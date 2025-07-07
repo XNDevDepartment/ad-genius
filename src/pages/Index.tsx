@@ -1,11 +1,34 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { Sidebar } from "@/components/Sidebar";
+import { Dashboard } from "@/components/Dashboard";
+import { UGCCreator } from "@/components/departments/UGCCreator";
 
 const Index = () => {
+  const [currentView, setCurrentView] = useState("dashboard");
+
+  const handleSelectDepartment = (departmentId: string) => {
+    setCurrentView(departmentId);
+  };
+
+  const handleNavigate = (view: string) => {
+    setCurrentView(view);
+  };
+
+  const renderCurrentView = () => {
+    switch (currentView) {
+      case "ugc-creator":
+        return <UGCCreator onBack={() => setCurrentView("dashboard")} />;
+      case "dashboard":
+      default:
+        return <Dashboard onSelectDepartment={handleSelectDepartment} />;
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-background flex">
+      <Sidebar currentView={currentView} onNavigate={handleNavigate} />
+      <div className="flex-1 overflow-auto">
+        {renderCurrentView()}
       </div>
     </div>
   );
