@@ -39,7 +39,7 @@ export const GeneratedImages = ({ images, isGenerating }: GeneratedImagesProps) 
       </CardHeader>
       <CardContent>
         {images.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {images.map((image) => (
               <div key={image.id} className="space-y-3 animate-scale-in">
                 <div className="rounded-lg overflow-hidden border border-border/50">
@@ -67,7 +67,7 @@ export const GeneratedImages = ({ images, isGenerating }: GeneratedImagesProps) 
             ))}
           </div>
         ) : (
-          <div className="border-2 border-dashed border-border/30 rounded-lg p-12 text-center">
+          <div className="border-2 border-dashed border-border/30 rounded-lg p-6 lg:p-12 text-center">
             <div className="mx-auto w-16 h-16 rounded-lg bg-secondary/50 flex items-center justify-center mb-4">
               <Image className="h-8 w-8 text-muted-foreground" />
             </div>

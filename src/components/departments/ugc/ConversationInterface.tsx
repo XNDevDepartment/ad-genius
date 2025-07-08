@@ -81,14 +81,14 @@ export const ConversationInterface = ({
         ) : (
           <div className="space-y-4">
             {/* Chat Messages - ChatGPT Style */}
-            <div className="max-h-96 overflow-y-auto space-y-4 border rounded-lg p-4 bg-muted/20">
+            <div className="max-h-64 lg:max-h-96 overflow-y-auto space-y-4 border rounded-lg p-3 lg:p-4 bg-muted/20">
               {messages.map((message) => (
                 <div
                   key={message.id}
                   className={`flex ${message.type === 'answer' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[80%] p-3 rounded-lg ${
+                    className={`max-w-[85%] lg:max-w-[80%] p-2 lg:p-3 rounded-lg text-sm lg:text-base ${
                       message.type === 'question'
                         ? 'bg-muted text-foreground'
                         : 'bg-primary text-primary-foreground ml-auto'
@@ -139,11 +139,11 @@ export const ConversationInterface = ({
                 value={currentAnswer}
                 onChange={(e) => setCurrentAnswer(e.target.value)}
                 onKeyPress={handleKeyPress}
-                rows={3}
-                className="border-0 p-0 resize-none focus-visible:ring-0 shadow-none"
+                rows={2}
+                className="border-0 p-0 resize-none focus-visible:ring-0 shadow-none text-sm lg:text-base"
                 disabled={isLoading || !currentQuestion}
               />
-              <div className="flex justify-between items-center mt-3 pt-3 border-t">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-3 pt-3 border-t">
                 <span className="text-xs text-muted-foreground">
                   Press Enter to send, Shift+Enter for new line
                 </span>

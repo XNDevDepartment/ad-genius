@@ -41,7 +41,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Sidebar currentView={currentView} onNavigate={handleNavigate} />
-      <div className="ml-64 min-h-screen">
+      <div className="lg:ml-64 min-h-screen">
         {renderCurrentView()}
       </div>
     </div>

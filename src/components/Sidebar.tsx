@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { 
   Brain, 
@@ -8,7 +9,8 @@ import {
   Users, 
   Home,
   Settings,
-  LogOut
+  LogOut,
+  Menu
 } from "lucide-react";
 
 interface SidebarProps {
@@ -49,8 +51,8 @@ const navigationItems = [
 ];
 
 export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
-  return (
-    <div className="w-64 bg-gradient-secondary border-r border-border/50 flex flex-col min-h-screen fixed left-0 top-0 z-40">
+  const SidebarContent = () => (
+    <>
       {/* Logo */}
       <div className="p-6 border-b border-border/50">
         <div className="flex items-center gap-3">
@@ -109,6 +111,31 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
           Sign Out
         </Button>
       </div>
-    </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:flex w-64 bg-gradient-secondary border-r border-border/50 flex-col min-h-screen fixed left-0 top-0 z-40">
+        <SidebarContent />
+      </div>
+
+      {/* Mobile Menu Button */}
+      <div className="lg:hidden fixed top-4 left-4 z-50">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon" className="bg-background/80 backdrop-blur-sm">
+              <Menu className="h-4 w-4" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-64 p-0 bg-gradient-secondary">
+            <div className="flex flex-col h-full">
+              <SidebarContent />
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+    </>
   );
 };

@@ -38,7 +38,7 @@ export const SettingsPanel = ({ settings, onSettingsChange }: SettingsPanelProps
   ];
 
   return (
-    <div className="fixed top-24 right-6 w-80 z-50">
+    <div className="fixed top-16 lg:top-24 right-4 lg:right-6 w-72 lg:w-80 z-50 max-h-[calc(100vh-5rem)] overflow-y-auto">
       <Card className="bg-gradient-card border-border/50 shadow-xl backdrop-blur-sm bg-background/95">
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <CollapsibleTrigger asChild>

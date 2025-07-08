@@ -224,20 +224,21 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
   };
 
   return (
-    <div className="p-8 space-y-6 animate-fade-in">
+    <div className="p-4 lg:p-8 space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <Button variant="ghost" onClick={onBack} className="gap-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
+        <Button variant="ghost" onClick={onBack} className="gap-2 w-fit">
           <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
+          <span className="hidden sm:inline">Back to Dashboard</span>
+          <span className="sm:hidden">Back</span>
         </Button>
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-gradient-primary shadow-glow">
             <Image className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">UGC Creator</h1>
-            <p className="text-muted-foreground">AI-powered conversation to create perfect UGC content</p>
+            <h1 className="text-xl lg:text-2xl font-bold">UGC Creator</h1>
+            <p className="text-sm lg:text-base text-muted-foreground">AI-powered conversation to create perfect UGC content</p>
           </div>
         </div>
       </div>
