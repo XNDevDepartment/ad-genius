@@ -79,31 +79,6 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
     }
   };
 
-  // const handleStart = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     // Simulate API call to OpenAI assistant to get first question
-  //     await new Promise(resolve => setTimeout(resolve, 1500));
-
-  //     const firstQuestion = "What type of product are you looking to create UGC content for? Please describe it in detail.";
-  //     setCurrentQuestion(firstQuestion);
-  //     setIsStarted(true);
-
-  //     toast({
-  //       title: "Conversation Started",
-  //       description: "The AI assistant is ready to help you create amazing UGC content.",
-  //     });
-  //   } catch (error) {
-  //     toast({
-  //       title: "Failed to Start",
-  //       description: "Something went wrong. Please try again.",
-  //       variant: "destructive"
-  //     });
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
 
   /* ---------- enviar resposta (texto + opcional imagem) ---------- */
   const handleAnswer = async (answer: string) => {
@@ -147,7 +122,16 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
         //   //   ? await generateImagesFromBase(attachedFile, prompt, 3)
         //   //   : await generateImages(prompt, 3);
         setIsGeneratingImages(true);
-        const imgs = await generateImagesFromBase(attachedFile, prompt)
+        const imgs = await generateImagesFromBase(
+          attachedFile,
+          prompt,
+          {
+            number: settings.numberOfImages,
+            quality: settings.quality,
+            size: settings.size,
+            output_format: settings.format,
+          }
+        );
 
         setGeneratedImages(imgs);
         setCurrentQuestion('');

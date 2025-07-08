@@ -145,6 +145,7 @@ export async function uploadFile(file) {
     baseFile,
     prompt,
     {
+      number = 1,
       quality = 'medium',
       size = '1024x1024',
       output_format = 'png',
@@ -162,7 +163,7 @@ export async function uploadFile(file) {
   }
 
   // Cria as chamadas em paralelo (até 16, mas neste exemplo 3)
-  const calls = Array.from({ length: 1}, async () => {
+  const calls = Array.from({ length: number}, async () => {
     const form = new FormData();
     form.append('model', 'gpt-image-1');
     form.append('image', baseFile);
