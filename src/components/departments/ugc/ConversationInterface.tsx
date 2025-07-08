@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { MessageSquare, Send, Sparkles } from "lucide-react";
+import { SettingsPanel } from "./SettingsPanel";
 
 interface Message {
   id: string;
@@ -18,7 +19,15 @@ interface ConversationInterfaceProps {
   messages: Message[];
   onStart: () => void;
   onAnswer: (answer: string) => void;
+  answer,
+  setAnswer,
+  expectImage: boolean;                     // ← vem do assistente
+  attachedFile: File | null;                // ← estado que vive no componente-pai
+  setAttachedFile: (file: File | null) => void;
+  settings,
+  setSettings
 }
+
 
 export const ConversationInterface = ({
   isStarted,
@@ -27,6 +36,11 @@ export const ConversationInterface = ({
   messages,
   onStart,
   onAnswer,
+  expectImage,
+  attachedFile,
+  setAttachedFile,
+  settings,
+  setSettings
 }: ConversationInterfaceProps) => {
   const [currentAnswer, setCurrentAnswer] = useState("");
 
@@ -37,6 +51,7 @@ export const ConversationInterface = ({
     }
   };
 
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -44,8 +59,18 @@ export const ConversationInterface = ({
     }
   };
 
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      const el = chatContainerRef.current;
+      el.scrollTop = el.scrollHeight;        // sem animação
+      // el.scrollTo({ top: el.scrollHeight, behavior: "smooth" }); // com animação
+    }
+  }, [messages, currentQuestion, isLoading]);  // re-executa sempre que chega algo novo
+
   return (
-    <Card className="bg-gradient-card border-border/50">
+    <Card className="bg-gradient-card border-border/50 ">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5 text-primary" />
@@ -81,14 +106,14 @@ export const ConversationInterface = ({
         ) : (
           <div className="space-y-4">
             {/* Chat Messages - ChatGPT Style */}
-            <div className="max-h-64 lg:max-h-96 overflow-y-auto space-y-4 border rounded-lg p-3 lg:p-4 bg-muted/20">
+            <div ref={chatContainerRef} className="h-[32rem] overflow-y-auto space-y-4 border rounded-lg p-3 lg:p-4 bg-muted/20">
               {messages.map((message) => (
                 <div
                   key={message.id}
                   className={`flex ${message.type === 'answer' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[85%] lg:max-w-[80%] p-2 lg:p-3 rounded-lg text-sm lg:text-base ${
+                    className={`max-w-[85%] lg:max-w-[65%] p-2 lg:p-3 rounded-lg text-sm lg:text-base ${
                       message.type === 'question'
                         ? 'bg-muted text-foreground'
                         : 'bg-primary text-primary-foreground ml-auto'
@@ -101,9 +126,9 @@ export const ConversationInterface = ({
                   </div>
                 </div>
               ))}
-              
+
               {/* Current AI Question */}
-              {currentQuestion && (
+              {/* {currentQuestion && (
                 <div className="flex justify-start">
                   <div className="max-w-[80%] p-3 rounded-lg bg-muted text-foreground">
                     <div className="text-xs opacity-70 mb-1 flex items-center gap-2">
@@ -113,8 +138,8 @@ export const ConversationInterface = ({
                     <p className="text-sm whitespace-pre-wrap">{currentQuestion}</p>
                   </div>
                 </div>
-              )}
-              
+              )} */}
+
               {isLoading && (
                 <div className="flex justify-start">
                   <div className="max-w-[80%] p-3 rounded-lg bg-muted text-foreground">
@@ -143,15 +168,33 @@ export const ConversationInterface = ({
                 className="border-0 p-0 resize-none focus-visible:ring-0 shadow-none text-sm lg:text-base"
                 disabled={isLoading || !currentQuestion}
               />
+              {/* MOSTRAR UPLOAD SE O ASSISTENTE PEDIR IMAGEM */}
+              {expectImage && (
+                <div className="mt-3 flex items-center gap-4">
+                  <input
+                    type="file"
+                    accept="image/png, image/jpeg"
+                    onChange={(e) => setAttachedFile(e.target.files?.[0] ?? null)}
+                    className="text-sm file:mr-2 file:px-3 file:py-1.5 file:rounded-md
+                              file:border file:bg-secondary file:text-foreground cursor-pointer"
+                  />
+                  {attachedFile && (
+                    <span className="truncate max-w-[10rem] text-xs text-muted-foreground">
+                      {attachedFile.name}
+                    </span>
+                  )}
+                </div>
+              )}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-3 pt-3 border-t">
                 <span className="text-xs text-muted-foreground">
                   Press Enter to send, Shift+Enter for new line
                 </span>
+                <div style={{display: 'flex', alignItems: 'start'}}>
                 <Button
                   size="sm"
                   onClick={handleSubmitAnswer}
                   disabled={!currentAnswer.trim() || isLoading || !currentQuestion}
-                  className="gap-2"
+                  className="gap-2 mr-3"
                 >
                   {isLoading ? (
                     <Sparkles className="h-4 w-4 animate-spin" />
@@ -160,6 +203,12 @@ export const ConversationInterface = ({
                   )}
                   Send
                 </Button>
+                {/* Floating Settings Panel */}
+                <SettingsPanel
+                  settings={settings}
+                  onSettingsChange={setSettings}
+                />
+                </div>
               </div>
             </div>
           </div>

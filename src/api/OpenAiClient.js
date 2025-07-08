@@ -145,23 +145,24 @@ export async function uploadFile(file) {
     baseFile,
     prompt,
     {
-      quality = 'hight',
+      quality = 'medium',
       size = '1024x1024',
       output_format = 'png',
     } = {},
     maskFile = null,
-    number
   ) {
     // Validações rápidas
   if (!['image/jpeg', 'image/png'].includes(baseFile.type)) {
+    console.log("Erro no formato da imagem")
     throw new Error('Formato inválido: apenas JPG ou PNG são aceites.');
   }
   if (maskFile && !['image/png'].includes(maskFile.type)) {
+    console.log("Erro na mascara da imagem")
     throw new Error('Máscara inválida: apenas PNG (com transparência).');
   }
 
   // Cria as chamadas em paralelo (até 16, mas neste exemplo 3)
-  const calls = Array.from({ length: number}, async () => {
+  const calls = Array.from({ length: 1}, async () => {
     const form = new FormData();
     form.append('model', 'gpt-image-1');
     form.append('image', baseFile);
@@ -171,24 +172,25 @@ export async function uploadFile(file) {
     form.append('quality', quality);
     form.append('output_format', output_format);
 
-    const res = await fetch('https://api.openai.com/v1/images/edits', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-        'OpenAI-Beta': 'assistants=v2',
-        // Note: não definimos Content-Type para FormData
-      },
-      body: form,
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error?.message || 'Falha na edição da imagem.');
-    }
-    const { data } = await res.json();
-    // Retorna a string b64_json da primeira (e única) imagem
-    return data[0].b64_json;
+      const res = await fetch('https://api.openai.com/v1/images/edits', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+          'OpenAI-Beta': 'assistants=v2',
+          // Note: não definimos Content-Type para FormData
+        },
+        body: form,
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        toast(err)
+        console.log(err)
+        throw new Error(err.error?.message || 'Falha na edição da imagem.');
+      }
+      const { data } = await res.json();
+      // Retorna a string b64_json da primeira (e única) imagem
+      return data[0].b64_json;
   });
-
   return Promise.all(calls);
 }
 

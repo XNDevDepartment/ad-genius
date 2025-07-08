@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, Image } from "lucide-react";
@@ -11,20 +12,46 @@ export interface GeneratedImage {
 }
 
 interface GeneratedImagesProps {
-  images: GeneratedImage[];
+  images: string[]; // array de base64
   isGenerating: boolean;
 }
 
 export const GeneratedImages = ({ images, isGenerating }: GeneratedImagesProps) => {
   const { toast } = useToast();
 
-  const handleDownload = (image: GeneratedImage) => {
+  const handleDownload = (b64: string, index: number) => {
     // In real implementation, this would download the image
     toast({
       title: "Download Started",
-      description: `Downloading ${image.id}...`,
+      description: `Downloading ...`,
     });
+
+    // converte base64 → Blob → link temporário
+    const byteString = atob(b64);
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+    const blob = new Blob([ab], { type: "image/png" });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `ugc-${index + 1}.png`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
+
+
+
+  const imageContainerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (imageContainerRef.current) {
+      const el = imageContainerRef.current;
+      el.scrollTop = el.scrollHeight;        // sem animação
+      // el.scrollTo({ top: el.scrollHeight, behavior: "smooth" }); // com animação
+    }
+  }, [isGenerating, images]);  // re-executa sempre que chega algo novo
 
   return (
     <Card className="bg-gradient-card border-border/50">
@@ -40,34 +67,38 @@ export const GeneratedImages = ({ images, isGenerating }: GeneratedImagesProps) 
       <CardContent>
         {images.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {images.map((image) => (
-              <div key={image.id} className="space-y-3 animate-scale-in">
-                <div className="rounded-lg overflow-hidden border border-border/50">
-                  <img 
-                    src={image.url} 
-                    alt="Generated UGC content" 
-                    className="w-full h-auto shadow-card"
-                  />
+            {images.map((b64, i) => {
+              const src = `data:image/png;base64,${b64}`;
+              return(
+                <div key={i} className="space-y-3 animate-scale-in">
+                  <div className="rounded-lg overflow-hidden border border-border/50">
+                    <img 
+                      src={src}
+                      alt={`UGC ${i + 1}`}
+                      className="w-full h-auto shadow-card"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    {/* <p className="text-sm text-muted-foreground line-clamp-2">
+                      {image.prompt}
+                    </p> */}
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="w-full gap-2"
+                      onClick={() => handleDownload(b64, i)}
+                    >
+                      <Download className="h-4 w-4" />
+                      Download
+                    </Button>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {image.prompt}
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="w-full gap-2"
-                    onClick={() => handleDownload(image)}
-                  >
-                    <Download className="h-4 w-4" />
-                    Download
-                  </Button>
-                </div>
-              </div>
-            ))}
+              )
+            }
+            )}
           </div>
         ) : (
-          <div className="border-2 border-dashed border-border/30 rounded-lg p-6 lg:p-12 text-center">
+          <div ref={imageContainerRef} className="border-2 border-dashed border-border/30 rounded-lg p-6 lg:p-12 text-center">
             <div className="mx-auto w-16 h-16 rounded-lg bg-secondary/50 flex items-center justify-center mb-4">
               <Image className="h-8 w-8 text-muted-foreground" />
             </div>

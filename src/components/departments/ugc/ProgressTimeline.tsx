@@ -19,14 +19,14 @@ export const ProgressTimeline = ({ steps, currentStepIndex }: ProgressTimelinePr
   return (
     <Card className="bg-gradient-card border-border/50">
       <CardContent className="p-4">
-        <div className="space-y-4">
+        <div className="space-y-2">
           {/* Progress Bar */}
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Progress</span>
               <span className="font-medium">{Math.round(progress)}%</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} className="h-1" />
           </div>
 
           {/* Timeline Steps */}

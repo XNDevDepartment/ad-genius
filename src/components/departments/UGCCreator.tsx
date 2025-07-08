@@ -6,7 +6,7 @@ import { ConversationInterface } from "./ugc/ConversationInterface";
 import { SettingsPanel, ImageSettings } from "./ugc/SettingsPanel";
 import { ProgressTimeline, TimelineStep } from "./ugc/ProgressTimeline";
 import { GeneratedImages, GeneratedImage } from "./ugc/GeneratedImages";
-import { startConversationAPI } from '../../api/OpenAiClient'
+import { startConversationAPI, uploadFile, converse, generateImagesFromBase } from '../../api/OpenAiClient'
 
 const assistantId = import.meta.env.VITE_OPENAI_ASSISTANT_ID_UGC
 
@@ -29,7 +29,9 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
+  const [attachedFile, setAttachedFile] = useState(null);
+  const [expectImage, setExpectImage] = useState(false);
+  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [isGeneratingImages, setIsGeneratingImages] = useState(false);
   const [settings, setSettings] = useState<ImageSettings>({
     size: '1024x1024',
@@ -55,6 +57,17 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
       setThreadId(id);
       setCurrentQuestion(reply);
       setIsStarted(true);
+
+      if (!reply?.trim()) return;
+      const now = new Date();
+      const questionMsg: Message = {
+        id: `q-${now.getTime()}`,
+        type: "question",
+        content: reply,
+        timestamp: now,
+      };
+      setMessages((prev) => [...prev, questionMsg]);
+
     } catch (e) {
       toast({
         title: "Failed to Start",
@@ -93,132 +106,78 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
 
 
   /* ---------- enviar resposta (texto + opcional imagem) ---------- */
-  const handleAnswer = async () => {
-    // …
+  const handleAnswer = async (answer: string) => {
+
+    if (!currentQuestion?.trim()) return;
+
+    /* -----------------------------------------------------------------------
+     * 1) Immediately mirror the finished exchange in <ConversationInterface />
+     * --------------------------------------------------------------------- */
+    const now = new Date();
+    const answerMsg: Message = {
+      id: `a-${now.getTime()}`,
+      type: "answer",
+      content: answer.trim(),
+      timestamp: now,
+    };
+    setMessages((prev) => [...prev, answerMsg]);
+
     try {
       setIsLoading(true);
 
       // 1) Validação e upload
-      // let fileId = null;
-      // if (attachedFile) {
-      //   fileId = await uploadFile(attachedFile);
-      // }
-  
+      let fileId = null;
+      if (attachedFile) {
+         fileId = await uploadFile(attachedFile);
+      }
+
       // 2) Envia ao assistant
       const content = [];
       if (answer.trim()) content.push({ type: 'text', text: answer.trim() });
-      // if (fileId)       content.push({ type: 'image_file', image_file: { file_id: fileId } });
-      // const reply = await converse(threadId, content, params.assistantId);
-  
+      if (fileId)       content.push({ type: 'image_file', image_file: { file_id: fileId } });
+      const reply = await converse(threadId, content, assistantId);
+
+      // 4) Detecta prompt
+      if (reply.includes('GENERATE_PROMPT:')) {
+        const cleaned = reply.replace(/\*/g, '');
+        const prompt  = cleaned.split(':')[1].trim();
+
+        //Usa always attachedFile directly
+        //   // const imgs = attachedFile
+        //   //   ? await generateImagesFromBase(attachedFile, prompt, 3)
+        //   //   : await generateImages(prompt, 3);
+        setIsGeneratingImages(true);
+        const imgs = await generateImagesFromBase(attachedFile, prompt)
+
+        setGeneratedImages(imgs);
+        setCurrentQuestion('');
+        setExpectImage(false);
+      } else {
+        setCurrentQuestion(reply);
+        setExpectImage(/envia.*imagem/i.test(reply));
+      }
+
+
+      if (!reply?.trim()) return;
+
+      const now = new Date();
+      const questionMsg: Message = {
+        id: `q-${now.getTime()}`,
+        type: "question",
+        content: reply,
+        timestamp: now,
+      };
+      setMessages((prev) => [...prev, questionMsg]);
+
       // 3) Limpa input
       setAnswer('');
-  
-      // 4) Detecta prompt
-      // if (reply.includes('GENERATE_PROMPT:')) {
-      //   const cleaned = reply.replace(/\*/g, '');
-      //   const prompt  = cleaned.split(':')[1].trim();
 
-      //   // Usa always attachedFile directly
-      //   // const imgs = attachedFile
-      //   //   ? await generateImagesFromBase(attachedFile, prompt, 3)
-      //   //   : await generateImages(prompt, 3);
-      //   //  const imgs = await generateImagesFromBase(attachedFile, prompt, 1)
 
-      //   // setImages(imgs);
-      //   setCurrentQuestion('');
-      //   // setExpectImage(false);
-      // } else {
-      //   setCurrentQuestion(reply);
-        // setExpectImage(/envia.*imagem/i.test(reply));
-      // }
     } catch (err) {
       toast(err.message);
+      setIsLoading(false);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-
-  // const handleAnswer = async (answer: string) => {
-  //   if (!currentQuestion) return;
-
-  //   setIsLoading(true);
-
-  //   // Add the current question and answer to messages
-  //   const questionMessage: Message = {
-  //     id: `q-${Date.now()}`,
-  //     type: 'question',
-  //     content: currentQuestion,
-  //     timestamp: new Date(),
-  //   };
-
-  //   const answerMessage: Message = {
-  //     id: `a-${Date.now()}`,
-  //     type: 'answer',
-  //     content: answer,
-  //     timestamp: new Date(),
-  //   };
-
-  //   setMessages(prev => [...prev, questionMessage, answerMessage]);
-
-  //   try {
-  //     // Simulate API call to OpenAI assistant
-  //     await new Promise(resolve => setTimeout(resolve, 2000));
-
-  //     // Determine next question or finish conversation
-  //     const nextQuestions = [
-  //       "What style of UGC content do you want? (lifestyle, professional, casual, artistic, etc.)",
-  //       "Who is your target audience and what mood should the content convey?",
-  //       "Any specific colors, themes, or elements you want to include or avoid?",
-  //     ];
-
-  //     const currentMessageCount = messages.length / 2; // Divide by 2 since each exchange adds 2 messages
-
-  //     if (currentMessageCount < nextQuestions.length) {
-  //       setCurrentQuestion(nextQuestions[currentMessageCount]);
-  //     } else {
-  //       // Conversation complete, generate images
-  //       setCurrentQuestion(null);
-  //       await generateImages();
-  //     }
-  //   } catch (error) {
-  //     toast({
-  //       title: "Processing Failed",
-  //       description: "Something went wrong. Please try again.",
-  //       variant: "destructive"
-  //     });
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-  const generateImages = async () => {
-    setIsGeneratingImages(true);
-
-    try {
-      // Simulate API call to image generation service
-      await new Promise(resolve => setTimeout(resolve, 4000));
-
-      const newImages: GeneratedImage[] = Array.from({ length: settings.numberOfImages }, (_, i) => ({
-        id: `img-${Date.now()}-${i}`,
-        url: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=400&fit=crop", // Placeholder
-        prompt: "Generated UGC content based on your conversation",
-        timestamp: new Date(),
-      }));
-
-      setGeneratedImages(newImages);
-
-      toast({
-        title: "Images Generated!",
-        description: `Successfully created ${settings.numberOfImages} UGC image${settings.numberOfImages > 1 ? 's' : ''}.`,
-      });
-    } catch (error) {
-      toast({
-        title: "Generation Failed",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
       setIsGeneratingImages(false);
     }
   };
@@ -226,7 +185,7 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
   return (
     <div className="p-4 lg:p-8 space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-5">
         <Button variant="ghost" onClick={onBack} className="gap-2 w-fit">
           <ArrowLeft className="h-4 w-4" />
           <span className="hidden sm:inline">Back to Dashboard</span>
@@ -244,18 +203,10 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Generated Images */}
-        <GeneratedImages
-          images={generatedImages}
-          isGenerating={isGeneratingImages}
-        />
+      <div className="max-w-7xl mx-auto space-y-6 h-full w-full align-bottom justify-end">
 
-        {/* Progress Timeline */}
-        <ProgressTimeline
-          steps={timelineSteps}
-          currentStepIndex={currentStepIndex >= 0 ? currentStepIndex : 0}
-        />
+
+
 
         {/* Conversation Interface */}
         <ConversationInterface
@@ -263,16 +214,32 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
           isLoading={isLoading}
           currentQuestion={currentQuestion}
           messages={messages}
+          answer={answer}
+          setAnswer={setAnswer}
           onStart={handleStart}
           onAnswer={handleAnswer}
+          expectImage={expectImage}
+          attachedFile={attachedFile}
+          setAttachedFile={setAttachedFile}
+          settings={settings}
+          setSettings={setSettings}
+        />
+
+        {/* Progress Timeline */}
+        {/* <ProgressTimeline
+          steps={timelineSteps}
+          currentStepIndex={currentStepIndex >= 0 ? currentStepIndex : 0}
+        /> */}
+
+
+
+        {/* Generated Images */}
+        <GeneratedImages
+          images={generatedImages}
+          isGenerating={isGeneratingImages}
         />
       </div>
 
-      {/* Floating Settings Panel */}
-      <SettingsPanel
-        settings={settings}
-        onSettingsChange={setSettings}
-      />
     </div>
   );
 };
