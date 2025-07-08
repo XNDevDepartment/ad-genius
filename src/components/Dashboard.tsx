@@ -12,7 +12,7 @@ interface Department {
 
 const departments: Department[] = [
   {
-    id: "ugc-creator",
+    id: "ugc_creator",
     name: "UGC Creator",
     description: "Transform product images into engaging user-generated content with AI",
     icon: Image,

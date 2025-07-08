@@ -23,7 +23,7 @@ const navigationItems = [
     icon: Home,
   },
   {
-    id: "ugc-creator",
+    id: "ugc_creator",
     label: "UGC Creator",
     icon: Image,
     active: true,

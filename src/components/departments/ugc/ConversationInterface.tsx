@@ -109,9 +109,9 @@ export const ConversationInterface = ({
               <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <MessageSquare className="h-4 w-4 text-primary" />
-                  <span className="font-medium text-sm">Current Question</span>
+                  <span className="font-medium text-sm">Assistente</span>
                 </div>
-                <p className="text-sm">{currentQuestion}</p>
+                <p className="whitespace-pre-wrap mb-4 min-h-[120px]">{currentQuestion}</p>
               </div>
             )}
 

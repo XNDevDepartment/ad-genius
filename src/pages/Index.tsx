@@ -3,20 +3,34 @@ import { Sidebar } from "@/components/Sidebar";
 import { Dashboard } from "@/components/Dashboard";
 import { UGCCreator } from "@/components/departments/UGCCreator";
 
+
+
+const assistants = [
+  {
+    id: import.meta.env.VITE_OPENAI_ASSISTANT_ID_UGC,
+    name: 'UGC Creator',
+    desc: 'Gerar imagens UGC realistas',
+    handle: 'ugc_creator'
+  },
+];
+
 const Index = () => {
-  const [currentView, setCurrentView] = useState("dashboard");
+  const [currentView, setCurrentView] = useState(localStorage.getItem("currentView"));
+
 
   const handleSelectDepartment = (departmentId: string) => {
     setCurrentView(departmentId);
+    localStorage.setItem("currentView", departmentId)
   };
 
   const handleNavigate = (view: string) => {
     setCurrentView(view);
+    localStorage.setItem("currentView", view)
   };
 
   const renderCurrentView = () => {
     switch (currentView) {
-      case "ugc-creator":
+      case "ugc_creator":
         return <UGCCreator onBack={() => setCurrentView("dashboard")} />;
       case "dashboard":
       default:
