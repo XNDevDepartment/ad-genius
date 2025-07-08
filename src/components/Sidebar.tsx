@@ -50,7 +50,7 @@ const navigationItems = [
 
 export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
   return (
-    <div className="w-64 bg-gradient-secondary border-r border-border/50 flex flex-col h-screen">
+    <div className="w-64 bg-gradient-secondary border-r border-border/50 flex flex-col min-h-screen fixed left-0 top-0 z-40">
       {/* Logo */}
       <div className="p-6 border-b border-border/50">
         <div className="flex items-center gap-3">

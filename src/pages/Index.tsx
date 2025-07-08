@@ -39,9 +39,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background">
       <Sidebar currentView={currentView} onNavigate={handleNavigate} />
-      <div className="flex-1 overflow-auto">
+      <div className="ml-64 min-h-screen">
         {renderCurrentView()}
       </div>
     </div>

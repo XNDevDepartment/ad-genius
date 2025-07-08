@@ -243,26 +243,20 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Generated Images */}
-        <div className="lg:col-span-2">
-          <GeneratedImages
-            images={generatedImages}
-            isGenerating={isGeneratingImages}
-          />
-        </div>
+        <GeneratedImages
+          images={generatedImages}
+          isGenerating={isGeneratingImages}
+        />
 
-        {/* Settings Panel */}
-        <div>
-          <SettingsPanel
-            settings={settings}
-            onSettingsChange={setSettings}
-          />
-        </div>
-      </div>
+        {/* Progress Timeline */}
+        <ProgressTimeline
+          steps={timelineSteps}
+          currentStepIndex={currentStepIndex >= 0 ? currentStepIndex : 0}
+        />
 
-      {/* Conversation Interface */}
-      <div className="max-w-7xl mx-auto">
+        {/* Conversation Interface */}
         <ConversationInterface
           isStarted={isStarted}
           isLoading={isLoading}
@@ -273,13 +267,11 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
         />
       </div>
 
-      {/* Progress Timeline */}
-      <div className="max-w-4xl mx-auto">
-        <ProgressTimeline
-          steps={timelineSteps}
-          currentStepIndex={currentStepIndex >= 0 ? currentStepIndex : 0}
-        />
-      </div>
+      {/* Floating Settings Panel */}
+      <SettingsPanel
+        settings={settings}
+        onSettingsChange={setSettings}
+      />
     </div>
   );
 };

@@ -38,102 +38,104 @@ export const SettingsPanel = ({ settings, onSettingsChange }: SettingsPanelProps
   ];
 
   return (
-    <Card className="bg-gradient-card border-border/50">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors">
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Settings className="h-5 w-5 text-primary" />
-                Image Settings
+    <div className="fixed top-24 right-6 w-80 z-50">
+      <Card className="bg-gradient-card border-border/50 shadow-xl backdrop-blur-sm bg-background/95">
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-muted/30 transition-all duration-200">
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Settings className="h-5 w-5 text-primary" />
+                  Image Settings
+                </div>
+                <ChevronDown className={`h-4 w-4 transition-all duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+              </CardTitle>
+              <CardDescription>
+                Configure your image generation preferences
+              </CardDescription>
+            </CardHeader>
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent className="transition-all duration-300 ease-in-out data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+            <CardContent className="space-y-4">
+              {/* Image Size */}
+              <div className="space-y-2">
+                <Label>Image Size</Label>
+                <Select
+                  value={settings.size}
+                  onValueChange={(value) => updateSetting('size', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sizeOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-            </CardTitle>
-            <CardDescription>
-              Configure your image generation preferences
-            </CardDescription>
-          </CardHeader>
-        </CollapsibleTrigger>
-        
-        <CollapsibleContent>
-          <CardContent className="space-y-4">
-            {/* Image Size */}
-            <div className="space-y-2">
-              <Label>Image Size</Label>
-              <Select
-                value={settings.size}
-                onValueChange={(value) => updateSetting('size', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {sizeOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
 
-            {/* Quality */}
-            <div className="space-y-2">
-              <Label>Quality</Label>
-              <Select
-                value={settings.quality}
-                onValueChange={(value: 'low' | 'medium' | 'high') => updateSetting('quality', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              {/* Quality */}
+              <div className="space-y-2">
+                <Label>Quality</Label>
+                <Select
+                  value={settings.quality}
+                  onValueChange={(value: 'low' | 'medium' | 'high') => updateSetting('quality', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Number of Images */}
-            <div className="space-y-2">
-              <Label htmlFor="numberOfImages">Number of Images</Label>
-              <Select
-                value={settings.numberOfImages.toString()}
-                onValueChange={(value) => updateSetting('numberOfImages', parseInt(value))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
-                    <SelectItem key={num} value={num.toString()}>
-                      {num} Image{num > 1 ? 's' : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              {/* Number of Images */}
+              <div className="space-y-2">
+                <Label htmlFor="numberOfImages">Number of Images</Label>
+                <Select
+                  value={settings.numberOfImages.toString()}
+                  onValueChange={(value) => updateSetting('numberOfImages', parseInt(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                      <SelectItem key={num} value={num.toString()}>
+                        {num} Image{num > 1 ? 's' : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Format */}
-            <div className="space-y-2">
-              <Label>Output Format</Label>
-              <Select
-                value={settings.format}
-                onValueChange={(value: 'png' | 'jpg') => updateSetting('format', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="png">PNG (Lossless)</SelectItem>
-                  <SelectItem value="jpg">JPG (Smaller file)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </CollapsibleContent>
-      </Collapsible>
-    </Card>
+              {/* Format */}
+              <div className="space-y-2">
+                <Label>Output Format</Label>
+                <Select
+                  value={settings.format}
+                  onValueChange={(value: 'png' | 'jpg') => updateSetting('format', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="png">PNG (Lossless)</SelectItem>
+                    <SelectItem value="jpg">JPG (Smaller file)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+    </div>
   );
 };
