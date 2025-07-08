@@ -18,7 +18,7 @@ interface SettingsPanelProps {
 }
 
 export const SettingsPanel = ({ settings, onSettingsChange }: SettingsPanelProps) => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   
   const updateSetting = (key: keyof ImageSettings, value: any) => {
     onSettingsChange({
@@ -28,13 +28,9 @@ export const SettingsPanel = ({ settings, onSettingsChange }: SettingsPanelProps
   };
 
   const sizeOptions = [
-    { value: "512x512", label: "512 × 512 (Square)" },
-    { value: "768x768", label: "768 × 768 (Square)" },
-    { value: "1024x1024", label: "1024 × 1024 (Square)" },
-    { value: "1152x896", label: "1152 × 896 (Landscape)" },
-    { value: "896x1152", label: "896 × 1152 (Portrait)" },
-    { value: "1344x768", label: "1344 × 768 (Wide)" },
-    { value: "768x1344", label: "768 × 1344 (Tall)" },
+    { value: "1024x1536", label: "1024 x 1536 (Portrait)" },
+    { value: "1024x1024", label: "1024 x 1024 (Square)" },
+    { value: "1536x1024", label: "1536 x 1024 (Landscape)" },
   ];
 
   return (
@@ -55,7 +51,7 @@ export const SettingsPanel = ({ settings, onSettingsChange }: SettingsPanelProps
               </CardDescription>
             </CardHeader>
           </CollapsibleTrigger>
-          
+
           <CollapsibleContent className="transition-all duration-300 ease-in-out data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
             <CardContent className="space-y-4">
               {/* Image Size */}
