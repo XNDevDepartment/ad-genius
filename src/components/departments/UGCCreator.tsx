@@ -32,9 +32,8 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [isGeneratingImages, setIsGeneratingImages] = useState(false);
   const [settings, setSettings] = useState<ImageSettings>({
-    width: 1024,
-    height: 1024,
-    quality: 'standard',
+    size: '1024x1024',
+    quality: 'medium',
     numberOfImages: 1,
     format: 'png',
   });
@@ -245,15 +244,11 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-        {/* Conversation Interface */}
+        {/* Generated Images */}
         <div className="lg:col-span-2">
-          <ConversationInterface
-            isStarted={isStarted}
-            isLoading={isLoading}
-            currentQuestion={currentQuestion}
-            messages={messages}
-            onStart={handleStart}
-            onAnswer={handleAnswer}
+          <GeneratedImages
+            images={generatedImages}
+            isGenerating={isGeneratingImages}
           />
         </div>
 
@@ -266,11 +261,15 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
         </div>
       </div>
 
-      {/* Generated Images */}
+      {/* Conversation Interface */}
       <div className="max-w-7xl mx-auto">
-        <GeneratedImages
-          images={generatedImages}
-          isGenerating={isGeneratingImages}
+        <ConversationInterface
+          isStarted={isStarted}
+          isLoading={isLoading}
+          currentQuestion={currentQuestion}
+          messages={messages}
+          onStart={handleStart}
+          onAnswer={handleAnswer}
         />
       </div>
 

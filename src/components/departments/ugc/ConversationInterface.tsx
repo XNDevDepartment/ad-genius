@@ -45,7 +45,7 @@ export const ConversationInterface = ({
   };
 
   return (
-    <Card className="bg-gradient-card border-border/50 h-full">
+    <Card className="bg-gradient-card border-border/50">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5 text-primary" />
@@ -55,7 +55,7 @@ export const ConversationInterface = ({
           Start the conversation to create your perfect UGC content
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent>
         {!isStarted ? (
           <div className="text-center py-12">
             <div className="mx-auto w-16 h-16 rounded-lg bg-secondary/50 flex items-center justify-center mb-4">
@@ -79,72 +79,90 @@ export const ConversationInterface = ({
             </Button>
           </div>
         ) : (
-          <>
-            {/* Messages History */}
-            <div className="space-y-3 max-h-64 overflow-y-auto">
+          <div className="space-y-4">
+            {/* Chat Messages - ChatGPT Style */}
+            <div className="max-h-96 overflow-y-auto space-y-4 border rounded-lg p-4 bg-muted/20">
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`p-3 rounded-lg ${
-                    message.type === 'question'
-                      ? 'bg-primary/10 border border-primary/20'
-                      : 'bg-secondary/50 border border-border/30'
-                  }`}
+                  className={`flex ${message.type === 'answer' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {message.type === 'question' ? 'AI Assistant' : 'You'}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {message.timestamp.toLocaleTimeString()}
-                    </span>
+                  <div
+                    className={`max-w-[80%] p-3 rounded-lg ${
+                      message.type === 'question'
+                        ? 'bg-muted text-foreground'
+                        : 'bg-primary text-primary-foreground ml-auto'
+                    }`}
+                  >
+                    <div className="text-xs opacity-70 mb-1">
+                      {message.type === 'question' ? 'AI Assistant' : 'You'} • {message.timestamp.toLocaleTimeString()}
+                    </div>
+                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                   </div>
-                  <p className="text-sm">{message.content}</p>
                 </div>
               ))}
+              
+              {/* Current AI Question */}
+              {currentQuestion && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] p-3 rounded-lg bg-muted text-foreground">
+                    <div className="text-xs opacity-70 mb-1 flex items-center gap-2">
+                      <MessageSquare className="h-3 w-3" />
+                      AI Assistant • now
+                    </div>
+                    <p className="text-sm whitespace-pre-wrap">{currentQuestion}</p>
+                  </div>
+                </div>
+              )}
+              
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] p-3 rounded-lg bg-muted text-foreground">
+                    <div className="flex items-center gap-2 text-xs opacity-70 mb-1">
+                      <Sparkles className="h-3 w-3 animate-spin" />
+                      AI Assistant is thinking...
+                    </div>
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse"></div>
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Current Question */}
-            {currentQuestion && (
-              <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <MessageSquare className="h-4 w-4 text-primary" />
-                  <span className="font-medium text-sm">Assistente</span>
-                </div>
-                <p className="whitespace-pre-wrap mb-4 min-h-[120px]">{currentQuestion}</p>
-              </div>
-            )}
-
-            {/* Answer Input */}
-            <div className="space-y-3">
+            {/* Input Area - ChatGPT Style */}
+            <div className="border rounded-lg p-3 bg-background">
               <Textarea
-                placeholder="Type your answer here..."
+                placeholder="Type your message..."
                 value={currentAnswer}
                 onChange={(e) => setCurrentAnswer(e.target.value)}
                 onKeyPress={handleKeyPress}
                 rows={3}
-                className="resize-none"
+                className="border-0 p-0 resize-none focus-visible:ring-0 shadow-none"
                 disabled={isLoading || !currentQuestion}
               />
-              <Button
-                onClick={handleSubmitAnswer}
-                disabled={!currentAnswer.trim() || isLoading || !currentQuestion}
-                className="w-full gap-2"
-              >
-                {isLoading ? (
-                  <>
+              <div className="flex justify-between items-center mt-3 pt-3 border-t">
+                <span className="text-xs text-muted-foreground">
+                  Press Enter to send, Shift+Enter for new line
+                </span>
+                <Button
+                  size="sm"
+                  onClick={handleSubmitAnswer}
+                  disabled={!currentAnswer.trim() || isLoading || !currentQuestion}
+                  className="gap-2"
+                >
+                  {isLoading ? (
                     <Sparkles className="h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
+                  ) : (
                     <Send className="h-4 w-4" />
-                    Send Answer
-                  </>
-                )}
-              </Button>
+                  )}
+                  Send
+                </Button>
+              </div>
             </div>
-          </>
+          </div>
         )}
       </CardContent>
     </Card>
