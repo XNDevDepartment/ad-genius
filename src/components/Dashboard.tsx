@@ -1,6 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Brain, Image, MessageSquare, BarChart3, Users, Sparkles } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface Department {
   id: string;
@@ -8,44 +10,52 @@ interface Department {
   description: string;
   icon: React.ComponentType<any>;
   status: "active" | "coming-soon";
+  requireAuth: boolean;
 }
 
 const departments: Department[] = [
   {
     id: "ugc_creator",
-    name: "UGC Creator",
+    name: "AdGenius UGC Creator",
     description: "Transform product images into engaging user-generated content with AI",
     icon: Image,
-    status: "active"
+    status: "active",
+    requireAuth: true,
   },
   {
-    id: "content-strategist",
-    name: "Content Strategist",
-    description: "Generate compelling marketing content and copy for your business",
+    id: "adgenius-lead-magnet-creator",
+    name: "AdGenius Lead Magnet Creator",
+    description: "Creative creator for lead capture ads with Lead Magnets",
     icon: MessageSquare,
-    status: "coming-soon"
+    status: "coming-soon",
+    requireAuth: false,
   },
   {
     id: "analytics-advisor",
     name: "Analytics Advisor",
     description: "Get insights and recommendations from your business data",
     icon: BarChart3,
-    status: "coming-soon"
+    status: "coming-soon",
+    requireAuth: false,
   },
   {
     id: "customer-insights",
     name: "Customer Insights",
     description: "Understand your customers better with AI-powered analysis",
     icon: Users,
-    status: "coming-soon"
+    status: "coming-soon",
+    requireAuth: false,
   }
 ];
+
 
 interface DashboardProps {
   onSelectDepartment: (departmentId: string) => void;
 }
 
 export const Dashboard = ({ onSelectDepartment }: DashboardProps) => {
+  const { user, signOut } = useAuth();
+  
   return (
     <div className="p-8 space-y-8 animate-fade-in">
       {/* Hero Section */}
@@ -72,7 +82,13 @@ export const Dashboard = ({ onSelectDepartment }: DashboardProps) => {
               key={department.id}
               className="group relative overflow-hidden bg-gradient-card border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-elegant cursor-pointer"
               style={{ animationDelay: `${index * 150}ms` }}
-              onClick={() => department.status === "active" && onSelectDepartment(department.id)}
+              onClick={() => {
+                if(department.requireAuth && !user){
+                  toast.error('Must authenticate to use this function');
+                }else{
+                  department.status === "active" && onSelectDepartment(department.id)
+                }
+              }}
             >
               <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity duration-300" />
               
@@ -108,7 +124,7 @@ export const Dashboard = ({ onSelectDepartment }: DashboardProps) => {
                 
                 <Button 
                   variant={department.status === "active" ? "default" : "secondary"}
-                  disabled={department.status === "coming-soon"}
+                  disabled={department.status === "coming-soon" || (department.requireAuth && !user)}
                   className="w-full group-hover:shadow-glow transition-all duration-300"
                   onClick={(e) => {
                     e.stopPropagation();
