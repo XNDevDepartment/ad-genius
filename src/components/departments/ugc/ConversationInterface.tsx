@@ -45,7 +45,7 @@ export const ConversationInterface = ({
   const [currentAnswer, setCurrentAnswer] = useState("");
 
   const handleSubmitAnswer = () => {
-    if (currentAnswer.trim()) {
+    if (currentAnswer.trim() || attachedFile) {
       onAnswer(currentAnswer.trim());
       setCurrentAnswer("");
     }
@@ -184,7 +184,7 @@ export const ConversationInterface = ({
                   <Button
                     size="sm"
                     onClick={handleSubmitAnswer}
-                    disabled={!currentAnswer.trim() || isLoading || !currentQuestion}
+                    disabled={(!currentAnswer.trim() || isLoading || !currentQuestion) && !attachedFile}
                     className="gap-2"
                   >
                     {isLoading ? (
