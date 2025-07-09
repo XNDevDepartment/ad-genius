@@ -104,7 +104,7 @@ export const ConversationInterface = ({
         ) : (
           <div className="space-y-4">
             {/* Chat Messages - ChatGPT Style */}
-            <div ref={chatContainerRef} className="h-[28rem] sm:h-[32rem] overflow-y-auto space-y-4 border rounded-lg p-3 lg:p-4 bg-muted/20">
+            <div ref={chatContainerRef} className="h-[28rem] sm:h-[24rem] overflow-y-auto space-y-4 border rounded-lg p-3 lg:p-4 bg-muted/20">
               {messages.map((message) => (
                 <div
                   key={message.id}
