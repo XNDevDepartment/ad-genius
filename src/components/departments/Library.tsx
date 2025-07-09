@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, FolderImage, Download, Trash2, Search, Filter } from "lucide-react";
+import { ArrowLeft, FileImage, Download, Trash2, Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
@@ -103,7 +102,7 @@ export const Library = ({ onBack }: LibraryProps) => {
         </Button>
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-gradient-primary shadow-glow">
-            <FolderImage className="h-6 w-6 text-primary-foreground" />
+            <FileImage className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
             <h1 className="text-xl lg:text-2xl font-bold">Library</h1>
@@ -144,7 +143,7 @@ export const Library = ({ onBack }: LibraryProps) => {
       <Card className="bg-gradient-card border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FolderImage className="h-5 w-5 text-primary" />
+            <FileImage className="h-5 w-5 text-primary" />
             Generated Images ({filteredAndSortedImages.length})
           </CardTitle>
           <CardDescription>
@@ -202,7 +201,7 @@ export const Library = ({ onBack }: LibraryProps) => {
           ) : (
             <div className="text-center py-12">
               <div className="mx-auto w-16 h-16 rounded-lg bg-secondary/50 flex items-center justify-center mb-4">
-                <FolderImage className="h-8 w-8 text-muted-foreground" />
+                <FileImage className="h-8 w-8 text-muted-foreground" />
               </div>
               <p className="text-muted-foreground mb-2">No images in your library yet</p>
               <p className="text-sm text-muted-foreground">

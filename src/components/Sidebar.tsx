@@ -12,7 +12,7 @@ import {
   Settings,
   LogOut,
   Menu,
-  FolderImage
+  FileImage
 } from "lucide-react";
 
 interface SidebarProps {
@@ -29,7 +29,7 @@ const navigationItems = [
   {
     id: "library",
     label: "Library",
-    icon: FolderImage,
+    icon: FileImage,
     active: true,
   },
   {
