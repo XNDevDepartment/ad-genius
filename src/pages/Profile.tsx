@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -65,7 +64,8 @@ export const Profile = ({ onBack }: ProfileProps) => {
   const createInitialProfile = async () => {
     if (!user) return;
 
-    const initialProfile = {
+    const now = new Date().toISOString();
+    const initialProfile: UserProfile = {
       id: user.id,
       email: user.email || '',
       name: user.user_metadata?.name || '',
@@ -73,6 +73,8 @@ export const Profile = ({ onBack }: ProfileProps) => {
       account_id: user.user_metadata?.account_id || `ACC${Date.now()}`,
       description: '',
       profile_picture: '',
+      created_at: now,
+      updated_at: now,
     };
 
     const { error } = await supabase
