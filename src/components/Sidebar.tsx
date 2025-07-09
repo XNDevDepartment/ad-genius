@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -10,7 +11,8 @@ import {
   Home,
   Settings,
   LogOut,
-  Menu
+  Menu,
+  FolderImage
 } from "lucide-react";
 
 interface SidebarProps {
@@ -23,6 +25,12 @@ const navigationItems = [
     id: "dashboard",
     label: "Dashboard",
     icon: Home,
+  },
+  {
+    id: "library",
+    label: "Library",
+    icon: FolderImage,
+    active: true,
   },
   {
     id: "ugc_creator",
@@ -117,7 +125,7 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden lg:flex w-64 bg-gradient-secondary border-r border-border/50 flex-col min-h-screen fixed left-0 top-0 z-40">
+      <div className="hidden lg:flex w-64 bg-gradient-secondary border-r border-border/50 flex-col h-screen fixed left-0 top-0 z-40">
         <SidebarContent />
       </div>
 

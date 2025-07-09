@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Image } from "lucide-react";
@@ -5,7 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ConversationInterface } from "./ugc/ConversationInterface";
 import { SettingsPanel, ImageSettings } from "./ugc/SettingsPanel";
 import { ProgressTimeline, TimelineStep } from "./ugc/ProgressTimeline";
-import { GeneratedImages, GeneratedImage } from "./ugc/GeneratedImages";
+import { GeneratingImagePlaceholders } from "./ugc/GeneratingImagePlaceholders";
+import { GeneratedImagesList } from "./ugc/GeneratedImagesList";
 import { startConversationAPI, uploadFile, converse, generateImagesFromBase } from '../../api/OpenAiClient'
 
 const assistantId = import.meta.env.VITE_OPENAI_ASSISTANT_ID_UGC
@@ -53,7 +55,7 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
   const handleStart = async () => {
     try {
       setIsLoading(true);
-      const { threadId: id, reply } = await startConversationAPI(assistantId); // rename p/ evitar sombra
+      const { threadId: id, reply } = await startConversationAPI(assistantId);
       setThreadId(id);
       setCurrentQuestion(reply);
       setIsStarted(true);
@@ -79,15 +81,9 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
     }
   };
 
-
-  /* ---------- enviar resposta (texto + opcional imagem) ---------- */
   const handleAnswer = async (answer: string) => {
-
     if (!currentQuestion?.trim()) return;
 
-    /* -----------------------------------------------------------------------
-     * 1) Immediately mirror the finished exchange in <ConversationInterface />
-     * --------------------------------------------------------------------- */
     const now = new Date();
     const answerMsg: Message = {
       id: `a-${now.getTime()}`,
@@ -100,28 +96,30 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
     try {
       setIsLoading(true);
 
-      // 1) Validação e upload
       let fileId = null;
       if (attachedFile) {
          fileId = await uploadFile(attachedFile);
       }
 
-      // 2) Envia ao assistant
       const content = [];
       if (answer.trim()) content.push({ type: 'text', text: answer.trim() });
       if (fileId)       content.push({ type: 'image_file', image_file: { file_id: fileId } });
       const reply = await converse(threadId, content, assistantId);
 
-      // 4) Detecta prompt
       if (reply.includes('GENERATE_PROMPT:')) {
         const cleaned = reply.replace(/\*/g, '');
         const prompt  = cleaned.split(':')[1].trim();
 
-        //Usa always attachedFile directly
-        //   // const imgs = attachedFile
-        //   //   ? await generateImagesFromBase(attachedFile, prompt, 3)
-        //   //   : await generateImages(prompt, 3);
         setIsGeneratingImages(true);
+        
+        // Scroll to show the generating placeholders
+        setTimeout(() => {
+          const element = document.getElementById('generating-images');
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 100);
+
         const imgs = await generateImagesFromBase(
           attachedFile,
           prompt,
@@ -136,11 +134,22 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
         setGeneratedImages(imgs);
         setCurrentQuestion('');
         setExpectImage(false);
+        
+        // Save to library (localStorage for now)
+        const existingImages = JSON.parse(localStorage.getItem('ugc_library') || '[]');
+        const newImages = imgs.map((base64, index) => ({
+          id: `${Date.now()}-${index}`,
+          base64,
+          prompt,
+          timestamp: new Date().toISOString(),
+          settings: { ...settings }
+        }));
+        localStorage.setItem('ugc_library', JSON.stringify([...existingImages, ...newImages]));
+
       } else {
         setCurrentQuestion(reply);
         setExpectImage(/envia.*imagem/i.test(reply));
       }
-
 
       if (!reply?.trim()) return;
 
@@ -153,9 +162,7 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
       };
       setMessages((prev) => [...prev, questionMsg]);
 
-      // 3) Limpa input
       setAnswer('');
-
 
     } catch (err) {
       toast(err.message);
@@ -188,9 +195,11 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto space-y-6 h-full w-full align-bottom justify-end">
-
-
-
+        {/* Progress Timeline */}
+        <ProgressTimeline
+          steps={timelineSteps}
+          currentStepIndex={currentStepIndex >= 0 ? currentStepIndex : 0}
+        />
 
         {/* Conversation Interface */}
         <ConversationInterface
@@ -209,21 +218,16 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
           setSettings={setSettings}
         />
 
-        {/* Progress Timeline */}
-        {/* <ProgressTimeline
-          steps={timelineSteps}
-          currentStepIndex={currentStepIndex >= 0 ? currentStepIndex : 0}
-        /> */}
+        {/* Generating Images Placeholders */}
+        {isGeneratingImages && (
+          <GeneratingImagePlaceholders numberOfImages={settings.numberOfImages} />
+        )}
 
-
-
-        {/* Generated Images */}
-        <GeneratedImages
-          images={generatedImages}
-          isGenerating={isGeneratingImages}
-        />
+        {/* Generated Images List */}
+        {generatedImages.length > 0 && !isGeneratingImages && (
+          <GeneratedImagesList images={generatedImages} />
+        )}
       </div>
-
     </div>
   );
 };

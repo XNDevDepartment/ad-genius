@@ -1,9 +1,9 @@
+
 import { useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { Dashboard } from "@/components/Dashboard";
 import { UGCCreator } from "@/components/departments/UGCCreator";
-
-
+import { Library } from "@/components/departments/Library";
 
 const assistants = [
   {
@@ -15,8 +15,7 @@ const assistants = [
 ];
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState(localStorage.getItem("currentView"));
-
+  const [currentView, setCurrentView] = useState(localStorage.getItem("currentView") || "dashboard");
 
   const handleSelectDepartment = (departmentId: string) => {
     setCurrentView(departmentId);
@@ -30,6 +29,8 @@ const Index = () => {
 
   const renderCurrentView = () => {
     switch (currentView) {
+      case "library":
+        return <Library onBack={() => setCurrentView("dashboard")} />;
       case "ugc_creator":
         return <UGCCreator onBack={() => setCurrentView("dashboard")} />;
       case "dashboard":

@@ -1,0 +1,217 @@
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, FolderImage, Download, Trash2, Search, Filter } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+
+interface LibraryImage {
+  id: string;
+  base64: string;
+  prompt: string;
+  timestamp: string;
+  settings: {
+    size: string;
+    quality: string;
+    numberOfImages: number;
+    format: string;
+  };
+}
+
+interface LibraryProps {
+  onBack: () => void;
+}
+
+export const Library = ({ onBack }: LibraryProps) => {
+  const [images, setImages] = useState<LibraryImage[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const loadImages = () => {
+      const storedImages = JSON.parse(localStorage.getItem('ugc_library') || '[]');
+      setImages(storedImages);
+    };
+
+    loadImages();
+    
+    // Listen for storage changes to update when images are added from other tabs/components
+    const handleStorageChange = () => loadImages();
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  const handleDownload = (image: LibraryImage) => {
+    toast({
+      title: "Download Started",
+      description: "Downloading image...",
+    });
+
+    const byteString = atob(image.base64);
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+    const blob = new Blob([ab], { type: "image/png" });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `ugc-${image.id}.png`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDelete = (imageId: string) => {
+    const updatedImages = images.filter(img => img.id !== imageId);
+    setImages(updatedImages);
+    localStorage.setItem('ugc_library', JSON.stringify(updatedImages));
+    
+    toast({
+      title: "Image Deleted",
+      description: "Image has been removed from your library.",
+    });
+  };
+
+  const filteredAndSortedImages = images
+    .filter(image => 
+      image.prompt.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'oldest':
+          return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+        case 'prompt':
+          return a.prompt.localeCompare(b.prompt);
+        case 'newest':
+        default:
+          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      }
+    });
+
+  return (
+    <div className="p-4 lg:p-8 space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-5">
+        <Button variant="ghost" onClick={onBack} className="gap-2 w-fit">
+          <ArrowLeft className="h-4 w-4" />
+          <span className="hidden sm:inline">Back to Dashboard</span>
+          <span className="sm:hidden">Back</span>
+        </Button>
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-gradient-primary shadow-glow">
+            <FolderImage className="h-6 w-6 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="text-xl lg:text-2xl font-bold">Library</h1>
+            <p className="text-sm lg:text-base text-muted-foreground">All your generated UGC images in one place</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <Card className="bg-gradient-card border-border/50">
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by prompt..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-full sm:w-48">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+                <SelectItem value="prompt">By Prompt</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Images Grid */}
+      <Card className="bg-gradient-card border-border/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FolderImage className="h-5 w-5 text-primary" />
+            Generated Images ({filteredAndSortedImages.length})
+          </CardTitle>
+          <CardDescription>
+            Your collection of AI-generated UGC content
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {filteredAndSortedImages.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredAndSortedImages.map((image) => {
+                const src = `data:image/png;base64,${image.base64}`;
+                
+                return (
+                  <div key={image.id} className="space-y-3 animate-scale-in group">
+                    <div className="rounded-lg overflow-hidden border border-border/50 relative">
+                      <img 
+                        src={src}
+                        alt={`Generated: ${image.prompt.substring(0, 50)}...`}
+                        className="w-full h-auto shadow-card transition-transform group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleDownload(image)}
+                            className="bg-background/90 hover:bg-background"
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDelete(image.id)}
+                            className="bg-destructive/90 hover:bg-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {image.prompt}
+                      </p>
+                      <div className="flex justify-between items-center text-xs text-muted-foreground">
+                        <span>{new Date(image.timestamp).toLocaleDateString()}</span>
+                        <span>{image.settings.size}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="mx-auto w-16 h-16 rounded-lg bg-secondary/50 flex items-center justify-center mb-4">
+                <FolderImage className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <p className="text-muted-foreground mb-2">No images in your library yet</p>
+              <p className="text-sm text-muted-foreground">
+                {searchTerm ? "Try adjusting your search terms" : "Generate some UGC content to see it here"}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
