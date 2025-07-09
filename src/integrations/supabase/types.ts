@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          account_id: string
+          created_at: string | null
+          description: string | null
+          email: string
+          id: string
+          name: string | null
+          profession: string | null
+          profile_picture: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_id: string
+          created_at?: string | null
+          description?: string | null
+          email: string
+          id: string
+          name?: string | null
+          profession?: string | null
+          profile_picture?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_id?: string
+          created_at?: string | null
+          description?: string | null
+          email?: string
+          id?: string
+          name?: string | null
+          profession?: string | null
+          profile_picture?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       "User Inputs": {
         Row: {
           created_at: string
