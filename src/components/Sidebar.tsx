@@ -43,6 +43,7 @@ const navigationItems = [
     label: "UGC Creator",
     icon: Image,
     active: true,
+    requireAuth: true,
   },
   {
     id: "content-strategist",
@@ -130,7 +131,7 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
           const Icon = item.icon;
           const isActive = currentView === item.id;
           const isDisabled = item.comingSoon || (item.requireAuth && !user);
-          
+
           return (
             <Button
               key={item.id}
