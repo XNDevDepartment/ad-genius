@@ -7,7 +7,6 @@ import { ConversationInterface } from "./ugc/ConversationInterface";
 import { SettingsPanel, ImageSettings } from "./ugc/SettingsPanel";
 import { ProgressTimeline, TimelineStep } from "./ugc/ProgressTimeline";
 import { GeneratingImagePlaceholders } from "./ugc/GeneratingImagePlaceholders";
-import { GeneratedImagesList } from "./ugc/GeneratedImagesList";
 import { startConversationAPI, uploadFile, converse, generateImagesFromBase } from '../../api/OpenAiClient'
 
 const assistantId = import.meta.env.VITE_OPENAI_ASSISTANT_ID_UGC
@@ -135,7 +134,7 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
         setCurrentQuestion('');
         setExpectImage(false);
         
-        // Save to library (localStorage for now)
+        // Save to library (localStorage)
         const existingImages = JSON.parse(localStorage.getItem('ugc_library') || '[]');
         const newImages = imgs.map((base64, index) => ({
           id: `${Date.now()}-${index}`,
@@ -145,6 +144,12 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
           settings: { ...settings }
         }));
         localStorage.setItem('ugc_library', JSON.stringify([...existingImages, ...newImages]));
+
+        // Show success toast
+        toast({
+          title: "Images Generated!",
+          description: `${imgs.length} image(s) generated and saved to your library.`,
+        });
 
       } else {
         setCurrentQuestion(reply);
@@ -165,7 +170,11 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
       setAnswer('');
 
     } catch (err) {
-      toast(err.message);
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive"
+      });
       setIsLoading(false);
     } finally {
       setIsLoading(false);
@@ -221,11 +230,6 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
         {/* Generating Images Placeholders */}
         {isGeneratingImages && (
           <GeneratingImagePlaceholders numberOfImages={settings.numberOfImages} />
-        )}
-
-        {/* Generated Images List */}
-        {generatedImages.length > 0 && !isGeneratingImages && (
-          <GeneratedImagesList images={generatedImages} />
         )}
       </div>
     </div>
