@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { 
   Brain, 
@@ -12,8 +13,12 @@ import {
   Settings,
   LogOut,
   Menu,
-  FileImage
+  FileImage,
+  User
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { AuthModal } from "@/components/auth/AuthModal";
+import { useState } from "react";
 
 interface SidebarProps {
   currentView: string;
@@ -31,6 +36,7 @@ const navigationItems = [
     label: "Library",
     icon: FileImage,
     active: true,
+    requireAuth: true,
   },
   {
     id: "ugc_creator",
@@ -59,6 +65,25 @@ const navigationItems = [
 ];
 
 export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
+  const { user, signOut } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const handleNavigation = (itemId: string) => {
+    const item = navigationItems.find(nav => nav.id === itemId);
+    if (item?.requireAuth && !user) {
+      setShowAuthModal(true);
+      return;
+    }
+    onNavigate(itemId);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    if (currentView === "library" || currentView === "profile") {
+      onNavigate("dashboard");
+    }
+  };
+
   const SidebarContent = () => (
     <>
       {/* Logo */}
@@ -74,6 +99,28 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
         </div>
       </div>
 
+      {/* User Section */}
+      {user && (
+        <div className="p-4 border-b border-border/50">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={user.user_metadata?.profile_picture} />
+              <AvatarFallback>
+                <User className="h-4 w-4" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">
+                {user.user_metadata?.name || user.email}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {user.user_metadata?.profession || 'User'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Navigation */}
       <div className="flex-1 p-4 space-y-2">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
@@ -82,7 +129,7 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
         {navigationItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentView === item.id;
-          const isDisabled = item.comingSoon;
+          const isDisabled = item.comingSoon || (item.requireAuth && !user);
           
           return (
             <Button
@@ -93,7 +140,7 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
                 isActive && "bg-primary/10 text-primary border border-primary/20",
                 isDisabled && "opacity-50 cursor-not-allowed"
               )}
-              onClick={() => !isDisabled && onNavigate(item.id)}
+              onClick={() => !isDisabled && handleNavigation(item.id)}
               disabled={isDisabled}
             >
               <Icon className="h-5 w-5" />
@@ -103,6 +150,11 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
                   Soon
                 </span>
               )}
+              {item.requireAuth && !user && (
+                <span className="text-xs bg-destructive/20 text-destructive px-2 py-1 rounded">
+                  Login
+                </span>
+              )}
             </Button>
           );
         })}
@@ -110,14 +162,37 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
 
       {/* Footer */}
       <div className="p-4 border-t border-border/50 space-y-2">
-        <Button variant="ghost" className="w-full justify-start gap-3">
-          <Settings className="h-5 w-5" />
-          Settings
-        </Button>
-        <Button variant="ghost" className="w-full justify-start gap-3 text-muted-foreground">
-          <LogOut className="h-5 w-5" />
-          Sign Out
-        </Button>
+        {user ? (
+          <>
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start gap-3"
+              onClick={() => onNavigate("profile")}
+            >
+              <User className="h-5 w-5" />
+              Profile
+            </Button>
+            <Button variant="ghost" className="w-full justify-start gap-3">
+              <Settings className="h-5 w-5" />
+              Settings
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start gap-3 text-muted-foreground"
+              onClick={handleSignOut}
+            >
+              <LogOut className="h-5 w-5" />
+              Sign Out
+            </Button>
+          </>
+        ) : (
+          <Button 
+            onClick={() => setShowAuthModal(true)}
+            className="w-full"
+          >
+            Sign In / Sign Up
+          </Button>
+        )}
       </div>
     </>
   );
@@ -144,6 +219,8 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
           </SheetContent>
         </Sheet>
       </div>
+
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </>
   );
 };

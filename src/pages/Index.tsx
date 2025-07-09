@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { Dashboard } from "@/components/Dashboard";
 import { UGCCreator } from "@/components/departments/UGCCreator";
 import { Library } from "@/components/departments/Library";
+import { Profile } from "@/pages/Profile";
 
 const assistants = [
   {
@@ -33,6 +34,8 @@ const Index = () => {
         return <Library onBack={() => setCurrentView("dashboard")} />;
       case "ugc_creator":
         return <UGCCreator onBack={() => setCurrentView("dashboard")} />;
+      case "profile":
+        return <Profile onBack={() => setCurrentView("dashboard")} />;
       case "dashboard":
       default:
         return <Dashboard onSelectDepartment={handleSelectDepartment} />;
