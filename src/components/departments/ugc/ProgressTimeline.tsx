@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, Circle, Sparkles } from "lucide-react";
@@ -20,8 +21,8 @@ export const ProgressTimeline = ({ steps, currentStepIndex }: ProgressTimelinePr
     <Card className="bg-gradient-card border-border/50">
       <CardContent className="p-4">
         <div className="space-y-2">
-          {/* Progress Bar */}
-          <div className="space-y-2">
+          {/* Progress Bar - Hidden on mobile */}
+          <div className="space-y-2 hidden sm:block">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Progress</span>
               <span className="font-medium">{Math.round(progress)}%</span>
