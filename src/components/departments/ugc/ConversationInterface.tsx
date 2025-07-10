@@ -3,14 +3,16 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageSquare, Send, Sparkles } from "lucide-react";
+import { MessageSquare, Send, Sparkles, Download } from "lucide-react";
 import { SettingsPanel } from "./SettingsPanel";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
-  type: 'question' | 'answer';
+  type: 'question' | 'answer' | 'images';
   content: string;
   timestamp: Date;
+  images?: string[];
 }
 
 interface ConversationInterfaceProps {
@@ -20,13 +22,13 @@ interface ConversationInterfaceProps {
   messages: Message[];
   onStart: () => void;
   onAnswer: (answer: string) => void;
-  answer,
-  setAnswer,
+  answer: string;
+  setAnswer: (answer: string) => void;
   expectImage: boolean;
   attachedFile: File | null;
   setAttachedFile: (file: File | null) => void;
-  settings,
-  setSettings
+  settings: any;
+  setSettings: (settings: any) => void;
 }
 
 export const ConversationInterface = ({
@@ -43,6 +45,7 @@ export const ConversationInterface = ({
   setSettings
 }: ConversationInterfaceProps) => {
   const [currentAnswer, setCurrentAnswer] = useState("");
+  const { toast } = useToast();
 
   const handleSubmitAnswer = () => {
     if (currentAnswer.trim() || attachedFile) {
@@ -56,6 +59,26 @@ export const ConversationInterface = ({
       e.preventDefault();
       handleSubmitAnswer();
     }
+  };
+
+  const handleDownloadImage = (base64: string, index: number) => {
+    toast({
+      title: "Download Started",
+      description: `Downloading image ${index + 1}...`,
+    });
+
+    const byteString = atob(base64);
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+    const blob = new Blob([ab], { type: "image/png" });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `ugc-image-${index + 1}.png`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
@@ -114,13 +137,43 @@ export const ConversationInterface = ({
                     className={`max-w-[85%] lg:max-w-[65%] p-2 lg:p-3 rounded-lg text-sm lg:text-base ${
                       message.type === 'question'
                         ? 'bg-muted text-foreground'
+                        : message.type === 'images'
+                        ? 'bg-primary/10 text-foreground border border-primary/20'
                         : 'bg-primary text-primary-foreground ml-auto'
                     }`}
                   >
                     <div className="text-xs opacity-70 mb-1">
-                      {message.type === 'question' ? 'AI Assistant' : 'You'} • {message.timestamp.toLocaleTimeString()}
+                      {message.type === 'question' ? 'AI Assistant' : message.type === 'images' ? 'Generated Images' : 'You'} • {message.timestamp.toLocaleTimeString()}
                     </div>
                     <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    
+                    {/* Display generated images */}
+                    {message.type === 'images' && message.images && (
+                      <div className="mt-3 space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {message.images.map((base64, index) => (
+                            <div key={index} className="space-y-2">
+                              <div className="rounded-lg overflow-hidden border border-border/50">
+                                <img 
+                                  src={`data:image/png;base64,${base64}`}
+                                  alt={`Generated image ${index + 1}`}
+                                  className="w-full h-auto shadow-card"
+                                />
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDownloadImage(base64, index)}
+                                className="w-full gap-2 bg-background/50 hover:bg-background/80"
+                              >
+                                <Download className="h-3 w-3" />
+                                Download Image {index + 1}
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

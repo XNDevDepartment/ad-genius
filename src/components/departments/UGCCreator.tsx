@@ -15,9 +15,10 @@ const assistantId = import.meta.env.VITE_OPENAI_ASSISTANT_ID_UGC;
 
 interface Message {
   id: string;
-  type: 'question' | 'answer';
+  type: 'question' | 'answer' | 'images';
   content: string;
   timestamp: Date;
+  images?: string[];
 }
 
 interface UGCCreatorProps {
@@ -151,14 +152,24 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
             if (Array.isArray(imgArray)) {
               images = imgArray.filter((img): img is string => typeof img === 'string');
             }
+          } else {
+            images = [];
           }
 
           setGeneratedImages(images);
-          setCurrentQuestion(null);
-          setExpectImage(false);
           
-          // Save to secure storage
+          // Add generated images to the conversation
           if (images.length > 0) {
+            const imagesMessage: Message = {
+              id: `imgs-${Date.now()}`,
+              type: "images",
+              content: `Generated ${images.length} image(s) based on your request.`,
+              timestamp: new Date(),
+              images: images,
+            };
+            setMessages((prev) => [...prev, imagesMessage]);
+            
+            // Save to secure storage
             await saveImages({
               base64Images: images,
               prompt,
@@ -170,6 +181,9 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
               description: `${images.length} image(s) generated and saved securely.`,
             });
           }
+          
+          setCurrentQuestion(null);
+          setExpectImage(false);
         }
 
       } else if (typeof reply === 'string') {
