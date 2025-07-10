@@ -25,14 +25,14 @@ interface UGCCreatorProps {
 }
 
 export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
-  const [threadId, setThreadId] = useState(null);
+  const [threadId, setThreadId] = useState<string | null>(null);
   const [answer, setAnswer] = useState('');
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState<Message[]>([]);
   const [isStarted, setIsStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [attachedFile, setAttachedFile] = useState(null);
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [expectImage, setExpectImage] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [isGeneratingImages, setIsGeneratingImages] = useState(false);
@@ -57,22 +57,27 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
   const handleStart = async () => {
     try {
       setIsLoading(true);
-      const { threadId: id, reply } = await startConversationAPI(assistantId);
-      setThreadId(id);
-      setCurrentQuestion(reply);
-      setIsStarted(true);
+      const response = await startConversationAPI(assistantId);
+      
+      if (response && typeof response === 'object' && 'threadId' in response && 'reply' in response) {
+        const { threadId: id, reply } = response as { threadId: string; reply: string };
+        setThreadId(id);
+        setCurrentQuestion(reply);
+        setIsStarted(true);
 
-      if (!reply?.trim()) return;
-      const now = new Date();
-      const questionMsg: Message = {
-        id: `q-${now.getTime()}`,
-        type: "question",
-        content: reply,
-        timestamp: now,
-      };
-      setMessages((prev) => [...prev, questionMsg]);
+        if (!reply?.trim()) return;
+        const now = new Date();
+        const questionMsg: Message = {
+          id: `q-${now.getTime()}`,
+          type: "question",
+          content: reply,
+          timestamp: now,
+        };
+        setMessages((prev) => [...prev, questionMsg]);
+      }
 
     } catch (e) {
+      console.error('Start conversation error:', e);
       toast({
         title: "Failed to Start",
         description: "Unable to start conversation. Please try again.",
@@ -84,7 +89,7 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
   };
 
   const handleAnswer = async (answer: string) => {
-    if (!currentQuestion?.trim()) return;
+    if (!currentQuestion?.trim() || !threadId) return;
 
     const now = new Date();
     const answerMsg: Message = {
@@ -100,7 +105,10 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
 
       let fileId = null;
       if (attachedFile) {
-        fileId = await uploadFile(attachedFile);
+        const uploadResponse = await uploadFile(attachedFile);
+        if (typeof uploadResponse === 'string') {
+          fileId = uploadResponse;
+        }
       }
 
       const content = [];
@@ -109,61 +117,74 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
       
       const reply = await converse(threadId, content, assistantId);
 
-      if (reply.includes('GENERATE_PROMPT:')) {
+      if (typeof reply === 'string' && reply.includes('GENERATE_PROMPT:')) {
         const cleaned = reply.replace(/\*/g, '');
-        const prompt = cleaned.split(':')[1].trim();
+        const prompt = cleaned.split(':')[1]?.trim();
 
-        setIsGeneratingImages(true);
-        
-        setTimeout(() => {
-          const element = document.getElementById('generating-images');
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (prompt && attachedFile) {
+          setIsGeneratingImages(true);
+          
+          setTimeout(() => {
+            const element = document.getElementById('generating-images');
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }, 100);
+
+          const imageResponse = await generateImagesFromBase(
+            attachedFile,
+            prompt,
+            {
+              number: settings.numberOfImages,
+              quality: settings.quality,
+              size: settings.size,
+              output_format: settings.format,
+            }
+          );
+
+          // Properly handle the image response
+          let images: string[] = [];
+          if (Array.isArray(imageResponse)) {
+            images = imageResponse.filter((img): img is string => typeof img === 'string');
+          } else if (imageResponse && typeof imageResponse === 'object' && 'images' in imageResponse) {
+            const imgArray = (imageResponse as { images: unknown }).images;
+            if (Array.isArray(imgArray)) {
+              images = imgArray.filter((img): img is string => typeof img === 'string');
+            }
           }
-        }, 100);
 
-        const imgs = await generateImagesFromBase(
-          attachedFile,
-          prompt,
-          {
-            number: settings.numberOfImages,
-            quality: settings.quality,
-            size: settings.size,
-            output_format: settings.format,
+          setGeneratedImages(images);
+          setCurrentQuestion(null);
+          setExpectImage(false);
+          
+          // Save to secure storage
+          if (images.length > 0) {
+            await saveImages({
+              base64Images: images,
+              prompt,
+              settings: { ...settings }
+            });
+
+            toast({
+              title: "Images Generated!",
+              description: `${images.length} image(s) generated and saved securely.`,
+            });
           }
-        );
+        }
 
-        setGeneratedImages(imgs);
-        setCurrentQuestion('');
-        setExpectImage(false);
-        
-        // Save to secure storage
-        await saveImages({
-          base64Images: imgs,
-          prompt,
-          settings: { ...settings }
-        });
-
-        toast({
-          title: "Images Generated!",
-          description: `${imgs.length} image(s) generated and saved securely.`,
-        });
-
-      } else {
+      } else if (typeof reply === 'string') {
         setCurrentQuestion(reply);
         setExpectImage(/envia.*imagem/i.test(reply));
+
+        const now = new Date();
+        const questionMsg: Message = {
+          id: `q-${now.getTime()}`,
+          type: "question",
+          content: reply,
+          timestamp: now,
+        };
+        setMessages((prev) => [...prev, questionMsg]);
       }
-
-      if (!reply?.trim()) return;
-
-      const now = new Date();
-      const questionMsg: Message = {
-        id: `q-${now.getTime()}`,
-        type: "question",
-        content: reply,
-        timestamp: now,
-      };
-      setMessages((prev) => [...prev, questionMsg]);
 
       setAnswer('');
 
