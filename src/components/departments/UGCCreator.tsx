@@ -7,9 +7,11 @@ import { ConversationInterface } from "./ugc/ConversationInterface";
 import { SettingsPanel, ImageSettings } from "./ugc/SettingsPanel";
 import { ProgressTimeline, TimelineStep } from "./ugc/ProgressTimeline";
 import { GeneratingImagePlaceholders } from "./ugc/GeneratingImagePlaceholders";
-import { startConversationAPI, uploadFile, converse, generateImagesFromBase } from '../../api/OpenAiClient'
+import { ErrorBoundary } from "./ugc/ErrorBoundary";
+import { useSecureImageStorage } from "./ugc/SecureImageStorage";
+import { startConversationAPI, uploadFile, converse, generateImagesFromBase } from '../../api/SecureOpenAiClient';
 
-const assistantId = import.meta.env.VITE_OPENAI_ASSISTANT_ID_UGC
+const assistantId = import.meta.env.VITE_OPENAI_ASSISTANT_ID_UGC;
 
 interface Message {
   id: string;
@@ -42,6 +44,7 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
   });
 
   const { toast } = useToast();
+  const { saveImages } = useSecureImageStorage();
 
   const timelineSteps: TimelineStep[] = [
     { id: 'start', label: 'Start Conversation', status: isStarted ? 'completed' : 'pending' },
@@ -72,10 +75,10 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
     } catch (e) {
       toast({
         title: "Failed to Start",
-        description: e.message,
+        description: "Unable to start conversation. Please try again.",
         variant: "destructive"
       });
-    }finally {
+    } finally {
       setIsLoading(false);
     }
   };
@@ -97,21 +100,21 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
 
       let fileId = null;
       if (attachedFile) {
-         fileId = await uploadFile(attachedFile);
+        fileId = await uploadFile(attachedFile);
       }
 
       const content = [];
       if (answer.trim()) content.push({ type: 'text', text: answer.trim() });
-      if (fileId)       content.push({ type: 'image_file', image_file: { file_id: fileId } });
+      if (fileId) content.push({ type: 'image_file', image_file: { file_id: fileId } });
+      
       const reply = await converse(threadId, content, assistantId);
 
       if (reply.includes('GENERATE_PROMPT:')) {
         const cleaned = reply.replace(/\*/g, '');
-        const prompt  = cleaned.split(':')[1].trim();
+        const prompt = cleaned.split(':')[1].trim();
 
         setIsGeneratingImages(true);
         
-        // Scroll to show the generating placeholders
         setTimeout(() => {
           const element = document.getElementById('generating-images');
           if (element) {
@@ -134,21 +137,16 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
         setCurrentQuestion('');
         setExpectImage(false);
         
-        // Save to library (localStorage)
-        const existingImages = JSON.parse(localStorage.getItem('ugc_library') || '[]');
-        const newImages = imgs.map((base64, index) => ({
-          id: `${Date.now()}-${index}`,
-          base64,
+        // Save to secure storage
+        await saveImages({
+          base64Images: imgs,
           prompt,
-          timestamp: new Date().toISOString(),
           settings: { ...settings }
-        }));
-        localStorage.setItem('ugc_library', JSON.stringify([...existingImages, ...newImages]));
+        });
 
-        // Show success toast
         toast({
           title: "Images Generated!",
-          description: `${imgs.length} image(s) generated and saved to your library.`,
+          description: `${imgs.length} image(s) generated and saved securely.`,
         });
 
       } else {
@@ -170,12 +168,12 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
       setAnswer('');
 
     } catch (err) {
+      console.error('Conversation error:', err);
       toast({
         title: "Error",
-        description: err.message,
+        description: "An error occurred. Please try again.",
         variant: "destructive"
       });
-      setIsLoading(false);
     } finally {
       setIsLoading(false);
       setIsGeneratingImages(false);
@@ -183,55 +181,57 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
   };
 
   return (
-    <div className="p-4 lg:p-8 space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-5">
-        <Button variant="ghost" onClick={onBack} className="gap-2 w-fit">
-          <ArrowLeft className="h-4 w-4" />
-          <span className="hidden sm:inline">Back to Dashboard</span>
-          <span className="sm:hidden">Back</span>
-        </Button>
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-gradient-primary shadow-glow">
-            <Image className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="text-xl lg:text-2xl font-bold">UGC Creator</h1>
-            <p className="text-sm lg:text-base text-muted-foreground">AI-powered conversation to create perfect UGC content</p>
+    <ErrorBoundary>
+      <div className="p-4 lg:p-8 space-y-6 animate-fade-in">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-5">
+          <Button variant="ghost" onClick={onBack} className="gap-2 w-fit">
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Back to Dashboard</span>
+            <span className="sm:hidden">Back</span>
+          </Button>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-gradient-primary shadow-glow">
+              <Image className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-xl lg:text-2xl font-bold">UGC Creator</h1>
+              <p className="text-sm lg:text-base text-muted-foreground">AI-powered conversation to create perfect UGC content</p>
+            </div>
           </div>
         </div>
+
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto space-y-6 h-full w-full align-bottom justify-end">
+          {/* Progress Timeline */}
+          <ProgressTimeline
+            steps={timelineSteps}
+            currentStepIndex={currentStepIndex >= 0 ? currentStepIndex : 0}
+          />
+
+          {/* Conversation Interface */}
+          <ConversationInterface
+            isStarted={isStarted}
+            isLoading={isLoading}
+            currentQuestion={currentQuestion}
+            messages={messages}
+            answer={answer}
+            setAnswer={setAnswer}
+            onStart={handleStart}
+            onAnswer={handleAnswer}
+            expectImage={expectImage}
+            attachedFile={attachedFile}
+            setAttachedFile={setAttachedFile}
+            settings={settings}
+            setSettings={setSettings}
+          />
+
+          {/* Generating Images Placeholders */}
+          {isGeneratingImages && (
+            <GeneratingImagePlaceholders numberOfImages={settings.numberOfImages} />
+          )}
+        </div>
       </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto space-y-6 h-full w-full align-bottom justify-end">
-        {/* Progress Timeline */}
-        <ProgressTimeline
-          steps={timelineSteps}
-          currentStepIndex={currentStepIndex >= 0 ? currentStepIndex : 0}
-        />
-
-        {/* Conversation Interface */}
-        <ConversationInterface
-          isStarted={isStarted}
-          isLoading={isLoading}
-          currentQuestion={currentQuestion}
-          messages={messages}
-          answer={answer}
-          setAnswer={setAnswer}
-          onStart={handleStart}
-          onAnswer={handleAnswer}
-          expectImage={expectImage}
-          attachedFile={attachedFile}
-          setAttachedFile={setAttachedFile}
-          settings={settings}
-          setSettings={setSettings}
-        />
-
-        {/* Generating Images Placeholders */}
-        {isGeneratingImages && (
-          <GeneratingImagePlaceholders numberOfImages={settings.numberOfImages} />
-        )}
-      </div>
-    </div>
+    </ErrorBoundary>
   );
 };
