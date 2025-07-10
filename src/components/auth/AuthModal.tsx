@@ -14,20 +14,20 @@ interface AuthModalProps {
 }
 
 export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [mode, setMode] = useState<'login' | 'signup' | 'reset'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [profession, setProfession] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, resetPassword } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (mode === 'login') {
         const { error } = await signIn(email, password);
         if (error) {
           toast.error(error.message);
@@ -35,7 +35,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
           toast.success('Logged in successfully!');
           onClose();
         }
-      } else {
+      } else if (mode === 'signup') {
         const { error } = await signUp(email, password, {
           name,
           profession,
@@ -46,6 +46,14 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         } else {
           toast.success('Account created successfully! Please check your email to verify your account.');
           onClose();
+        }
+      } else if (mode === 'reset') {
+        const { error } = await resetPassword(email);
+        if (error) {
+          toast.error(error.message);
+        } else {
+          toast.success('Password reset email sent! Please check your email.');
+          setMode('login');
         }
       }
     } catch (error) {
@@ -62,8 +70,18 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     setProfession('');
   };
 
-  const toggleMode = () => {
-    setIsLogin(!isLogin);
+  const toggleToSignup = () => {
+    setMode('signup');
+    resetForm();
+  };
+
+  const toggleToLogin = () => {
+    setMode('login');
+    resetForm();
+  };
+
+  const toggleToReset = () => {
+    setMode('reset');
     resetForm();
   };
 
@@ -72,11 +90,13 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {isLogin ? 'Sign In' : 'Create Account'}
+            {mode === 'login' && 'Sign In'}
+            {mode === 'signup' && 'Create Account'}
+            {mode === 'reset' && 'Reset Password'}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
+          {mode === 'signup' && (
             <>
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
@@ -85,7 +105,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  required={!isLogin}
+                  required={mode === 'signup'}
                 />
               </div>
               <div className="space-y-2">
@@ -110,28 +130,67 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               required
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+          {mode !== 'reset' && (
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+          )}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-            {isLogin ? 'Sign In' : 'Create Account'}
+            {mode === 'login' && 'Sign In'}
+            {mode === 'signup' && 'Create Account'}
+            {mode === 'reset' && 'Send Reset Email'}
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            className="w-full"
-            onClick={toggleMode}
-          >
-            {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
-          </Button>
+          
+          <div className="space-y-2">
+            {mode === 'login' && (
+              <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full"
+                  onClick={toggleToSignup}
+                >
+                  Don't have an account? Sign up
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full text-sm"
+                  onClick={toggleToReset}
+                >
+                  Forgot your password?
+                </Button>
+              </>
+            )}
+            {mode === 'signup' && (
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={toggleToLogin}
+              >
+                Already have an account? Sign in
+              </Button>
+            )}
+            {mode === 'reset' && (
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={toggleToLogin}
+              >
+                Back to Sign In
+              </Button>
+            )}
+          </div>
         </form>
       </DialogContent>
     </Dialog>
