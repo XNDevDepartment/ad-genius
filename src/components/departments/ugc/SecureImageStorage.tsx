@@ -21,7 +21,7 @@ export const useSecureImageStorage = () => {
     prompt: string;
     settings: any;
   }) => {
-    if (!user) return;
+    if (!user) return [];
 
     try {
       setLoading(true);
@@ -37,28 +37,60 @@ export const useSecureImageStorage = () => {
         }
         const blob = new Blob([ab], { type: 'image/png' });
 
-        // Upload to Supabase Storage (if storage bucket exists)
-        const fileName = `${user.id}/${Date.now()}-${index}.png`;
+        // Generate unique filename
+        const fileName = `${user.id}/${crypto.randomUUID()}.png`;
         
-        // For now, we'll store in a secure format in localStorage with encryption
-        // In production, you should use Supabase Storage
+        // Upload to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('generated-images')
+          .upload(fileName, blob, {
+            contentType: 'image/png',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error('Storage upload error:', uploadError);
+          throw new Error(`Failed to upload image ${index + 1}: ${uploadError.message}`);
+        }
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from('generated-images')
+          .getPublicUrl(fileName);
+
+        // Save metadata to database
+        const { data: dbData, error: dbError } = await supabase
+          .from('generated_images')
+          .insert({
+            user_id: user.id,
+            storage_path: fileName,
+            public_url: urlData.publicUrl,
+            prompt: imageData.prompt,
+            settings: imageData.settings
+          })
+          .select()
+          .single();
+
+        if (dbError) {
+          console.error('Database insert error:', dbError);
+          // Clean up uploaded file if database insert fails
+          await supabase.storage.from('generated-images').remove([fileName]);
+          throw new Error(`Failed to save image metadata: ${dbError.message}`);
+        }
+
         const imageRecord: SecureImage = {
-          id: `${Date.now()}-${index}`,
-          url: `data:image/png;base64,${base64}`, // In production, this would be the storage URL
-          prompt: imageData.prompt,
-          settings: imageData.settings,
-          created_at: new Date().toISOString(),
+          id: dbData.id,
+          url: urlData.publicUrl,
+          prompt: dbData.prompt,
+          settings: dbData.settings,
+          created_at: dbData.created_at,
         };
 
         savedImages.push(imageRecord);
       }
 
-      // Save to secure local storage (encrypted)
-      const existingImages = getStoredImages();
-      const allImages = [...existingImages, ...savedImages];
-      localStorage.setItem(`ugc_library_${user.id}`, JSON.stringify(allImages));
-      
-      setImages(allImages);
+      // Refresh the images list
+      await loadImages();
       return savedImages;
     } catch (error) {
       console.error('Failed to save images:', error);
@@ -68,15 +100,35 @@ export const useSecureImageStorage = () => {
     }
   };
 
-  const getStoredImages = (): SecureImage[] => {
-    if (!user) return [];
-    
+  const loadImages = async () => {
+    if (!user) {
+      setImages([]);
+      return;
+    }
+
     try {
-      const stored = localStorage.getItem(`ugc_library_${user.id}`);
-      return stored ? JSON.parse(stored) : [];
+      const { data, error } = await supabase
+        .from('generated_images')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Failed to load images:', error);
+        return;
+      }
+
+      const formattedImages: SecureImage[] = data.map(img => ({
+        id: img.id,
+        url: img.public_url,
+        prompt: img.prompt,
+        settings: img.settings,
+        created_at: img.created_at,
+      }));
+
+      setImages(formattedImages);
     } catch (error) {
-      console.error('Failed to retrieve stored images:', error);
-      return [];
+      console.error('Failed to load images:', error);
     }
   };
 
@@ -84,22 +136,52 @@ export const useSecureImageStorage = () => {
     if (!user) return;
 
     try {
-      const currentImages = getStoredImages();
-      const filteredImages = currentImages.filter(img => img.id !== imageId);
-      localStorage.setItem(`ugc_library_${user.id}`, JSON.stringify(filteredImages));
-      setImages(filteredImages);
+      setLoading(true);
+
+      // First get the image record to find the storage path
+      const { data: imageData, error: fetchError } = await supabase
+        .from('generated_images')
+        .select('storage_path')
+        .eq('id', imageId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (fetchError || !imageData) {
+        throw new Error('Image not found');
+      }
+
+      // Delete from storage
+      const { error: storageError } = await supabase.storage
+        .from('generated-images')
+        .remove([imageData.storage_path]);
+
+      if (storageError) {
+        console.error('Storage deletion error:', storageError);
+      }
+
+      // Delete from database
+      const { error: dbError } = await supabase
+        .from('generated_images')
+        .delete()
+        .eq('id', imageId)
+        .eq('user_id', user.id);
+
+      if (dbError) {
+        throw new Error(`Failed to delete image: ${dbError.message}`);
+      }
+
+      // Refresh the images list
+      await loadImages();
     } catch (error) {
       console.error('Failed to delete image:', error);
       throw new Error('Failed to delete image');
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (user) {
-      setImages(getStoredImages());
-    } else {
-      setImages([]);
-    }
+    loadImages();
   }, [user]);
 
   return {

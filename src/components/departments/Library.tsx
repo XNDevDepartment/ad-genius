@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSecureImageStorage } from "./ugc/SecureImageStorage";
 
 interface LibraryImage {
   id: string;
@@ -26,76 +27,54 @@ interface LibraryProps {
 }
 
 export const Library = ({ onBack }: LibraryProps) => {
-  const [images, setImages] = useState<LibraryImage[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const { toast } = useToast();
   const { user } = useAuth();
+  const { images, deleteImage, loading } = useSecureImageStorage();
 
-  useEffect(() => {
-    const loadImages = () => {
-      if (!user) {
-        setImages([]);
-        return;
-      }
-      
-      // Use the same storage key pattern as useSecureImageStorage
-      const storedImages = localStorage.getItem(`ugc_library_${user.id}`);
-      if (storedImages) {
-        try {
-          const parsedImages = JSON.parse(storedImages);
-          setImages(parsedImages);
-        } catch (error) {
-          console.error('Failed to parse stored images:', error);
-          setImages([]);
-        }
-      } else {
-        setImages([]);
-      }
-    };
-
-    loadImages();
-    
-    // Listen for storage changes to update when images are added from other tabs/components
-    const handleStorageChange = () => loadImages();
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [user]);
-
-  const handleDownload = (image: LibraryImage) => {
+  const handleDownload = async (image: LibraryImage) => {
     toast({
       title: "Download Started",
       description: "Downloading image...",
     });
 
-    // Extract base64 from data URL
-    const base64 = image.url.split(',')[1];
-    const byteString = atob(base64);
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
-    const blob = new Blob([ab], { type: "image/png" });
+    try {
+      // For Supabase storage URLs, we can directly download
+      const response = await fetch(image.url);
+      const blob = await response.blob();
 
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `ugc-${image.id}.png`;
-    link.click();
-    URL.revokeObjectURL(url);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `ugc-${image.id}.png`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      toast({
+        title: "Download Failed",
+        description: "Failed to download the image. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDelete = (imageId: string) => {
+  const handleDelete = async (imageId: string) => {
     if (!user) return;
     
-    const updatedImages = images.filter(img => img.id !== imageId);
-    setImages(updatedImages);
-    localStorage.setItem(`ugc_library_${user.id}`, JSON.stringify(updatedImages));
-    
-    toast({
-      title: "Image Deleted",
-      description: "Image has been removed from your library.",
-    });
+    try {
+      await deleteImage(imageId);
+      toast({
+        title: "Image Deleted",
+        description: "Image has been removed from your library.",
+      });
+    } catch (error) {
+      toast({
+        title: "Delete Failed",
+        description: "Failed to delete the image. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const filteredAndSortedImages = images
@@ -174,7 +153,14 @@ export const Library = ({ onBack }: LibraryProps) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {filteredAndSortedImages.length > 0 ? (
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="mx-auto w-16 h-16 rounded-lg bg-secondary/50 flex items-center justify-center mb-4">
+                <FileImage className="h-8 w-8 text-muted-foreground animate-pulse" />
+              </div>
+              <p className="text-muted-foreground">Loading your library...</p>
+            </div>
+          ) : filteredAndSortedImages.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredAndSortedImages.map((image) => {
                 return (
