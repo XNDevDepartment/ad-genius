@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Image } from "lucide-react";
@@ -217,9 +216,9 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
 
   return (
     <ErrorBoundary>
-      <div className="p-4 lg:p-8 space-y-6 animate-fade-in">
+      <div className="p-2 sm:p-4 lg:p-8 space-y-4 sm:space-y-6 animate-fade-in">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-5">
           <Button variant="ghost" onClick={onBack} className="gap-2 w-fit">
             <ArrowLeft className="h-4 w-4" />
             <span className="hidden sm:inline">Back to Dashboard</span>
@@ -230,14 +229,14 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
               <Image className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl lg:text-2xl font-bold">UGC Creator</h1>
-              <p className="text-sm lg:text-base text-muted-foreground">AI-powered conversation to create perfect UGC content</p>
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold">UGC Creator</h1>
+              <p className="text-xs sm:text-sm lg:text-base text-muted-foreground">AI-powered conversation to create perfect UGC content</p>
             </div>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto space-y-6 h-full w-full align-bottom justify-end">
+        <div className="w-full space-y-4 sm:space-y-6">
           {/* Progress Timeline */}
           <ProgressTimeline
             steps={timelineSteps}

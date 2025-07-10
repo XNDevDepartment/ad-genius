@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MessageSquare, Send, Sparkles, Download } from "lucide-react";
 import { SettingsPanel } from "./SettingsPanel";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Message {
   id: string;
@@ -46,6 +47,7 @@ export const ConversationInterface = ({
 }: ConversationInterfaceProps) => {
   const [currentAnswer, setCurrentAnswer] = useState("");
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const handleSubmitAnswer = () => {
     if (currentAnswer.trim() || attachedFile) {
@@ -91,23 +93,23 @@ export const ConversationInterface = ({
   }, [messages, currentQuestion, isLoading]);
 
   return (
-    <Card className="bg-gradient-card border-border/50">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-primary" />
+    <Card className="bg-gradient-card border-border/50 w-full">
+      <CardHeader className="pb-3 sm:pb-6">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+          <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           AI Assistant Conversation
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-xs sm:text-sm">
           Start the conversation to create your perfect UGC content
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-3 sm:p-6">
         {!isStarted ? (
-          <div className="text-center py-12">
-            <div className="mx-auto w-16 h-16 rounded-lg bg-secondary/50 flex items-center justify-center mb-4">
-              <Sparkles className="h-8 w-8 text-muted-foreground" />
+          <div className="text-center py-8 sm:py-12">
+            <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-lg bg-secondary/50 flex items-center justify-center mb-3 sm:mb-4">
+              <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
             </div>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base px-4">
               Ready to create amazing UGC content? Let the AI assistant guide you through the process.
             </p>
             <Button onClick={onStart} className="gap-2" disabled={isLoading}>
@@ -125,16 +127,23 @@ export const ConversationInterface = ({
             </Button>
           </div>
         ) : (
-          <div className="space-y-4">
-            {/* Chat Messages - ChatGPT Style */}
-            <div ref={chatContainerRef} className="h-[28rem] sm:h-[24rem] overflow-y-auto space-y-4 border rounded-lg p-3 lg:p-4 bg-muted/20">
+          <div className="space-y-3 sm:space-y-4">
+            {/* Chat Messages - Optimized for Mobile */}
+            <div 
+              ref={chatContainerRef} 
+              className={`${isMobile ? 'h-[60vh]' : 'h-[28rem] sm:h-[24rem]'} overflow-y-auto space-y-3 sm:space-y-4 border rounded-lg p-2 sm:p-3 lg:p-4 bg-muted/20`}
+            >
               {messages.map((message) => (
                 <div
                   key={message.id}
                   className={`flex ${message.type === 'answer' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[85%] lg:max-w-[65%] p-2 lg:p-3 rounded-lg text-sm lg:text-base ${
+                    className={`${
+                      isMobile 
+                        ? 'max-w-[95%]' 
+                        : 'max-w-[85%] lg:max-w-[75%]'
+                    } p-2 sm:p-3 rounded-lg text-sm ${
                       message.type === 'question'
                         ? 'bg-muted text-foreground'
                         : message.type === 'images'
@@ -145,12 +154,12 @@ export const ConversationInterface = ({
                     <div className="text-xs opacity-70 mb-1">
                       {message.type === 'question' ? 'AI Assistant' : message.type === 'images' ? 'Generated Images' : 'You'} • {message.timestamp.toLocaleTimeString()}
                     </div>
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
                     
                     {/* Display generated images */}
                     {message.type === 'images' && message.images && (
                       <div className="mt-3 space-y-3">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'} gap-3`}>
                           {message.images.map((base64, index) => (
                             <div key={index} className="space-y-2">
                               <div className="rounded-lg overflow-hidden border border-border/50">
@@ -164,7 +173,7 @@ export const ConversationInterface = ({
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleDownloadImage(base64, index)}
-                                className="w-full gap-2 bg-background/50 hover:bg-background/80"
+                                className="w-full gap-2 bg-background/50 hover:bg-background/80 text-xs"
                               >
                                 <Download className="h-3 w-3" />
                                 Download Image {index + 1}
@@ -180,7 +189,7 @@ export const ConversationInterface = ({
 
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="max-w-[80%] p-3 rounded-lg bg-muted text-foreground">
+                  <div className={`${isMobile ? 'max-w-[90%]' : 'max-w-[80%]'} p-3 rounded-lg bg-muted text-foreground`}>
                     <div className="flex items-center gap-2 text-xs opacity-70 mb-1">
                       <Sparkles className="h-3 w-3 animate-spin" />
                       AI Assistant is thinking...
@@ -195,29 +204,29 @@ export const ConversationInterface = ({
               )}
             </div>
 
-            {/* Input Area - ChatGPT Style */}
-            <div className="border rounded-lg p-3 bg-background">
+            {/* Input Area - Mobile Optimized */}
+            <div className="border rounded-lg p-2 sm:p-3 bg-background">
               <Textarea
                 placeholder="Type your message..."
                 value={currentAnswer}
                 onChange={(e) => setCurrentAnswer(e.target.value)}
                 onKeyPress={handleKeyPress}
-                rows={2}
-                className="border-0 p-0 resize-none focus-visible:ring-0 shadow-none text-sm lg:text-base"
+                rows={isMobile ? 3 : 2}
+                className="border-0 p-0 resize-none focus-visible:ring-0 shadow-none text-sm"
                 disabled={isLoading || !currentQuestion}
               />
               
               {expectImage && (
-                <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="mt-3 flex flex-col gap-3">
                   <input
                     type="file"
                     accept="image/png, image/jpeg"
                     onChange={(e) => setAttachedFile(e.target.files?.[0] ?? null)}
-                    className="text-sm file:mr-2 file:px-3 file:py-1.5 file:rounded-md
+                    className="text-xs file:mr-2 file:px-2 file:py-1 file:rounded-md
                               file:border file:bg-secondary file:text-foreground cursor-pointer"
                   />
                   {attachedFile && (
-                    <span className="truncate max-w-[10rem] text-xs text-muted-foreground">
+                    <span className="truncate text-xs text-muted-foreground">
                       {attachedFile.name}
                     </span>
                   )}
@@ -228,7 +237,7 @@ export const ConversationInterface = ({
                 <span className="text-xs text-muted-foreground">
                   Press Enter to send, Shift+Enter for new line
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
                   {/* Minimized Settings Panel */}
                   <SettingsPanel
                     settings={settings}
