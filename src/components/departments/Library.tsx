@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,12 +6,13 @@ import { ArrowLeft, FileImage, Download, Trash2, Search, Filter } from "lucide-r
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface LibraryImage {
   id: string;
-  base64: string;
+  url: string;
   prompt: string;
-  timestamp: string;
+  created_at: string;
   settings: {
     size: string;
     quality: string;
@@ -28,11 +30,28 @@ export const Library = ({ onBack }: LibraryProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     const loadImages = () => {
-      const storedImages = JSON.parse(localStorage.getItem('ugc_library') || '[]');
-      setImages(storedImages);
+      if (!user) {
+        setImages([]);
+        return;
+      }
+      
+      // Use the same storage key pattern as useSecureImageStorage
+      const storedImages = localStorage.getItem(`ugc_library_${user.id}`);
+      if (storedImages) {
+        try {
+          const parsedImages = JSON.parse(storedImages);
+          setImages(parsedImages);
+        } catch (error) {
+          console.error('Failed to parse stored images:', error);
+          setImages([]);
+        }
+      } else {
+        setImages([]);
+      }
     };
 
     loadImages();
@@ -42,7 +61,7 @@ export const Library = ({ onBack }: LibraryProps) => {
     window.addEventListener('storage', handleStorageChange);
     
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  }, [user]);
 
   const handleDownload = (image: LibraryImage) => {
     toast({
@@ -50,7 +69,9 @@ export const Library = ({ onBack }: LibraryProps) => {
       description: "Downloading image...",
     });
 
-    const byteString = atob(image.base64);
+    // Extract base64 from data URL
+    const base64 = image.url.split(',')[1];
+    const byteString = atob(base64);
     const ab = new ArrayBuffer(byteString.length);
     const ia = new Uint8Array(ab);
     for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
@@ -65,9 +86,11 @@ export const Library = ({ onBack }: LibraryProps) => {
   };
 
   const handleDelete = (imageId: string) => {
+    if (!user) return;
+    
     const updatedImages = images.filter(img => img.id !== imageId);
     setImages(updatedImages);
-    localStorage.setItem('ugc_library', JSON.stringify(updatedImages));
+    localStorage.setItem(`ugc_library_${user.id}`, JSON.stringify(updatedImages));
     
     toast({
       title: "Image Deleted",
@@ -82,12 +105,12 @@ export const Library = ({ onBack }: LibraryProps) => {
     .sort((a, b) => {
       switch (sortBy) {
         case 'oldest':
-          return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
         case 'prompt':
           return a.prompt.localeCompare(b.prompt);
         case 'newest':
         default:
-          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
     });
 
@@ -154,15 +177,13 @@ export const Library = ({ onBack }: LibraryProps) => {
           {filteredAndSortedImages.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredAndSortedImages.map((image) => {
-                const src = `data:image/png;base64,${image.base64}`;
-                
                 return (
                   <div key={image.id} className="space-y-3 animate-scale-in group">
-                    <div className="rounded-lg overflow-hidden border border-border/50 relative">
+                    <div className="rounded-lg overflow-hidden border border-border/50 relative aspect-square">
                       <img 
-                        src={src}
+                        src={image.url}
                         alt={`Generated: ${image.prompt.substring(0, 50)}...`}
-                        className="w-full h-auto shadow-card transition-transform group-hover:scale-105"
+                        className="w-full h-full object-cover shadow-card transition-transform group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                         <div className="flex gap-2">
@@ -190,7 +211,7 @@ export const Library = ({ onBack }: LibraryProps) => {
                         {image.prompt}
                       </p>
                       <div className="flex justify-between items-center text-xs text-muted-foreground">
-                        <span>{new Date(image.timestamp).toLocaleDateString()}</span>
+                        <span>{new Date(image.created_at).toLocaleDateString()}</span>
                         <span>{image.settings.size}</span>
                       </div>
                     </div>

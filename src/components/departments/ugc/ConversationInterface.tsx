@@ -3,17 +3,15 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageSquare, Send, Sparkles, Download } from "lucide-react";
+import { MessageSquare, Send, Sparkles } from "lucide-react";
 import { SettingsPanel } from "./SettingsPanel";
-import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Message {
   id: string;
-  type: 'question' | 'answer' | 'images';
+  type: 'question' | 'answer';
   content: string;
   timestamp: Date;
-  images?: string[];
 }
 
 interface ConversationInterfaceProps {
@@ -46,7 +44,6 @@ export const ConversationInterface = ({
   setSettings
 }: ConversationInterfaceProps) => {
   const [currentAnswer, setCurrentAnswer] = useState("");
-  const { toast } = useToast();
   const isMobile = useIsMobile();
 
   const handleSubmitAnswer = () => {
@@ -61,26 +58,6 @@ export const ConversationInterface = ({
       e.preventDefault();
       handleSubmitAnswer();
     }
-  };
-
-  const handleDownloadImage = (base64: string, index: number) => {
-    toast({
-      title: "Download Started",
-      description: `Downloading image ${index + 1}...`,
-    });
-
-    const byteString = atob(base64);
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
-    const blob = new Blob([ab], { type: "image/png" });
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `ugc-image-${index + 1}.png`;
-    link.click();
-    URL.revokeObjectURL(url);
   };
 
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
@@ -131,7 +108,7 @@ export const ConversationInterface = ({
             {/* Chat Messages - Optimized for Mobile */}
             <div 
               ref={chatContainerRef} 
-              className={`${isMobile ? 'h-[60vh]' : 'h-[28rem] sm:h-[24rem]'} overflow-y-auto space-y-3 sm:space-y-4 border rounded-lg p-2 sm:p-3 lg:p-4 bg-muted/20`}
+              className={`${isMobile ? 'h-[40vh]' : 'h-[28rem] sm:h-[24rem]'} overflow-y-auto space-y-3 sm:space-y-4 border rounded-lg p-2 sm:p-3 lg:p-4 bg-muted/20`}
             >
               {messages.map((message) => (
                 <div
@@ -141,55 +118,25 @@ export const ConversationInterface = ({
                   <div
                     className={`${
                       isMobile 
-                        ? 'max-w-[95%]' 
-                        : 'max-w-[85%] lg:max-w-[75%]'
+                        ? 'max-w-[85%]' 
+                        : 'max-w-[80%] lg:max-w-[70%]'
                     } p-2 sm:p-3 rounded-lg text-sm ${
                       message.type === 'question'
                         ? 'bg-muted text-foreground'
-                        : message.type === 'images'
-                        ? 'bg-primary/10 text-foreground border border-primary/20'
                         : 'bg-primary text-primary-foreground ml-auto'
                     }`}
                   >
                     <div className="text-xs opacity-70 mb-1">
-                      {message.type === 'question' ? 'AI Assistant' : message.type === 'images' ? 'Generated Images' : 'You'} • {message.timestamp.toLocaleTimeString()}
+                      {message.type === 'question' ? 'AI Assistant' : 'You'} • {message.timestamp.toLocaleTimeString()}
                     </div>
                     <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-                    
-                    {/* Display generated images */}
-                    {message.type === 'images' && message.images && (
-                      <div className="mt-3 space-y-3">
-                        <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'} gap-3`}>
-                          {message.images.map((base64, index) => (
-                            <div key={index} className="space-y-2">
-                              <div className="rounded-lg overflow-hidden border border-border/50">
-                                <img 
-                                  src={`data:image/png;base64,${base64}`}
-                                  alt={`Generated image ${index + 1}`}
-                                  className="w-full h-auto shadow-card"
-                                />
-                              </div>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDownloadImage(base64, index)}
-                                className="w-full gap-2 bg-background/50 hover:bg-background/80 text-xs"
-                              >
-                                <Download className="h-3 w-3" />
-                                Download Image {index + 1}
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
 
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className={`${isMobile ? 'max-w-[90%]' : 'max-w-[80%]'} p-3 rounded-lg bg-muted text-foreground`}>
+                  <div className={`${isMobile ? 'max-w-[85%]' : 'max-w-[80%]'} p-3 rounded-lg bg-muted text-foreground`}>
                     <div className="flex items-center gap-2 text-xs opacity-70 mb-1">
                       <Sparkles className="h-3 w-3 animate-spin" />
                       AI Assistant is thinking...

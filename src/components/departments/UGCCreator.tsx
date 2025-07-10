@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Image } from "lucide-react";
@@ -6,6 +7,7 @@ import { ConversationInterface } from "./ugc/ConversationInterface";
 import { SettingsPanel, ImageSettings } from "./ugc/SettingsPanel";
 import { ProgressTimeline, TimelineStep } from "./ugc/ProgressTimeline";
 import { GeneratingImagePlaceholders } from "./ugc/GeneratingImagePlaceholders";
+import { GeneratedImagesDisplay } from "./ugc/GeneratedImagesDisplay";
 import { ErrorBoundary } from "./ugc/ErrorBoundary";
 import { useSecureImageStorage } from "./ugc/SecureImageStorage";
 import { startConversationAPI, uploadFile, converse, generateImagesFromBase } from '../../api/SecureOpenAiClient';
@@ -14,10 +16,9 @@ const assistantId = import.meta.env.VITE_OPENAI_ASSISTANT_ID_UGC;
 
 interface Message {
   id: string;
-  type: 'question' | 'answer' | 'images';
+  type: 'question' | 'answer';
   content: string;
   timestamp: Date;
-  images?: string[];
 }
 
 interface UGCCreatorProps {
@@ -142,7 +143,7 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
             }
           );
 
-          // Properly handle the image response
+          // Handle the image response
           let images: string[] = [];
           if (Array.isArray(imageResponse)) {
             images = imageResponse.filter((img): img is string => typeof img === 'string');
@@ -157,18 +158,8 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
 
           setGeneratedImages(images);
           
-          // Add generated images to the conversation
+          // Save to secure storage
           if (images.length > 0) {
-            const imagesMessage: Message = {
-              id: `imgs-${Date.now()}`,
-              type: "images",
-              content: `Generated ${images.length} image(s) based on your request.`,
-              timestamp: new Date(),
-              images: images,
-            };
-            setMessages((prev) => [...prev, imagesMessage]);
-            
-            // Save to secure storage
             await saveImages({
               base64Images: images,
               prompt,
@@ -177,8 +168,16 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
 
             toast({
               title: "Images Generated!",
-              description: `${images.length} image(s) generated and saved securely.`,
+              description: `${images.length} image(s) generated and saved to your library.`,
             });
+
+            // Scroll to generated images after a short delay
+            setTimeout(() => {
+              const element = document.getElementById('generated-images');
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }, 500);
           }
           
           setCurrentQuestion(null);
@@ -212,6 +211,11 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
       setIsLoading(false);
       setIsGeneratingImages(false);
     }
+  };
+
+  const handleViewLibrary = () => {
+    onBack(); // Go back to dashboard first
+    // The user can then navigate to library from dashboard
   };
 
   return (
@@ -264,6 +268,12 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
           {isGeneratingImages && (
             <GeneratingImagePlaceholders numberOfImages={settings.numberOfImages} />
           )}
+
+          {/* Generated Images Display */}
+          <GeneratedImagesDisplay 
+            images={generatedImages}
+            onViewLibrary={handleViewLibrary}
+          />
         </div>
       </div>
     </ErrorBoundary>
