@@ -104,6 +104,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_favorites: {
+        Row: {
+          assistant_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          assistant_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          assistant_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

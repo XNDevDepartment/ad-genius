@@ -1,52 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Image, MessageSquare, BarChart3, Users, Sparkles } from "lucide-react";
+import { Brain, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-
-interface Department {
-  id: string;
-  name: string;
-  description: string;
-  icon: React.ComponentType<any>;
-  status: "active" | "coming-soon";
-  requireAuth: boolean;
-}
-
-const departments: Department[] = [
-  {
-    id: "ugc_creator",
-    name: "UGC Creator",
-    description: "Transform product images into engaging user-generated content with AI",
-    icon: Image,
-    status: "active",
-    requireAuth: true,
-  },
-  {
-    id: "lead-magnet-creator",
-    name: "Lead Magnet Creator",
-    description: "Creative creator for lead capture ads with Lead Magnets",
-    icon: MessageSquare,
-    status: "coming-soon",
-    requireAuth: false,
-  },
-  {
-    id: "analytics-advisor",
-    name: "Analytics Advisor",
-    description: "Get insights and recommendations from your business data",
-    icon: BarChart3,
-    status: "coming-soon",
-    requireAuth: false,
-  },
-  {
-    id: "customer-insights",
-    name: "Customer Insights",
-    description: "Understand your customers better with AI-powered analysis",
-    icon: Users,
-    status: "coming-soon",
-    requireAuth: false,
-  }
-];
+import { categories } from "@/data/assistants";
 
 
 interface DashboardProps {
@@ -54,7 +11,7 @@ interface DashboardProps {
 }
 
 export const Dashboard = ({ onSelectDepartment }: DashboardProps) => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   
   return (
     <div className="p-8 space-y-8 animate-fade-in">
@@ -69,26 +26,20 @@ export const Dashboard = ({ onSelectDepartment }: DashboardProps) => {
           </h1>
         </div>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Supercharge your business operations with specialized AI assistants for every department
+          Escolha uma categoria de assistentes AI para começar
         </p>
       </div>
 
-      {/* Departments Grid */}
+      {/* Categories Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
-        {departments.map((department, index) => {
-          const Icon = department.icon;
+        {categories.map((category, index) => {
+          const Icon = category.icon;
           return (
             <Card 
-              key={department.id}
+              key={category.id}
               className="group relative overflow-hidden bg-gradient-card border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-elegant cursor-pointer"
               style={{ animationDelay: `${index * 150}ms` }}
-              onClick={() => {
-                if(department.requireAuth && !user){
-                  toast.error('Must authenticate to use this function');
-                }else{
-                  department.status === "active" && onSelectDepartment(department.id)
-                }
-              }}
+              onClick={() => onSelectDepartment(category.id)}
             >
               <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity duration-300" />
               
@@ -98,40 +49,27 @@ export const Dashboard = ({ onSelectDepartment }: DashboardProps) => {
                     <Icon className="h-6 w-6 text-primary group-hover:text-primary transition-colors duration-300" />
                   </div>
                   <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <CardTitle className="text-xl group-hover:text-primary transition-colors duration-300">
-                        {department.name}
-                      </CardTitle>
-                      {department.status === "active" && (
-                        <div className="flex items-center gap-1">
-                          <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-                        </div>
-                      )}
-                      {department.status === "coming-soon" && (
-                        <span className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded-md">
-                          Coming Soon
-                        </span>
-                      )}
-                    </div>
+                    <CardTitle className="text-xl group-hover:text-primary transition-colors duration-300">
+                      {category.name}
+                    </CardTitle>
                   </div>
                 </div>
               </CardHeader>
               
               <CardContent className="relative">
                 <CardDescription className="text-muted-foreground mb-4">
-                  {department.description}
+                  {category.description}
                 </CardDescription>
                 
                 <Button 
-                  variant={department.status === "active" ? "default" : "secondary"}
-                  disabled={department.status === "coming-soon" || (department.requireAuth && !user)}
+                  variant="default"
                   className="w-full group-hover:shadow-glow transition-all duration-300"
                   onClick={(e) => {
                     e.stopPropagation();
-                    department.status === "active" && onSelectDepartment(department.id);
+                    onSelectDepartment(category.id);
                   }}
                 >
-                  {department.status === "active" ? "Launch Assistant" : "Coming Soon"}
+                  Explorar Assistentes
                 </Button>
               </CardContent>
             </Card>

@@ -5,20 +5,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { 
   Brain, 
-  Image, 
-  MessageSquare, 
-  BarChart3, 
-  Users, 
   Home,
   Settings,
   LogOut,
   Menu,
   FileImage,
-  User
+  User,
+  Star,
+  Sparkles
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { useState } from "react";
+import { useFavorites } from "@/hooks/useFavorites";
+import { assistants } from "@/data/assistants";
+import { Separator } from "@/components/ui/separator";
 
 interface SidebarProps {
   currentView: string;
@@ -35,39 +36,14 @@ const navigationItems = [
     id: "library",
     label: "Library",
     icon: FileImage,
-    active: true,
     requireAuth: true,
-  },
-  {
-    id: "ugc_creator",
-    label: "UGC Creator",
-    icon: Image,
-    active: true,
-    requireAuth: true,
-  },
-  {
-    id: "lead-magnet-creator",
-    label: "Lead Magnet Creator",
-    icon: Image,
-    comingSoon: true,
-  },
-  {
-    id: "analytics-advisor",
-    label: "Analytics Advisor",
-    icon: BarChart3,
-    comingSoon: true,
-  },
-  {
-    id: "customer-insights",
-    label: "Customer Insights",
-    icon: Users,
-    comingSoon: true,
   },
 ];
 
 export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
   const { user, signOut } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const { favorites, isFavorite } = useFavorites();
 
   const handleNavigation = (itemId: string) => {
     const item = navigationItems.find(nav => nav.id === itemId);
@@ -84,6 +60,8 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
       onNavigate("dashboard");
     }
   };
+
+  const favoriteAssistants = assistants.filter(assistant => isFavorite(assistant.id));
 
   const SidebarContent = () => (
     <>
@@ -122,43 +100,80 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
         </div>
       )}
 
-      {/* Navigation */}
-      <div className="flex-1 p-4 space-y-2">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
-          Navigation
-        </div>
-        {navigationItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = currentView === item.id;
-          const isDisabled = item.comingSoon || (item.requireAuth && !user);
+      <div className="flex-1 overflow-y-auto">
+        {/* Favorites Section */}
+        {favoriteAssistants.length > 0 && (
+          <div className="p-4 border-b border-border/50">
+            <div className="flex items-center gap-2 mb-3">
+              <Star className="h-4 w-4 text-primary" />
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Favoritos
+              </span>
+            </div>
+            <div className="space-y-1">
+              {favoriteAssistants.slice(0, 5).map((assistant) => {
+                const Icon = assistant.icon;
+                const isActive = currentView === assistant.id;
+                const isDisabled = assistant.status === "coming-soon" || (assistant.requireAuth && !user);
 
-          return (
-            <Button
-              key={item.id}
-              variant="ghost"
-              className={cn(
-                "w-full justify-start gap-3 h-11 px-3",
-                isActive && "bg-primary/10 text-primary border border-primary/20",
-                isDisabled && "opacity-50 cursor-not-allowed"
-              )}
-              onClick={() => !isDisabled && handleNavigation(item.id)}
-              disabled={isDisabled}
-            >
-              <Icon className="h-5 w-5" />
-              <span className="flex-1 text-left">{item.label}</span>
-              {item.comingSoon && (
-                <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded">
-                  Soon
-                </span>
-              )}
-              {item.requireAuth && !user && (
-                <span className="text-xs bg-destructive/20 text-destructive px-2 py-1 rounded">
-                  Login
-                </span>
-              )}
-            </Button>
-          );
-        })}
+                return (
+                  <Button
+                    key={assistant.id}
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "w-full justify-start gap-2 h-9 px-2",
+                      isActive && "bg-primary/10 text-primary border border-primary/20",
+                      isDisabled && "opacity-50 cursor-not-allowed"
+                    )}
+                    onClick={() => !isDisabled && onNavigate(assistant.id)}
+                    disabled={isDisabled}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span className="flex-1 text-left text-sm truncate">{assistant.name}</span>
+                    {assistant.status === "active" && (
+                      <Sparkles className="h-3 w-3 text-primary" />
+                    )}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <div className="p-4 space-y-2">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
+            Navigation
+          </div>
+          {navigationItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentView === item.id;
+            const isDisabled = item.requireAuth && !user;
+
+            return (
+              <Button
+                key={item.id}
+                variant="ghost"
+                className={cn(
+                  "w-full justify-start gap-3 h-11 px-3",
+                  isActive && "bg-primary/10 text-primary border border-primary/20",
+                  isDisabled && "opacity-50 cursor-not-allowed"
+                )}
+                onClick={() => !isDisabled && handleNavigation(item.id)}
+                disabled={isDisabled}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="flex-1 text-left">{item.label}</span>
+                {item.requireAuth && !user && (
+                  <span className="text-xs bg-destructive/20 text-destructive px-2 py-1 rounded">
+                    Login
+                  </span>
+                )}
+              </Button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Footer */}
