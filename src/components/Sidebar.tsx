@@ -12,13 +12,14 @@ import {
   FileImage,
   User,
   Star,
-  Sparkles
+  Sparkles,
+  Megaphone
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { useState } from "react";
 import { useFavorites } from "@/hooks/useFavorites";
-import { assistants } from "@/data/assistants";
+import { assistants, categories } from "@/data/assistants";
 import { Separator } from "@/components/ui/separator";
 
 interface SidebarProps {
@@ -140,6 +141,42 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
             </div>
           </div>
         )}
+
+        {/* Categories Section */}
+        <div className="p-4 border-b border-border/50">
+          <div className="flex items-center gap-2 mb-3">
+            <Megaphone className="h-4 w-4 text-primary" />
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Categorias
+            </span>
+          </div>
+          <div className="space-y-1">
+            {categories.map((category) => {
+              const Icon = category.icon;
+              const isActive = currentView === category.id;
+              const assistantCount = assistants.filter(a => a.category === category.id).length;
+
+              return (
+                <Button
+                  key={category.id}
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "w-full justify-start gap-2 h-9 px-2",
+                    isActive && "bg-primary/10 text-primary border border-primary/20"
+                  )}
+                  onClick={() => onNavigate(category.id)}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="flex-1 text-left text-sm truncate">{category.name}</span>
+                  <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
+                    {assistantCount}
+                  </span>
+                </Button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* Navigation */}
         <div className="p-4 space-y-2">
