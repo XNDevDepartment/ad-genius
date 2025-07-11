@@ -148,27 +148,6 @@ export type Database = {
         }
         Relationships: []
       }
-      "User Inputs": {
-        Row: {
-          created_at: string
-          id: number
-          input: string | null
-          user: number
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          input?: string | null
-          user: number
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          input?: string | null
-          user?: number
-        }
-        Relationships: []
-      }
       user_favorites: {
         Row: {
           assistant_id: string
