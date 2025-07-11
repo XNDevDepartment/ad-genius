@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Image } from "lucide-react";
+import { ArrowLeft, Image, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ConversationInterface } from "./ugc/ConversationInterface";
 import { SettingsPanel, ImageSettings } from "./ugc/SettingsPanel";
@@ -10,6 +10,7 @@ import { GeneratingImagePlaceholders } from "./ugc/GeneratingImagePlaceholders";
 import { GeneratedImagesDisplay } from "./ugc/GeneratedImagesDisplay";
 import { ErrorBoundary } from "./ugc/ErrorBoundary";
 import { useSecureImageStorage } from "./ugc/SecureImageStorage";
+import { useConversationStorage } from "@/hooks/useConversationStorage";
 import { startConversationAPI, uploadFile, converse, generateImagesFromBase } from '../../api/SecureOpenAiClient';
 
 const assistantId = import.meta.env.VITE_OPENAI_ASSISTANT_ID_UGC;
@@ -27,6 +28,7 @@ interface UGCCreatorProps {
 
 export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
   const [threadId, setThreadId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [answer, setAnswer] = useState('');
   const [history, setHistory] = useState<Message[]>([]);
   const [isStarted, setIsStarted] = useState(false);
@@ -37,6 +39,7 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
   const [expectImage, setExpectImage] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [isGeneratingImages, setIsGeneratingImages] = useState(false);
+  const [isConversationCompleted, setIsConversationCompleted] = useState(false);
   const [settings, setSettings] = useState<ImageSettings>({
     size: '1024x1024',
     quality: 'medium',
@@ -46,10 +49,11 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
 
   const { toast } = useToast();
   const { saveImages } = useSecureImageStorage();
+  const { saveConversation, saveMessage, updateConversationStatus } = useConversationStorage();
 
   const timelineSteps: TimelineStep[] = [
     { id: 'start', label: 'Start Conversation', status: isStarted ? 'completed' : 'pending' },
-    { id: 'questions', label: 'Answer Questions', status: messages.length > 0 ? (currentQuestion ? 'current' : 'completed') : 'pending' },
+    { id: 'questions', label: 'Answer Questions', status: messages.length > 0 ? (currentQuestion && !isConversationCompleted ? 'current' : 'completed') : 'pending' },
     { id: 'generate', label: 'Generate Images', status: generatedImages.length > 0 ? 'completed' : (isGeneratingImages ? 'current' : 'pending') },
   ];
 
@@ -66,6 +70,12 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
         setCurrentQuestion(reply);
         setIsStarted(true);
 
+        // Save conversation to database
+        const conversation = await saveConversation({ threadId: id, assistantId });
+        if (conversation) {
+          setConversationId(conversation.id);
+        }
+
         if (!reply?.trim()) return;
         const now = new Date();
         const questionMsg: Message = {
@@ -75,6 +85,15 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
           timestamp: now,
         };
         setMessages((prev) => [...prev, questionMsg]);
+
+        // Save assistant message to database
+        if (conversation) {
+          await saveMessage({
+            conversationId: conversation.id,
+            role: 'assistant',
+            content: reply,
+          });
+        }
       }
 
     } catch (e) {
@@ -100,6 +119,16 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
       timestamp: now,
     };
     setMessages((prev) => [...prev, answerMsg]);
+
+    // Save user message to database
+    if (conversationId) {
+      await saveMessage({
+        conversationId,
+        role: 'user',
+        content: answer.trim(),
+        metadata: attachedFile ? { hasFile: true, fileName: attachedFile.name } : {},
+      });
+    }
 
     try {
       setIsLoading(true);
@@ -180,8 +209,14 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
             }, 500);
           }
           
-          setCurrentQuestion(null);
+          setCurrentQuestion("Great! Your images have been generated successfully. You can continue the conversation if you need any adjustments, or start a new conversation to create different UGC content.");
           setExpectImage(false);
+          setIsConversationCompleted(true);
+          
+          // Update conversation status to completed
+          if (conversationId) {
+            await updateConversationStatus(conversationId, 'completed');
+          }
         }
 
       } else if (typeof reply === 'string') {
@@ -196,6 +231,15 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
           timestamp: now,
         };
         setMessages((prev) => [...prev, questionMsg]);
+
+        // Save assistant message to database
+        if (conversationId) {
+          await saveMessage({
+            conversationId,
+            role: 'assistant',
+            content: reply,
+          });
+        }
       }
 
       setAnswer('');
@@ -218,16 +262,45 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
     // The user can then navigate to library from dashboard
   };
 
+  const handleRestartConversation = async () => {
+    // Reset all conversation state
+    setThreadId(null);
+    setConversationId(null);
+    setIsStarted(false);
+    setCurrentQuestion(null);
+    setMessages([]);
+    setAttachedFile(null);
+    setExpectImage(false);
+    setGeneratedImages([]);
+    setIsGeneratingImages(false);
+    setIsConversationCompleted(false);
+    setAnswer('');
+
+    toast({
+      title: "Conversation Reset",
+      description: "You can now start a new conversation.",
+    });
+  };
+
   return (
     <ErrorBoundary>
       <div className="p-2 sm:p-4 lg:p-8 space-y-4 sm:space-y-6 animate-fade-in">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-5">
-          <Button variant="ghost" onClick={onBack} className="gap-2 w-fit">
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Back to Dashboard</span>
-            <span className="sm:hidden">Back</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" onClick={onBack} className="gap-2 w-fit">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Back to Dashboard</span>
+              <span className="sm:hidden">Back</span>
+            </Button>
+            {isStarted && (
+              <Button variant="ghost" onClick={handleRestartConversation} className="gap-2 w-fit">
+                <RotateCcw className="h-4 w-4" />
+                <span className="hidden sm:inline">Restart Conversation</span>
+                <span className="sm:hidden">Restart</span>
+              </Button>
+            )}
+          </div>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-gradient-primary shadow-glow">
               <Image className="h-6 w-6 text-primary-foreground" />
@@ -262,6 +335,7 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
             setAttachedFile={setAttachedFile}
             settings={settings}
             setSettings={setSettings}
+            isConversationCompleted={isConversationCompleted}
           />
 
           {/* Generating Images Placeholders */}

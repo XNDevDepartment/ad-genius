@@ -28,6 +28,7 @@ interface ConversationInterfaceProps {
   setAttachedFile: (file: File | null) => void;
   settings: any;
   setSettings: (settings: any) => void;
+  isConversationCompleted?: boolean;
 }
 
 export const ConversationInterface = ({
@@ -41,7 +42,8 @@ export const ConversationInterface = ({
   attachedFile,
   setAttachedFile,
   settings,
-  setSettings
+  setSettings,
+  isConversationCompleted = false
 }: ConversationInterfaceProps) => {
   const [currentAnswer, setCurrentAnswer] = useState("");
   const isMobile = useIsMobile();
@@ -193,7 +195,7 @@ export const ConversationInterface = ({
                   <Button
                     size="sm"
                     onClick={handleSubmitAnswer}
-                    disabled={(!currentAnswer.trim() || isLoading || !currentQuestion) && !attachedFile}
+                    disabled={(!currentAnswer.trim() || isLoading || (!currentQuestion && !isConversationCompleted)) && !attachedFile}
                     className="gap-2"
                   >
                     {isLoading ? (
@@ -201,7 +203,7 @@ export const ConversationInterface = ({
                     ) : (
                       <Send className="h-4 w-4" />
                     )}
-                    Send
+                    {isConversationCompleted ? 'Continue' : 'Send'}
                   </Button>
                 </div>
               </div>
