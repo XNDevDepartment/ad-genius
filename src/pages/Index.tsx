@@ -5,8 +5,15 @@ import { Dashboard } from "@/components/Dashboard";
 import { UGCCreator } from "@/components/departments/UGCCreator";
 import { Library } from "@/components/departments/Library";
 import { Profile } from "@/pages/Profile";
-import { CategoryPage } from "@/components/categories/CategoryPage";
-import { assistants, categories } from "@/data/assistants";
+
+const assistants = [
+  {
+    id: import.meta.env.VITE_OPENAI_ASSISTANT_ID_UGC,
+    name: 'UGC Creator',
+    desc: 'Gerar imagens UGC realistas',
+    handle: 'ugc_creator'
+  },
+];
 
 const Index = () => {
   const [currentView, setCurrentView] = useState(localStorage.getItem("currentView") || "dashboard");
@@ -22,36 +29,11 @@ const Index = () => {
   };
 
   const renderCurrentView = () => {
-    // Check if current view is a category
-    const category = categories.find(cat => cat.id === currentView);
-    if (category) {
-      return (
-        <CategoryPage 
-          categoryId={currentView}
-          onBack={() => setCurrentView("dashboard")}
-          onSelectAssistant={handleSelectDepartment}
-        />
-      );
-    }
-
-    // Check if current view is an individual assistant
-    const assistant = assistants.find(ass => ass.id === currentView);
-    if (assistant) {
-      // Route to the appropriate assistant component
-      switch (assistant.id) {
-        case "ugc_creator":
-          return <UGCCreator onBack={() => setCurrentView("dashboard")} />;
-        default:
-          // For coming soon assistants, redirect to dashboard
-          setCurrentView("dashboard");
-          return <Dashboard onSelectDepartment={handleSelectDepartment} />;
-      }
-    }
-
-    // Handle main navigation
     switch (currentView) {
       case "library":
         return <Library onBack={() => setCurrentView("dashboard")} />;
+      case "ugc_creator":
+        return <UGCCreator onBack={() => setCurrentView("dashboard")} />;
       case "profile":
         return <Profile onBack={() => setCurrentView("dashboard")} />;
       case "dashboard":
