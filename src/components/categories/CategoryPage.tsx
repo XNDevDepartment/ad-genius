@@ -34,7 +34,7 @@ export const CategoryPage = ({ categoryId, onBack, onSelectAssistant }: Category
 
   const handleAssistantClick = (assistant: any) => {
     if (assistant.requireAuth && !user) {
-      toast.error('É necessário fazer login para usar este assistente');
+      toast.error('É necessário fazer sessão para usar este assistente');
       return;
     }
     

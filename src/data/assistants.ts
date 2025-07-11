@@ -11,11 +11,11 @@ export interface Assistant {
 }
 
 export const assistants: Assistant[] = [
-  // Marketing & Advertising
+  // Marketing & Publicidade
   {
     id: "email-subject-xn",
     name: "Email Subject XN",
-    description: "Especialista em criar assuntos de email que aumentam drasticamente as taxas de abertura",
+    description: "Especialista em criar assuntos de e-mail que aumentam drasticamente as taxas de abertura",
     icon: Mail,
     category: "marketing",
     status: "coming-soon",
@@ -23,8 +23,8 @@ export const assistants: Assistant[] = [
   },
   {
     id: "ecommerce-campaign-planner",
-    name: "Planeador de Campanhas para Ecommerce",
-    description: "Planeador de campanhas para Ecommerce da FormulaXN",
+    name: "Planeador de Campanhas para E-commerce",
+    description: "Planeador de campanhas para E-commerce da FormulaXN",
     icon: TrendingUp,
     category: "marketing",
     status: "coming-soon",
@@ -41,8 +41,8 @@ export const assistants: Assistant[] = [
   },
   {
     id: "promotional-ad-wizard",
-    name: "Wizard de Criativos de Anúncios Promocionais",
-    description: "Wizard de Criativos de Anúncios Promocionais para Ecommerce",
+    name: "Assistente de Criativos Promocionais",
+    description: "Assistente de Criativos de Anúncios Promocionais para E-commerce",
     icon: Megaphone,
     category: "marketing",
     status: "coming-soon",
@@ -58,22 +58,22 @@ export const assistants: Assistant[] = [
     requireAuth: true,
   },
 
-  // Content Creation
+  // Criação de Conteúdo
   {
     id: "ugc_creator",
     name: "Gerador de Imagens UGC",
-    description: "Gerador de Imagens UGC para Anúncios e Posts",
+    description: "Gerador de Imagens UGC para Anúncios e Publicações",
     icon: Camera,
     category: "content",
     status: "active",
     requireAuth: true,
   },
 
-  // Business Strategy Tools
+  // Ferramentas de Estratégia Empresarial
   {
     id: "persona-creator",
-    name: "Criador de Personas para Ecommerce",
-    description: "Criador de Personas para Ecommerce",
+    name: "Criador de Personas para E-commerce",
+    description: "Criador de Personas para E-commerce",
     icon: Users,
     category: "business",
     status: "coming-soon",
@@ -98,7 +98,7 @@ export const assistants: Assistant[] = [
     requireAuth: true,
   },
 
-  // Legal & Compliance
+  // Legal e Conformidade
   {
     id: "legal-policies-creator",
     name: "Criador de Políticas Legais",
@@ -113,26 +113,26 @@ export const assistants: Assistant[] = [
 export const categories = [
   {
     id: "marketing",
-    name: "Marketing & Advertising",
-    description: "Ferramentas para otimizar campanhas, criar anúncios e aumentar conversões",
+    name: "Marketing e Publicidade",
+    description: "Ferramentas para optimizar campanhas, criar anúncios e aumentar conversões",
     icon: Megaphone,
   },
   {
     id: "content",
-    name: "Content Creation",
-    description: "Gere conteúdo visual e criativo para suas campanhas e redes sociais",
+    name: "Criação de Conteúdo",
+    description: "Gere conteúdo visual e criativo para as suas campanhas e redes sociais",
     icon: Camera,
   },
   {
     id: "business",
-    name: "Business Strategy Tools",
+    name: "Ferramentas de Estratégia Empresarial",
     description: "Desenvolva estratégias, personas e propostas de valor para o seu negócio",
     icon: Target,
   },
   {
     id: "legal",
-    name: "Legal & Compliance Center",
-    description: "Crie documentos legais e políticas de conformidade para o seu ecommerce",
+    name: "Centro Legal e de Conformidade",
+    description: "Crie documentos legais e políticas de conformidade para o seu e-commerce",
     icon: Shield,
   },
 ];

@@ -42,8 +42,8 @@ export const useFavorites = () => {
     } catch (error) {
       console.error('Error fetching favorites:', error);
       toast({
-        title: "Error loading favorites",
-        description: "Failed to load your favorite assistants",
+        title: "Erro ao carregar favoritos",
+        description: "Falha ao carregar os seus assistentes favoritos",
         variant: "destructive",
       });
     } finally {
@@ -65,14 +65,14 @@ export const useFavorites = () => {
 
         setFavorites(prev => [...prev, assistantId]);
         toast({
-          title: "Added to favorites",
-          description: "Assistant added to your favorites",
+          title: "Adicionado aos favoritos",
+          description: "Assistente adicionado aos seus favoritos",
         });
       } catch (error) {
         console.error('Error adding favorite:', error);
         toast({
-          title: "Error adding favorite",
-          description: "Failed to add assistant to favorites",
+          title: "Erro ao adicionar favorito",
+          description: "Falha ao adicionar assistente aos favoritos",
           variant: "destructive",
         });
       }
@@ -82,8 +82,8 @@ export const useFavorites = () => {
       setFavorites(newFavorites);
       localStorage.setItem('userFavorites', JSON.stringify(newFavorites));
       toast({
-        title: "Added to favorites",
-        description: "Assistant added to your favorites",
+        title: "Adicionado aos favoritos",
+        description: "Assistente adicionado aos seus favoritos",
       });
     }
   };
@@ -101,14 +101,14 @@ export const useFavorites = () => {
 
         setFavorites(prev => prev.filter(id => id !== assistantId));
         toast({
-          title: "Removed from favorites",
-          description: "Assistant removed from your favorites",
+          title: "Removido dos favoritos",
+          description: "Assistente removido dos seus favoritos",
         });
       } catch (error) {
         console.error('Error removing favorite:', error);
         toast({
-          title: "Error removing favorite",
-          description: "Failed to remove assistant from favorites",
+          title: "Erro ao remover favorito",
+          description: "Falha ao remover assistente dos favoritos",
           variant: "destructive",
         });
       }
@@ -118,8 +118,8 @@ export const useFavorites = () => {
       setFavorites(newFavorites);
       localStorage.setItem('userFavorites', JSON.stringify(newFavorites));
       toast({
-        title: "Removed from favorites",
-        description: "Assistant removed from your favorites",
+        title: "Removido dos favoritos",
+        description: "Assistente removido dos seus favoritos",
       });
     }
   };

@@ -29,12 +29,12 @@ interface SidebarProps {
 const navigationItems = [
   {
     id: "dashboard",
-    label: "Dashboard",
+    label: "Painel Principal",
     icon: Home,
   },
   {
     id: "library",
-    label: "Library",
+    label: "Biblioteca",
     icon: FileImage,
     requireAuth: true,
   },
@@ -72,8 +72,8 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
             <Brain className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="font-bold text-lg">Business AI</h1>
-            <p className="text-xs text-muted-foreground">AI-Powered Platform</p>
+            <h1 className="font-bold text-lg">IA Empresarial</h1>
+            <p className="text-xs text-muted-foreground">Plataforma com IA</p>
           </div>
         </div>
       </div>
@@ -93,7 +93,7 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
                 {user.user_metadata?.name || user.email}
               </p>
               <p className="text-xs text-muted-foreground truncate">
-                {user.user_metadata?.profession || 'User'}
+                {user.user_metadata?.profession || 'Utilizador'}
               </p>
             </div>
           </div>
@@ -144,7 +144,7 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
         {/* Navigation */}
         <div className="p-4 space-y-2">
           <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
-            Navigation
+            Navegação
           </div>
           {navigationItems.map((item) => {
             const Icon = item.icon;
@@ -166,9 +166,9 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
                 <Icon className="h-5 w-5" />
                 <span className="flex-1 text-left">{item.label}</span>
                 {item.requireAuth && !user && (
-                  <span className="text-xs bg-destructive/20 text-destructive px-2 py-1 rounded">
-                    Login
-                  </span>
+                   <span className="text-xs bg-destructive/20 text-destructive px-2 py-1 rounded">
+                     Sessão
+                   </span>
                 )}
               </Button>
             );
@@ -185,33 +185,33 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
               className="w-full justify-start gap-3"
               onClick={() => onNavigate("profile")}
             >
-              <User className="h-5 w-5" />
-              Profile
-            </Button>
-            <Button variant="ghost" className="w-full justify-start gap-3">
-              <Settings className="h-5 w-5" />
-              Settings
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start gap-3 text-muted-foreground"
-              onClick={handleSignOut}
-            >
-              <LogOut className="h-5 w-5" />
-              Sign Out
-            </Button>
-          </>
-        ) : (
-          <Button 
-            onClick={() => setShowAuthModal(true)}
-            className="w-full"
-          >
-            Sign In / Sign Up
-          </Button>
-        )}
-      </div>
-    </>
-  );
+               <User className="h-5 w-5" />
+               Perfil
+             </Button>
+             <Button variant="ghost" className="w-full justify-start gap-3">
+               <Settings className="h-5 w-5" />
+               Definições
+             </Button>
+             <Button 
+               variant="ghost" 
+               className="w-full justify-start gap-3 text-muted-foreground"
+               onClick={handleSignOut}
+             >
+               <LogOut className="h-5 w-5" />
+               Terminar Sessão
+             </Button>
+           </>
+         ) : (
+           <Button 
+             onClick={() => setShowAuthModal(true)}
+             className="w-full"
+           >
+             Iniciar Sessão / Registar
+           </Button>
+         )}
+       </div>
+     </>
+   );
 
   return (
     <>
