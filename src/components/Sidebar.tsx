@@ -142,6 +142,40 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
           </div>
         )}
 
+        {/* Navigation */}
+        <div className="p-4 space-y-2">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
+            Navegação
+          </div>
+          {navigationItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentView === item.id;
+            const isDisabled = item.requireAuth && !user;
+
+            return (
+              <Button
+                key={item.id}
+                variant="ghost"
+                className={cn(
+                  "w-full justify-start gap-3 h-11 px-3",
+                  isActive && "bg-primary/10 text-primary border border-primary/20",
+                  isDisabled && "opacity-50 cursor-not-allowed"
+                )}
+                onClick={() => !isDisabled && handleNavigation(item.id)}
+                disabled={isDisabled}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="flex-1 text-left">{item.label}</span>
+                {item.requireAuth && !user && (
+                   <span className="text-xs bg-destructive/20 text-destructive px-2 py-1 rounded">
+                     Sessão
+                   </span>
+                )}
+              </Button>
+            );
+          })}
+        </div>
+
         {/* Categories Section */}
         <div className="p-4 border-b border-border/50">
           <div className="flex items-center gap-2 mb-3">
@@ -178,40 +212,8 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
           </div>
         </div>
 
-        {/* Navigation */}
-        <div className="p-4 space-y-2">
-          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
-            Navegação
-          </div>
-          {navigationItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentView === item.id;
-            const isDisabled = item.requireAuth && !user;
-
-            return (
-              <Button
-                key={item.id}
-                variant="ghost"
-                className={cn(
-                  "w-full justify-start gap-3 h-11 px-3",
-                  isActive && "bg-primary/10 text-primary border border-primary/20",
-                  isDisabled && "opacity-50 cursor-not-allowed"
-                )}
-                onClick={() => !isDisabled && handleNavigation(item.id)}
-                disabled={isDisabled}
-              >
-                <Icon className="h-5 w-5" />
-                <span className="flex-1 text-left">{item.label}</span>
-                {item.requireAuth && !user && (
-                   <span className="text-xs bg-destructive/20 text-destructive px-2 py-1 rounded">
-                     Sessão
-                   </span>
-                )}
-              </Button>
-            );
-          })}
-        </div>
       </div>
+      
 
       {/* Footer */}
       <div className="p-4 border-t border-border/50 space-y-2">
