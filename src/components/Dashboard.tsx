@@ -16,15 +16,15 @@ interface Department {
 const departments: Department[] = [
   {
     id: "ugc_creator",
-    name: "AdGenius UGC Creator",
+    name: "UGC Creator",
     description: "Transform product images into engaging user-generated content with AI",
     icon: Image,
     status: "active",
     requireAuth: true,
   },
   {
-    id: "adgenius-lead-magnet-creator",
-    name: "AdGenius Lead Magnet Creator",
+    id: "lead-magnet-creator",
+    name: "Lead Magnet Creator",
     description: "Creative creator for lead capture ads with Lead Magnets",
     icon: MessageSquare,
     status: "coming-soon",

@@ -46,9 +46,9 @@ const navigationItems = [
     requireAuth: true,
   },
   {
-    id: "content-strategist",
-    label: "Content Strategist",
-    icon: MessageSquare,
+    id: "lead-magnet-creator",
+    label: "Lead Magnet Creator",
+    icon: Image,
     comingSoon: true,
   },
   {
