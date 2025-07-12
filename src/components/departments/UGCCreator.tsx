@@ -186,7 +186,7 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
           }
 
           setGeneratedImages(images);
-          
+
           // Save to secure storage
           if (images.length > 0) {
             await saveImages({
