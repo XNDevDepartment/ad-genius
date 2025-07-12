@@ -148,6 +148,25 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
       const reply = await converse(threadId, content, assistantId);
 
       if (typeof reply === 'string' && reply.includes('GENERATE_PROMPT:')) {
+        // First, display the assistant's message to the user
+        const now = new Date();
+        const assistantMsg: Message = {
+          id: `q-${now.getTime()}`,
+          type: "question",
+          content: reply,
+          timestamp: now,
+        };
+        setMessages((prev) => [...prev, assistantMsg]);
+
+        // Save assistant message to database
+        if (conversationId) {
+          await saveMessage({
+            conversationId,
+            role: 'assistant',
+            content: reply,
+          });
+        }
+
         const cleaned = reply.replace(/\*/g, '');
         const prompt = cleaned.split(':')[1]?.trim();
 
@@ -207,16 +226,40 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
                 element.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }
             }, 500);
+
+            // Automatically call assistant with "Imagem pronta" after successful generation
+            try {
+              const completionReply = await converse(threadId, [{ type: 'text', text: 'Imagem pronta' }], assistantId);
+              
+              if (typeof completionReply === 'string') {
+                setCurrentQuestion(completionReply);
+                
+                const completionMsg: Message = {
+                  id: `q-${Date.now() + 1}`,
+                  type: "question",
+                  content: completionReply,
+                  timestamp: new Date(),
+                };
+                setMessages((prev) => [...prev, completionMsg]);
+
+                // Save assistant completion message to database
+                if (conversationId) {
+                  await saveMessage({
+                    conversationId,
+                    role: 'assistant',
+                    content: completionReply,
+                  });
+                }
+              }
+            } catch (completionError) {
+              console.error('Error calling assistant after image completion:', completionError);
+              // Fallback to original behavior
+              setCurrentQuestion("Great! Your images have been generated successfully. You can continue the conversation if you need any adjustments, or start a new conversation to create different UGC content.");
+            }
           }
           
-          setCurrentQuestion("Great! Your images have been generated successfully. You can continue the conversation if you need any adjustments, or start a new conversation to create different UGC content.");
           setExpectImage(false);
-          setIsConversationCompleted(true);
-          
-          // Update conversation status to completed
-          if (conversationId) {
-            await updateConversationStatus(conversationId, 'completed');
-          }
+          // Don't mark conversation as completed - keep it active for continuation
         }
 
       } else if (typeof reply === 'string') {
