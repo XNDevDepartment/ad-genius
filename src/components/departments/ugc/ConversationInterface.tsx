@@ -125,29 +125,32 @@ export const ConversationInterface = ({
               ref={chatContainerRef} 
               className="flex-1 overflow-y-auto space-y-3 sm:space-y-4 border rounded-lg p-2 sm:p-3 lg:p-4 bg-muted/20 mb-4"
             >
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.type === 'answer' ? 'justify-end' : 'justify-start'}`}
-                >
+              {messages.map((message) => {
+                if(message.content.includes("GENERATE_PROMPT"))return
+                return(
                   <div
-                    className={`${
-                      isMobile 
-                        ? 'max-w-[85%]' 
-                        : 'max-w-[80%] lg:max-w-[70%]'
-                    } p-2 sm:p-3 rounded-lg text-sm ${
-                      message.type === 'question'
-                        ? 'bg-muted text-foreground'
-                        : 'bg-primary text-primary-foreground ml-auto'
-                    }`}
+                    key={message.id}
+                    className={`flex ${message.type === 'answer' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className="text-xs opacity-70 mb-1">
-                      {message.type === 'question' ? 'AI Assistant' : 'You'} • {message.timestamp.toLocaleTimeString()}
+                    <div
+                      className={`${
+                        isMobile 
+                          ? 'max-w-[85%]' 
+                          : 'max-w-[80%] lg:max-w-[70%]'
+                      } p-2 sm:p-3 rounded-lg text-sm ${
+                        message.type === 'question'
+                          ? 'bg-muted text-foreground'
+                          : 'bg-primary text-primary-foreground ml-auto'
+                      }`}
+                    >
+                      <div className="text-xs opacity-70 mb-1">
+                        {message.type === 'question' ? 'AI Assistant' : 'You'} • {message.timestamp.toLocaleTimeString()}
+                      </div>
+                      <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
                     </div>
-                    <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
                   </div>
-                </div>
-              ))}
+                )}
+              )}
 
               {isLoading && (
                 <div className="flex justify-start">

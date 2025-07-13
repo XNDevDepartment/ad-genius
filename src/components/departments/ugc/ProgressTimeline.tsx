@@ -45,9 +45,9 @@ export const ProgressTimeline = ({ steps, currentStepIndex }: ProgressTimelinePr
           </div>
 
           {/* Professional Step Timeline */}
-          <div className="relative">
+          {/* <div className="relative">
             {/* Connection Line */}
-            <div className="absolute top-6 left-6 right-6 h-0.5 bg-border"></div>
+            {/* <div className="absolute top-6 left-6 right-6 h-0.5 bg-border"></div>
             <div 
               className="absolute top-6 left-6 h-0.5 bg-gradient-to-r from-primary to-primary/60 transition-all duration-700 ease-out"
               style={{ width: `${Math.max(0, (currentStepIndex / (steps.length - 1)) * 100)}%` }}
@@ -62,7 +62,7 @@ export const ProgressTimeline = ({ steps, currentStepIndex }: ProgressTimelinePr
                 return (
                   <div key={step.id} className="flex flex-col items-center space-y-3 relative z-10">
                     {/* Step Circle */}
-                    <div className={`
+                    {/* <div className={`
                       w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 transform
                       ${isCompleted 
                         ? 'bg-primary text-primary-foreground shadow-primary/30 shadow-lg scale-110' 
@@ -71,11 +71,17 @@ export const ProgressTimeline = ({ steps, currentStepIndex }: ProgressTimelinePr
                           : 'bg-muted text-muted-foreground border border-border hover:border-primary/50'
                       }
                     `}>
-                      <span className="text-sm font-semibold">{stepNumber}</span>
+                      {isCompleted ? (
+                        <CheckCircle className="h-5 w-5" />
+                      ) : isCurrent ? (
+                        <Sparkles className="h-5 w-5" />
+                      ) : (
+                        <Clock className="h-4 w-4" />
+                      )}
                     </div>
 
                     {/* Step Details */}
-                    <div className="text-center space-y-1 max-w-[80px]">
+                    {/* <div className="text-center space-y-1 max-w-[80px]">
                       <div className={`
                         text-xs font-medium transition-colors duration-300
                         ${isCompleted 
@@ -87,9 +93,9 @@ export const ProgressTimeline = ({ steps, currentStepIndex }: ProgressTimelinePr
                       `}>
                         {step.label}
                       </div>
-                      
+
                       {/* Step Status */}
-                      <div className={`
+                      {/* <div className={`
                         text-[10px] px-2 py-0.5 rounded-full transition-all duration-300
                         ${isCompleted 
                           ? 'bg-primary/10 text-primary' 
@@ -105,7 +111,7 @@ export const ProgressTimeline = ({ steps, currentStepIndex }: ProgressTimelinePr
                 );
               })}
             </div>
-          </div>
+          </div> */}
         </div>
       </CardContent>
     </Card>

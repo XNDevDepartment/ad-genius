@@ -351,10 +351,10 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
         {/* Main Content */}
         <div className="w-full space-y-4 sm:space-y-6">
           {/* Progress Timeline */}
-          <ProgressTimeline
+          {/* <ProgressTimeline
             steps={timelineSteps}
             currentStepIndex={currentStepIndex >= 0 ? currentStepIndex : 0}
-          />
+          /> */}
 
           {/* Conversation Interface */}
           <ConversationInterface
