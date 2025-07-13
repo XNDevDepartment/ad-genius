@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Image, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -49,7 +49,44 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
 
   const { toast } = useToast();
   const { saveImages } = useSecureImageStorage();
-  const { saveConversation, saveMessage, updateConversationStatus } = useConversationStorage();
+  const { saveConversation, saveMessage, updateConversationStatus, getConversationMessages, getActiveConversation } = useConversationStorage();
+
+  // Load conversation on mount
+  useEffect(() => {
+    const loadActiveConversation = async () => {
+      try {
+        const activeConversation = await getActiveConversation(assistantId);
+        if (activeConversation) {
+          setThreadId(activeConversation.thread_id);
+          setConversationId(activeConversation.id);
+          setIsStarted(true);
+          
+          // Load messages
+          const dbMessages = await getConversationMessages(activeConversation.id);
+          const convertedMessages: Message[] = dbMessages.map(msg => ({
+            id: msg.id,
+            type: msg.role === 'assistant' ? 'question' : 'answer',
+            content: msg.content,
+            timestamp: new Date(msg.created_at),
+          }));
+          
+          setMessages(convertedMessages);
+          
+          // If conversation is ongoing, set up for next question
+          if (activeConversation.status === 'active') {
+            const lastMessage = convertedMessages[convertedMessages.length - 1];
+            if (lastMessage?.type === 'question' && !lastMessage.content.includes('GENERATE_PROMPT:')) {
+              setCurrentQuestion(lastMessage.content);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error loading active conversation:', error);
+      }
+    };
+
+    loadActiveConversation();
+  }, [assistantId, getActiveConversation, getConversationMessages]);
 
   const timelineSteps: TimelineStep[] = [
     { id: 'start', label: 'Start Conversation', status: isStarted ? 'completed' : 'pending' },
@@ -306,6 +343,11 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
   };
 
   const handleRestartConversation = async () => {
+    // Update current conversation status to completed
+    if (conversationId) {
+      await updateConversationStatus(conversationId, 'completed');
+    }
+
     // Reset all conversation state
     setThreadId(null);
     setConversationId(null);

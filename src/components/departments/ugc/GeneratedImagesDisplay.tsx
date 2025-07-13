@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Image, Eye, Check } from "lucide-react";
+import { Download, Image, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface GeneratedImagesDisplayProps {
@@ -12,7 +12,6 @@ interface GeneratedImagesDisplayProps {
 
 export const GeneratedImagesDisplay = ({ images, onViewLibrary }: GeneratedImagesDisplayProps) => {
   const { toast } = useToast();
-  const [downloadedImages, setDownloadedImages] = useState<Set<number>>(new Set());
 
   const handleDownload = (b64: string, index: number) => {
     toast({
@@ -33,7 +32,10 @@ export const GeneratedImagesDisplay = ({ images, onViewLibrary }: GeneratedImage
     link.click();
     URL.revokeObjectURL(url);
 
-    setDownloadedImages(prev => new Set(prev).add(index));
+    toast({
+      title: "Download Complete",
+      description: `Image ${index + 1} downloaded successfully!`,
+    });
   };
 
   if (images.length === 0) {
@@ -56,7 +58,6 @@ export const GeneratedImagesDisplay = ({ images, onViewLibrary }: GeneratedImage
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {images.map((b64, i) => {
               const src = `data:image/png;base64,${b64}`;
-              const isDownloaded = downloadedImages.has(i);
               
               return (
                 <div key={i} className="space-y-3 animate-scale-in">
@@ -68,23 +69,13 @@ export const GeneratedImagesDisplay = ({ images, onViewLibrary }: GeneratedImage
                     />
                   </div>
                   <Button 
-                    variant={isDownloaded ? "secondary" : "outline"}
+                    variant="outline"
                     size="sm"
                     className="w-full gap-2"
                     onClick={() => handleDownload(b64, i)}
-                    disabled={isDownloaded}
                   >
-                    {isDownloaded ? (
-                      <>
-                        <Check className="h-4 w-4" />
-                        Downloaded
-                      </>
-                    ) : (
-                      <>
-                        <Download className="h-4 w-4" />
-                        Download
-                      </>
-                    )}
+                    <Download className="h-4 w-4" />
+                    Download
                   </Button>
                 </div>
               );

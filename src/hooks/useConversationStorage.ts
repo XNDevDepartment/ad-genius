@@ -97,10 +97,50 @@ export const useConversationStorage = () => {
     }
   }, []);
 
+  const getConversationMessages = useCallback(async (conversationId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('conversation_messages')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error getting conversation messages:', error);
+      return [];
+    }
+  }, []);
+
+  const getActiveConversation = useCallback(async (assistantId: string) => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('conversations')
+        .select('*')
+        .eq('user_id', user.user.id)
+        .eq('assistant_id', assistantId)
+        .eq('status', 'active')
+        .order('updated_at', { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+      return data?.[0] || null;
+    } catch (error) {
+      console.error('Error getting active conversation:', error);
+      return null;
+    }
+  }, []);
+
   return {
     saveConversation,
     saveMessage,
     getConversationByThreadId,
     updateConversationStatus,
+    getConversationMessages,
+    getActiveConversation,
   };
 };
