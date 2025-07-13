@@ -336,13 +336,6 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
               <span className="hidden sm:inline">Back to Dashboard</span>
               <span className="sm:hidden">Back</span>
             </Button>
-            {isStarted && (
-              <Button variant="ghost" onClick={handleRestartConversation} className="gap-2 w-fit">
-                <RotateCcw className="h-4 w-4" />
-                <span className="hidden sm:inline">Restart Conversation</span>
-                <span className="sm:hidden">Restart</span>
-              </Button>
-            )}
           </div>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-gradient-primary shadow-glow">
@@ -379,6 +372,7 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
             settings={settings}
             setSettings={setSettings}
             isConversationCompleted={isConversationCompleted}
+            onRestartConversation={handleRestartConversation}
           />
 
           {/* Generating Images Placeholders */}

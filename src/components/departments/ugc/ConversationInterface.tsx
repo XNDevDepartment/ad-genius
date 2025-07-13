@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageSquare, Send, Sparkles } from "lucide-react";
+import { MessageSquare, Send, Sparkles, RotateCcw } from "lucide-react";
 import { SettingsPanel } from "./SettingsPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -29,6 +29,7 @@ interface ConversationInterfaceProps {
   settings: any;
   setSettings: (settings: any) => void;
   isConversationCompleted?: boolean;
+  onRestartConversation?: () => void;
 }
 
 export const ConversationInterface = ({
@@ -43,7 +44,8 @@ export const ConversationInterface = ({
   setAttachedFile,
   settings,
   setSettings,
-  isConversationCompleted = false
+  isConversationCompleted = false,
+  onRestartConversation
 }: ConversationInterfaceProps) => {
   const [currentAnswer, setCurrentAnswer] = useState("");
   const isMobile = useIsMobile();
@@ -74,13 +76,24 @@ export const ConversationInterface = ({
   return (
     <Card className="bg-gradient-card border-border/50 w-full">
       <CardHeader className="pb-3 sm:pb-6">
-        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-          <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-          AI Assistant Conversation
-        </CardTitle>
-        <CardDescription className="text-xs sm:text-sm">
-          Start the conversation to create your perfect UGC content
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              AI Assistant Conversation
+            </CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
+              Start the conversation to create your perfect UGC content
+            </CardDescription>
+          </div>
+          {isStarted && onRestartConversation && (
+            <Button variant="ghost" onClick={onRestartConversation} size="sm" className="gap-2">
+              <RotateCcw className="h-4 w-4" />
+              <span className="hidden sm:inline">Restart Conversation</span>
+              <span className="sm:hidden">Restart</span>
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="p-3 sm:p-6">
         {!isStarted ? (
@@ -106,11 +119,11 @@ export const ConversationInterface = ({
             </Button>
           </div>
         ) : (
-          <div className="space-y-3 sm:space-y-4">
+          <div className="flex flex-col h-[calc(100vh-20rem)]">
             {/* Chat Messages - Optimized for Mobile */}
             <div 
               ref={chatContainerRef} 
-              className={`${isMobile ? 'h-[40vh]' : 'h-[28rem] sm:h-[24rem]'} overflow-y-auto space-y-3 sm:space-y-4 border rounded-lg p-2 sm:p-3 lg:p-4 bg-muted/20`}
+              className="flex-1 overflow-y-auto space-y-3 sm:space-y-4 border rounded-lg p-2 sm:p-3 lg:p-4 bg-muted/20 mb-4"
             >
               {messages.map((message) => (
                 <div
@@ -153,7 +166,7 @@ export const ConversationInterface = ({
               )}
             </div>
 
-            {/* Input Area - Mobile Optimized */}
+            {/* Input Area - Fixed at bottom */}
             <div className="border rounded-lg p-2 sm:p-3 bg-background">
               <Textarea
                 placeholder="Type your message..."

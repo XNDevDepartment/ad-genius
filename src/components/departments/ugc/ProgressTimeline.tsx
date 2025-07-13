@@ -71,13 +71,7 @@ export const ProgressTimeline = ({ steps, currentStepIndex }: ProgressTimelinePr
                           : 'bg-muted text-muted-foreground border border-border hover:border-primary/50'
                       }
                     `}>
-                      {isCompleted ? (
-                        <CheckCircle className="h-5 w-5" />
-                      ) : isCurrent ? (
-                        <Sparkles className="h-5 w-5" />
-                      ) : (
-                        <Clock className="h-4 w-4" />
-                      )}
+                      <span className="text-sm font-semibold">{stepNumber}</span>
                     </div>
 
                     {/* Step Details */}
