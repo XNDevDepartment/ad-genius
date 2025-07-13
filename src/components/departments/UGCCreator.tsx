@@ -42,7 +42,7 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
   const [isConversationCompleted, setIsConversationCompleted] = useState(false);
   const [settings, setSettings] = useState<ImageSettings>({
     size: '1024x1024',
-    quality: 'medium',
+    quality: 'high',
     numberOfImages: 1,
     format: 'png',
   });
@@ -172,7 +172,7 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
 
         if (prompt && attachedFile) {
           setIsGeneratingImages(true);
-          
+
           setTimeout(() => {
             const element = document.getElementById('generating-images');
             if (element) {
