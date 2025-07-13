@@ -74,7 +74,8 @@ export const ConversationInterface = ({
   }, [messages, currentQuestion, isLoading]);
 
   return (
-    <Card className="bg-gradient-card border-border/50 w-full h-full flex flex-col">
+    <div className="w-full h-full flex justify-center px-4 sm:px-6">
+      <Card className="bg-gradient-card border-border/50 w-full max-w-4xl h-full flex flex-col">
       <CardHeader className="flex-none pb-2 sm:pb-4">
         <div className="flex items-center justify-between">
           <div>
@@ -228,5 +229,6 @@ export const ConversationInterface = ({
         )}
       </CardContent>
     </Card>
+    </div>
   );
 };
