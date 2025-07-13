@@ -369,64 +369,68 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
 
   return (
     <ErrorBoundary>
-      <div className="p-2 sm:p-4 lg:p-8 space-y-4 sm:space-y-6 animate-fade-in">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-5">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" onClick={onBack} className="gap-2 w-fit">
-              <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Back to Dashboard</span>
-              <span className="sm:hidden">Back</span>
-            </Button>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-primary shadow-glow">
-              <Image className="h-6 w-6 text-primary-foreground" />
+      <div className="flex flex-col h-screen md:p-2 lg:p-4">
+        {/* Header - Mobile optimized */}
+        <div className="flex-none p-2 sm:p-4 border-b md:border-0">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" onClick={onBack} className="gap-2 w-fit p-2">
+                <ArrowLeft className="h-4 w-4" />
+                <span className="hidden sm:inline">Back to Dashboard</span>
+                <span className="sm:hidden">Back</span>
+              </Button>
             </div>
-            <div>
-              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold">UGC Creator</h1>
-              <p className="text-xs sm:text-sm lg:text-base text-muted-foreground">AI-powered conversation to create perfect UGC content</p>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-primary shadow-glow">
+                <Image className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-base sm:text-lg lg:text-xl font-bold">UGC Creator</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground">AI-powered conversation to create perfect UGC content</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="w-full space-y-4 sm:space-y-6">
-          {/* Progress Timeline */}
-          {/* <ProgressTimeline
-            steps={timelineSteps}
-            currentStepIndex={currentStepIndex >= 0 ? currentStepIndex : 0}
-          /> */}
-
-          {/* Conversation Interface */}
-          <ConversationInterface
-            isStarted={isStarted}
-            isLoading={isLoading}
-            currentQuestion={currentQuestion}
-            messages={messages}
-            answer={answer}
-            setAnswer={setAnswer}
-            onStart={handleStart}
-            onAnswer={handleAnswer}
-            expectImage={expectImage}
-            attachedFile={attachedFile}
-            setAttachedFile={setAttachedFile}
-            settings={settings}
-            setSettings={setSettings}
-            isConversationCompleted={isConversationCompleted}
-            onRestartConversation={handleRestartConversation}
-          />
+        {/* Main Content - Flex container for mobile */}
+        <div className="flex-1 flex flex-col min-h-0 p-2 sm:p-4 gap-4">
+          {/* Conversation Interface - Takes remaining space */}
+          <div className="flex-1 min-h-0">
+            <ConversationInterface
+              isStarted={isStarted}
+              isLoading={isLoading}
+              currentQuestion={currentQuestion}
+              messages={messages}
+              answer={answer}
+              setAnswer={setAnswer}
+              onStart={handleStart}
+              onAnswer={handleAnswer}
+              expectImage={expectImage}
+              attachedFile={attachedFile}
+              setAttachedFile={setAttachedFile}
+              settings={settings}
+              setSettings={setSettings}
+              isConversationCompleted={isConversationCompleted}
+              onRestartConversation={handleRestartConversation}
+            />
+          </div>
 
           {/* Generating Images Placeholders */}
           {isGeneratingImages && (
-            <GeneratingImagePlaceholders numberOfImages={settings.numberOfImages} />
+            <div className="flex-none">
+              <GeneratingImagePlaceholders numberOfImages={settings.numberOfImages} />
+            </div>
           )}
 
           {/* Generated Images Display */}
-          <GeneratedImagesDisplay 
-            images={generatedImages}
-            onViewLibrary={handleViewLibrary}
-          />
+          {generatedImages.length > 0 && (
+            <div className="flex-none">
+              <GeneratedImagesDisplay 
+                images={generatedImages}
+                onViewLibrary={handleViewLibrary}
+              />
+            </div>
+          )}
         </div>
       </div>
     </ErrorBoundary>

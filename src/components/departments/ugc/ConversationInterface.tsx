@@ -74,8 +74,8 @@ export const ConversationInterface = ({
   }, [messages, currentQuestion, isLoading]);
 
   return (
-    <Card className="bg-gradient-card border-border/50 w-full">
-      <CardHeader className="pb-3 sm:pb-6">
+    <Card className="bg-gradient-card border-border/50 w-full h-full flex flex-col">
+      <CardHeader className="flex-none pb-2 sm:pb-4">
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
@@ -95,9 +95,9 @@ export const ConversationInterface = ({
           )}
         </div>
       </CardHeader>
-      <CardContent className="p-3 sm:p-6">
+      <CardContent className="flex-1 flex flex-col min-h-0 p-2 sm:p-4">
         {!isStarted ? (
-          <div className="text-center py-8 sm:py-12">
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
             <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-lg bg-secondary/50 flex items-center justify-center mb-3 sm:mb-4">
               <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
             </div>
@@ -119,11 +119,11 @@ export const ConversationInterface = ({
             </Button>
           </div>
         ) : (
-          <div className="flex flex-col h-[calc(100vh-20rem)]">
+          <div className="flex flex-col h-full min-h-0">
             {/* Chat Messages - Optimized for Mobile */}
             <div 
               ref={chatContainerRef} 
-              className="flex-1 overflow-y-auto space-y-3 sm:space-y-4 border rounded-lg p-2 sm:p-3 lg:p-4 bg-muted/20 mb-4"
+              className="flex-1 overflow-y-auto space-y-2 sm:space-y-3 border rounded-lg p-2 sm:p-3 bg-muted/20 mb-3 min-h-0"
             >
               {messages.map((message) => {
                 if(message.content.includes("GENERATE_PROMPT"))return
