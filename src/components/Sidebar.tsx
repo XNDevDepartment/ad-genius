@@ -94,7 +94,7 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
             <Brain className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="font-bold text-lg">IA Empresarial</h1>
+            <h1 className="font-bold text-lg">Business AI XN </h1>
             <p className="text-xs text-muted-foreground">Plataforma com IA</p>
           </div>
         </div>

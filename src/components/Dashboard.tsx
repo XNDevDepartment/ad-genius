@@ -65,7 +65,7 @@ export const Dashboard = ({ onSelectDepartment }: DashboardProps) => {
             <Brain className="h-8 w-8 text-primary-foreground" />
           </div>
           <h1 className="text-4xl font-bold bg-gradient-hero bg-clip-text text-transparent">
-            Central de IA Empresarial
+            Business AI XN
           </h1>
         </div>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
