@@ -395,7 +395,7 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
         {/* Main Content - Full width layout */}
         <div className="flex-1 flex flex-col min-h-0 p-2 sm:p-4 gap-4 max-w-none w-full">
           {/* Conversation Interface - Fixed height, full width */}
-          <div className="h-[60vh] min-h-[400px] w-full">
+          <div className="h-full min-h-[400px] w-full">
             <ConversationInterface
               isStarted={isStarted}
               isLoading={isLoading}
