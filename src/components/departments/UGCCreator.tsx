@@ -43,7 +43,7 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
   const [settings, setSettings] = useState<ImageSettings>({
     size: '1024x1024',
     quality: 'high',
-    numberOfImages: 1,
+    numberOfImages: 2,
     format: 'png',
   });
 

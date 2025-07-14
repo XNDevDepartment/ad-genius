@@ -122,8 +122,8 @@ export const ConversationInterface = ({
         ) : (
           <div className="flex flex-col h-full min-h-0">
             {/* Chat Messages - Optimized for Mobile */}
-            <div 
-              ref={chatContainerRef} 
+            <div
+              ref={chatContainerRef}
               className="flex-1 overflow-y-auto space-y-2 sm:space-y-3 border rounded-lg p-2 sm:p-3 bg-muted/20 mb-3 min-h-0"
             >
               {messages.map((message) => (
@@ -178,7 +178,7 @@ export const ConversationInterface = ({
                 className="border-0 p-0 resize-none focus-visible:ring-0 shadow-none text-sm"
                 disabled={isLoading || !currentQuestion}
               />
-              
+
               {expectImage && (
                 <div className="mt-3 flex flex-col gap-3">
                   <input
@@ -195,7 +195,7 @@ export const ConversationInterface = ({
                   )}
                 </div>
               )}
-              
+
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-3 pt-3 border-t">
                 <span className="text-xs text-muted-foreground">
                   Press Enter to send, Shift+Enter for new line
