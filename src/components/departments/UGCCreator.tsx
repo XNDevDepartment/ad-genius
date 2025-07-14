@@ -392,10 +392,10 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
           </div>
         </div>
 
-        {/* Main Content - Flex container for mobile */}
-        <div className="flex-1 flex flex-col min-h-0 p-2 sm:p-4 gap-4">
-          {/* Conversation Interface - Takes remaining space */}
-          <div className="flex-1 min-h-0">
+        {/* Main Content - Full width layout */}
+        <div className="flex-1 flex flex-col min-h-0 p-2 sm:p-4 gap-4 max-w-none w-full">
+          {/* Conversation Interface - Fixed height, full width */}
+          <div className="h-[60vh] min-h-[400px] w-full">
             <ConversationInterface
               isStarted={isStarted}
               isLoading={isLoading}
@@ -417,14 +417,14 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
 
           {/* Generating Images Placeholders */}
           {isGeneratingImages && (
-            <div className="flex-none">
+            <div className="flex-none w-full">
               <GeneratingImagePlaceholders numberOfImages={settings.numberOfImages} />
             </div>
           )}
 
           {/* Generated Images Display */}
           {generatedImages.length > 0 && (
-            <div className="flex-none">
+            <div className="flex-none w-full">
               <GeneratedImagesDisplay 
                 images={generatedImages}
                 onViewLibrary={handleViewLibrary}
