@@ -400,7 +400,7 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
               isStarted={isStarted}
               isLoading={isLoading}
               currentQuestion={currentQuestion}
-              messages={messages}
+              messages={messages.filter(message => !message.content.includes("GENERATE_PROMPT"))}
               answer={answer}
               setAnswer={setAnswer}
               onStart={handleStart}
