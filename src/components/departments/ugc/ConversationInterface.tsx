@@ -81,17 +81,17 @@ export const ConversationInterface = ({
           <div>
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              AI Assistant Conversation
+              Conversa com Assistente IA
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              Start the conversation to create your perfect UGC content
+              Inicie a conversa para criar seu conteúdo UGC perfeito
             </CardDescription>
           </div>
           {isStarted && onRestartConversation && (
             <Button variant="ghost" onClick={onRestartConversation} size="sm" className="gap-2">
               <RotateCcw className="h-4 w-4" />
-              <span className="hidden sm:inline">Restart Conversation</span>
-              <span className="sm:hidden">Restart</span>
+              <span className="hidden sm:inline">Reiniciar Conversa</span>
+              <span className="sm:hidden">Reiniciar</span>
             </Button>
           )}
         </div>
@@ -103,18 +103,18 @@ export const ConversationInterface = ({
               <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
             </div>
             <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base px-4">
-              Ready to create amazing UGC content? Let the AI assistant guide you through the process.
+              Pronto para criar conteúdo UGC incrível? Deixe o assistente IA te guiar pelo processo.
             </p>
             <Button onClick={onStart} className="gap-2" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Sparkles className="h-4 w-4 animate-spin" />
-                  Starting...
+                  Iniciando...
                 </>
               ) : (
                 <>
                   <MessageSquare className="h-4 w-4" />
-                  Start Conversation
+                  Iniciar Conversa
                 </>
               )}
             </Button>
@@ -143,7 +143,7 @@ export const ConversationInterface = ({
                     }`}
                   >
                     <div className="text-xs opacity-70 mb-1">
-                      {message.type === 'question' ? 'AI Assistant' : 'You'} • {message.timestamp.toLocaleTimeString()}
+                      {message.type === 'question' ? 'Assistente IA' : 'Você'} • {message.timestamp.toLocaleTimeString()}
                     </div>
                     <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
                   </div>
@@ -155,7 +155,7 @@ export const ConversationInterface = ({
                   <div className={`${isMobile ? 'max-w-[85%]' : 'max-w-[80%]'} p-3 rounded-lg bg-muted text-foreground`}>
                     <div className="flex items-center gap-2 text-xs opacity-70 mb-1">
                       <Sparkles className="h-3 w-3 animate-spin" />
-                      AI Assistant is thinking...
+                      Assistente IA está pensando...
                     </div>
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse"></div>
@@ -170,7 +170,7 @@ export const ConversationInterface = ({
             {/* Input Area - Fixed at bottom */}
             <div className="border rounded-lg p-2 sm:p-3 bg-background">
               <Textarea
-                placeholder="Type your message..."
+                placeholder="Digite sua mensagem..."
                 value={currentAnswer}
                 onChange={(e) => setCurrentAnswer(e.target.value)}
                 onKeyPress={handleKeyPress}
@@ -198,7 +198,7 @@ export const ConversationInterface = ({
 
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-3 pt-3 border-t">
                 <span className="text-xs text-muted-foreground">
-                  Press Enter to send, Shift+Enter for new line
+                  Pressione Enter para enviar, Shift+Enter para nova linha
                 </span>
                 <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
                   {/* Minimized Settings Panel */}
@@ -217,7 +217,7 @@ export const ConversationInterface = ({
                     ) : (
                       <Send className="h-4 w-4" />
                     )}
-                    {isConversationCompleted ? 'Continue' : 'Send'}
+                    {isConversationCompleted ? 'Continuar' : 'Enviar'}
                   </Button>
                 </div>
               </div>

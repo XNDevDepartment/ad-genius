@@ -9,7 +9,7 @@ import { Profile } from "@/pages/Profile";
 const assistants = [
   {
     id: import.meta.env.VITE_OPENAI_ASSISTANT_ID_UGC,
-    name: 'UGC Creator',
+    name: 'Criador UGC',
     desc: 'Gerar imagens UGC realistas',
     handle: 'ugc_creator'
   },

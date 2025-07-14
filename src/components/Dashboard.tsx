@@ -16,8 +16,8 @@ interface Department {
 const departments: Department[] = [
   {
     id: "ugc_creator",
-    name: "UGC Creator",
-    description: "Transform product images into engaging user-generated content with AI",
+    name: "Criador UGC",
+    description: "Transforme imagens de produtos em conteúdo envolvente gerado pelo usuário com IA",
     icon: Image,
     status: "active",
     requireAuth: true,
@@ -65,11 +65,11 @@ export const Dashboard = ({ onSelectDepartment }: DashboardProps) => {
             <Brain className="h-8 w-8 text-primary-foreground" />
           </div>
           <h1 className="text-4xl font-bold bg-gradient-hero bg-clip-text text-transparent">
-            Business AI Hub
+            Central de IA Empresarial
           </h1>
         </div>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Supercharge your business operations with specialized AI assistants for every department
+          Potencialize suas operações empresariais com assistentes de IA especializados para cada departamento
         </p>
       </div>
 
@@ -84,7 +84,7 @@ export const Dashboard = ({ onSelectDepartment }: DashboardProps) => {
               style={{ animationDelay: `${index * 150}ms` }}
               onClick={() => {
                 if(department.requireAuth && !user){
-                  toast.error('Must authenticate to use this function');
+                  toast.error('Você deve se autenticar para usar esta função');
                 }else{
                   department.status === "active" && onSelectDepartment(department.id)
                 }
@@ -109,7 +109,7 @@ export const Dashboard = ({ onSelectDepartment }: DashboardProps) => {
                       )}
                       {department.status === "coming-soon" && (
                         <span className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded-md">
-                          Coming Soon
+                          Em Breve
                         </span>
                       )}
                     </div>
@@ -131,7 +131,7 @@ export const Dashboard = ({ onSelectDepartment }: DashboardProps) => {
                     department.status === "active" && onSelectDepartment(department.id);
                   }}
                 >
-                  {department.status === "active" ? "Launch Assistant" : "Coming Soon"}
+                  {department.status === "active" ? "Iniciar Assistente" : "Em Breve"}
                 </Button>
               </CardContent>
             </Card>

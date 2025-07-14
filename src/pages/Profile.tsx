@@ -54,7 +54,7 @@ export const Profile = ({ onBack }: ProfileProps) => {
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching profile:', error);
-        toast.error('Failed to load profile');
+        toast.error('Falha ao carregar perfil');
       } else if (data) {
         setProfile(data);
         setFormData({
@@ -123,7 +123,7 @@ export const Profile = ({ onBack }: ProfileProps) => {
         .eq('id', user.id);
 
       if (error) {
-        toast.error('Failed to update profile');
+        toast.error('Falha ao atualizar perfil');
       } else {
         // Update auth metadata
         await updateProfile({
@@ -131,11 +131,11 @@ export const Profile = ({ onBack }: ProfileProps) => {
           profession: formData.profession,
         });
         
-        toast.success('Profile updated successfully!');
+        toast.success('Perfil atualizado com sucesso!');
         await fetchProfile();
       }
     } catch (error) {
-      toast.error('An unexpected error occurred');
+      toast.error('Ocorreu um erro inesperado');
     } finally {
       setSaving(false);
     }
@@ -156,7 +156,7 @@ export const Profile = ({ onBack }: ProfileProps) => {
           <Button variant="ghost" size="icon" onClick={onBack}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-3xl font-bold">Profile</h1>
+          <h1 className="text-3xl font-bold">Perfil</h1>
         </div>
 
         <Card>
@@ -178,7 +178,7 @@ export const Profile = ({ onBack }: ProfileProps) => {
                 </Button>
               </div>
               <div>
-                <CardTitle>{profile?.name || 'No name set'}</CardTitle>
+                <CardTitle>{profile?.name || 'Nome não definido'}</CardTitle>
                 <CardDescription>{profile?.email}</CardDescription>
                 <p className="text-sm text-muted-foreground">ID: {profile?.account_id}</p>
               </div>
@@ -188,13 +188,13 @@ export const Profile = ({ onBack }: ProfileProps) => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Edit Profile</CardTitle>
-            <CardDescription>Update your personal information</CardDescription>
+            <CardTitle>Editar Perfil</CardTitle>
+            <CardDescription>Atualize suas informações pessoais</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">Nome</Label>
                 <Input
                   id="name"
                   value={formData.name}
@@ -202,25 +202,25 @@ export const Profile = ({ onBack }: ProfileProps) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="profession">Profession</Label>
+                <Label htmlFor="profession">Profissão</Label>
                 <Input
                   id="profession"
                   value={formData.profession}
                   onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
-                  placeholder="e.g., Designer, Developer, Marketer"
+                  placeholder="ex: Designer, Desenvolvedor, Marqueteiro"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Descrição</Label>
                 <Input
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Tell us about yourself..."
+                  placeholder="Conte-nos sobre você..."
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="profile_picture">Profile Picture URL</Label>
+                <Label htmlFor="profile_picture">URL da Foto de Perfil</Label>
                 <Input
                   id="profile_picture"
                   value={formData.profile_picture}
@@ -230,7 +230,7 @@ export const Profile = ({ onBack }: ProfileProps) => {
               </div>
               <Button type="submit" disabled={saving} className="w-full">
                 {saving && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-                Save Changes
+                Salvar Alterações
               </Button>
             </form>
           </CardContent>

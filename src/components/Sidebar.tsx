@@ -28,19 +28,19 @@ interface SidebarProps {
 const navigationItems = [
   {
     id: "dashboard",
-    label: "Dashboard",
+    label: "Painel",
     icon: Home,
   },
   {
     id: "library",
-    label: "Library",
+    label: "Biblioteca",
     icon: FileImage,
     active: true,
     requireAuth: true,
   },
   {
     id: "ugc_creator",
-    label: "UGC Creator",
+    label: "Criador UGC",
     icon: Image,
     active: true,
     requireAuth: true,
@@ -94,8 +94,8 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
             <Brain className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="font-bold text-lg">Business AI</h1>
-            <p className="text-xs text-muted-foreground">AI-Powered Platform</p>
+            <h1 className="font-bold text-lg">IA Empresarial</h1>
+            <p className="text-xs text-muted-foreground">Plataforma com IA</p>
           </div>
         </div>
       </div>
@@ -115,7 +115,7 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
                 {user.user_metadata?.name || user.email}
               </p>
               <p className="text-xs text-muted-foreground truncate">
-                {user.user_metadata?.profession || 'User'}
+                {user.user_metadata?.profession || 'Usuário'}
               </p>
             </div>
           </div>
@@ -125,12 +125,12 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
       {/* Navigation */}
       <div className="flex-1 p-4 space-y-2">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
-          Navigation
+          Navegação
         </div>
         {navigationItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentView === item.id;
-          const isDisabled = item.comingSoon || (item.requireAuth && !user);
+          const isDisabled = (item.requireAuth && !user);
 
           return (
             <Button
@@ -146,14 +146,9 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
             >
               <Icon className="h-5 w-5" />
               <span className="flex-1 text-left">{item.label}</span>
-              {item.comingSoon && (
-                <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded">
-                  Soon
-                </span>
-              )}
               {item.requireAuth && !user && (
                 <span className="text-xs bg-destructive/20 text-destructive px-2 py-1 rounded">
-                  Login
+                  Entrar
                 </span>
               )}
             </Button>
@@ -171,7 +166,7 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
               onClick={() => onNavigate("profile")}
             >
               <User className="h-5 w-5" />
-              Profile
+              Perfil
             </Button>
             {/* <Button variant="ghost" className="w-full justify-start gap-3">
               <Settings className="h-5 w-5" />
@@ -183,7 +178,7 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
               onClick={handleSignOut}
             >
               <LogOut className="h-5 w-5" />
-              Sign Out
+              Sair
             </Button>
           </>
         ) : (
@@ -191,7 +186,7 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
             onClick={() => setShowAuthModal(true)}
             className="w-full"
           >
-            Sign In / Sign Up
+            Entrar / Registrar
           </Button>
         )}
       </div>
