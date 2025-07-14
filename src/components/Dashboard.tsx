@@ -22,30 +22,30 @@ const departments: Department[] = [
     status: "active",
     requireAuth: true,
   },
-  {
-    id: "lead-magnet-creator",
-    name: "Lead Magnet Creator",
-    description: "Creative creator for lead capture ads with Lead Magnets",
-    icon: MessageSquare,
-    status: "coming-soon",
-    requireAuth: false,
-  },
-  {
-    id: "analytics-advisor",
-    name: "Analytics Advisor",
-    description: "Get insights and recommendations from your business data",
-    icon: BarChart3,
-    status: "coming-soon",
-    requireAuth: false,
-  },
-  {
-    id: "customer-insights",
-    name: "Customer Insights",
-    description: "Understand your customers better with AI-powered analysis",
-    icon: Users,
-    status: "coming-soon",
-    requireAuth: false,
-  }
+  // {
+  //   id: "lead-magnet-creator",
+  //   name: "Lead Magnet Creator",
+  //   description: "Creative creator for lead capture ads with Lead Magnets",
+  //   icon: MessageSquare,
+  //   status: "coming-soon",
+  //   requireAuth: false,
+  // },
+  // {
+  //   id: "analytics-advisor",
+  //   name: "Analytics Advisor",
+  //   description: "Get insights and recommendations from your business data",
+  //   icon: BarChart3,
+  //   status: "coming-soon",
+  //   requireAuth: false,
+  // },
+  // {
+  //   id: "customer-insights",
+  //   name: "Customer Insights",
+  //   description: "Understand your customers better with AI-powered analysis",
+  //   icon: Users,
+  //   status: "coming-soon",
+  //   requireAuth: false,
+  // }
 ];
 
 

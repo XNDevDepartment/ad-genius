@@ -45,24 +45,24 @@ const navigationItems = [
     active: true,
     requireAuth: true,
   },
-  {
-    id: "lead-magnet-creator",
-    label: "Lead Magnet Creator",
-    icon: Image,
-    comingSoon: true,
-  },
-  {
-    id: "analytics-advisor",
-    label: "Analytics Advisor",
-    icon: BarChart3,
-    comingSoon: true,
-  },
-  {
-    id: "customer-insights",
-    label: "Customer Insights",
-    icon: Users,
-    comingSoon: true,
-  },
+  // {
+  //   id: "lead-magnet-creator",
+  //   label: "Lead Magnet Creator",
+  //   icon: Image,
+  //   comingSoon: true,
+  // },
+  // {
+  //   id: "analytics-advisor",
+  //   label: "Analytics Advisor",
+  //   icon: BarChart3,
+  //   comingSoon: true,
+  // },
+  // {
+  //   id: "customer-insights",
+  //   label: "Customer Insights",
+  //   icon: Users,
+  //   comingSoon: true,
+  // },
 ];
 
 export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
@@ -173,10 +173,10 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
               <User className="h-5 w-5" />
               Profile
             </Button>
-            <Button variant="ghost" className="w-full justify-start gap-3">
+            {/* <Button variant="ghost" className="w-full justify-start gap-3">
               <Settings className="h-5 w-5" />
               Settings
-            </Button>
+            </Button> */}
             <Button 
               variant="ghost" 
               className="w-full justify-start gap-3 text-muted-foreground"
