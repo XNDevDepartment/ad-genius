@@ -179,7 +179,7 @@ export const ConversationInterface = ({
                 disabled={isLoading || !currentQuestion}
               />
 
-              {expectImage && (
+              {/* {expectImage && ( */}
                 <div className="mt-3 flex flex-col gap-3">
                   <input
                     type="file"
@@ -194,7 +194,7 @@ export const ConversationInterface = ({
                     </span>
                   )}
                 </div>
-              )}
+              {/* )} */}
 
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-3 pt-3 border-t">
                 <span className="text-xs text-muted-foreground">
