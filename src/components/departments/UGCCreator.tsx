@@ -266,11 +266,11 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
 
             // Automatically call assistant with "Imagem pronta" after successful generation
             try {
-              const completionReply = await converse(threadId, [{ type: 'text', text: 'Imagem pronta' }], assistantId);
-              
+              const completionReply = await converse(threadId, [{ type: 'text', text: 'Próximo passo' }], assistantId);
+
               if (typeof completionReply === 'string') {
                 setCurrentQuestion(completionReply);
-                
+
                 const completionMsg: Message = {
                   id: `q-${Date.now() + 1}`,
                   type: "question",
@@ -294,7 +294,7 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
               setCurrentQuestion("Great! Your images have been generated successfully. You can continue the conversation if you need any adjustments, or start a new conversation to create different UGC content.");
             }
           }
-          
+
           setExpectImage(false);
           // Don't mark conversation as completed - keep it active for continuation
         }
