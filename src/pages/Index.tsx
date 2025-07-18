@@ -5,6 +5,7 @@ import { Dashboard } from "@/components/Dashboard";
 import { UGCCreator } from "@/components/departments/UGCCreator";
 import { Library } from "@/components/departments/Library";
 import { Profile } from "@/pages/Profile";
+import { AdminAccessButton } from "@/components/AdminAccessButton";
 
 const assistants = [
   {
@@ -46,6 +47,9 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Sidebar currentView={currentView} onNavigate={handleNavigate} />
       <div className="lg:ml-64 min-h-screen">
+        <div className="fixed top-4 right-4 z-50">
+          <AdminAccessButton />
+        </div>
         {renderCurrentView()}
       </div>
     </div>
