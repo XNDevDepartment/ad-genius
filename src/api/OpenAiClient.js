@@ -196,28 +196,6 @@ export async function uploadFile(file) {
 }
 
 
-/* ---------- gerar 1 imagem com gpt-image-1 ---------- */
-async function generateOneImage(prompt, { quality = 'medium', size = '1024x1024', format = 'png' } = {}) {
-  const r = await fetch('https://api.openai.com/v1/images/generations', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-      'OpenAI-Beta': 'assistants=v2',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-image-1',
-      prompt,
-      quality,          // low · medium · high
-      size,             // 1024x1024 · 1024x1792 · 1792x1024
-      output_format: format, // png · jpeg · webp
-    }),
-  });
-  if (!r.ok) throw new Error('Falha a gerar imagem');
-  const { data } = await r.json();        // { data:[{b64_json}] }
-  return data[0].b64_json;                // devolve base64 string
-}
-
 /* ---------- gerar N imagens (chamadas em paralelo) ---------- */
 export async function generateImages(prompt, n = 3, opts = {}) {
   const tasks = Array.from({ length: n }, () => generateOneImage(prompt, opts));

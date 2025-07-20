@@ -32,7 +32,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         if (error) {
           toast.error(error.message);
         } else {
-          toast.success('Logged in successfully!');
+          toast.success('Login realizado com sucesso!');
           onClose();
         }
       } else if (mode === 'signup') {
@@ -44,7 +44,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         if (error) {
           toast.error(error.message);
         } else {
-          toast.success('Account created successfully! Please check your email to verify your account.');
+          toast.success('Conta criada com sucesso! Verifique seu email para confirmar sua conta.');
           onClose();
         }
       } else if (mode === 'reset') {
@@ -52,12 +52,12 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         if (error) {
           toast.error(error.message);
         } else {
-          toast.success('Password reset email sent! Please check your email.');
+          toast.success('Email de redefinição de senha enviado! Verifique seu email.');
           setMode('login');
         }
       }
     } catch (error) {
-      toast.error('An unexpected error occurred');
+      toast.error('Ocorreu um erro inesperado');
     } finally {
       setLoading(false);
     }
@@ -90,16 +90,16 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {mode === 'login' && 'Sign In'}
-            {mode === 'signup' && 'Create Account'}
-            {mode === 'reset' && 'Reset Password'}
+            {mode === 'login' && 'Entrar'}
+            {mode === 'signup' && 'Criar Conta'}
+            {mode === 'reset' && 'Redefinir Senha'}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === 'signup' && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">Nome</Label>
                 <Input
                   id="name"
                   type="text"
@@ -109,13 +109,13 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="profession">Profession</Label>
+                <Label htmlFor="profession">Profissão</Label>
                 <Input
                   id="profession"
                   type="text"
                   value={profession}
                   onChange={(e) => setProfession(e.target.value)}
-                  placeholder="e.g., Designer, Developer, Marketer"
+                  placeholder="ex: Designer, Desenvolvedor, Marqueteiro"
                 />
               </div>
             </>
@@ -132,7 +132,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
           </div>
           {mode !== 'reset' && (
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Senha</Label>
               <Input
                 id="password"
                 type="password"
@@ -144,9 +144,9 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
           )}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-            {mode === 'login' && 'Sign In'}
-            {mode === 'signup' && 'Create Account'}
-            {mode === 'reset' && 'Send Reset Email'}
+            {mode === 'login' && 'Entrar'}
+            {mode === 'signup' && 'Criar Conta'}
+            {mode === 'reset' && 'Enviar Email de Redefinição'}
           </Button>
           
           <div className="space-y-2">
@@ -158,7 +158,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   className="w-full"
                   onClick={toggleToSignup}
                 >
-                  Don't have an account? Sign up
+                  Não tem uma conta? Registre-se
                 </Button>
                 <Button
                   type="button"
@@ -166,7 +166,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   className="w-full text-sm"
                   onClick={toggleToReset}
                 >
-                  Forgot your password?
+                  Esqueceu sua senha?
                 </Button>
               </>
             )}
@@ -177,7 +177,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                 className="w-full"
                 onClick={toggleToLogin}
               >
-                Already have an account? Sign in
+                Já tem uma conta? Entre
               </Button>
             )}
             {mode === 'reset' && (
@@ -187,7 +187,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                 className="w-full"
                 onClick={toggleToLogin}
               >
-                Back to Sign In
+                Voltar ao Login
               </Button>
             )}
           </div>

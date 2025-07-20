@@ -107,7 +107,7 @@ export const SettingsPanel = ({ settings, onSettingsChange }: SettingsPanelProps
             <SelectValue placeholder="Select number" />
           </SelectTrigger>
           <SelectContent>
-            {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+            {Array.from({ length: 2 }, (_, i) => i + 1).map((n) => (
               <SelectItem key={n} value={n.toString()}>
                 {n} Image{n > 1 ? "s" : ""}
               </SelectItem>

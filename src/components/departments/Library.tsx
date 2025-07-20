@@ -35,8 +35,8 @@ export const Library = ({ onBack }: LibraryProps) => {
 
   const handleDownload = async (image: LibraryImage) => {
     toast({
-      title: "Download Started",
-      description: "Downloading image...",
+      title: "Download Iniciado",
+      description: "Baixando imagem...",
     });
 
     try {
@@ -52,8 +52,8 @@ export const Library = ({ onBack }: LibraryProps) => {
       URL.revokeObjectURL(url);
     } catch (error) {
       toast({
-        title: "Download Failed",
-        description: "Failed to download the image. Please try again.",
+        title: "Download Falhou",
+        description: "Falha ao baixar a imagem. Tente novamente.",
         variant: "destructive",
       });
     }
@@ -65,13 +65,13 @@ export const Library = ({ onBack }: LibraryProps) => {
     try {
       await deleteImage(imageId);
       toast({
-        title: "Image Deleted",
-        description: "Image has been removed from your library.",
+        title: "Imagem Excluída",
+        description: "A imagem foi removida da sua biblioteca.",
       });
     } catch (error) {
       toast({
-        title: "Delete Failed",
-        description: "Failed to delete the image. Please try again.",
+        title: "Exclusão Falhou",
+        description: "Falha ao excluir a imagem. Tente novamente.",
         variant: "destructive",
       });
     }
@@ -99,16 +99,16 @@ export const Library = ({ onBack }: LibraryProps) => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-5">
         <Button variant="ghost" onClick={onBack} className="gap-2 w-fit">
           <ArrowLeft className="h-4 w-4" />
-          <span className="hidden sm:inline">Back to Dashboard</span>
-          <span className="sm:hidden">Back</span>
+          <span className="hidden sm:inline">Voltar ao Painel</span>
+          <span className="sm:hidden">Voltar</span>
         </Button>
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-gradient-primary shadow-glow">
             <FileImage className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-xl lg:text-2xl font-bold">Library</h1>
-            <p className="text-sm lg:text-base text-muted-foreground">All your generated UGC images in one place</p>
+            <h1 className="text-xl lg:text-2xl font-bold">Biblioteca</h1>
+            <p className="text-sm lg:text-base text-muted-foreground">Todas as suas imagens UGC geradas em um só lugar</p>
           </div>
         </div>
       </div>
@@ -120,7 +120,7 @@ export const Library = ({ onBack }: LibraryProps) => {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by prompt..."
+                placeholder="Buscar por prompt..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -129,12 +129,12 @@ export const Library = ({ onBack }: LibraryProps) => {
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-full sm:w-48">
                 <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Sort by" />
+                <SelectValue placeholder="Ordenar por" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
-                <SelectItem value="prompt">By Prompt</SelectItem>
+                <SelectItem value="newest">Mais Recentes Primeiro</SelectItem>
+                <SelectItem value="oldest">Mais Antigos Primeiro</SelectItem>
+                <SelectItem value="prompt">Por Prompt</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -146,10 +146,10 @@ export const Library = ({ onBack }: LibraryProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileImage className="h-5 w-5 text-primary" />
-            Generated Images ({filteredAndSortedImages.length})
+            Imagens Geradas ({filteredAndSortedImages.length})
           </CardTitle>
           <CardDescription>
-            Your collection of AI-generated UGC content
+            Sua coleção de conteúdo UGC gerado por IA
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -158,7 +158,7 @@ export const Library = ({ onBack }: LibraryProps) => {
               <div className="mx-auto w-16 h-16 rounded-lg bg-secondary/50 flex items-center justify-center mb-4">
                 <FileImage className="h-8 w-8 text-muted-foreground animate-pulse" />
               </div>
-              <p className="text-muted-foreground">Loading your library...</p>
+              <p className="text-muted-foreground">Carregando sua biblioteca...</p>
             </div>
           ) : filteredAndSortedImages.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -210,9 +210,9 @@ export const Library = ({ onBack }: LibraryProps) => {
               <div className="mx-auto w-16 h-16 rounded-lg bg-secondary/50 flex items-center justify-center mb-4">
                 <FileImage className="h-8 w-8 text-muted-foreground" />
               </div>
-              <p className="text-muted-foreground mb-2">No images in your library yet</p>
+              <p className="text-muted-foreground mb-2">Ainda não há imagens na sua biblioteca</p>
               <p className="text-sm text-muted-foreground">
-                {searchTerm ? "Try adjusting your search terms" : "Generate some UGC content to see it here"}
+                {searchTerm ? "Tente ajustar seus termos de busca" : "Gere algum conteúdo UGC para vê-lo aqui"}
               </p>
             </div>
           )}

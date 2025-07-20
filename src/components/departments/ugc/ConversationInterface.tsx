@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageSquare, Send, Sparkles } from "lucide-react";
+import { MessageSquare, Send, Sparkles, RotateCcw } from "lucide-react";
 import { SettingsPanel } from "./SettingsPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -28,6 +28,8 @@ interface ConversationInterfaceProps {
   setAttachedFile: (file: File | null) => void;
   settings: any;
   setSettings: (settings: any) => void;
+  isConversationCompleted?: boolean;
+  onRestartConversation?: () => void;
 }
 
 export const ConversationInterface = ({
@@ -41,7 +43,9 @@ export const ConversationInterface = ({
   attachedFile,
   setAttachedFile,
   settings,
-  setSettings
+  setSettings,
+  isConversationCompleted = false,
+  onRestartConversation
 }: ConversationInterfaceProps) => {
   const [currentAnswer, setCurrentAnswer] = useState("");
   const isMobile = useIsMobile();
@@ -70,45 +74,57 @@ export const ConversationInterface = ({
   }, [messages, currentQuestion, isLoading]);
 
   return (
-    <Card className="bg-gradient-card border-border/50 w-full">
-      <CardHeader className="pb-3 sm:pb-6">
-        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-          <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-          AI Assistant Conversation
-        </CardTitle>
-        <CardDescription className="text-xs sm:text-sm">
-          Start the conversation to create your perfect UGC content
-        </CardDescription>
+    <div className="w-full h-full flex justify-center px-2 sm:px-4">
+      <Card className="bg-gradient-card border-border/50 w-full max-w-none h-full flex flex-col">
+      <CardHeader className="flex-none pb-2 sm:pb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              Conversa com Assistente IA
+            </CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
+              Inicie a conversa para criar seu conteúdo UGC perfeito
+            </CardDescription>
+          </div>
+          {isStarted && onRestartConversation && (
+            <Button variant="ghost" onClick={onRestartConversation} size="sm" className="gap-2">
+              <RotateCcw className="h-4 w-4" />
+              <span className="hidden sm:inline">Reiniciar Conversa</span>
+              <span className="sm:hidden">Reiniciar</span>
+            </Button>
+          )}
+        </div>
       </CardHeader>
-      <CardContent className="p-3 sm:p-6">
+      <CardContent className="flex-1 flex flex-col min-h-0 p-2 sm:p-4">
         {!isStarted ? (
-          <div className="text-center py-8 sm:py-12">
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
             <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-lg bg-secondary/50 flex items-center justify-center mb-3 sm:mb-4">
               <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
             </div>
             <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base px-4">
-              Ready to create amazing UGC content? Let the AI assistant guide you through the process.
+              Pronto para criar conteúdo UGC incrível? Deixe o assistente IA te guiar pelo processo.
             </p>
             <Button onClick={onStart} className="gap-2" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Sparkles className="h-4 w-4 animate-spin" />
-                  Starting...
+                  Iniciando...
                 </>
               ) : (
                 <>
                   <MessageSquare className="h-4 w-4" />
-                  Start Conversation
+                  Iniciar Conversa
                 </>
               )}
             </Button>
           </div>
         ) : (
-          <div className="space-y-3 sm:space-y-4">
+          <div className="flex flex-col h-full min-h-0">
             {/* Chat Messages - Optimized for Mobile */}
-            <div 
-              ref={chatContainerRef} 
-              className={`${isMobile ? 'h-[40vh]' : 'h-[28rem] sm:h-[24rem]'} overflow-y-auto space-y-3 sm:space-y-4 border rounded-lg p-2 sm:p-3 lg:p-4 bg-muted/20`}
+            <div
+              ref={chatContainerRef}
+              className="flex-1 overflow-y-auto space-y-2 sm:space-y-3 border rounded-lg p-2 sm:p-3 bg-muted/20 mb-3 min-h-0"
             >
               {messages.map((message) => (
                 <div
@@ -127,7 +143,7 @@ export const ConversationInterface = ({
                     }`}
                   >
                     <div className="text-xs opacity-70 mb-1">
-                      {message.type === 'question' ? 'AI Assistant' : 'You'} • {message.timestamp.toLocaleTimeString()}
+                      {message.type === 'question' ? 'Assistente IA' : 'Você'} • {message.timestamp.toLocaleTimeString()}
                     </div>
                     <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
                   </div>
@@ -139,7 +155,7 @@ export const ConversationInterface = ({
                   <div className={`${isMobile ? 'max-w-[85%]' : 'max-w-[80%]'} p-3 rounded-lg bg-muted text-foreground`}>
                     <div className="flex items-center gap-2 text-xs opacity-70 mb-1">
                       <Sparkles className="h-3 w-3 animate-spin" />
-                      AI Assistant is thinking...
+                      Assistente IA está pensando...
                     </div>
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse"></div>
@@ -151,10 +167,10 @@ export const ConversationInterface = ({
               )}
             </div>
 
-            {/* Input Area - Mobile Optimized */}
+            {/* Input Area - Fixed at bottom */}
             <div className="border rounded-lg p-2 sm:p-3 bg-background">
               <Textarea
-                placeholder="Type your message..."
+                placeholder="Digite sua mensagem..."
                 value={currentAnswer}
                 onChange={(e) => setCurrentAnswer(e.target.value)}
                 onKeyPress={handleKeyPress}
@@ -162,8 +178,8 @@ export const ConversationInterface = ({
                 className="border-0 p-0 resize-none focus-visible:ring-0 shadow-none text-sm"
                 disabled={isLoading || !currentQuestion}
               />
-              
-              {expectImage && (
+
+              {/* {expectImage && ( */}
                 <div className="mt-3 flex flex-col gap-3">
                   <input
                     type="file"
@@ -178,11 +194,11 @@ export const ConversationInterface = ({
                     </span>
                   )}
                 </div>
-              )}
-              
+              {/* )} */}
+
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-3 pt-3 border-t">
                 <span className="text-xs text-muted-foreground">
-                  Press Enter to send, Shift+Enter for new line
+                  Pressione Enter para enviar, Shift+Enter para nova linha
                 </span>
                 <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
                   {/* Minimized Settings Panel */}
@@ -193,7 +209,7 @@ export const ConversationInterface = ({
                   <Button
                     size="sm"
                     onClick={handleSubmitAnswer}
-                    disabled={(!currentAnswer.trim() || isLoading || !currentQuestion) && !attachedFile}
+                    disabled={(!currentAnswer.trim() || isLoading || (!currentQuestion && !isConversationCompleted)) && !attachedFile}
                     className="gap-2"
                   >
                     {isLoading ? (
@@ -201,7 +217,7 @@ export const ConversationInterface = ({
                     ) : (
                       <Send className="h-4 w-4" />
                     )}
-                    Send
+                    {isConversationCompleted ? 'Continuar' : 'Enviar'}
                   </Button>
                 </div>
               </div>
@@ -210,5 +226,6 @@ export const ConversationInterface = ({
         )}
       </CardContent>
     </Card>
+    </div>
   );
 };
