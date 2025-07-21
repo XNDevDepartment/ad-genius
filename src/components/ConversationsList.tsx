@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { MessageSquare, Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale/pt-BR";
+import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
 interface Conversation {
