@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { MessageSquare, Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
+// import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
 interface Conversation {
@@ -15,6 +15,10 @@ interface Conversation {
   status: string;
   created_at: string;
   updated_at: string;
+  conversation_messages?: Array<{
+    content: string;
+    role: string;
+  }>;
   messages?: Array<{
     content: string;
     role: string;
@@ -71,8 +75,9 @@ export const ConversationsList = ({
   };
 
   const getConversationPreview = (conversation: Conversation) => {
-    const firstUserMessage = conversation.messages?.find(m => m.role === 'user');
-    return firstUserMessage?.content?.slice(0, 50) + '...' || 'Nova conversa';
+
+    const  firstUserMessage = conversation.conversation_messages?.find(m => m.role === 'user');
+    if(firstUserMessage) return firstUserMessage?.content?.slice(0, 50) + '...' || 'Nova conversa';
   };
 
   if (loading) {
@@ -104,18 +109,19 @@ export const ConversationsList = ({
       </div>
 
       {/* Conversations List */}
-      <ScrollArea className="h-[300px]">
+      <ScrollArea className="h-[400px]">
         <div className="space-y-2">
           {conversations.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground text-sm">
               Nenhuma conversa encontrada
             </div>
           ) : (
-            conversations.map((conversation) => (
+            conversations.map((conversation) => {
+              if(getConversationPreview(conversation)) return(
               <div
                 key={conversation.id}
                 className={cn(
-                  "p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:bg-muted/50",
+                  " rounded-lg border cursor-pointer transition-all duration-200 hover:bg-muted/50",
                   currentThreadId === conversation.thread_id 
                     ? "bg-primary/10 border-primary/30" 
                     : "border-border"
@@ -127,7 +133,7 @@ export const ConversationsList = ({
                     <p className="text-sm font-medium line-clamp-2 flex-1">
                       {getConversationPreview(conversation)}
                     </p>
-                    <Badge 
+                    {/* <Badge 
                       variant="secondary" 
                       className={cn(
                         "ml-2 text-xs",
@@ -137,17 +143,17 @@ export const ConversationsList = ({
                       )}
                     >
                       {conversation.status === 'active' ? 'Ativa' : 'Pausada'}
-                    </Badge>
+                    </Badge> */}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {formatDistanceToNow(new Date(conversation.updated_at), { 
                       addSuffix: true, 
-                      locale: ptBR 
+                      // locale: ptBR 
                     })}
                   </p>
                 </div>
               </div>
-            ))
+            )})
           )}
         </div>
       </ScrollArea>
