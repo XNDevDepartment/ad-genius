@@ -11,6 +11,7 @@ import { GeneratedImagesDisplay } from "./ugc/GeneratedImagesDisplay";
 import { ErrorBoundary } from "./ugc/ErrorBoundary";
 import { useSecureImageStorage } from "./ugc/SecureImageStorage";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
+import { supabase } from "@/integrations/supabase/client";
 import { startConversationAPI, uploadFile, converse, generateImagesFromBase } from '../../api/SecureOpenAiClient';
 
 const assistantId = import.meta.env.VITE_OPENAI_ASSISTANT_ID_UGC;
@@ -24,9 +25,10 @@ interface Message {
 
 interface UGCCreatorProps {
   onBack: () => void;
+  initialThreadId?: string;
 }
 
-export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
+export const UGCCreator = ({ onBack, initialThreadId }: UGCCreatorProps) => {
   const [threadId, setThreadId] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [answer, setAnswer] = useState('');
@@ -53,40 +55,77 @@ export const UGCCreator = ({ onBack }: UGCCreatorProps) => {
 
   // Load conversation on mount
   useEffect(() => {
-    const loadActiveConversation = async () => {
+    const loadConversation = async () => {
       try {
-        const activeConversation = await getActiveConversation(assistantId);
-        if (activeConversation) {
-          setThreadId(activeConversation.thread_id);
-          setConversationId(activeConversation.id);
-          setIsStarted(true);
-          
-          // Load messages
-          const dbMessages = await getConversationMessages(activeConversation.id);
-          const convertedMessages: Message[] = dbMessages.map(msg => ({
-            id: msg.id,
-            type: msg.role === 'assistant' ? 'question' : 'answer',
-            content: msg.content,
-            timestamp: new Date(msg.created_at),
-          }));
-          
-          setMessages(convertedMessages);
-          
-          // If conversation is ongoing, set up for next question
-          if (activeConversation.status === 'active') {
-            const lastMessage = convertedMessages[convertedMessages.length - 1];
-            if (lastMessage?.type === 'question' && !lastMessage.content.includes('GENERATE_PROMPT:')) {
-              setCurrentQuestion(lastMessage.content);
+        if (initialThreadId) {
+          // Load specific conversation by thread ID
+          const { data: conversation, error } = await supabase
+            .from('conversations')
+            .select('*')
+            .eq('thread_id', initialThreadId)
+            .single();
+
+          if (error) throw error;
+
+          if (conversation) {
+            setThreadId(conversation.thread_id);
+            setConversationId(conversation.id);
+            setIsStarted(true);
+            
+            // Load messages
+            const dbMessages = await getConversationMessages(conversation.id);
+            const convertedMessages: Message[] = dbMessages.map(msg => ({
+              id: msg.id,
+              type: msg.role === 'assistant' ? 'question' : 'answer',
+              content: msg.content,
+              timestamp: new Date(msg.created_at),
+            }));
+            
+            setMessages(convertedMessages);
+            
+            // If conversation is ongoing, set up for next question
+            if (conversation.status === 'active') {
+              const lastMessage = convertedMessages[convertedMessages.length - 1];
+              if (lastMessage?.type === 'question' && !lastMessage.content.includes('GENERATE_PROMPT:')) {
+                setCurrentQuestion(lastMessage.content);
+              }
+            }
+          }
+        } else {
+          // Load active conversation if no specific thread ID
+          const activeConversation = await getActiveConversation(assistantId);
+          if (activeConversation) {
+            setThreadId(activeConversation.thread_id);
+            setConversationId(activeConversation.id);
+            setIsStarted(true);
+            
+            // Load messages
+            const dbMessages = await getConversationMessages(activeConversation.id);
+            const convertedMessages: Message[] = dbMessages.map(msg => ({
+              id: msg.id,
+              type: msg.role === 'assistant' ? 'question' : 'answer',
+              content: msg.content,
+              timestamp: new Date(msg.created_at),
+            }));
+            
+            setMessages(convertedMessages);
+            
+            // If conversation is ongoing, set up for next question
+            if (activeConversation.status === 'active') {
+              const lastMessage = convertedMessages[convertedMessages.length - 1];
+              if (lastMessage?.type === 'question' && !lastMessage.content.includes('GENERATE_PROMPT:')) {
+                setCurrentQuestion(lastMessage.content);
+              }
             }
           }
         }
       } catch (error) {
-        console.error('Error loading active conversation:', error);
+        console.error('Error loading conversation:', error);
       }
     };
 
-    loadActiveConversation();
-  }, [assistantId, getActiveConversation, getConversationMessages]);
+    loadConversation();
+  }, [assistantId, initialThreadId, getActiveConversation, getConversationMessages]);
 
   const timelineSteps: TimelineStep[] = [
     { id: 'start', label: 'Start Conversation', status: isStarted ? 'completed' : 'pending' },

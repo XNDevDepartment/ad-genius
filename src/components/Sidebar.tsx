@@ -5,24 +5,23 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { 
   Brain, 
-  Image, 
-  MessageSquare, 
-  BarChart3, 
-  Users, 
   Home,
-  Settings,
   LogOut,
   Menu,
-  FileImage,
-  User
+  User,
+  Plus
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { ConversationsList } from "@/components/ConversationsList";
 import { useState } from "react";
 
 interface SidebarProps {
   currentView: string;
   onNavigate: (view: string) => void;
+  onSelectConversation?: (threadId: string) => void;
+  onNewConversation?: () => void;
+  currentThreadId?: string;
 }
 
 const navigationItems = [
@@ -31,50 +30,19 @@ const navigationItems = [
     label: "Painel",
     icon: Home,
   },
-  {
-    id: "library",
-    label: "Biblioteca",
-    icon: FileImage,
-    active: true,
-    requireAuth: true,
-  },
-  {
-    id: "ugc_creator",
-    label: "Criador UGC",
-    icon: Image,
-    active: true,
-    requireAuth: true,
-  },
-  // {
-  //   id: "lead-magnet-creator",
-  //   label: "Lead Magnet Creator",
-  //   icon: Image,
-  //   comingSoon: true,
-  // },
-  // {
-  //   id: "analytics-advisor",
-  //   label: "Analytics Advisor",
-  //   icon: BarChart3,
-  //   comingSoon: true,
-  // },
-  // {
-  //   id: "customer-insights",
-  //   label: "Customer Insights",
-  //   icon: Users,
-  //   comingSoon: true,
-  // },
 ];
 
-export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
+export const Sidebar = ({ 
+  currentView, 
+  onNavigate, 
+  onSelectConversation, 
+  onNewConversation, 
+  currentThreadId 
+}: SidebarProps) => {
   const { user, signOut } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   const handleNavigation = (itemId: string) => {
-    const item = navigationItems.find(nav => nav.id === itemId);
-    if (item?.requireAuth && !user) {
-      setShowAuthModal(true);
-      return;
-    }
     onNavigate(itemId);
   };
 
@@ -123,14 +91,15 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
       )}
 
       {/* Navigation */}
-      <div className="flex-1 p-4 space-y-2">
+      <div className="flex-1 p-4 space-y-4">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
           Navegação
         </div>
+        
+        {/* Dashboard Navigation */}
         {navigationItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentView === item.id;
-          const isDisabled = (item.requireAuth && !user);
 
           return (
             <Button
@@ -138,22 +107,24 @@ export const Sidebar = ({ currentView, onNavigate }: SidebarProps) => {
               variant="ghost"
               className={cn(
                 "w-full justify-start gap-3 h-11 px-3",
-                isActive && "bg-primary/10 text-primary border border-primary/20",
-                isDisabled && "opacity-50 cursor-not-allowed"
+                isActive && "bg-primary/10 text-primary border border-primary/20"
               )}
-              onClick={() => !isDisabled && handleNavigation(item.id)}
-              disabled={isDisabled}
+              onClick={() => handleNavigation(item.id)}
             >
               <Icon className="h-5 w-5" />
               <span className="flex-1 text-left">{item.label}</span>
-              {item.requireAuth && !user && (
-                <span className="text-xs bg-destructive/20 text-destructive px-2 py-1 rounded">
-                  Entrar
-                </span>
-              )}
             </Button>
           );
         })}
+
+        {/* Conversations Section - Only show when logged in and not on dashboard */}
+        {user && currentView !== "dashboard" && currentView !== "library" && currentView !== "profile" && currentView !== "conversation_history" && onSelectConversation && onNewConversation && (
+          <ConversationsList
+            onSelectConversation={onSelectConversation}
+            onNewConversation={onNewConversation}
+            currentThreadId={currentThreadId}
+          />
+        )}
       </div>
 
       {/* Footer */}
