@@ -30,6 +30,11 @@ const navigationItems = [
     label: "Painel",
     icon: Home,
   },
+  {
+    id: "library",
+    label: "Biblioteca",
+    icon: Plus,
+  },
 ];
 
 export const Sidebar = ({ 
@@ -96,7 +101,7 @@ export const Sidebar = ({
           Navegação
         </div>
         
-        {/* Dashboard Navigation */}
+        {/* Main Navigation */}
         {navigationItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentView === item.id;
@@ -117,8 +122,11 @@ export const Sidebar = ({
           );
         })}
 
-        {/* Conversations Section - Only show when logged in and not on dashboard */}
-        {user && currentView !== "dashboard" && currentView !== "library" && currentView !== "profile" && currentView !== "conversation_history" && onSelectConversation && onNewConversation && (
+        {/* Separator */}
+        <div className="h-4" />
+
+        {/* Conversations Section - Only show when logged in */}
+        {user && onSelectConversation && onNewConversation && (
           <ConversationsList
             onSelectConversation={onSelectConversation}
             onNewConversation={onNewConversation}
