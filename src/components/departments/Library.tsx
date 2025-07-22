@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, FileImage, Download, Trash2, Search, Filter } from "lucide-react";
+import { ArrowLeft, FileImage, Download, Trash2, Search, Filter, ExternalLink } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
@@ -171,6 +171,17 @@ export const Library = ({ onBack }: LibraryProps) => {
                         alt={`Generated: ${image.prompt.substring(0, 50)}...`}
                         className="w-full h-full object-cover shadow-card transition-transform group-hover:scale-105"
                       />
+                      {/* Bottom right corner button */}
+                      <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => window.open(image.url, '_blank')}
+                          className="bg-background/90 hover:bg-background"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                      </div>
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                         <div className="flex gap-2">
                           <Button
@@ -193,9 +204,6 @@ export const Library = ({ onBack }: LibraryProps) => {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {image.prompt}
-                      </p>
                       <div className="flex justify-between items-center text-xs text-muted-foreground">
                         <span>{new Date(image.created_at).toLocaleDateString()}</span>
                         <span>{image.settings.size}</span>
