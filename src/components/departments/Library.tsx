@@ -108,41 +108,15 @@ export const Library = ({ onBack }: LibraryProps) => {
           </div>
           <div>
             <h1 className="text-xl lg:text-2xl font-bold">Biblioteca</h1>
-            <p className="text-sm lg:text-base text-muted-foreground">Todas as suas imagens UGC geradas em um só lugar</p>
+            <p className="text-sm lg:text-base text-muted-foreground">Todas as suas imagens UGC geradas num só lugar</p>
           </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <Card className="bg-gradient-card border-border/50">
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por prompt..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full sm:w-48">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Ordenar por" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Mais Recentes Primeiro</SelectItem>
-                <SelectItem value="oldest">Mais Antigos Primeiro</SelectItem>
-                <SelectItem value="prompt">Por Prompt</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Images Grid */}
       <Card className="bg-gradient-card border-border/50">
+        <div className="flex items-center justify-between mr-7">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileImage className="h-5 w-5 text-primary" />
@@ -152,6 +126,21 @@ export const Library = ({ onBack }: LibraryProps) => {
             Sua coleção de conteúdo UGC gerado por IA
           </CardDescription>
         </CardHeader>
+         {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-4">
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-full sm:w-48">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Ordenar por" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Mais Recentes Primeiro</SelectItem>
+                <SelectItem value="oldest">Mais Antigos Primeiro</SelectItem>
+                {/* <SelectItem value="prompt">Por Prompt</SelectItem> */}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         <CardContent>
           {loading ? (
             <div className="text-center py-12">

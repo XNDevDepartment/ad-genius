@@ -175,7 +175,7 @@ export const Sidebar = ({
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden lg:flex w-64 bg-gradient-secondary border-r border-border/50 flex-col h-screen fixed left-0 top-0 z-40">
+      <div className="hidden lg:flex w-64  border-r border-border/50 flex-col h-screen fixed left-0 top-0 z-40">
         <SidebarContent />
       </div>
 
