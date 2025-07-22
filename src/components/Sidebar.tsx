@@ -100,7 +100,7 @@ export const Sidebar = ({
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
           Navegação
         </div>
-        
+
         {/* Main Navigation */}
         {navigationItems.map((item) => {
           const Icon = item.icon;
@@ -126,13 +126,13 @@ export const Sidebar = ({
         <div className="h-4" />
 
         {/* Conversations Section - Only show when logged in */}
-        {user && onSelectConversation && onNewConversation && (
+        {/* {user && onSelectConversation && onNewConversation && (
           <ConversationsList
             onSelectConversation={onSelectConversation}
             onNewConversation={onNewConversation}
             currentThreadId={currentThreadId}
           />
-        )}
+        )} */}
       </div>
 
       {/* Footer */}
