@@ -121,8 +121,7 @@ export const Sidebar = ({
             </Button>
           );
         })}
-
-        {/* Separator */}
+      </div>
 
       {/* Footer */}
       <div className="p-4 border-t border-border/50 space-y-2">
@@ -136,10 +135,6 @@ export const Sidebar = ({
               <User className="h-5 w-5" />
               Perfil
             </Button>
-            {/* <Button variant="ghost" className="w-full justify-start gap-3">
-              <Settings className="h-5 w-5" />
-              Settings
-            </Button> */}
             <Button 
               variant="ghost" 
               className="w-full justify-start gap-3 text-muted-foreground"
