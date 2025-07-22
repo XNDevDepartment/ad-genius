@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Image, MessageSquare, BarChart3, Users, Sparkles, History } from "lucide-react";
+import { Brain, Image, MessageSquare, BarChart3, Users, Sparkles, History, FileImage } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -24,7 +24,7 @@ const dashboardOptions: DashboardOption[] = [
     id: "library",
     name: "Biblioteca de Imagens",
     description: "Visualize e gerencie todas as suas imagens geradas",
-    icon: BarChart3,
+    icon: FileImage,
     requireAuth: true,
   },
   {
@@ -52,11 +52,11 @@ export const Dashboard = ({ onSelectDepartment }: DashboardProps) => {
             <Brain className="h-8 w-8 text-primary-foreground" />
           </div>
           <h1 className="text-4xl font-bold bg-gradient-hero bg-clip-text text-transparent">
-            Business AI XN
+            Genius UGC
           </h1>
         </div>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Potencialize suas operações empresariais com assistentes de IA especializados para cada departamento
+          Posicione os seus produtos nos sitios que sempre desejou com ajuda da nossa IA especializada
         </p>
       </div>
 

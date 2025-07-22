@@ -9,7 +9,7 @@ import {
   LogOut,
   Menu,
   User,
-  Plus
+  FileImage
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -33,7 +33,7 @@ const navigationItems = [
   {
     id: "library",
     label: "Biblioteca",
-    icon: Plus,
+    icon: FileImage,
   },
 ];
 
@@ -67,8 +67,8 @@ export const Sidebar = ({
             <Brain className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="font-bold text-lg">Business AI XN </h1>
-            <p className="text-xs text-muted-foreground">Plataforma com IA</p>
+            <h1 className="font-bold text-lg">Genius UGC </h1>
+            <p className="text-xs text-muted-foreground">Marketing com IA</p>
           </div>
         </div>
       </div>

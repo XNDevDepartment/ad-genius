@@ -1,4 +1,4 @@
-
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Loader } from 'lucide-react';
+
+const secret = Deno.env.get('OPENAI_API_KEY');
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -17,6 +19,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [mode, setMode] = useState<'login' | 'signup' | 'reset'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [key, setKey] = useState('');
   const [name, setName] = useState('');
   const [profession, setProfession] = useState('');
   const [loading, setLoading] = useState(false);
@@ -118,6 +121,16 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   placeholder="ex: Designer, Desenvolvedor, Marqueteiro"
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="profession">Access Key</Label>
+                <Input
+                  id="access_key"
+                  type="password"
+                  value={key}
+                  onChange={(e) => setKey(e.target.value)}
+                  required={mode === 'signup'}
+                />
+              </div>
             </>
           )}
           <div className="space-y-2">
@@ -142,13 +155,13 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               />
             </div>
           )}
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading || (mode === "signup" && key !== secret)}>
             {loading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
             {mode === 'login' && 'Entrar'}
             {mode === 'signup' && 'Criar Conta'}
             {mode === 'reset' && 'Enviar Email de Redefinição'}
           </Button>
-          
+
           <div className="space-y-2">
             {mode === 'login' && (
               <>
