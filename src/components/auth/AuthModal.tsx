@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Loader } from 'lucide-react';
 
-const secret = Deno.env.get('OPENAI_API_KEY');
+const secret = import.meta.env.VITE_SECRET_KEY;
 
 interface AuthModalProps {
   isOpen: boolean;
