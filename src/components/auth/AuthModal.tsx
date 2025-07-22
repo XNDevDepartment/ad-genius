@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Loader } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -21,7 +22,41 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [name, setName] = useState('');
   const [profession, setProfession] = useState('');
   const [loading, setLoading] = useState(false);
+  const [keyValid, setKeyValid] = useState(false);
+  const [keyValidating, setKeyValidating] = useState(false);
   const { signIn, signUp, resetPassword } = useAuth();
+
+  // Validate access key when it changes
+  useEffect(() => {
+    const validateKey = async () => {
+      if (!key || mode !== 'signup') {
+        setKeyValid(false);
+        return;
+      }
+
+      setKeyValidating(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('validate-access-key', {
+          body: { key }
+        });
+
+        if (error) {
+          console.error('Key validation error:', error);
+          setKeyValid(false);
+        } else {
+          setKeyValid(data?.valid === true);
+        }
+      } catch (error) {
+        console.error('Key validation error:', error);
+        setKeyValid(false);
+      } finally {
+        setKeyValidating(false);
+      }
+    };
+
+    const timeoutId = setTimeout(validateKey, 500); // Debounce validation
+    return () => clearTimeout(timeoutId);
+  }, [key, mode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +105,8 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     setPassword('');
     setName('');
     setProfession('');
+    setKey('');
+    setKeyValid(false);
   };
 
   const toggleToSignup = () => {
@@ -154,7 +191,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               />
             </div>
           )}
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading || (mode === 'signup' && (!keyValid || keyValidating))}>
             {loading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
             {mode === 'login' && 'Entrar'}
             {mode === 'signup' && 'Criar Conta'}
