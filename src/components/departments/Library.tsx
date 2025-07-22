@@ -172,7 +172,7 @@ export const Library = ({ onBack }: LibraryProps) => {
                         className="w-full h-full object-cover shadow-card transition-transform group-hover:scale-105"
                       />
                       {/* Bottom right corner button */}
-                      <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                         <Button
                           size="sm"
                           variant="secondary"
@@ -182,7 +182,7 @@ export const Library = ({ onBack }: LibraryProps) => {
                           <ExternalLink className="h-4 w-4" />
                         </Button>
                       </div>
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 z-10">
                         <div className="flex gap-2">
                           <Button
                             size="sm"
