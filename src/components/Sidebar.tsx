@@ -123,17 +123,6 @@ export const Sidebar = ({
         })}
 
         {/* Separator */}
-        <div className="h-4" />
-
-        {/* Conversations Section - Only show when logged in */}
-        {/* {user && onSelectConversation && onNewConversation && (
-          <ConversationsList
-            onSelectConversation={onSelectConversation}
-            onNewConversation={onNewConversation}
-            currentThreadId={currentThreadId}
-          />
-        )} */}
-      </div>
 
       {/* Footer */}
       <div className="p-4 border-t border-border/50 space-y-2">
