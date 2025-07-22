@@ -8,8 +8,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Loader } from 'lucide-react';
 
-const secret = import.meta.env.VITE_SECRET_KEY;
-
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -42,6 +40,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         const { error } = await signUp(email, password, {
           name,
           profession,
+          access_key: key,
           account_id: `ACC${Date.now()}`,
         });
         if (error) {
@@ -155,7 +154,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               />
             </div>
           )}
-          <Button type="submit" className="w-full" disabled={loading || (mode === "signup" && key !== secret)}>
+          <Button type="submit" className="w-full" disabled={loading}>
             {loading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
             {mode === 'login' && 'Entrar'}
             {mode === 'signup' && 'Criar Conta'}
