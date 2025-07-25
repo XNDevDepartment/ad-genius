@@ -22,9 +22,9 @@ import {
 
 const navigationItems = [
   { id: "home", label: "Home", icon: Home, path: "/" },
-  { id: "create", label: "Create", icon: Plus, path: "/create", primary: true },
-  { id: "library", label: "Library", icon: Image, path: "/library" },
-  { id: "account", label: "Account", icon: User, path: "/account" },
+  { id: "create", label: "Criar", icon: Plus, path: "/create", primary: true },
+  { id: "library", label: "Biblioteca", icon: Image, path: "/library" },
+  { id: "account", label: "Conta", icon: User, path: "/account" },
 ];
 
 export function AppSidebar() {
@@ -63,7 +63,7 @@ export function AppSidebar() {
 
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+            <SidebarGroupLabel>Navegar</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {navigationItems.map((item) => {
@@ -71,8 +71,8 @@ export function AppSidebar() {
                   return (
                     <SidebarMenuItem key={item.id}>
                       <SidebarMenuButton asChild>
-                        <NavLink 
-                          to={item.path} 
+                        <NavLink
+                          to={item.path}
                           className={cn(
                             "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
                             getNavCls({ isActive: isActive(item.path) }),
@@ -102,8 +102,8 @@ export function AppSidebar() {
           {!isCollapsed && (
             <div className="space-y-2">
               {user ? (
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="w-full justify-start gap-3"
                   onClick={handleSignOut}
                 >

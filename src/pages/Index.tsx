@@ -50,7 +50,7 @@ const Index = () => {
               <h2 className="text-xl lg:text-2xl font-semibold text-center lg:text-left text-foreground">
                 Choose Your Workflow
               </h2>
-              
+
               <div className="grid gap-4 lg:gap-6">
                 {features.map((feature) => (
                   <FeatureTile

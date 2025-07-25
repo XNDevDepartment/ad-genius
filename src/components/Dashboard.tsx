@@ -42,7 +42,7 @@ interface DashboardProps {
 
 export const Dashboard = ({ onSelectDepartment }: DashboardProps) => {
   const { user, signOut } = useAuth();
-  
+
   return (
     <div className="p-8 space-y-8 animate-fade-in">
       {/* Hero Section */}
@@ -78,7 +78,7 @@ export const Dashboard = ({ onSelectDepartment }: DashboardProps) => {
               }}
             >
               <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity duration-300" />
-              
+
               <CardHeader className="relative">
                 <div className="flex items-center gap-4">
                   <div className="p-3 rounded-lg bg-secondary group-hover:bg-primary/10 transition-colors duration-300">
@@ -91,13 +91,13 @@ export const Dashboard = ({ onSelectDepartment }: DashboardProps) => {
                   </div>
                 </div>
               </CardHeader>
-              
+
               <CardContent className="relative">
                 <CardDescription className="text-muted-foreground mb-4">
                   {option.description}
                 </CardDescription>
-                
-                <Button 
+
+                <Button
                   variant="default"
                   disabled={option.requireAuth && !user}
                   className="w-full group-hover:shadow-glow transition-all duration-300"

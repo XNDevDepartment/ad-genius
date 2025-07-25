@@ -97,11 +97,6 @@ export const Library = ({ onBack }: LibraryProps) => {
     <div className="p-4 lg:p-8 space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-5">
-        <Button variant="ghost" onClick={onBack} className="gap-2 w-fit">
-          <ArrowLeft className="h-4 w-4" />
-          <span className="hidden sm:inline">Voltar ao Painel</span>
-          <span className="sm:hidden">Voltar</span>
-        </Button>
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-gradient-primary shadow-glow">
             <FileImage className="h-6 w-6 text-primary-foreground" />
@@ -119,15 +114,15 @@ export const Library = ({ onBack }: LibraryProps) => {
         <div className="flex items-center justify-between mr-7">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileImage className="h-5 w-5 text-primary" />
+            {/* <FileImage className="h-5 w-5 text-primary" /> */}
             Imagens Geradas ({filteredAndSortedImages.length})
           </CardTitle>
-          <CardDescription>
+          {/* <CardDescription>
             Sua coleção de conteúdo UGC gerado por IA
-          </CardDescription>
+          </CardDescription> */}
         </CardHeader>
          {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
+        {/* <div className="flex flex-col sm:flex-row gap-4">
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-full sm:w-48">
                 <Filter className="h-4 w-4 mr-2" />
@@ -137,9 +132,9 @@ export const Library = ({ onBack }: LibraryProps) => {
                 <SelectItem value="newest">Mais Recentes Primeiro</SelectItem>
                 <SelectItem value="oldest">Mais Antigos Primeiro</SelectItem>
                 {/* <SelectItem value="prompt">Por Prompt</SelectItem> */}
-              </SelectContent>
+              {/* </SelectContent>
             </Select>
-          </div>
+          </div> */}
         </div>
         <CardContent>
           {loading ? (

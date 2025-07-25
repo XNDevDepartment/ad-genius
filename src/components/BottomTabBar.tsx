@@ -9,9 +9,9 @@ const BottomTabBar = () => {
 
   const tabs = [
     { id: "home", label: "Home", icon: Home, path: "/" },
-    { id: "create", label: "Create", icon: Plus, path: "/create", primary: true },
-    { id: "library", label: "Library", icon: Image, path: "/library" },
-    { id: "account", label: "Account", icon: User, path: "/account" },
+    { id: "create", label: "Criar", icon: Plus, path: "/create", primary: true },
+    { id: "library", label: "Biblioteca", icon: Image, path: "/library" },
+    { id: "account", label: "Conta", icon: User, path: "/account" },
   ];
 
   return (
@@ -20,7 +20,7 @@ const BottomTabBar = () => {
         {tabs.map((tab) => {
           const isActive = currentPath === tab.path;
           const Icon = tab.icon;
-          
+
           if (tab.primary) {
             return (
               <Link key={tab.id} to={tab.path}>
