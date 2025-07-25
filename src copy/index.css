@@ -1,0 +1,156 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Apple-inspired Design System */
+    --background: 0 0% 100%;          /* Base: #FFFFFF */
+    --foreground: 0 0% 11%;           /* Text-Primary: #1C1C1E */
+
+    --card: 0 0% 95%;                 /* Surface: #F2F3F5 */
+    --card-foreground: 0 0% 11%;      /* Text-Primary */
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 11%;
+
+    --primary: 225 86% 60%;          /* Blue-Purple: #4285F4 */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 248 95% 85%;         /* Light Purple */
+    --secondary-foreground: 225 86% 30%; /* Dark Blue */
+
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 43%;     /* Text-Secondary */
+
+    --accent: 248 95% 70%;            /* Purple Accent */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 95%;
+    --ring: 225 86% 60%;
+
+    --radius: 1rem;                   /* 16pt corner radius */
+
+    /* Custom design tokens */
+    --shadow: 0 0% 0%;                /* rgba(0,0,0,0.12) base */
+    --gradient-hero: linear-gradient(135deg, hsl(225 86% 60%), hsl(248 95% 70%));
+    --gradient-button: linear-gradient(135deg, hsl(225 86% 60%), hsl(248 95% 70%));
+    --spacing-base: 0.5rem;           /* 8pt base rhythm */
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 225 86% 70%;           /* Lighter blue in dark mode */
+    --primary-foreground: 0 0% 5%;    /* Dark text on light blue */
+
+    --secondary: 248 95% 15%;         /* Dark Purple */
+    --secondary-foreground: 248 95% 85%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 225 86% 60%;            /* Blue Accent */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 225 86% 70%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-[system-ui,-apple-system,BlinkMacSystemFont,"Segoe_UI",Roboto,"Helvetica_Neue",Arial,sans-serif];
+  }
+}
+
+@layer utilities {
+  /* Apple-inspired spacing rhythm (8pt base) */
+  .space-apple { @apply space-y-2; }
+  .p-apple { @apply p-2; }
+  .m-apple { @apply m-2; }
+
+  /* Card shadows matching Apple design */
+  .shadow-apple {
+    box-shadow: 0 2px 16px hsl(var(--shadow) / 0.12);
+  }
+
+  .shadow-apple-lg {
+    box-shadow: 0 8px 32px hsl(var(--shadow) / 0.16);
+  }
+
+  /* Spring animations */
+  .transition-spring {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  /* Gradient backgrounds */
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .bg-gradient-button {
+    background: var(--gradient-button);
+  }
+
+  /* Apple-style button radius */
+  .rounded-apple { @apply rounded-xl; }
+  .rounded-apple-sm { @apply rounded-lg; }
+
+  /* Responsive containers */
+  .container-mobile { @apply max-w-lg mx-auto; }
+  .container-desktop { @apply max-w-6xl mx-auto; }
+  .container-responsive { @apply max-w-lg lg:max-w-6xl mx-auto; }
+
+  /* Desktop-specific utilities */
+  .desktop-grid { @apply lg:grid-cols-2 xl:grid-cols-3; }
+  .desktop-sidebar { @apply lg:w-80 lg:fixed lg:h-screen lg:left-0 lg:top-0; }
+  .desktop-main { @apply lg:ml-80; }
+}
