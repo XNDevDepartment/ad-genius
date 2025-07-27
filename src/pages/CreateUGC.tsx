@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import ImageUploader from "@/components/ImageUploader";
 import ImageGallery from "@/components/ImageGallery";
+import { GeneratingImagePlaceholders } from "@/components/departments/ugc/GeneratingImagePlaceholders";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
@@ -60,6 +61,7 @@ const CreateUGC = () => {
   const [progress, setProgress] = useState(0);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const ASSISTANT_ID = "asst_zX2cHyZXHY1mj5CT4wzdJLU6";
 
@@ -275,8 +277,18 @@ const CreateUGC = () => {
       return;
     }
 
+    setIsGenerating(true);
     setStage("generating");
     setProgress(0);
+    setGeneratedImages([]);
+
+    // Scroll to generating images section
+    setTimeout(() => {
+      const element = document.getElementById('generating-images');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
 
     try {
       // Convert image to base64
@@ -295,26 +307,41 @@ photorealistic, 8k detail, natural color grading,
 --negative "AI artifacts, over-saturation, text, watermark, lens flare" --ar ${orientation === 'square' ? '1:1' : orientation === 'portrait' ? '4:5' : '16:9'}
         `.trim();
 
-        const images = await generateImagesFromBase(
-          base64,
-          prompt,
-          {
-            number: numImages,
-            size: orientation === 'square' ? '1024x1024' : orientation === 'portrait' ? '1024x1536' : '1536x1024',
-            quality: 'high',
-            output_format: 'png'
+        const imageObjects: GeneratedImage[] = [];
+        
+        // Generate images one by one
+        for (let i = 0; i < numImages; i++) {
+          try {
+            const images = await generateImagesFromBase(
+              base64,
+              prompt,
+              {
+                number: 1, // Generate one image at a time
+                size: orientation === 'square' ? '1024x1024' : orientation === 'portrait' ? '1024x1536' : '1536x1024',
+                quality: 'high',
+                output_format: 'png'
+              }
+            );
+
+            if (images && images.length > 0) {
+              const imageObject: GeneratedImage = {
+                id: `${Date.now()}-${i}`,
+                url: `data:image/png;base64,${images[0]}`,
+                prompt,
+                selected: false,
+              };
+              
+              imageObjects.push(imageObject);
+              setGeneratedImages([...imageObjects]);
+            }
+            
+            // Update progress
+            setProgress(((i + 1) / numImages) * 100);
+          } catch (error) {
+            console.error(`Error generating image ${i + 1}:`, error);
           }
-        );
+        }
 
-        // Process generated images
-        const imageObjects: GeneratedImage[] = images.map((base64Image: string, index: number) => ({
-          id: `${Date.now()}-${index}`,
-          url: `data:image/png;base64,${base64Image}`,
-          prompt,
-          selected: false,
-        }));
-
-        setGeneratedImages(imageObjects);
         setStage("results");
         
         toast({
@@ -333,6 +360,7 @@ photorealistic, 8k detail, natural color grading,
       });
       setStage("setup");
     } finally {
+      setIsGenerating(false);
       setProgress(100);
     }
   };
@@ -645,21 +673,37 @@ photorealistic, 8k detail, natural color grading,
                 <Button 
                   variant="default" 
                   size="lg" 
-                  className="w-full"
+                  className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
                   onClick={handleGenerate}
-                  disabled={!productImage || !selectedScenario}
+                  disabled={!productImage || !selectedScenario || isGenerating}
                 >
-                  <Sparkles className="h-5 w-5 mr-2" />
-                  Generate Images
+                  {isGenerating ? (
+                    <>
+                      <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-5 w-5 mr-2" />
+                      Generate Images
+                    </>
+                  )}
                 </Button>
                 
                 <p className="text-xs text-muted-foreground mt-2 text-center">
-                  Generation typically takes 30-60 seconds
+                  {isGenerating ? 'AI is creating your images...' : 'Generation typically takes 30-60 seconds'}
                 </p>
               </div>
             </div>
           </div>
         </div>
+        
+        {/* Generating Images Section */}
+        {stage === "generating" && (
+          <div className="mt-8">
+            <GeneratingImagePlaceholders numberOfImages={numImages} />
+          </div>
+        )}
       </div>
     </div>
   );
