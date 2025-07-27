@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Upload, Sparkles, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,36 @@ const CreateUGC = () => {
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
 
   const ASSISTANT_ID = "asst_zX2cHyZXHY1mj5CT4wzdJLU6";
+
+  // Initialize a new OpenAI thread when component mounts
+  const initializeThread = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('openai-chat', {
+        body: {
+          action: 'startConversation',
+          assistantId: ASSISTANT_ID
+        }
+      });
+
+      if (error) throw error;
+
+      setThreadId(data.threadId);
+      console.log('New thread created:', data.threadId);
+      
+    } catch (error) {
+      console.error('Error initializing thread:', error);
+      toast({
+        title: "Initialization Error",
+        description: "Failed to start conversation with AI assistant. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Initialize thread on component mount
+  useEffect(() => {
+    initializeThread();
+  }, []);
 
   const handleImageUpload = async (file: File) => {
     setProductImage(file);
@@ -381,8 +411,8 @@ photorealistic, 8k detail, natural color grading,
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate("/")}
-                className="lg:hidden"
+            onClick={() => navigate("/create")}
+            className="lg:hidden"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
