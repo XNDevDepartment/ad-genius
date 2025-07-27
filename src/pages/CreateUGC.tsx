@@ -368,26 +368,26 @@ photorealistic, 8k detail, natural color grading,
 
   const selectedImages = generatedImages.filter(img => img.selected);
 
-  if (stage === "generating") {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="container-mobile px-4 text-center space-y-8">
-          <div className="space-y-4">
-            <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
-              <Sparkles className="h-10 w-10 text-primary animate-pulse" />
-            </div>
-            <h1 className="text-2xl lg:text-3xl font-bold">Generating...</h1>
-            <p className="text-muted-foreground lg:text-lg">Creating your UGC images with AI</p>
-          </div>
+  // if (stage === "generating") {
+  //   return (
+  //     <div className="min-h-screen bg-background flex items-center justify-center">
+  //       <div className="container-mobile px-4 text-center space-y-8">
+  //         <div className="space-y-4">
+  //           <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+  //             <Sparkles className="h-10 w-10 text-primary animate-pulse" />
+  //           </div>
+  //           <h1 className="text-2xl lg:text-3xl font-bold">Generating...</h1>
+  //           <p className="text-muted-foreground lg:text-lg">Creating your UGC images with AI</p>
+  //         </div>
           
-          <div className="space-y-2 max-w-md mx-auto">
-            <Progress value={progress} className="h-3 lg:h-4" />
-            <p className="text-sm lg:text-base text-muted-foreground">{Math.round(progress)}% complete</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  //         <div className="space-y-2 max-w-md mx-auto">
+  //           <Progress value={progress} className="h-3 lg:h-4" />
+  //           <p className="text-sm lg:text-base text-muted-foreground">{Math.round(progress)}% complete</p>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   if (stage === "results") {
     return (
@@ -485,12 +485,12 @@ photorealistic, 8k detail, natural color grading,
                 selectedImage={productImage}
               />
               
-              {productIdentification && (
+              {/* {productIdentification && (
                 <div className="p-3 bg-muted rounded-apple-sm">
                   <p className="text-sm text-muted-foreground">AI Analysis:</p>
                   <p className="text-sm mt-1">{productIdentification}</p>
                 </div>
-              )}
+              )} */}
 
               <div className="space-y-2">
                 <Label htmlFor="niche">Product Niche</Label>
