@@ -11,6 +11,7 @@ import ImageGallery from "@/components/ImageGallery";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
+import { startConversationAPI, converse, sendImageAndRun, generateImagesFromBase } from '@/api/OpenAiChatClient';
 
 interface GeneratedImage {
   id: string;
@@ -65,21 +66,14 @@ const CreateUGC = () => {
   // Initialize a new OpenAI thread when component mounts
   const initializeThread = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('new-open-ai', {
-        body: {
-          action: 'startConversation',
-          assistantId: ASSISTANT_ID
-        }
-      });
+      const result = await startConversationAPI(ASSISTANT_ID);
 
-      if (error) throw error;
-
-      setThreadId(data.threadId);
-      console.log('New thread created with optimized function:', data.threadId);
+      setThreadId(result.threadId);
+      console.log('New thread created with new-openai-chat:', result.threadId);
       
       // Save conversation to database
       const conversation = await saveConversation({
-        threadId: data.threadId,
+        threadId: result.threadId,
         assistantId: ASSISTANT_ID
       });
       
@@ -111,28 +105,15 @@ const CreateUGC = () => {
       reader.onload = async () => {
         const base64 = reader.result as string;
         
-        const { data, error } = await supabase.functions.invoke('new-open-ai', {
-          body: {
-            action: 'fastConverse',
-            threadId: threadId,
-            content: [
-              { 
-                type: 'text', 
-                text: 'I have uploaded a product image. Please analyze it and tell me what product you see. Be specific about the product type, key features, and any details that would help with creating UGC content.' 
-              },
-              {
-                type: 'image_file',
-                image_file: { file_id: base64 }
-              }
-            ],
-            assistantId: ASSISTANT_ID
-          }
-        });
+        const reply = await sendImageAndRun(
+          threadId!,
+          ASSISTANT_ID,
+          base64,
+          file.name,
+          'I have uploaded a product image. Please analyze it and tell me what product you see. Be specific about the product type, key features, and any details that would help with creating UGC content.'
+        );
 
-        if (error) throw error;
-
-        setThreadId(data.threadId);
-        setProductIdentification(data.reply);
+        setProductIdentification(reply);
         
         // Save user message and assistant response
         if (conversationId) {
@@ -146,7 +127,7 @@ const CreateUGC = () => {
           await saveMessage({
             conversationId,
             role: 'assistant',
-            content: data.reply,
+            content: reply,
             metadata: { analysisType: 'product_identification' }
           });
         }
@@ -176,23 +157,11 @@ const CreateUGC = () => {
     const targetNiche = nicheText || niche;
     setIsLoadingScenarios(true);
     try {
-      const { data, error } = await supabase.functions.invoke('new-open-ai', {
-        body: {
-          action: 'fastConverse',
-          threadId: threadId,
-          content: [
-            { 
-              type: 'text', 
-              text: `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 8 creative UGC scenario ideas. Return ONLY a JSON object with this exact structure: {"scenarios": [{"idea": "short idea name", "description": "detailed description"}]}` 
-            }
-          ],
-          assistantId: ASSISTANT_ID
-        }
-      });
-
-      if (error) throw error;
-
-      const responseText = data.reply;
+      const responseText = await converse(
+        threadId!,
+        `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 8 creative UGC scenario ideas. Return ONLY a JSON object with this exact structure: {"scenarios": [{"idea": "short idea name", "description": "detailed description"}]}`,
+        ASSISTANT_ID
+      );
       // Extract JSON from response
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
@@ -211,7 +180,7 @@ const CreateUGC = () => {
           await saveMessage({
             conversationId,
             role: 'assistant',
-            content: data.reply,
+            content: responseText,
             metadata: { scenarioCount: scenarios.scenarios?.length || 0 }
           });
         }
@@ -326,31 +295,26 @@ photorealistic, 8k detail, natural color grading,
 --negative "AI artifacts, over-saturation, text, watermark, lens flare" --ar ${orientation === 'square' ? '1:1' : orientation === 'portrait' ? '4:5' : '16:9'}
         `.trim();
 
-        const { data, error } = await supabase.functions.invoke('new-open-ai', {
-          body: {
-            action: 'generateImages',
-            baseFileData: base64,
-            prompt,
-            options: {
-              number: numImages,
-              size: orientation === 'square' ? '1024x1024' : orientation === 'portrait' ? '1024x1536' : '1536x1024',
-              quality: 'high',
-              output_format: 'png'
-            }
+        const images = await generateImagesFromBase(
+          base64,
+          prompt,
+          {
+            number: numImages,
+            size: orientation === 'square' ? '1024x1024' : orientation === 'portrait' ? '1024x1536' : '1536x1024',
+            quality: 'high',
+            output_format: 'png'
           }
-        });
-
-        if (error) throw error;
+        );
 
         // Process generated images
-        const images: GeneratedImage[] = data.images.map((base64Image: string, index: number) => ({
+        const imageObjects: GeneratedImage[] = images.map((base64Image: string, index: number) => ({
           id: `${Date.now()}-${index}`,
           url: `data:image/png;base64,${base64Image}`,
           prompt,
           selected: false,
         }));
 
-        setGeneratedImages(images);
+        setGeneratedImages(imageObjects);
         setStage("results");
         
         toast({

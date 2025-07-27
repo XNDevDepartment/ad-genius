@@ -35,10 +35,7 @@ jwt_expiry = 3600
 refresh_token_rotation_enabled = true
 security_update_enabled = true
 
-[functions.openai-chat]
-verify_jwt = true
-
-[functions.new-open-ai]
+[functions.new-openai-chat]
 verify_jwt = true
 
 [edge_runtime]
