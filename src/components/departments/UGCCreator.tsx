@@ -71,7 +71,7 @@ export const UGCCreator = ({ onBack, initialThreadId }: UGCCreatorProps) => {
             setThreadId(conversation.thread_id);
             setConversationId(conversation.id);
             setIsStarted(true);
-            
+
             // Load messages
             const dbMessages = await getConversationMessages(conversation.id);
             const convertedMessages: Message[] = dbMessages.map(msg => ({

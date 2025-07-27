@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { uploadFile } from "../api/OpenAiClient";
 
 interface ImageUploaderProps {
   onImageSelect: (file: File | null) => void;
@@ -10,10 +11,12 @@ interface ImageUploaderProps {
 const ImageUploader = ({ onImageSelect, selectedImage }: ImageUploaderProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       onImageSelect(file);
+      uploadFile(file)
     }
   };
 
