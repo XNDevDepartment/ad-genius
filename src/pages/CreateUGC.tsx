@@ -153,16 +153,12 @@ const CreateUGC = () => {
     }
   };
 
-  const handleNicheChange = async (nicheText: string) => {
+  const handleNicheChange = (nicheText: string) => {
     setNiche(nicheText);
-    
-    // If we have both image and niche, get scenarios automatically
-    if (productImage && nicheText.trim() && threadId) {
-      await getScenariosFromConversation(nicheText);
-    }
   };
 
-  const getScenariosFromConversation = async (nicheText: string) => {
+  const getScenariosFromConversation = async (nicheText?: string) => {
+    const targetNiche = nicheText || niche;
     setIsLoadingScenarios(true);
     try {
       const { data, error } = await supabase.functions.invoke('openai-chat', {
@@ -172,7 +168,7 @@ const CreateUGC = () => {
           content: [
             { 
               type: 'text', 
-              text: `Product niche: ${nicheText}. Based on the product image I shared and this niche description, please provide 8 creative UGC scenario ideas. Return ONLY a JSON object with this exact structure: {"scenarios": [{"idea": "short idea name", "description": "detailed description"}]}` 
+              text: `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 8 creative UGC scenario ideas. Return ONLY a JSON object with this exact structure: {"scenarios": [{"idea": "short idea name", "description": "detailed description"}]}` 
             }
           ],
           assistantId: ASSISTANT_ID
@@ -193,7 +189,7 @@ const CreateUGC = () => {
           await saveMessage({
             conversationId,
             role: 'user',
-            content: `Product niche: ${nicheText}. Based on the product image I shared and this niche description, please provide 8 creative UGC scenario ideas.`,
+            content: `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 8 creative UGC scenario ideas.`,
             metadata: { requestType: 'scenario_generation' }
           });
           
@@ -449,7 +445,20 @@ photorealistic, 8k detail, natural color grading,
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      {/* Loading Overlay */}
+      {!threadId && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+              <Sparkles className="h-10 w-10 text-primary animate-pulse" />
+            </div>
+            <h2 className="text-xl font-semibold">Preparing system...</h2>
+            <p className="text-muted-foreground">Just a moment</p>
+          </div>
+        </div>
+      )}
+      
       <div className="container-responsive px-4 py-8">
         <div className="lg:grid lg:grid-cols-12 lg:gap-8">
           {/* Header */}
@@ -458,8 +467,9 @@ photorealistic, 8k detail, natural color grading,
               <Button
                 variant="ghost"
                 size="icon"
-            onClick={() => navigate("/create")}
-            className="lg:hidden"
+                onClick={() => navigate("/create")}
+                className="lg:hidden"
+                disabled={!threadId}
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
@@ -469,7 +479,7 @@ photorealistic, 8k detail, natural color grading,
 
           {/* Main Form */}
           <div className="lg:col-span-7">
-            <div className="bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6">
+            <div className={`bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
               <ImageUploader 
                 onImageSelect={handleImageUpload}
                 selectedImage={productImage}
@@ -490,6 +500,7 @@ photorealistic, 8k detail, natural color grading,
                   value={niche}
                   onChange={(e) => handleNicheChange(e.target.value)}
                   className="rounded-apple-sm lg:min-h-[120px]"
+                  disabled={!threadId}
                 />
                 
                 {isLoadingScenarios && (
@@ -507,8 +518,8 @@ photorealistic, 8k detail, natural color grading,
                     type="button"
                     variant="default"
                     size="sm"
-                    onClick={getScenarios}
-                    disabled={isLoadingScenarios || !productImage || !niche.trim()}
+                    onClick={() => getScenariosFromConversation()}
+                    disabled={isLoadingScenarios || !productImage || !niche.trim() || !threadId}
                   >
                     {isLoadingScenarios ? (
                       <>
@@ -628,7 +639,7 @@ photorealistic, 8k detail, natural color grading,
 
           {/* Sidebar - Settings & Preview */}
           <div className="lg:col-span-5 mt-6 lg:mt-0">
-            <div className="bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6 lg:sticky lg:top-8">
+            <div className={`bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
               <div>
                 <h3 className="text-lg font-semibold mb-4">Generation Settings</h3>
                 <div className="space-y-3 text-sm">
