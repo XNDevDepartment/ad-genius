@@ -50,7 +50,7 @@ const CreateUGC = () => {
   // Initialize a new OpenAI thread when component mounts
   const initializeThread = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('openai-chat', {
+      const { data, error } = await supabase.functions.invoke('new-open-ai', {
         body: {
           action: 'startConversation',
           assistantId: ASSISTANT_ID
@@ -60,7 +60,7 @@ const CreateUGC = () => {
       if (error) throw error;
 
       setThreadId(data.threadId);
-      console.log('New thread created:', data.threadId);
+      console.log('New thread created with optimized function:', data.threadId);
       
       // Save conversation to database
       const conversation = await saveConversation({
@@ -96,9 +96,9 @@ const CreateUGC = () => {
       reader.onload = async () => {
         const base64 = reader.result as string;
         
-        const { data, error } = await supabase.functions.invoke('openai-chat', {
+        const { data, error } = await supabase.functions.invoke('new-open-ai', {
           body: {
-            action: 'converse',
+            action: 'fastConverse',
             threadId: threadId,
             content: [
               { 
@@ -161,9 +161,9 @@ const CreateUGC = () => {
     const targetNiche = nicheText || niche;
     setIsLoadingScenarios(true);
     try {
-      const { data, error } = await supabase.functions.invoke('openai-chat', {
+      const { data, error } = await supabase.functions.invoke('new-open-ai', {
         body: {
-          action: 'converse',
+          action: 'fastConverse',
           threadId: threadId,
           content: [
             { 
@@ -235,7 +235,7 @@ const CreateUGC = () => {
       reader.onload = async () => {
         const base64 = reader.result as string;
         
-        const { data, error } = await supabase.functions.invoke('openai-chat', {
+        const { data, error } = await supabase.functions.invoke('new-open-ai', {
           body: {
             action: 'converse',
             threadId: null,
@@ -311,7 +311,7 @@ photorealistic, 8k detail, natural color grading,
 --negative "AI artifacts, over-saturation, text, watermark, lens flare" --ar ${orientation === 'square' ? '1:1' : orientation === 'portrait' ? '4:5' : '16:9'}
         `.trim();
 
-        const { data, error } = await supabase.functions.invoke('openai-chat', {
+        const { data, error } = await supabase.functions.invoke('new-open-ai', {
           body: {
             action: 'generateImages',
             baseFileData: base64,

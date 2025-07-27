@@ -38,6 +38,9 @@ security_update_enabled = true
 [functions.openai-chat]
 verify_jwt = true
 
+[functions.new-open-ai]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 port = 54327
