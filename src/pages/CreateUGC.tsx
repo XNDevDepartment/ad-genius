@@ -32,6 +32,8 @@ const CreateUGC = () => {
   const [aiScenarios, setAiScenarios] = useState<AIScenario[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<AIScenario | null>(null);
   const [isLoadingScenarios, setIsLoadingScenarios] = useState(false);
+  const [threadId, setThreadId] = useState<string | null>(null);
+  const [productIdentification, setProductIdentification] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [numImages, setNumImages] = useState(3);
   const [orientation, setOrientation] = useState("square");
@@ -41,6 +43,107 @@ const CreateUGC = () => {
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
 
   const ASSISTANT_ID = "asst_zX2cHyZXHY1mj5CT4wzdJLU6";
+
+  const handleImageUpload = async (file: File) => {
+    setProductImage(file);
+    
+    // Start conversation with assistant to identify the product
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        
+        const { data, error } = await supabase.functions.invoke('openai-chat', {
+          body: {
+            action: 'converse',
+            threadId: threadId,
+            content: [
+              { 
+                type: 'text', 
+                text: 'I have uploaded a product image. Please analyze it and tell me what product you see. Be specific about the product type, key features, and any details that would help with creating UGC content.' 
+              },
+              {
+                type: 'image_file',
+                image_file: { file_id: base64 }
+              }
+            ],
+            assistantId: ASSISTANT_ID
+          }
+        });
+
+        if (error) throw error;
+
+        setThreadId(data.threadId);
+        setProductIdentification(data.reply);
+        
+        toast({
+          title: "Product Analyzed",
+          description: "AI has identified your product. Now describe your niche to get scenario suggestions.",
+        });
+      };
+      reader.readAsDataURL(file);
+      
+    } catch (error) {
+      console.error('Error analyzing product image:', error);
+      toast({
+        title: "Analysis Error",
+        description: "Failed to analyze the product image. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleNicheChange = async (nicheText: string) => {
+    setNiche(nicheText);
+    
+    // If we have both image and niche, get scenarios automatically
+    if (productImage && nicheText.trim() && threadId) {
+      await getScenariosFromConversation(nicheText);
+    }
+  };
+
+  const getScenariosFromConversation = async (nicheText: string) => {
+    setIsLoadingScenarios(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('openai-chat', {
+        body: {
+          action: 'converse',
+          threadId: threadId,
+          content: [
+            { 
+              type: 'text', 
+              text: `Product niche: ${nicheText}. Based on the product image I shared and this niche description, please provide 8 creative UGC scenario ideas. Return ONLY a JSON object with this exact structure: {"scenarios": [{"idea": "short idea name", "description": "detailed description"}]}` 
+            }
+          ],
+          assistantId: ASSISTANT_ID
+        }
+      });
+
+      if (error) throw error;
+
+      const responseText = data.reply;
+      // Extract JSON from response
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const scenarios = JSON.parse(jsonMatch[0]);
+        setAiScenarios(scenarios.scenarios || []);
+        
+        toast({
+          title: "Scenarios Generated",
+          description: `Got ${scenarios.scenarios?.length || 0} UGC scenario ideas for your product.`,
+        });
+      }
+    } catch (error) {
+      console.error('Error getting scenarios:', error);
+      toast({
+        title: "Error",
+        description: "Failed to get scenario suggestions. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingScenarios(false);
+    }
+  };
 
   const getScenarios = async () => {
     if (!productImage || !niche.trim()) {
@@ -291,9 +394,16 @@ photorealistic, 8k detail, natural color grading,
           <div className="lg:col-span-7">
             <div className="bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6">
               <ImageUploader 
-                onImageSelect={setProductImage}
+                onImageSelect={handleImageUpload}
                 selectedImage={productImage}
               />
+              
+              {productIdentification && (
+                <div className="p-3 bg-muted rounded-apple-sm">
+                  <p className="text-sm text-muted-foreground">AI Analysis:</p>
+                  <p className="text-sm mt-1">{productIdentification}</p>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="niche">Product Niche</Label>
@@ -301,9 +411,16 @@ photorealistic, 8k detail, natural color grading,
                   id="niche"
                   placeholder="Describe your product niche (e.g., skincare, tech accessories, home decor)..."
                   value={niche}
-                  onChange={(e) => setNiche(e.target.value)}
+                  onChange={(e) => handleNicheChange(e.target.value)}
                   className="rounded-apple-sm lg:min-h-[120px]"
                 />
+                
+                {isLoadingScenarios && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    AI is generating scenario ideas...
+                  </div>
+                )}
               </div>
 
               <div className="space-y-4">
