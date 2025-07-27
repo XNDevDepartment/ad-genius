@@ -10,6 +10,7 @@ import ImageUploader from "@/components/ImageUploader";
 import ImageGallery from "@/components/ImageGallery";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useConversationStorage } from "@/hooks/useConversationStorage";
 
 interface GeneratedImage {
   id: string;
@@ -26,6 +27,7 @@ interface AIScenario {
 const CreateUGC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { saveConversation, saveMessage, getActiveConversation } = useConversationStorage();
   const [stage, setStage] = useState<"setup" | "generating" | "results">("setup");
   const [productImage, setProductImage] = useState<File | null>(null);
   const [niche, setNiche] = useState("");
@@ -41,6 +43,7 @@ const CreateUGC = () => {
   const [style, setStyle] = useState("lifestyle");
   const [progress, setProgress] = useState(0);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
 
   const ASSISTANT_ID = "asst_zX2cHyZXHY1mj5CT4wzdJLU6";
 
@@ -58,6 +61,16 @@ const CreateUGC = () => {
 
       setThreadId(data.threadId);
       console.log('New thread created:', data.threadId);
+      
+      // Save conversation to database
+      const conversation = await saveConversation({
+        threadId: data.threadId,
+        assistantId: ASSISTANT_ID
+      });
+      
+      if (conversation) {
+        setConversationId(conversation.id);
+      }
       
     } catch (error) {
       console.error('Error initializing thread:', error);
@@ -105,6 +118,23 @@ const CreateUGC = () => {
 
         setThreadId(data.threadId);
         setProductIdentification(data.reply);
+        
+        // Save user message and assistant response
+        if (conversationId) {
+          await saveMessage({
+            conversationId,
+            role: 'user',
+            content: 'I have uploaded a product image. Please analyze it and tell me what product you see.',
+            metadata: { hasImage: true }
+          });
+          
+          await saveMessage({
+            conversationId,
+            role: 'assistant',
+            content: data.reply,
+            metadata: { analysisType: 'product_identification' }
+          });
+        }
         
         toast({
           title: "Product Analyzed",
@@ -157,6 +187,23 @@ const CreateUGC = () => {
       if (jsonMatch) {
         const scenarios = JSON.parse(jsonMatch[0]);
         setAiScenarios(scenarios.scenarios || []);
+        
+        // Save user message and assistant response
+        if (conversationId) {
+          await saveMessage({
+            conversationId,
+            role: 'user',
+            content: `Product niche: ${nicheText}. Based on the product image I shared and this niche description, please provide 8 creative UGC scenario ideas.`,
+            metadata: { requestType: 'scenario_generation' }
+          });
+          
+          await saveMessage({
+            conversationId,
+            role: 'assistant',
+            content: data.reply,
+            metadata: { scenarioCount: scenarios.scenarios?.length || 0 }
+          });
+        }
         
         toast({
           title: "Scenarios Generated",
