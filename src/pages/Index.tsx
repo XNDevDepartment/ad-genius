@@ -14,7 +14,7 @@ const Index = () => {
       description: "Create authentic user-generated content that converts with AI-powered product photography",
       icon: <Camera className="h-8 w-8 text-primary" />,
       available: true,
-      onClick: () => navigate("/create"),
+      onClick: () => navigate("/create/ugc"),
     },
   ];
 
