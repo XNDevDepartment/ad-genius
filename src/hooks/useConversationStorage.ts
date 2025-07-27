@@ -27,7 +27,11 @@ export const useConversationStorage = () => {
   const saveConversation = useCallback(async ({ threadId, assistantId }: SaveConversationParams) => {
     try {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error('User not authenticated');
+      if (!user.user) {
+        // User not authenticated - skip saving but don't throw error
+        console.log('User not authenticated, skipping conversation save');
+        return null;
+      }
 
       const { data, error } = await supabase
         .from('conversations')
@@ -49,6 +53,12 @@ export const useConversationStorage = () => {
 
   const saveMessage = useCallback(async ({ conversationId, role, content, metadata = {} }: SaveMessageParams) => {
     try {
+      // Skip if no conversation ID (user not authenticated)
+      if (!conversationId) {
+        console.log('No conversation ID, skipping message save');
+        return true;
+      }
+
       const { error } = await supabase
         .from('conversation_messages')
         .insert({

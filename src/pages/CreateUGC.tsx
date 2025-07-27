@@ -117,7 +117,7 @@ const CreateUGC = () => {
 
         setProductIdentification(reply);
         
-        // Save user message and assistant response
+        // Save user message and assistant response (only if user is authenticated)
         if (conversationId) {
           await saveMessage({
             conversationId,
@@ -221,27 +221,15 @@ const CreateUGC = () => {
       reader.onload = async () => {
         const base64 = reader.result as string;
         
-        const { data, error } = await supabase.functions.invoke('new-open-ai', {
-          body: {
-            action: 'converse',
-            threadId: null,
-            content: [
-              { 
-                type: 'text', 
-                text: `Product niche: ${niche}. Please provide 8 creative UGC scenario ideas for this product. Return ONLY a JSON object with this exact structure: {"scenarios": [{"idea": "short idea name", "description": "detailed description"}]}` 
-              },
-              {
-                type: 'image_file',
-                image_file: { file_id: base64 }
-              }
-            ],
-            assistantId: ASSISTANT_ID
-          }
-        });
+        const response = await sendImageAndRun(
+          threadId,
+          ASSISTANT_ID,
+          base64,
+          'product-image.jpg',
+          `Product niche: ${niche}. Please provide 8 creative UGC scenario ideas for this product. Return ONLY a JSON object with this exact structure: {"scenarios": [{"idea": "short idea name", "description": "detailed description"}]}`
+        );
 
-        if (error) throw error;
-
-        const responseText = data.reply;
+        const responseText = response;
         // Extract JSON from response
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {

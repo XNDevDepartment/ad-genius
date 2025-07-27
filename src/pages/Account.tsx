@@ -2,14 +2,14 @@ import { ArrowLeft, User, Settings, CreditCard, HelpCircle, LogOut, Bell, Shield
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { Profile } from "@/pages/Profile";
+import { AuthModal } from "@/components/auth/AuthModal";
 
 const Account = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
 
   if (!user) {
-    return <Profile onBack={() => navigate("/")} />;
+    return <AuthModal onSuccess={() => navigate("/account")} />;
   }
 
   const menuItems = [
