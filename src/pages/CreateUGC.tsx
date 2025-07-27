@@ -25,7 +25,22 @@ interface AIScenario {
 }
 
 const CreateUGC = () => {
-  const navigate = useNavigate();
+  console.log('CreateUGC component rendering...');
+  
+  // Add error boundary for useNavigate
+  let navigate;
+  try {
+    navigate = useNavigate();
+    console.log('useNavigate hook successful');
+  } catch (error) {
+    console.error('useNavigate hook failed:', error);
+    console.log('Router context might be missing');
+    // Fallback navigation function
+    navigate = () => {
+      console.error('Navigation attempted but useNavigate failed');
+      window.location.href = '/create';
+    };
+  }
   const { toast } = useToast();
   const { saveConversation, saveMessage, getActiveConversation } = useConversationStorage();
   const [stage, setStage] = useState<"setup" | "generating" | "results">("setup");
