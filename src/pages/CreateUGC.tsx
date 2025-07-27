@@ -428,7 +428,7 @@ photorealistic, 8k detail, natural color grading,
                   <Label>UGC Scenarios</Label>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="default"
                     size="sm"
                     onClick={getScenarios}
                     disabled={isLoadingScenarios || !productImage || !niche.trim()}
@@ -436,10 +436,10 @@ photorealistic, 8k detail, natural color grading,
                     {isLoadingScenarios ? (
                       <>
                         <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                        Getting Ideas...
+                        Generating...
                       </>
                     ) : (
-                      "Get AI Suggestions"
+                      "Generate Scenarios"
                     )}
                   </Button>
                 </div>
