@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Upload, Sparkles } from "lucide-react";
+import { ArrowLeft, Upload, Sparkles, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,9 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import ImageUploader from "@/components/ImageUploader";
-import ScenarioChips from "@/components/ScenarioChips";
 import ImageGallery from "@/components/ImageGallery";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GeneratedImage {
   id: string;
@@ -18,13 +18,20 @@ interface GeneratedImage {
   selected: boolean;
 }
 
+interface AIScenario {
+  idea: string;
+  description: string;
+}
+
 const CreateUGC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [stage, setStage] = useState<"setup" | "generating" | "results">("setup");
   const [productImage, setProductImage] = useState<File | null>(null);
-  const [audience, setAudience] = useState("");
-  const [selectedScenarios, setSelectedScenarios] = useState<string[]>(["unboxing"]);
+  const [niche, setNiche] = useState("");
+  const [aiScenarios, setAiScenarios] = useState<AIScenario[]>([]);
+  const [selectedScenario, setSelectedScenario] = useState<AIScenario | null>(null);
+  const [isLoadingScenarios, setIsLoadingScenarios] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [numImages, setNumImages] = useState(3);
   const [orientation, setOrientation] = useState("square");
@@ -33,20 +40,76 @@ const CreateUGC = () => {
   const [progress, setProgress] = useState(0);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
 
-  const scenarios = [
-    { id: "unboxing", label: "Unboxing", emoji: "📦" },
-    { id: "flatlay", label: "Flat-lay", emoji: "🎨" },
-    { id: "pov", label: "POV", emoji: "👀" },
-    { id: "lifestyle", label: "Lifestyle", emoji: "✨" },
-    { id: "review", label: "Review", emoji: "⭐" },
-    { id: "tutorial", label: "Tutorial", emoji: "📚" },
-  ];
+  const ASSISTANT_ID = "asst_zX2cHyZXHY1mj5CT4wzdJLU6";
+
+  const getScenarios = async () => {
+    if (!productImage || !niche.trim()) {
+      toast({
+        title: "Missing Information", 
+        description: "Please upload a product image and describe your niche.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoadingScenarios(true);
+    try {
+      // Convert image to base64
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        
+        const { data, error } = await supabase.functions.invoke('openai-chat', {
+          body: {
+            action: 'converse',
+            threadId: null,
+            content: [
+              { 
+                type: 'text', 
+                text: `Product niche: ${niche}. Please provide 8 creative UGC scenario ideas for this product. Return ONLY a JSON object with this exact structure: {"scenarios": [{"idea": "short idea name", "description": "detailed description"}]}` 
+              },
+              {
+                type: 'image_file',
+                image_file: { file_id: base64 }
+              }
+            ],
+            assistantId: ASSISTANT_ID
+          }
+        });
+
+        if (error) throw error;
+
+        const responseText = data.reply;
+        // Extract JSON from response
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const scenarios = JSON.parse(jsonMatch[0]);
+          setAiScenarios(scenarios.scenarios || []);
+        }
+      };
+      reader.readAsDataURL(productImage);
+      
+    } catch (error) {
+      console.error('Error getting scenarios:', error);
+      toast({
+        title: "Error",
+        description: "Failed to get scenario suggestions. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingScenarios(false);
+    }
+  };
+
+  const generateMoreScenarios = async () => {
+    await getScenarios();
+  };
 
   const handleGenerate = async () => {
-    if (!productImage || !audience.trim()) {
+    if (!productImage || !selectedScenario) {
       toast({
         title: "Missing Information",
-        description: "Please upload a product image and describe your target audience.",
+        description: "Please upload a product image and select a scenario.",
         variant: "destructive",
       });
       return;
@@ -55,52 +118,68 @@ const CreateUGC = () => {
     setStage("generating");
     setProgress(0);
 
-    // Simulate AI generation progress
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 90) {
-          clearInterval(progressInterval);
-          return 90;
-        }
-        return prev + Math.random() * 10;
-      });
-    }, 200);
+    try {
+      // Convert image to base64
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        
+        // Build the prompt
+        const prompt = `
+[${selectedScenario.idea}] on/in/with [${selectedScenario.description}],
+shot in [${timeOfDay} lighting], 
+captured with [professional camera details],
+showing [natural texture & imperfections], 
+evoking a [${style}] vibe,
+photorealistic, 8k detail, natural color grading,
+--negative "AI artifacts, over-saturation, text, watermark, lens flare" --ar ${orientation === 'square' ? '1:1' : orientation === 'portrait' ? '4:5' : '16:9'}
+        `.trim();
 
-    // Simulate generation delay
-    setTimeout(() => {
-      clearInterval(progressInterval);
-      setProgress(100);
-      
-      // Mock generated images
-      const mockImages: GeneratedImage[] = [
-        {
-          id: "1",
-          url: "/api/placeholder/400/400",
-          prompt: `${selectedScenarios.join(", ")} style UGC content for ${audience}`,
+        const { data, error } = await supabase.functions.invoke('openai-chat', {
+          body: {
+            action: 'generateImages',
+            baseFileData: base64,
+            prompt,
+            options: {
+              number: numImages,
+              size: orientation === 'square' ? '1024x1024' : orientation === 'portrait' ? '1024x1536' : '1536x1024',
+              quality: 'high',
+              output_format: 'png'
+            }
+          }
+        });
+
+        if (error) throw error;
+
+        // Process generated images
+        const images: GeneratedImage[] = data.images.map((base64Image: string, index: number) => ({
+          id: `${Date.now()}-${index}`,
+          url: `data:image/png;base64,${base64Image}`,
+          prompt,
           selected: false,
-        },
-        {
-          id: "2", 
-          url: "/api/placeholder/400/400",
-          prompt: `${selectedScenarios.join(", ")} style UGC content for ${audience}`,
-          selected: false,
-        },
-        {
-          id: "3",
-          url: "/api/placeholder/400/400", 
-          prompt: `${selectedScenarios.join(", ")} style UGC content for ${audience}`,
-          selected: false,
-        },
-      ];
+        }));
+
+        setGeneratedImages(images);
+        setStage("results");
+        
+        toast({
+          title: "Images Generated!",
+          description: "Your UGC images are ready to review.",
+        });
+      };
+      reader.readAsDataURL(productImage);
       
-      setGeneratedImages(mockImages);
-      setStage("results");
-      
+    } catch (error) {
+      console.error('Error generating images:', error);
       toast({
-        title: "Images Generated!",
-        description: "Your UGC images are ready to review.",
+        title: "Generation Failed",
+        description: "Failed to generate images. Please try again.",
+        variant: "destructive",
       });
-    }, 3000);
+      setStage("setup");
+    } finally {
+      setProgress(100);
+    }
   };
 
   const handleImageSelect = (imageId: string) => {
@@ -217,21 +296,69 @@ const CreateUGC = () => {
               />
 
               <div className="space-y-2">
-                <Label htmlFor="audience">Target Audience</Label>
+                <Label htmlFor="niche">Product Niche</Label>
                 <Textarea
-                  id="audience"
-                  placeholder="Describe your target audience..."
-                  value={audience}
-                  onChange={(e) => setAudience(e.target.value)}
+                  id="niche"
+                  placeholder="Describe your product niche (e.g., skincare, tech accessories, home decor)..."
+                  value={niche}
+                  onChange={(e) => setNiche(e.target.value)}
                   className="rounded-apple-sm lg:min-h-[120px]"
                 />
               </div>
 
-              <ScenarioChips
-                scenarios={scenarios}
-                selected={selectedScenarios}
-                onChange={setSelectedScenarios}
-              />
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>UGC Scenarios</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={getScenarios}
+                    disabled={isLoadingScenarios || !productImage || !niche.trim()}
+                  >
+                    {isLoadingScenarios ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Getting Ideas...
+                      </>
+                    ) : (
+                      "Get AI Suggestions"
+                    )}
+                  </Button>
+                </div>
+                
+                {aiScenarios.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="grid gap-2">
+                      {aiScenarios.map((scenario, index) => (
+                        <div
+                          key={index}
+                          className={`p-3 border rounded-apple-sm cursor-pointer transition-all ${
+                            selectedScenario?.idea === scenario.idea
+                              ? 'border-primary bg-primary/5'
+                              : 'border-border hover:border-primary/50'
+                          }`}
+                          onClick={() => setSelectedScenario(scenario)}
+                        >
+                          <h4 className="font-medium text-sm">{scenario.idea}</h4>
+                          <p className="text-xs text-muted-foreground mt-1">{scenario.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={generateMoreScenarios}
+                      disabled={isLoadingScenarios}
+                      className="w-full"
+                    >
+                      Give More Options
+                    </Button>
+                  </div>
+                )}
+              </div>
 
               <button
                 onClick={() => setShowAdvanced(!showAdvanced)}
@@ -324,8 +451,8 @@ const CreateUGC = () => {
                     <span className="font-medium capitalize">{style}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Scenarios:</span>
-                    <span className="font-medium">{selectedScenarios.length}</span>
+                    <span className="text-muted-foreground">Scenario:</span>
+                    <span className="font-medium">{selectedScenario ? "Selected" : "None"}</span>
                   </div>
                 </div>
               </div>
@@ -336,6 +463,7 @@ const CreateUGC = () => {
                   size="lg" 
                   className="w-full"
                   onClick={handleGenerate}
+                  disabled={!productImage || !selectedScenario}
                 >
                   <Sparkles className="h-5 w-5 mr-2" />
                   Generate Images
