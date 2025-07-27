@@ -85,19 +85,10 @@ const ImageGallery = ({ images, onImageSelect }: ImageGalleryProps) => {
 
             {/* Image */}
             <div className="aspect-square bg-muted flex items-center justify-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-apple flex items-center justify-center">
-                <span className="text-2xl">🎨</span>
-              </div>
               {/* In a real app, this would be: */}
-              {/* <img src={image.url} alt={image.prompt} className="w-full h-full object-cover" /> */}
+              <img src={image.url} alt={image.prompt} className="w-full h-full object-cover" />
             </div>
 
-            {/* Image Info */}
-            <div className="p-4">
-              <p className="text-sm text-muted-foreground line-clamp-2">
-                {image.prompt}
-              </p>
-            </div>
           </div>
         ))}
       </div>

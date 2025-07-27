@@ -12,7 +12,8 @@ import { GeneratingImagePlaceholders } from "@/components/departments/ugc/Genera
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
-import { startConversationAPI, converse, sendImageAndRun, generateImagesFromBase } from '@/api/OpenAiChatClient';
+import { startConversationAPI, converse, sendImageAndRun, generateImagesFromBase, saveImages } from '@/api/OpenAiChatClient';
+import { useSecureImageStorage } from "@/components/departments/ugc/SecureImageStorage";
 
 interface GeneratedImage {
   id: string;
@@ -21,6 +22,7 @@ interface GeneratedImage {
   selected: boolean;
 }
 
+
 interface AIScenario {
   idea: string;
   description: string;
@@ -28,6 +30,8 @@ interface AIScenario {
 
 const CreateUGC = () => {
   console.log('CreateUGC component rendering...');
+
+  const { saveImages } = useSecureImageStorage();
   
   // Add error boundary for useNavigate
   let navigate;
@@ -255,103 +259,194 @@ const CreateUGC = () => {
     await getScenarios();
   };
 
+  // handleGenerate.ts – final version aligned with Supabase contract
+  // Generates UGC images by sending a **Data‑URL string** to the edge function.
+
+  // helper: File → Data‑URL (base64)
+  const fileToDataUrl = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
   const handleGenerate = async () => {
     if (!productImage || !selectedScenario) {
       toast({
-        title: "Missing Information",
-        description: "Please upload a product image and select a scenario.",
-        variant: "destructive",
+        title: 'Missing information',
+        description: 'Please upload a product image and select a scenario.',
+        variant: 'destructive',
       });
       return;
     }
 
-    setIsGenerating(true);
-    setStage("generating");
-    setProgress(0);
-    setGeneratedImages([]);
-
-    // Scroll to generating images section
-    setTimeout(() => {
-      const element = document.getElementById('generating-images');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-
     try {
-      // Convert image to base64
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const base64 = reader.result as string;
-        
-        // Build the prompt
-        const prompt = `
-[${selectedScenario.idea}] on/in/with [${selectedScenario.description}],
-shot in [${timeOfDay} lighting], 
-captured with [professional camera details],
-showing [natural texture & imperfections], 
-evoking a [${style}] vibe,
-photorealistic, 8k detail, natural color grading,
---negative "AI artifacts, over-saturation, text, watermark, lens flare" --ar ${orientation === 'square' ? '1:1' : orientation === 'portrait' ? '4:5' : '16:9'}
-        `.trim();
+      setIsGenerating(true);
+      setStage('generating');
+      setProgress(0);
+      setGeneratedImages([]);
 
-        const imageObjects: GeneratedImage[] = [];
-        
-        // Generate images one by one
-        for (let i = 0; i < numImages; i++) {
-          try {
-            const images = await generateImagesFromBase(
-              base64,
+      // smooth‑scroll to progress area
+      setTimeout(() => {
+        document.getElementById('generating-images')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+
+      /* ------------------------------------------------------------------
+        1️⃣  Prepare payloads once (Data‑URL + prompt)
+      ------------------------------------------------------------------*/
+      const baseFileData = await fileToDataUrl(productImage); // Data URL with prefix
+
+      const prompt =
+      'A hyper realistic image of my product highlighted on/in/with ' + selectedScenario.description +
+      ', shot in ' + timeOfDay + ' lighting, captured with professional camera details, showing natural texture & imperfections, evoking a ' + style +
+      ' vibe, photorealistic, 8k detail, natural color grading --negative "AI artifacts, over-saturation, text, watermark, lens flare, big portions of human parts" --ar ' + 
+      '. The image detail should be focused on my product and not on the external details. The images must be an ugc image, and based on that you must deliver the best representation of the product.';
+
+      const imageObjects: GeneratedImage[] = [];
+
+      /* ------------------------------------------------------------------
+        2️⃣  Generate images sequentially (one call per image)
+      ------------------------------------------------------------------*/
+      for (let i = 0; i < numImages; i++) {
+        try {
+          const res = await generateImagesFromBase(baseFileData, prompt, {
+            number: 1,
+            size: orientation === 'square' ? '1024x1024' : orientation === 'portrait' ? '1024x1536' : '1536x1024',
+            quality: 'high',
+            output_format: 'png',
+          });
+
+          const images = Array.isArray(res)
+            ? res
+            : (res as { images?: unknown }).images ?? [];
+
+          if (images.length) {
+            imageObjects.push({
+              id: `${Date.now()}-${i}`,
+              url: `data:image/png;base64,${images[0]}`,
               prompt,
-              {
-                number: 1, // Generate one image at a time
-                size: orientation === 'square' ? '1024x1024' : orientation === 'portrait' ? '1024x1536' : '1536x1024',
-                quality: 'high',
-                output_format: 'png'
-              }
-            );
-
-            if (images && images.length > 0) {
-              const imageObject: GeneratedImage = {
-                id: `${Date.now()}-${i}`,
-                url: `data:image/png;base64,${images[0]}`,
-                prompt,
-                selected: false,
-              };
-              
-              imageObjects.push(imageObject);
-              setGeneratedImages([...imageObjects]);
-            }
-            
-            // Update progress
-            setProgress(((i + 1) / numImages) * 100);
-          } catch (error) {
-            console.error(`Error generating image ${i + 1}:`, error);
+              selected: false,
+            });
+            setGeneratedImages([...imageObjects]);
           }
+        } catch (err) {
+          console.error(`Image ${i + 1} failed:`, err);
+        } finally {
+          setProgress(((i + 1) / numImages) * 100);
         }
+      }
 
-        setStage("results");
-        
-        toast({
-          title: "Images Generated!",
-          description: "Your UGC images are ready to review.",
-        });
-      };
-      reader.readAsDataURL(productImage);
-      
-    } catch (error) {
-      console.error('Error generating images:', error);
-      toast({
-        title: "Generation Failed",
-        description: "Failed to generate images. Please try again.",
-        variant: "destructive",
-      });
-      setStage("setup");
+      /* ------------------------------------------------------------------
+        3️⃣  Wrap‑up
+      ------------------------------------------------------------------*/
+      setStage('results');
+      toast({ title: 'Images generated!', description: 'Your UGC images are ready to review.' });
+    } catch (err) {
+      console.error('handleGenerate failed:', err);
+      toast({ title: 'Generation failed', description: 'Something went wrong. Please try again.', variant: 'destructive' });
+      setStage('setup');
     } finally {
       setIsGenerating(false);
-      setProgress(100);
     }
   };
+
+//     if (!productImage || !selectedScenario) {
+//       toast({
+//         title: "Missing Information",
+//         description: "Please upload a product image and select a scenario.",
+//         variant: "destructive",
+//       });
+//       return;
+//     }
+
+//     setIsGenerating(true);
+//     setStage("generating");
+//     setProgress(0);
+//     setGeneratedImages([]);
+
+//     // Scroll to generating images section
+//     setTimeout(() => {
+//       const element = document.getElementById('generating-images');
+//       if (element) {
+//         element.scrollIntoView({ behavior: 'smooth' });
+//       }
+//     }, 100);
+
+//     try {
+//       // Convert image to base64
+//       const reader = new FileReader();
+//       reader.onload = async () => {
+//         const base64 = reader.result as string;
+        
+//         // Build the prompt
+//         const prompt = `
+// [${selectedScenario.idea}] on/in/with [${selectedScenario.description}],
+// shot in [${timeOfDay} lighting], 
+// captured with [professional camera details],
+// showing [natural texture & imperfections], 
+// evoking a [${style}] vibe,
+// photorealistic, 8k detail, natural color grading,
+// --negative "AI artifacts, over-saturation, text, watermark, lens flare" --ar ${orientation === 'square' ? '1:1' : orientation === 'portrait' ? '4:5' : '16:9'}
+//         `.trim();
+
+//         const imageObjects: GeneratedImage[] = [];
+        
+//         // Generate images one by one
+//         for (let i = 0; i < numImages; i++) {
+//           try {
+//             const images = await generateImagesFromBase(
+//               base64,
+//               prompt,
+//               {
+//                 number: 1, // Generate one image at a time
+//                 size: orientation === 'square' ? '1024x1024' : orientation === 'portrait' ? '1024x1536' : '1536x1024',
+//                 quality: 'high',
+//                 output_format: 'png'
+//               }
+//             );
+
+//             if (images && images.length > 0) {
+//               const imageObject: GeneratedImage = {
+//                 id: `${Date.now()}-${i}`,
+//                 url: `data:image/png;base64,${images[0]}`,
+//                 prompt,
+//                 selected: false,
+//               };
+              
+//               imageObjects.push(imageObject);
+//               setGeneratedImages([...imageObjects]);
+//             }
+            
+//             // Update progress
+//             setProgress(((i + 1) / numImages) * 100);
+//           } catch (error) {
+//             console.error(`Error generating image ${i + 1}:`, error);
+//           }
+//         }
+
+//         setStage("results");
+        
+//         toast({
+//           title: "Images Generated!",
+//           description: "Your UGC images are ready to review.",
+//         });
+//       };
+//       reader.readAsDataURL(productImage);
+      
+//     } catch (error) {
+//       console.error('Error generating images:', error);
+//       toast({
+//         title: "Generation Failed",
+//         description: "Failed to generate images. Please try again.",
+//         variant: "destructive",
+//       });
+//       setStage("setup");
+//     } finally {
+//       setIsGenerating(false);
+//       setProgress(100);
+//     }
+//   };
 
   const handleImageSelect = (imageId: string) => {
     setGeneratedImages(prev => 
@@ -416,6 +511,7 @@ photorealistic, 8k detail, natural color grading,
                   variant="default" 
                   className="w-full"
                   disabled={selectedImages.length === 0}
+                  // onClick={handleSave}
                 >
                   Save to Project ({selectedImages.length})
                 </Button>
