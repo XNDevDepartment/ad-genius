@@ -58,7 +58,7 @@ const CreateUGC = () => {
   const [threadId, setThreadId] = useState<string | null>(null);
   const [productIdentification, setProductIdentification] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [numImages, setNumImages] = useState(3);
+  const [numImages, setNumImages] = useState(1);
   const [orientation, setOrientation] = useState("square");
   const [timeOfDay, setTimeOfDay] = useState("natural");
   const [style, setStyle] = useState("lifestyle");
@@ -298,11 +298,11 @@ const CreateUGC = () => {
       const baseFileData = await fileToDataUrl(productImage); // Data URL with prefix
 
       const prompt =
-      'A hyper realistic image of my product highlighted on/in/with ' + selectedScenario.description +
-      ', shot in ' + timeOfDay + ' lighting, captured with professional camera details, showing natural texture & imperfections, evoking a ' + style +
-      ' vibe, photorealistic, 8k detail, natural color grading --negative "AI artifacts, over-saturation, text, watermark, lens flare, big portions of human parts" --ar ' + 
-      '. The image detail should be focused on my product and not on the external details. The images must be an ugc image, and based on that you must deliver the best representation of the product.';
-
+      'Ultra‑detailed UGC photograph of my product positioned ' + selectedScenario.description +
+      ', shot in natural ' + timeOfDay + ' light using a full‑frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125 s, ISO 200. ' +
+      'Center‑weighted autofocus locked on the product. True‑to‑life colors and surface texture with subtle, authentic imperfections. ' +
+      'Composition: product fills about 70 percent of the frame, slight background bokeh for depth while preserving scenario context; camera at eye‑level angle—no wide‑angle distortion. ' +
+      'Visual mood: ' + style + ' yet realistic. --negative "AI artifacts, text overlays, watermark, lens flare, distorted or rotated labels, invented branding, extra limbs, low resolution, out‑of‑focus product, over‑saturation" --ar ';
       const imageObjects: GeneratedImage[] = [];
 
       /* ------------------------------------------------------------------
