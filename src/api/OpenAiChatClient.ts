@@ -80,7 +80,7 @@ export async function sendImageAndRun(
 }
 
 export async function generateImagesFromBase(
-  baseFileData: File,
+  baseFileData: string,
   prompt: string,
   options: {
     number?: number;
