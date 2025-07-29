@@ -667,7 +667,7 @@ const CreateUGC = () => {
                           onClick={() => setSelectedScenario(scenario)}
                         >
                           <h4 className="font-medium text-sm">{scenario.idea}</h4>
-                          <p className="text-xs text-muted-foreground mt-1">{scenario.description}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{scenario['small-description']}</p>
                         </div>
                       ))}
                     </div>
