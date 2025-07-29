@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { ArrowLeft, Upload, Sparkles, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { useSecureImageStorage } from "@/components/departments/ugc/SecureImageS
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Description } from "@radix-ui/react-dialog";
 
 interface GeneratedImage {
   id: string;
@@ -536,6 +537,20 @@ const CreateUGC = () => {
     );
   }
 
+
+  const taRef = useRef<HTMLTextAreaElement>(null)
+
+  // On every render where `niche` changed, shrink then grow to fit
+  useLayoutEffect(() => {
+    const el = taRef.current
+    if (!el) return
+
+    // reset to let it shrink when lines are removed
+    el.style.height = 'auto'
+    // expand to fit current content
+    el.style.height = el.scrollHeight + 'px'
+  }, [niche])
+
   return (
     <div className="min-h-screen bg-background relative">
       {/* Loading Overlay */}
@@ -587,13 +602,21 @@ const CreateUGC = () => {
               <div className="space-y-2">
                 <Label htmlFor="niche">Product Niche</Label>
                 <Textarea
+                  ref={taRef}
                   id="niche"
-                  placeholder="Describe your product niche (e.g., skincare, tech accessories, home decor)..."
+                  placeholder="Describe your product niche (max 250 char.)"
                   value={niche}
+                  maxLength={250}
                   onChange={(e) => handleNicheChange(e.target.value)}
-                  className="rounded-apple-sm lg:min-h-[120px]"
+                  className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full"
+                  style={{ lineHeight: '1.5rem' }}
                   disabled={!threadId}
+                  rows={1}
                 />
+                {/* live counter, right‑aligned and muted */}
+                <div className="flex justify-end text-sm text-muted-foreground">
+                  {niche.length} / 250
+                </div>
 
                 {isLoadingScenarios && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
