@@ -172,7 +172,7 @@ const CreateUGC = () => {
     try {
       const responseText = await converse(
         threadId!,
-        `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 8 creative UGC scenario ideas. Return ONLY a JSON object with this exact structure: {"scenarios": [{"idea": "short idea name", "description": "detailed description"}]}`,
+        `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 4 creative UGC scenario ideas.`,
         ASSISTANT_ID
       );
       // Extract JSON from response
@@ -180,16 +180,16 @@ const CreateUGC = () => {
       if (jsonMatch) {
         const scenarios = JSON.parse(jsonMatch[0]);
         setAiScenarios(scenarios.scenarios || []);
-        
+
         // Save user message and assistant response
         if (conversationId) {
           await saveMessage({
             conversationId,
             role: 'user',
-            content: `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 8 creative UGC scenario ideas.`,
+            content: `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 4 creative UGC scenario ideas.`,
             metadata: { requestType: 'scenario_generation' }
           });
-          
+
           await saveMessage({
             conversationId,
             role: 'assistant',
@@ -661,7 +661,7 @@ const CreateUGC = () => {
                           onClick={() => setSelectedScenario(scenario)}
                         >
                           <h4 className="font-medium text-sm">{scenario.idea}</h4>
-                          <p className="text-xs text-muted-foreground mt-1">{scenario.description}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{scenario['small-description']}</p>
                         </div>
                       ))}
                     </div>
