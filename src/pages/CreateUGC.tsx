@@ -72,6 +72,27 @@ const CreateUGC = () => {
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Move all refs and effects to the top, before any conditional returns
+  const taRef = useRef<HTMLTextAreaElement>(null);
+
+  // Block access if not authenticated
+  useEffect(() => {
+    if (!user) {
+      navigate('/account');
+    }
+  }, [user, navigate]);
+
+  // On every render where `niche` changed, shrink then grow to fit
+  useLayoutEffect(() => {
+    const el = taRef.current
+    if (!el) return
+
+    // reset to let it shrink when lines are removed
+    el.style.height = 'auto'
+    // expand to fit current content
+    el.style.height = el.scrollHeight + 'px'
+  }, [niche]);
  
 
   const ASSISTANT_ID = "asst_zX2cHyZXHY1mj5CT4wzdJLU6";
@@ -461,14 +482,6 @@ const CreateUGC = () => {
     setProgress(0);
   };
 
-  // Block access if not authenticated
-  useEffect(() => {
-    if (!user) {
-      navigate('/account');
-    }
-  }, [user, navigate]);
-
-
   if (stage === "results") {
     return (
       <div className="min-h-screen bg-background">
@@ -536,20 +549,6 @@ const CreateUGC = () => {
       </div>
     );
   }
-
-
-  const taRef = useRef<HTMLTextAreaElement>(null)
-
-  // On every render where `niche` changed, shrink then grow to fit
-  useLayoutEffect(() => {
-    const el = taRef.current
-    if (!el) return
-
-    // reset to let it shrink when lines are removed
-    el.style.height = 'auto'
-    // expand to fit current content
-    el.style.height = el.scrollHeight + 'px'
-  }, [niche])
 
   return (
     <div className="min-h-screen bg-background relative">
