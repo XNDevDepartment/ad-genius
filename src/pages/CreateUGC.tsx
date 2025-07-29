@@ -258,7 +258,7 @@ const CreateUGC = () => {
           ASSISTANT_ID,
           base64,
           'product-image.jpg',
-          `Product niche: ${niche}. Please provide 8 creative UGC scenario ideas for this product. Return ONLY a JSON object with this exact structure: {"scenarios": [{"idea": "short idea name", "description": "detailed description"}]}`
+          `Product niche: ${niche}. Please provide 6 creative UGC scenario ideas for this product. Return ONLY a JSON object.`
         );
 
         const responseText = response;
