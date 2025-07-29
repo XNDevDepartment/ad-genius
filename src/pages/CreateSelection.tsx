@@ -1,10 +1,20 @@
 import { ArrowLeft, Users, Camera, Edit3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
 
 const CreateSelection = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Block access if not authenticated
+  useEffect(() => {
+    if (!user) {
+      navigate('/account');
+    }
+  }, [user, navigate]);
 
   const workflows = [
     {

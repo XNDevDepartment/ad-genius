@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { MessageSquare, Send, Sparkles, RotateCcw } from "lucide-react";
 import { SettingsPanel } from "./SettingsPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -169,15 +169,22 @@ export const ConversationInterface = ({
 
             {/* Input Area - Fixed at bottom */}
             <div className="border rounded-lg p-2 sm:p-3 bg-background">
-              <Textarea
-                placeholder="Digite sua mensagem..."
+              <Input
+                placeholder="Digite sua mensagem... (máx. 250 caracteres)"
                 value={currentAnswer}
-                onChange={(e) => setCurrentAnswer(e.target.value)}
+                onChange={(e) => {
+                  if (e.target.value.length <= 250) {
+                    setCurrentAnswer(e.target.value);
+                  }
+                }}
                 onKeyPress={handleKeyPress}
-                rows={isMobile ? 3 : 2}
-                className="border-0 p-0 resize-none focus-visible:ring-0 shadow-none text-sm"
+                className="border-0 p-0 focus-visible:ring-0 shadow-none text-sm"
                 disabled={isLoading || !currentQuestion}
+                maxLength={250}
               />
+              <div className="text-xs text-muted-foreground mt-1">
+                {currentAnswer.length}/250 caracteres
+              </div>
 
               {/* {expectImage && ( */}
                 <div className="mt-3 flex flex-col gap-3">

@@ -462,8 +462,10 @@ const CreateUGC = () => {
 
   // Block access if not authenticated
   useEffect(() => {
-    setShowAuthModal(!user);
-  }, [user]);
+    if (!user) {
+      navigate('/account');
+    }
+  }, [user, navigate]);
 
 
   if (stage === "results") {
