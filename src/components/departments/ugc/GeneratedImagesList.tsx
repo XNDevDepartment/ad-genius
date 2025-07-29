@@ -71,9 +71,17 @@ export const GeneratedImagesList = ({ images, prompt = "Generated UGC image", se
 
   const handleOpenInNewTab = (b64: string) => {
     const src = b64.startsWith('data:') ? b64 : `data:image/png;base64,${b64}`;
-    const newWindow = window.open();
+    const newWindow = window.open('', '_blank');
     if (newWindow) {
-      newWindow.document.write(`<img src="${src}" style="max-width: 100%; height: auto;" />`);
+      newWindow.document.write(`
+        <html>
+          <head><title>Generated Image</title></head>
+          <body style="margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #000;">
+            <img src="${src}" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+          </body>
+        </html>
+      `);
+      newWindow.document.close();
     }
   };
 
