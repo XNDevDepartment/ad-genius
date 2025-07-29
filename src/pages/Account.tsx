@@ -1,28 +1,61 @@
-import { ArrowLeft, User, Settings, CreditCard, HelpCircle, LogOut, Bell, Shield } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, User, Settings, CreditCard, HelpCircle, LogOut, Bell, Shield, Upload, Mail, Lock, UserX, Download, Globe, Moon, Sun, Monitor, Grid, List, Eye, EyeOff, Camera, Edit2, Trash2, RefreshCw, ExternalLink, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { useToast } from "@/hooks/use-toast";
 
 const Account = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("profile");
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [theme, setTheme] = useState("auto");
+  const [layout, setLayout] = useState("grid");
 
   if (!user) {
     return <AuthModal onSuccess={() => navigate("/account")} />;
   }
 
-  const menuItems = [
-    { icon: Settings, label: "Settings", description: "App preferences and notifications" },
-    { icon: Bell, label: "Notifications", description: "Manage your notification preferences" },
-    { icon: Shield, label: "Privacy", description: "Data and privacy settings" },
-    { icon: CreditCard, label: "Billing", description: "Manage your subscription" },
-    { icon: HelpCircle, label: "Help & Support", description: "Get help and contact support" },
-  ];
-
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
+  };
+
+  const handleSaveProfile = () => {
+    setIsEditingProfile(false);
+    toast({
+      title: "Profile updated",
+      description: "Your profile has been successfully updated.",
+    });
+  };
+
+  const handleDownloadData = () => {
+    toast({
+      title: "Data export requested",
+      description: "Your data export will be sent to your email within 24 hours.",
+    });
+  };
+
+  const handleDeleteAccount = () => {
+    toast({
+      title: "Account deletion requested",
+      description: "A confirmation email has been sent to verify this action.",
+      variant: "destructive",
+    });
   };
 
   return (
@@ -40,64 +73,635 @@ const Account = () => {
         </div>
       </div>
 
-      <div className="container-responsive px-4 py-8 space-y-6">
-        <h1 className="text-2xl lg:text-3xl font-bold hidden lg:block">Account</h1>
+      <div className="container-responsive px-4 py-8">
+        <h1 className="text-2xl lg:text-3xl font-bold hidden lg:block mb-8">Account Settings</h1>
         
-        <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-          {/* Profile Section */}
-          <div className="lg:col-span-1">
-            <div className="bg-card rounded-apple p-6 shadow-apple">
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="w-20 h-20 bg-primary/10 rounded-apple flex items-center justify-center">
-                  <User className="h-10 w-10 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold">
-                    {user.user_metadata?.name || user.email}
-                  </h3>
-                  <p className="text-muted-foreground">{user.email}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {user.user_metadata?.profession || 'Usuário'}
-                  </p>
-                </div>
-                <Button variant="outline" className="w-full">
-                  Edit Profile
-                </Button>
-              </div>
-            </div>
-          </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline">Profile</span>
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">Settings</span>
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="flex items-center gap-2">
+              <Bell className="h-4 w-4" />
+              <span className="hidden sm:inline">Notifications</span>
+            </TabsTrigger>
+            <TabsTrigger value="privacy" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              <span className="hidden sm:inline">Privacy</span>
+            </TabsTrigger>
+            <TabsTrigger value="billing" className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              <span className="hidden sm:inline">Billing</span>
+            </TabsTrigger>
+            <TabsTrigger value="support" className="flex items-center gap-2">
+              <HelpCircle className="h-4 w-4" />
+              <span className="hidden sm:inline">Support</span>
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Menu Items */}
-          <div className="lg:col-span-2 mt-6 lg:mt-0">
-            <div className="space-y-3">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.label}
-                    className="w-full bg-card rounded-apple p-4 shadow-apple hover:shadow-apple-lg transition-spring text-left"
+          {/* Profile Card */}
+          <TabsContent value="profile">
+            <div className="grid gap-6 lg:grid-cols-3">
+              <Card className="lg:col-span-1">
+                <CardHeader>
+                  <CardTitle>Profile Picture</CardTitle>
+                  <CardDescription>Update your avatar and profile information</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex flex-col items-center space-y-4">
+                    <Avatar className="w-24 h-24">
+                      <AvatarImage src={user.user_metadata?.avatar_url} />
+                      <AvatarFallback className="text-lg">
+                        {user.user_metadata?.name?.[0] || user.email?.[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm">
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Camera className="h-4 w-4 mr-2" />
+                        Webcam
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="lg:col-span-2">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Personal Information</CardTitle>
+                    <CardDescription>Manage your personal details and account settings</CardDescription>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setIsEditingProfile(!isEditingProfile)}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-primary/10 rounded-apple-sm flex items-center justify-center">
-                        <Icon className="h-5 w-5 text-primary" />
+                    <Edit2 className="h-4 w-4 mr-2" />
+                    {isEditingProfile ? "Cancel" : "Edit"}
+                  </Button>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="displayName">Display Name</Label>
+                      <Input 
+                        id="displayName" 
+                        defaultValue={user.user_metadata?.name || ""} 
+                        disabled={!isEditingProfile}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        defaultValue={user.email || ""} 
+                        disabled={!isEditingProfile}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="profession">Profession</Label>
+                    <Input 
+                      id="profession" 
+                      defaultValue={user.user_metadata?.profession || ""} 
+                      disabled={!isEditingProfile}
+                    />
+                  </div>
+
+                  {isEditingProfile && (
+                    <div className="flex gap-2">
+                      <Button onClick={handleSaveProfile}>
+                        Save Changes
+                      </Button>
+                      <Button variant="outline" onClick={() => setIsEditingProfile(false)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
+
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium">Security</h4>
+                    <div className="flex flex-col gap-2">
+                      <Button variant="outline">
+                        <Lock className="h-4 w-4 mr-2" />
+                        Change Password
+                      </Button>
+                      <Button variant="outline">
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Sign Out Everywhere
+                      </Button>
+                      <Button variant="destructive" onClick={handleDeleteAccount}>
+                        <UserX className="h-4 w-4 mr-2" />
+                        Delete Account
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Settings */}
+          <TabsContent value="settings">
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Generation Defaults</CardTitle>
+                  <CardDescription>Set your preferred defaults for image generation</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Default Aspect Ratio</Label>
+                      <Select defaultValue="square">
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="square">Square (1:1)</SelectItem>
+                          <SelectItem value="portrait">Portrait (3:4)</SelectItem>
+                          <SelectItem value="landscape">Landscape (4:3)</SelectItem>
+                          <SelectItem value="wide">Wide (16:9)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Resolution Cap</Label>
+                      <Select defaultValue="1024">
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="512">512x512</SelectItem>
+                          <SelectItem value="1024">1024x1024</SelectItem>
+                          <SelectItem value="2048">2048x2048</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Safe Mode</Label>
+                      <p className="text-sm text-muted-foreground">Filter explicit content</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Interface Preferences</CardTitle>
+                  <CardDescription>Customize how the app looks and feels</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Theme</Label>
+                    <Select value={theme} onValueChange={setTheme}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="light">
+                          <div className="flex items-center gap-2">
+                            <Sun className="h-4 w-4" />
+                            Light
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="dark">
+                          <div className="flex items-center gap-2">
+                            <Moon className="h-4 w-4" />
+                            Dark
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="auto">
+                          <div className="flex items-center gap-2">
+                            <Monitor className="h-4 w-4" />
+                            Auto
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Results Layout</Label>
+                    <Select value={layout} onValueChange={setLayout}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="grid">
+                          <div className="flex items-center gap-2">
+                            <Grid className="h-4 w-4" />
+                            Grid View
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="list">
+                          <div className="flex items-center gap-2">
+                            <List className="h-4 w-4" />
+                            List View
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Language</Label>
+                    <Select defaultValue="en">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="es">Español</SelectItem>
+                        <SelectItem value="fr">Français</SelectItem>
+                        <SelectItem value="pt">Português</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>API Keys</CardTitle>
+                  <CardDescription>Manage your API access tokens</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Primary API Key</p>
+                      <p className="text-sm text-muted-foreground">••••••••••••••••••••••••••••••••</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <RefreshCw className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <Button variant="outline">
+                    Generate New Key
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Notifications */}
+          <TabsContent value="notifications">
+            <Card>
+              <CardHeader>
+                <CardTitle>Notification Preferences</CardTitle>
+                <CardDescription>Choose how you want to be notified about account activity</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Job Complete</Label>
+                      <p className="text-sm text-muted-foreground">When image generation, upscaling, or variations complete</p>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="flex items-center space-x-2">
+                        <Switch id="job-email" defaultChecked />
+                        <Label htmlFor="job-email" className="text-sm">Email</Label>
                       </div>
-                      <div className="flex-1">
-                        <h4 className="font-medium text-foreground">{item.label}</h4>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
+                      <div className="flex items-center space-x-2">
+                        <Switch id="job-push" />
+                        <Label htmlFor="job-push" className="text-sm">Push</Label>
                       </div>
                     </div>
-                  </button>
-                );
-              })}
-            </div>
+                  </div>
 
-            <div className="mt-8 pt-6 border-t border-border">
-              <Button variant="outline" className="w-full lg:w-auto" onClick={handleSignOut}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
+                  <Separator />
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Credits Running Low</Label>
+                      <p className="text-sm text-muted-foreground">When you have less than 10% of credits remaining</p>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="flex items-center space-x-2">
+                        <Switch id="credits-email" defaultChecked />
+                        <Label htmlFor="credits-email" className="text-sm">Email</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Switch id="credits-push" defaultChecked />
+                        <Label htmlFor="credits-push" className="text-sm">Push</Label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Billing Events</Label>
+                      <p className="text-sm text-muted-foreground">Receipts, failed renewals, and payment updates</p>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="flex items-center space-x-2">
+                        <Switch id="billing-email" defaultChecked />
+                        <Label htmlFor="billing-email" className="text-sm">Email</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Switch id="billing-push" />
+                        <Label htmlFor="billing-push" className="text-sm">Push</Label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Product Updates & Marketing</Label>
+                      <p className="text-sm text-muted-foreground">New features, tips, and promotional content</p>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="flex items-center space-x-2">
+                        <Switch id="marketing-email" />
+                        <Label htmlFor="marketing-email" className="text-sm">Email</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Switch id="marketing-push" />
+                        <Label htmlFor="marketing-push" className="text-sm">Push</Label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <Button>Save Preferences</Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Privacy */}
+          <TabsContent value="privacy">
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Data Management</CardTitle>
+                  <CardDescription>Control your personal data and privacy settings</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Download My Data</p>
+                      <p className="text-sm text-muted-foreground">Get a copy of all your prompts, images, and account data</p>
+                    </div>
+                    <Button variant="outline" onClick={handleDownloadData}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Download
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 border rounded-lg border-destructive/20">
+                    <div>
+                      <p className="font-medium">Request Account Deletion</p>
+                      <p className="text-sm text-muted-foreground">Permanently delete your account and all associated data</p>
+                    </div>
+                    <Button variant="destructive" onClick={handleDeleteAccount}>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Privacy Controls</CardTitle>
+                  <CardDescription>Manage how your data is used</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Opt-out of Model Training</Label>
+                      <p className="text-sm text-muted-foreground">Prevent your images and prompts from being used to improve AI models</p>
+                    </div>
+                    <Switch />
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Prompt Redaction</Label>
+                      <p className="text-sm text-muted-foreground">Automatically remove personal data from prompts</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Analytics & Usage Data</Label>
+                      <p className="text-sm text-muted-foreground">Help improve the service by sharing anonymous usage data</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </div>
+          </TabsContent>
+
+          {/* Billing */}
+          <TabsContent value="billing">
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Current Plan</CardTitle>
+                  <CardDescription>Manage your subscription and usage</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-semibold">Pro Plan</h3>
+                        <Badge>Active</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">$19/month • Renews on Dec 15, 2024</p>
+                    </div>
+                    <Button variant="outline">
+                      Manage Subscription
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Credits Used</span>
+                      <span>750 / 1000</span>
+                    </div>
+                    <Progress value={75} className="h-2" />
+                  </div>
+
+                  <div className="grid gap-2 md:grid-cols-3">
+                    <Button variant="outline">
+                      Upgrade Plan
+                    </Button>
+                    <Button variant="outline">
+                      Buy Credits
+                    </Button>
+                    <Button variant="outline">
+                      Payment Method
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Usage Statistics</CardTitle>
+                  <CardDescription>Track your monthly usage and spending</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Images Generated</p>
+                      <p className="text-2xl font-bold">347</p>
+                      <p className="text-sm text-muted-foreground">This month</p>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Credits Spent</p>
+                      <p className="text-2xl font-bold">750</p>
+                      <p className="text-sm text-muted-foreground">This month</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Invoices & Receipts</CardTitle>
+                  <CardDescription>Download your billing history</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    {[
+                      { date: "Dec 1, 2024", amount: "$19.00", status: "Paid" },
+                      { date: "Nov 1, 2024", amount: "$19.00", status: "Paid" },
+                      { date: "Oct 1, 2024", amount: "$19.00", status: "Paid" },
+                    ].map((invoice, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{invoice.date}</p>
+                          <p className="text-sm text-muted-foreground">{invoice.amount}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary">{invoice.status}</Badge>
+                          <Button variant="ghost" size="sm">
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Help & Support */}
+          <TabsContent value="support">
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Get Help</CardTitle>
+                  <CardDescription>Find answers and get support</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Button variant="outline" className="h-20 flex-col gap-2">
+                      <Globe className="h-6 w-6" />
+                      <span>Documentation</span>
+                    </Button>
+                    <Button variant="outline" className="h-20 flex-col gap-2">
+                      <MessageCircle className="h-6 w-6" />
+                      <span>Live Chat</span>
+                    </Button>
+                  </div>
+                  
+                  <Button variant="outline" className="w-full">
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Status Page
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Contact Support</CardTitle>
+                  <CardDescription>Send us a message and we'll get back to you</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="subject">Subject</Label>
+                    <Input id="subject" placeholder="What can we help you with?" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="message">Message</Label>
+                    <Textarea 
+                      id="message" 
+                      placeholder="Describe your issue or question..."
+                      className="min-h-[100px]"
+                    />
+                  </div>
+                  <Button>Send Message</Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Links</CardTitle>
+                  <CardDescription>Common help topics</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Button variant="ghost" className="w-full justify-start">
+                    Writing Better Prompts
+                  </Button>
+                  <Button variant="ghost" className="w-full justify-start">
+                    Why Did My Image Fail?
+                  </Button>
+                  <Button variant="ghost" className="w-full justify-start">
+                    Billing & Credits FAQ
+                  </Button>
+                  <Button variant="ghost" className="w-full justify-start">
+                    Privacy & Data Usage
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        <div className="mt-8 pt-6 border-t border-border">
+          <Button variant="outline" onClick={handleSignOut}>
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
         </div>
       </div>
     </div>
