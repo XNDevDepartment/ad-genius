@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
-import { ArrowLeft, Upload, Sparkles, RefreshCw } from "lucide-react";
+import { ArrowLeft, Upload, Sparkles, RefreshCw, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -525,10 +525,17 @@ const CreateUGC = () => {
                 <Button
                   variant="default"
                   className="w-full"
-                  disabled={selectedImages.length === 0}
+                  disabled={selectedImages.length === 0 || isGenerating}
                   onClick={handleSaveImages}
                 >
-                  Save to Project ({selectedImages.length})
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    `Save to Project (${selectedImages.length})`
+                  )}
                 </Button>
 
                 <div className="grid grid-cols-1 lg:grid-cols-1 gap-3">

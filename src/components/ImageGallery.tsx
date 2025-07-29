@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Check, Star, Download, MoreHorizontal } from "lucide-react";
+import { Check, Star, Download, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useFavorites } from "@/hooks/useFavorites";
 
 interface GeneratedImage {
   id: string;
@@ -16,16 +17,10 @@ interface ImageGalleryProps {
 }
 
 const ImageGallery = ({ images, onImageSelect }: ImageGalleryProps) => {
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const { favorites, toggleFavorite } = useFavorites();
 
-  const toggleFavorite = (imageId: string) => {
-    const newFavorites = new Set(favorites);
-    if (newFavorites.has(imageId)) {
-      newFavorites.delete(imageId);
-    } else {
-      newFavorites.add(imageId);
-    }
-    setFavorites(newFavorites);
+  const handleOpenInNewTab = (imageUrl: string) => {
+    window.open(imageUrl, '_blank');
   };
 
   return (
@@ -78,8 +73,9 @@ const ImageGallery = ({ images, onImageSelect }: ImageGalleryProps) => {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-background"
+                onClick={() => handleOpenInNewTab(image.url)}
               >
-                <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                <ExternalLink className="h-4 w-4 text-muted-foreground" />
               </Button>
             </div>
 
