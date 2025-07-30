@@ -19,6 +19,7 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
+    to: '',
     subject: '',
     message: '',
     category: 'general',
@@ -74,6 +75,7 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
       try {
         await supabase.functions.invoke('send-email', {
           body: {
+            to: "info@formulaxn.com",
             subject: `Support Ticket Created: ${formData.subject}`,
             html: `
               <h2>Support Ticket Creation</h2>
@@ -104,6 +106,7 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
 
       // Reset form
       setFormData({
+        to: '',
         subject: '',
         message: '',
         category: 'general',
