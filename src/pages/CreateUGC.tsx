@@ -419,11 +419,13 @@ const CreateUGC = () => {
       return;
     }
 
+    setIsGenerating(true)
+
     try {
       const base64Images = selectedImages.map(img => 
         img.url.replace('data:image/png;base64,', '')
       );
-      
+
       await saveImages({
         base64Images,
         prompt: selectedImages[0].prompt,
@@ -440,7 +442,9 @@ const CreateUGC = () => {
         title: "Images saved",
         description: `Successfully saved ${selectedImages.length} images to your library.`,
       });
+      setIsGenerating(false)
     } catch (error) {
+      setIsGenerating(false)
       toast({
         title: "Save failed",
         description: "Failed to save images. Please try again.",
