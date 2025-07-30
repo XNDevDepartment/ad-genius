@@ -14,15 +14,18 @@ import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const Account = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const [section, setSection] = useState("");
+  const [section, setSection] = useState<string>("");
   const [theme, setTheme] = useState("auto");
   const [layout, setLayout] = useState("grid");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+
+    // add this
+    const containerRef = useRef<HTMLDivElement>(null);
 
   const { toast } = useToast();
 
@@ -65,6 +68,18 @@ const Account = () => {
       variant: "destructive",
     });
   };
+
+  /* kick the viewport (or the container) back to the top every time
+  the user opens a different panel                               */
+  useEffect(() => {
+  if (containerRef.current) {
+    // scroll the inner container (safer on iOS Safari where window scrolling can be quirky)
+    containerRef.current.scrollTo({ top: 0, behavior: "instant" });
+  } else {
+    // fallback – scroll the whole window
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+}, [section]);
 
 
   const SettingsPanel = (
@@ -190,31 +205,6 @@ const Account = () => {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>API Keys</CardTitle>
-                <CardDescription>Manage your API access tokens</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <p className="font-medium">Primary API Key</p>
-                    <p className="text-sm text-muted-foreground">••••••••••••••••••••••••••••••••</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <RefreshCw className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <Button variant="outline">
-                  Generate New Key
-                </Button>
-              </CardContent>
-            </Card>
           </div>
   )
 
@@ -688,7 +678,7 @@ const Account = () => {
         </div>
       </div>
 
-      <div className="container-responsive px-4 py-8 max-w-6xl">
+      <div ref={containerRef} className="container-responsive px-4 py-8 max-w-6xl">
         <div className="hidden lg:flex">
           {(section !== "") &&
             <>
