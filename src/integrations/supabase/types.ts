@@ -228,7 +228,6 @@ export type Database = {
           created_at: string
           id: string
           message: string
-          priority: string
           status: string
           subject: string
           updated_at: string
@@ -239,7 +238,6 @@ export type Database = {
           created_at?: string
           id?: string
           message: string
-          priority?: string
           status?: string
           subject: string
           updated_at?: string
@@ -250,7 +248,6 @@ export type Database = {
           created_at?: string
           id?: string
           message?: string
-          priority?: string
           status?: string
           subject?: string
           updated_at?: string

@@ -22,7 +22,6 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
     subject: '',
     message: '',
     category: 'general',
-    priority: 'medium'
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -58,7 +57,6 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
           subject: formData.subject.trim(),
           message: formData.message.trim(),
           category: formData.category,
-          priority: formData.priority,
           status: 'open'
         });
 
@@ -76,19 +74,20 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
       try {
         await supabase.functions.invoke('send-email', {
           body: {
-            to: user.email,
             subject: `Support Ticket Created: ${formData.subject}`,
             html: `
-              <h2>Support Ticket Confirmation</h2>
-              <p>Thank you for contacting our support team. We have received your message and will get back to you as soon as possible.</p>
+              <h2>Support Ticket Creation</h2>
+              <p>A user has created a support ticket.</p>
+              <hr>
+              <h3>User Details:</h3>
+              <strong>Name:</strong> ${user.user_metadata?.name}</p>
+              <strong>Email:</strong> ${user.email}</p>
+              <hr>
               <h3>Ticket Details:</h3>
               <p><strong>Subject:</strong> ${formData.subject}</p>
               <p><strong>Category:</strong> ${formData.category}</p>
-              <p><strong>Priority:</strong> ${formData.priority}</p>
               <p><strong>Message:</strong></p>
               <p>${formData.message.replace(/\n/g, '<br>')}</p>
-              <hr>
-              <p>Best regards,<br>The Support Team</p>
             `,
             type: 'support'
           }
@@ -108,7 +107,6 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
         subject: '',
         message: '',
         category: 'general',
-        priority: 'medium'
       });
 
     } catch (error) {
@@ -198,21 +196,6 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
                 <SelectItem value="feature">Feature Request</SelectItem>
                 <SelectItem value="account">Account Help</SelectItem>
                 <SelectItem value="general">General</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="priority">Priority</Label>
-            <Select value={formData.priority} onValueChange={(value) => handleInputChange('priority', value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="urgent">Urgent</SelectItem>
               </SelectContent>
             </Select>
           </div>

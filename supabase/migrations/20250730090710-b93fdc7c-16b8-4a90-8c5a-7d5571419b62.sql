@@ -89,7 +89,6 @@ CREATE TABLE public.support_tickets (
   subject TEXT NOT NULL,
   message TEXT NOT NULL,
   category TEXT NOT NULL DEFAULT 'general',
-  priority TEXT NOT NULL DEFAULT 'medium',
   status TEXT NOT NULL DEFAULT 'open',
   
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
