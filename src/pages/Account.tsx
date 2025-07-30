@@ -73,24 +73,26 @@ const Account = () => {
   };
 
   const AccountPanel = (
-    <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-      {/* Profile Card - Left Side */}
-      <div className="lg:col-span-1">
-        <Card className="sticky top-8">
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center text-center space-y-4">
-              <Avatar className="h-24 w-24">
-                <AvatarImage src={user?.user_metadata?.avatar_url} />
-                <AvatarFallback className="text-2xl">
-                  {user?.email?.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              
-              <div className="space-y-1">
-                <h2 className="text-xl font-semibold">
-                  {user?.user_metadata?.full_name || user?.email?.split('@')[0]}
+    <div className="grid gap-8 lg:grid-cols-5">
+      {/* Profile Card - Left Column */}
+      <div className="lg:col-span-2">
+        <Card className="bg-muted/30">
+          <CardContent className="p-8">
+            <div className="flex flex-col items-center space-y-6">
+              <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+                <Avatar className="w-20 h-20">
+                  <AvatarImage src={user.user_metadata?.avatar_url} />
+                  <AvatarFallback className="text-2xl bg-primary/10 text-primary">
+                    {user.user_metadata?.name?.[0] || user.email?.[0]?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+
+              <div className="text-center space-y-3">
+                <h2 className="text-2xl font-semibold">
+                  {user.user_metadata?.name || "User"}
                 </h2>
-                <p className="text-muted-foreground">{user?.email}</p>
+                <p className="text-muted-foreground">{user.email}</p>
                 <Badge variant="secondary">Pro Member</Badge>
               </div>
 
@@ -99,7 +101,6 @@ const Account = () => {
                 className="w-full"
                 onClick={() => handleMenuClick("edit-profile")}
               >
-                <Edit2 className="h-4 w-4 mr-2" />
                 Edit Profile
               </Button>
             </div>
@@ -107,83 +108,102 @@ const Account = () => {
         </Card>
       </div>
 
-      {/* Menu Options - Right Side */}
-      <div className="lg:col-span-2 space-y-2 mt-6 lg:mt-0">
-        <h1 className="text-2xl lg:text-3xl font-bold lg:hidden mb-6">Account</h1>
-        
-        <Button
-          variant="ghost"
-          className="w-full justify-start h-14 px-4"
+      {/* Menu Items - Right Column */}
+      <div className="lg:col-span-3 space-y-2">
+        {/* Settings */}
+        <Card
+          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none"
           onClick={() => handleMenuClick("settings")}
         >
-          <Settings className="h-5 w-5 mr-3" />
-          <div className="flex-1 text-left">
-            <div className="font-medium">Settings</div>
-            <div className="text-sm text-muted-foreground">Preferences and defaults</div>
-          </div>
-        </Button>
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Settings className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium">Settings</h3>
+              <p className="text-sm text-muted-foreground">App preferences and notifications</p>
+            </div>
+          </CardContent>
+        </Card>
 
-        <Button
-          variant="ghost"
-          className="w-full justify-start h-14 px-4"
+        {/* Notifications */}
+        <Card 
+          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none"
           onClick={() => handleMenuClick("notifications")}
         >
-          <Bell className="h-5 w-5 mr-3" />
-          <div className="flex-1 text-left">
-            <div className="font-medium">Notifications</div>
-            <div className="text-sm text-muted-foreground">Email and push notifications</div>
-          </div>
-        </Button>
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Bell className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium">Notifications</h3>
+              <p className="text-sm text-muted-foreground">Manage your notification preferences</p>
+            </div>
+          </CardContent>
+        </Card>
 
-        <Button
-          variant="ghost"
-          className="w-full justify-start h-14 px-4"
+        {/* Privacy */}
+        <Card 
+          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none"
           onClick={() => handleMenuClick("privacy")}
         >
-          <Shield className="h-5 w-5 mr-3" />
-          <div className="flex-1 text-left">
-            <div className="font-medium">Privacy</div>
-            <div className="text-sm text-muted-foreground">Data and security settings</div>
-          </div>
-        </Button>
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Shield className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium">Privacy</h3>
+              <p className="text-sm text-muted-foreground">Data and privacy settings</p>
+            </div>
+          </CardContent>
+        </Card>
 
-        <Button
-          variant="ghost"
-          className="w-full justify-start h-14 px-4"
+        {/* Billing */}
+        <Card 
+          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none"
           onClick={() => handleMenuClick("billing")}
         >
-          <CreditCard className="h-5 w-5 mr-3" />
-          <div className="flex-1 text-left">
-            <div className="font-medium">Billing</div>
-            <div className="text-sm text-muted-foreground">Subscription and usage</div>
-          </div>
-        </Button>
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <CreditCard className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium">Billing</h3>
+              <p className="text-sm text-muted-foreground">Manage your subscription</p>
+            </div>
+          </CardContent>
+        </Card>
 
-        <Button
-          variant="ghost"
-          className="w-full justify-start h-14 px-4"
+        {/* Help & Support */}
+        <Card 
+          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none"
           onClick={() => handleMenuClick("help")}
         >
-          <HelpCircle className="h-5 w-5 mr-3" />
-          <div className="flex-1 text-left">
-            <div className="font-medium">Help & Support</div>
-            <div className="text-sm text-muted-foreground">Documentation and contact</div>
-          </div>
-        </Button>
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <HelpCircle className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium">Help & Support</h3>
+              <p className="text-sm text-muted-foreground">Get help and contact support</p>
+            </div>
+          </CardContent>
+        </Card>
 
-        <Separator className="my-4" />
-
-        <Button
-          variant="ghost"
-          className="w-full justify-start h-14 px-4 text-destructive hover:text-destructive"
+        {/* Sign Out */}
+        <Card 
+          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none mt-8"
           onClick={handleSignOut}
         >
-          <LogOut className="h-5 w-5 mr-3" />
-          <div className="flex-1 text-left">
-            <div className="font-medium">Sign Out</div>
-            <div className="text-sm text-muted-foreground">Sign out of your account</div>
-          </div>
-        </Button>
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
+              <LogOut className="h-5 w-5 text-destructive" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium text-destructive">Sign Out</h3>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

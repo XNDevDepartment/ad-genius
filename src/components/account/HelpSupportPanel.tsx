@@ -44,19 +44,19 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
             Getting Started Guide
             <ExternalLink className="h-4 w-4 ml-auto" />
           </Button>
-          
+
           <Button variant="outline" className="w-full justify-start">
             <HelpCircle className="h-4 w-4 mr-2" />
             FAQ
             <ExternalLink className="h-4 w-4 ml-auto" />
           </Button>
-          
+
           <Button variant="outline" className="w-full justify-start">
             <MessageCircle className="h-4 w-4 mr-2" />
             Video Tutorials
             <ExternalLink className="h-4 w-4 ml-auto" />
           </Button>
-          
+
           <Button variant="outline" className="w-full justify-start">
             <Book className="h-4 w-4 mr-2" />
             API Documentation
@@ -96,25 +96,10 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="priority">Priority</Label>
-            <Select>
-              <SelectTrigger>
-                <SelectValue placeholder="Select priority level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="urgent">Urgent</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="message">Message</Label>
-            <Textarea 
-              id="message" 
-              placeholder="Please describe your issue in detail..." 
+            <Textarea
+              id="message"
+              placeholder="Please describe your issue in detail..."
               rows={4}
             />
           </div>
@@ -126,7 +111,8 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
         </CardContent>
       </Card>
 
-      <Card>
+      {/* To configure Later when launching the application */}
+      {/* <Card>
         <CardHeader>
           <CardTitle>Community</CardTitle>
           <CardDescription>Connect with other users and get help</CardDescription>
@@ -137,20 +123,20 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
             Discord Community
             <ExternalLink className="h-4 w-4 ml-auto" />
           </Button>
-          
+
           <Button variant="outline" className="w-full justify-start">
             <MessageCircle className="h-4 w-4 mr-2" />
             Reddit Community
             <ExternalLink className="h-4 w-4 ml-auto" />
           </Button>
-          
+
           <Button variant="outline" className="w-full justify-start">
             <MessageCircle className="h-4 w-4 mr-2" />
             User Forum
             <ExternalLink className="h-4 w-4 ml-auto" />
           </Button>
         </CardContent>
-      </Card>
+      </Card> */}
 
       <Card>
         <CardHeader>
@@ -160,11 +146,11 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
         <CardContent className="space-y-2">
           <div className="flex justify-between">
             <span className="text-sm">Email Support</span>
-            <span className="text-sm text-muted-foreground">support@example.com</span>
+            <span className="text-sm text-muted-foreground">manager@formulaxn.com</span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm">Business Hours</span>
-            <span className="text-sm text-muted-foreground">9 AM - 6 PM PST</span>
+            <span className="text-sm text-muted-foreground">9 AM - 6 PM ECT</span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm">Response Time</span>

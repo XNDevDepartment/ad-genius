@@ -30,15 +30,16 @@ export const SettingsPanel = ({ theme, setTheme, layout, setLayout, onClose }: S
           <CardDescription>Set your preferred image generation settings</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
+          {/** NOT NECESSARY AT THE MOMENT */}
+          {/* <div className="space-y-2">
             <Label>Image Quality</Label>
             <Slider defaultValue={[75]} max={100} step={1} className="w-full" />
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>Standard</span>
               <span>Premium</span>
             </div>
-          </div>
-          
+          </div> */}
+
           <div className="space-y-2">
             <Label htmlFor="aspectRatio">Default Aspect Ratio</Label>
             <Select defaultValue="1:1">
@@ -47,14 +48,13 @@ export const SettingsPanel = ({ theme, setTheme, layout, setLayout, onClose }: S
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1:1">Square (1:1)</SelectItem>
-                <SelectItem value="16:9">Landscape (16:9)</SelectItem>
-                <SelectItem value="9:16">Portrait (9:16)</SelectItem>
-                <SelectItem value="4:3">Classic (4:3)</SelectItem>
+                <SelectItem value="4:3">Portrait  (4:3)</SelectItem>
+                <SelectItem value="16:9">Landscape (3:4)</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="style">Default Style</Label>
             <Select defaultValue="realistic">
               <SelectTrigger>
@@ -67,6 +67,14 @@ export const SettingsPanel = ({ theme, setTheme, layout, setLayout, onClose }: S
                 <SelectItem value="abstract">Abstract</SelectItem>
               </SelectContent>
             </Select>
+          </div> */}
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Auto Save Images</Label>
+              <p className="text-sm text-muted-foreground">Automatically save images when finished</p>
+            </div>
+            <Switch defaultChecked />
           </div>
         </CardContent>
       </Card>
@@ -91,7 +99,7 @@ export const SettingsPanel = ({ theme, setTheme, layout, setLayout, onClose }: S
             </Select>
           </div>
 
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="layout">Layout Style</Label>
             <Select value={layout} onValueChange={setLayout}>
               <SelectTrigger>
@@ -103,23 +111,23 @@ export const SettingsPanel = ({ theme, setTheme, layout, setLayout, onClose }: S
                 <SelectItem value="masonry">Masonry</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
 
-          <div className="flex items-center justify-between">
+          {/* <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Reduced Motion</Label>
               <p className="text-sm text-muted-foreground">Minimize animations and transitions</p>
             </div>
             <Switch />
-          </div>
+          </div> */}
 
-          <div className="flex items-center justify-between">
+          {/* <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Show Tips</Label>
               <p className="text-sm text-muted-foreground">Display helpful tips and tutorials</p>
             </div>
             <Switch defaultChecked />
-          </div>
+          </div> */}
         </CardContent>
       </Card>
 

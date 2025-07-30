@@ -37,8 +37,8 @@ export const NotificationsPanel = ({ onClose }: NotificationsPanelProps) => {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Weekly Summary</Label>
-              <p className="text-sm text-muted-foreground">Weekly report of your activity and credits</p>
+              <Label>Monthly Summary</Label>
+              <p className="text-sm text-muted-foreground">Monthly report of your activity and credits</p>
             </div>
             <Switch defaultChecked />
           </div>
@@ -51,13 +51,14 @@ export const NotificationsPanel = ({ onClose }: NotificationsPanelProps) => {
             <Switch />
           </div>
 
-          <div className="flex items-center justify-between">
+
+          {/* <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Tips & Tutorials</Label>
               <p className="text-sm text-muted-foreground">Helpful tips to improve your creations</p>
             </div>
             <Switch defaultChecked />
-          </div>
+          </div> */}
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
@@ -121,21 +122,14 @@ export const NotificationsPanel = ({ onClose }: NotificationsPanelProps) => {
             <Switch defaultChecked />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Badge Count</Label>
-              <p className="text-sm text-muted-foreground">Show notification count in app icon</p>
-            </div>
-            <Switch defaultChecked />
-          </div>
-
-          <div className="flex items-center justify-between">
+          {/** Request Approval Before Implementation */}
+          {/* <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Auto-dismiss</Label>
               <p className="text-sm text-muted-foreground">Automatically hide notifications after 5 seconds</p>
             </div>
             <Switch />
-          </div>
+          </div> */}
         </CardContent>
       </Card>
     </div>

@@ -69,13 +69,14 @@ export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
             <Switch defaultChecked />
           </div>
 
-          <div className="flex items-center justify-between">
+          {/* AT THE MOMENT IS NOT NECESSARY */}
+          {/* <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Third-party Integrations</Label>
               <p className="text-sm text-muted-foreground">Allow connections to external services</p>
             </div>
             <Switch />
-          </div>
+          </div> */}
         </CardContent>
       </Card>
 
