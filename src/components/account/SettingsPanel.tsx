@@ -5,6 +5,10 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Eye, RefreshCw, X } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState } from "react";
 
 interface SettingsPanelProps {
   theme: string;
@@ -14,7 +18,98 @@ interface SettingsPanelProps {
   onClose: () => void;
 }
 
+interface UserPreferences {
+  default_aspect_ratio: string;
+  auto_save_images: boolean;
+  theme: string;
+  language: string;
+  timezone: string;
+}
+
 export const SettingsPanel = ({ theme, setTheme, layout, setLayout, onClose }: SettingsPanelProps) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [preferences, setPreferences] = useState<UserPreferences>({
+    default_aspect_ratio: '1:1',
+    auto_save_images: true,
+    theme: theme,
+    language: 'en',
+    timezone: 'utc'
+  });
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      loadUserPreferences();
+    }
+  }, [user]);
+
+  const loadUserPreferences = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading preferences:', error);
+        return;
+      }
+
+      if (data) {
+        setPreferences(data);
+        setTheme(data.theme);
+      }
+    } catch (error) {
+      console.error('Error loading preferences:', error);
+    }
+  };
+
+  const saveUserPreferences = async () => {
+    if (!user) return;
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('user_preferences')
+        .upsert({
+          user_id: user.id,
+          ...preferences
+        });
+
+      if (error) {
+        console.error('Error saving preferences:', error);
+        toast({
+          title: "Error",
+          description: "Failed to save preferences. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Settings saved",
+          description: "Your preferences have been updated successfully.",
+        });
+      }
+    } catch (error) {
+      console.error('Error saving preferences:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save preferences. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePreferenceChange = (key: keyof UserPreferences, value: any) => {
+    setPreferences(prev => ({ ...prev, [key]: value }));
+    if (key === 'theme') {
+      setTheme(value);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -42,14 +137,15 @@ export const SettingsPanel = ({ theme, setTheme, layout, setLayout, onClose }: S
 
           <div className="space-y-2">
             <Label htmlFor="aspectRatio">Default Aspect Ratio</Label>
-            <Select defaultValue="1:1">
+            <Select value={preferences.default_aspect_ratio} onValueChange={(value) => handlePreferenceChange('default_aspect_ratio', value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1:1">Square (1:1)</SelectItem>
-                <SelectItem value="4:3">Portrait  (4:3)</SelectItem>
-                <SelectItem value="16:9">Landscape (3:4)</SelectItem>
+                <SelectItem value="4:3">Portrait (4:3)</SelectItem>
+                <SelectItem value="3:4">Landscape (3:4)</SelectItem>
+                <SelectItem value="16:9">Wide (16:9)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -74,7 +170,7 @@ export const SettingsPanel = ({ theme, setTheme, layout, setLayout, onClose }: S
               <Label>Auto Save Images</Label>
               <p className="text-sm text-muted-foreground">Automatically save images when finished</p>
             </div>
-            <Switch defaultChecked />
+            <Switch checked={preferences.auto_save_images} onCheckedChange={(checked) => handlePreferenceChange('auto_save_images', checked)} />
           </div>
         </CardContent>
       </Card>
@@ -87,7 +183,7 @@ export const SettingsPanel = ({ theme, setTheme, layout, setLayout, onClose }: S
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="theme">Theme</Label>
-            <Select value={theme} onValueChange={setTheme}>
+            <Select value={preferences.theme} onValueChange={(value) => handlePreferenceChange('theme', value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -139,7 +235,7 @@ export const SettingsPanel = ({ theme, setTheme, layout, setLayout, onClose }: S
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="language">Language</Label>
-            <Select defaultValue="en">
+            <Select value={preferences.language} onValueChange={(value) => handlePreferenceChange('language', value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -154,7 +250,7 @@ export const SettingsPanel = ({ theme, setTheme, layout, setLayout, onClose }: S
 
           <div className="space-y-2">
             <Label htmlFor="timezone">Timezone</Label>
-            <Select defaultValue="utc">
+            <Select value={preferences.timezone} onValueChange={(value) => handlePreferenceChange('timezone', value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -165,6 +261,12 @@ export const SettingsPanel = ({ theme, setTheme, layout, setLayout, onClose }: S
                 <SelectItem value="cet">Central European Time</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="flex gap-2 pt-4">
+            <Button onClick={saveUserPreferences} disabled={isLoading}>
+              {isLoading ? "Saving..." : "Save Changes"}
+            </Button>
           </div>
         </CardContent>
       </Card>

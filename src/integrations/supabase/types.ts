@@ -141,6 +141,51 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          email_generation_complete: boolean | null
+          email_marketing: boolean | null
+          email_monthly_summary: boolean | null
+          email_new_features: boolean | null
+          id: string
+          push_credit_alerts: boolean | null
+          push_enabled: boolean | null
+          push_generation_updates: boolean | null
+          sound_effects: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_generation_complete?: boolean | null
+          email_marketing?: boolean | null
+          email_monthly_summary?: boolean | null
+          email_new_features?: boolean | null
+          id?: string
+          push_credit_alerts?: boolean | null
+          push_enabled?: boolean | null
+          push_generation_updates?: boolean | null
+          sound_effects?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_generation_complete?: boolean | null
+          email_marketing?: boolean | null
+          email_monthly_summary?: boolean | null
+          email_new_features?: boolean | null
+          id?: string
+          push_credit_alerts?: boolean | null
+          push_enabled?: boolean | null
+          push_generation_updates?: boolean | null
+          sound_effects?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_id: string
@@ -177,6 +222,42 @@ export type Database = {
         }
         Relationships: []
       }
+      support_tickets: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          message: string
+          priority: string
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          message: string
+          priority?: string
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          message?: string
+          priority?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_favorites: {
         Row: {
           assistant_id: string
@@ -194,6 +275,42 @@ export type Database = {
           assistant_id?: string
           created_at?: string
           id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          auto_save_images: boolean | null
+          created_at: string
+          default_aspect_ratio: string | null
+          id: string
+          language: string | null
+          theme: string | null
+          timezone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_save_images?: boolean | null
+          created_at?: string
+          default_aspect_ratio?: string | null
+          id?: string
+          language?: string | null
+          theme?: string | null
+          timezone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_save_images?: boolean | null
+          created_at?: string
+          default_aspect_ratio?: string | null
+          id?: string
+          language?: string | null
+          theme?: string | null
+          timezone?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []

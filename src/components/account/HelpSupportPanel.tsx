@@ -6,19 +6,121 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, HelpCircle, MessageCircle, Book, ExternalLink, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
+import { useState } from "react";
 
 interface HelpSupportPanelProps {
   onClose: () => void;
 }
 
 export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
+  const { user } = useAuth();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    subject: '',
+    message: '',
+    category: 'general',
+    priority: 'medium'
+  });
 
-  const handleSubmitTicket = () => {
-    toast({
-      title: "Support ticket submitted",
-      description: "We'll get back to you within 24 hours.",
-    });
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmitTicket = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to submit a support ticket.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.subject.trim() || !formData.message.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in both subject and message fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Create support ticket
+      const { error: ticketError } = await supabase
+        .from('support_tickets')
+        .insert({
+          user_id: user.id,
+          subject: formData.subject.trim(),
+          message: formData.message.trim(),
+          category: formData.category,
+          priority: formData.priority,
+          status: 'open'
+        });
+
+      if (ticketError) {
+        console.error('Error creating support ticket:', ticketError);
+        toast({
+          title: "Error",
+          description: "Failed to submit support ticket. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Send confirmation email
+      try {
+        await supabase.functions.invoke('send-email', {
+          body: {
+            to: user.email,
+            subject: `Support Ticket Created: ${formData.subject}`,
+            html: `
+              <h2>Support Ticket Confirmation</h2>
+              <p>Thank you for contacting our support team. We have received your message and will get back to you as soon as possible.</p>
+              <h3>Ticket Details:</h3>
+              <p><strong>Subject:</strong> ${formData.subject}</p>
+              <p><strong>Category:</strong> ${formData.category}</p>
+              <p><strong>Priority:</strong> ${formData.priority}</p>
+              <p><strong>Message:</strong></p>
+              <p>${formData.message.replace(/\n/g, '<br>')}</p>
+              <hr>
+              <p>Best regards,<br>The Support Team</p>
+            `,
+            type: 'support'
+          }
+        });
+      } catch (emailError) {
+        console.error('Error sending confirmation email:', emailError);
+        // Don't fail the ticket creation if email fails
+      }
+
+      toast({
+        title: "Ticket submitted",
+        description: "Your support ticket has been created successfully. We'll get back to you soon!",
+      });
+
+      // Reset form
+      setFormData({
+        subject: '',
+        message: '',
+        category: 'general',
+        priority: 'medium'
+      });
+
+    } catch (error) {
+      console.error('Error submitting support ticket:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit support ticket. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -76,12 +178,17 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="subject">Subject</Label>
-            <Input id="subject" placeholder="Brief description of your issue" />
+            <Input 
+              id="subject" 
+              placeholder="Brief description of your issue" 
+              value={formData.subject}
+              onChange={(e) => handleInputChange('subject', e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="category">Category</Label>
-            <Select>
+            <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
@@ -90,7 +197,22 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
                 <SelectItem value="billing">Billing Question</SelectItem>
                 <SelectItem value="feature">Feature Request</SelectItem>
                 <SelectItem value="account">Account Help</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="general">General</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="priority">Priority</Label>
+            <Select value={formData.priority} onValueChange={(value) => handleInputChange('priority', value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="urgent">Urgent</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -101,12 +223,14 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
               id="message"
               placeholder="Please describe your issue in detail..."
               rows={4}
+              value={formData.message}
+              onChange={(e) => handleInputChange('message', e.target.value)}
             />
           </div>
 
-          <Button onClick={handleSubmitTicket} className="w-full">
+          <Button onClick={handleSubmitTicket} className="w-full" disabled={isSubmitting}>
             <Send className="h-4 w-4 mr-2" />
-            Submit Ticket
+            {isSubmitting ? "Submitting..." : "Submit Ticket"}
           </Button>
         </CardContent>
       </Card>
