@@ -8,6 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSecureImageStorage } from "./ugc/SecureImageStorage";
+import { useGenerationJobs } from "@/hooks/useGenerationJobs";
+import { GenerationJobStatus } from "./ugc/GenerationJobStatus";
+import { PendingImagesReview } from "./ugc/PendingImagesReview";
 
 interface LibraryImage {
   id: string;
@@ -32,6 +35,13 @@ export const Library = ({ onBack }: LibraryProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { images, deleteImage, loading } = useSecureImageStorage();
+  const { 
+    jobs, 
+    pendingImages, 
+    loading: jobsLoading, 
+    cancelJob, 
+    dismissPendingImages 
+  } = useGenerationJobs();
 
   const handleDownload = async (image: LibraryImage) => {
     toast({
@@ -93,6 +103,20 @@ export const Library = ({ onBack }: LibraryProps) => {
       }
     });
 
+  // Filter active jobs (pending or in_progress)
+  const activeJobs = jobs.filter(job => 
+    job.status === 'pending' || job.status === 'in_progress'
+  );
+
+  // Group pending images by job
+  const pendingImagesByJob = pendingImages.reduce((acc, image) => {
+    if (!acc[image.job_id]) {
+      acc[image.job_id] = [];
+    }
+    acc[image.job_id].push(image);
+    return acc;
+  }, {} as Record<string, typeof pendingImages>);
+
   return (
     <div className="p-4 lg:p-8 space-y-6 animate-fade-in">
       {/* Header */}
@@ -107,6 +131,33 @@ export const Library = ({ onBack }: LibraryProps) => {
           </div>
         </div>
       </div>
+
+      {/* Active Generation Jobs */}
+      {activeJobs.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Geração em Andamento</h2>
+          <div className="grid gap-4">
+            {activeJobs.map((job) => (
+              <GenerationJobStatus
+                key={job.id}
+                job={job}
+                onCancel={cancelJob}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Pending Images for Review */}
+      {Object.keys(pendingImagesByJob).length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Imagens Prontas para Revisão</h2>
+          <PendingImagesReview
+            images={pendingImages}
+            onDismiss={dismissPendingImages}
+          />
+        </div>
+      )}
 
 
       {/* Images Grid */}
@@ -137,7 +188,7 @@ export const Library = ({ onBack }: LibraryProps) => {
           </div> */}
         </div>
         <CardContent>
-          {loading ? (
+          {loading || jobsLoading ? (
             <div className="text-center py-12">
               <div className="mx-auto w-16 h-16 rounded-lg bg-secondary/50 flex items-center justify-center mb-4">
                 <FileImage className="h-8 w-8 text-muted-foreground animate-pulse" />
