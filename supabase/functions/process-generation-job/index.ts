@@ -21,8 +21,10 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let requestBody;
   try {
-    const { jobId } = await req.json();
+    requestBody = await req.json();
+    const { jobId } = requestBody;
     console.log('Processing generation job:', jobId);
 
     // Get the job details
@@ -75,7 +77,6 @@ serve(async (req) => {
           n: 1,
           size: size as "1024x1024" | "1792x1024" | "1024x1792",
           quality: quality as "standard" | "hd",
-          response_format: "b64_json",
         });
 
         if (response.data && response.data[0] && response.data[0].b64_json) {
@@ -233,8 +234,7 @@ serve(async (req) => {
 
     // Update job status to failed if we have the jobId
     try {
-      const { jobId } = await req.json();
-      if (jobId) {
+      if (requestBody?.jobId) {
         await supabase
           .from('generation_jobs')
           .update({ 
@@ -242,7 +242,7 @@ serve(async (req) => {
             error_message: error.message,
             completed_at: new Date().toISOString()
           })
-          .eq('id', jobId);
+          .eq('id', requestBody.jobId);
       }
     } catch (updateError) {
       console.error('Error updating job status to failed:', updateError);
