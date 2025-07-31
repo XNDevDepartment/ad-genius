@@ -1,39 +1,42 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
-import { ArrowLeft, Upload, Sparkles, RefreshCw, Loader2, Clock, CheckCircle } from "lucide-react";
+import { ArrowLeft, Upload, Sparkles, RefreshCw, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
 import ImageUploader from "@/components/ImageUploader";
-import { GenerationJobStatus } from "@/components/departments/ugc/GenerationJobStatus";
-import { PendingImagesReview } from "@/components/departments/ugc/PendingImagesReview";
+import ImageGallery from "@/components/ImageGallery";
+import { GeneratingImagePlaceholders } from "@/components/departments/ugc/GeneratingImagePlaceholders";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
-import { useGenerationJobs } from "@/hooks/useGenerationJobs";
-import { startConversationAPI, converse, sendImageAndRun } from '@/api/OpenAiChatClient';
+import { startConversationAPI, converse, sendImageAndRun, generateImagesFromBase } from '@/api/OpenAiChatClient';
+import { useSecureImageStorage } from "@/components/departments/ugc/SecureImageStorage";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Description } from "@radix-ui/react-dialog";
+
+interface GeneratedImage {
+  id: string;
+  url: string;
+  prompt: string;
+  selected: boolean;
+}
+
 
 interface AIScenario {
   idea: string;
   description: string;
-  'small-description': string;
 }
 
 const CreateUGC = () => {
   console.log('CreateUGC component rendering...');
 
   const { user } = useAuth();
-  const { 
-    activeJobs, 
-    pendingImages, 
-    createGenerationJob, 
-    cancelJob, 
-    dismissPendingImages,
-    loadPendingImages 
-  } = useGenerationJobs();
+  const { saveImages } = useSecureImageStorage();
   const [showAuthModal, setShowAuthModal] = useState(!user);
   
   // Add error boundary for useNavigate
@@ -50,9 +53,9 @@ const CreateUGC = () => {
       window.location.href = '/create';
     };
   }
-  
   const { toast } = useToast();
-  const { saveConversation, saveMessage } = useConversationStorage();
+  const { saveConversation, saveMessage, getActiveConversation } = useConversationStorage();
+  const [stage, setStage] = useState<"setup" | "generating" | "results">("setup");
   const [productImage, setProductImage] = useState<File | null>(null);
   const [niche, setNiche] = useState("");
   const [aiScenarios, setAiScenarios] = useState<AIScenario[]>([]);
@@ -65,8 +68,10 @@ const CreateUGC = () => {
   const [orientation, setOrientation] = useState("square");
   const [timeOfDay, setTimeOfDay] = useState("natural");
   const [style, setStyle] = useState("lifestyle");
+  const [progress, setProgress] = useState(0);
+  const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Move all refs and effects to the top, before any conditional returns
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -231,9 +236,59 @@ const CreateUGC = () => {
     }
   };
 
-  const generateMoreScenarios = async () => {
-    await getScenariosFromConversation();
+  const getScenarios = async () => {
+    if (!productImage || !niche.trim()) {
+      toast({
+        title: "Missing Information", 
+        description: "Please upload a product image and describe your niche.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoadingScenarios(true);
+    try {
+      // Convert image to base64
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        
+        const response = await sendImageAndRun(
+          threadId,
+          ASSISTANT_ID,
+          base64,
+          'product-image.jpg',
+          `Product niche: ${niche}. Please provide 6 creative UGC scenario ideas for this product. Return ONLY a JSON object.`
+        );
+
+        const responseText = response;
+        // Extract JSON from response
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const scenarios = JSON.parse(jsonMatch[0]);
+          setAiScenarios(scenarios.scenarios || []);
+        }
+      };
+      reader.readAsDataURL(productImage);
+      
+    } catch (error) {
+      console.error('Error getting scenarios:', error);
+      toast({
+        title: "Error",
+        description: "Failed to get scenario suggestions. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingScenarios(false);
+    }
   };
+
+  const generateMoreScenarios = async () => {
+    await getScenarios();
+  };
+
+  // handleGenerate.ts – final version aligned with Supabase contract
+  // Generates UGC images by sending a **Data‑URL string** to the edge function.
 
   // helper: File → Data‑URL (base64)
   const fileToDataUrl = (file: File): Promise<string> =>
@@ -244,7 +299,6 @@ const CreateUGC = () => {
       reader.readAsDataURL(file);
     });
 
-  // Updated generate function to use background jobs
   const handleGenerate = async () => {
     if (!productImage || !selectedScenario) {
       toast({
@@ -255,59 +309,186 @@ const CreateUGC = () => {
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      // Create the final prompt combining scenario and product image
-      const finalPrompt = `Ultra‑detailed UGC photograph of my product positioned ${selectedScenario.description}, shot in natural ${timeOfDay} light using a full‑frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125 s, ISO 200. Center‑weighted autofocus locked on the product. True‑to‑life colors and surface texture with subtle, authentic imperfections. Composition: product fills about 70 percent of the frame, slight background bokeh for depth while preserving scenario context; camera at eye‑level angle—no wide‑angle distortion. Visual mood: ${style} yet realistic. --negative "AI artifacts, text overlays, watermark, lens flare, distorted or rotated labels, invented branding, extra limbs, low resolution, out‑of‑focus product, over‑saturation"`;
-      
-      console.log('Creating background generation job with prompt:', finalPrompt);
-      
-      // Convert image to base64 for the settings
-      const baseImageData = await fileToDataUrl(productImage);
-      
-      await createGenerationJob(finalPrompt, {
-        numberOfImages: numImages,
-        size: orientation === 'square' ? '1024x1024' : orientation === 'portrait' ? '1024x1536' : '1536x1024',
-        quality: 'high',
-        outputFormat: 'png',
-        baseImage: baseImageData,
-        scenario: selectedScenario,
-        style,
-        timeOfDay,
-        orientation
+      setIsGenerating(true);
+      setStage('generating');
+      setProgress(0);
+      setGeneratedImages([]);
+
+      // smooth‑scroll to progress area
+      setTimeout(() => {
+        document.getElementById('generating-images')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+
+      /* ------------------------------------------------------------------
+        1️⃣  Prepare payloads once (Data‑URL + prompt)
+      ------------------------------------------------------------------*/
+      const baseFileData = await fileToDataUrl(productImage); // Data URL with prefix
+
+      const prompt =
+      'Ultra‑detailed UGC photograph of my product positioned ' + selectedScenario.description +
+      ', shot in natural ' + timeOfDay + ' light using a full‑frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125 s, ISO 200. ' +
+      'Center‑weighted autofocus locked on the product. True‑to‑life colors and surface texture with subtle, authentic imperfections. ' +
+      'Composition: product fills about 70 percent of the frame, slight background bokeh for depth while preserving scenario context; camera at eye‑level angle—no wide‑angle distortion. ' +
+      'Visual mood: ' + style + ' yet realistic. --negative "AI artifacts, text overlays, watermark, lens flare, distorted or rotated labels, invented branding, extra limbs, low resolution, out‑of‑focus product, over‑saturation" --ar ';
+
+      const imageObjects: GeneratedImage[] = [];
+
+      /* ------------------------------------------------------------------
+        2️⃣  // Generate all images in parallel
+      ------------------------------------------------------------------*/
+      const imagePromises = Array.from({ length: numImages }, async (_, i) => {
+        try {
+          const res = await generateImagesFromBase(
+            baseFileData,
+            prompt,
+            {
+              number: 1,
+              size: orientation === 'square' ? '1024x1024' : orientation === 'portrait' ? '1024x1536' : '1536x1024',
+              quality: 'high',
+              output_format: 'png',
+            }
+          );
+
+          const images = Array.isArray(res) ? res : (res && (res as any).images) ? (res as any).images : [];
+          if (images && images.length > 0) {
+            return {
+              id: `${Date.now()}-${i}`,
+              url: `data:image/png;base64,${images[0]}`,
+              prompt,
+              selected: false,
+            };
+          }
+          return null;
+        } catch (err) {
+          console.error(`Image ${i + 1} failed:`, err);
+          return null;
+        }
       });
 
-      // Show success feedback
-      toast({
-        title: 'Generation started!',
-        description: `Creating ${numImages} image${numImages !== 1 ? 's' : ''} in the background. You'll be notified when ready.`,
-      });
+      // Wait for all images to complete
+      const results = await Promise.all(imagePromises);
+      const validImages = results.filter(Boolean) as GeneratedImage[];
 
-      // Reset form for next generation
-      setSelectedScenario(null);
-      setAiScenarios([]);
-      
-    } catch (error) {
-      console.error('Error creating generation job:', error);
+      /* ------------------------------------------------------------------
+        3️⃣  Wrap‑up
+      ------------------------------------------------------------------*/
+      setGeneratedImages(validImages);
+      setProgress(100);
+      setStage('results');
+
       toast({
-        title: 'Generation failed',
-        description: 'Failed to start generation. Please try again.',
-        variant: 'destructive'
+        title: 'Images generated!',
+        description: `Successfully created ${validImages.length} images.`
       });
+      
+    } catch (err) {
+      console.error('handleGenerate failed:', err);
+      toast({ title: 'Generation failed', description: 'Something went wrong. Please try again.', variant: 'destructive' });
+      setStage('setup');
     } finally {
-      setIsSubmitting(false);
+      setIsGenerating(false);
     }
   };
 
+  const handleImageSelect = (imageId: string) => {
+    setGeneratedImages(prev => 
+      prev.map(img => 
+        img.id === imageId ? { ...img, selected: !img.selected } : img
+      )
+    );
+  };
+
+  const toggleImageSelection = (imageId: string) => {
+    setGeneratedImages(prev => 
+      prev.map(img => 
+        img.id === imageId ? { ...img, selected: !img.selected } : img
+      )
+    );
+  };
+
+  const selectedImages = generatedImages.filter(img => img.selected);
+
+  const handleSaveImages = async () => {
+    if (selectedImages.length === 0) {
+      toast({
+        title: "No images selected",
+        description: "Please select at least one image to save.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true)
+
+    try {
+      const base64Images = selectedImages.map(img => 
+        img.url.replace('data:image/png;base64,', '')
+      );
+
+      await saveImages({
+        base64Images,
+        prompt: selectedImages[0].prompt,
+        settings: {
+          numImages,
+          orientation,
+          timeOfDay,
+          style,
+          scenario: selectedScenario
+        }
+      });
+
+      toast({
+        title: "Images saved",
+        description: `Successfully saved ${selectedImages.length} images to your library.`,
+      });
+      setIsGenerating(false)
+    } catch (error) {
+      setIsGenerating(false)
+      toast({
+        title: "Save failed",
+        description: "Failed to save images. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDownloadAll = () => {
+    const imagesToDownload = selectedImages.length > 0 ? selectedImages : generatedImages;
+
+    imagesToDownload.forEach((img, index) => {
+      const link = document.createElement('a');
+      link.href = img.url;
+      link.download = `ugc-image-${index + 1}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    toast({
+      title: "Download started",
+      description: `Downloading ${imagesToDownload.length} images.`,
+    });
+  };
+
+  const handleGenerateMore = () => {
+    setStage("setup");
+    setGeneratedImages([]);
+  };
+
   const handleNewCreation = () => {
+    setStage("setup");
+    setGeneratedImages([]);
     setProductImage(null);
     setNiche("");
     setAiScenarios([]);
     setSelectedScenario(null);
+    setProgress(0);
   };
 
-  return (
-    <div className="min-h-screen bg-background relative">
+  if (stage === "results") {
+    return (
+      <div className="min-h-screen bg-background">
       {/* Auth Modal */}
       <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
         <DialogContent className="max-w-md">
@@ -317,7 +498,71 @@ const CreateUGC = () => {
           />
         </DialogContent>
       </Dialog>
+        <div className="container-responsive px-4 py-8 space-y-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setStage("setup")}
+              className="lg:hidden"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-2xl lg:text-3xl font-bold">Your Images</h1>
+            <p className="text-muted-foreground">
+              Select the images you'd like to save or download
+            </p>
+          </div>
 
+          <div className="lg:grid lg:grid-cols-3 lg:gap-8">
+            <div className="lg:col-span-2">
+              <ImageGallery
+                images={generatedImages}
+                onImageSelect={handleImageSelect}
+              />
+            </div>
+
+            <div className="lg:col-span-1 mt-6 lg:mt-0">
+              <div className="bg-card rounded-apple p-6 shadow-apple space-y-4 lg:sticky lg:top-8">
+                <h3 className="font-semibold text-lg">Actions</h3>
+
+                <Button
+                  variant="default"
+                  className="w-full"
+                  disabled={selectedImages.length === 0 || isGenerating}
+                  onClick={handleSaveImages}
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    `Save to Project (${selectedImages.length})`
+                  )}
+                </Button>
+
+                <div className="grid grid-cols-1 lg:grid-cols-1 gap-3">
+                  <Button variant="outline" className="w-full" onClick={handleDownloadAll}>
+                    Download {selectedImages.length > 0 ? 'Selected' : 'All'}
+                  </Button>
+                  <Button variant="outline" className="w-full" onClick={handleGenerateMore}>
+                    Generate More
+                  </Button>
+                  <Button variant="outline" className="w-full" onClick={handleNewCreation}>
+                    New Creation
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background relative">
       {/* Loading Overlay */}
       {!threadId && (
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -332,53 +577,23 @@ const CreateUGC = () => {
       )}
 
       <div className="container-responsive px-4 py-8">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/create")}
-              className="lg:hidden"
-              disabled={!threadId}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-2xl lg:text-3xl font-bold">Create UGC Content</h1>
-          </div>
-        </div>
-
-        {/* Pending Images Review */}
-        {pendingImages.length > 0 && (
-          <div className="mb-8">
-            <PendingImagesReview 
-              images={pendingImages}
-              onDismiss={dismissPendingImages}
-              onSave={loadPendingImages}
-            />
-          </div>
-        )}
-
-        {/* Active Generation Jobs */}
-        {activeJobs.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Active Generations
-            </h2>
-            <div className="space-y-4">
-              {activeJobs.map(job => (
-                <GenerationJobStatus 
-                  key={job.id} 
-                  job={job} 
-                  onCancel={cancelJob}
-                />
-              ))}
+        <div className="lg:grid lg:grid-cols-12 lg:gap-8">
+          {/* Header */}
+          <div className="lg:col-span-12 mb-6">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate("/create")}
+                className="lg:hidden"
+                disabled={!threadId}
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <h1 className="text-2xl lg:text-3xl font-bold">Create UGC Content</h1>
             </div>
           </div>
-        )}
 
-        <div className="lg:grid lg:grid-cols-12 lg:gap-8">
           {/* Main Form */}
           <div className="lg:col-span-7">
             <div className={`bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -386,6 +601,13 @@ const CreateUGC = () => {
                 onImageSelect={handleImageUpload}
                 selectedImage={productImage}
               />
+
+              {/* {productIdentification && (
+                <div className="p-3 bg-muted rounded-apple-sm">
+                  <p className="text-sm text-muted-foreground">AI Analysis:</p>
+                  <p className="text-sm mt-1">{productIdentification}</p>
+                </div>
+              )} */}
 
               <div className="space-y-2">
                 <Label htmlFor="niche">Product Niche</Label>
@@ -565,46 +787,59 @@ const CreateUGC = () => {
                 </div>
               </div>
 
-              <div className="border-t pt-4 space-y-3">
+              <div className="border-t pt-4">
                 <Button 
                   variant="default" 
                   size="lg" 
-                  className="w-full"
+                  className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
                   onClick={handleGenerate}
-                  disabled={!productImage || !selectedScenario || isSubmitting}
+                  disabled={!productImage || !selectedScenario || isGenerating}
                 >
-                  {isSubmitting ? (
+                  {isGenerating ? (
                     <>
-                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                      Starting Generation...
+                      <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                      Generating...
                     </>
                   ) : (
                     <>
                       <Sparkles className="h-5 w-5 mr-2" />
-                      Start Background Generation
+                      Generate Images
                     </>
                   )}
                 </Button>
 
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full"
-                  onClick={handleNewCreation}
-                >
-                  New Creation
-                </Button>
-
-                <p className="text-xs text-muted-foreground text-center">
-                  {isSubmitting 
-                    ? 'Starting background generation...' 
-                    : 'Generation will run in the background. You can leave and return anytime.'
-                  }
+                <p className="text-xs text-muted-foreground mt-2 text-center">
+                  {isGenerating ? 'AI is creating your images...' : 'Generation typically takes 30-60 seconds'}
                 </p>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Generating Images Section */}
+        {stage === "generating" && (
+          <div id="generating-images" className="space-y-8">
+            <div className="text-center space-y-4">
+              <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+                <Sparkles className="h-10 w-10 text-primary animate-pulse" />
+              </div>
+              <h2 className="text-2xl font-semibold">Generating Your Images</h2>
+              <p className="text-muted-foreground">
+                Creating {numImages} unique UGC image{numImages > 1 ? 's' : ''} based on your preferences...
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex justify-between text-sm">
+                <span>Progress</span>
+                <span>{Math.round(progress)}%</span>
+              </div>
+              <Progress value={progress} className="w-full" />
+            </div>
+
+            <GeneratingImagePlaceholders numberOfImages={numImages} />
+          </div>
+        )}
       </div>
     </div>
   );
