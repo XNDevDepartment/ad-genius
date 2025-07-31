@@ -196,16 +196,33 @@ export const useGenerationJobs = () => {
         },
         (payload) => {
           console.log('Job status changed:', payload);
-          loadJobs();
+          
+          // Update the specific job in state immediately
+          setJobs(currentJobs => {
+            const updatedJobs = [...currentJobs];
+            const jobIndex = updatedJobs.findIndex(job => 
+              job.id === (payload.new as any)?.id || job.id === (payload.old as any)?.id
+            );
+            
+            if (payload.eventType === 'INSERT' && payload.new) {
+              updatedJobs.unshift(payload.new as GenerationJob);
+            } else if (payload.eventType === 'UPDATE' && payload.new && jobIndex >= 0) {
+              updatedJobs[jobIndex] = payload.new as GenerationJob;
+            } else if (payload.eventType === 'DELETE' && jobIndex >= 0) {
+              updatedJobs.splice(jobIndex, 1);
+            }
+            
+            return updatedJobs;
+          });
           
           // Show notification for completed jobs
-          if (payload.eventType === 'UPDATE' && payload.new.status === 'completed') {
+          if (payload.eventType === 'UPDATE' && payload.new?.status === 'completed') {
             toast.success(`Your images are ready! Generated ${payload.new.generated_images_count} image${payload.new.generated_images_count !== 1 ? 's' : ''}.`);
             loadPendingImages();
           }
           
           // Show notification for failed jobs
-          if (payload.eventType === 'UPDATE' && payload.new.status === 'failed') {
+          if (payload.eventType === 'UPDATE' && payload.new?.status === 'failed') {
             toast.error(`Generation failed: ${payload.new.error_message || 'Unknown error'}`);
           }
         }

@@ -277,6 +277,12 @@ const CreateUGC = () => {
         orientation
       });
 
+      // Show success feedback
+      toast({
+        title: 'Generation started!',
+        description: `Creating ${numImages} image${numImages !== 1 ? 's' : ''} in the background. You'll be notified when ready.`,
+      });
+
       // Reset form for next generation
       setSelectedScenario(null);
       setAiScenarios([]);

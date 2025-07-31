@@ -62,6 +62,7 @@ serve(async (req) => {
     const numberOfImages = settings.numberOfImages || 1;
     const size = settings.size || '1024x1024';
     const quality = settings.quality || 'standard';
+    const baseImage = settings.baseImage;
 
     const generatedImages = [];
     let currentProgress = 10;
@@ -71,13 +72,21 @@ serve(async (req) => {
       try {
         console.log(`Generating image ${i + 1} of ${numberOfImages}`);
         
-        const response = await openai.images.generate({
+        // Prepare the generation request
+        const generationRequest: any = {
           model: "gpt-image-1",
           prompt: job.prompt,
           n: 1,
           size: size as "1024x1024" | "1792x1024" | "1024x1792",
           quality: quality as "standard" | "hd",
-        });
+        };
+
+        // If we have a base image, include it for image-to-image generation
+        if (baseImage) {
+          generationRequest.image = baseImage;
+        }
+
+        const response = await openai.images.generate(generationRequest);
 
         if (response.data && response.data[0] && response.data[0].b64_json) {
           generatedImages.push(response.data[0].b64_json);
