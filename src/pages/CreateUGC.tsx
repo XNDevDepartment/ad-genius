@@ -706,7 +706,7 @@ const CreateUGC = () => {
                         id="numImages"
                         type="number"
                         min="1"
-                        max="6"
+                        max="3"
                         value={numImages}
                         onChange={(e) => setNumImages(parseInt(e.target.value))}
                         className="rounded-apple-sm"
