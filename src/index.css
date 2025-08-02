@@ -33,7 +33,7 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
+    --border: 0 0% 100%;
     --input: 0 0% 95%;
     --ring: 225 86% 60%;
 
@@ -45,7 +45,7 @@ All colors MUST be HSL.
     --gradient-button: linear-gradient(135deg, hsl(225 86% 60%), hsl(248 95% 70%));
     --spacing-base: 0.5rem;           /* 8pt base rhythm */
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
     --sidebar-primary-foreground: 0 0% 98%;
@@ -86,10 +86,10 @@ All colors MUST be HSL.
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
+    --border: 222.2 84% 4.9%;
     --input: 217.2 32.6% 17.5%;
     --ring: 225 86% 70%;
-    --sidebar-background: 240 5.9% 10%;
+    --sidebar-background: 222.2 84% 4.9%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
