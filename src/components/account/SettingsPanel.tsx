@@ -6,13 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Eye, RefreshCw, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 
 interface SettingsPanelProps {
-  theme: string;
-  setTheme: (theme: string) => void;
   layout: string;
   setLayout: (layout: string) => void;
   onClose: () => void;
@@ -26,8 +25,9 @@ interface UserPreferences {
   timezone: string;
 }
 
-export const SettingsPanel = ({ theme, setTheme, layout, setLayout, onClose }: SettingsPanelProps) => {
+export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps) => {
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const [preferences, setPreferences] = useState<UserPreferences>({
     default_aspect_ratio: '1:1',
@@ -59,7 +59,9 @@ export const SettingsPanel = ({ theme, setTheme, layout, setLayout, onClose }: S
 
       if (data) {
         setPreferences(data);
-        setTheme(data.theme);
+        if (data.theme) {
+          setTheme(data.theme as 'light' | 'dark' | 'auto');
+        }
       }
     } catch (error) {
       console.error('Error loading preferences:', error);
@@ -106,7 +108,7 @@ export const SettingsPanel = ({ theme, setTheme, layout, setLayout, onClose }: S
   const handlePreferenceChange = (key: keyof UserPreferences, value: any) => {
     setPreferences(prev => ({ ...prev, [key]: value }));
     if (key === 'theme') {
-      setTheme(value);
+      setTheme(value as 'light' | 'dark' | 'auto');
     }
   };
 
@@ -183,14 +185,14 @@ export const SettingsPanel = ({ theme, setTheme, layout, setLayout, onClose }: S
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="theme">Theme</Label>
-            <Select value={preferences.theme} onValueChange={(value) => handlePreferenceChange('theme', value)}>
+            <Select value={theme} onValueChange={(value) => handlePreferenceChange('theme', value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="light">Light</SelectItem>
                 <SelectItem value="dark">Dark</SelectItem>
-                <SelectItem value="auto">Auto</SelectItem>
+                <SelectItem value="auto">System</SelectItem>
               </SelectContent>
             </Select>
           </div>

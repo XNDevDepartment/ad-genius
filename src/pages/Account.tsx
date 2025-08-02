@@ -26,7 +26,7 @@ const Account = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [section, setSection] = useState<string>("");
-  const [theme, setTheme] = useState("auto");
+  
   const [layout, setLayout] = useState("grid");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
@@ -240,7 +240,7 @@ const Account = () => {
         </div>
 
         {section === "edit-profile" && <ProfileEditPanel onClose={() => setSection("")} />}
-        {section === "settings" && <SettingsPanel theme={theme} setTheme={setTheme} layout={layout} setLayout={setLayout} onClose={() => setSection("")} />}
+        {section === "settings" && <SettingsPanel layout={layout} setLayout={setLayout} onClose={() => setSection("")} />}
         {section === "notifications" && <NotificationsPanel onClose={() => setSection("")} />}
         {section === "privacy" && <PrivacyPanel onClose={() => setSection("")} />}
         {section === "billing" && <BillingPanel onClose={() => setSection("")} />}
