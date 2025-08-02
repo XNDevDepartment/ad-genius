@@ -47,46 +47,47 @@ export function AppSidebar() {
   return (
     <>
       <Sidebar className={isCollapsed ? "w-14" : "w-64"} collapsible="icon">
-        <SidebarHeader className="p-6 border-b">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-apple flex items-center justify-center">
-              <Sparkles className="h-6 w-6 text-primary-foreground" />
+        <SidebarHeader className="p-6">
+          <div className="flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Sparkles className="h-6 w-6 text-white" />
             </div>
             {!isCollapsed && (
-              <div>
-                <h1 className="text-lg font-bold text-foreground">Genius UGC</h1>
-                <p className="text-xs text-muted-foreground">Marketing com IA</p>
+              <div className="ml-3">
+                <h1 className="text-lg font-bold text-sidebar-foreground">Genius UGC</h1>
+                <p className="text-xs text-sidebar-foreground/60">Marketing com IA</p>
               </div>
             )}
           </div>
         </SidebarHeader>
 
-        <SidebarContent>
+        <SidebarContent className="px-3 py-6">
           <SidebarGroup>
-            <SidebarGroupLabel>Navegar</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="space-y-2">
                 {navigationItems.map((item) => {
                   const Icon = item.icon;
+                  const active = isActive(item.path);
                   return (
                     <SidebarMenuItem key={item.id}>
                       <SidebarMenuButton asChild>
                         <NavLink
                           to={item.path}
                           className={cn(
-                            "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                            getNavCls({ isActive: isActive(item.path) }),
-                            item.primary && !isActive(item.path) && "text-primary hover:text-primary"
+                            "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
+                            "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                            active 
+                              ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md" 
+                              : "text-sidebar-foreground/70 hover:text-sidebar-foreground",
+                            isCollapsed && "justify-center px-3"
                           )}
                         >
-                          <Icon className="h-5 w-5" />
+                          <Icon className={cn(
+                            "h-5 w-5 transition-colors",
+                            active && "text-sidebar-primary-foreground"
+                          )} />
                           {!isCollapsed && (
-                            <>
-                              <span>{item.label}</span>
-                              {item.primary && (
-                                <div className="ml-auto w-2 h-2 bg-primary rounded-full" />
-                              )}
-                            </>
+                            <span className="font-medium">{item.label}</span>
                           )}
                         </NavLink>
                       </SidebarMenuButton>
@@ -98,31 +99,37 @@ export function AppSidebar() {
           </SidebarGroup>
         </SidebarContent>
 
-        <SidebarFooter className="p-4 border-t">
-          {!isCollapsed && (
-            <div className="space-y-2">
-              {user ? (
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start gap-3"
-                  onClick={handleSignOut}
-                >
-                  <LogOut className="h-5 w-5" />
-                  Sair
-                </Button>
-              ) : (
-                <Button 
-                  onClick={() => setShowAuthModal(true)}
-                  className="w-full"
-                >
-                  Entrar / Registrar
-                </Button>
-              )}
-              <div className="text-xs text-muted-foreground text-center">
+        <SidebarFooter className="p-4">
+          <div className="space-y-3">
+            {user ? (
+              <Button
+                variant="ghost"
+                className={cn(
+                  "w-full justify-start gap-3 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent",
+                  isCollapsed && "justify-center px-3"
+                )}
+                onClick={handleSignOut}
+              >
+                <LogOut className="h-5 w-5" />
+                {!isCollapsed && <span>Sair</span>}
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => setShowAuthModal(true)}
+                className={cn(
+                  "w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0 shadow-lg",
+                  isCollapsed && "px-3"
+                )}
+              >
+                {isCollapsed ? <User className="h-5 w-5" /> : "Entrar / Registrar"}
+              </Button>
+            )}
+            {!isCollapsed && (
+              <div className="text-xs text-sidebar-foreground/40 text-center">
                 Genius UGC v1.0
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </SidebarFooter>
       </Sidebar>
 
