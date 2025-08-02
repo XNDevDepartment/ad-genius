@@ -46,7 +46,7 @@ export function AppSidebar() {
 
   return (
     <>
-      <Sidebar className={isCollapsed ? "w-14" : "w-64"} collapsible="icon">
+      <Sidebar className={isCollapsed ? "w-20" : "w-64"} collapsible="icon">
         <SidebarHeader className="p-6">
           <div className="flex items-center justify-center">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -76,7 +76,7 @@ export function AppSidebar() {
                           className={cn(
                             "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
                             "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                            active 
+                            active
                               ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md" 
                               : "text-sidebar-foreground/70 hover:text-sidebar-foreground",
                             isCollapsed && "justify-center px-3"
