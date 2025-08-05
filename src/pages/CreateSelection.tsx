@@ -32,14 +32,6 @@ const CreateSelection = () => {
       path: "/create/studio",
       disabled: true
     },
-    {
-      id: "edit",
-      title: "Photo Editor",
-      description: "Edit and enhance existing product images",
-      icon: Edit3,
-      path: "/create/edit",
-      disabled: true
-    }
   ];
 
   return (
