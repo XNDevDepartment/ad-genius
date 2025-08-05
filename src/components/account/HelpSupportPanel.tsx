@@ -159,7 +159,7 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
             </Link>
           </Button>
 
-          <Button asChild variant="outline" className="w-full justify-start">
+          {/* <Button asChild variant="outline" className="w-full justify-start">
             <Link to="/help/tutorials">
               <Video className="h-4 w-4 mr-2" />
               Video Tutorials
@@ -173,7 +173,7 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
               API Documentation
               <ExternalLink className="h-4 w-4 ml-auto" />
             </Link>
-          </Button>
+          </Button> */}
         </CardContent>
       </Card>
 
