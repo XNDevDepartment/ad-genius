@@ -1,0 +1,31 @@
+{
+  "navigation": {
+    "home": "Home",
+    "create": "Create",
+    "library": "Library", 
+    "account": "Account"
+  },
+  "auth": {
+    "signIn": "Sign In / Register",
+    "signOut": "Sign Out"
+  },
+  "settings": {
+    "quickSettings": "Quick Settings",
+    "theme": "Theme",
+    "language": "Language"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "english": "English",
+    "portuguese": "Portuguese", 
+    "spanish": "Spanish",
+    "french": "French"
+  },
+  "header": {
+    "tagline": "AI Marketing"
+  }
+}

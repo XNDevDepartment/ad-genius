@@ -1,0 +1,31 @@
+{
+  "navigation": {
+    "home": "Inicio",
+    "create": "Crear",
+    "library": "Biblioteca",
+    "account": "Cuenta"
+  },
+  "auth": {
+    "signIn": "Iniciar Sesión / Registrarse",
+    "signOut": "Cerrar Sesión"
+  },
+  "settings": {
+    "quickSettings": "Configuración Rápida",
+    "theme": "Tema",
+    "language": "Idioma"
+  },
+  "theme": {
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema"
+  },
+  "language": {
+    "english": "Inglés",
+    "portuguese": "Portugués",
+    "spanish": "Español",
+    "french": "Francés"
+  },
+  "header": {
+    "tagline": "Marketing con IA"
+  }
+}
