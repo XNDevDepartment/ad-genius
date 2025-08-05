@@ -1,10 +1,13 @@
-import { Home, Plus, Image, User, Sparkles, LogOut } from "lucide-react";
+import { Home, Plus, Image, User, Sparkles, LogOut, Settings } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageSelector } from "@/components/LanguageSelector";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import symbol from './../assets/favicon2.png';
 
 import {
@@ -22,16 +25,17 @@ import {
 } from "@/components/ui/sidebar";
 
 const navigationItems = [
-  { id: "home", label: "Home", icon: Home, path: "/" },
-  { id: "create", label: "Criar", icon: Plus, path: "/create", primary: true },
-  { id: "library", label: "Biblioteca", icon: Image, path: "/library" },
-  { id: "account", label: "Conta", icon: User, path: "/account" },
+  { id: "home", icon: Home, path: "/" },
+  { id: "create", icon: Plus, path: "/create", primary: true },
+  { id: "library", icon: Image, path: "/library" },
+  { id: "account", icon: User, path: "/account" },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const { t } = useTranslation();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const currentPath = location.pathname;
 
@@ -66,7 +70,7 @@ export function AppSidebar() {
             {!isCollapsed && (
               <div className="ml-3">
                 <h1 className="text-lg font-bold text-sidebar-foreground">Genius UGC</h1>
-                <p className="text-xs text-sidebar-foreground/60">Marketing com IA</p>
+                <p className="text-xs text-sidebar-foreground/60">{t('header.tagline')}</p>
               </div>
             )}
           </div>
@@ -98,7 +102,7 @@ export function AppSidebar() {
                             active && "text-sidebar-primary-foreground"
                           )} />
                           {!isCollapsed && (
-                            <span className="font-medium">{item.label}</span>
+                            <span className="font-medium">{t(`navigation.${item.id}`)}</span>
                           )}
                         </NavLink>
                       </SidebarMenuButton>
@@ -106,6 +110,19 @@ export function AppSidebar() {
                   );
                 })}
               </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          
+          <SidebarGroup>
+            <SidebarGroupLabel>{t('settings.quickSettings')}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <div className={cn(
+                "flex gap-2 px-2",
+                isCollapsed ? "flex-col items-center" : "flex-row"
+              )}>
+                <ThemeToggle variant="ghost" size={isCollapsed ? "icon" : "default"} />
+                <LanguageSelector variant="ghost" size={isCollapsed ? "icon" : "default"} />
+              </div>
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
@@ -122,7 +139,7 @@ export function AppSidebar() {
                 onClick={handleSignOut}
               >
                 <LogOut className="h-5 w-5" />
-                {!isCollapsed && <span>Sair</span>}
+                {!isCollapsed && <span>{t('auth.signOut')}</span>}
               </Button>
             ) : (
               <Button 
@@ -132,7 +149,7 @@ export function AppSidebar() {
                   isCollapsed && "px-3"
                 )}
               >
-                {isCollapsed ? <User className="h-5 w-5" /> : "Entrar / Registrar"}
+                {isCollapsed ? <User className="h-5 w-5" /> : t('auth.signIn')}
               </Button>
             )}
             {!isCollapsed && (

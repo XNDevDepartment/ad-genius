@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useTranslation } from 'react-i18next';
 
 interface ThemeToggleProps {
   variant?: 'default' | 'ghost' | 'outline';
@@ -15,6 +16,7 @@ interface ThemeToggleProps {
 
 export const ThemeToggle = ({ variant = 'ghost', size = 'icon' }: ThemeToggleProps) => {
   const { theme, setTheme, actualTheme } = useTheme();
+  const { t } = useTranslation();
 
   const getIcon = () => {
     if (theme === 'auto') {
@@ -34,15 +36,15 @@ export const ThemeToggle = ({ variant = 'ghost', size = 'icon' }: ThemeTogglePro
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setTheme('light')}>
           <Sun className="mr-2 h-4 w-4" />
-          <span>Light</span>
+          <span>{t('theme.light')}</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('dark')}>
           <Moon className="mr-2 h-4 w-4" />
-          <span>Dark</span>
+          <span>{t('theme.dark')}</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('auto')}>
           <Monitor className="mr-2 h-4 w-4" />
-          <span>System</span>
+          <span>{t('theme.system')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
