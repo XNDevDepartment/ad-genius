@@ -15,10 +15,10 @@ interface LanguageSelectorProps {
 }
 
 const languageOptions = [
+  { code: 'pt', flag: '🇵🇹', key: 'portuguese' },
   { code: 'en', flag: '🇺🇸', key: 'english' },
-  { code: 'pt', flag: '🇧🇷', key: 'portuguese' },
-  { code: 'es', flag: '🇪🇸', key: 'spanish' },
   { code: 'fr', flag: '🇫🇷', key: 'french' },
+  { code: 'es', flag: '🇪🇸', key: 'spanish' },
 ] as const;
 
 export const LanguageSelector = ({ variant = 'ghost', size = 'icon' }: LanguageSelectorProps) => {
