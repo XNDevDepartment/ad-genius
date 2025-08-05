@@ -21,40 +21,64 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [theme, setThemeState] = useState<Theme>('auto');
   const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light');
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Load theme from localStorage or user preferences
   useEffect(() => {
     const loadTheme = async () => {
-      if (user) {
-        // Load from user preferences if logged in
+      try {
+        console.log('[ThemeProvider] Loading theme, user:', user?.id, 'authLoading:', authLoading);
+        
+        if (user && !authLoading) {
+          // Load from user preferences if logged in
+          try {
+            const { data, error } = await supabase
+              .from('user_preferences')
+              .select('theme')
+              .eq('user_id', user.id)
+              .maybeSingle();
+            
+            if (error) {
+              console.error('[ThemeProvider] Database error:', error);
+            } else if (data?.theme) {
+              console.log('[ThemeProvider] Loaded theme from database:', data.theme);
+              setThemeState(data.theme as Theme);
+              setIsInitialized(true);
+              return;
+            }
+          } catch (error) {
+            console.error('[ThemeProvider] Error loading theme from user preferences:', error);
+          }
+        }
+        
+        // Fallback to localStorage
         try {
-          const { data } = await supabase
-            .from('user_preferences')
-            .select('theme')
-            .eq('user_id', user.id)
-            .maybeSingle();
-          
-          if (data?.theme) {
-            setThemeState(data.theme as Theme);
-            return;
+          const savedTheme = localStorage.getItem('theme') as Theme;
+          if (savedTheme && ['light', 'dark', 'auto'].includes(savedTheme)) {
+            console.log('[ThemeProvider] Loaded theme from localStorage:', savedTheme);
+            setThemeState(savedTheme);
+          } else {
+            console.log('[ThemeProvider] Using default theme: auto');
           }
         } catch (error) {
-          console.error('Error loading theme from user preferences:', error);
+          console.error('[ThemeProvider] localStorage error:', error);
+          console.log('[ThemeProvider] Using default theme due to localStorage error');
         }
-      }
-      
-      // Fallback to localStorage
-      const savedTheme = localStorage.getItem('theme') as Theme;
-      if (savedTheme && ['light', 'dark', 'auto'].includes(savedTheme)) {
-        setThemeState(savedTheme);
+      } catch (error) {
+        console.error('[ThemeProvider] Unexpected error during theme loading:', error);
+      } finally {
+        setIsInitialized(true);
       }
     };
 
-    loadTheme();
-  }, [user]);
+    // Don't load if auth is still loading
+    if (!authLoading) {
+      loadTheme();
+    }
+  }, [user, authLoading]);
 
   // Apply theme to document and calculate actual theme
   useEffect(() => {
@@ -87,25 +111,42 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [theme]);
 
   const setTheme = async (newTheme: Theme) => {
+    console.log('[ThemeProvider] Setting theme to:', newTheme);
     setThemeState(newTheme);
     
     // Save to localStorage
-    localStorage.setItem('theme', newTheme);
+    try {
+      localStorage.setItem('theme', newTheme);
+      console.log('[ThemeProvider] Saved theme to localStorage');
+    } catch (error) {
+      console.error('[ThemeProvider] Failed to save theme to localStorage:', error);
+    }
     
     // Save to user preferences if logged in
     if (user) {
       try {
-        await supabase
+        const { error } = await supabase
           .from('user_preferences')
           .upsert({
             user_id: user.id,
             theme: newTheme
           });
+        
+        if (error) {
+          console.error('[ThemeProvider] Database error saving theme:', error);
+        } else {
+          console.log('[ThemeProvider] Saved theme to database');
+        }
       } catch (error) {
-        console.error('Error saving theme to user preferences:', error);
+        console.error('[ThemeProvider] Error saving theme to user preferences:', error);
       }
     }
   };
+
+  // Don't render children until theme is initialized
+  if (!isInitialized) {
+    return null;
+  }
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, actualTheme }}>
