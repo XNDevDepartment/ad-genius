@@ -250,7 +250,7 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
             </Select>
           </div>
 
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="timezone">Timezone</Label>
             <Select value={preferences.timezone} onValueChange={(value) => handlePreferenceChange('timezone', value)}>
               <SelectTrigger>
@@ -263,7 +263,7 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
                 <SelectItem value="cet">Central European Time</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
 
           <div className="flex gap-2 pt-4">
             <Button onClick={saveUserPreferences} disabled={isLoading}>
