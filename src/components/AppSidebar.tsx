@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { useState } from "react";
+import symbol from './../assets/favicon2.png';
 
 import {
   Sidebar,
@@ -49,8 +50,8 @@ export function AppSidebar() {
       <Sidebar className={isCollapsed ? "w-20" : "w-64"} collapsible="icon">
         <SidebarHeader className="p-6">
           <div className="flex items-center justify-center">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Sparkles className="h-6 w-6 text-white" />
+            <div className="w-12 h-12 flex items-center justify-center shadow-lg object-contain">
+              <img src={symbol} alt="Genius_logo" />
             </div>
             {!isCollapsed && (
               <div className="ml-3">
