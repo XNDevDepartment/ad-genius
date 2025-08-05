@@ -126,6 +126,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           .upsert({
             user_id: user.id,
             language: newLanguage
+          }, {
+            onConflict: 'user_id'
           });
         
         if (error) {

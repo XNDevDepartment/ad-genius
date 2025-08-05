@@ -130,6 +130,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           .upsert({
             user_id: user.id,
             theme: newTheme
+          }, {
+            onConflict: 'user_id'
           });
         
         if (error) {
