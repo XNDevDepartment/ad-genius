@@ -112,7 +112,10 @@ export function AppSidebar() {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
-          
+
+        </SidebarContent>
+
+        <SidebarFooter className="p-4">
           <SidebarGroup>
             <SidebarGroupLabel>{t('settings.quickSettings')}</SidebarGroupLabel>
             <SidebarGroupContent>
@@ -125,9 +128,6 @@ export function AppSidebar() {
               </div>
             </SidebarGroupContent>
           </SidebarGroup>
-        </SidebarContent>
-
-        <SidebarFooter className="p-4">
           <div className="space-y-3">
             {user ? (
               <Button
