@@ -112,7 +112,7 @@ const Account = () => {
       <div className="lg:col-span-3 space-y-2">
         {/* Settings */}
         <Card
-          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none bg-white"
+          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none bg-transparent"
           onClick={() => handleMenuClick("settings")}
         >
           <CardContent className="flex items-center gap-4 p-6">
@@ -128,7 +128,7 @@ const Account = () => {
 
         {/* Notifications */}
         <Card 
-          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none bg-white"
+          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none bg-transparent"
           onClick={() => handleMenuClick("notifications")}
         >
           <CardContent className="flex items-center gap-4 p-6">
@@ -144,7 +144,7 @@ const Account = () => {
 
         {/* Privacy */}
         <Card 
-          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none bg-white"
+          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none bg-transparent"
           onClick={() => handleMenuClick("privacy")}
         >
           <CardContent className="flex items-center gap-4 p-6">
@@ -160,7 +160,7 @@ const Account = () => {
 
         {/* Billing */}
         <Card 
-          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none bg-white"
+          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none bg-transparent"
           onClick={() => handleMenuClick("billing")}
         >
           <CardContent className="flex items-center gap-4 p-6">
@@ -176,7 +176,7 @@ const Account = () => {
 
         {/* Help & Support */}
         <Card 
-          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none bg-white"
+          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none bg-transparent"
           onClick={() => handleMenuClick("help")}
         >
           <CardContent className="flex items-center gap-4 p-6">
@@ -192,7 +192,7 @@ const Account = () => {
 
         {/* Sign Out */}
         <Card 
-          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none mt-8 bg-white"
+          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none mt-8 bg-transparent"
           onClick={handleSignOut}
         >
           <CardContent className="flex items-center gap-4 p-6">
