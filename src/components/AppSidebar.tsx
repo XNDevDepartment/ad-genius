@@ -112,7 +112,7 @@ export function AppSidebar() {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
-
+ 
         </SidebarContent>
 
         <SidebarFooter className="p-4">

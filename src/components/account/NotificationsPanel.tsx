@@ -193,7 +193,7 @@ export const NotificationsPanel = ({ onClose }: NotificationsPanelProps) => {
         </CardContent>
       </Card>
 
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Smartphone className="h-5 w-5" />
@@ -232,24 +232,24 @@ export const NotificationsPanel = ({ onClose }: NotificationsPanelProps) => {
             <Switch checked={preferences.push_credit_alerts} onCheckedChange={(checked) => handlePreferenceChange('push_credit_alerts', checked)} disabled={!preferences.push_enabled} />
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       <Card>
-        <CardHeader>
+        {/* <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
             In-App Notifications
           </CardTitle>
           <CardDescription>Notifications within the application</CardDescription>
-        </CardHeader>
+        </CardHeader> */}
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
+          {/* <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Sound Effects</Label>
               <p className="text-sm text-muted-foreground">Play sounds for notifications</p>
             </div>
             <Switch checked={preferences.sound_effects} onCheckedChange={(checked) => handlePreferenceChange('sound_effects', checked)} />
-          </div>
+          </div> */}
 
           <div className="flex gap-2 pt-4">
             <Button onClick={saveNotificationPreferences} disabled={isLoading}>
