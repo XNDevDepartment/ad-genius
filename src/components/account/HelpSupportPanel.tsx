@@ -1,10 +1,11 @@
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { X, HelpCircle, MessageCircle, Book, ExternalLink, Send } from "lucide-react";
+import { X, HelpCircle, MessageCircle, Book, ExternalLink, Send, Video, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -142,28 +143,36 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
           <CardDescription>Find answers to common questions</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Button variant="outline" className="w-full justify-start">
-            <Book className="h-4 w-4 mr-2" />
-            Getting Started Guide
-            <ExternalLink className="h-4 w-4 ml-auto" />
+          <Button asChild variant="outline" className="w-full justify-start">
+            <Link to="/help/getting-started">
+              <Book className="h-4 w-4 mr-2" />
+              Getting Started Guide
+              <ExternalLink className="h-4 w-4 ml-auto" />
+            </Link>
           </Button>
 
-          <Button variant="outline" className="w-full justify-start">
-            <HelpCircle className="h-4 w-4 mr-2" />
-            FAQ
-            <ExternalLink className="h-4 w-4 ml-auto" />
+          <Button asChild variant="outline" className="w-full justify-start">
+            <Link to="/help/faq">
+              <HelpCircle className="h-4 w-4 mr-2" />
+              FAQ
+              <ExternalLink className="h-4 w-4 ml-auto" />
+            </Link>
           </Button>
 
-          <Button variant="outline" className="w-full justify-start">
-            <MessageCircle className="h-4 w-4 mr-2" />
-            Video Tutorials
-            <ExternalLink className="h-4 w-4 ml-auto" />
+          <Button asChild variant="outline" className="w-full justify-start">
+            <Link to="/help/tutorials">
+              <Video className="h-4 w-4 mr-2" />
+              Video Tutorials
+              <ExternalLink className="h-4 w-4 ml-auto" />
+            </Link>
           </Button>
 
-          <Button variant="outline" className="w-full justify-start">
-            <Book className="h-4 w-4 mr-2" />
-            API Documentation
-            <ExternalLink className="h-4 w-4 ml-auto" />
+          <Button asChild variant="outline" className="w-full justify-start">
+            <Link to="/help/api-docs">
+              <FileText className="h-4 w-4 mr-2" />
+              API Documentation
+              <ExternalLink className="h-4 w-4 ml-auto" />
+            </Link>
           </Button>
         </CardContent>
       </Card>

@@ -15,6 +15,10 @@ import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
 import AdminDashboard from "./pages/AdminDashboard";
+import GettingStartedGuide from "./pages/help/GettingStartedGuide";
+import FAQPage from "./pages/help/FAQPage";
+import VideoTutorialsPage from "./pages/help/VideoTutorialsPage";
+import APIDocsPage from "./pages/help/APIDocsPage";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +40,10 @@ const App = () => {
                 <Route path="create/ugc" element={<CreateUGC />} />
                 <Route path="library" element={<Library />} />
                 <Route path="account" element={<Account />} />
+                <Route path="help/getting-started" element={<GettingStartedGuide />} />
+                <Route path="help/faq" element={<FAQPage />} />
+                <Route path="help/tutorials" element={<VideoTutorialsPage />} />
+                <Route path="help/api-docs" element={<APIDocsPage />} />
               </Route>
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/admin" element={<AdminDashboard />} />
