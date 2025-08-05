@@ -242,10 +242,10 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="es">Español</SelectItem>
-                <SelectItem value="fr">Français</SelectItem>
-                <SelectItem value="de">Deutsch</SelectItem>
+                <SelectItem value="pt">Portuguese 🇵🇹</SelectItem>
+                <SelectItem value="en">English 🇺🇸</SelectItem>
+                <SelectItem value="fr">French 🇫🇷</SelectItem>
+                <SelectItem value="en">Spanish 🇪🇸</SelectItem>
               </SelectContent>
             </Select>
           </div>
