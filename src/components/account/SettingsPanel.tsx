@@ -10,6 +10,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
+import { LanguageSelector } from "../LanguageSelector";
 
 interface SettingsPanelProps {
   layout: string;
@@ -231,24 +232,11 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
 
       <Card>
         <CardHeader>
-          <CardTitle>Language & Region</CardTitle>
-          <CardDescription>Set your language and regional preferences</CardDescription>
+          <CardTitle>Language</CardTitle>
+          <CardDescription>Set your language preference</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="language">Language</Label>
-            <Select value={preferences.language} onValueChange={(value) => handlePreferenceChange('language', value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pt">Portuguese 🇵🇹</SelectItem>
-                <SelectItem value="en">English 🇺🇸</SelectItem>
-                <SelectItem value="fr">French 🇫🇷</SelectItem>
-                <SelectItem value="en">Spanish 🇪🇸</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <LanguageSelector variant="ghost" size={"default"} />
 
           {/* <div className="space-y-2">
             <Label htmlFor="timezone">Timezone</Label>
