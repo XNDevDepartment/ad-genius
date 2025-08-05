@@ -138,7 +138,7 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
             </div>
           </div> */}
 
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="aspectRatio">Default Aspect Ratio</Label>
             <Select value={preferences.default_aspect_ratio} onValueChange={(value) => handlePreferenceChange('default_aspect_ratio', value)}>
               <SelectTrigger>
@@ -151,7 +151,7 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
                 <SelectItem value="16:9">Wide (16:9)</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
 
           {/* <div className="space-y-2">
             <Label htmlFor="style">Default Style</Label>
