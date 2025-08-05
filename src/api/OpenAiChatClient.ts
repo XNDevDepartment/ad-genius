@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
@@ -95,6 +96,11 @@ export async function generateImagesFromBase(
 
   if (prompt.length > 4000) {
     throw new Error('Prompt is too long. Maximum length is 4000 characters.');
+  }
+
+  if(options.number > 3){
+    toast.error('Apenas pode gerar 3 imagens em simultâneo');
+    throw new Error('User asked to generate more than 3 images');
   }
 
   console.log('Using new-openai-chat generateImages...');

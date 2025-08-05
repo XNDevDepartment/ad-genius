@@ -51,12 +51,12 @@ export function AppSidebar() {
         <SidebarHeader className={isCollapsed ? "p-3" : "p-6"}>
           <div className="flex items-center justify-center">
             <div className={cn(
-              "flex items-center justify-center shadow-lg",
+              "flex items-center justify-center ",
               isCollapsed ? "w-14 h-14" : "w-12 h-12"
             )}>
               <img 
                 src={symbol} 
-                alt="Genius_logo" 
+                alt="Genius_logo"
                 className={cn(
                   "object-contain",
                   isCollapsed ? "w-10 h-10" : "w-8 h-8"
