@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/lib/supabase';
-import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
 
 type Language = 'en' | 'pt' | 'es' | 'fr';
 
@@ -22,51 +22,64 @@ export const useLanguage = () => {
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  const { i18n } = useTranslation();
   const [language, setLanguageState] = useState<Language>('pt');
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Load language from localStorage or user preferences
   useEffect(() => {
     const loadLanguage = async () => {
-      if (user) {
-        // Load from user preferences if logged in
-        try {
-          const { data } = await supabase
-            .from('user_preferences')
-            .select('language')
-            .eq('user_id', user.id)
-            .maybeSingle();
-          
-          if (data?.language) {
-            setLanguageState(data.language as Language);
-            i18n.changeLanguage(data.language);
-            return;
+      try {
+        // Wait for i18n to be ready
+        await i18n.loadLanguages(['en', 'pt', 'es', 'fr']);
+        
+        if (user) {
+          // Load from user preferences if logged in
+          try {
+            const { data } = await supabase
+              .from('user_preferences')
+              .select('language')
+              .eq('user_id', user.id)
+              .maybeSingle();
+            
+            if (data?.language) {
+              setLanguageState(data.language as Language);
+              await i18n.changeLanguage(data.language);
+              setIsInitialized(true);
+              return;
+            }
+          } catch (error) {
+            console.error('Error loading language from user preferences:', error);
           }
-        } catch (error) {
-          console.error('Error loading language from user preferences:', error);
         }
-      }
-      
-      // Fallback to localStorage and browser detection
-      const savedLanguage = localStorage.getItem('language') as Language;
-      if (savedLanguage && ['en', 'pt', 'es', 'fr'].includes(savedLanguage)) {
-        setLanguageState(savedLanguage);
-        i18n.changeLanguage(savedLanguage);
-      } else {
-        // Use browser language detection
-        const browserLang = navigator.language.split('-')[0] as Language;
-        const supportedLang = ['en', 'pt', 'es', 'fr'].includes(browserLang) ? browserLang : 'pt';
-        setLanguageState(supportedLang);
-        i18n.changeLanguage(supportedLang);
+        
+        // Fallback to localStorage and browser detection
+        const savedLanguage = localStorage.getItem('language') as Language;
+        if (savedLanguage && ['en', 'pt', 'es', 'fr'].includes(savedLanguage)) {
+          setLanguageState(savedLanguage);
+          await i18n.changeLanguage(savedLanguage);
+        } else {
+          // Use browser language detection
+          const browserLang = navigator.language.split('-')[0] as Language;
+          const supportedLang = ['en', 'pt', 'es', 'fr'].includes(browserLang) ? browserLang : 'pt';
+          setLanguageState(supportedLang);
+          await i18n.changeLanguage(supportedLang);
+        }
+      } catch (error) {
+        console.error('Error initializing language:', error);
+        // Fallback to default
+        setLanguageState('pt');
+        await i18n.changeLanguage('pt');
+      } finally {
+        setIsInitialized(true);
       }
     };
 
     loadLanguage();
-  }, [user, i18n]);
+  }, [user]);
 
   const setLanguage = async (newLanguage: Language) => {
     setLanguageState(newLanguage);
-    i18n.changeLanguage(newLanguage);
+    await i18n.changeLanguage(newLanguage);
     
     // Save to localStorage
     localStorage.setItem('language', newLanguage);
@@ -85,6 +98,11 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     }
   };
+
+  // Don't render children until language is initialized
+  if (!isInitialized) {
+    return null;
+  }
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage }}>
