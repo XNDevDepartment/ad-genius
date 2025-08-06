@@ -377,6 +377,8 @@ const CreateUGC = () => {
       setProgress(100);
       setStage('results');
 
+      await handleSaveImages(validImages);
+
       toast({
         title: 'Images generated!',
         description: `Successfully created ${validImages.length} images.`
@@ -409,8 +411,8 @@ const CreateUGC = () => {
 
   const selectedImages = generatedImages.filter(img => img.selected);
 
-  const handleSaveImages = async () => {
-    if (selectedImages.length === 0) {
+  const handleSaveImages = async (validImages) => {
+    if (validImages.length === 0) {
       toast({
         title: "No images selected",
         description: "Please select at least one image to save.",
@@ -422,7 +424,7 @@ const CreateUGC = () => {
     setIsGenerating(true)
 
     try {
-      const base64Images = selectedImages.map(img => 
+      const base64Images = validImages.map(img =>
         img.url.replace('data:image/png;base64,', '')
       );
 
@@ -438,10 +440,10 @@ const CreateUGC = () => {
         }
       });
 
-      toast({
-        title: "Images saved",
-        description: `Successfully saved ${selectedImages.length} images to your library.`,
-      });
+      // toast({
+      //   title: "Images saved",
+      //   description: `Successfully saved ${selectedImages.length} images to your library.`,
+      // });
       setIsGenerating(false)
     } catch (error) {
       setIsGenerating(false)
@@ -829,13 +831,13 @@ const CreateUGC = () => {
               </p>
             </div>
 
-            <div className="space-y-4">
+            {/* <div className="space-y-4">
               <div className="flex justify-between text-sm">
                 <span>Progress</span>
                 <span>{Math.round(progress)}%</span>
               </div>
               <Progress value={progress} className="w-full" />
-            </div>
+            </div> */}
 
             <GeneratingImagePlaceholders numberOfImages={numImages} />
           </div>
