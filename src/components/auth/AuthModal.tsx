@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Loader, Eye, EyeOff } from 'lucide-react';
 
+
 interface AuthModalProps {
   onSuccess?: () => void;
   isOpen?: boolean;
@@ -24,6 +25,8 @@ export const AuthModal = ({ onSuccess, isOpen, onClose }: AuthModalProps) => {
     name: '',
     profession: '',
   });
+
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

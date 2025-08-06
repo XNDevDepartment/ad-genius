@@ -33,7 +33,7 @@ const Account = () => {
   const { toast } = useToast();
 
   if (!user) {
-    return <AuthModal onSuccess={() => navigate("/account")} />;
+    return <AuthModal onSuccess={() => navigate("/")} />;
   }
 
   const handleSignOut = async () => {
