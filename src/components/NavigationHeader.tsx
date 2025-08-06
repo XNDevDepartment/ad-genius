@@ -11,7 +11,7 @@ const NavigationHeader = () => {
     <header ref={ref} className="bg-background/90 backdrop-blur-sm border-b border-border flex justify-between ">
       <motion.div
       initial={{ opacity: 0, y: -20 }}
-      animate={{opacity: 1, y: 0 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: 0.2 }}
       >
         <div className="flex items-center gap-1 pt-2">
