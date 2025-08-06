@@ -35,7 +35,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose }: AuthModalProps) => {
           name: formData.name,
           profession: formData.profession,
         });
-        
+
         if (error) {
           if (error.message.includes('already registered')) {
             toast.error('Este email já está registrado. Tente fazer login.');
@@ -49,7 +49,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose }: AuthModalProps) => {
         }
       } else {
         const { error } = await signIn(formData.email, formData.password);
-        
+
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
             toast.error('Email ou senha incorretos.');

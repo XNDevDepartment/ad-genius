@@ -1,5 +1,5 @@
 import { Home, Plus, Image, User, Sparkles, LogOut, Settings } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -25,10 +25,10 @@ import {
 } from "@/components/ui/sidebar";
 
 const navigationItems = [
-  { id: "home", icon: Home, path: "/" },
-  { id: "create", icon: Plus, path: "/create", primary: true },
-  { id: "library", icon: Image, path: "/library" },
-  { id: "account", icon: User, path: "/account" },
+  { id: "home", icon: Home, path: "/", userAuth: false },
+  { id: "create", icon: Plus, path: "/create", primary: true, userAuth: true },
+  { id: "library", icon: Image, path: "/library", userAuth: true },
+  { id: "account", icon: User, path: "/account", userAuth: false },
 ];
 
 export function AppSidebar() {
@@ -39,6 +39,7 @@ export function AppSidebar() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const currentPath = location.pathname;
 
+  const navigate = useNavigate();
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive ? "bg-primary text-primary-foreground" : "hover:bg-accent hover:text-accent-foreground";
@@ -83,6 +84,7 @@ export function AppSidebar() {
                 {navigationItems.map((item) => {
                   const Icon = item.icon;
                   const active = isActive(item.path);
+                  if(item.userAuth && !user) return;
                   return (
                     <SidebarMenuItem key={item.id}>
                       <SidebarMenuButton asChild>
@@ -116,7 +118,8 @@ export function AppSidebar() {
         </SidebarContent>
 
         <SidebarFooter className="p-4">
-          <SidebarGroup>
+          {user &&
+            <SidebarGroup>
             <SidebarGroupLabel>{t('settings.quickSettings')}</SidebarGroupLabel>
             <SidebarGroupContent>
               <div className={cn(
@@ -127,7 +130,7 @@ export function AppSidebar() {
                 <LanguageSelector variant="ghost" size={isCollapsed ? "icon" : "default"} />
               </div>
             </SidebarGroupContent>
-          </SidebarGroup>
+          </SidebarGroup>}
           <div className="space-y-3">
             {user ? (
               <Button
@@ -143,7 +146,7 @@ export function AppSidebar() {
               </Button>
             ) : (
               <Button 
-                onClick={() => setShowAuthModal(true)}
+                onClick={() => navigate("/account")}
                 className={cn(
                   "w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0 shadow-lg",
                   isCollapsed && "px-3"
