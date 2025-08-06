@@ -193,7 +193,7 @@ const CreateUGC = () => {
     try {
       const responseText = await converse(
         threadId!,
-        `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 4 creative UGC scenario ideas.`,
+        `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 6 creative UGC scenario ideas.`,
         ASSISTANT_ID
       );
       // Extract JSON from response
@@ -207,7 +207,7 @@ const CreateUGC = () => {
           await saveMessage({
             conversationId,
             role: 'user',
-            content: `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 4 creative UGC scenario ideas.`,
+            content: `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 6 creative UGC scenario ideas.`,
             metadata: { requestType: 'scenario_generation' }
           });
 
