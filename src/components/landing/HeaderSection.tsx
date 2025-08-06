@@ -43,7 +43,7 @@ const HeaderSection = () => {
 
         {/* Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: -20,}}
           animate={inView ? { opacity: 1, y: 0} : {}}
           transition={{ duration: 0.6, delay: 0.2 }}
@@ -63,7 +63,7 @@ const HeaderSection = () => {
           transition={{ duration: 0.6, delay: 0.3 }}
           >
           <a href="#community" className="btn-ghost">Community</a>
-        </motion.div>
+        </motion.div> */}
         <motion.div
           initial={{ opacity: 0, y: -20, x: 30 }}
           animate={inView ? { opacity: 1, y: 0, x: 0 } : {}}
