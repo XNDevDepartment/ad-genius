@@ -8,7 +8,7 @@ const NavigationHeader = () => {
           <img 
             src={symbol}
             alt="Genius UGC Logo"
-            className="h-12 w-12 object-contain"
+            className="h-12 w-12 object-contain ml-4"
           />
         </div>
         <div>
@@ -16,6 +16,7 @@ const NavigationHeader = () => {
           <p className="text-xs font-bold" style={{color: '#0C60FE'}}>Genius</p>
         </div>
       </div>
+      
     </header>
   );
 };
