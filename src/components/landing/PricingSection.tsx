@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 const plans = [
   {
-    name: "Starter",
+    name: "Free",
     price: "Free",
     description: "Perfect for trying out Ad Genius",
     features: [
@@ -18,7 +18,7 @@ const plans = [
     entreprise: false
   },
   {
-    name: "Pro", 
+    name: "Pro",
     price: "$29",
     period: "/month",
     description: "Best for small businesses and agencies",
@@ -35,7 +35,7 @@ const plans = [
     entreprise: false
   },
   {
-    name: "Growth",
+    name: "Entreprise",
     price: "$99",
     period: "/month",
     description: "For teams and high-volume users",
