@@ -70,8 +70,8 @@ export function AppSidebar() {
             </div>
             {!isCollapsed && (
               <div className="ml-3">
-                <h1 className="text-lg font-bold text-sidebar-foreground">Genius UGC</h1>
-                <p className="text-xs text-sidebar-foreground/60">{t('header.tagline')}</p>
+                <h1 className="text-lg font-bold text-sidebar-foreground">Produkt Pix</h1>
+                <p className="text-xs text-sidebar-foreground/60">Genius</p>
               </div>
             )}
           </div>
