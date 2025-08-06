@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play, ArrowRight, Users, Zap, Trophy } from "lucide-react";
+import heroProduct from "@/assets/example_image.jpeg";
+
 
 const HeroSection = () => {
   const { t } = useTranslation();
@@ -15,7 +17,7 @@ const HeroSection = () => {
 
   const headlines = [
     "Create product images that sell",
-    "Transform products with AI magic", 
+    "Transform products with AI",
     "Generate stunning visuals instantly",
     "Turn ideas into compelling images"
   ];
@@ -152,16 +154,16 @@ const HeroSection = () => {
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300 }}
-                className="bg-card border border-border/50 rounded-apple-lg p-8 shadow-apple-lg backdrop-blur-sm"
+                className="bg-card border border-border/50 rounded-apple-lg shadow-apple-lg backdrop-blur-sm"
               >
-                <div className="space-y-6">
+                {/* <div className="space-y-6">
                   <div className="flex items-center gap-3">
                     <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
                     <span className="text-sm text-muted-foreground">AI Generation in Progress</span>
-                  </div>
+                  </div> */}
                   
                   {/* Mock Generation Preview */}
-                  <div className="aspect-square bg-gradient-to-br from-primary/10 to-secondary/10 rounded-apple border-2 border-dashed border-primary/20 flex items-center justify-center">
+                  {/* <div className="aspect-square bg-gradient-to-br from-primary/10 to-secondary/10 rounded-apple border-2 border-dashed border-primary/20 flex items-center justify-center">
                     <div className="text-center space-y-4">
                       <motion.div
                         animate={{ rotate: 360 }}
@@ -176,6 +178,17 @@ const HeroSection = () => {
                     <span>Style: Professional</span>
                     <span>Quality: Ultra HD</span>
                   </div>
+                </div> */}
+                {/* Hero Image */}
+                <div className="relative">
+                  <div className="relative z-10 transform hover:scale-105 transition-smooth">
+                    <img 
+                      src={heroProduct}
+                      alt="AI-generated product photography"
+                      className="w-full max-w-lg mx-auto rounded-2xl shadow-elegant"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-brand-gradient rounded-2xl blur-xl opacity-30 animate-pulse" />
                 </div>
               </motion.div>
 
@@ -196,7 +209,7 @@ const HeroSection = () => {
                 className="absolute -bottom-4 -left-4 bg-card border border-border rounded-apple p-4 shadow-apple"
               >
                 <div className="text-xs text-muted-foreground">Generated in</div>
-                <div className="text-lg font-bold text-primary">2.3s</div>
+                <div className="text-lg font-bold text-primary">23s</div>
               </motion.div>
             </div>
           </motion.div>
