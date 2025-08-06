@@ -135,7 +135,7 @@ const PublicGallery = () => {
 
 
         {/* Gallery Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-12">
+        <div className="grid gap-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-12">
           {images.map((image, index) => (
             <Card
               key={image.id}
@@ -153,12 +153,12 @@ const PublicGallery = () => {
                   loading={index < 4 ? "eager" : "lazy"}
                 /> */}
 
-<img
-  src={image.thumb_url}                                              // 🔄
-  alt={`Generated: ${image.prompt.slice(0, 50)}...`}
-  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-  loading={index < 4 ? "eager" : "lazy"}
-/>
+                <img
+                  src={image.thumb_url}                                              // 🔄
+                  alt={`Generated: ${image.prompt.slice(0, 50)}...`}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  loading={index < 4 ? "eager" : "lazy"}
+                />
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
                   <Button
@@ -176,10 +176,7 @@ const PublicGallery = () => {
                 </div>
               </div>
               
-              <CardContent className="p-4">
-                {/* <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                  {image.prompt}
-                </p> */}
+              {/* <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <Badge variant="secondary" className="text-xs">
                     {new Date(image.created_at).toLocaleDateString()}
@@ -190,7 +187,7 @@ const PublicGallery = () => {
                     </Badge>
                   )}
                 </div>
-              </CardContent>
+              </CardContent> */}
             </Card>
           ))}
         </div>
