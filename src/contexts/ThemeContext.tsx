@@ -22,7 +22,7 @@ export const useTheme = () => {
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading: authLoading } = useAuth();
-  const [theme, setThemeState] = useState<Theme>('auto');
+  const [theme, setThemeState] = useState<Theme>('light');
   const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light');
   const [isInitialized, setIsInitialized] = useState(false);
 

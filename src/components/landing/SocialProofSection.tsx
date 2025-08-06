@@ -51,10 +51,10 @@ const SocialProofSection = () => {
   ];
 
   const stats = [
-    { value: "50K+", label: "Happy Customers", change: "+23% this month" },
-    { value: "2M+", label: "Images Generated", change: "+156% this quarter" },
+    { value: "500", label: "Happy Customers", change: "+23% this month" },
+    { value: "10k", label: "Images Generated", change: "+156% this quarter" },
     { value: "98%", label: "Satisfaction Rate", change: "Consistently high" },
-    { value: "2.3s", label: "Average Generation Time", change: "50% faster than v1" },
+    { value: "25s", label: "Average Generation Time", change: "50% faster than v1" },
   ];
 
   return (

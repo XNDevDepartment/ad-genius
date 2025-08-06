@@ -45,7 +45,7 @@ const PublicGallery = () => {
 
 
   const handleTryCreating = () => {
-    navigate("/auth");
+    navigate("/account");
   };
 
   const handleOpenImage = (imageUrl: string) => {

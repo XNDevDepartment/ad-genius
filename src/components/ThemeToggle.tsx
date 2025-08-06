@@ -19,9 +19,6 @@ export const ThemeToggle = ({ variant = 'ghost', size = 'icon' }: ThemeTogglePro
   const { t } = useTranslation();
 
   const getIcon = () => {
-    if (theme === 'auto') {
-      return <Monitor className="h-4 w-4" />;
-    }
     return actualTheme === 'dark' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />;
   };
 
@@ -41,10 +38,6 @@ export const ThemeToggle = ({ variant = 'ghost', size = 'icon' }: ThemeTogglePro
         <DropdownMenuItem onClick={() => setTheme('dark')}>
           <Moon className="mr-2 h-4 w-4" />
           <span>{t('theme.dark')}</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('auto')}>
-          <Monitor className="mr-2 h-4 w-4" />
-          <span>{t('theme.system')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

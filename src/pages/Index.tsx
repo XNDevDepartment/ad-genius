@@ -7,6 +7,8 @@ import { Camera, Wand2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FeatureTile from "@/components/FeatureTile";
 import { useAuth } from "@/contexts/AuthContext";
+import PricingSection from "@/components/landing/PricingSection";
+import HeaderSection from "@/components/landing/HeaderSection";
 
 const Index = () => {
 
@@ -101,6 +103,11 @@ const Index = () => {
     <>
     {/* Landing Page */}
 
+      {/* Header Navigation */}
+      <div className="hidden lg:block">
+        <HeaderSection />
+      </div>
+
       {/* Enhanced Hero Section */}
       <HeroSection />
 
@@ -109,6 +116,9 @@ const Index = () => {
 
       {/* Social Proof and Testimonials */}
       <SocialProofSection />
+
+      {/* Plans & Pricing */}
+      <PricingSection />
     </>
     }
     </div>

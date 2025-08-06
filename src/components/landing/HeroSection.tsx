@@ -51,7 +51,7 @@ const HeroSection = () => {
         />
       </div>
 
-      <div className="container-responsive relative z-10 px-4 py-16">
+      <div className="container-responsive relative z-10 px-4 py-4 lg:py-16">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <motion.div

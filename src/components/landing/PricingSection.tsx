@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const plans = [
   {
@@ -13,7 +14,8 @@ const plans = [
       "Standard processing"
     ],
     cta: "Get started",
-    popular: false
+    popular: false,
+    entreprise: false
   },
   {
     name: "Pro", 
@@ -28,8 +30,9 @@ const plans = [
       "Brand kit storage",
       "Custom dimensions"
     ],
-    cta: "Start free trial",
-    popular: true
+    cta: "Unlock Your Success",
+    popular: true,
+    entreprise: false
   },
   {
     name: "Growth",
@@ -44,18 +47,21 @@ const plans = [
       "Custom integrations",
       "Dedicated support"
     ],
-    cta: "Contact sales",
-    popular: false
+    cta: "Contact Sales",
+    popular: false,
+    entreprise: true
   }
 ];
 
-const Pricing = () => {
+
+const PricingSection = () => {
+  const navigate = useNavigate();
   return (
-    <section className="py-section bg-background-dark text-white" id="pricing">
+    <section className="py-5 bg-black text-white" id="pricing-section">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
-          <h2 className="heading-lg mb-4 text-white">Choose your plan</h2>
-          <p className="body-lg text-gray-300 max-w-2xl mx-auto">
+          <h2 className="mb-4 text-3xl lg:text-4xl font-bold text-primary-foreground">Choose your plan</h2>
+          <p className="text-1xl lg:text-2xl text-primary-foreground text-gray-300 max-w-2xl mx-auto">
             Start free, scale as you grow. No hidden fees.
           </p>
         </div>
@@ -66,31 +72,32 @@ const Pricing = () => {
               key={index}
               className={`relative rounded-2xl p-8 ${
                 plan.popular
-                  ? "bg-white text-foreground border-2 border-brand-primary transform scale-105"
+                  ? "bg-white text-foreground border-2 border-primary transform scale-105"
                   : "bg-white/5 backdrop-blur-sm border border-white/10"
               }`}
             >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-brand-primary text-white px-4 py-1 rounded-full text-sm font-medium">
+                  <span className="bg-gradient-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
                     Most Popular
                   </span>
                 </div>
               )}
 
               <div className="text-center mb-8">
-                <h3 className={`text-xl font-semibold mb-2 ${plan.popular ? "text-foreground" : "text-white"}`}>
+                <h3 className={`text-xl font-semibold mb-2 ${plan.popular ? "text-primary" : "text-white"}`}>
                   {plan.name}
                 </h3>
                 <div className="mb-3">
-                  <span className={`text-4xl font-bold ${plan.popular ? "text-foreground" : "text-white"}`}>
-                    {plan.price}
+                  <span className={`text-2xl font-bold ${plan.popular ? "text-secondary" : "text-gray-400"}`}>
+                    {/* {plan.price} */}
+                    Soon
                   </span>
-                  {plan.period && (
+                  {/* {plan.period && (
                     <span className={`text-lg ${plan.popular ? "text-muted-foreground" : "text-gray-400"}`}>
                       {plan.period}
                     </span>
-                  )}
+                  )} */}
                 </div>
                 <p className={`text-sm ${plan.popular ? "text-muted-foreground" : "text-gray-400"}`}>
                   {plan.description}
@@ -101,7 +108,7 @@ const Pricing = () => {
                 {plan.features.map((feature, featureIndex) => (
                   <li key={featureIndex} className="flex items-center space-x-3">
                     <svg 
-                      className={`w-5 h-5 ${plan.popular ? "text-brand-primary" : "text-gray-400"}`} 
+                      className={`w-5 h-5 ${plan.popular ? "text-primary" : "text-gray-400"}`} 
                       fill="currentColor" 
                       viewBox="0 0 20 20"
                     >
@@ -111,7 +118,7 @@ const Pricing = () => {
                         clipRule="evenodd" 
                       />
                     </svg>
-                    <span className={`text-sm ${plan.popular ? "text-foreground" : "text-gray-300"}`}>
+                    <span className={`text-sm ${plan.popular ? "text-black" : "text-gray-300"}`}>
                       {feature}
                     </span>
                   </li>
@@ -119,6 +126,7 @@ const Pricing = () => {
               </ul>
 
               <Button
+                onClick={() => plan.entreprise ? navigate("/account") : navigate("/account")}
                 className={`w-full ${
                   plan.popular
                     ? "btn-primary"
@@ -141,4 +149,4 @@ const Pricing = () => {
   );
 };
 
-export default Pricing;
+export default PricingSection;
