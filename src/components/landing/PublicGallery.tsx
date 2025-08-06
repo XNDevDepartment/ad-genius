@@ -23,7 +23,7 @@ const PublicGallery = () => {
 
   useEffect(() => {
     fetchPublicImages();
-  }, []);
+  }, [loading]);
 
   const fetchPublicImages = async () => {
     try {
@@ -144,9 +144,9 @@ const PublicGallery = () => {
               </div>
               
               <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                {/* <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
                   {image.prompt}
-                </p>
+                </p> */}
                 <div className="flex items-center justify-between">
                   <Badge variant="secondary" className="text-xs">
                     {new Date(image.created_at).toLocaleDateString()}
