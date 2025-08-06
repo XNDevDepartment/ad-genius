@@ -45,13 +45,13 @@ export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
           <CardDescription>Control how your data is used and shared</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
+          {/* <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Profile Visibility</Label>
               <p className="text-sm text-muted-foreground">Make your profile visible to other users</p>
             </div>
             <Switch />
-          </div>
+          </div> */}
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
@@ -121,7 +121,7 @@ export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
           <CardDescription>Manage your personal data and account</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 border rounded-lg">
+          {/* <div className="flex items-center justify-between p-4 border rounded-lg">
             <div>
               <h4 className="font-medium">Export Your Data</h4>
               <p className="text-sm text-muted-foreground">Download a copy of all your data</p>
@@ -130,7 +130,7 @@ export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
-          </div>
+          </div> */}
 
           <div className="flex items-center justify-between p-4 border rounded-lg border-destructive/20">
             <div>
@@ -151,7 +151,7 @@ export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
           <CardDescription>Manage your account security settings</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
+          {/* <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Two-Factor Authentication</Label>
               <p className="text-sm text-muted-foreground">Add an extra layer of security to your account</p>
@@ -159,7 +159,7 @@ export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
             <Button variant="outline" size="sm">
               Enable
             </Button>
-          </div>
+          </div> */}
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">

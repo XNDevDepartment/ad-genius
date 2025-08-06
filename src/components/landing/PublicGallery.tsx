@@ -90,7 +90,7 @@ const PublicGallery = () => {
           </p>
           
           {/* Stats */}
-          <div className="flex justify-center items-center gap-8 pt-4">
+          {/* <div className="flex justify-center items-center gap-8 pt-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">10K+</div>
               <div className="text-sm text-muted-foreground">Images Created</div>
@@ -100,10 +100,10 @@ const PublicGallery = () => {
               <div className="text-sm text-muted-foreground">Active Creators</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">95%</div>
+              <div className="text-2xl font-bold text-primary">98%</div>
               <div className="text-sm text-muted-foreground">Satisfaction Rate</div>
             </div>
-          </div>
+          </div> */}
         </div>
 
 

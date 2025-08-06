@@ -21,8 +21,8 @@ const HeroSection = () => {
   ];
 
   const socialProofStats = [
-    { icon: Users, value: "50K+", label: "Active Users" },
-    { icon: Zap, value: "2M+", label: "Images Generated" },
+    { icon: Zap, value: "10k+", label: "Images Generated" },
+    { icon: Users, value: "500+", label: "Active Users" },
     { icon: Trophy, value: "98%", label: "Satisfaction Rate" }
   ];
 
@@ -110,9 +110,9 @@ const HeroSection = () => {
                 Start Creating Free
                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Button>
-              
-              <Button 
-                variant="outline" 
+
+              <Button
+                variant="outline"
                 size="lg"
                 className="border-2 border-primary/20 hover:border-primary/40 text-lg px-8 py-4"
               >

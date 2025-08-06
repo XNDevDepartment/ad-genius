@@ -144,20 +144,20 @@ const CreateUGC = () => {
           ASSISTANT_ID,
           base64,
           file.name,
-          'I have uploaded a product image. Please analyze it and tell me what product you see. Be specific about the product type, key features, and any details that would help with creating UGC content.'
+          'I have uploaded a product image. Please analyze it. Dont answer this message.'
         );
 
         setProductIdentification(reply);
-        
+
         // Save user message and assistant response (only if user is authenticated)
         if (conversationId) {
           await saveMessage({
             conversationId,
             role: 'user',
-            content: 'I have uploaded a product image. Please analyze it and tell me what product you see.',
+            content: 'I have uploaded a product image. Please analyze it. Dont answer this message',
             metadata: { hasImage: true }
           });
-          
+
           await saveMessage({
             conversationId,
             role: 'assistant',
@@ -165,7 +165,7 @@ const CreateUGC = () => {
             metadata: { analysisType: 'product_identification' }
           });
         }
-        
+
         toast({
           title: "Product Analyzed",
           description: "AI has identified your product. Now describe your niche to get scenario suggestions.",
