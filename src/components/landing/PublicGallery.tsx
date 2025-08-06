@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 interface PublicImage {
   id: string;
   public_url: string;
+  thumb_url: string;
   prompt: string;
   created_at: string;
   settings?: any;
@@ -25,6 +26,24 @@ const PublicGallery = () => {
     fetchPublicImages();
   }, [loading]);
 
+  // const fetchPublicImages = async () => {
+  //   try {
+  //     const { data, error } = await supabase
+  //       .from("generated_images")
+  //       .select("id, public_url, prompt, created_at, settings")
+  //       .eq("public_showcase", true)
+  //       .order("created_at", { ascending: false })
+  //       .limit(12);
+
+  //     if (error) throw error;
+  //     setImages(data || []);
+  //   } catch (error) {
+  //     console.error("Error fetching public images:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const fetchPublicImages = async () => {
     try {
       const { data, error } = await supabase
@@ -33,9 +52,17 @@ const PublicGallery = () => {
         .eq("public_showcase", true)
         .order("created_at", { ascending: false })
         .limit(12);
-
+  
       if (error) throw error;
-      setImages(data || []);
+  
+      setImages(
+        (data ?? []).map((img) => ({
+          ...img,
+          thumb_url:
+            img.public_url.replace("/object/", "/render/image/") +          // 🔄
+            "?width=600&quality=70",                            // 🔄
+        }))
+      );                                                                   // 🔄
     } catch (error) {
       console.error("Error fetching public images:", error);
     } finally {
@@ -119,13 +146,19 @@ const PublicGallery = () => {
               onClick={() => handleOpenImage(image.public_url)}
             >
               <div className="relative aspect-square overflow-hidden">
-                <img
+                {/* <img
                   src={image.public_url}
                   alt={`Generated: ${image.prompt.slice(0, 50)}...`}
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   loading={index < 4 ? "eager" : "lazy"}
-                />
-                
+                /> */}
+
+<img
+  src={image.thumb_url}                                              // 🔄
+  alt={`Generated: ${image.prompt.slice(0, 50)}...`}
+  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+  loading={index < 4 ? "eager" : "lazy"}
+/>
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
                   <Button

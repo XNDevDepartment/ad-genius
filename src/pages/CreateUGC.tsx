@@ -73,6 +73,7 @@ const CreateUGC = () => {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
+
   // Move all refs and effects to the top, before any conditional returns
   const taRef = useRef<HTMLTextAreaElement>(null);
 
@@ -247,6 +248,8 @@ const CreateUGC = () => {
     }
 
     setIsLoadingScenarios(true);
+    setProgress(0);
+
     try {
       // Convert image to base64
       const reader = new FileReader();
@@ -270,7 +273,7 @@ const CreateUGC = () => {
         }
       };
       reader.readAsDataURL(productImage);
-      
+
     } catch (error) {
       console.error('Error getting scenarios:', error);
       toast({
@@ -383,7 +386,7 @@ const CreateUGC = () => {
         title: 'Images generated!',
         description: `Successfully created ${validImages.length} images.`
       });
-      
+
     } catch (err) {
       console.error('handleGenerate failed:', err);
       toast({ title: 'Generation failed', description: 'Something went wrong. Please try again.', variant: 'destructive' });
@@ -484,6 +487,8 @@ const CreateUGC = () => {
     setSelectedScenario(null);
     setProgress(0);
   };
+
+
 
   if (stage === "results") {
     return (
@@ -638,6 +643,7 @@ const CreateUGC = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label>UGC Scenarios</Label>
+                  <div>
                   <Button
                     type="button"
                     variant="default"
@@ -654,6 +660,7 @@ const CreateUGC = () => {
                       "Generate Scenarios"
                     )}
                   </Button>
+                  </div>
                 </div>
 
                 {aiScenarios.length > 0 && (
