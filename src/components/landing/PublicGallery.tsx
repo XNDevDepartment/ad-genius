@@ -19,14 +19,7 @@ interface PublicImage {
 const PublicGallery = () => {
   const [images, setImages] = useState<PublicImage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<string>("all");
   const navigate = useNavigate();
-
-  const filters = [
-    { id: "all", label: "All Images", icon: ImageIcon },
-    { id: "product", label: "Products", icon: Sparkles },
-    { id: "lifestyle", label: "Lifestyle", icon: Users },
-  ];
 
   useEffect(() => {
     fetchPublicImages();
@@ -50,18 +43,6 @@ const PublicGallery = () => {
     }
   };
 
-  const filteredImages = images.filter((image) => {
-    if (activeFilter === "all") return true;
-    const prompt = image.prompt.toLowerCase();
-    
-    if (activeFilter === "product") {
-      return prompt.includes("product") || prompt.includes("bottle") || prompt.includes("package");
-    }
-    if (activeFilter === "lifestyle") {
-      return prompt.includes("lifestyle") || prompt.includes("person") || prompt.includes("scene");
-    }
-    return true;
-  });
 
   const handleTryCreating = () => {
     navigate("/auth");
@@ -125,30 +106,10 @@ const PublicGallery = () => {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="flex justify-center mb-8">
-          <div className="flex gap-2 p-1 bg-background rounded-lg border">
-            {filters.map((filter) => {
-              const Icon = filter.icon;
-              return (
-                <Button
-                  key={filter.id}
-                  variant={activeFilter === filter.id ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setActiveFilter(filter.id)}
-                  className="gap-2"
-                >
-                  <Icon className="h-4 w-4" />
-                  {filter.label}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
 
         {/* Gallery Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-12">
-          {filteredImages.map((image, index) => (
+          {images.map((image, index) => (
             <Card
               key={image.id}
               className={cn(
@@ -232,7 +193,7 @@ const PublicGallery = () => {
         </div>
 
         {/* Empty State */}
-        {!loading && filteredImages.length === 0 && (
+        {!loading && images.length === 0 && (
           <div className="text-center py-12">
             <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-foreground mb-2">
