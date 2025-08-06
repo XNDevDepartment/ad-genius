@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Loader, Eye, EyeOff } from 'lucide-react';
+import HeaderSection from '../landing/HeaderSection';
 
 
 interface AuthModalProps {
@@ -19,12 +20,15 @@ export const AuthModal = ({ onSuccess, isOpen, onClose }: AuthModalProps) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     name: '',
     profession: '',
   });
+
+  const { user } = useAuth();
 
 
 
@@ -76,7 +80,13 @@ export const AuthModal = ({ onSuccess, isOpen, onClose }: AuthModalProps) => {
   if (isOpen === false) return null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background">
+    {/* Header Navigation */}
+    {!user &&
+      <div className="hidden lg:block">
+        <HeaderSection />
+      </div>
+    }
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">
@@ -151,7 +161,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose }: AuthModalProps) => {
               {isSignUp ? 'Criar Conta' : 'Entrar'}
             </Button>
           </form>
-          
+
           <div className="mt-4 text-center">
             <p className="text-sm text-muted-foreground">
               {isSignUp ? 'Já tem uma conta?' : 'Não tem uma conta?'}

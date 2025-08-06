@@ -58,7 +58,7 @@ const SocialProofSection = () => {
   ];
 
   return (
-    <section ref={ref} className="py-24 bg-muted/30">
+    <section ref={ref} className="py-24 bg-muted/30" id="community">
       <div className="container-responsive px-4">
         {/* Companies Section */}
         <motion.div

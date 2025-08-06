@@ -81,7 +81,7 @@ const PublicGallery = () => {
 
   if (loading) {
     return (
-      <section className="py-16 lg:py-24 bg-muted/30">
+      <section className="py-16 lg:py-24 bg-muted/30" id="explore">
         <div className="container-responsive px-4">
           <div className="text-center space-y-4 mb-12">
             <Skeleton className="h-10 w-64 mx-auto" />

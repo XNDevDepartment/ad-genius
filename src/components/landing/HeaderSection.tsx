@@ -32,8 +32,8 @@ const HeaderSection = () => {
       <div className="container mx-auto px-6 h-full flex items-center justify-between">
         {/* Logo */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0, y: -20, x: -30  }}
+          animate={inView ? { opacity: 1, y: 0 , x: 0} : {}}
           transition={{ duration: 0.6 }}
           >
         <div className="font-heading font-semibold tracking-tight" onClick={() => navigate("/")}>
@@ -44,11 +44,11 @@ const HeaderSection = () => {
         {/* Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
         <motion.div
-          initial={{ opacity: 0, y: -20, x: -30 }}
-          animate={inView ? { opacity: 1, y: 0, x: 0} : {}}
+          initial={{ opacity: 0, y: -20,}}
+          animate={inView ? { opacity: 1, y: 0} : {}}
           transition={{ duration: 0.6, delay: 0.2 }}
           >
-          <a href="#features" className="btn-ghost">Features</a>
+          <a href="#explore" className="btn-ghost">Explore</a>
         </motion.div>
         <motion.div
           initial={{ opacity: 0, y: -20 }}

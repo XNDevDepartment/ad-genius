@@ -153,4 +153,14 @@ All colors MUST be HSL.
   .desktop-grid { @apply lg:grid-cols-2 xl:grid-cols-3; }
   .desktop-sidebar { @apply lg:w-80 lg:fixed lg:h-screen lg:left-0 lg:top-0; }
   .desktop-main { @apply lg:ml-80; }
+
+  /* Scroll snap for mobile gallery */
+  .scroll-snap-x {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .scroll-snap-center {
+    scroll-snap-align: center;
+  }
 }

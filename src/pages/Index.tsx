@@ -103,7 +103,6 @@ const Index = () => {
     <>
     {/* Landing Page */}
 
-      {/* Header Navigation */}
       <div className="hidden lg:block">
         <HeaderSection />
       </div>
