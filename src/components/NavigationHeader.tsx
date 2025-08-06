@@ -8,7 +8,7 @@ const NavigationHeader = () => {
   const navigate = useNavigate()
 
   return (
-    <header ref={ref} className="bg-background/90 backdrop-blur-sm border-b border-border flex justify-between ">
+    <header ref={ref} className=" bg-background/90 backdrop-blur-sm border-b border-border flex justify-between ">
       <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}

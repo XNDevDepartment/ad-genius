@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Loader, Eye, EyeOff } from 'lucide-react';
 import HeaderSection from '../landing/HeaderSection';
+import NavigationHeader from '../NavigationHeader';
 
 
 interface AuthModalProps {
@@ -80,11 +81,16 @@ export const AuthModal = ({ onSuccess, isOpen, onClose }: AuthModalProps) => {
   if (isOpen === false) return null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex items-start justify-start flex-col bg-background">
     {/* Header Navigation */}
     {!user &&
       <div className="hidden lg:block">
         <HeaderSection />
+      </div>
+    }
+    {!user &&
+      <div className="lg:hidden mb-20">
+        <NavigationHeader />
       </div>
     }
       <Card className="w-full max-w-md bg-white">
