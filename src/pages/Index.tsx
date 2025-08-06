@@ -29,6 +29,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
     {user ?
       <>
+      {/* Home Page */}
       <div className="container-responsive px-4 py-8">
         <div className="lg:grid lg:grid-cols-12 lg:gap-8 lg:items-start">
           {/* Hero Section */}
@@ -98,6 +99,8 @@ const Index = () => {
       </>
     :
     <>
+    {/* Landing Page */}
+
       {/* Enhanced Hero Section */}
       <HeroSection />
 
