@@ -512,7 +512,7 @@ const CreateUGC = () => {
             </Button>
             <h1 className="text-2xl lg:text-3xl font-bold">Your Images</h1>
             <p className="text-muted-foreground">
-              Select the images you'd like to save or download
+              Select the images you'd like to download
             </p>
           </div>
 
@@ -528,7 +528,7 @@ const CreateUGC = () => {
               <div className="bg-card rounded-apple p-6 shadow-apple space-y-4 lg:sticky lg:top-8">
                 <h3 className="font-semibold text-lg">Actions</h3>
 
-                <Button
+                {/* <Button
                   variant="default"
                   className="w-full"
                   disabled={selectedImages.length === 0 || isGenerating}
@@ -542,10 +542,10 @@ const CreateUGC = () => {
                   ) : (
                     `Save to Project (${selectedImages.length})`
                   )}
-                </Button>
+                </Button> */}
 
                 <div className="grid grid-cols-1 lg:grid-cols-1 gap-3">
-                  <Button variant="outline" className="w-full" onClick={handleDownloadAll}>
+                  <Button variant="default" className="w-full" onClick={handleDownloadAll}>
                     Download {selectedImages.length > 0 ? 'Selected' : 'All'}
                   </Button>
                   <Button variant="outline" className="w-full" onClick={handleGenerateMore}>
