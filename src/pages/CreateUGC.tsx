@@ -411,17 +411,15 @@ const CreateUGC = () => {
 
   const selectedImages = generatedImages.filter(img => img.selected);
 
-  const handleSaveImages = async (validImages) => {
+  const handleSaveImages = async (validImages: GeneratedImage[]) => {
     if (validImages.length === 0) {
       toast({
-        title: "No images selected",
-        description: "Please select at least one image to save.",
+        title: "No images to save",
+        description: "No generated images to save to your library.",
         variant: "destructive",
       });
       return;
     }
-
-    setIsGenerating(true)
 
     try {
       const base64Images = validImages.map(img =>
@@ -430,7 +428,7 @@ const CreateUGC = () => {
 
       await saveImages({
         base64Images,
-        prompt: selectedImages[0].prompt,
+        prompt: validImages[0].prompt,
         settings: {
           numImages,
           orientation,
@@ -440,16 +438,15 @@ const CreateUGC = () => {
         }
       });
 
-      // toast({
-      //   title: "Images saved",
-      //   description: `Successfully saved ${selectedImages.length} images to your library.`,
-      // });
-      setIsGenerating(false)
-    } catch (error) {
-      setIsGenerating(false)
       toast({
-        title: "Save failed",
-        description: "Failed to save images. Please try again.",
+        title: "Images auto-saved!",
+        description: `Successfully saved ${validImages.length} images to your library.`,
+      });
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+      toast({
+        title: "Auto-save failed",
+        description: "Failed to automatically save images. You can still download them.",
         variant: "destructive",
       });
     }
