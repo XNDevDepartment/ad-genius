@@ -27,7 +27,7 @@ const HeaderSection = () => {
     >
       <div className="container mx-auto px-6 h-full flex items-center justify-between">
         {/* Logo */}
-        <div className="font-heading font-semibold tracking-tight">
+        <div className="font-heading font-semibold tracking-tight" onClick={() => navigate("/")}>
           <img src={logo} alt="ProduktPix Logo" className="w-48"/>
         </div>
 

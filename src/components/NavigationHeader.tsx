@@ -1,10 +1,13 @@
+import { useNavigate } from 'react-router-dom';
 import symbol from '../assets/favicon2.png';
 
 const NavigationHeader = () => {
+
+  const navigate = useNavigate()
   return (
     <header className="bg-background/90 backdrop-blur-sm border-b border-border flex justify-between ">
       <div className="flex items-center gap-1 pt-2">
-        <div className=" shadow-glow">
+        <div className=" shadow-glow" onClick={() => navigate("/")}>
           <img 
             src={symbol}
             alt="Genius UGC Logo"

@@ -60,7 +60,7 @@ const PublicGallery = () => {
           ...img,
           thumb_url:
             img.public_url.replace("/object/", "/render/image/") +          // 🔄
-            "?width=600&quality=70",                            // 🔄
+            "?width=1000&quality=70",                            // 🔄
         }))
       );                                                                   // 🔄
     } catch (error) {
