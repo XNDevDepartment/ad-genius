@@ -52,6 +52,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           } catch (error) {
             console.error('[ThemeProvider] Error loading theme from user preferences:', error);
           }
+        }else{
+          setTheme("dark");
         }
         
         // Fallback to localStorage
