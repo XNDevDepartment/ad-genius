@@ -87,7 +87,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose }: AuthModalProps) => {
         <HeaderSection />
       </div>
     }
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md bg-white">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">
             {isSignUp ? 'Criar Conta' : 'Fazer Login'}
