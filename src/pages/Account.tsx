@@ -211,32 +211,48 @@ const Account = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="lg:hidden">
-        <div className="flex items-center gap-4 p-4 border-b">
+        <div className="flex items-center gap-4 p-4 border-b bg-background/95 backdrop-blur-sm sticky top-0 z-40 safe-area-top">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => {if(section === "") {navigate("/")} else {setSection("")} }}
+            className="min-h-[44px] min-w-[44px] touch-manipulation active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-bold">Account</h1>
+          <h1 className="text-xl font-bold">
+            {section === "" ? "Account" : 
+             section === "edit-profile" ? "Edit Profile" :
+             section === "settings" ? "Settings" :
+             section === "notifications" ? "Notifications" :
+             section === "privacy" ? "Privacy" :
+             section === "billing" ? "Billing" :
+             section === "help" ? "Help & Support" : "Account"}
+          </h1>
         </div>
       </div>
 
-      <div className="container-responsive px-4 py-8 max-w-6xl">
-        <div className="hidden lg:flex">
-          {(section !== "") &&
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSection("")}
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <h1 className="text-2xl lg:text-3xl font-bold hidden lg:block mb-8">Account</h1>
-            </>
-          }
+      <div className="container-responsive px-4 py-4 lg:py-8 max-w-6xl safe-area-bottom">
+        <div className="hidden lg:flex items-center gap-4 mb-8">
+          {(section !== "") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSection("")}
+              className="min-h-[44px] min-w-[44px]"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          )}
+          <h1 className="text-2xl lg:text-3xl font-bold">
+            {section === "" ? "Account" : 
+             section === "edit-profile" ? "Edit Profile" :
+             section === "settings" ? "Settings" :
+             section === "notifications" ? "Notifications" :
+             section === "privacy" ? "Privacy" :
+             section === "billing" ? "Billing" :
+             section === "help" ? "Help & Support" : "Account"}
+          </h1>
         </div>
 
         {section === "edit-profile" && <ProfileEditPanel onClose={() => setSection("")} />}

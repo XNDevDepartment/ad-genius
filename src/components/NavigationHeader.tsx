@@ -8,24 +8,24 @@ const NavigationHeader = () => {
   const navigate = useNavigate()
 
   return (
-    <header ref={ref} className=" bg-background/90 backdrop-blur-sm border-b border-border flex justify-between ">
+    <header ref={ref} className="bg-background/90 backdrop-blur-sm border-b border-border flex justify-between items-center px-4 py-2 safe-area-top">
       <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay: 0.2 }}
+        initial={{ opacity: 0, y: -20 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="flex items-center gap-3 cursor-pointer"
+        onClick={() => navigate("/")}
       >
-        <div className="flex items-center gap-1 pt-2">
-          <div className=" shadow-glow" onClick={() => navigate("/")}>
-            <img 
-              src={symbol}
-              alt="Genius UGC Logo"
-              className="h-12 w-12 object-contain ml-4"
-            />
-          </div>
-          <div>
-            <h1 className="font-bold text-lg">ProduktPix</h1>
-            <p className="text-xs font-bold" style={{color: '#0C60FE'}}>Genius</p>
-          </div>
+        <div className="shadow-glow">
+          <img 
+            src={symbol}
+            alt="Genius UGC Logo"
+            className="h-10 w-10 object-contain"
+          />
+        </div>
+        <div>
+          <h1 className="font-bold text-lg leading-tight">ProduktPix</h1>
+          <p className="text-xs font-bold leading-none" style={{color: '#0C60FE'}}>Genius</p>
         </div>
       </motion.div>
     </header>

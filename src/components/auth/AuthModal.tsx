@@ -81,19 +81,22 @@ export const AuthModal = ({ onSuccess, isOpen, onClose }: AuthModalProps) => {
   if (isOpen === false) return null;
 
   return (
-    <div className="min-h-screen flex items-start justify-start flex-col bg-background">
-    {/* Header Navigation */}
-    {!user &&
-      <div className="hidden lg:block">
-        <HeaderSection />
-      </div>
-    }
-    {!user &&
-      <div className="lg:hidden mb-20">
-        <NavigationHeader />
-      </div>
-    }
-      <Card className="w-full max-w-md bg-white">
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Header Navigation */}
+      {!user && (
+        <div className="hidden lg:block">
+          <HeaderSection />
+        </div>
+      )}
+      {!user && (
+        <div className="lg:hidden">
+          <NavigationHeader />
+        </div>
+      )}
+      
+      {/* Centered Auth Card */}
+      <div className="flex-1 flex items-center justify-center p-4 lg:p-8">
+        <Card className="w-full max-w-md bg-card shadow-lg border-border">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">
             {isSignUp ? 'Criar Conta' : 'Fazer Login'}
@@ -181,7 +184,8 @@ export const AuthModal = ({ onSuccess, isOpen, onClose }: AuthModalProps) => {
             </Button>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 };
