@@ -1,12 +1,14 @@
-import { useNavigate } from 'react-router-dom';
+import { useActionData, useNavigate } from 'react-router-dom';
 import symbol from '../assets/favicon2.png';
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
+import { useAuth } from '@/contexts/AuthContext';
 
 const NavigationHeader = () => {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
   const navigate = useNavigate()
+  const { user } = useAuth();
 
   return (
     <header ref={ref} className="bg-background/90 backdrop-blur-sm border-b border-border flex justify-between items-center px-4 py-2 safe-area-top">
@@ -29,20 +31,21 @@ const NavigationHeader = () => {
           <p className="text-xs font-bold leading-none" style={{color: '#0C60FE'}}>Genius</p>
         </div>
       </motion.div>
-      
+
+      {!user &&
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.6, delay: 0.3 }}
       >
-        <Button 
+        <Button
           onClick={() => navigate("/account")}
           size="sm"
-          className="min-h-[44px] px-4"
+          className="min-h-[24px] p-4 mt-2"
         >
           Start Now
         </Button>
-      </motion.div>
+      </motion.div>}
     </header>
   );
 };
