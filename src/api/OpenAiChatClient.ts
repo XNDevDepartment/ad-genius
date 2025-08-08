@@ -109,7 +109,10 @@ export async function generateImagesFromBase(
     action: 'generateImages',
     baseFileData,
     prompt,
-    options
+    options: {
+      ...options,
+      input_fidelity: 'high'
+    }
   });
 
   return result.images;

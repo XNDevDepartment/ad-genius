@@ -199,9 +199,7 @@ async function generateImages({ baseFileData, prompt, options }) {
     form.append('size', options.size ?? '1024x1024');
     form.append('quality', options.quality ?? 'medium');
     form.append('output_format', options.output_format ?? 'png');
-    if (options.input_fidelity) {
-      form.append('input_fidelity', options.input_fidelity);
-    }
+    form.append('input_fidelity', 'high');
     const { data } = await fetchWithRetry(`${OPENAI_BASE}/images/edits`, {
       method: 'POST',
       headers: {
