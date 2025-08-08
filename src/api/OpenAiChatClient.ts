@@ -88,6 +88,7 @@ export async function generateImagesFromBase(
     size?: string;
     quality?: string;
     output_format?: string;
+    input_fidelity?: string;
   } = {}
 ) {
   if (!baseFileData || !prompt) {
