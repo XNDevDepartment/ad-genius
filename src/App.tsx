@@ -21,6 +21,7 @@ import GettingStartedGuide from "./pages/help/GettingStartedGuide";
 import FAQPage from "./pages/help/FAQPage";
 import VideoTutorialsPage from "./pages/help/VideoTutorialsPage";
 import APIDocsPage from "./pages/help/APIDocsPage";
+import Pricing from "./pages/Pricing";
 
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => {
                 <Route path="create/ugc" element={<CreateUGC />} />
                 <Route path="library" element={<Library />} />
                 <Route path="account" element={<Account />} />
+                <Route path="pricing" element={<Pricing />} />
                 <Route path="help/getting-started" element={<GettingStartedGuide />} />
                 <Route path="help/faq" element={<FAQPage />} />
                 <Route path="help/tutorials" element={<VideoTutorialsPage />} />

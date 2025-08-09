@@ -127,36 +127,30 @@ const PricingSection = () => {
               </ul>
 
               <Button
-                onClick={async () => {
-                  if (plan.name === "Pro") {
-                    const { data, error } = await supabase.functions.invoke('create-checkout');
-                    if (data?.url) {
-                      window.open(data.url, '_blank');
-                    } else {
-                      navigate('/account');
-                    }
-                  } else if (plan.name === "Entreprise") {
-                    navigate('/account');
-                  } else {
-                    navigate('/account');
-                  }
-                }}
+                onClick={() => navigate('/pricing')}
                 className={`w-full ${
                   plan.popular
                     ? "btn-primary"
                     : "bg-white/10 hover:bg-white/20 text-white border border-white/20"
                 }`}
               >
-                {plan.cta}
+                View Details
               </Button>
             </div>
           ))}
         </div>
 
         <div className="text-center mt-12">
-          <p className="text-gray-400 text-sm">
+          <p className="text-gray-400 text-sm mb-6">
             All plans include 14-day free trial • No credit card required • Cancel anytime
           </p>
+          <Button 
+            onClick={() => navigate('/pricing')} 
+            variant="outline" 
+            className="border-white/20 text-white hover:bg-white/10"
+          >
+            See Full Pricing Details
+          </Button>
         </div>
       </div>
     </section>
