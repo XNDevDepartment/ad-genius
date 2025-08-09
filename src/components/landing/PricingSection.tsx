@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const plans = [
   {
@@ -126,7 +127,20 @@ const PricingSection = () => {
               </ul>
 
               <Button
-                onClick={() => plan.entreprise ? navigate("/account") : navigate("/account")}
+                onClick={async () => {
+                  if (plan.name === "Pro") {
+                    const { data, error } = await supabase.functions.invoke('create-checkout');
+                    if (data?.url) {
+                      window.open(data.url, '_blank');
+                    } else {
+                      navigate('/account');
+                    }
+                  } else if (plan.name === "Entreprise") {
+                    navigate('/account');
+                  } else {
+                    navigate('/account');
+                  }
+                }}
                 className={`w-full ${
                   plan.popular
                     ? "btn-primary"

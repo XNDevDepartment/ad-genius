@@ -1,5 +1,6 @@
 import 'https://deno.land/x/xhr@0.1.0/mod.ts';
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 // ─────────────────────────────────────────────────────────────────────────────
 //  CORS & ENV
 // ─────────────────────────────────────────────────────────────────────────────
@@ -18,6 +19,15 @@ const OPENAI_BASE = 'https://api.openai.com/v1';
 const ASSISTANTS_BETA = {
   'OpenAI-Beta': 'assistants=v2'
 };
+
+// Supabase clients
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+
+const supabaseAuth = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseService = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+
 const json = (data, status = 200)=>new Response(JSON.stringify(data), {
     status,
     headers: {
@@ -174,45 +184,114 @@ async function converse({ threadId, content, assistantId }) {
     reply
   });
 }
-async function generateImages({ baseFileData, prompt, options }) {
+async function generateImages({ baseFileData, prompt, options }, req: Request) {
   if (!prompt || prompt.length > 4000) throw new Error('Invalid prompt');
+
+  // Auth user
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) return json({ error: 'Unauthorized' }, 401);
+  const token = authHeader.replace('Bearer ', '');
+  const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token);
+  if (userError || !userData.user) return json({ error: 'Unauthorized' }, 401);
+  const user = userData.user;
+
+  // Ensure subscriber exists and monthly reset
+  const { data: existing } = await supabaseService
+    .from('subscribers')
+    .select('*')
+    .eq('user_id', user.id)
+    .maybeSingle();
+  let subscriber = existing;
+  if (!subscriber) {
+    const { data: inserted } = await supabaseService
+      .from('subscribers')
+      .insert({ user_id: user.id, email: user.email, subscription_tier: 'Free', subscribed: false })
+      .select('*')
+      .single();
+    subscriber = inserted;
+  }
+  const now = new Date();
+  const needsReset = !subscriber?.last_reset_at ||
+    new Date(subscriber.last_reset_at).getUTCMonth() !== now.getUTCMonth() ||
+    new Date(subscriber.last_reset_at).getUTCFullYear() !== now.getUTCFullYear();
+  const planAllowance = subscriber?.subscription_tier === 'Pro' ? 100 : (subscriber?.subscription_tier === 'Enterprise' ? Infinity : 30);
+  if (subscriber?.subscription_tier !== 'Enterprise' && needsReset) {
+    const allowance = planAllowance === Infinity ? 0 : planAllowance;
+    const { data: updated } = await supabaseService
+      .from('subscribers')
+      .update({ credits_balance: allowance, last_reset_at: now.toISOString(), updated_at: now.toISOString() })
+      .eq('user_id', user.id)
+      .select('*')
+      .single();
+    await supabaseService.from('credits_transactions').insert({
+      user_id: user.id,
+      amount: allowance,
+      reason: 'monthly_grant',
+      metadata: { tier: subscriber?.subscription_tier || 'Free' }
+    });
+    subscriber = updated;
+  }
+
+  // Enforce plan rules
+  const quality = options?.quality ?? 'medium';
+  if (subscriber?.subscription_tier === 'Free' && quality === 'high') {
+    return json({ error: 'Free plan limited to medium quality' }, 403);
+  }
+
+  const perImageCost = quality === 'high' ? 2 : quality === 'medium' ? 1.5 : 1;
+  const count = Math.max(1, options?.number ?? 1);
+  const totalCost = perImageCost * count;
+
+  if (subscriber?.subscription_tier !== 'Enterprise') {
+    const balance = Number(subscriber?.credits_balance ?? 0);
+    if (balance < totalCost) {
+      return json({ error: 'Insufficient credits', required: totalCost, balance }, 402);
+    }
+  }
+
   const safePrompt = prompt.replace(/[<>]/g, '');
-  const tasks = Array.from({
-    length: options.number ?? 1
-  }, async ()=>{
-    // Convert base64 to blob
+  const tasks = Array.from({ length: count }, async () => {
     const byteString = atob(baseFileData.split(',')[1]);
     const ab = new ArrayBuffer(byteString.length);
     const ia = new Uint8Array(ab);
-    for(let i = 0; i < byteString.length; i++){
+    for (let i = 0; i < byteString.length; i++) {
       ia[i] = byteString.charCodeAt(i);
     }
-    const blob = new Blob([
-      ab
-    ], {
-      type: 'image/jpeg'
-    });
+    const blob = new Blob([ab], { type: 'image/jpeg' });
     const form = new FormData();
     form.append('model', 'gpt-image-1');
     form.append('image', blob);
     form.append('prompt', safePrompt);
-    form.append('size', options.size ?? '1024x1024');
-    form.append('quality', options.quality ?? 'medium');
-    form.append('output_format', options.output_format ?? 'png');
+    form.append('size', options?.size ?? '1024x1024');
+    form.append('quality', quality);
+    form.append('output_format', options?.output_format ?? 'png');
     form.append('input_fidelity', 'high');
     const { data } = await fetchWithRetry(`${OPENAI_BASE}/images/edits`, {
       method: 'POST',
-      headers: {
-        ...ASSISTANTS_BETA,
-        Authorization: `Bearer ${openAIApiKey}`
-      },
+      headers: { ...ASSISTANTS_BETA, Authorization: `Bearer ${openAIApiKey}` },
       body: form
-    }).then((r)=>r.json());
+    }).then((r) => r.json());
     return data[0].b64_json;
   });
-  return json({
-    images: await Promise.all(tasks)
-  });
+
+  const images = await Promise.all(tasks);
+
+  // Deduct credits and record transaction (non-Enterprise)
+  if (subscriber?.subscription_tier !== 'Enterprise') {
+    const newBalance = Number(subscriber.credits_balance) - totalCost;
+    await supabaseService
+      .from('subscribers')
+      .update({ credits_balance: newBalance, updated_at: new Date().toISOString() })
+      .eq('user_id', user.id);
+    await supabaseService.from('credits_transactions').insert({
+      user_id: user.id,
+      amount: -totalCost,
+      reason: 'generation',
+      metadata: { quality, count }
+    });
+  }
+
+  return json({ images });
 }
 /*──────────────────────────  HTTP server  ───────────────────────────*/ serve(async (req)=>{
   // CORS pre-flight
@@ -238,7 +317,7 @@ async function generateImages({ baseFileData, prompt, options }) {
       case 'converse':
         return await converse(params);
       case 'generateImages':
-        return await generateImages(params);
+        return await generateImages(params, req);
       default:
         return json({
           error: 'Invalid action'

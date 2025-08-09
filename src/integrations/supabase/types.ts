@@ -79,6 +79,33 @@ export type Database = {
         }
         Relationships: []
       }
+      credits_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          metadata: Json
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          metadata?: Json
+          reason: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          metadata?: Json
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       generated_images: {
         Row: {
           created_at: string
@@ -306,6 +333,48 @@ export type Database = {
           profession?: string | null
           profile_picture?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      subscribers: {
+        Row: {
+          created_at: string
+          credits_balance: number
+          email: string | null
+          id: string
+          last_reset_at: string | null
+          stripe_customer_id: string | null
+          subscribed: boolean
+          subscription_end: string | null
+          subscription_tier: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits_balance?: number
+          email?: string | null
+          id?: string
+          last_reset_at?: string | null
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits_balance?: number
+          email?: string | null
+          id?: string
+          last_reset_at?: string | null
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

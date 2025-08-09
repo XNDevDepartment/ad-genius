@@ -49,6 +49,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
+  // Sync subscription info when user is available
+  useEffect(() => {
+    if (user) {
+      setTimeout(() => {
+        supabase.functions.invoke('check-subscription').catch(() => {});
+      }, 0);
+    }
+  }, [user?.id]);
+
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
