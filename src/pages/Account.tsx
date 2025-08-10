@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCredits } from "@/hooks/useCredits";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -24,7 +25,8 @@ import { HelpSupportPanel } from "@/components/account/HelpSupportPanel";
 
 const Account = () => {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, subscriptionData } = useAuth();
+  const { tier } = useCredits();
   const [section, setSection] = useState<string>("");
   
   const [layout, setLayout] = useState("grid");
@@ -93,7 +95,9 @@ const Account = () => {
                   {user.user_metadata?.name || "User"}
                 </h2>
                 <p className="text-muted-foreground">{user.email}</p>
-                <Badge variant="secondary">Pro Member</Badge>
+                <Badge variant={subscriptionData?.subscribed ? "default" : "secondary"}>
+                  {tier} Member
+                </Badge>
               </div>
 
               <Button 

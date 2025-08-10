@@ -15,6 +15,7 @@ import { useConversationStorage } from "@/hooks/useConversationStorage";
 import { startConversationAPI, converse, sendImageAndRun, generateImagesFromBase } from '@/api/OpenAiChatClient';
 import { useSecureImageStorage } from "@/components/departments/ugc/SecureImageStorage";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCredits } from "@/hooks/useCredits";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Description } from "@radix-ui/react-dialog";
@@ -35,7 +36,8 @@ interface AIScenario {
 const CreateUGC = () => {
   console.log('CreateUGC component rendering...');
 
-  const { user } = useAuth();
+  const { user, subscriptionData } = useAuth();
+  const { credits, canAfford, deductCredits } = useCredits();
   const { saveImages } = useSecureImageStorage();
   const [showAuthModal, setShowAuthModal] = useState(!user);
   
@@ -312,7 +314,29 @@ const CreateUGC = () => {
       return;
     }
 
+    // Check if user has enough credits
+    const creditsNeeded = numImages;
+    if (!canAfford(creditsNeeded)) {
+      toast({
+        title: 'Insufficient credits',
+        description: `You need ${creditsNeeded} credits to generate ${numImages} image(s). You have ${credits} credits remaining.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
+      // Deduct credits before generation
+      const success = await deductCredits(creditsNeeded);
+      if (!success) {
+        toast({
+          title: 'Credit deduction failed',
+          description: 'Unable to deduct credits. Please try again.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
       setIsGenerating(true);
       setStage('generating');
       setProgress(0);
@@ -775,6 +799,14 @@ const CreateUGC = () => {
                 <h3 className="text-lg font-semibold mb-4">Generation Settings</h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
+                    <span className="text-muted-foreground">Credits available:</span>
+                    <span className="font-medium">{credits}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Cost:</span>
+                    <span className="font-medium">{numImages} credit{numImages > 1 ? 's' : ''}</span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-muted-foreground">Images:</span>
                     <span className="font-medium">{numImages}</span>
                   </div>
@@ -799,7 +831,7 @@ const CreateUGC = () => {
                   size="lg" 
                   className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
                   onClick={handleGenerate}
-                  disabled={!productImage || !selectedScenario || isGenerating}
+                  disabled={!productImage || !selectedScenario || isGenerating || !canAfford(numImages)}
                 >
                   {isGenerating ? (
                     <>
@@ -815,8 +847,21 @@ const CreateUGC = () => {
                 </Button>
 
                 <p className="text-xs text-muted-foreground mt-2 text-center">
-                  {isGenerating ? 'AI is creating your images...' : 'Generation typically takes 30-60 seconds'}
+                  {isGenerating ? 'AI is creating your images...' : 
+                   !canAfford(numImages) ? `Need ${numImages} credits to generate` :
+                   'Generation typically takes 30-60 seconds'}
                 </p>
+                
+                {!canAfford(numImages) && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full mt-2"
+                    onClick={() => window.location.href = '/pricing'}
+                  >
+                    Upgrade for More Credits
+                  </Button>
+                )}
               </div>
             </div>
           </div>

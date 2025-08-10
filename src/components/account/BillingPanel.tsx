@@ -2,13 +2,73 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { X, CreditCard, Download, Calendar, Zap, Crown } from "lucide-react";
+import { X, CreditCard, Download, Calendar, Zap, Crown, ExternalLink } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCredits } from "@/hooks/useCredits";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BillingPanelProps {
   onClose: () => void;
 }
 
 export const BillingPanel = ({ onClose }: BillingPanelProps) => {
+  const { user, subscriptionData, subscriptionLoading } = useAuth();
+  const { 
+    getUsagePercentage, 
+    getRemainingCredits, 
+    getTotalCredits, 
+    getUsedCredits, 
+    getDaysUntilReset 
+  } = useCredits();
+  const { toast } = useToast();
+
+  const handleManageSubscription = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      if (error) throw error;
+      
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error opening customer portal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to open subscription management. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const formatSubscriptionEnd = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  if (subscriptionLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold">Billing & Usage</h2>
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="animate-pulse space-y-4">
+          <div className="h-32 bg-muted rounded-lg"></div>
+          <div className="h-48 bg-muted rounded-lg"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -29,30 +89,50 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold">Pro Plan</h3>
-              <p className="text-sm text-muted-foreground">$24.99/month</p>
+              <h3 className="font-semibold">{subscriptionData?.subscription_tier || 'Free'} Plan</h3>
+              <p className="text-sm text-muted-foreground">
+                {subscriptionData?.subscription_tier === 'Pro' ? '€39/month' : 
+                 subscriptionData?.subscription_tier === 'Enterprise' ? '€99/month' : 
+                 'Free forever'}
+              </p>
             </div>
-            <Badge variant="secondary">Active</Badge>
+            <Badge variant={subscriptionData?.subscribed ? "default" : "secondary"}>
+              {subscriptionData?.subscribed ? "Active" : "Free"}
+            </Badge>
           </div>
 
           <div className="space-y-2">
+            {subscriptionData?.subscribed && (
+              <div className="flex justify-between text-sm">
+                <span>Next billing date</span>
+                <span>{formatSubscriptionEnd(subscriptionData.subscription_end)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm">
-              <span>Next billing date</span>
-              <span>March 15, 2024</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span>Payment method</span>
-              <span>•••• •••• •••• 4242</span>
+              <span>Credits included</span>
+              <span>{getTotalCredits()} per month</span>
             </div>
           </div>
 
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1">
-              Change Plan
-            </Button>
-            <Button variant="outline" className="flex-1">
-              Cancel Subscription
-            </Button>
+            {subscriptionData?.subscribed ? (
+              <Button 
+                variant="outline" 
+                className="flex-1" 
+                onClick={handleManageSubscription}
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Manage Subscription
+              </Button>
+            ) : (
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => window.location.href = '/pricing'}
+              >
+                Upgrade Plan
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -69,87 +149,78 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>Credits used this month</span>
-              <span>42 / 100</span>
+              <span>{getUsedCredits()} / {getTotalCredits()}</span>
             </div>
-            <Progress value={42} className="h-2" />
+            <Progress value={getUsagePercentage()} className="h-2" />
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-center">
             <div className="p-3 border rounded-lg">
-              <div className="text-2xl font-semibold">58</div>
+              <div className="text-2xl font-semibold">{getRemainingCredits()}</div>
               <div className="text-sm text-muted-foreground">Remaining</div>
             </div>
             <div className="p-3 border rounded-lg">
-              <div className="text-2xl font-semibold">12</div>
+              <div className="text-2xl font-semibold">{getDaysUntilReset()}</div>
               <div className="text-sm text-muted-foreground">Days left</div>
             </div>
           </div>
 
-          <Button className="w-full">
-            Buy Additional Credits
-          </Button>
+          {!subscriptionData?.subscribed && (
+            <Button 
+              className="w-full"
+              onClick={() => window.location.href = '/pricing'}
+            >
+              Upgrade for More Credits
+            </Button>
+          )}
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            Payment Method
-          </CardTitle>
-          <CardDescription>Manage your payment information</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-6 bg-gradient-to-r from-blue-600 to-blue-400 rounded"></div>
-              <div>
-                <p className="font-medium">•••• •••• •••• 4242</p>
-                <p className="text-sm text-muted-foreground">Expires 12/26</p>
+      {subscriptionData?.subscribed && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Subscription Management
+            </CardTitle>
+            <CardDescription>Manage your subscription and billing details</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h4 className="font-medium mb-2">Subscription Details</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>Plan:</span>
+                    <span>{subscriptionData.subscription_tier}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Status:</span>
+                    <span className="text-green-600">Active</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Renewal:</span>
+                    <span>{formatSubscriptionEnd(subscriptionData.subscription_end)}</span>
+                  </div>
+                </div>
               </div>
+              
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={handleManageSubscription}
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Open Stripe Customer Portal
+              </Button>
+              
+              <p className="text-xs text-muted-foreground">
+                Manage your subscription, update payment methods, and view billing history in Stripe's secure portal.
+              </p>
             </div>
-            <Badge variant="outline">Default</Badge>
-          </div>
-
-          <Button variant="outline" className="w-full">
-            Add Payment Method
-          </Button>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Billing History
-          </CardTitle>
-          <CardDescription>View and download your invoices</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {[
-              { date: "Feb 15, 2024", amount: "$24.99", status: "Paid" },
-              { date: "Jan 15, 2024", amount: "$24.99", status: "Paid" },
-              { date: "Dec 15, 2023", amount: "$24.99", status: "Paid" },
-            ].map((invoice, index) => (
-              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                <div>
-                  <p className="font-medium">{invoice.amount}</p>
-                  <p className="text-sm text-muted-foreground">{invoice.date}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-green-600 border-green-600">
-                    {invoice.status}
-                  </Badge>
-                  <Button variant="ghost" size="sm">
-                    <Download className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

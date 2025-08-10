@@ -22,6 +22,8 @@ import FAQPage from "./pages/help/FAQPage";
 import VideoTutorialsPage from "./pages/help/VideoTutorialsPage";
 import APIDocsPage from "./pages/help/APIDocsPage";
 import Pricing from "./pages/Pricing";
+import Success from "./pages/Success";
+import Cancel from "./pages/Cancel";
 
 
 const queryClient = new QueryClient();
@@ -52,6 +54,8 @@ const App = () => {
                 <Route path="help/api-docs" element={<APIDocsPage />} />
               </Route>
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/success" element={<Success />} />
+              <Route path="/cancel" element={<Cancel />} />
               <Route path="/admin" element={<AdminDashboard />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
