@@ -16,6 +16,7 @@ import { startConversationAPI, converse, sendImageAndRun, generateImagesFromBase
 import { useSecureImageStorage } from "@/components/departments/ugc/SecureImageStorage";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
+import { useImageLimit } from "@/hooks/useImageLimit";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Description } from "@radix-ui/react-dialog";
@@ -38,6 +39,7 @@ const CreateUGC = () => {
 
   const { user, subscriptionData } = useAuth();
   const { credits, canAfford, deductCredits } = useCredits();
+  const { totalImagesGenerated, remainingImages, canGenerateImages, isAtLimit, refreshCount } = useImageLimit();
   const { saveImages } = useSecureImageStorage();
   const [showAuthModal, setShowAuthModal] = useState(!user);
   
@@ -314,6 +316,16 @@ const CreateUGC = () => {
       return;
     }
 
+    // Check image limit first (test mode: 30 images for non-admins)
+    if (!canGenerateImages(numImages)) {
+      toast({
+        title: 'Image limit reached',
+        description: `Test mode limit: You can only generate ${30} images total. You have generated ${totalImagesGenerated} images and have ${remainingImages} remaining.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     // Check if user has enough credits
     const creditsNeeded = numImages;
     if (!canAfford(creditsNeeded)) {
@@ -405,6 +417,9 @@ const CreateUGC = () => {
       setStage('results');
 
       await handleSaveImages(validImages);
+      
+      // Refresh image count after saving
+      await refreshCount();
 
       toast({
         title: 'Images generated!',
@@ -803,6 +818,10 @@ const CreateUGC = () => {
                     <span className="font-medium">{credits}</span>
                   </div>
                   <div className="flex justify-between">
+                    <span className="text-muted-foreground">Images remaining:</span>
+                    <span className="font-medium">{remainingImages === 999 ? 'Unlimited' : remainingImages}</span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-muted-foreground">Cost:</span>
                     <span className="font-medium">{numImages} credit{numImages > 1 ? 's' : ''}</span>
                   </div>
@@ -831,7 +850,7 @@ const CreateUGC = () => {
                   size="lg" 
                   className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
                   onClick={handleGenerate}
-                  disabled={!productImage || !selectedScenario || isGenerating || !canAfford(numImages)}
+                  disabled={!productImage || !selectedScenario || isGenerating || !canAfford(numImages) || !canGenerateImages(numImages)}
                 >
                   {isGenerating ? (
                     <>
@@ -848,18 +867,19 @@ const CreateUGC = () => {
 
                 <p className="text-xs text-muted-foreground mt-2 text-center">
                   {isGenerating ? 'AI is creating your images...' : 
+                   !canGenerateImages(numImages) ? `Image limit reached (${remainingImages} remaining)` :
                    !canAfford(numImages) ? `Need ${numImages} credits to generate` :
                    'Generation typically takes 30-60 seconds'}
                 </p>
                 
-                {!canAfford(numImages) && (
+                {(!canAfford(numImages) || !canGenerateImages(numImages)) && (
                   <Button 
                     variant="outline" 
                     size="sm" 
                     className="w-full mt-2"
                     onClick={() => window.location.href = '/pricing'}
                   >
-                    Upgrade for More Credits
+                    {!canGenerateImages(numImages) ? 'Upgrade for Unlimited Images' : 'Upgrade for More Credits'}
                   </Button>
                 )}
               </div>
