@@ -38,7 +38,7 @@ const CreateUGC = () => {
   console.log('CreateUGC component rendering...');
 
   const { user, subscriptionData } = useAuth();
-  const { credits, canAfford, deductCredits } = useCredits();
+  const { credits, canAfford, deductCredits, calculateImageCost } = useCredits();
   const { totalImagesGenerated, remainingImages, canGenerateImages, isAtLimit, refreshCount } = useImageLimit();
   const { saveImages } = useSecureImageStorage();
   const [showAuthModal, setShowAuthModal] = useState(!user);
@@ -72,6 +72,7 @@ const CreateUGC = () => {
   const [orientation, setOrientation] = useState("square");
   const [timeOfDay, setTimeOfDay] = useState("natural");
   const [style, setStyle] = useState("lifestyle");
+  const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
   const [progress, setProgress] = useState(0);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -326,12 +327,12 @@ const CreateUGC = () => {
       return;
     }
 
-    // Check if user has enough credits
-    const creditsNeeded = numImages;
+    // Check if user has enough credits based on quality
+    const creditsNeeded = calculateImageCost(imageQuality, numImages);
     if (!canAfford(creditsNeeded)) {
       toast({
         title: 'Insufficient credits',
-        description: `You need ${creditsNeeded} credits to generate ${numImages} image(s). You have ${credits} credits remaining.`,
+        description: `You need ${creditsNeeded} credits to generate ${numImages} ${imageQuality}-quality image(s). You have ${credits} credits remaining.`,
         variant: 'destructive',
       });
       return;
@@ -384,7 +385,7 @@ const CreateUGC = () => {
             {
               number: 1,
               size: orientation === 'square' ? '1024x1024' : orientation === 'portrait' ? '1024x1536' : '1536x1024',
-              quality: 'high',
+              quality: imageQuality,
               output_format: 'png',
             }
           );
@@ -802,6 +803,22 @@ const CreateUGC = () => {
                       </select>
                     </div>
                   </div>
+
+                  <div className="grid grid-cols-1 gap-4 mt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="imageQuality">Image Quality</Label>
+                      <select
+                        id="imageQuality"
+                        value={imageQuality}
+                        onChange={(e) => setImageQuality(e.target.value as 'low' | 'medium' | 'high')}
+                        className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
+                      >
+                        <option value="high">High Quality (2 credits per image)</option>
+                        <option value="medium">Medium Quality (1.5 credits per image)</option>
+                        <option value="low">Low Quality (1 credit per image)</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -823,7 +840,11 @@ const CreateUGC = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Cost:</span>
-                    <span className="font-medium">{numImages} credit{numImages > 1 ? 's' : ''}</span>
+                    <span className="font-medium">{calculateImageCost(imageQuality, numImages)} credits</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Quality:</span>
+                    <span className="font-medium capitalize">{imageQuality}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Images:</span>
@@ -850,7 +871,7 @@ const CreateUGC = () => {
                   size="lg" 
                   className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
                   onClick={handleGenerate}
-                  disabled={!productImage || !selectedScenario || isGenerating || !canAfford(numImages) || !canGenerateImages(numImages)}
+                  disabled={!productImage || !selectedScenario || isGenerating || !canAfford(calculateImageCost(imageQuality, numImages)) || !canGenerateImages(numImages)}
                 >
                   {isGenerating ? (
                     <>
@@ -868,11 +889,11 @@ const CreateUGC = () => {
                 <p className="text-xs text-muted-foreground mt-2 text-center">
                   {isGenerating ? 'AI is creating your images...' : 
                    !canGenerateImages(numImages) ? `Image limit reached (${remainingImages} remaining)` :
-                   !canAfford(numImages) ? `Need ${numImages} credits to generate` :
+                   !canAfford(calculateImageCost(imageQuality, numImages)) ? `Need ${calculateImageCost(imageQuality, numImages)} credits to generate` :
                    'Generation typically takes 30-60 seconds'}
                 </p>
                 
-                {(!canAfford(numImages) || !canGenerateImages(numImages)) && (
+                {(!canAfford(calculateImageCost(imageQuality, numImages)) || !canGenerateImages(numImages)) && (
                   <Button 
                     variant="outline" 
                     size="sm" 

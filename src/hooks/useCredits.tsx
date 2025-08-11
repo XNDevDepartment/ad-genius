@@ -13,8 +13,17 @@ export const useCredits = () => {
       case 'Enterprise':
         return 500;
       default:
-        return 10; // Free tier
+        return 60; // Test mode credits for testers
     }
+  };
+
+  const calculateImageCost = (quality: 'low' | 'medium' | 'high', numberOfImages: number = 1): number => {
+    const qualityCosts = {
+      'low': 1,
+      'medium': 1.5,
+      'high': 2
+    };
+    return qualityCosts[quality] * numberOfImages;
   };
 
   const canAfford = (amount: number): boolean => {
@@ -93,5 +102,6 @@ export const useCredits = () => {
     getUsedCredits,
     getDaysUntilReset,
     refreshCredits: refreshSubscription,
+    calculateImageCost,
   };
 };
