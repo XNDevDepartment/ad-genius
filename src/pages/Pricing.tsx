@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Check, X, Star, Zap, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import HeaderSection from "@/components/landing/HeaderSection";
 
 const plans = [
   {
@@ -135,8 +136,11 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <div className="hidden lg:block">
+        <HeaderSection />
+      </div>
       {/* Header */}
-      <div className="bg-gradient-hero text-primary-foreground py-20">
+      <div className="bg-gradient-hero text-primary-foreground py-20 mt-3">
         <div className="container mx-auto px-6 text-center">
           <h1 className="text-4xl lg:text-6xl font-bold mb-6">
             Choose Your Perfect Plan
