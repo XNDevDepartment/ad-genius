@@ -38,7 +38,7 @@ const CreateUGC = () => {
   console.log('CreateUGC component rendering...');
 
   const { user, subscriptionData } = useAuth();
-  const { credits, canAfford, deductCredits, calculateImageCost } = useCredits();
+  const { credits, canAfford, deductCredits, calculateImageCost, getRemainingCredits } = useCredits();
   const { totalImagesGenerated, remainingImages, canGenerateImages, isAtLimit, refreshCount } = useImageLimit();
   const { saveImages } = useSecureImageStorage();
   const [showAuthModal, setShowAuthModal] = useState(!user);
@@ -329,10 +329,11 @@ const CreateUGC = () => {
 
     // Check if user has enough credits based on quality
     const creditsNeeded = calculateImageCost(imageQuality, numImages);
+    const remainingCredits = getRemainingCredits();
     if (!canAfford(creditsNeeded)) {
       toast({
         title: 'Insufficient credits',
-        description: `You need ${creditsNeeded} credits to generate ${numImages} ${imageQuality}-quality image(s). You have ${credits} credits remaining.`,
+        description: `You need ${creditsNeeded} credits to generate ${numImages} ${imageQuality}-quality image(s). You have ${remainingCredits} credits remaining.`,
         variant: 'destructive',
       });
       return;
