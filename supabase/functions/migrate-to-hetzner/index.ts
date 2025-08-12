@@ -14,6 +14,14 @@ const hetznerBucketName = Deno.env.get('HETZNER_BUCKET_NAME');
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
+// Debug logging for environment variables
+console.log('Environment variables check:');
+console.log('HETZNER_ACCESS_KEY_ID:', hetznerAccessKeyId ? 'SET' : 'UNDEFINED');
+console.log('HETZNER_SECRET_ACCESS_KEY:', hetznerSecretAccessKey ? 'SET' : 'UNDEFINED');
+console.log('HETZNER_BUCKET_NAME:', hetznerBucketName ? `SET (${hetznerBucketName})` : 'UNDEFINED');
+console.log('SUPABASE_URL:', supabaseUrl ? 'SET' : 'UNDEFINED');
+console.log('SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? 'SET' : 'UNDEFINED');
+
 const s3Client = new S3Client({
   endPoint: 'produktpix.nbg1.your-objectstorage.com',
   useSSL: true,
@@ -30,7 +38,28 @@ serve(async (req) => {
   }
 
   try {
+    // Validate required environment variables
+    const missingVars = [];
+    if (!hetznerAccessKeyId) missingVars.push('HETZNER_ACCESS_KEY_ID');
+    if (!hetznerSecretAccessKey) missingVars.push('HETZNER_SECRET_ACCESS_KEY');
+    if (!hetznerBucketName) missingVars.push('HETZNER_BUCKET_NAME');
+    if (!supabaseUrl) missingVars.push('SUPABASE_URL');
+    if (!supabaseServiceKey) missingVars.push('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (missingVars.length > 0) {
+      const errorMessage = `Missing required environment variables: ${missingVars.join(', ')}`;
+      console.error(errorMessage);
+      return new Response(JSON.stringify({ 
+        error: errorMessage,
+        missingVariables: missingVars
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     console.log('Starting migration to Hetzner...');
+    console.log(`Using bucket: ${hetznerBucketName}`);
 
     // Get all images from Supabase
     const { data: images, error: fetchError } = await supabase
