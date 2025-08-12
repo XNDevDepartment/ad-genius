@@ -32,6 +32,7 @@ interface GeneratedImage {
 interface AIScenario {
   idea: string;
   description: string;
+  'small-description': string;
 }
 
 const CreateUGC = () => {
@@ -707,7 +708,10 @@ const CreateUGC = () => {
                               ? 'border-primary bg-primary/5'
                               : 'border-border hover:border-primary/50'
                           }`}
-                          onClick={() => setSelectedScenario(scenario)}
+                          onClick={() => {
+                            console.log('Scenario selected:', scenario);
+                            setSelectedScenario(scenario);
+                          }}
                         >
                           <h4 className="font-medium text-sm">{scenario.idea}</h4>
                           <p className="text-xs text-muted-foreground mt-1">{scenario['small-description']}</p>
