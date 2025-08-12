@@ -232,11 +232,12 @@ async function generateImages({ baseFileData, prompt, options }, req: Request) {
     subscriber = updated;
   }
 
-  // Enforce plan rules
+  // Enforce plan rules - TEMPORARILY DISABLED: Allow all users high quality
   const quality = options?.quality ?? 'medium';
-  if (subscriber?.subscription_tier === 'Free' && quality === 'high') {
-    return json({ error: 'Free plan limited to medium quality' }, 403);
-  }
+  // Temporarily allow free users to generate high quality images
+  // if (subscriber?.subscription_tier === 'Free' && quality === 'high') {
+  //   return json({ error: 'Free plan limited to medium quality' }, 403);
+  // }
 
   const perImageCost = quality === 'high' ? 2 : quality === 'medium' ? 1.5 : 1;
   const count = Math.max(1, options?.number ?? 1);
