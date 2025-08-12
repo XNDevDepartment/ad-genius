@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useCredits } from '@/hooks/useCredits';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useImageLimit = () => {
+export const useImageLimit = (imageQuality: 'low' | 'medium' | 'high' = 'high') => {
   const { user } = useAuth();
   const { isAdmin } = useAdminAuth();
+  const { getRemainingCredits, calculateImageCost } = useCredits();
   const [totalImagesGenerated, setTotalImagesGenerated] = useState(0);
   const [loading, setLoading] = useState(true);
-
-  const TEST_MODE_LIMIT = 30; // 30 images = 60 credits (high quality)
 
   const fetchImageCount = async () => {
     if (!user) {
@@ -44,12 +44,15 @@ export const useImageLimit = () => {
     fetchImageCount();
   }, [user]);
 
-  const remainingImages = isAdmin ? 999 : Math.max(0, TEST_MODE_LIMIT - totalImagesGenerated);
-  const isAtLimit = !isAdmin && totalImagesGenerated >= TEST_MODE_LIMIT;
+  const remainingCredits = getRemainingCredits();
+  const creditsPerImage = calculateImageCost(imageQuality);
+  const remainingImages = isAdmin ? 999 : Math.floor(remainingCredits / creditsPerImage);
+  const isAtLimit = !isAdmin && remainingCredits < creditsPerImage;
 
   const canGenerateImages = (count: number = 1): boolean => {
     if (isAdmin) return true;
-    return totalImagesGenerated + count <= TEST_MODE_LIMIT;
+    const creditsNeeded = calculateImageCost(imageQuality, count);
+    return remainingCredits >= creditsNeeded;
   };
 
   const refreshCount = async () => {
@@ -63,6 +66,6 @@ export const useImageLimit = () => {
     isAtLimit,
     loading,
     refreshCount,
-    limit: isAdmin ? 'unlimited' : TEST_MODE_LIMIT,
+    limit: isAdmin ? 'unlimited' : remainingImages,
   };
 };

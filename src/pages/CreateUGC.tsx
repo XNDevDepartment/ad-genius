@@ -39,9 +39,10 @@ const CreateUGC = () => {
 
   const { user, subscriptionData } = useAuth();
   const { credits, canAfford, deductCredits, calculateImageCost, getRemainingCredits } = useCredits();
-  const { totalImagesGenerated, remainingImages, canGenerateImages, isAtLimit, refreshCount } = useImageLimit();
   const { saveImages } = useSecureImageStorage();
   const [showAuthModal, setShowAuthModal] = useState(!user);
+  const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
+  const { totalImagesGenerated, remainingImages, canGenerateImages, isAtLimit, refreshCount } = useImageLimit(imageQuality);
   
   // Add error boundary for useNavigate
   let navigate;
@@ -72,7 +73,6 @@ const CreateUGC = () => {
   const [orientation, setOrientation] = useState("square");
   const [timeOfDay, setTimeOfDay] = useState("natural");
   const [style, setStyle] = useState("lifestyle");
-  const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
   const [progress, setProgress] = useState(0);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -317,11 +317,11 @@ const CreateUGC = () => {
       return;
     }
 
-    // Check image limit first (test mode: 30 images for non-admins)
+    // Check if user can generate the requested number of images
     if (!canGenerateImages(numImages)) {
       toast({
-        title: 'Image limit reached',
-        description: `Test mode limit: You can only generate ${30} images total. You have generated ${totalImagesGenerated} images and have ${remainingImages} remaining.`,
+        title: 'Insufficient credits',
+        description: `You need ${calculateImageCost(imageQuality, numImages)} credits to generate ${numImages} ${imageQuality}-quality image(s). You have ${remainingImages} image(s) remaining with current quality.`,
         variant: 'destructive',
       });
       return;
