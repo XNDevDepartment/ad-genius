@@ -3,20 +3,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useCredits = () => {
-  const { user, subscriptionData, deductCredits, refreshSubscription } = useAuth();
+  const { user, subscriptionData, refreshSubscription } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [imagesAfterAug7, setImagesAfterAug7] = useState(0);
-
-  const getCreditsForTier = (tier: string): number => {
-    switch (tier) {
-      case 'Pro':
-        return 100;
-      case 'Enterprise':
-        return 500;
-      default:
-        return 60; // Test mode credits for testers
-    }
-  };
+  const [creditsSpent, setCreditsSpent] = useState(0);
 
   const calculateImageCost = (quality: 'low' | 'medium' | 'high', numberOfImages: number = 1): number => {
     const qualityCosts = {
@@ -27,62 +16,94 @@ export const useCredits = () => {
     return qualityCosts[quality] * numberOfImages;
   };
 
+  const fetchCreditsSpent = async () => {
+    if (!user) {
+      setCreditsSpent(0);
+      return;
+    }
+
+    try {
+      // Fetch all images generated after Aug 7th and calculate actual credits spent
+      const { data: images, error } = await supabase
+        .from('generated_images')
+        .select('settings')
+        .eq('user_id', user.id)
+        .gte('created_at', '2024-08-07T00:00:00.000Z');
+
+      if (error) {
+        console.error('Error fetching images for credit calculation:', error);
+        setCreditsSpent(0);
+        return;
+      }
+
+      let totalCreditsSpent = 0;
+      images?.forEach(image => {
+        const settings = image.settings as any;
+        const quality = settings?.quality || 'high'; // Default to high if not specified
+        totalCreditsSpent += calculateImageCost(quality);
+      });
+
+      setCreditsSpent(totalCreditsSpent);
+    } catch (error) {
+      console.error('Error calculating credits spent:', error);
+      setCreditsSpent(0);
+    }
+  };
+
+  useEffect(() => {
+    fetchCreditsSpent();
+  }, [user]);
+
   const canAfford = (amount: number): boolean => {
     const remaining = getRemainingCredits();
     return remaining >= amount;
   };
 
-  const getUsagePercentage = (): number => {
-    if (!subscriptionData) return 0;
-    const totalCredits = getCreditsForTier(subscriptionData.subscription_tier);
-    const creditsUsedAfterAug7 = imagesAfterAug7 * 2; // All images are high quality (2 credits each)
-    return Math.min((creditsUsedAfterAug7 / totalCredits) * 100, 100);
-  };
-
   const getRemainingCredits = (): number => {
     if (!subscriptionData) return 0;
-    const totalCredits = getCreditsForTier(subscriptionData.subscription_tier);
-    const creditsUsedAfterAug7 = imagesAfterAug7 * 2; // All images are high quality (2 credits each)
-    return Math.max(0, totalCredits - creditsUsedAfterAug7);
+    const currentBalance = subscriptionData.credits_balance || 0;
+    return Math.max(0, currentBalance - creditsSpent);
   };
 
   const getTotalCredits = (): number => {
     if (!subscriptionData) return 0;
-    return getCreditsForTier(subscriptionData.subscription_tier);
+    return subscriptionData.credits_balance || 0;
   };
 
   const getUsedCredits = (): number => {
-    return imagesAfterAug7 * 2; // All images are high quality (2 credits each)
+    return creditsSpent;
   };
 
-  const fetchImagesAfterAug7 = async () => {
-    if (!user) {
-      setImagesAfterAug7(0);
-      return;
-    }
+  const getUsagePercentage = (): number => {
+    const total = getTotalCredits();
+    if (total === 0) return 0;
+    return Math.min((creditsSpent / total) * 100, 100);
+  };
 
+  const deductCredits = async (amount: number): Promise<boolean> => {
+    if (!user || !subscriptionData) return false;
+    
+    setLoading(true);
     try {
-      const { count, error } = await supabase
-        .from('generated_images')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .gte('created_at', '2024-08-07T00:00:00.000Z');
-
-      if (error) {
-        console.error('Error fetching images after Aug 7:', error);
-        setImagesAfterAug7(0);
-      } else {
-        setImagesAfterAug7(count || 0);
-      }
+      const newBalance = (subscriptionData.credits_balance || 0) - amount;
+      
+      const { error } = await supabase
+        .from('subscribers')
+        .update({ credits_balance: newBalance })
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      await refreshSubscription();
+      await fetchCreditsSpent(); // Refresh credits spent calculation
+      return true;
     } catch (error) {
-      console.error('Error fetching images after Aug 7:', error);
-      setImagesAfterAug7(0);
+      console.error('Error deducting credits:', error);
+      return false;
+    } finally {
+      setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchImagesAfterAug7();
-  }, [user]);
 
   const getDaysUntilReset = (): number => {
     if (!subscriptionData?.subscription_end) return 0;
@@ -93,46 +114,25 @@ export const useCredits = () => {
     return Math.max(0, diffDays);
   };
 
-  const purchaseCredits = async (amount: number): Promise<boolean> => {
-    if (!user) return false;
-    
-    setLoading(true);
-    try {
-      // This would typically involve Stripe checkout for additional credits
-      // For now, we'll add them directly (in production, this should be server-side)
-      const { error } = await supabase
-        .from('credits_transactions')
-        .insert({
-          user_id: user.id,
-          amount: amount,
-          reason: 'credit_purchase'
-        });
-      
-      if (error) throw error;
-      
-      await refreshSubscription();
-      return true;
-    } catch (error) {
-      console.error('Error purchasing credits:', error);
-      return false;
-    } finally {
-      setLoading(false);
-    }
+  const refreshCredits = async () => {
+    await refreshSubscription();
+    await fetchCreditsSpent();
   };
 
   return {
-    credits: subscriptionData?.credits_balance || 0,
+    credits: getTotalCredits(),
+    remainingCredits: getRemainingCredits(),
+    usedCredits: getUsedCredits(),
     tier: subscriptionData?.subscription_tier || 'Free',
     loading,
     canAfford,
     deductCredits,
-    purchaseCredits,
     getUsagePercentage,
     getRemainingCredits,
     getTotalCredits,
     getUsedCredits,
     getDaysUntilReset,
-    refreshCredits: refreshSubscription,
+    refreshCredits,
     calculateImageCost,
   };
 };

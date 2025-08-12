@@ -38,11 +38,11 @@ const CreateUGC = () => {
   console.log('CreateUGC component rendering...');
 
   const { user, subscriptionData } = useAuth();
-  const { credits, canAfford, deductCredits, calculateImageCost, getRemainingCredits } = useCredits();
+  const { credits, canAfford, deductCredits, getRemainingCredits } = useCredits();
   const { saveImages } = useSecureImageStorage();
   const [showAuthModal, setShowAuthModal] = useState(!user);
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
-  const { totalImagesGenerated, remainingImages, canGenerateImages, isAtLimit, refreshCount, isTestMode } = useImageLimit(imageQuality);
+  const { remainingCredits, canGenerateImages, isAtLimit, refreshCount, calculateImageCost } = useImageLimit(imageQuality);
   
   // Add error boundary for useNavigate
   let navigate;
@@ -319,23 +319,7 @@ const CreateUGC = () => {
 
     // Check if user can generate the requested number of images
     if (!canGenerateImages(numImages)) {
-      const title = isTestMode ? 'Image limit reached' : 'Insufficient credits';
-      const description = isTestMode 
-        ? `Test mode limit: You can generate up to 30 images total. You have generated ${totalImagesGenerated} images and have ${remainingImages} remaining.`
-        : `You need ${calculateImageCost(imageQuality, numImages)} credits to generate ${numImages} ${imageQuality}-quality image(s). You have ${remainingImages} image(s) remaining with current quality.`;
-      
-      toast({
-        title,
-        description,
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Check if user has enough credits based on quality
-    const creditsNeeded = calculateImageCost(imageQuality, numImages);
-    const remainingCredits = getRemainingCredits();
-    if (!canAfford(creditsNeeded)) {
+      const creditsNeeded = calculateImageCost(imageQuality, numImages);
       toast({
         title: 'Insufficient credits',
         description: `You need ${creditsNeeded} credits to generate ${numImages} ${imageQuality}-quality image(s). You have ${remainingCredits} credits remaining.`,
@@ -343,6 +327,9 @@ const CreateUGC = () => {
       });
       return;
     }
+
+    // Prepare for generation
+    const creditsNeeded = calculateImageCost(imageQuality, numImages);
 
     try {
       // Deduct credits before generation
@@ -890,7 +877,7 @@ const CreateUGC = () => {
 
                 <p className="text-xs text-muted-foreground mt-2 text-center">
                   {isGenerating ? 'AI is creating your images...' : 
-                   !canGenerateImages(numImages) ? `Image limit reached (${remainingImages} remaining)` :
+                   !canGenerateImages(numImages) ? `Insufficient credits (${remainingCredits} remaining)` :
                    !canAfford(calculateImageCost(imageQuality, numImages)) ? `Need ${calculateImageCost(imageQuality, numImages)} credits to generate` :
                    'Generation typically takes 30-60 seconds'}
                 </p>
@@ -902,7 +889,7 @@ const CreateUGC = () => {
                     className="w-full mt-2"
                     onClick={() => window.location.href = '/pricing'}
                   >
-                    {!canGenerateImages(numImages) ? 'Upgrade for Unlimited Images' : 'Upgrade for More Credits'}
+                    Upgrade for More Credits
                   </Button>
                 )}
               </div>
