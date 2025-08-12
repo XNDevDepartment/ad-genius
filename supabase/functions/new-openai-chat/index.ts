@@ -233,7 +233,7 @@ async function generateImages({ baseFileData, prompt, options }, req: Request) {
   }
 
   // Enforce plan rules
-  const quality = options?.quality ?? 'high'; /// para alterar na versão final
+  const quality = options?.quality ?? 'medium';
   if (subscriber?.subscription_tier === 'Free' && quality === 'high') {
     return json({ error: 'Free plan limited to medium quality' }, 403);
   }
