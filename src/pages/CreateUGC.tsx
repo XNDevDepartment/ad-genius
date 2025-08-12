@@ -841,10 +841,6 @@ const CreateUGC = () => {
                     <span className="font-medium">{credits}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Images remaining:</span>
-                    <span className="font-medium">{remainingImages === 999 ? 'Unlimited' : remainingImages}</span>
-                  </div>
-                  <div className="flex justify-between">
                     <span className="text-muted-foreground">Cost:</span>
                     <span className="font-medium">{calculateImageCost(imageQuality, numImages)} credits</span>
                   </div>
