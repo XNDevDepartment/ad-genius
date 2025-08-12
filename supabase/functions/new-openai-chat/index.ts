@@ -239,60 +239,78 @@ async function generateImages({ baseFileData, prompt, options }, req: Request) {
   //   return json({ error: 'Free plan limited to medium quality' }, 403);
   // }
 
-  const perImageCost = quality === 'high' ? 2 : quality === 'medium' ? 1.5 : 1;
   const count = Math.max(1, options?.number ?? 1);
-  const totalCost = perImageCost * count;
+  let totalCost = 0;
 
+  // Server-side credit calculation and atomic deduction
   if (subscriber?.subscription_tier !== 'Enterprise') {
-    const balance = Number(subscriber?.credits_balance ?? 0);
-    if (balance < totalCost) {
-      return json({ error: 'Insufficient credits', required: totalCost, balance }, 402);
-    }
-  }
-
-  const safePrompt = prompt.replace(/[<>]/g, '');
-  const tasks = Array.from({ length: count }, async () => {
-    const byteString = atob(baseFileData.split(',')[1]);
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-    const blob = new Blob([ab], { type: 'image/jpeg' });
-    const form = new FormData();
-    form.append('model', 'gpt-image-1');
-    form.append('image', blob);
-    form.append('prompt', safePrompt);
-    form.append('size', options?.size ?? '1024x1024');
-    form.append('quality', quality);
-    form.append('output_format', options?.output_format ?? 'png');
-    form.append('input_fidelity', 'high');
-    const { data } = await fetchWithRetry(`${OPENAI_BASE}/images/edits`, {
-      method: 'POST',
-      headers: { ...ASSISTANTS_BETA, Authorization: `Bearer ${openAIApiKey}` },
-      body: form
-    }).then((r) => r.json());
-    return data[0].b64_json;
-  });
-
-  const images = await Promise.all(tasks);
-
-  // Deduct credits and record transaction (non-Enterprise)
-  if (subscriber?.subscription_tier !== 'Enterprise') {
-    const newBalance = Number(subscriber.credits_balance) - totalCost;
-    await supabaseService
-      .from('subscribers')
-      .update({ credits_balance: newBalance, updated_at: new Date().toISOString() })
-      .eq('user_id', user.id);
-    await supabaseService.from('credits_transactions').insert({
-      user_id: user.id,
-      amount: -totalCost,
-      reason: 'generation',
-      metadata: { quality, count }
+    const { data: cost, error: costError } = await supabaseService.rpc('get_image_credit_cost', {
+      p_quality: quality,
+      p_count: count,
     });
+    if (costError) {
+      return json({ error: 'Credit cost calculation failed' }, 500);
+    }
+    totalCost = Number(cost ?? 0);
+
+    const { data: deduction, error: deductionError } = await supabaseService.rpc('deduct_user_credits', {
+      p_user_id: user.id,
+      p_amount: totalCost,
+      p_reason: 'image_generation',
+    });
+    if (deductionError) {
+      return json({ error: `Credit deduction failed: ${deductionError.message}` }, 500);
+    }
+    if (!(deduction as any)?.success) {
+      return json({ error: (deduction as any)?.error ?? 'Insufficient credits' }, 402);
+    }
   }
 
-  return json({ images });
+  try {
+    const safePrompt = prompt.replace(/[<>]/g, '');
+    const tasks = Array.from({ length: count }, async () => {
+      const byteString = atob(baseFileData.split(',')[1]);
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([ab], { type: 'image/jpeg' });
+      const form = new FormData();
+      form.append('model', 'gpt-image-1');
+      form.append('image', blob);
+      form.append('prompt', safePrompt);
+      form.append('size', options?.size ?? '1024x1024');
+      form.append('quality', quality);
+      form.append('output_format', options?.output_format ?? 'png');
+      form.append('input_fidelity', 'high');
+      const { data } = await fetchWithRetry(`${OPENAI_BASE}/images/edits`, {
+        method: 'POST',
+        headers: { ...ASSISTANTS_BETA, Authorization: `Bearer ${openAIApiKey}` },
+        body: form
+      }).then((r) => r.json());
+      return data[0].b64_json;
+    });
+
+    const images = await Promise.all(tasks);
+    return json({ images });
+  } catch (err) {
+    // Refund on failure when credits were deducted
+    if (subscriber?.subscription_tier !== 'Enterprise' && totalCost > 0) {
+      await supabaseService
+        .from('subscribers')
+        .update({ credits_balance: Number(subscriber?.credits_balance ?? 0) + totalCost, updated_at: new Date().toISOString() })
+        .eq('user_id', user.id);
+      await supabaseService.from('credits_transactions').insert({
+        user_id: user.id,
+        amount: totalCost,
+        reason: 'refund_generation_failed',
+        metadata: { quality, count, error: String(err) }
+      });
+    }
+    throw err;
+  }
+
 }
 /*──────────────────────────  HTTP server  ───────────────────────────*/ serve(async (req)=>{
   // CORS pre-flight

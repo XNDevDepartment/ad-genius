@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import type { CreditDeductionResponse } from "@/types/credits";
+
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
@@ -103,38 +103,6 @@ export async function generateImagesFromBase(
   if(options.number && options.number > 3){
     toast.error('Apenas pode gerar 3 imagens em simultâneo');
     throw new Error('User asked to generate more than 3 images');
-  }
-
-  // Check and deduct credits before generation
-  const { data: user } = await supabase.auth.getUser();
-  if (!user.user) {
-    throw new Error('User not authenticated');
-  }
-
-  // Calculate credit cost
-  const quality = options.quality || 'high';
-  const numberOfImages = options.number || 1;
-  const { data: creditCost } = await supabase.rpc('get_image_credit_cost', {
-    p_quality: quality,
-    p_count: numberOfImages
-  });
-
-  // Deduct credits using the atomic RPC function
-  const { data: deductionResult, error: deductionError } = await supabase.rpc('deduct_user_credits', {
-    p_user_id: user.user.id,
-    p_amount: creditCost,
-    p_reason: 'image_generation'
-  });
-
-  if (deductionError) {
-    throw new Error(`Credit check failed: ${deductionError.message}`);
-  }
-
-  // Cast the response to our expected type
-  const result = deductionResult as CreditDeductionResponse;
-
-  if (!result.success) {
-    throw new Error(`Insufficient credits: ${result.error}`);
   }
 
   console.log('Using new-openai-chat generateImages...');

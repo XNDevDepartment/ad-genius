@@ -66,7 +66,7 @@ export const useCredits = () => {
       if (error) throw error;
       
       // Cast the response to our expected type
-      const result = data as CreditDeductionResponse;
+      const result = data as unknown as CreditDeductionResponse;
       
       if (!result.success) {
         console.error('Credit deduction failed:', result.error);
