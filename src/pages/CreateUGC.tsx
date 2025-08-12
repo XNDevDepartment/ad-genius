@@ -42,7 +42,7 @@ const CreateUGC = () => {
   const { saveImages } = useSecureImageStorage();
   const [showAuthModal, setShowAuthModal] = useState(!user);
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
-  const { totalImagesGenerated, remainingImages, canGenerateImages, isAtLimit, refreshCount } = useImageLimit(imageQuality);
+  const { totalImagesGenerated, remainingImages, canGenerateImages, isAtLimit, refreshCount, isTestMode } = useImageLimit(imageQuality);
   
   // Add error boundary for useNavigate
   let navigate;
@@ -319,9 +319,14 @@ const CreateUGC = () => {
 
     // Check if user can generate the requested number of images
     if (!canGenerateImages(numImages)) {
+      const title = isTestMode ? 'Image limit reached' : 'Insufficient credits';
+      const description = isTestMode 
+        ? `Test mode limit: You can generate up to 30 images total. You have generated ${totalImagesGenerated} images and have ${remainingImages} remaining.`
+        : `You need ${calculateImageCost(imageQuality, numImages)} credits to generate ${numImages} ${imageQuality}-quality image(s). You have ${remainingImages} image(s) remaining with current quality.`;
+      
       toast({
-        title: 'Insufficient credits',
-        description: `You need ${calculateImageCost(imageQuality, numImages)} credits to generate ${numImages} ${imageQuality}-quality image(s). You have ${remainingImages} image(s) remaining with current quality.`,
+        title,
+        description,
         variant: 'destructive',
       });
       return;

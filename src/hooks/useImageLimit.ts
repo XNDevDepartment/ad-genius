@@ -5,11 +5,13 @@ import { useCredits } from '@/hooks/useCredits';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useImageLimit = (imageQuality: 'low' | 'medium' | 'high' = 'high') => {
-  const { user } = useAuth();
+  const { user, subscriptionData } = useAuth();
   const { isAdmin } = useAdminAuth();
   const { getRemainingCredits, calculateImageCost } = useCredits();
   const [totalImagesGenerated, setTotalImagesGenerated] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const TEST_MODE_LIMIT = 30; // 30 images for non-subscribed users
 
   const fetchImageCount = async () => {
     if (!user) {
@@ -44,15 +46,37 @@ export const useImageLimit = (imageQuality: 'low' | 'medium' | 'high' = 'high') 
     fetchImageCount();
   }, [user]);
 
-  const remainingCredits = getRemainingCredits();
-  const creditsPerImage = calculateImageCost(imageQuality);
-  const remainingImages = isAdmin ? 999 : Math.floor(remainingCredits / creditsPerImage);
-  const isAtLimit = !isAdmin && remainingCredits < creditsPerImage;
+  // Determine if user is in test mode or subscription mode
+  const isTestMode = !subscriptionData || subscriptionData.subscription_tier === 'Free';
+  
+  let remainingImages: number;
+  let isAtLimit: boolean;
+
+  if (isAdmin) {
+    remainingImages = 999;
+    isAtLimit = false;
+  } else if (isTestMode) {
+    // Test mode: 30 images limit based on images after Aug 7th
+    remainingImages = Math.max(0, TEST_MODE_LIMIT - totalImagesGenerated);
+    isAtLimit = totalImagesGenerated >= TEST_MODE_LIMIT;
+  } else {
+    // Subscription mode: credit-based system
+    const remainingCredits = getRemainingCredits();
+    const creditsPerImage = calculateImageCost(imageQuality);
+    remainingImages = Math.floor(remainingCredits / creditsPerImage);
+    isAtLimit = remainingCredits < creditsPerImage;
+  }
 
   const canGenerateImages = (count: number = 1): boolean => {
     if (isAdmin) return true;
-    const creditsNeeded = calculateImageCost(imageQuality, count);
-    return remainingCredits >= creditsNeeded;
+    
+    if (isTestMode) {
+      return totalImagesGenerated + count <= TEST_MODE_LIMIT;
+    } else {
+      const creditsNeeded = calculateImageCost(imageQuality, count);
+      const remainingCredits = getRemainingCredits();
+      return remainingCredits >= creditsNeeded;
+    }
   };
 
   const refreshCount = async () => {
@@ -66,6 +90,7 @@ export const useImageLimit = (imageQuality: 'low' | 'medium' | 'high' = 'high') 
     isAtLimit,
     loading,
     refreshCount,
-    limit: isAdmin ? 'unlimited' : remainingImages,
+    limit: isAdmin ? 'unlimited' : (isTestMode ? TEST_MODE_LIMIT : remainingImages),
+    isTestMode,
   };
 };
