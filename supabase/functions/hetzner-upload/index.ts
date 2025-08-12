@@ -1,6 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { S3Client, PutObjectCommand } from "https://deno.land/x/s3_lite_client@0.7.0/mod.ts";
+import { S3Client } from "https://deno.land/x/s3_lite_client@0.7.0/mod.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.4';
 
 const corsHeaders = {
@@ -52,15 +52,13 @@ serve(async (req) => {
       const fileName = `${user_id}/${crypto.randomUUID()}.png`;
       
       // Upload to Hetzner
-      const uploadCommand = new PutObjectCommand({
+      await s3Client.putObject({
         Bucket: hetznerBucketName,
         Key: fileName,
         Body: uint8Array,
         ContentType: 'image/png',
         ACL: 'public-read',
       });
-
-      await s3Client.send(uploadCommand);
 
       // Construct public URL
       const publicUrl = `https://produktpix.nbg1.your-objectstorage.com/${hetznerBucketName}/${fileName}`;
