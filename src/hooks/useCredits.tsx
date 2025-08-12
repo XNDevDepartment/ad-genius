@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const useCredits = () => {
   const { user, subscriptionData, deductCredits, refreshSubscription } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [imagesAfterAug7, setImagesAfterAug7] = useState(0);
 
   const getCreditsForTier = (tier: string): number => {
     switch (tier) {
@@ -27,19 +28,22 @@ export const useCredits = () => {
   };
 
   const canAfford = (amount: number): boolean => {
-    if (!subscriptionData) return false;
-    return subscriptionData.credits_balance >= amount;
+    const remaining = getRemainingCredits();
+    return remaining >= amount;
   };
 
   const getUsagePercentage = (): number => {
     if (!subscriptionData) return 0;
     const totalCredits = getCreditsForTier(subscriptionData.subscription_tier);
-    const used = totalCredits - subscriptionData.credits_balance;
-    return Math.min((used / totalCredits) * 100, 100);
+    const creditsUsedAfterAug7 = imagesAfterAug7 * 2; // All images are high quality (2 credits each)
+    return Math.min((creditsUsedAfterAug7 / totalCredits) * 100, 100);
   };
 
   const getRemainingCredits = (): number => {
-    return subscriptionData?.credits_balance || 0;
+    if (!subscriptionData) return 0;
+    const totalCredits = getCreditsForTier(subscriptionData.subscription_tier);
+    const creditsUsedAfterAug7 = imagesAfterAug7 * 2; // All images are high quality (2 credits each)
+    return Math.max(0, totalCredits - creditsUsedAfterAug7);
   };
 
   const getTotalCredits = (): number => {
@@ -48,10 +52,37 @@ export const useCredits = () => {
   };
 
   const getUsedCredits = (): number => {
-    const total = getTotalCredits();
-    const remaining = getRemainingCredits();
-    return total - remaining;
+    return imagesAfterAug7 * 2; // All images are high quality (2 credits each)
   };
+
+  const fetchImagesAfterAug7 = async () => {
+    if (!user) {
+      setImagesAfterAug7(0);
+      return;
+    }
+
+    try {
+      const { count, error } = await supabase
+        .from('generated_images')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', '2024-08-07T00:00:00.000Z');
+
+      if (error) {
+        console.error('Error fetching images after Aug 7:', error);
+        setImagesAfterAug7(0);
+      } else {
+        setImagesAfterAug7(count || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching images after Aug 7:', error);
+      setImagesAfterAug7(0);
+    }
+  };
+
+  useEffect(() => {
+    fetchImagesAfterAug7();
+  }, [user]);
 
   const getDaysUntilReset = (): number => {
     if (!subscriptionData?.subscription_end) return 0;

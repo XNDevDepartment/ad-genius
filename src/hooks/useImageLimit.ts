@@ -9,7 +9,7 @@ export const useImageLimit = () => {
   const [totalImagesGenerated, setTotalImagesGenerated] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const TEST_MODE_LIMIT = 30;
+  const TEST_MODE_LIMIT = 30; // 30 images = 60 credits (high quality)
 
   const fetchImageCount = async () => {
     if (!user) {
@@ -19,10 +19,12 @@ export const useImageLimit = () => {
     }
 
     try {
+      // Only count images generated after August 7th, 2024
       const { count, error } = await supabase
         .from('generated_images')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .gte('created_at', '2024-08-07T00:00:00.000Z');
 
       if (error) {
         console.error('Error fetching image count:', error);
