@@ -1,6 +1,6 @@
 
 import HeroSection from "@/components/landing/HeroSection";
-import PublicGallery from "@/components/landing/PublicGallery";
+import SecurePublicGallery from "@/components/landing/SecurePublicGallery";
 import SocialProofSection from "@/components/landing/SocialProofSection";
 import { useNavigate } from "react-router-dom";
 import { Camera, Wand2, Edit } from "lucide-react";
@@ -111,7 +111,7 @@ const Index = () => {
       <HeroSection />
 
       {/* Public Gallery */}
-      <PublicGallery />
+      <SecurePublicGallery />
 
       {/* Social Proof and Testimonials */}
       <SocialProofSection />
