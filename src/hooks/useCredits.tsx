@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import type { CreditDeductionResponse } from '@/types/credits';
 
 export const useCredits = () => {
   const { user, subscriptionData, refreshSubscription } = useAuth();
@@ -64,8 +65,11 @@ export const useCredits = () => {
       
       if (error) throw error;
       
-      if (!data.success) {
-        console.error('Credit deduction failed:', data.error);
+      // Cast the response to our expected type
+      const result = data as CreditDeductionResponse;
+      
+      if (!result.success) {
+        console.error('Credit deduction failed:', result.error);
         return false;
       }
       

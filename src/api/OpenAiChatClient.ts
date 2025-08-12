@@ -1,6 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import type { CreditDeductionResponse } from "@/types/credits";
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
@@ -130,12 +130,15 @@ export async function generateImagesFromBase(
     throw new Error(`Credit check failed: ${deductionError.message}`);
   }
 
-  if (!deductionResult.success) {
-    throw new Error(`Insufficient credits: ${deductionResult.error}`);
+  // Cast the response to our expected type
+  const result = deductionResult as CreditDeductionResponse;
+
+  if (!result.success) {
+    throw new Error(`Insufficient credits: ${result.error}`);
   }
 
   console.log('Using new-openai-chat generateImages...');
-  const result = await callEdgeFunction('new-openai-chat', {
+  const imageResult = await callEdgeFunction('new-openai-chat', {
     action: 'generateImages',
     baseFileData,
     prompt,
@@ -145,5 +148,5 @@ export async function generateImagesFromBase(
     }
   });
 
-  return result.images;
+  return imageResult.images;
 }
