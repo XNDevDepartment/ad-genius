@@ -497,9 +497,41 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      deduct_user_credits: {
+        Args: { p_user_id: string; p_amount: number; p_reason?: string }
+        Returns: Json
+      }
+      get_image_credit_cost: {
+        Args: { p_quality?: string; p_count?: number }
+        Returns: number
+      }
+      get_public_showcase_images: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          prompt: string
+          public_url: string
+          storage_path: string
+          settings: Json
+          created_at: string
+          updated_at: string
+        }[]
+      }
+      get_tier_monthly_credits: {
+        Args: { p_tier: string }
+        Returns: number
+      }
       is_admin: {
         Args: { check_user_id?: string }
         Returns: boolean
+      }
+      reset_monthly_credits: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_id: string
+          old_balance: number
+          new_balance: number
+        }[]
       }
     }
     Enums: {

@@ -21,7 +21,6 @@ interface AuthContextType {
   updateProfile: (updates: any) => Promise<{ error?: any }>;
   resetPassword: (email: string) => Promise<{ error?: any }>;
   refreshSubscription: () => Promise<void>;
-  deductCredits: (amount: number) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -77,43 +76,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshSubscription = async () => {
     await fetchSubscriptionData();
-  };
-
-  const deductCredits = async (amount: number): Promise<boolean> => {
-    if (!user || !subscriptionData) return false;
-    
-    // Check if user has enough credits
-    if (subscriptionData.credits_balance < amount) {
-      return false;
-    }
-    
-    try {
-      // Update credits balance optimistically
-      setSubscriptionData(prev => prev ? {
-        ...prev,
-        credits_balance: prev.credits_balance - amount
-      } : null);
-      
-      // Record credit transaction
-      const { error } = await supabase
-        .from('credits_transactions')
-        .insert({
-          user_id: user.id,
-          amount: -amount,
-          reason: 'image_generation'
-        });
-      
-      if (error) throw error;
-      
-      // Refresh actual balance
-      await fetchSubscriptionData();
-      return true;
-    } catch (error) {
-      console.error('Error deducting credits:', error);
-      // Revert optimistic update
-      await fetchSubscriptionData();
-      return false;
-    }
   };
 
   useEffect(() => {
@@ -202,7 +164,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateProfile,
     resetPassword,
     refreshSubscription,
-    deductCredits,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

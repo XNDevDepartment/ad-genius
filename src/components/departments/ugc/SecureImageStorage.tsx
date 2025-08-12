@@ -26,12 +26,18 @@ export const useSecureImageStorage = () => {
     try {
       setLoading(true);
 
+      // Ensure settings include quality (defaulting to high if not specified)
+      const enhancedSettings = {
+        ...imageData.settings,
+        quality: imageData.settings.quality || 'high'
+      };
+
       // Use Hetzner upload edge function
       const { data, error } = await supabase.functions.invoke('hetzner-upload', {
         body: {
           base64Images: imageData.base64Images,
           prompt: imageData.prompt,
-          settings: imageData.settings,
+          settings: enhancedSettings,
           user_id: user.id
         }
       });

@@ -109,8 +109,8 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
               </div>
             )}
             <div className="flex justify-between text-sm">
-              <span>Credits included</span>
-              <span>{getTotalCredits()} per month</span>
+              <span>Monthly credit allowance</span>
+              <span>{getTotalCredits()} credits</span>
             </div>
           </div>
 
