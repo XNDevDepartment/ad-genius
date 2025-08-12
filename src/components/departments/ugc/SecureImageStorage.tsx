@@ -32,8 +32,8 @@ export const useSecureImageStorage = () => {
         quality: imageData.settings.quality || 'high'
       };
 
-      // Use Hetzner upload edge function
-      const { data, error } = await supabase.functions.invoke('hetzner-upload', {
+      // Use Supabase storage upload edge function
+      const { data, error } = await supabase.functions.invoke('supabase-upload', {
         body: {
           base64Images: imageData.base64Images,
           prompt: imageData.prompt,
@@ -43,7 +43,7 @@ export const useSecureImageStorage = () => {
       });
 
       if (error) {
-        console.error('Hetzner upload error:', error);
+        console.error('Supabase upload error:', error);
         throw new Error(`Failed to upload images: ${error.message}`);
       }
 
@@ -96,7 +96,31 @@ export const useSecureImageStorage = () => {
     try {
       setLoading(true);
 
-      // Delete from database only (Hetzner deletion would require additional edge function)
+      // First get the image details to get the storage path
+      const { data: imageData, error: fetchError } = await supabase
+        .from('generated_images')
+        .select('storage_path')
+        .eq('id', imageId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (fetchError) {
+        throw new Error(`Failed to fetch image details: ${fetchError.message}`);
+      }
+
+      // Delete from Supabase storage
+      if (imageData?.storage_path) {
+        const { error: storageError } = await supabase.storage
+          .from('generated-images')
+          .remove([imageData.storage_path]);
+
+        if (storageError) {
+          console.warn('Failed to delete from storage:', storageError);
+          // Continue with database deletion even if storage deletion fails
+        }
+      }
+
+      // Delete from database
       const { error: dbError } = await supabase
         .from('generated_images')
         .delete()
