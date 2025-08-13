@@ -27,8 +27,8 @@ console.log("ENV:", {
 // ─────────────────────────────────────────────────────────────────────────────
 const s3 = new S3Client({
   endpoint: "https://nbg1.your-objectstorage.com",
-  region: "eu-central",
-  forcePathStyle: true,
+  region: "nbg1",
+  forcePathStyle: false,
   credentials: {
     accessKeyId: HETZNER_ACCESS_KEY_ID ?? "",
     secretAccessKey: HETZNER_SECRET_ACCESS_KEY ?? ""

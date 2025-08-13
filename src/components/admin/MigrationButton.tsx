@@ -16,7 +16,7 @@ export const MigrationButton = () => {
     try {
       setMigrating(true);
       
-      const { data, error } = await supabase.functions.invoke('migrate-to-hetzner');
+      const { data, error } = await supabase.functions.invoke('hetzner-test');
       
       if (error) {
         throw error;
