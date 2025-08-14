@@ -10,6 +10,7 @@ interface ImageUploaderProps {
 const ImageUploader = ({ onImageSelect, selectedImage }: ImageUploaderProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   useEffect(() => {
     if (selectedImage) {
@@ -35,6 +36,26 @@ const ImageUploader = ({ onImageSelect, selectedImage }: ImageUploaderProps) => 
     setImagePreview(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = e.dataTransfer.files;
+    if (files && files[0] && files[0].type.startsWith('image/')) {
+      onImageSelect(files[0]);
     }
   };
 
@@ -73,7 +94,14 @@ const ImageUploader = ({ onImageSelect, selectedImage }: ImageUploaderProps) => 
       ) : (
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="w-full bg-card border-2 border-dashed border-border rounded-apple p-8 hover:border-primary/50 transition-colors"
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={`w-full bg-card border-2 border-dashed rounded-apple p-8 transition-colors ${
+            isDragOver 
+              ? 'border-primary bg-primary/5 scale-[1.02]' 
+              : 'border-border hover:border-primary/50'
+          }`}
         >
           <div className="flex flex-col items-center gap-3">
             <div className="w-12 h-12 bg-primary/10 rounded-apple-sm flex items-center justify-center">
@@ -81,10 +109,10 @@ const ImageUploader = ({ onImageSelect, selectedImage }: ImageUploaderProps) => 
             </div>
             <div className="text-center">
               <p className="text-sm font-medium text-foreground">
-                Upload Product Image
+                {isDragOver ? 'Drop your image here' : 'Upload Product Image'}
               </p>
               <p className="text-xs text-muted-foreground">
-                PNG, JPG up to 10MB
+                {isDragOver ? 'Release to upload' : 'PNG, JPG up to 10MB • Click or drag & drop'}
               </p>
             </div>
           </div>

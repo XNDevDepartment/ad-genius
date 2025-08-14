@@ -20,6 +20,7 @@ import { useImageLimit } from "@/hooks/useImageLimit";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Description } from "@radix-ui/react-dialog";
+import OrientationSelector from "@/components/OrientationSelector";
 
 interface GeneratedImage {
   id: string;
@@ -71,7 +72,7 @@ const CreateUGC = () => {
   const [productIdentification, setProductIdentification] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [numImages, setNumImages] = useState(1);
-  const [orientation, setOrientation] = useState("square");
+  const [imageOrientation, setImageOrientation] = useState("1:1");
   const [timeOfDay, setTimeOfDay] = useState("natural");
   const [style, setStyle] = useState("lifestyle");
   const [progress, setProgress] = useState(0);
@@ -293,6 +294,8 @@ const CreateUGC = () => {
   };
 
   const generateMoreScenarios = async () => {
+    setAiScenarios([]); // Clear existing scenarios
+    setIsLoadingScenarios(true);
     await getScenarios();
   };
 
@@ -378,7 +381,7 @@ const CreateUGC = () => {
             prompt,
             {
               number: 1,
-              size: orientation === 'square' ? '1024x1024' : orientation === 'portrait' ? '1024x1536' : '1536x1024',
+              size: imageOrientation === '1:1' ? '1024x1024' : imageOrientation === '4:3' ? '1024x768' : '768x1024',
               quality: imageQuality,
               output_format: 'png',
             }
@@ -468,7 +471,7 @@ const CreateUGC = () => {
         prompt: validImages[0].prompt,
         settings: {
           numImages,
-          orientation,
+          orientation: imageOrientation,
           timeOfDay,
           style,
           scenario: selectedScenario
@@ -756,18 +759,11 @@ const CreateUGC = () => {
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="orientation">Orientation</Label>
-                      <select
-                        id="orientation"
-                        value={orientation}
-                        onChange={(e) => setOrientation(e.target.value)}
-                        className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
-                      >
-                        <option value="square">Square</option>
-                        <option value="portrait">Portrait</option>
-                        <option value="landscape">Landscape</option>
-                      </select>
+                    <div className="col-span-2">
+                      <OrientationSelector 
+                        value={imageOrientation}
+                        onChange={setImageOrientation}
+                      />
                     </div>
 
                     <div className="space-y-2">
@@ -845,7 +841,7 @@ const CreateUGC = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Orientation:</span>
-                    <span className="font-medium capitalize">{orientation}</span>
+                    <span className="font-medium">{imageOrientation}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Style:</span>
