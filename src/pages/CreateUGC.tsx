@@ -760,7 +760,7 @@ const CreateUGC = () => {
                     </div>
 
                     <div className="col-span-2">
-                      <OrientationSelector 
+                      <OrientationSelector
                         value={imageOrientation}
                         onChange={setImageOrientation}
                       />
