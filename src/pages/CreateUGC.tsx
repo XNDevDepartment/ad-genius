@@ -381,7 +381,7 @@ const CreateUGC = () => {
             prompt,
             {
               number: 1,
-              size: imageOrientation === '1:1' ? '1024x1024' : imageOrientation === '4:3' ? '1024x768' : '768x1024',
+              size: imageOrientation === '1:1' ? '1024x1024' : imageOrientation === '4:3' ? '1536x1024' : '1024x1536',
               quality: imageQuality,
               output_format: 'png',
             }

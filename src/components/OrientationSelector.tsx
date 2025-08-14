@@ -7,21 +7,21 @@ interface OrientationSelectorProps {
 
 const orientationOptions = [
   {
-    value: 'landscape',
+    value: '4:3',
     label: ' Facebook Landscape (4:3)',
     description: 'Horizontal format for Facebook posts',
     iconWidth: 'w-7',
     iconHeight: 'h-5'
   },
   {
-    value: 'square',
+    value: '1:1',
     label: 'Instagram Square (1:1)',
     description: 'Square format for Instagram',
     iconWidth: 'w-5',
     iconHeight: 'h-5'
   },
   {
-    value: 'portrait',
+    value: '3:4',
     label: 'Instagram Post (3:4)',
     description: 'Vertical format for Instagram',
     iconWidth: 'w-5',
