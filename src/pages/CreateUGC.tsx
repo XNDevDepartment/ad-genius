@@ -70,7 +70,7 @@ const CreateUGC = () => {
   const [isLoadingScenarios, setIsLoadingScenarios] = useState(false);
   const [threadId, setThreadId] = useState<string | null>(null);
   const [productIdentification, setProductIdentification] = useState("");
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(true);
   const [numImages, setNumImages] = useState(1);
   const [imageOrientation, setImageOrientation] = useState("1:1");
   const [timeOfDay, setTimeOfDay] = useState("natural");
@@ -747,7 +747,7 @@ const CreateUGC = () => {
                 <div className="space-y-4 border-t pt-4">
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="numImages"># Images</Label>
+                      <Label htmlFor="numImages">No. Images</Label>
                       <Input
                         id="numImages"
                         type="number"
@@ -756,13 +756,6 @@ const CreateUGC = () => {
                         value={numImages}
                         onChange={(e) => setNumImages(parseInt(e.target.value))}
                         className="rounded-apple-sm"
-                      />
-                    </div>
-
-                    <div className="col-span-2">
-                      <OrientationSelector
-                        value={imageOrientation}
-                        onChange={setImageOrientation}
                       />
                     </div>
 
@@ -795,6 +788,13 @@ const CreateUGC = () => {
                         <option value="professional">Professional</option>
                       </select>
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <OrientationSelector
+                      value={imageOrientation}
+                      onChange={setImageOrientation}
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 mt-4">

@@ -35,44 +35,19 @@ const OrientationSelector = ({ value, onChange }: OrientationSelectorProps) => {
       <Label className="text-sm font-medium text-foreground">
         Image Orientation
       </Label>
-      <div className="grid gap-3">
+      <select
+        name="orientation"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-apple border-2 border-border p-3 text-sm font-medium text-foreground bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+      >
         {orientationOptions.map((option) => (
-          <label
-            key={option.value}
-            className={`flex items-center gap-4 p-4 rounded-apple border-2 cursor-pointer transition-all ${
-              value === option.value
-                ? 'border-primary bg-primary/5'
-                : 'border-border hover:border-primary/30 hover:bg-primary/5'
-            }`}
-          >
-            <input
-              type="radio"
-              name="orientation"
-              value={option.value}
-              checked={value === option.value}
-              onChange={(e) => onChange(e.target.value)}
-              className="sr-only"
-            />
-            
-            {/* Visual aspect ratio preview - more accurate representation */}
-            <div className="flex items-center gap-3">
-              <div   className={`bg-transparent border border-gray-500 ${option.iconWidth} ${option.iconHeight}`} />
-              <span className="text-sm font-mono text-muted-foreground">
-                {option.value}
-              </span>
-            </div>
-            
-            <div className="flex-1">
-              <div className="text-sm font-medium text-foreground">
-                {option.label}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {option.description}
-              </div>
-            </div>
-          </label>
+          <option key={option.value} value={option.value}>
+            <div className={`bg-transparent border border-gray-500 ${option.iconWidth} ${option.iconHeight}`} />
+            {option.label}
+          </option>
         ))}
-      </div>
+      </select>
     </div>
   );
 };
