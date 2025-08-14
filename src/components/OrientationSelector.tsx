@@ -10,15 +10,15 @@ const orientationOptions = [
     value: '4:3',
     label: 'Instagram Post (4:3)',
     description: 'Horizontal format for Instagram posts',
-    iconWidth: 'w-8',
-    iconHeight: 'h-6'
+    iconWidth: 'w-7',
+    iconHeight: 'h-5'
   },
   {
     value: '1:1',
     label: 'Instagram Square (1:1)',
     description: 'Square format for Instagram',
-    iconWidth: 'w-6',
-    iconHeight: 'h-6'
+    iconWidth: 'w-5',
+    iconHeight: 'h-5'
   },
   {
     value: '3:4',
@@ -56,7 +56,7 @@ const OrientationSelector = ({ value, onChange }: OrientationSelectorProps) => {
             
             {/* Visual aspect ratio preview - more accurate representation */}
             <div className="flex items-center gap-3">
-              <div className={`bg-foreground rounded-sm ${option.iconWidth} ${option.iconHeight}`} />
+              <div   className={`bg-transparent border border-gray-500 ${option.iconWidth} ${option.iconHeight}`} />
               <span className="text-sm font-mono text-muted-foreground">
                 {option.value}
               </span>
