@@ -10,19 +10,22 @@ const orientationOptions = [
     value: '4:3',
     label: 'Instagram Post (4:3)',
     description: 'Horizontal format for Instagram posts',
-    aspectRatio: 'w-8 h-6'
+    iconWidth: 'w-8',
+    iconHeight: 'h-6'
   },
   {
     value: '1:1',
     label: 'Instagram Square (1:1)',
     description: 'Square format for Instagram',
-    aspectRatio: 'w-6 h-6'
+    iconWidth: 'w-6',
+    iconHeight: 'h-6'
   },
   {
     value: '3:4',
     label: 'Facebook Landscape (3:4)',
     description: 'Vertical format for Facebook',
-    aspectRatio: 'w-6 h-8'
+    iconWidth: 'w-5',
+    iconHeight: 'h-7'
   }
 ];
 
@@ -36,7 +39,7 @@ const OrientationSelector = ({ value, onChange }: OrientationSelectorProps) => {
         {orientationOptions.map((option) => (
           <label
             key={option.value}
-            className={`flex items-center gap-3 p-3 rounded-apple border-2 cursor-pointer transition-all ${
+            className={`flex items-center gap-4 p-4 rounded-apple border-2 cursor-pointer transition-all ${
               value === option.value
                 ? 'border-primary bg-primary/5'
                 : 'border-border hover:border-primary/30 hover:bg-primary/5'
@@ -51,9 +54,12 @@ const OrientationSelector = ({ value, onChange }: OrientationSelectorProps) => {
               className="sr-only"
             />
             
-            {/* Visual aspect ratio preview */}
-            <div className="flex items-center justify-center w-12 h-12 bg-muted rounded-apple-sm">
-              <div className={`bg-primary rounded-sm ${option.aspectRatio}`} />
+            {/* Visual aspect ratio preview - more accurate representation */}
+            <div className="flex items-center gap-3">
+              <div className={`bg-foreground rounded-sm ${option.iconWidth} ${option.iconHeight}`} />
+              <span className="text-sm font-mono text-muted-foreground">
+                {option.value}
+              </span>
             </div>
             
             <div className="flex-1">
