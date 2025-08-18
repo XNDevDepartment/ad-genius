@@ -882,7 +882,7 @@ const CreateUGC = () => {
                    !canGenerateImages(numImages) ? `Insufficient credits (${remainingCredits} remaining, need ${calculateImageCost(imageQuality, numImages)})` :
                    'Generation typically takes 30-60 seconds'}
                 </p>
-                
+
                 {!canGenerateImages(numImages) && (
                   <Button 
                     variant="outline" 
