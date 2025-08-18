@@ -74,6 +74,7 @@ const CreateUGC = () => {
   const [numImages, setNumImages] = useState(1);
   const [imageOrientation, setImageOrientation] = useState("1:1");
   const [timeOfDay, setTimeOfDay] = useState("natural");
+  const [highlight, setHighlight] = useState("yes");
   const [style, setStyle] = useState("lifestyle");
   const [progress, setProgress] = useState(0);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
@@ -112,17 +113,17 @@ const CreateUGC = () => {
 
       setThreadId(result.threadId);
       console.log('New thread created with new-openai-chat:', result.threadId);
-      
+
       // Save conversation to database
       const conversation = await saveConversation({
         threadId: result.threadId,
         assistantId: ASSISTANT_ID
       });
-      
+
       if (conversation) {
         setConversationId(conversation.id);
       }
-      
+
     } catch (error) {
       console.error('Error initializing thread:', error);
       toast({
@@ -146,7 +147,7 @@ const CreateUGC = () => {
       const reader = new FileReader();
       reader.onload = async () => {
         const base64 = reader.result as string;
-        
+
         const reply = await sendImageAndRun(
           threadId!,
           ASSISTANT_ID,
@@ -349,12 +350,26 @@ const CreateUGC = () => {
       ------------------------------------------------------------------*/
       const baseFileData = await fileToDataUrl(productImage); // Data URL with prefix
 
-      const prompt =
+      let prompt = "";
+
+      const highlightedProdPrompt =
       'Ultra‑detailed UGC photograph of my product positioned ' + selectedScenario.description +
       ', shot in ' + timeOfDay + ' light using a full‑frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125 s, ISO 200. ' +
       'Center‑weighted autofocus locked on the product. True‑to‑life colors and surface texture with subtle, authentic imperfections. ' +
       'Composition: product fills about 70 percent of the frame, slight background bokeh for depth while preserving scenario context; camera at eye‑level angle—no wide‑angle distortion. The product must have maximum quality and all the details of the original image must be preserved at all costs. ' +
       'Visual mood: ' + style + ' yet ultra-realistic. --negative "AI artifacts, text overlays, watermark, lens flare, distorted or rotated labels, invented branding, extra limbs, low resolution, out‑of‑focus product, over‑saturation" --ar ';
+
+
+      const blendedProdPrompt =
+      'A hyper-realistic lifestyle photograph where my product ' +
+      'is naturally integrated into the scene. The setting is ' + selectedScenario.description + '. ' +
+      'The focus is on accurately replicating my product with sharp details, clear labeling, and realistic textures. ' +
+      'Surroundings should enhance the scene but remain slightly out of focus, ensuring the product looks authentic and integrated. ' +
+      'Include only partial human presence if relevant (e.g., a hand holding the product, someone reaching for it), but avoid full human bodies. ' +
+      'Lighting should be natural, with soft shadows and reflections consistent with the environment, shot in ' + timeOfDay + '. ' +
+      'Include ' + style + ' textures, surfaces, and props that reinforce authenticity (e.g., fruits, shaker bottle, towels, books, plants), ultra-realistic. ' +
+      'The composition should feel casual, as if captured in daily life, not staged. ' +
+      '--negative "AI artifacts, text overlays, watermark, lens flare, distorted or rotated labels, invented branding, extra limbs, full bodies, low resolution, out-of-focus product, over-saturation" --ar ';
 
       const imageObjects: GeneratedImage[] = [];
 
@@ -362,6 +377,11 @@ const CreateUGC = () => {
         2️⃣  // Generate all images in parallel
       ------------------------------------------------------------------*/
       const imagePromises = Array.from({ length: numImages }, async (_, i) => {
+        if(highlight === "true"){
+          prompt = highlightedProdPrompt
+        }else{
+          prompt = blendedProdPrompt
+        }
         try {
           const res = await generateImagesFromBase(
             baseFileData,
@@ -725,7 +745,7 @@ const CreateUGC = () => {
 
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="default"
                       size="sm"
                       onClick={generateMoreScenarios}
                       disabled={isLoadingScenarios}
@@ -787,6 +807,19 @@ const CreateUGC = () => {
                         <option value="minimal">Minimal</option>
                         <option value="vibrant">Vibrant</option>
                         <option value="professional">Professional</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="style">Product Highlight</Label>
+                      <select
+                        id="style"
+                        value={highlight}
+                        onChange={(e) => setHighlight(e.target.value)}
+                        className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
+                      >
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
                       </select>
                     </div>
                   </div>
