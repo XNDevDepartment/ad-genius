@@ -70,8 +70,36 @@ export const GeneratedImagesList = ({ images, prompt = "Generated UGC image", se
   };
 
   const handleOpenInNewTab = (b64: string) => {
-    const src = `data:image/png;base64,${b64}`;
-    window.open(src, '_blank');
+    try {
+      // Convert base64 to blob for reliable handling
+      const byteString = atob(b64);
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([ab], { type: "image/png" });
+      const blobUrl = URL.createObjectURL(blob);
+      
+      // Use link element for better compatibility
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up blob URL
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    } catch (error) {
+      console.error('Failed to open image:', error);
+      toast({
+        title: "Failed to open image",
+        description: "Unable to open image in new tab.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
