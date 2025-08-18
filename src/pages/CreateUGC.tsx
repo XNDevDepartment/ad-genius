@@ -827,7 +827,7 @@ const CreateUGC = () => {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Credits available:</span>
-                    <span className="font-medium">{credits}</span>
+                    <span className="font-medium">{remainingCredits}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Cost:</span>
