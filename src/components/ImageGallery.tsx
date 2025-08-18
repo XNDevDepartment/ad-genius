@@ -19,9 +19,48 @@ interface ImageGalleryProps {
 const ImageGallery = ({ images, onImageSelect }: ImageGalleryProps) => {
   const { favorites, toggleFavorite } = useFavorites();
 
+  // const handleOpenInNewTab = (imageUrl: string) => {
+  //   window.open(imageUrl, '_blank');
+  // };
+
   const handleOpenInNewTab = (imageUrl: string) => {
-    window.open(imageUrl, '_blank');
+    console.log("entrei")
+    try {
+      // If it's already http(s) or a blob URL, just open it.
+      if (!imageUrl.startsWith("data:")) {
+        const a = document.createElement("a");
+        a.href = imageUrl;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.click();
+        return;
+      }
+  
+      // data:[mime];base64,<payload>
+      const [meta, base64] = imageUrl.split(",");
+      const mime = meta.split(":")[1]?.split(";")[0] || "image/png";
+  
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  
+      const blob = new Blob([bytes], { type: mime });
+      const url = URL.createObjectURL(blob);
+  
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.click();
+  
+      // Cleanup after the new tab has loaded it
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    } catch (err) {
+      console.error("Failed to open image in new tab:", err);
+    }
   };
+  
+
 
   return (
     <div className="space-y-4">
