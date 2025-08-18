@@ -12,7 +12,7 @@ import { GeneratingImagePlaceholders } from "@/components/departments/ugc/Genera
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
-import { startConversationAPI, converse, sendImageAndRun, generateImagesFromBase, getScenariosFast } from '@/api/OpenAiChatClient';
+import { startConversationAPI, converse, sendImageAndRun, generateImagesFromBase } from '@/api/OpenAiChatClient';
 import { useSecureImageStorage } from "@/components/departments/ugc/SecureImageStorage";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
@@ -245,9 +245,9 @@ const CreateUGC = () => {
   };
 
   const getScenarios = async () => {
-    if (!productIdentification || !niche.trim()) {
+    if (!productImage || !niche.trim()) {
       toast({
-        title: "Missing Information",
+        title: "Missing Information", 
         description: "Please upload a product image and describe your niche.",
         variant: "destructive",
       });
@@ -255,22 +255,32 @@ const CreateUGC = () => {
     }
 
     setIsLoadingScenarios(true);
-    
+    setProgress(0);
+
     try {
-      const scenarios = await getScenariosFast(productIdentification, niche);
-      if (scenarios && scenarios.length > 0) {
-        setAiScenarios(scenarios);
-        toast({
-          title: "Scenarios Generated",
-          description: `Got ${scenarios.length} UGC scenario ideas for your product.`,
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "No scenarios found in the response",
-          variant: "destructive",
-        });
-      }
+      // Convert image to base64
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        
+        const response = await sendImageAndRun(
+          threadId,
+          ASSISTANT_ID,
+          base64,
+          'product-image.jpg',
+          `Product niche: ${niche}. Please provide 6 creative UGC scenario ideas for this product. Return ONLY a JSON object.`
+        );
+
+        const responseText = response;
+        // Extract JSON from response
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const scenarios = JSON.parse(jsonMatch[0]);
+          setAiScenarios(scenarios.scenarios || []);
+        }
+      };
+      reader.readAsDataURL(productImage);
+
     } catch (error) {
       console.error('Error getting scenarios:', error);
       toast({
@@ -285,7 +295,7 @@ const CreateUGC = () => {
 
   const generateMoreScenarios = async () => {
     setAiScenarios([]); // Clear existing scenarios
-    await getScenarios();
+    await getScenariosFromConversation();
   };
 
   // handleGenerate.ts – final version aligned with Supabase contract
