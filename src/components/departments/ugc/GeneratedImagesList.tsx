@@ -71,7 +71,7 @@ export const GeneratedImagesList = ({ images, prompt = "Generated UGC image", se
 
   const handleOpenInNewTab = (b64: string) => {
     try {
-      // Convert base64 to blob for more reliable handling
+      // Convert base64 to blob for reliable handling
       const byteString = atob(b64);
       const ab = new ArrayBuffer(byteString.length);
       const ia = new Uint8Array(ab);
@@ -81,32 +81,22 @@ export const GeneratedImagesList = ({ images, prompt = "Generated UGC image", se
       const blob = new Blob([ab], { type: "image/png" });
       const blobUrl = URL.createObjectURL(blob);
       
-      const newWindow = window.open('', '_blank');
-      if (newWindow) {
-        newWindow.document.write(`
-          <html>
-            <head>
-              <title>Generated Image</title>
-              <style>
-                body { margin: 0; padding: 20px; background: #000; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-                img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 20px rgba(255,255,255,0.1); }
-              </style>
-            </head>
-            <body>
-              <img src="${blobUrl}" alt="Generated Image" onload="document.title = 'UGC Image - ' + new Date().toLocaleString();" />
-            </body>
-          </html>
-        `);
-        newWindow.document.close();
-        
-        // Clean up blob URL after a delay to ensure image loads
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
-      }
+      // Use link element for better compatibility
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up blob URL
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
     } catch (error) {
-      console.error('Failed to open image in new tab:', error);
+      console.error('Failed to open image:', error);
       toast({
         title: "Failed to open image",
-        description: "Unable to open image in new tab. Try downloading instead.",
+        description: "Unable to open image in new tab.",
         variant: "destructive",
       });
     }
