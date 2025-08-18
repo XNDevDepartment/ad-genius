@@ -910,7 +910,7 @@ const CreateUGC = () => {
 
               <div className="border-t pt-4">
                 <Button 
-                  variant="default" 
+                  variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "default"}
                   size="lg" 
                   className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
                   onClick={handleGenerate}
