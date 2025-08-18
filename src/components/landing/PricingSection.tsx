@@ -142,11 +142,11 @@ const PricingSection = () => {
 
         <div className="text-center mt-12">
           <p className="text-gray-400 text-sm mb-6">
-            All plans include 14-day free trial • No credit card required • Cancel anytime
+            All plans include 7-day free trial • No credit card required • Cancel anytime
           </p>
           <Button 
             onClick={() => navigate('/pricing')} 
-            variant="outline" 
+            variant="link" 
             className="border-white/20 text-white hover:bg-white/10"
           >
             See Full Pricing Details
