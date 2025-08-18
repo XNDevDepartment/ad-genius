@@ -6,7 +6,6 @@ import { ConversationsList } from './ConversationsList';
 import { ConversationViewer } from './ConversationViewer';
 import { AdminManagement } from './AdminManagement';
 import { AdminImagesList } from './AdminImagesList';
-import { MigrationButton } from './MigrationButton';
 
 export const AdminOverview = () => {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
@@ -52,14 +51,6 @@ export const AdminOverview = () => {
         
         <TabsContent value="admins" className="space-y-6">
           <AdminManagement />
-          
-          <div className="mt-8 p-6 border rounded-lg">
-            <h3 className="text-lg font-semibold mb-4">Storage Migration</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Migrate all images from Supabase Storage to Hetzner Object Storage. This process may take several minutes.
-            </p>
-            <MigrationButton />
-          </div>
         </TabsContent>
       </Tabs>
     </div>

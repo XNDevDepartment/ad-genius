@@ -44,7 +44,7 @@ const PublicGallery = () => {
         setImages(
           (data || []).map((img: any) => ({
             ...img,
-            thumb_url: img.public_url, // Use same URL for Hetzner images
+            thumb_url: img.public_url,
           }))
         );
       }
