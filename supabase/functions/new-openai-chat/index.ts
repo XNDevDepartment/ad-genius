@@ -249,7 +249,7 @@ async function generateImages({ baseFileData, prompt, options }, req: Request) {
   
   const isAdmin = adminCheck === true;
   
-  // Only deduct credits for non-admin users
+  // Check affordability for non-admin users (pre-check without deducting)
   if (!isAdmin) {
     const { data: cost, error: costError } = await supabaseService.rpc('get_image_credit_cost', {
       p_quality: quality,
@@ -260,16 +260,10 @@ async function generateImages({ baseFileData, prompt, options }, req: Request) {
     }
     totalCost = Number(cost ?? 0);
 
-    const { data: deduction, error: deductionError } = await supabaseService.rpc('deduct_user_credits', {
-      p_user_id: user.id,
-      p_amount: totalCost,
-      p_reason: 'image_generation',
-    });
-    if (deductionError) {
-      return json({ error: `Credit deduction failed: ${deductionError.message}` }, 500);
-    }
-    if (!(deduction as any)?.success) {
-      return json({ error: (deduction as any)?.error ?? 'Insufficient credits' }, 402);
+    // Check if user can afford the generation
+    const currentBalance = subscriber?.credits_balance || 0;
+    if (currentBalance < totalCost) {
+      return json({ error: 'Insufficient credits' }, 402);
     }
   }
 
@@ -300,25 +294,23 @@ async function generateImages({ baseFileData, prompt, options }, req: Request) {
     });
 
     const images = await Promise.all(tasks);
-    return json({ images });
-  } catch (err) {
-    // Refund on failure when credits were deducted (non-admin users only)
-    const { data: adminCheckRefund } = await supabaseService.rpc('is_admin', {
-      check_user_id: user.id
-    });
-    const isAdminRefund = adminCheckRefund === true;
     
-    if (!isAdminRefund && totalCost > 0) {
-      const { data: refund, error: refundError } = await supabaseService.rpc('refund_user_credits', {
+    // Only deduct credits after successful generation for non-admin users
+    if (!isAdmin && totalCost > 0) {
+      const { data: deduction, error: deductionError } = await supabaseService.rpc('deduct_user_credits', {
         p_user_id: user.id,
         p_amount: totalCost,
-        p_reason: 'refund_generation_failed'
+        p_reason: 'image_generation',
       });
-      
-      if (refundError) {
-        console.error('Failed to refund credits:', refundError);
+      if (deductionError || !(deduction as any)?.success) {
+        console.error('Failed to deduct credits after successful generation:', deductionError);
+        return json({ error: 'Payment processing failed after generation' }, 402);
       }
     }
+    
+    return json({ images });
+  } catch (err) {
+    // No refund needed since credits weren't deducted yet
     throw err;
   }
 
