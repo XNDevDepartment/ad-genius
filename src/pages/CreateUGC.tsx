@@ -201,7 +201,7 @@ const CreateUGC = () => {
     try {
       const responseText = await converse(
         threadId!,
-        `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 6 creative UGC scenario ideas.`,
+        `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 6 creative UGC scenario ideas. Return ONLY a compact JSON object with "scenarios" array.`,
         ASSISTANT_ID
       );
       // Extract JSON from response
@@ -295,8 +295,7 @@ const CreateUGC = () => {
 
   const generateMoreScenarios = async () => {
     setAiScenarios([]); // Clear existing scenarios
-    setIsLoadingScenarios(true);
-    await getScenarios();
+    await getScenariosFromConversation();
   };
 
   // handleGenerate.ts – final version aligned with Supabase contract
