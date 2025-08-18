@@ -118,3 +118,17 @@ export async function generateImagesFromBase(
 
   return imageResult.images;
 }
+
+export async function getScenariosFast(productDescription: string, targetNiche: string) {
+  if (!productDescription || !targetNiche) {
+    throw new Error('Product description and target niche are required');
+  }
+
+  console.log('Using fast scenario-suggester...');
+  const result = await callEdgeFunction('scenario-suggester', {
+    productDescription,
+    targetNiche
+  });
+
+  return result.scenarios;
+}
