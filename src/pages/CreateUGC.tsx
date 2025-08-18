@@ -21,6 +21,9 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Description } from "@radix-ui/react-dialog";
 import OrientationSelector from "@/components/OrientationSelector";
+import { Card, CardContent } from "@/components/ui/card"
+import { motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 
 interface GeneratedImage {
   id: string;
@@ -623,6 +626,11 @@ const CreateUGC = () => {
     );
   }
 
+  const collapse = {
+    open: { opacity: 1, height: "auto" },
+    collapsed: { opacity: 0, height: 0 },
+  };
+
   return (
     <div className="min-h-screen bg-background relative">
       {/* Loading Overlay */}
@@ -761,10 +769,20 @@ const CreateUGC = () => {
                 onClick={() => setShowAdvanced(!showAdvanced)}
                 className="text-sm text-primary hover:text-primary/80 transition-colors"
               >
-                Advanced Settings {showAdvanced ? "▲" : "▼"}
+                Image Settings {showAdvanced ? "▲" : "▼"}
               </button>
 
+              <AnimatePresence initial={false} mode="wait">
               {showAdvanced && (
+                <motion.div
+                  key="advanced-card"
+                  variants={collapse}
+                  initial="collapsed"
+                  animate="open"
+                  exit="collapsed"
+                  transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+                  className="overflow-hidden" // critical for smooth close
+                >
                 <div className="space-y-4 border-t pt-4">
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="space-y-2">
@@ -847,7 +865,9 @@ const CreateUGC = () => {
                     </div>
                   </div>
                 </div>
+                </motion.div>
               )}
+              </AnimatePresence>
             </div>
           </div>
 
