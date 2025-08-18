@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -498,22 +498,22 @@ export type Database = {
     }
     Functions: {
       deduct_user_credits: {
-        Args: { p_user_id: string; p_amount: number; p_reason?: string }
+        Args: { p_amount: number; p_reason?: string; p_user_id: string }
         Returns: Json
       }
       get_image_credit_cost: {
-        Args: { p_quality?: string; p_count?: number }
+        Args: { p_count?: number; p_quality?: string }
         Returns: number
       }
       get_public_showcase_images: {
         Args: Record<PropertyKey, never>
         Returns: {
+          created_at: string
           id: string
           prompt: string
           public_url: string
-          storage_path: string
           settings: Json
-          created_at: string
+          storage_path: string
           updated_at: string
         }[]
       }
@@ -525,13 +525,21 @@ export type Database = {
         Args: { check_user_id?: string }
         Returns: boolean
       }
+      refund_user_credits: {
+        Args: { p_amount: number; p_reason?: string; p_user_id: string }
+        Returns: Json
+      }
       reset_monthly_credits: {
         Args: Record<PropertyKey, never>
         Returns: {
-          user_id: string
-          old_balance: number
           new_balance: number
+          old_balance: number
+          user_id: string
         }[]
+      }
+      reset_user_monthly_credits: {
+        Args: { p_user_id: string }
+        Returns: Json
       }
     }
     Enums: {

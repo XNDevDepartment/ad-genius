@@ -51,37 +51,10 @@ export const useCredits = () => {
     return Math.min((used / total) * 100, 100);
   };
 
+  // Removed client-side deductCredits - all deductions now handled server-side
   const deductCredits = async (amount: number): Promise<boolean> => {
-    if (!user) return false;
-    
-    setLoading(true);
-    try {
-      // Use the new atomic RPC function
-      const { data, error } = await supabase.rpc('deduct_user_credits', {
-        p_user_id: user.id,
-        p_amount: amount,
-        p_reason: 'image_generation'
-      });
-      
-      if (error) throw error;
-      
-      // Cast the response to our expected type
-      const result = data as unknown as CreditDeductionResponse;
-      
-      if (!result.success) {
-        console.error('Credit deduction failed:', result.error);
-        return false;
-      }
-      
-      // Refresh subscription data to get updated balance
-      await refreshSubscription();
-      return true;
-    } catch (error) {
-      console.error('Error deducting credits:', error);
-      return false;
-    } finally {
-      setLoading(false);
-    }
+    console.warn('Client-side credit deduction is deprecated. Credits are now deducted server-side during image generation.');
+    return true; // Always return true to maintain compatibility
   };
 
   const getDaysUntilReset = (): number => {

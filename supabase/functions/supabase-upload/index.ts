@@ -18,7 +18,20 @@ serve(async (req) => {
   }
 
   try {
-    const { base64Images, prompt, settings, user_id } = await req.json();
+    // Get user from JWT token instead of trusting client
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Authorization header required');
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      throw new Error('Invalid authentication token');
+    }
+
+    const { base64Images, prompt, settings } = await req.json();
 
     if (!base64Images || !Array.isArray(base64Images)) {
       throw new Error('base64Images array is required');
@@ -36,8 +49,8 @@ serve(async (req) => {
         uint8Array[i] = byteString.charCodeAt(i);
       }
 
-      // Generate unique filename
-      const fileName = `${user_id}/${crypto.randomUUID()}.png`;
+      // Generate unique filename using authenticated user ID
+      const fileName = `${user.id}/${crypto.randomUUID()}.png`;
       
       // Upload to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -59,11 +72,11 @@ serve(async (req) => {
 
       const publicUrl = urlData.publicUrl;
 
-      // Save metadata to database
+      // Save metadata to database using authenticated user ID
       const { data: dbData, error: dbError } = await supabase
         .from('generated_images')
         .insert({
-          user_id: user_id,
+          user_id: user.id,
           storage_path: fileName,
           public_url: publicUrl,
           prompt: prompt,

@@ -242,8 +242,15 @@ async function generateImages({ baseFileData, prompt, options }, req: Request) {
   const count = Math.max(1, options?.number ?? 1);
   let totalCost = 0;
 
-  // Server-side credit calculation and atomic deduction
-  if (subscriber?.subscription_tier !== 'Enterprise') {
+  // Check credits and admin status
+  const { data: adminCheck, error: adminError } = await supabaseService.rpc('is_admin', {
+    check_user_id: user.id
+  });
+  
+  const isAdmin = adminCheck === true;
+  
+  // Only deduct credits for non-admin users
+  if (!isAdmin) {
     const { data: cost, error: costError } = await supabaseService.rpc('get_image_credit_cost', {
       p_quality: quality,
       p_count: count,
@@ -295,18 +302,22 @@ async function generateImages({ baseFileData, prompt, options }, req: Request) {
     const images = await Promise.all(tasks);
     return json({ images });
   } catch (err) {
-    // Refund on failure when credits were deducted
-    if (subscriber?.subscription_tier !== 'Enterprise' && totalCost > 0) {
-      await supabaseService
-        .from('subscribers')
-        .update({ credits_balance: Number(subscriber?.credits_balance ?? 0) + totalCost, updated_at: new Date().toISOString() })
-        .eq('user_id', user.id);
-      await supabaseService.from('credits_transactions').insert({
-        user_id: user.id,
-        amount: totalCost,
-        reason: 'refund_generation_failed',
-        metadata: { quality, count, error: String(err) }
+    // Refund on failure when credits were deducted (non-admin users only)
+    const { data: adminCheckRefund } = await supabaseService.rpc('is_admin', {
+      check_user_id: user.id
+    });
+    const isAdminRefund = adminCheckRefund === true;
+    
+    if (!isAdminRefund && totalCost > 0) {
+      const { data: refund, error: refundError } = await supabaseService.rpc('refund_user_credits', {
+        p_user_id: user.id,
+        p_amount: totalCost,
+        p_reason: 'refund_generation_failed'
       });
+      
+      if (refundError) {
+        console.error('Failed to refund credits:', refundError);
+      }
     }
     throw err;
   }

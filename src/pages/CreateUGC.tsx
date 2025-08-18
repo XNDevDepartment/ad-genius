@@ -321,7 +321,7 @@ const CreateUGC = () => {
       return;
     }
 
-    // Check if user can generate the requested number of images
+    // Pre-flight check for credit availability (admins bypass this)
     if (!canGenerateImages(numImages)) {
       const creditsNeeded = calculateImageCost(imageQuality, numImages);
       toast({
@@ -332,20 +332,8 @@ const CreateUGC = () => {
       return;
     }
 
-    // Prepare for generation
-    const creditsNeeded = calculateImageCost(imageQuality, numImages);
-
     try {
-      // Deduct credits before generation
-      const success = await deductCredits(creditsNeeded);
-      if (!success) {
-        toast({
-          title: 'Credit deduction failed',
-          description: 'Unable to deduct credits. Please try again.',
-          variant: 'destructive',
-        });
-        return;
-      }
+      // Credits are now deducted server-side during generation
 
       setIsGenerating(true);
       setStage('generating');
@@ -424,12 +412,26 @@ const CreateUGC = () => {
         description: `Successfully created ${validImages.length} images.`
       });
 
-    } catch (err) {
-      console.error('handleGenerate failed:', err);
-      toast({ title: 'Generation failed', description: 'Something went wrong. Please try again.', variant: 'destructive' });
-      setStage('setup');
+    } catch (error: any) {
+      console.error('Generation error:', error);
+      
+      // Check if it's a credit-related error
+      if (error.message?.includes('Insufficient credits') || error.message?.includes('Credit')) {
+        toast({
+          title: 'Insufficient credits',
+          description: error.message || 'Not enough credits to generate images.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Generation failed',
+          description: error.message || 'Failed to generate images. Please try again.',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setIsGenerating(false);
+      await refreshCount(); // Refresh the credit count to get updated balance
     }
   };
 
@@ -860,7 +862,7 @@ const CreateUGC = () => {
                   size="lg" 
                   className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
                   onClick={handleGenerate}
-                  disabled={!productImage || !selectedScenario || isGenerating || !canAfford(calculateImageCost(imageQuality, numImages)) || !canGenerateImages(numImages)}
+                  disabled={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages)}
                 >
                   {isGenerating ? (
                     <>
@@ -877,12 +879,11 @@ const CreateUGC = () => {
 
                 <p className="text-xs text-muted-foreground mt-2 text-center">
                   {isGenerating ? 'AI is creating your images...' : 
-                   !canGenerateImages(numImages) ? `Insufficient credits (${remainingCredits} remaining)` :
-                   !canAfford(calculateImageCost(imageQuality, numImages)) ? `Need ${calculateImageCost(imageQuality, numImages)} credits to generate` :
+                   !canGenerateImages(numImages) ? `Insufficient credits (${remainingCredits} remaining, need ${calculateImageCost(imageQuality, numImages)})` :
                    'Generation typically takes 30-60 seconds'}
                 </p>
                 
-                {(!canAfford(calculateImageCost(imageQuality, numImages)) || !canGenerateImages(numImages)) && (
+                {!canGenerateImages(numImages) && (
                   <Button 
                     variant="outline" 
                     size="sm" 
