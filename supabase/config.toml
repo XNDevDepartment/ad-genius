@@ -47,6 +47,15 @@ verify_jwt = true
 [functions.customer-portal]
 verify_jwt = true
 
+[functions.supabase-upload]
+verify_jwt = true
+
+[functions.validate-access-key]
+verify_jwt = false
+
+[functions.send-email]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 port = 54327

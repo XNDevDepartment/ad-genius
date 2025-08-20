@@ -525,6 +525,10 @@ export type Database = {
         Args: { check_user_id?: string }
         Returns: boolean
       }
+      is_user_admin: {
+        Args: { check_user_id?: string }
+        Returns: boolean
+      }
       refund_user_credits: {
         Args: { p_amount: number; p_reason?: string; p_user_id: string }
         Returns: Json
