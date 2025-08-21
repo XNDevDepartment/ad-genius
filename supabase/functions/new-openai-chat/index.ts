@@ -195,7 +195,7 @@ async function generateScenariosFast({ imageData, niche, language = 'en', count 
 Niche: ${niche}`;
 
   try {
-    const response = await fetchWithRetry(`${OPENAI_BASE}/responses`, {
+    const response = await fetchWithRetry(`${OPENAI_BASE}/chat/completions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
@@ -203,8 +203,6 @@ Niche: ${niche}`;
       },
       body: JSON.stringify({
         model: 'gpt-5-nano-2025-08-07',
-        reasoning: { effort: 'minimal' },
-        verbosity: 'low',
         max_completion_tokens: 600,
         messages: [
           {
@@ -245,14 +243,20 @@ Niche: ${niche}`;
       }),
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('OpenAI API error:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+    }
+
     const data = await response.json();
-    console.log('OpenAI Responses API result:', data);
+    console.log('OpenAI Chat Completions API result:', data);
     
-    if (data.output && data.output.text) {
-      const parsed = JSON.parse(data.output.text);
+    if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+      const parsed = JSON.parse(data.choices[0].message.content);
       return json({ scenarios: parsed.scenarios });
     } else {
-      throw new Error('No output text from OpenAI Responses API');
+      throw new Error('No content in OpenAI response');
     }
   } catch (error) {
     console.error('generateScenariosFast error:', error);
