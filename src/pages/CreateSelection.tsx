@@ -59,7 +59,7 @@ const CreateSelection = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {workflows.map((workflow) => (
             <Card 
-              key={workflow.id} 
+              key={workflow.id}
               className={`bg-transparent shadow-md cursor-pointer transition-all hover:shadow-lg ${
                 workflow.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'
               }`}
