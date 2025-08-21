@@ -27,5 +27,82 @@
   },
   "header": {
     "tagline": "Marketing com IA"
+  },
+  "ugc": {
+    "title": "Criar Conteúdo UGC",
+    "productImage": {
+      "title": "Imagem do Produto",
+      "subtitle": "Envie uma imagem do seu produto para análise",
+      "analyzing": "Analisando imagem...",
+      "tooltip": "Envie uma imagem clara e de alta qualidade do seu produto. A IA irá analisá-la para entender o que está vendendo e sugerir cenários relevantes."
+    },
+    "productNiche": {
+      "title": "Nicho do Produto",
+      "subtitle": "Descreva seu mercado-alvo, audiência ou caso de uso",
+      "placeholder": "Exemplo: Entusiastas de fitness, aventureiros ao ar livre, profissionais ocupados...",
+      "tooltip": "Descreva para quem é o seu produto ou como é usado. Isto ajuda a IA a gerar cenários relevantes que correspondem à sua audiência-alvo."
+    },
+    "scenarios": {
+      "title": "Cenários UGC",
+      "subtitle": "Ideias de conteúdo geradas pela IA para seu produto",
+      "generateButton": "Obter Ideias de Cenários",
+      "generateMoreButton": "Gerar Mais Ideias",
+      "loading": "Gerando cenários...",
+      "tooltip": "Escolha entre cenários gerados pela IA que mostram seu produto em situações realistas e envolventes."
+    },
+    "generationSettings": {
+      "title": "Configurações de Geração",
+      "subtitle": "Personalize suas preferências de saída de imagem",
+      "tooltip": "Ajuste essas configurações para controlar o estilo, qualidade e formato das suas imagens geradas."
+    },
+    "numImages": {
+      "title": "Número de Imagens",
+      "tooltip": "Escolha quantas variações deseja gerar. Mais imagens = mais opções mas maior custo de créditos."
+    },
+    "imageQuality": {
+      "title": "Qualidade da Imagem",
+      "low": "Baixa",
+      "medium": "Média",
+      "high": "Alta",
+      "tooltip": "Imagens de maior qualidade ficam melhores mas custam mais créditos. Baixa=1 crédito, Média=2 créditos, Alta=3 créditos por imagem."
+    },
+    "orientation": {
+      "title": "Orientação da Imagem",
+      "tooltip": "Escolha a proporção das suas imagens baseada em onde planeja usá-las."
+    },
+    "advancedSettings": {
+      "title": "Configurações Avançadas",
+      "timeOfDay": {
+        "title": "Hora do Dia",
+        "natural": "Natural",
+        "golden": "Hora Dourada",
+        "bright": "Luz do Dia Brilhante",
+        "soft": "Manhã Suave",
+        "tooltip": "Controla o clima de iluminação nas suas imagens geradas."
+      },
+      "highlight": {
+        "title": "Destaque do Produto",
+        "yes": "Sim - Focar no produto",
+        "no": "Não - Misturar naturalmente",
+        "tooltip": "Escolha se deve tornar seu produto o foco principal ou misturá-lo naturalmente na cena."
+      },
+      "style": {
+        "title": "Estilo Visual",
+        "lifestyle": "Lifestyle",
+        "professional": "Profissional",
+        "casual": "Casual",
+        "minimalist": "Minimalista",
+        "tooltip": "Define a estética geral e o clima das imagens geradas."
+      }
+    },
+    "generateButton": "Gerar Imagens",
+    "generating": "Gerando suas imagens UGC...",
+    "results": {
+      "title": "Imagens Geradas",
+      "downloadAll": "Baixar Todas",
+      "downloadSelected": "Baixar Selecionadas",
+      "generateMore": "Gerar Mais",
+      "newCreation": "Nova Criação"
+    }
   }
 }

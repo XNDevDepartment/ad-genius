@@ -27,5 +27,82 @@
   },
   "header": {
     "tagline": "AI Marketing"
+  },
+  "ugc": {
+    "title": "Create UGC Content",
+    "productImage": {
+      "title": "Product Image",
+      "subtitle": "Upload an image of your product for analysis",
+      "analyzing": "Analyzing image...",
+      "tooltip": "Upload a clear, high-quality image of your product. The AI will analyze it to understand what you're selling and suggest relevant scenarios."
+    },
+    "productNiche": {
+      "title": "Product Niche", 
+      "subtitle": "Describe your target market, audience, or use case",
+      "placeholder": "Example: Fitness enthusiasts, outdoor adventurers, busy professionals...",
+      "tooltip": "Describe who your product is for or how it's used. This helps the AI generate relevant scenarios that match your target audience."
+    },
+    "scenarios": {
+      "title": "UGC Scenarios",
+      "subtitle": "AI-generated content ideas for your product",
+      "generateButton": "Get Scenario Ideas",
+      "generateMoreButton": "Generate More Ideas",
+      "loading": "Generating scenarios...",
+      "tooltip": "Choose from AI-generated scenarios that show your product in realistic, engaging situations."
+    },
+    "generationSettings": {
+      "title": "Generation Settings",
+      "subtitle": "Customize your image output preferences",
+      "tooltip": "Adjust these settings to control the style, quality, and format of your generated images."
+    },
+    "numImages": {
+      "title": "Number of Images",
+      "tooltip": "Choose how many variations you want to generate. More images = more options but higher credit cost."
+    },
+    "imageQuality": {
+      "title": "Image Quality",
+      "low": "Low",
+      "medium": "Medium", 
+      "high": "High",
+      "tooltip": "Higher quality images look better but cost more credits. Low=1 credit, Medium=2 credits, High=3 credits per image."
+    },
+    "orientation": {
+      "title": "Image Orientation",
+      "tooltip": "Choose the aspect ratio for your images based on where you plan to use them."
+    },
+    "advancedSettings": {
+      "title": "Advanced Settings",
+      "timeOfDay": {
+        "title": "Time of Day",
+        "natural": "Natural",
+        "golden": "Golden Hour",
+        "bright": "Bright Daylight",
+        "soft": "Soft Morning",
+        "tooltip": "Controls the lighting mood in your generated images."
+      },
+      "highlight": {
+        "title": "Product Highlight",
+        "yes": "Yes - Focus on product",
+        "no": "No - Blend naturally",
+        "tooltip": "Choose whether to make your product the main focus or blend it naturally into the scene."
+      },
+      "style": {
+        "title": "Visual Style", 
+        "lifestyle": "Lifestyle",
+        "professional": "Professional",
+        "casual": "Casual",
+        "minimalist": "Minimalist",
+        "tooltip": "Sets the overall aesthetic and mood of the generated images."
+      }
+    },
+    "generateButton": "Generate Images",
+    "generating": "Generating your UGC images...",
+    "results": {
+      "title": "Generated Images",
+      "downloadAll": "Download All",
+      "downloadSelected": "Download Selected",
+      "generateMore": "Generate More",
+      "newCreation": "New Creation"
+    }
   }
 }
