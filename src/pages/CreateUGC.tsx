@@ -682,210 +682,222 @@ const CreateUGC = () => {
           </div>
 
           {/* Main Form */}
-          <div className="lg:col-span-7">
-            <div className={`bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
-              <ImageUploader 
-                onImageSelect={handleImageUpload}
-                selectedImage={productImage}
-              />
+          <div className="lg:col-span-7 space-y-6">
+            {/* Product & Niche Card */}
+            <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
+              <CardContent className="p-6 lg:p-8 space-y-6">
+                <div>
+                  <h2 className="text-lg font-semibold mb-4">Product & Niche</h2>
+                  <div className="space-y-4">
+                    <ImageUploader 
+                      onImageSelect={handleImageUpload}
+                      selectedImage={productImage}
+                    />
 
-              {/* {productIdentification && (
-                <div className="p-3 bg-muted rounded-apple-sm">
-                  <p className="text-sm text-muted-foreground">AI Analysis:</p>
-                  <p className="text-sm mt-1">{productIdentification}</p>
-                </div>
-              )} */}
-
-              <div className="space-y-2">
-                <Label htmlFor="niche">Product Niche</Label>
-                <Textarea
-                  ref={taRef}
-                  id="niche"
-                  placeholder="Describe your product niche (max 250 char.)"
-                  value={niche}
-                  maxLength={250}
-                  onChange={(e) => handleNicheChange(e.target.value)}
-                  className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full"
-                  style={{ lineHeight: '1.5rem' }}
-                  disabled={!threadId}
-                  rows={1}
-                />
-                {/* live counter, right‑aligned and muted */}
-                <div className="flex justify-end text-sm text-muted-foreground">
-                  {niche.length} / 250
-                </div>
-
-                {isLoadingScenarios && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <RefreshCw className="h-4 w-4 animate-spin" />
-                    AI is generating scenario ideas...
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label>UGC Scenarios</Label>
-                  <div>
-                  <Button
-                    type="button"
-                    variant="default"
-                    size="sm"
-                    onClick={() => getScenariosFromConversation()}
-                    disabled={isLoadingScenarios || !productImage || !niche.trim() || !threadId}
-                  >
-                    {isLoadingScenarios ? (
-                      <>
-                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      "Generate Scenarios"
-                    )}
-                  </Button>
-                  </div>
-                </div>
-
-                {aiScenarios.length > 0 && (
-                  <div className="space-y-3">
-                    <div className="grid gap-2">
-                      {aiScenarios.map((scenario, index) => (
-                        <div
-                          key={index}
-                          className={`p-3 border rounded-apple-sm cursor-pointer transition-all ${
-                            selectedScenario?.idea === scenario.idea
-                              ? 'border-primary bg-primary/5'
-                              : 'border-border hover:border-primary/50'
-                          }`}
-                          onClick={() => {
-                            console.log('Scenario selected:', scenario);
-                            setSelectedScenario(scenario);
-                          }}
-                        >
-                          <h4 className="font-medium text-sm">{scenario.idea}</h4>
-                          <p className="text-xs text-muted-foreground mt-1">{scenario['small-description']}</p>
-                        </div>
-                      ))}
+                    <div className="space-y-2">
+                      <Label htmlFor="niche">Product Niche</Label>
+                      <Textarea
+                        ref={taRef}
+                        id="niche"
+                        placeholder="Describe your product niche (max 250 char.)"
+                        value={niche}
+                        maxLength={250}
+                        onChange={(e) => handleNicheChange(e.target.value)}
+                        className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full"
+                        style={{ lineHeight: '1.5rem' }}
+                        disabled={!threadId}
+                        rows={1}
+                      />
+                      <div className="flex justify-end text-sm text-muted-foreground">
+                        {niche.length} / 250
+                      </div>
                     </div>
 
                     <Button
                       type="button"
                       variant="default"
-                      size="sm"
-                      onClick={generateMoreScenarios}
-                      disabled={isLoadingScenarios}
+                      onClick={() => getScenariosFromConversation()}
+                      disabled={isLoadingScenarios || !productImage || !niche.trim() || !threadId}
                       className="w-full"
                     >
-                      Give More Options
+                      {isLoadingScenarios ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          Generating Scenarios...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Generate Scenarios
+                        </>
+                      )}
                     </Button>
-                  </div>
-                )}
-              </div>
 
-              <button
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="text-sm text-primary hover:text-primary/80 transition-colors"
-              >
-                Image Settings {showAdvanced ? "▲" : "▼"}
-              </button>
-
-              <AnimatePresence initial={false} mode="wait">
-              {showAdvanced && (
-                <motion.div
-                  key="advanced-card"
-                  variants={collapse}
-                  initial="collapsed"
-                  animate="open"
-                  exit="collapsed"
-                  transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-                  className="overflow-hidden" // critical for smooth close
-                >
-                <div className="space-y-4 border-t pt-4">
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="numImages">No. Images</Label>
-                      <Input
-                        id="numImages"
-                        type="number"
-                        min="1"
-                        max="3"
-                        value={numImages}
-                        onChange={(e) => setNumImages(parseInt(e.target.value))}
-                        className="rounded-apple-sm"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="timeOfDay">Time of Day</Label>
-                      <select
-                        id="timeOfDay"
-                        value={timeOfDay}
-                        onChange={(e) => setTimeOfDay(e.target.value)}
-                        className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
-                      >
-                        <option value="natural">Natural</option>
-                        <option value="morning">Morning</option>
-                        <option value="golden">Golden Hour</option>
-                        <option value="studio">Studio</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="style">Style</Label>
-                      <select
-                        id="style"
-                        value={style}
-                        onChange={(e) => setStyle(e.target.value)}
-                        className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
-                      >
-                        <option value="lifestyle">Lifestyle</option>
-                        <option value="minimal">Minimal</option>
-                        <option value="vibrant">Vibrant</option>
-                        <option value="professional">Professional</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="style">Product Highlight</Label>
-                      <select
-                        id="style"
-                        value={highlight}
-                        onChange={(e) => setHighlight(e.target.value)}
-                        className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
-                      >
-                        <option value="yes">Yes</option>
-                        <option value="no">No</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <OrientationSelector
-                      value={imageOrientation}
-                      onChange={setImageOrientation}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4 mt-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="imageQuality">Image Quality</Label>
-                      <select
-                        id="imageQuality"
-                        value={imageQuality}
-                        onChange={(e) => setImageQuality(e.target.value as 'low' | 'medium' | 'high')}
-                        className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
-                      >
-                        <option value="high">High Quality (2 credits per image)</option>
-                        <option value="medium">Medium Quality (1.5 credits per image)</option>
-                        <option value="low">Low Quality (1 credit per image)</option>
-                      </select>
-                    </div>
+                    {isLoadingScenarios && (
+                      <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground py-4">
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                        AI is generating scenario ideas...
+                      </div>
+                    )}
                   </div>
                 </div>
-                </motion.div>
-              )}
-              </AnimatePresence>
-            </div>
+              </CardContent>
+            </Card>
+
+            {/* UGC Scenarios Card */}
+            {aiScenarios.length > 0 && (
+              <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
+                <CardContent className="p-6 lg:p-8">
+                  <div>
+                    <h2 className="text-lg font-semibold mb-4">UGC Scenarios</h2>
+                    <div className="space-y-4">
+                      <div className="grid gap-2">
+                        {aiScenarios.map((scenario, index) => (
+                          <div
+                            key={index}
+                            className={`p-3 border rounded-apple-sm cursor-pointer transition-all ${
+                              selectedScenario?.idea === scenario.idea
+                                ? 'border-primary bg-primary/5'
+                                : 'border-border hover:border-primary/50'
+                            }`}
+                            onClick={() => {
+                              console.log('Scenario selected:', scenario);
+                              setSelectedScenario(scenario);
+                            }}
+                          >
+                            <h4 className="font-medium text-sm">{scenario.idea}</h4>
+                            <p className="text-xs text-muted-foreground mt-1">{scenario['small-description']}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={generateMoreScenarios}
+                        disabled={isLoadingScenarios}
+                        className="w-full"
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Give More Options
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Image Settings Card */}
+            <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
+              <CardContent className="p-6 lg:p-8">
+                <div>
+                  <button
+                    onClick={() => setShowAdvanced(!showAdvanced)}
+                    className="flex items-center justify-between w-full text-lg font-semibold mb-4 hover:text-primary transition-colors"
+                  >
+                    <span>Image Settings</span>
+                    <span className="text-sm">{showAdvanced ? "▲" : "▼"}</span>
+                  </button>
+
+                  <AnimatePresence initial={false} mode="wait">
+                    {showAdvanced && (
+                      <motion.div
+                        key="advanced-card"
+                        variants={collapse}
+                        initial="collapsed"
+                        animate="open"
+                        exit="collapsed"
+                        transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="numImages">No. Images</Label>
+                              <Input
+                                id="numImages"
+                                type="number"
+                                min="1"
+                                max="3"
+                                value={numImages}
+                                onChange={(e) => setNumImages(parseInt(e.target.value))}
+                                className="rounded-apple-sm"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="timeOfDay">Time of Day</Label>
+                              <select
+                                id="timeOfDay"
+                                value={timeOfDay}
+                                onChange={(e) => setTimeOfDay(e.target.value)}
+                                className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
+                              >
+                                <option value="natural">Natural</option>
+                                <option value="morning">Morning</option>
+                                <option value="golden">Golden Hour</option>
+                                <option value="studio">Studio</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="style">Style</Label>
+                              <select
+                                id="style"
+                                value={style}
+                                onChange={(e) => setStyle(e.target.value)}
+                                className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
+                              >
+                                <option value="lifestyle">Lifestyle</option>
+                                <option value="minimal">Minimal</option>
+                                <option value="vibrant">Vibrant</option>
+                                <option value="professional">Professional</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="style">Product Highlight</Label>
+                              <select
+                                id="style"
+                                value={highlight}
+                                onChange={(e) => setHighlight(e.target.value)}
+                                className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
+                              >
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <OrientationSelector
+                              value={imageOrientation}
+                              onChange={setImageOrientation}
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-4 mt-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="imageQuality">Image Quality</Label>
+                              <select
+                                id="imageQuality"
+                                value={imageQuality}
+                                onChange={(e) => setImageQuality(e.target.value as 'low' | 'medium' | 'high')}
+                                className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
+                              >
+                                <option value="high">High Quality (2 credits per image)</option>
+                                <option value="medium">Medium Quality (1.5 credits per image)</option>
+                                <option value="low">Low Quality (1 credit per image)</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar - Settings & Preview */}
