@@ -118,3 +118,25 @@ export async function generateImagesFromBase(
 
   return imageResult.images;
 }
+
+export async function generateScenariosFast(
+  imageData: string,
+  niche: string,
+  language?: string,
+  count: number = 6
+): Promise<any[]> {
+  if (!imageData || !niche) {
+    throw new Error('Image data and niche are required');
+  }
+
+  console.log('Using new-openai-chat generateScenariosFast...');
+  const result = await callEdgeFunction('new-openai-chat', {
+    action: 'generateScenariosFast',
+    imageData,
+    niche,
+    language,
+    count
+  });
+
+  return result.scenarios;
+}

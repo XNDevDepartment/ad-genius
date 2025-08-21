@@ -184,6 +184,82 @@ async function converse({ threadId, content, assistantId }) {
     reply
   });
 }
+async function generateScenariosFast({ imageData, niche, language = 'en', count = 6 }) {
+  console.log('generateScenariosFast called with language:', language, 'count:', count);
+  
+  const promptText = `You help create UGC scenarios. Return ONLY a compact JSON object:
+{ "scenarios": [ { "idea": string, "description": string, "small-description": string } x ${count} ] }
+- Output language: ${language}
+- COUNT = ${count}
+- Base the ideas on the image and niche below.
+Niche: ${niche}`;
+
+  try {
+    const response = await fetchWithRetry(`${OPENAI_BASE}/responses`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-5-nano-2025-08-07',
+        reasoning: { effort: 'minimal' },
+        verbosity: 'low',
+        max_completion_tokens: 600,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: promptText },
+              { type: 'image_url', image_url: { url: imageData } }
+            ]
+          }
+        ],
+        response_format: {
+          type: 'json_schema',
+          json_schema: {
+            name: 'ugc_scenarios',
+            strict: true,
+            schema: {
+              type: 'object',
+              properties: {
+                scenarios: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      idea: { type: 'string' },
+                      description: { type: 'string' },
+                      'small-description': { type: 'string' }
+                    },
+                    required: ['idea', 'description', 'small-description'],
+                    additionalProperties: false
+                  }
+                }
+              },
+              required: ['scenarios'],
+              additionalProperties: false
+            }
+          }
+        }
+      }),
+    });
+
+    const data = await response.json();
+    console.log('OpenAI Responses API result:', data);
+    
+    if (data.output && data.output.text) {
+      const parsed = JSON.parse(data.output.text);
+      return json({ scenarios: parsed.scenarios });
+    } else {
+      throw new Error('No output text from OpenAI Responses API');
+    }
+  } catch (error) {
+    console.error('generateScenariosFast error:', error);
+    throw error;
+  }
+}
+
 async function generateImages({ baseFileData, prompt, options }, req: Request) {
   if (!prompt || prompt.length > 4000) throw new Error('Invalid prompt');
 
@@ -340,6 +416,8 @@ async function generateImages({ baseFileData, prompt, options }, req: Request) {
         return await converse(params);
       case 'generateImages':
         return await generateImages(params, req);
+      case 'generateScenariosFast':
+        return await generateScenariosFast(params);
       default:
         return json({
           error: 'Invalid action'
