@@ -17,6 +17,7 @@ interface AuthContextType {
   subscriptionLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: any }>;
   signUp: (email: string, password: string, userData?: any) => Promise<{ error?: any }>;
+  signInWithGoogle: () => Promise<{ error?: any }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: any) => Promise<{ error?: any }>;
   resetPassword: (email: string) => Promise<{ error?: any }>;
@@ -79,17 +80,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Listen for auth changes FIRST
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    // THEN get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -131,6 +132,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error };
   };
 
+  const signInWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/`,
+      },
+    });
+    return { error };
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setSubscriptionData(null);
@@ -160,6 +171,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     subscriptionLoading,
     signIn,
     signUp,
+    signInWithGoogle,
     signOut,
     updateProfile,
     resetPassword,
