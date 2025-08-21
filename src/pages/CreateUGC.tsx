@@ -1143,7 +1143,7 @@ const CreateUGC = () => {
         </div>
 
         {/* Generating Images Section */}
-        {stage !== "generating" && (
+        {stage === "generating" && (
           <div id="generating-images" className="space-y-8">
             {/* <div className="text-center space-y-4">
               <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
