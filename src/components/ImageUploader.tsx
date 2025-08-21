@@ -64,9 +64,9 @@ const ImageUploader = ({ onImageSelect, selectedImage }: ImageUploaderProps) => 
       <label className="block text-sm font-medium text-foreground">
         Product Image
       </label>
-      
+
       {selectedImage && imagePreview ? (
-        <div className="relative bg-card border-2 border-border rounded-apple overflow-hidden">
+        <div className="relative bg-transparent border-2 border-border rounded-apple overflow-hidden ">
           <img 
             src={imagePreview} 
             alt="Product preview" 
@@ -97,7 +97,7 @@ const ImageUploader = ({ onImageSelect, selectedImage }: ImageUploaderProps) => 
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className={`w-full bg-card border-2 border-dashed rounded-apple p-8 transition-colors ${
+          className={`w-full bg-transparent border-2 border-dashed rounded-apple p-8 transition-colors ${
             isDragOver 
               ? 'border-primary bg-primary/5 scale-[1.02]' 
               : 'border-border hover:border-primary/50'

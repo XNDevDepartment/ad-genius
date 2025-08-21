@@ -25,6 +25,7 @@ import OrientationSelector from "@/components/OrientationSelector";
 import { Card, CardContent } from "@/components/ui/card"
 import { motion } from 'framer-motion';
 import { AnimatePresence } from 'framer-motion';
+import { Line } from "recharts";
 
 interface GeneratedImage {
   id: string;
@@ -684,7 +685,7 @@ const CreateUGC = () => {
           {/* Main Form */}
           <div className="lg:col-span-7 space-y-6">
             {/* Product & Niche Card */}
-            <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
+            <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : 'bg-transparent rounded-apple shadow-lg'}`}>
               <CardContent className="p-6 lg:p-8 space-y-6">
                 <div>
                   <h2 className="text-lg font-semibold mb-4">Product & Niche</h2>
@@ -746,7 +747,7 @@ const CreateUGC = () => {
 
             {/* UGC Scenarios Card */}
             {aiScenarios.length > 0 && (
-              <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
+              <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : 'bg-transparent rounded-apple shadow-lg'}`}>
                 <CardContent className="p-6 lg:p-8">
                   <div>
                     <h2 className="text-lg font-semibold mb-4">UGC Scenarios</h2>
@@ -773,7 +774,7 @@ const CreateUGC = () => {
 
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="default"
                         onClick={generateMoreScenarios}
                         disabled={isLoadingScenarios}
                         className="w-full"
@@ -788,16 +789,17 @@ const CreateUGC = () => {
             )}
 
             {/* Image Settings Card */}
-            <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
+            <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : 'bg-transparent rounded-apple shadow-lg'}`}>
               <CardContent className="p-6 lg:p-8">
                 <div>
                   <button
                     onClick={() => setShowAdvanced(!showAdvanced)}
-                    className="flex items-center justify-between w-full text-lg font-semibold mb-4 hover:text-primary transition-colors"
+                    className="flex items-center justify-between w-full text-lg font-semibold mb-4 hover:text-primary transition-colors "
                   >
                     <span>Image Settings</span>
                     <span className="text-sm">{showAdvanced ? "▲" : "▼"}</span>
                   </button>
+
 
                   <AnimatePresence initial={false} mode="wait">
                     {showAdvanced && (

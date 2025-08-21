@@ -20,7 +20,7 @@ const Library = () => {
           <h1 className="text-xl font-bold">Library</h1>
         </div>
       </div>
-      
+
       <LibraryComponent onBack={() => navigate("/")} />
     </div>
   );
