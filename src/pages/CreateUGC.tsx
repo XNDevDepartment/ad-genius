@@ -14,7 +14,7 @@ import { GeneratingImagePlaceholders } from "@/components/departments/ugc/Genera
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
-import { startConversationAPI, converse, sendImageAndRun, generateImagesFromBase, generateScenariosFast } from '@/api/OpenAiChatClient';
+import { startConversationAPI, converse, sendImageAndRun, generateImagesFromBase } from '@/api/OpenAiChatClient';
 import { useSecureImageStorage } from "@/components/departments/ugc/SecureImageStorage";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
@@ -45,7 +45,7 @@ interface AIScenario {
 
 const CreateUGC = () => {
   console.log('CreateUGC component rendering...');
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const { user, subscriptionData } = useAuth();
   const { credits, canAfford, deductCredits, getRemainingCredits } = useCredits();
@@ -225,62 +225,12 @@ const CreateUGC = () => {
   const getScenariosFromConversation = async (nicheText?: string) => {
     const targetNiche = nicheText || niche;
     setIsLoadingScenarios(true);
-    
     try {
-      // Try fast path first if we have product image
-      if (productImage && targetNiche.trim()) {
-        try {
-          const reader = new FileReader();
-          reader.onload = async () => {
-            const base64 = reader.result as string;
-            
-            try {
-              const scenarios = await generateScenariosFast(base64, targetNiche, i18n?.language || 'en', 6);
-              setAiScenarios(scenarios || []);
-              
-              // Save to conversation history for consistency
-              if (conversationId) {
-                await saveMessage({
-                  conversationId,
-                  role: 'user',
-                  content: `Product niche: ${targetNiche}. Generate UGC scenario ideas (fast mode).`,
-                  metadata: { requestType: 'scenario_generation_fast' }
-                });
-
-                await saveMessage({
-                  conversationId,
-                  role: 'assistant',
-                  content: JSON.stringify({ scenarios }),
-                  metadata: { scenarioCount: scenarios?.length || 0, method: 'fast' }
-                });
-              }
-              
-              toast({
-                title: "Scenarios Generated",
-                description: `Got ${scenarios?.length || 0} UGC scenario ideas for your product.`,
-              });
-              
-              setIsLoadingScenarios(false);
-              return;
-            } catch (fastError) {
-              console.warn('Fast scenario generation failed, falling back to assistant:', fastError);
-              // Fall through to traditional method
-            }
-          };
-          reader.readAsDataURL(productImage);
-          // Don't return here, let it fall through to traditional method if fast fails
-        } catch (fastError) {
-          console.warn('Fast scenario generation setup failed, using traditional method:', fastError);
-        }
-      }
-      
-      // Traditional assistant-based method (fallback)
       const responseText = await converse(
         threadId!,
         `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 6 creative UGC scenario ideas. Return ONLY a compact JSON object with "scenarios" array.`,
         ASSISTANT_ID
       );
-      
       // Extract JSON from response
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
@@ -300,7 +250,7 @@ const CreateUGC = () => {
             conversationId,
             role: 'assistant',
             content: responseText,
-            metadata: { scenarioCount: scenarios.scenarios?.length || 0, method: 'traditional' }
+            metadata: { scenarioCount: scenarios.scenarios?.length || 0 }
           });
         }
         
@@ -335,74 +285,25 @@ const CreateUGC = () => {
     setProgress(0);
 
     try {
-      // Try fast path first
+      // Convert image to base64
       const reader = new FileReader();
       reader.onload = async () => {
         const base64 = reader.result as string;
         
-        try {
-          // Fast scenario generation
-          const scenarios = await generateScenariosFast(base64, niche, i18n?.language || 'en', 6);
-          setAiScenarios(scenarios || []);
-          
-          // Save to conversation history
-          if (conversationId) {
-            await saveMessage({
-              conversationId,
-              role: 'user',
-              content: `Product niche: ${niche}. Generate UGC scenario ideas (fast mode).`,
-              metadata: { requestType: 'scenario_generation_fast' }
-            });
+        const response = await sendImageAndRun(
+          threadId,
+          ASSISTANT_ID,
+          base64,
+          'product-image.jpg',
+          `Product niche: ${niche}. Please provide 6 creative UGC scenario ideas for this product. Return ONLY a JSON object.`
+        );
 
-            await saveMessage({
-              conversationId,
-              role: 'assistant',
-              content: JSON.stringify({ scenarios }),
-              metadata: { scenarioCount: scenarios?.length || 0, method: 'fast' }
-            });
-          }
-          
-          toast({
-            title: "Scenarios Generated",
-            description: `Got ${scenarios?.length || 0} UGC scenario ideas for your product.`,
-          });
-          
-        } catch (fastError) {
-          console.warn('Fast scenario generation failed, falling back to assistant:', fastError);
-          
-          // Fallback to traditional method
-          const response = await sendImageAndRun(
-            threadId,
-            ASSISTANT_ID,
-            base64,
-            'product-image.jpg',
-            `Product niche: ${niche}. Please provide 6 creative UGC scenario ideas for this product. Return ONLY a JSON object.`
-          );
-
-          const responseText = response;
-          // Extract JSON from response
-          const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            const scenarios = JSON.parse(jsonMatch[0]);
-            setAiScenarios(scenarios.scenarios || []);
-            
-            // Save to conversation history
-            if (conversationId) {
-              await saveMessage({
-                conversationId,
-                role: 'user',
-                content: `Product niche: ${niche}. Generate UGC scenario ideas.`,
-                metadata: { requestType: 'scenario_generation_traditional' }
-              });
-
-              await saveMessage({
-                conversationId,
-                role: 'assistant',
-                content: responseText,
-                metadata: { scenarioCount: scenarios.scenarios?.length || 0, method: 'traditional' }
-              });
-            }
-          }
+        const responseText = response;
+        // Extract JSON from response
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const scenarios = JSON.parse(jsonMatch[0]);
+          setAiScenarios(scenarios.scenarios || []);
         }
       };
       reader.readAsDataURL(productImage);
@@ -513,7 +414,7 @@ const CreateUGC = () => {
             prompt,
             {
               number: 1,
-              size: imageOrientation === '1:1' ? '1024x1024' : imageOrientation === '3:2' ? '1536x1024' : '1024x1536',
+              size: imageOrientation === '1:1' ? '1024x1024' : imageOrientation === '4:3' ? '1536x1024' : '1024x1536',
               quality: imageQuality,
               output_format: 'png',
             }
