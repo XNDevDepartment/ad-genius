@@ -4,9 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ExternalLink, Sparkles, Users, Image as ImageIcon } from "lucide-react";
+import { Sparkles, Users, Image as ImageIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { BeforeAfterSlider } from "@/components/ui/before-after";
 
 interface PublicImage {
   id: string;
@@ -67,9 +68,6 @@ const SecurePublicGallery = () => {
     navigate("/account");
   };
 
-  const handleOpenImage = (imageUrl: string) => {
-    window.open(imageUrl, '_blank');
-  };
 
   if (loading) {
     return (
@@ -115,33 +113,17 @@ const SecurePublicGallery = () => {
             <Card
               key={image.id}
               className={cn(
-                "group overflow-hidden border-2 border-transparent hover:border-primary/50 transition-all duration-300 cursor-pointer",
+                "group overflow-hidden border-2 border-transparent hover:border-primary/50 transition-all duration-300",
                 "hover:shadow-lg hover:scale-[1.02]"
               )}
-              onClick={() => handleOpenImage(image.public_url)}
             >
-              <div className="relative aspect-square overflow-hidden">
-                <img
-                  src={image.thumb_url}
+              <div className="aspect-square">
+                <BeforeAfterSlider
+                  beforeImage={image.thumb_url}
+                  afterImage={image.thumb_url}
                   alt={`Generated: ${image.prompt.slice(0, 50)}...`}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  loading={index < 4 ? "eager" : "lazy"}
+                  className="w-full h-full"
                 />
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 gap-2"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenImage(image.public_url);
-                    }}
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    View Full Size
-                  </Button>
-                </div>
               </div>
             </Card>
           ))}
