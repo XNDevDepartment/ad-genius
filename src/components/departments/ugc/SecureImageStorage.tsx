@@ -20,6 +20,7 @@ export const useSecureImageStorage = () => {
     base64Images: string[];
     prompt: string;
     settings: any;
+    source_image_id?: string;
   }) => {
     if (!user) return [];
 
@@ -38,7 +39,8 @@ export const useSecureImageStorage = () => {
           base64Images: imageData.base64Images,
           prompt: imageData.prompt,
           settings: enhancedSettings,
-          user_id: user.id
+          user_id: user.id,
+          source_image_id: imageData.source_image_id
         }
       });
 

@@ -114,6 +114,7 @@ export type Database = {
           public_showcase: boolean | null
           public_url: string
           settings: Json | null
+          source_image_id: string | null
           storage_path: string
           updated_at: string
           user_id: string
@@ -125,6 +126,7 @@ export type Database = {
           public_showcase?: boolean | null
           public_url: string
           settings?: Json | null
+          source_image_id?: string | null
           storage_path: string
           updated_at?: string
           user_id: string
@@ -136,11 +138,20 @@ export type Database = {
           public_showcase?: boolean | null
           public_url?: string
           settings?: Json | null
+          source_image_id?: string | null
           storage_path?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "generated_images_source_image_id_fkey"
+            columns: ["source_image_id"]
+            isOneToOne: false
+            referencedRelation: "source_images"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       generated_images_jobs: {
         Row: {
@@ -333,6 +344,42 @@ export type Database = {
           profession?: string | null
           profile_picture?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      source_images: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number | null
+          id: string
+          mime_type: string | null
+          public_url: string
+          storage_path: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          public_url: string
+          storage_path: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          public_url?: string
+          storage_path?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

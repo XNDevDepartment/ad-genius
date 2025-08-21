@@ -31,7 +31,7 @@ serve(async (req) => {
       throw new Error('Invalid authentication token');
     }
 
-    const { base64Images, prompt, settings } = await req.json();
+    const { base64Images, prompt, settings, source_image_id } = await req.json();
 
     if (!base64Images || !Array.isArray(base64Images)) {
       throw new Error('base64Images array is required');
@@ -80,7 +80,8 @@ serve(async (req) => {
           storage_path: fileName,
           public_url: publicUrl,
           prompt: prompt,
-          settings: settings
+          settings: settings,
+          source_image_id: source_image_id || null
         })
         .select()
         .single();

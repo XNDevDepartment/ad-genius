@@ -17,6 +17,7 @@ import { useSecureImageStorage } from "@/components/departments/ugc/SecureImageS
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
 import { useImageLimit } from "@/hooks/useImageLimit";
+import { useSourceImageUpload } from "@/hooks/useSourceImageUpload";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Description } from "@radix-ui/react-dialog";
@@ -45,6 +46,7 @@ const CreateUGC = () => {
   const { user, subscriptionData } = useAuth();
   const { credits, canAfford, deductCredits, getRemainingCredits } = useCredits();
   const { saveImages } = useSecureImageStorage();
+  const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
   const [showAuthModal, setShowAuthModal] = useState(!user);
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
   const { remainingCredits, canGenerateImages, isAtLimit, refreshCount, calculateImageCost } = useImageLimit(imageQuality);
@@ -67,6 +69,7 @@ const CreateUGC = () => {
   const { saveConversation, saveMessage, getActiveConversation } = useConversationStorage();
   const [stage, setStage] = useState<"setup" | "generating" | "results">("setup");
   const [productImage, setProductImage] = useState<File | null>(null);
+  const [sourceImageId, setSourceImageId] = useState<string | null>(null);
   const [niche, setNiche] = useState("");
   const [aiScenarios, setAiScenarios] = useState<AIScenario[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<AIScenario | null>(null);
@@ -144,6 +147,18 @@ const CreateUGC = () => {
 
   const handleImageUpload = async (file: File) => {
     setProductImage(file);
+    
+    // Upload source image to secure storage
+    try {
+      const sourceImage = await uploadSourceImage(file);
+      if (sourceImage) {
+        setSourceImageId(sourceImage.id);
+        console.log('Source image uploaded with ID:', sourceImage.id);
+      }
+    } catch (error) {
+      console.error('Failed to upload source image:', error);
+      // Continue with the product analysis even if source upload fails
+    }
     
     // Start conversation with assistant to identify the product
     try {
@@ -499,7 +514,8 @@ const CreateUGC = () => {
           timeOfDay,
           style,
           scenario: selectedScenario
-        }
+        },
+        source_image_id: sourceImageId
       });
 
       toast({
@@ -543,6 +559,7 @@ const CreateUGC = () => {
     setStage("setup");
     setGeneratedImages([]);
     setProductImage(null);
+    setSourceImageId(null);
     setNiche("");
     setAiScenarios([]);
     setSelectedScenario(null);
