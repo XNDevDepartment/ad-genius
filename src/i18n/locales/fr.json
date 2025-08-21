@@ -27,5 +27,82 @@
   },
   "header": {
     "tagline": "Marketing IA"
+  },
+  "ugc": {
+    "title": "Créer du Contenu UGC",
+    "productImage": {
+      "title": "Image du Produit",
+      "subtitle": "Téléchargez une image de votre produit pour analyse",
+      "analyzing": "Analyse de l'image...",
+      "tooltip": "Téléchargez une image claire et de haute qualité de votre produit. L'IA l'analysera pour comprendre ce que vous vendez et suggérer des scénarios pertinents."
+    },
+    "productNiche": {
+      "title": "Niche du Produit",
+      "subtitle": "Décrivez votre marché cible, audience ou cas d'usage",
+      "placeholder": "Exemple : Passionnés de fitness, aventuriers en plein air, professionnels occupés...",
+      "tooltip": "Décrivez pour qui est votre produit ou comment il est utilisé. Cela aide l'IA à générer des scénarios pertinents qui correspondent à votre audience cible."
+    },
+    "scenarios": {
+      "title": "Scénarios UGC",
+      "subtitle": "Idées de contenu générées par IA pour votre produit",
+      "generateButton": "Obtenir des Idées de Scénarios",
+      "generateMoreButton": "Générer Plus d'Idées",
+      "loading": "Génération de scénarios...",
+      "tooltip": "Choisissez parmi les scénarios générés par IA qui montrent votre produit dans des situations réalistes et engageantes."
+    },
+    "generationSettings": {
+      "title": "Paramètres de Génération",
+      "subtitle": "Personnalisez vos préférences de sortie d'image",
+      "tooltip": "Ajustez ces paramètres pour contrôler le style, la qualité et le format de vos images générées."
+    },
+    "numImages": {
+      "title": "Nombre d'Images",
+      "tooltip": "Choisissez combien de variations vous voulez générer. Plus d'images = plus d'options mais coût de crédits plus élevé."
+    },
+    "imageQuality": {
+      "title": "Qualité d'Image",
+      "low": "Basse",
+      "medium": "Moyenne",
+      "high": "Haute",
+      "tooltip": "Les images de meilleure qualité sont plus belles mais coûtent plus de crédits. Basse=1 crédit, Moyenne=2 crédits, Haute=3 crédits par image."
+    },
+    "orientation": {
+      "title": "Orientation d'Image",
+      "tooltip": "Choisissez le rapport d'aspect pour vos images en fonction de l'endroit où vous prévoyez de les utiliser."
+    },
+    "advancedSettings": {
+      "title": "Paramètres Avancés",
+      "timeOfDay": {
+        "title": "Heure de la Journée",
+        "natural": "Naturel",
+        "golden": "Heure Dorée",
+        "bright": "Lumière du Jour Brillante",
+        "soft": "Matin Doux",
+        "tooltip": "Contrôle l'ambiance d'éclairage dans vos images générées."
+      },
+      "highlight": {
+        "title": "Mise en Valeur du Produit",
+        "yes": "Oui - Se concentrer sur le produit",
+        "no": "Non - Mélanger naturellement",
+        "tooltip": "Choisissez de faire de votre produit le focus principal ou de le mélanger naturellement dans la scène."
+      },
+      "style": {
+        "title": "Style Visuel",
+        "lifestyle": "Lifestyle",
+        "professional": "Professionnel",
+        "casual": "Décontracté",
+        "minimalist": "Minimaliste",
+        "tooltip": "Définit l'esthétique générale et l'ambiance des images générées."
+      }
+    },
+    "generateButton": "Générer des Images",
+    "generating": "Génération de vos images UGC...",
+    "results": {
+      "title": "Images Générées",
+      "downloadAll": "Télécharger Tout",
+      "downloadSelected": "Télécharger Sélectionnées",
+      "generateMore": "Générer Plus",
+      "newCreation": "Nouvelle Création"
+    }
   }
 }

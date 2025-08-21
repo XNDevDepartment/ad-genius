@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 interface ImageUploaderProps {
   onImageSelect: (file: File | null) => void;
   selectedImage: File | null;
+  isAnalyzing?: boolean;
+  analyzingText?: string;
 }
 
-const ImageUploader = ({ onImageSelect, selectedImage }: ImageUploaderProps) => {
+const ImageUploader = ({ onImageSelect, selectedImage, isAnalyzing, analyzingText }: ImageUploaderProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -72,6 +74,14 @@ const ImageUploader = ({ onImageSelect, selectedImage }: ImageUploaderProps) => 
             alt="Product preview" 
             className="w-full h-48 object-contain"
           />
+          {isAnalyzing && (
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary-glow/30 to-primary/20 animate-grain flex items-center justify-center backdrop-blur-sm">
+              <div className="text-center text-white">
+                <div className="animate-spin h-8 w-8 border-2 border-white border-t-transparent rounded-full mx-auto mb-2"></div>
+                <p className="text-sm font-medium">{analyzingText}</p>
+              </div>
+            </div>
+          )}
           <div className="absolute top-2 right-2">
             <Button
               variant="secondary"

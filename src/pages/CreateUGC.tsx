@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
-import { ArrowLeft, Upload, Sparkles, RefreshCw, Loader2 } from "lucide-react";
+import { ArrowLeft, Upload, Sparkles, RefreshCw, Loader2, HelpCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ImageUploader from "@/components/ImageUploader";
 import ImageGallery from "@/components/ImageGallery";
 import { GeneratingImagePlaceholders } from "@/components/departments/ugc/GeneratingImagePlaceholders";
@@ -43,6 +45,7 @@ interface AIScenario {
 
 const CreateUGC = () => {
   console.log('CreateUGC component rendering...');
+  const { t } = useTranslation();
 
   const { user, subscriptionData } = useAuth();
   const { credits, canAfford, deductCredits, getRemainingCredits } = useCredits();
@@ -51,6 +54,7 @@ const CreateUGC = () => {
   const [showAuthModal, setShowAuthModal] = useState(!user);
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
   const { remainingCredits, canGenerateImages, isAtLimit, refreshCount, calculateImageCost } = useImageLimit(imageQuality);
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   
   // Add error boundary for useNavigate
   let navigate;
@@ -148,6 +152,7 @@ const CreateUGC = () => {
 
   const handleImageUpload = async (file: File) => {
     setProductImage(file);
+    setIsAnalyzingImage(true);
     
     // Upload source image to secure storage
     try {
@@ -194,6 +199,7 @@ const CreateUGC = () => {
           });
         }
 
+        setIsAnalyzingImage(false);
         toast({
           title: "Product Analyzed",
           description: "AI has identified your product. Now describe your niche to get scenario suggestions.",
@@ -203,6 +209,7 @@ const CreateUGC = () => {
       
     } catch (error) {
       console.error('Error analyzing product image:', error);
+      setIsAnalyzingImage(false);
       toast({
         title: "Analysis Error",
         description: "Failed to analyze the product image. Please try again.",
@@ -678,7 +685,7 @@ const CreateUGC = () => {
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <h1 className="text-2xl lg:text-3xl font-bold">Create UGC Content</h1>
+              <h1 className="text-2xl lg:text-3xl font-bold">{t('ugc.title')}</h1>
             </div>
           </div>
 
@@ -688,25 +695,62 @@ const CreateUGC = () => {
             <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : 'bg-transparent rounded-apple shadow-lg'}`}>
               <CardContent className="p-6 lg:p-8 space-y-6">
                 <div>
-                  <h2 className="text-lg font-semibold mb-4">Product & Niche</h2>
+                  <div className="flex items-center gap-2 mb-4">
+                    <h2 className="text-lg font-semibold">{t('ugc.productImage.title')} & {t('ugc.productNiche.title')}</h2>
+                  </div>
                   <div className="space-y-4">
-                    <ImageUploader 
-                      onImageSelect={handleImageUpload}
-                      selectedImage={productImage}
-                    />
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Label>{t('ugc.productImage.title')}</Label>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                                <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs">{t('ugc.productImage.tooltip')}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{t('ugc.productImage.subtitle')}</p>
+                      <ImageUploader 
+                        onImageSelect={handleImageUpload}
+                        selectedImage={productImage}
+                        isAnalyzing={isAnalyzingImage}
+                        analyzingText={t('ugc.productImage.analyzing')}
+                      />
+                    </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="niche">Product Niche</Label>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="niche">{t('ugc.productNiche.title')}</Label>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                                <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs">{t('ugc.productNiche.tooltip')}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{t('ugc.productNiche.subtitle')}</p>
                       <Textarea
                         ref={taRef}
                         id="niche"
-                        placeholder="Describe your product niche (max 250 char.)"
+                        placeholder={t('ugc.productNiche.placeholder')}
                         value={niche}
                         maxLength={250}
                         onChange={(e) => handleNicheChange(e.target.value)}
                         className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full"
                         style={{ lineHeight: '1.5rem' }}
-                        disabled={!threadId}
+                        disabled={!threadId || isAnalyzingImage}
                         rows={1}
                       />
                       <div className="flex justify-end text-sm text-muted-foreground">
@@ -718,18 +762,18 @@ const CreateUGC = () => {
                       type="button"
                       variant="default"
                       onClick={() => getScenariosFromConversation()}
-                      disabled={isLoadingScenarios || !productImage || !niche.trim() || !threadId}
+                      disabled={isLoadingScenarios || !productImage || !niche.trim() || !threadId || isAnalyzingImage}
                       className="w-full"
                     >
                       {isLoadingScenarios ? (
                         <>
                           <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                          Generating Scenarios...
+                          {t('ugc.scenarios.loading')}
                         </>
                       ) : (
                         <>
                           <Sparkles className="h-4 w-4 mr-2" />
-                          Generate Scenarios
+                          {t('ugc.scenarios.generateButton')}
                         </>
                       )}
                     </Button>
@@ -737,7 +781,7 @@ const CreateUGC = () => {
                     {isLoadingScenarios && (
                       <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground py-4">
                         <RefreshCw className="h-4 w-4 animate-spin" />
-                        AI is generating scenario ideas...
+                        {t('ugc.scenarios.loading')}
                       </div>
                     )}
                   </div>
@@ -750,7 +794,22 @@ const CreateUGC = () => {
               <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : 'bg-transparent rounded-apple shadow-lg'}`}>
                 <CardContent className="p-6 lg:p-8">
                   <div>
-                    <h2 className="text-lg font-semibold mb-4">UGC Scenarios</h2>
+                    <div className="flex items-center gap-2 mb-4">
+                      <h2 className="text-lg font-semibold">{t('ugc.scenarios.title')}</h2>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                              <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">{t('ugc.scenarios.tooltip')}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">{t('ugc.scenarios.subtitle')}</p>
                     <div className="space-y-4">
                       <div className="grid gap-2">
                         {aiScenarios.map((scenario, index) => (
@@ -780,7 +839,7 @@ const CreateUGC = () => {
                         className="w-full"
                       >
                         <RefreshCw className="h-4 w-4 mr-2" />
-                        Give More Options
+                        {t('ugc.scenarios.generateMoreButton')}
                       </Button>
                     </div>
                   </div>
@@ -794,10 +853,24 @@ const CreateUGC = () => {
                 <div>
                   <button
                     onClick={() => setShowAdvanced(!showAdvanced)}
-                    className="flex items-center justify-between w-full text-lg font-semibold mb-4 hover:text-primary transition-colors "
+                    className="flex items-center justify-between w-full text-lg font-semibold mb-4 hover:text-primary transition-colors"
                   >
-                    <span>Image Settings</span>
-                    <span className="text-sm">{showAdvanced ? "▲" : "▼"}</span>
+                      <div className="flex items-center gap-2">
+                        <span>{t('ugc.generationSettings.title')}</span>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                                <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs">{t('ugc.generationSettings.tooltip')}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                      <span className="text-sm">{showAdvanced ? "▲" : "▼"}</span>
                   </button>
 
                   <div className="my-6 h-px w-full bg-gray-200 dark:bg-gray-800" aria-hidden="true" />
@@ -813,10 +886,23 @@ const CreateUGC = () => {
                         transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
                         className="overflow-hidden"
                       >
-                        <div className="space-y-4">
                           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                             <div className="space-y-2">
-                              <Label htmlFor="numImages">No. Images</Label>
+                              <div className="flex items-center gap-2">
+                                <Label htmlFor="numImages">{t('ugc.numImages.title')}</Label>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                                        <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs">{t('ugc.numImages.tooltip')}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
                               <Input
                                 id="numImages"
                                 type="number"
@@ -829,50 +915,107 @@ const CreateUGC = () => {
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="timeOfDay">Time of Day</Label>
+                              <div className="flex items-center gap-2">
+                                <Label htmlFor="timeOfDay">{t('ugc.advancedSettings.timeOfDay.title')}</Label>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                                        <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs">{t('ugc.advancedSettings.timeOfDay.tooltip')}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
                               <select
                                 id="timeOfDay"
                                 value={timeOfDay}
                                 onChange={(e) => setTimeOfDay(e.target.value)}
                                 className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
                               >
-                                <option value="natural">Natural</option>
-                                <option value="morning">Morning</option>
-                                <option value="golden">Golden Hour</option>
-                                <option value="studio">Studio</option>
+                                <option value="natural">{t('ugc.advancedSettings.timeOfDay.natural')}</option>
+                                <option value="morning">{t('ugc.advancedSettings.timeOfDay.soft')}</option>
+                                <option value="golden">{t('ugc.advancedSettings.timeOfDay.golden')}</option>
+                                <option value="studio">{t('ugc.advancedSettings.timeOfDay.bright')}</option>
                               </select>
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="style">Style</Label>
+                              <div className="flex items-center gap-2">
+                                <Label htmlFor="style">{t('ugc.advancedSettings.style.title')}</Label>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                                        <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs">{t('ugc.advancedSettings.style.tooltip')}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
                               <select
                                 id="style"
                                 value={style}
                                 onChange={(e) => setStyle(e.target.value)}
                                 className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
                               >
-                                <option value="lifestyle">Lifestyle</option>
-                                <option value="minimal">Minimal</option>
+                                <option value="lifestyle">{t('ugc.advancedSettings.style.lifestyle')}</option>
+                                <option value="minimal">{t('ugc.advancedSettings.style.minimalist')}</option>
                                 <option value="vibrant">Vibrant</option>
-                                <option value="professional">Professional</option>
+                                <option value="professional">{t('ugc.advancedSettings.style.professional')}</option>
                               </select>
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="style">Product Highlight</Label>
+                              <div className="flex items-center gap-2">
+                                <Label htmlFor="highlight">{t('ugc.advancedSettings.highlight.title')}</Label>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                                        <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs">{t('ugc.advancedSettings.highlight.tooltip')}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
                               <select
-                                id="style"
+                                id="highlight"
                                 value={highlight}
                                 onChange={(e) => setHighlight(e.target.value)}
                                 className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
                               >
-                                <option value="yes">Yes</option>
-                                <option value="no">No</option>
+                                <option value="yes">{t('ugc.advancedSettings.highlight.yes')}</option>
+                                <option value="no">{t('ugc.advancedSettings.highlight.no')}</option>
                               </select>
                             </div>
                           </div>
 
                           <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Label>{t('ugc.orientation.title')}</Label>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                                      <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="max-w-xs">{t('ugc.orientation.tooltip')}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
                             <OrientationSelector
                               value={imageOrientation}
                               onChange={setImageOrientation}
@@ -881,20 +1024,33 @@ const CreateUGC = () => {
 
                           <div className="grid grid-cols-1 gap-4 mt-4">
                             <div className="space-y-2">
-                              <Label htmlFor="imageQuality">Image Quality</Label>
+                              <div className="flex items-center gap-2">
+                                <Label htmlFor="imageQuality">{t('ugc.imageQuality.title')}</Label>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                                        <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs">{t('ugc.imageQuality.tooltip')}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
                               <select
                                 id="imageQuality"
                                 value={imageQuality}
                                 onChange={(e) => setImageQuality(e.target.value as 'low' | 'medium' | 'high')}
                                 className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
                               >
-                                <option value="high">High Quality (2 credits per image)</option>
-                                <option value="medium">Medium Quality (1.5 credits per image)</option>
-                                <option value="low">Low Quality (1 credit per image)</option>
+                                <option value="high">{t('ugc.imageQuality.high')} (2 credits per image)</option>
+                                <option value="medium">{t('ugc.imageQuality.medium')} (1.5 credits per image)</option>
+                                <option value="low">{t('ugc.imageQuality.low')} (1 credit per image)</option>
                               </select>
                             </div>
                           </div>
-                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -907,7 +1063,7 @@ const CreateUGC = () => {
           <div className="lg:col-span-5 mt-6 lg:mt-0">
             <div className={`bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
               <div>
-                <h3 className="text-lg font-semibold mb-4">Generation Settings</h3>
+                <h3 className="text-lg font-semibold mb-4">{t('ugc.generationSettings.title')}</h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Credits available:</span>
@@ -962,7 +1118,7 @@ const CreateUGC = () => {
                 </Button>
 
                 <p className="text-xs text-muted-foreground mt-2 text-center">
-                  {isGenerating ? 'AI is creating your images...' : 
+                  {isGenerating ? t('ugc.generating') : 
                    !canGenerateImages(numImages) ? `Insufficient credits (${remainingCredits} remaining, need ${calculateImageCost(imageQuality, numImages)})` :
                    'Generation typically takes 30-60 seconds'}
                 </p>
