@@ -800,6 +800,7 @@ const CreateUGC = () => {
                     <span className="text-sm">{showAdvanced ? "▲" : "▼"}</span>
                   </button>
 
+                  <div className="my-6 h-px w-full bg-gray-200 dark:bg-gray-800" aria-hidden="true" />
 
                   <AnimatePresence initial={false} mode="wait">
                     {showAdvanced && (
