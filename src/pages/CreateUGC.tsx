@@ -695,9 +695,9 @@ const CreateUGC = () => {
             <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : 'bg-transparent rounded-apple shadow-lg'}`}>
               <CardContent className="p-6 lg:p-8 space-y-6">
                 <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <h2 className="text-lg font-semibold">{t('ugc.productImage.title')} & {t('ugc.productNiche.title')}</h2>
-                  </div>
+                  {/* <div className="flex items-center gap-2 mb-4">
+                    <h2 className="text-lg font-semibold">{t('ugc.productImage.title')}</h2>
+                  </div> */}
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
@@ -886,7 +886,7 @@ const CreateUGC = () => {
                         transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
                         className="overflow-hidden"
                       >
-                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                          <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 mb-6">
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">
                                 <Label htmlFor="numImages">{t('ugc.numImages.title')}</Label>
@@ -910,9 +910,39 @@ const CreateUGC = () => {
                                 max="3"
                                 value={numImages}
                                 onChange={(e) => setNumImages(parseInt(e.target.value))}
-                                className="rounded-apple-sm"
+                                className="rounded-apple-sm shadow-sm"
                               />
                             </div>
+
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Label htmlFor="highlight">{t('ugc.advancedSettings.highlight.title')}</Label>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                                        <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs">{t('ugc.advancedSettings.highlight.tooltip')}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
+                              <select
+                                id="highlight"
+                                value={highlight}
+                                onChange={(e) => setHighlight(e.target.value)}
+                                className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm"
+                              >
+                                <option value="yes">{t('ugc.advancedSettings.highlight.yes')}</option>
+                                <option value="no">{t('ugc.advancedSettings.highlight.no')}</option>
+                              </select>
+                            </div>
+
+                          </div>
+                          <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 mb-6">
 
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">
@@ -934,7 +964,7 @@ const CreateUGC = () => {
                                 id="timeOfDay"
                                 value={timeOfDay}
                                 onChange={(e) => setTimeOfDay(e.target.value)}
-                                className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
+                                className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm"
                               >
                                 <option value="natural">{t('ugc.advancedSettings.timeOfDay.natural')}</option>
                                 <option value="morning">{t('ugc.advancedSettings.timeOfDay.soft')}</option>
@@ -963,7 +993,7 @@ const CreateUGC = () => {
                                 id="style"
                                 value={style}
                                 onChange={(e) => setStyle(e.target.value)}
-                                className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
+                                className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm"
                               >
                                 <option value="lifestyle">{t('ugc.advancedSettings.style.lifestyle')}</option>
                                 <option value="minimal">{t('ugc.advancedSettings.style.minimalist')}</option>
@@ -972,32 +1002,6 @@ const CreateUGC = () => {
                               </select>
                             </div>
 
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <Label htmlFor="highlight">{t('ugc.advancedSettings.highlight.title')}</Label>
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
-                                        <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="max-w-xs">{t('ugc.advancedSettings.highlight.tooltip')}</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </div>
-                              <select
-                                id="highlight"
-                                value={highlight}
-                                onChange={(e) => setHighlight(e.target.value)}
-                                className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
-                              >
-                                <option value="yes">{t('ugc.advancedSettings.highlight.yes')}</option>
-                                <option value="no">{t('ugc.advancedSettings.highlight.no')}</option>
-                              </select>
-                            </div>
                           </div>
 
                           <div className="space-y-2">
@@ -1043,7 +1047,7 @@ const CreateUGC = () => {
                                 id="imageQuality"
                                 value={imageQuality}
                                 onChange={(e) => setImageQuality(e.target.value as 'low' | 'medium' | 'high')}
-                                className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm"
+                                className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm"
                               >
                                 <option value="high">{t('ugc.imageQuality.high')} (2 credits per image)</option>
                                 <option value="medium">{t('ugc.imageQuality.medium')} (1.5 credits per image)</option>

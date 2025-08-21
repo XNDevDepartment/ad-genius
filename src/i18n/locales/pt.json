@@ -37,7 +37,7 @@
       "tooltip": "Envie uma imagem clara e de alta qualidade do seu produto. A IA irá analisá-la para entender o que está vendendo e sugerir cenários relevantes."
     },
     "productNiche": {
-      "title": "Nicho do Produto",
+      "title": "Detalhes e Nicho do Produto",
       "subtitle": "Descreva seu mercado-alvo, audiência ou caso de uso",
       "placeholder": "Exemplo: Entusiastas de fitness, aventureiros ao ar livre, profissionais ocupados...",
       "tooltip": "Descreva para quem é o seu produto ou como é usado. Isto ajuda a IA a gerar cenários relevantes que correspondem à sua audiência-alvo."
@@ -81,9 +81,9 @@
         "tooltip": "Controla o clima de iluminação nas suas imagens geradas."
       },
       "highlight": {
-        "title": "Destaque do Produto",
-        "yes": "Sim - Focar no produto",
-        "no": "Não - Misturar naturalmente",
+        "title": "Foco no Produto",
+        "yes": "Sim",
+        "no": "Não",
         "tooltip": "Escolha se deve tornar seu produto o foco principal ou misturá-lo naturalmente na cena."
       },
       "style": {

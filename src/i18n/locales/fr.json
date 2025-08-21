@@ -37,7 +37,7 @@
       "tooltip": "Téléchargez une image claire et de haute qualité de votre produit. L'IA l'analysera pour comprendre ce que vous vendez et suggérer des scénarios pertinents."
     },
     "productNiche": {
-      "title": "Niche du Produit",
+      "title": "Détails et Niche du produit",
       "subtitle": "Décrivez votre marché cible, audience ou cas d'usage",
       "placeholder": "Exemple : Passionnés de fitness, aventuriers en plein air, professionnels occupés...",
       "tooltip": "Décrivez pour qui est votre produit ou comment il est utilisé. Cela aide l'IA à générer des scénarios pertinents qui correspondent à votre audience cible."
@@ -81,9 +81,9 @@
         "tooltip": "Contrôle l'ambiance d'éclairage dans vos images générées."
       },
       "highlight": {
-        "title": "Mise en Valeur du Produit",
-        "yes": "Oui - Se concentrer sur le produit",
-        "no": "Non - Mélanger naturellement",
+        "title": "Concentrer sur le Produit",
+        "yes": "Oui",
+        "no": "Non",
         "tooltip": "Choisissez de faire de votre produit le focus principal ou de le mélanger naturellement dans la scène."
       },
       "style": {

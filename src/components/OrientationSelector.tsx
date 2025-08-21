@@ -8,22 +8,22 @@ interface OrientationSelectorProps {
 const orientationOptions = [
   {
     value: '4:3',
-    label: ' Facebook Landscape (4:3)',
-    description: 'Horizontal format for Facebook posts',
+    label: ' Landscape (4:3)',
+    description: 'Horizontal format',
     iconWidth: 'w-7',
     iconHeight: 'h-5'
   },
   {
     value: '1:1',
-    label: 'Instagram Square (1:1)',
-    description: 'Square format for Instagram',
+    label: 'Square (1:1)',
+    description: 'Square format ',
     iconWidth: 'w-5',
     iconHeight: 'h-5'
   },
   {
     value: '3:4',
-    label: 'Instagram Post (3:4)',
-    description: 'Vertical format for Instagram',
+    label: 'Portrait (3:4)',
+    description: 'Vertical format ',
     iconWidth: 'w-5',
     iconHeight: 'h-7'
   }
@@ -32,14 +32,14 @@ const orientationOptions = [
 const OrientationSelector = ({ value, onChange }: OrientationSelectorProps) => {
   return (
     <div className="space-y-3">
-      <Label className="text-sm font-medium text-foreground">
+      {/* <Label className="text-sm font-medium text-foreground">
         Image Orientation
-      </Label>
+      </Label> */}
       <select
         name="orientation"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-apple border-2 border-border p-3 text-sm font-medium text-foreground bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+        className="w-full rounded-apple border-2 border-border p-3 text-sm font-medium text-foreground bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
       >
         {orientationOptions.map((option) => (
           <option key={option.value} value={option.value}>

@@ -63,9 +63,9 @@ const ImageUploader = ({ onImageSelect, selectedImage, isAnalyzing, analyzingTex
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-foreground">
+      {/* <label className="block text-sm font-medium text-foreground">
         Product Image
-      </label>
+      </label> */}
 
       {selectedImage && imagePreview ? (
         <div className="relative bg-transparent border-2 border-border rounded-apple overflow-hidden ">

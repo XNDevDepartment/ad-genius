@@ -37,7 +37,7 @@
       "tooltip": "Upload a clear, high-quality image of your product. The AI will analyze it to understand what you're selling and suggest relevant scenarios."
     },
     "productNiche": {
-      "title": "Product Niche", 
+      "title": "Product Niche & Details",
       "subtitle": "Describe your target market, audience, or use case",
       "placeholder": "Example: Fitness enthusiasts, outdoor adventurers, busy professionals...",
       "tooltip": "Describe who your product is for or how it's used. This helps the AI generate relevant scenarios that match your target audience."
@@ -81,9 +81,9 @@
         "tooltip": "Controls the lighting mood in your generated images."
       },
       "highlight": {
-        "title": "Product Highlight",
-        "yes": "Yes - Focus on product",
-        "no": "No - Blend naturally",
+        "title": "Focus on Product",
+        "yes": "Yes",
+        "no": "No ",
         "tooltip": "Choose whether to make your product the main focus or blend it naturally into the scene."
       },
       "style": {
