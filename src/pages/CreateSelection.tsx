@@ -60,7 +60,7 @@ const CreateSelection = () => {
           {workflows.map((workflow) => (
             <Card 
               key={workflow.id} 
-              className={`cursor-pointer transition-all hover:shadow-lg ${
+              className={`bg-transparent shadow-md cursor-pointer transition-all hover:shadow-lg ${
                 workflow.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'
               }`}
               onClick={() => !workflow.disabled && navigate(workflow.path)}

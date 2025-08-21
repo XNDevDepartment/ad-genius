@@ -14,7 +14,7 @@ const FeatureTile = ({ title, description, icon, available, onClick, className }
   return (
     <div 
       className={cn(
-        "bg-card rounded-apple p-6 shadow-apple hover:shadow-apple-lg transition-spring cursor-pointer",
+        "bg-transparent rounded-apple p-6 shadow-apple hover:shadow-apple-lg transition-spring cursor-pointer",
         !available && "opacity-50 cursor-not-allowed",
         className
       )}

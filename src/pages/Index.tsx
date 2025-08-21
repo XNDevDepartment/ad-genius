@@ -59,9 +59,9 @@ const Index = () => {
           {/* Feature Tiles */}
           <div className="lg:col-span-5">
             <div className="space-y-6">
-              <h2 className="text-xl lg:text-2xl font-semibold text-center lg:text-left text-foreground">
+              {/* <h2 className="text-xl lg:text-2xl font-semibold text-center lg:text-left text-foreground">
                 Choose Your Workflow
-              </h2>
+              </h2> */}
 
               <div className="grid gap-4 lg:gap-6">
                 {features.map((feature) => (
