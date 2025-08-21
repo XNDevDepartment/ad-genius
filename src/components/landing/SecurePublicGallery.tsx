@@ -107,7 +107,7 @@ const SecurePublicGallery = () => {
 
         {/* Featured before/after slider */}
         {featured && (
-          <div className="relative max-w-5xl mx-auto sm:w-5/6 lg:w-3/6">
+          <div className="relative max-w-5xl mx-auto sm:w-5/6 lg:w-2/6">
             <div className="rounded-2xl overflow-hidden border border-border/50 shadow-xl bg-background aspect-[1/1]">
               <BeforeAfterSlider
                 beforeImage={featured.source_url || featured.public_url}
@@ -146,7 +146,7 @@ const SecurePublicGallery = () => {
 
         {/* Thumbnail library */}
         {images.length > 0 && (
-          <div className="mt-8 grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5">
+          <div className="mt-8 grid gap-3 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {images.map((img, idx) => {
               const active = idx === selectedIndex;
               return (
