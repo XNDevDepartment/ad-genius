@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Sparkles, Users, Image as ImageIcon } from "lucide-react";
+import { Sparkles, Image as ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { BeforeAfterSlider } from "@/components/ui/before-after";
@@ -21,34 +20,51 @@ interface PublicImage {
 const SecurePublicGallery = () => {
   const [images, setImages] = useState<PublicImage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchPublicImages = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("public-gallery");
+        if (error) {
+          console.error("Error fetching public images:", error);
+          setImages([]);
+        } else {
+          const list: PublicImage[] = data?.images || [];
+          setImages(list);
+          setSelectedIndex(0);
+        }
+      } catch (e) {
+        console.error("Error fetching public images:", e);
+        setImages([]);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchPublicImages();
   }, []);
 
-  const fetchPublicImages = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('public-gallery');
-      
-      if (error) {
-        console.error("Error fetching public images:", error);
-        setImages([]);
-      } else {
-        setImages(data?.images || []);
-      }
-    } catch (error) {
-      console.error("Error fetching public images:", error);
-      setImages([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const prev = useCallback(() => {
+    setSelectedIndex((i) => (i === 0 ? Math.max(images.length - 1, 0) : i - 1));
+  }, [images.length]);
 
-  const handleTryCreating = () => {
-    navigate("/account");
-  };
+  const next = useCallback(() => {
+    setSelectedIndex((i) => (images.length ? (i + 1) % images.length : 0));
+  }, [images.length]);
 
+  // keyboard nav
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!images.length) return;
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [images.length, prev, next]);
+
+  const handleTryCreating = () => navigate("/account");
 
   if (loading) {
     return (
@@ -58,7 +74,6 @@ const SecurePublicGallery = () => {
             <Skeleton className="h-10 w-64 mx-auto" />
             <Skeleton className="h-6 w-96 mx-auto" />
           </div>
-          
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <Card key={i} className="overflow-hidden">
@@ -75,11 +90,13 @@ const SecurePublicGallery = () => {
     );
   }
 
+  const featured = images[selectedIndex];
+
   return (
     <section className="py-16 lg:py-24 bg-muted/30">
       <div className="container-responsive px-4">
         {/* Header */}
-        <div className="text-center space-y-4 mb-12">
+        <div className="text-center space-y-4 mb-10">
           <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
             Created by Our Community
           </h2>
@@ -88,53 +105,99 @@ const SecurePublicGallery = () => {
           </p>
         </div>
 
-        {/* Gallery Grid */}
-        <div className="grid gap-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-12">
-          {images.map((image, index) => (
-            <Card
-              key={image.id}
-              className={cn(
-                "group overflow-hidden border-2 border-transparent hover:border-primary/50 transition-all duration-300",
-                "hover:shadow-lg hover:scale-[1.02]"
-              )}
-            >
-              <div className="aspect-square">
-                <BeforeAfterSlider
-                  beforeImage={image.source_url || image.public_url}
-                  afterImage={image.public_url}
-                  alt={`Generated: ${image.prompt.slice(0, 50)}...`}
-                  className="w-full h-full"
-                  grayscaleBefore={!image.source_url}
-                />
-              </div>
-            </Card>
-          ))}
-        </div>
+        {/* Featured before/after slider */}
+        {featured && (
+          <div className="relative max-w-5xl mx-auto sm:w-5/6 lg:w-3/6">
+            <div className="rounded-2xl overflow-hidden border border-border/50 shadow-xl bg-background aspect-[1/1]">
+              <BeforeAfterSlider
+                beforeImage={featured.source_url || featured.public_url}
+                afterImage={featured.public_url}
+                alt={`Generated: ${featured.prompt?.slice(0, 80) || "image"}`}
+                className="w-full h-full"
+                grayscaleBefore={!featured.source_url}
+              />
+            </div>
+
+            {/* Arrows */}
+            <div className="pointer-events-none">
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                onClick={prev}
+                aria-label="Previous image"
+                className="pointer-events-auto absolute left-3 top-1/2 -translate-y-1/2 rounded-full shadow-md"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                onClick={next}
+                aria-label="Next image"
+                className="pointer-events-auto absolute right-3 top-1/2 -translate-y-1/2 rounded-full shadow-md"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Thumbnail library */}
+        {images.length > 0 && (
+          <div className="mt-8 grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5">
+            {images.map((img, idx) => {
+              const active = idx === selectedIndex;
+              return (
+                <button
+                  key={img.id}
+                  onClick={() => setSelectedIndex(idx)}
+                  className={cn(
+                    "group relative rounded-xl overflow-hidden border transition-all",
+                    active
+                      ? "ring-2 ring-primary border-transparent"
+                      : "border-border/50 hover:border-foreground/40"
+                  )}
+                >
+                  <img
+                    src={img.public_url}
+                    alt={`Generated: ${img.prompt?.slice(0, 60) || "image"}`}
+                    className="w-full aspect-square object-cover"
+                    loading="lazy"
+                  />
+                  {/* small source thumb */}
+                  {img.source_url && (
+                    <div className="absolute bottom-2 left-2 w-14 h-14 rounded-md overflow-hidden border-2 border-white shadow-md">
+                      <img
+                        src={img.source_url}
+                        alt="Source"
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* CTA Section */}
-        <div className="text-center space-y-6 pt-8 border-t border-border/50">
+        <div className="text-center space-y-6 pt-10 border-t border-border/50 mt-12">
           <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-foreground">
-              Ready to Create Your Own?
-            </h3>
-            <p className="text-muted-foreground">
-              Join our community and start generating amazing images today.
-            </p>
+            <h3 className="text-xl font-semibold text-foreground">Ready to Create Your Own?</h3>
+            <p className="text-muted-foreground">Join our community and start generating amazing images today.</p>
           </div>
-          
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              onClick={handleTryCreating}
-              className="gap-2"
-            >
+            <Button size="lg" onClick={handleTryCreating} className="gap-2">
               <Sparkles className="h-4 w-4" />
               Start Creating for Free
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="lg"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
               Learn More
             </Button>
@@ -145,9 +208,7 @@ const SecurePublicGallery = () => {
         {!loading && images.length === 0 && (
           <div className="text-center py-12">
             <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              No images found
-            </h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">No images found</h3>
             <p className="text-muted-foreground">
               Try selecting a different filter or check back later for new content.
             </p>
