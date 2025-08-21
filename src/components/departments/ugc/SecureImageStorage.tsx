@@ -9,6 +9,8 @@ interface SecureImage {
   prompt: string;
   settings: any;
   created_at: string;
+  source_image_id?: string;
+  sourceSignedUrl?: string;
 }
 
 export const useSecureImageStorage = () => {
@@ -69,7 +71,7 @@ export const useSecureImageStorage = () => {
     try {
       const { data, error } = await supabase
         .from('generated_images')
-        .select('*')
+        .select('*, source_image_id')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -78,13 +80,47 @@ export const useSecureImageStorage = () => {
         return;
       }
 
-      const formattedImages: SecureImage[] = data.map(img => ({
-        id: img.id,
-        url: img.public_url,
-        prompt: img.prompt,
-        settings: img.settings,
-        created_at: img.created_at,
-      }));
+      // Get unique source image IDs
+      const sourceImageIds = [...new Set(data.filter(img => img.source_image_id).map(img => img.source_image_id))];
+      
+      let sourceImages: any[] = [];
+      if (sourceImageIds.length > 0) {
+        const { data: sourceData, error: sourceError } = await supabase
+          .from('source_images')
+          .select('id, storage_path')
+          .eq('user_id', user.id)
+          .in('id', sourceImageIds);
+
+        if (!sourceError && sourceData) {
+          // Generate signed URLs for source images
+          const sourceImagesWithUrls = await Promise.all(
+            sourceData.map(async (source) => {
+              const { data: signedUrlData, error: urlError } = await supabase.storage
+                .from('ugc-inputs')
+                .createSignedUrl(source.storage_path, 86400); // 24 hours
+
+              return {
+                id: source.id,
+                signedUrl: urlError ? null : signedUrlData?.signedUrl
+              };
+            })
+          );
+          sourceImages = sourceImagesWithUrls;
+        }
+      }
+
+      const formattedImages: SecureImage[] = data.map(img => {
+        const sourceImage = sourceImages.find(src => src.id === img.source_image_id);
+        return {
+          id: img.id,
+          url: img.public_url,
+          prompt: img.prompt,
+          settings: img.settings,
+          created_at: img.created_at,
+          source_image_id: img.source_image_id,
+          sourceSignedUrl: sourceImage?.signedUrl || undefined,
+        };
+      });
 
       setImages(formattedImages);
     } catch (error) {

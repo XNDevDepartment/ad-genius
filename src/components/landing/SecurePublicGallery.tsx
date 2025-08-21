@@ -12,10 +12,10 @@ import { BeforeAfterSlider } from "@/components/ui/before-after";
 interface PublicImage {
   id: string;
   public_url: string;
-  thumb_url: string;
   prompt: string;
   created_at: string;
   settings?: any;
+  source_url?: string;
 }
 
 const SecurePublicGallery = () => {
@@ -29,32 +29,13 @@ const SecurePublicGallery = () => {
 
   const fetchPublicImages = async () => {
     try {
-      // Use raw SQL to call the secure function since types aren't updated yet
-      const { data, error } = await supabase
-        .from('generated_images')
-        .select(`
-          id,
-          prompt,
-          public_url,
-          storage_path,
-          settings,
-          created_at,
-          updated_at
-        `)
-        .eq('public_showcase', true)
-        .order('created_at', { ascending: false })
-        .limit(12);
-
+      const { data, error } = await supabase.functions.invoke('public-gallery');
+      
       if (error) {
         console.error("Error fetching public images:", error);
         setImages([]);
       } else {
-        setImages(
-          (data || []).map((img: any) => ({
-            ...img,
-            thumb_url: img.public_url,
-          }))
-        );
+        setImages(data?.images || []);
       }
     } catch (error) {
       console.error("Error fetching public images:", error);
@@ -119,10 +100,11 @@ const SecurePublicGallery = () => {
             >
               <div className="aspect-square">
                 <BeforeAfterSlider
-                  beforeImage={image.thumb_url}
-                  afterImage={image.thumb_url}
+                  beforeImage={image.source_url || image.public_url}
+                  afterImage={image.public_url}
                   alt={`Generated: ${image.prompt.slice(0, 50)}...`}
                   className="w-full h-full"
+                  grayscaleBefore={!image.source_url}
                 />
               </div>
             </Card>

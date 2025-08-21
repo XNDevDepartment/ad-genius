@@ -20,6 +20,8 @@ interface LibraryImage {
     numberOfImages: number;
     format: string;
   };
+  source_image_id?: string;
+  sourceSignedUrl?: string;
 }
 
 interface LibraryProps {
@@ -155,6 +157,18 @@ export const Library = ({ onBack }: LibraryProps) => {
                         alt={`Generated: ${image.prompt.substring(0, 50)}...`}
                         className="w-full h-full object-cover shadow-card transition-transform group-hover:scale-105"
                       />
+                      
+                      {/* Source image thumbnail in bottom-left */}
+                      {image.sourceSignedUrl && (
+                        <div className="absolute bottom-2 left-2 w-12 h-12 rounded-lg overflow-hidden border-2 border-white shadow-lg z-20">
+                          <img 
+                            src={image.sourceSignedUrl}
+                            alt="Source image"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      
                       {/* Bottom right corner button */}
                       <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                         <Button

@@ -6,13 +6,15 @@ interface BeforeAfterSliderProps {
   afterImage: string;
   alt: string;
   className?: string;
+  grayscaleBefore?: boolean;
 }
 
 export const BeforeAfterSlider = ({ 
   beforeImage, 
   afterImage, 
   alt, 
-  className 
+  className,
+  grayscaleBefore = true
 }: BeforeAfterSliderProps) => {
   const [sliderPosition, setSliderPosition] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -68,7 +70,7 @@ export const BeforeAfterSlider = ({
         <img
           src={beforeImage}
           alt={`${alt} (before)`}
-          className="w-full h-full object-cover filter grayscale"
+          className={`w-full h-full object-cover ${grayscaleBefore ? 'filter grayscale' : ''}`}
           draggable={false}
         />
       </div>
