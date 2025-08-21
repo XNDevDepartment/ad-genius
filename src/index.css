@@ -73,7 +73,7 @@ All colors MUST be HSL.
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
-    --card: 225 24% 13%;              /* Subtle blue tint for better contrast */
+    --card: 222.2 84% 8.9%;              /* Subtle blue tint for better contrast */
     --card-foreground: 210 40% 98%;
 
     --popover: 222.2 84% 4.9%;
@@ -94,7 +94,7 @@ All colors MUST be HSL.
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 225 18% 20%;            /* Subtle blue tint for borders */
+    --border: 222.2 84% 4.9%;            /* Subtle blue tint for borders */
     --input: 217.2 32.6% 17.5%;
     --ring: 225 86% 70%;
     --sidebar-background: 222.2 84% 4.9%;
