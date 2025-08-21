@@ -13,7 +13,7 @@ All colors MUST be HSL.
     --background: 0 0% 100%;          /* Base: #FFFFFF */
     --foreground: 0 0% 11%;           /* Text-Primary: #1C1C1E */
 
-    --card: 0 0% 98%;                 /* Surface: #FAFAFA */
+    --card: 0 0% 95%;                 /* Surface: #F2F3F5 */
     --card-foreground: 0 0% 11%;      /* Text-Primary */
 
     --popover: 0 0% 100%;
@@ -34,7 +34,7 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 89%;
+    --border: 0 0% 100%;
     --input: 0 0% 95%;
     --ring: 225 86% 60%;
 
@@ -42,8 +42,6 @@ All colors MUST be HSL.
 
     /* Custom design tokens */
     --shadow: 0 0% 0%;                /* rgba(0,0,0,0.12) base */
-    --shadow-card: 0 0% 0%;           /* Card shadows */
-    --shadow-elegant: 0 0% 0%;        /* Elegant shadows */
     --gradient-hero: linear-gradient(135deg, hsl(225 86% 60%), hsl(248 95% 70%));
     --gradient-button: linear-gradient(135deg, hsl(225 86% 60%), hsl(248 95% 70%));
     --spacing-base: 0.5rem;           /* 8pt base rhythm */
@@ -75,7 +73,7 @@ All colors MUST be HSL.
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 7%;             /* Slightly lighter than background */
+    --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
 
     --popover: 222.2 84% 4.9%;
@@ -96,13 +94,9 @@ All colors MUST be HSL.
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;      /* Distinct border color */
+    --border: 222.2 84% 4.9%;
     --input: 217.2 32.6% 17.5%;
     --ring: 225 86% 70%;
-    
-    /* Dark mode shadows */
-    --shadow-card: 0 0% 0%;           /* Card shadows in dark mode */
-    --shadow-elegant: 0 0% 0%;        /* Elegant shadows in dark mode */
     --sidebar-background: 222.2 84% 4.9%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -137,23 +131,6 @@ All colors MUST be HSL.
 
   .shadow-apple-lg {
     box-shadow: 0 8px 32px hsl(var(--shadow) / 0.16);
-  }
-
-  /* Enhanced card shadows */
-  .shadow-card {
-    box-shadow: 0 1px 3px hsl(var(--shadow-card) / 0.12), 0 1px 2px hsl(var(--shadow-card) / 0.24);
-  }
-
-  .shadow-elegant {
-    box-shadow: 0 4px 6px -1px hsl(var(--shadow-elegant) / 0.1), 0 2px 4px -1px hsl(var(--shadow-elegant) / 0.06);
-  }
-
-  .dark .shadow-card {
-    box-shadow: 0 2px 8px hsl(var(--shadow-card) / 0.3), 0 1px 3px hsl(var(--shadow-card) / 0.4);
-  }
-
-  .dark .shadow-elegant {
-    box-shadow: 0 8px 16px -4px hsl(var(--shadow-elegant) / 0.4), 0 4px 6px -2px hsl(var(--shadow-elegant) / 0.3);
   }
 
   /* Spring animations */
