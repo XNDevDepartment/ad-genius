@@ -778,19 +778,19 @@ const CreateUGC = () => {
                       )}
                     </Button>
 
-                    {isLoadingScenarios && (
+                    {/* {isLoadingScenarios && (
                       <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground py-4">
                         <RefreshCw className="h-4 w-4 animate-spin" />
                         {t('ugc.scenarios.loading')}
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* UGC Scenarios Card */}
-            {aiScenarios.length > 0 && (
+            {!isLoadingScenarios && aiScenarios.length > 0 && (
               <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : 'bg-transparent rounded-apple shadow-lg'}`}>
                 <CardContent className="p-6 lg:p-8">
                   <div>
@@ -1143,9 +1143,9 @@ const CreateUGC = () => {
         </div>
 
         {/* Generating Images Section */}
-        {stage === "generating" && (
+        {stage !== "generating" && (
           <div id="generating-images" className="space-y-8">
-            <div className="text-center space-y-4">
+            {/* <div className="text-center space-y-4">
               <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
                 <Sparkles className="h-10 w-10 text-primary animate-pulse" />
               </div>
@@ -1153,7 +1153,7 @@ const CreateUGC = () => {
               <p className="text-muted-foreground">
                 Creating {numImages} unique UGC image{numImages > 1 ? 's' : ''} based on your preferences...
               </p>
-            </div>
+            </div> */}
 
             {/* <div className="space-y-4">
               <div className="flex justify-between text-sm">

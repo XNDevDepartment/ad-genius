@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+
 interface ImageUploaderProps {
   onImageSelect: (file: File | null) => void;
   selectedImage: File | null;

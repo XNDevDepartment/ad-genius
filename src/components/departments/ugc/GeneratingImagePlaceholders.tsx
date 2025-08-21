@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Image } from "lucide-react";
+import './../../../costumn.css';
 
 interface GeneratingImagePlaceholdersProps {
   numberOfImages: number;
@@ -33,11 +34,14 @@ export const GeneratingImagePlaceholders = ({ numberOfImages }: GeneratingImageP
                          }}>
                     </div>
                   </div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <Image className="h-8 w-8 text-muted-foreground mx-auto mb-2 animate-pulse" />
+
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary-glow/30 to-primary/20 backdrop-blur-sm grain-analysed flex items-center justify-center">
+                  <div className="text-center">
+                    <Image className="h-8 w-8 text-muted-foreground mx-auto mb-2 animate-pulse" />
+                  {/* <div className="absolute inset-0 flex items-center justify-center">
+                      </div> */}
                       <p className="text-xs text-muted-foreground">Generating...</p>
-                    </div>
+                      </div>
                   </div>
                 </div>
               </div>
