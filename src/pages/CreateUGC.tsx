@@ -445,7 +445,6 @@ const CreateUGC = () => {
       ------------------------------------------------------------------*/
       setGeneratedImages(validImages);
       setProgress(100);
-      setStage('results');
 
       await handleSaveImages(validImages);
       
@@ -559,12 +558,10 @@ const CreateUGC = () => {
   };
 
   const handleGenerateMore = () => {
-    setStage("setup");
     setGeneratedImages([]);
   };
 
   const handleNewCreation = () => {
-    setStage("setup");
     setGeneratedImages([]);
     setProductImage(null);
     setSourceImageId(null);
@@ -576,80 +573,6 @@ const CreateUGC = () => {
 
 
 
-  if (stage === "results") {
-    return (
-      <div className="min-h-screen bg-background">
-      {/* Auth Modal */}
-      <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
-        <DialogContent className="max-w-md">
-          <AuthModal 
-            onSuccess={() => setShowAuthModal(false)}
-            onClose={() => setShowAuthModal(false)}
-          />
-        </DialogContent>
-      </Dialog>
-        <div className="container-responsive px-4 py-8 space-y-6">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setStage("setup")}
-              className="lg:hidden"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-2xl lg:text-3xl font-bold">Your Images</h1>
-            <p className="text-muted-foreground">
-              Select the images you'd like to download
-            </p>
-          </div>
-
-          <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-            <div className="lg:col-span-2">
-              <ImageGallery
-                images={generatedImages}
-                onImageSelect={handleImageSelect}
-              />
-            </div>
-
-            <div className="lg:col-span-1 mt-6 lg:mt-0">
-              <div className="bg-card rounded-apple p-6 shadow-apple space-y-4 lg:sticky lg:top-8">
-                <h3 className="font-semibold text-lg">Actions</h3>
-
-                {/* <Button
-                  variant="default"
-                  className="w-full"
-                  disabled={selectedImages.length === 0 || isGenerating}
-                  onClick={handleSaveImages}
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    `Save to Project (${selectedImages.length})`
-                  )}
-                </Button> */}
-
-                <div className="grid grid-cols-1 lg:grid-cols-1 gap-3">
-                  <Button variant="default" className="w-full" onClick={handleDownloadAll}>
-                    Download {selectedImages.length > 0 ? 'Selected' : 'All'}
-                  </Button>
-                  <Button variant="outline" className="w-full" onClick={handleGenerateMore}>
-                    Generate More
-                  </Button>
-                  <Button variant="outline" className="w-full" onClick={handleNewCreation}>
-                    New Creation
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const collapse = {
     open: { opacity: 1, height: "auto" },
@@ -1142,28 +1065,35 @@ const CreateUGC = () => {
           </div>
         </div>
 
-        {/* Generating Images Section */}
-        {stage === "generating" && (
-          <div id="generating-images" className="space-y-8">
-            {/* <div className="text-center space-y-4">
-              <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
-                <Sparkles className="h-10 w-10 text-primary animate-pulse" />
+        {/* Results Section */}
+        {(isGenerating || generatedImages.length > 0) && (
+          <div id="generating-images" className="scroll-mt-6 space-y-8">
+            <GeneratingImagePlaceholders
+              numberOfImages={numImages}
+              isGenerating={isGenerating}
+              images={generatedImages.map(img => img.url)}
+              onImageSelect={handleImageSelect}
+            />
+            
+            {/* Action buttons when images are generated */}
+            {!isGenerating && generatedImages.length > 0 && (
+              <div className="flex justify-center">
+                <div className="bg-card rounded-apple p-6 shadow-apple space-y-4 max-w-md w-full">
+                  <h3 className="font-semibold text-lg text-center">Actions</h3>
+                  <div className="grid grid-cols-1 gap-3">
+                    <Button variant="default" className="w-full" onClick={handleDownloadAll}>
+                      Download {selectedImages.length > 0 ? 'Selected' : 'All'}
+                    </Button>
+                    <Button variant="outline" className="w-full" onClick={handleGenerateMore}>
+                      Generate More
+                    </Button>
+                    <Button variant="outline" className="w-full" onClick={handleNewCreation}>
+                      New Creation
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <h2 className="text-2xl font-semibold">Generating Your Images</h2>
-              <p className="text-muted-foreground">
-                Creating {numImages} unique UGC image{numImages > 1 ? 's' : ''} based on your preferences...
-              </p>
-            </div> */}
-
-            {/* <div className="space-y-4">
-              <div className="flex justify-between text-sm">
-                <span>Progress</span>
-                <span>{Math.round(progress)}%</span>
-              </div>
-              <Progress value={progress} className="w-full" />
-            </div> */}
-
-            <GeneratingImagePlaceholders numberOfImages={numImages} />
+            )}
           </div>
         )}
       </div>
