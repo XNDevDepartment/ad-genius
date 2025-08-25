@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const AppLayout = () => {
   const location = useLocation();
   const showHeader = location.pathname === "/";
+  const hideBottomTabBar = location.pathname === "/create/ugc";
 
   const { user } = useAuth();
 
@@ -17,10 +18,10 @@ const AppLayout = () => {
       {/* Mobile Layout */}
       <div className="lg:hidden">
         {showHeader && <NavigationHeader />}
-        <main className="pb-20">
+        <main className={hideBottomTabBar ? "pb-0" : "pb-20"}>
           <Outlet />
         </main>
-        {user &&
+        {user && !hideBottomTabBar &&
           <BottomTabBar />
         }
       </div>
