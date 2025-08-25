@@ -61,37 +61,56 @@
     90%,100% { background-position: 250% 0; }
   }
 
-  /* Neon glow animation for generating images */
+  /* Subtle glow animation for generating images */
   @keyframes animateGlow {
     0% {
       background-position: 0% 50%;
     }
-    50% {
-      background-position: 100% 50%;
-    }
     100% {
-      background-position: 0% 50%;
+      background-position: 200% 50%;
     }
   }
 
-  .gen-glow {
+  .gen-glow-soft {
     position: relative;
     overflow: hidden;
   }
 
-  .gen-glow::after {
+  .gen-glow-soft::after {
     position: absolute;
     content: '';
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 1;
-    filter: blur(40px);
-    background: linear-gradient(90deg, #0fffc1, #7e0fff);
+    z-index: -1;
+    height: 100%;
+    width: 100%;
+    transform: scale(0.95) translateZ(0);
+    filter: blur(12px);
+    background: linear-gradient(
+      to left,
+      hsl(var(--primary)),
+      hsl(var(--primary) / 0.8),
+      hsl(var(--accent)),
+      hsl(var(--secondary)),
+      hsl(var(--primary) / 0.6),
+      hsl(var(--secondary)),
+      hsl(var(--accent)),
+      hsl(var(--primary) / 0.8),
+      hsl(var(--primary))
+    );
     background-size: 200% 200%;
-    animation: animateGlow 10s ease infinite;
+    animation: animateGlow 2s linear infinite;
     pointer-events: none;
+    opacity: 0.3;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gen-glow-soft::after {
+      animation: none;
+      opacity: 0.1;
+    }
   }
   
   
