@@ -1,4 +1,5 @@
 import { Label } from "@/components/ui/label";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface OrientationSelectorProps {
   value: string;
@@ -35,19 +36,19 @@ const OrientationSelector = ({ value, onChange }: OrientationSelectorProps) => {
       {/* <Label className="text-sm font-medium text-foreground">
         Image Orientation
       </Label> */}
-      <select
-        name="orientation"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-apple border-2 border-border p-3 text-sm font-medium text-foreground bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
-      >
+      <ToggleGroup
+          type="single"
+          value={value}
+          onValueChange={(e) => onChange(e)}
+          className="justify-start grid grid-cols-3 gap-1"
+        >
         {orientationOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            <div className={`bg-transparent border border-gray-500 ${option.iconWidth} ${option.iconHeight}`} />
+          <ToggleGroupItem key={option.value} value={option.value} className="text-xs px-2 py-1">
+            <div className={`bg-transparent border ${option.value === value ? 'border-white-500' : 'border-gray-500' } mr-2 ${option.iconWidth} ${option.iconHeight}`} />
             {option.label}
-          </option>
+          </ToggleGroupItem>
         ))}
-      </select>
+      </ToggleGroup>
     </div>
   );
 };

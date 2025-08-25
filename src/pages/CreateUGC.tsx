@@ -28,6 +28,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Line } from "recharts";
 import { SettingsSheet } from "@/components/departments/ugc/SettingsSheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface GeneratedImage {
   id: string;
@@ -70,6 +71,10 @@ const CreateUGC = () => {
       console.error('Navigation attempted but useNavigate failed');
       window.location.href = '/create';
     };
+  }
+
+  function capitalize(s: string) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
   }
   const { toast } = useToast();
   const { saveConversation, saveMessage, getActiveConversation } = useConversationStorage();
@@ -833,15 +838,16 @@ const CreateUGC = () => {
                         </Tooltip>
                       </TooltipProvider>
                     </div>
-                    <Input
-                      id="sidebar-numImages"
-                      type="number"
-                      min="1"
-                      max="3"
-                      value={numImages}
-                      onChange={(e) => setNumImages(parseInt(e.target.value))}
-                      className="rounded-apple-sm shadow-sm"
-                    />
+                    <ToggleGroup
+                      type="single"
+                      value={numImages.toString()}
+                      onValueChange={(e) => setNumImages(parseInt(e))}
+                      className="justify-start"
+                    >
+                      <ToggleGroupItem value="1" className="flex-1">1</ToggleGroupItem>
+                      <ToggleGroupItem value="2" className="flex-1">2</ToggleGroupItem>
+                      <ToggleGroupItem value="3" className="flex-1">3</ToggleGroupItem>
+                    </ToggleGroup>
                   </div>
 
                   {/* Highlight */}
@@ -861,15 +867,15 @@ const CreateUGC = () => {
                         </Tooltip>
                       </TooltipProvider>
                     </div>
-                    <select
-                      id="sidebar-highlight"
+                    <ToggleGroup 
+                      type="single" 
                       value={highlight}
-                      onChange={(e) => setHighlight(e.target.value)}
-                      className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm text-sm"
+                      onValueChange={(e) => setHighlight(e)}
+                      className="justify-start"
                     >
-                      <option value="yes">{t('ugc.advancedSettings.highlight.yes')}</option>
-                      <option value="no">{t('ugc.advancedSettings.highlight.no')}</option>
-                    </select>
+                      <ToggleGroupItem value="yes" className="flex-1 text-xs">{t('ugc.advancedSettings.highlight.yes')}</ToggleGroupItem>
+                      <ToggleGroupItem value="no" className="flex-1 text-xs">{t('ugc.advancedSettings.highlight.no')}</ToggleGroupItem>
+                    </ToggleGroup>
                   </div>
 
                   {/* Time of Day */}
@@ -889,17 +895,17 @@ const CreateUGC = () => {
                         </Tooltip>
                       </TooltipProvider>
                     </div>
-                    <select
-                      id="sidebar-timeOfDay"
+                    <ToggleGroup 
+                      type="single" 
                       value={timeOfDay}
-                      onChange={(e) => setTimeOfDay(e.target.value as typeof timeOfDay)}
-                      className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm text-sm"
+                      onValueChange={(e) => setTimeOfDay(e as typeof timeOfDay)}
+                      className="justify-start grid grid-cols-4 gap-1"
                     >
-                      <option value="natural">{t('ugc.advancedSettings.timeOfDay.natural')}</option>
-                      <option value="morning">{t('ugc.advancedSettings.timeOfDay.soft')}</option>
-                      <option value="golden">{t('ugc.advancedSettings.timeOfDay.golden')}</option>
-                      <option value="studio">{t('ugc.advancedSettings.timeOfDay.bright')}</option>
-                    </select>
+                        <ToggleGroupItem key={"natural"} className="text-xs px-2 py-1" value="natural">{t('ugc.advancedSettings.timeOfDay.natural')}</ToggleGroupItem>
+                        <ToggleGroupItem key={"night"} className="text-xs px-2 py-1" value="night">{t('ugc.advancedSettings.timeOfDay.night')}</ToggleGroupItem>
+                        <ToggleGroupItem key={"golden"} className="text-xs px-2 py-1" value="golden">{t('ugc.advancedSettings.timeOfDay.golden')}</ToggleGroupItem>
+                        <ToggleGroupItem key={"morning"} className="text-xs px-2 py-1" value="morning">{t('ugc.advancedSettings.timeOfDay.soft')}</ToggleGroupItem>
+                    </ToggleGroup>
                   </div>
 
                   {/* Style */}
@@ -919,17 +925,17 @@ const CreateUGC = () => {
                         </Tooltip>
                       </TooltipProvider>
                     </div>
-                    <select
-                      id="sidebar-style"
+                    <ToggleGroup 
+                      type="single" 
                       value={style}
-                      onChange={(e) => setStyle(e.target.value as typeof style)}
-                      className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm text-sm"
+                      onValueChange={(e) => setStyle(e as typeof style)}
+                      className="justify-start grid grid-cols-4 gap-1"
                     >
-                      <option value="lifestyle">{t('ugc.advancedSettings.style.lifestyle')}</option>
-                      <option value="minimal">{t('ugc.advancedSettings.style.minimalist')}</option>
-                      <option value="vibrant">Vibrant</option>
-                      <option value="professional">{t('ugc.advancedSettings.style.professional')}</option>
-                    </select>
+                        <ToggleGroupItem key={"lifestyle"} className="text-xs px-2 py-1" value="lifestyle">{t('ugc.advancedSettings.style.lifestyle')}</ToggleGroupItem>
+                        <ToggleGroupItem key={"minimal"} className="text-xs px-2 py-1" value="minimal">{t('ugc.advancedSettings.style.minimalist')}</ToggleGroupItem>
+                        <ToggleGroupItem key={"vibrant"} className="text-xs px-2 py-1" value="vibrant">Vibrant</ToggleGroupItem>
+                        <ToggleGroupItem key={"professional"} className="text-xs px-2 py-1" value="professional">{t('ugc.advancedSettings.style.professional')}</ToggleGroupItem>
+                    </ToggleGroup>
                   </div>
 
                   {/* Orientation */}
@@ -972,16 +978,25 @@ const CreateUGC = () => {
                         </Tooltip>
                       </TooltipProvider>
                     </div>
-                    <select
-                      id="sidebar-imageQuality"
+                    <ToggleGroup 
+                      type="single" 
                       value={imageQuality}
-                      onChange={(e) => setImageQuality(e.target.value as 'low' | 'medium' | 'high')}
-                      className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm text-sm"
+                      onValueChange={(e) => setImageQuality(e as 'low' | 'medium' | 'high')}
+                      className="justify-start grid grid-cols-3 gap-1"
                     >
-                      <option value="high">{t('ugc.imageQuality.high')} (2 credits per image)</option>
-                      <option value="medium">{t('ugc.imageQuality.medium')} (1.5 credits per image)</option>
-                      <option value="low">{t('ugc.imageQuality.low')} (1 credit per image)</option>
-                    </select>
+                      <ToggleGroupItem value="low" className="text-xs px-2 py-1 flex flex-col items-center">
+                        <span>Baixa</span>
+                        <span className="text-[10px] opacity-70">1 crédito</span>
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="medium" className="text-xs px-2 py-1 flex flex-col items-center">
+                        <span>Média</span>
+                        <span className="text-[10px] opacity-70">1.5 créditos</span>
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="high" className="text-xs px-2 py-1 flex flex-col items-center">
+                        <span>Alta</span>
+                        <span className="text-[10px] opacity-70">2 créditos</span>
+                      </ToggleGroupItem>
+                    </ToggleGroup>
                   </div>
                 </div>
 

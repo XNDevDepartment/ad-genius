@@ -75,7 +75,7 @@
       "timeOfDay": {
         "title": "Hora do Dia",
         "natural": "Natural",
-        "golden": "Hora Dourada",
+        "golden": "Pôr do Sol",
         "night": "Luz Noturna",
         "soft": "Manhã Suave",
         "tooltip": "Controla o clima de iluminação nas suas imagens geradas."
