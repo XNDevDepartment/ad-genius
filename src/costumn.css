@@ -88,7 +88,7 @@
     bottom: 0;
     z-index: 1;
     filter: blur(40px);
-    background: linear-gradient(90deg, #0fffc1, #7e0fff);
+    background: linear-gradient(90deg, #0fcbff70, #7e0fff70);
     background-size: 200% 200%;
     animation: animateGlow 10s ease infinite;
     pointer-events: none;
