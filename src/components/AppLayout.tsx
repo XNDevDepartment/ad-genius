@@ -12,6 +12,7 @@ const AppLayout = () => {
 
   const { user } = useAuth();
 
+
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile Layout */}
@@ -20,7 +21,7 @@ const AppLayout = () => {
         <main className="pb-20">
           <Outlet />
         </main>
-        {user &&
+        {(user && location.pathname !== '/create/ugc') &&
           <BottomTabBar />
         }
       </div>

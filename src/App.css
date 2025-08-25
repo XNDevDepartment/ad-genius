@@ -5,6 +5,16 @@
   text-align: center;
 }
 
+/* global.css */
+@media (hover: none) and (pointer: coarse) {
+  input, textarea, select { font-size: 16px; line-height: 1.25; }
+}
+/* iOS-specific guard (optional) */
+@supports (-webkit-touch-callout: none) {
+  input, textarea, select { font-size: 16px; }
+}
+
+
 .logo {
   height: 6em;
   padding: 1.5em;
