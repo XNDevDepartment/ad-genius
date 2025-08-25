@@ -1029,7 +1029,7 @@ const CreateUGC = () => {
 
               {/* Bottom row: Generate button */}
               <Button 
-                variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "default"}
+                variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
                 size="lg" 
                 className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
                 onClick={handleGenerate}
