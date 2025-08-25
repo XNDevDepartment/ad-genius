@@ -1010,7 +1010,7 @@ const CreateUGC = () => {
 
         {/* Mobile Floating Action Panel */}
         {(isMobile && !settingsOpen) && (
-          <div className="fixed left-0 right-0 bottom-[20px] sm:bottom-[80px] z-[60] px-4 pb-safe backdrop-blur supports-backdrop-blur:bg-background/60">
+          <div className="fixed left-0 right-0 bottom-[17px] sm:bottom-[80px] z-[20] px-4 pb-safe backdrop-blur supports-backdrop-blur:bg-background/60">
             <div className="max-w-lg mx-auto bg-card/95 border border-border/50 rounded-2xl shadow-lg p-3 space-y-3">
               {/* Top row: Summary pill and Edit button */}
               <div className="flex items-center gap-3">
