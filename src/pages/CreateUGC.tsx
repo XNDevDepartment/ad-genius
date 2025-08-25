@@ -26,6 +26,8 @@ import { Description } from "@radix-ui/react-dialog";
 import OrientationSelector from "@/components/OrientationSelector";
 import { Card, CardContent } from "@/components/ui/card";
 import { Line } from "recharts";
+import { SettingsSheet } from "@/components/departments/ugc/SettingsSheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface GeneratedImage {
   id: string;
@@ -44,6 +46,7 @@ interface AIScenario {
 const CreateUGC = () => {
   console.log('CreateUGC component rendering...');
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
 
   const { user, subscriptionData } = useAuth();
   const { credits, canAfford, deductCredits, getRemainingCredits } = useCredits();
@@ -590,22 +593,51 @@ const CreateUGC = () => {
         <div className="lg:grid lg:grid-cols-12 lg:gap-8">
           {/* Header */}
           <div className="lg:col-span-12 mb-6">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate("/create")}
-                className="lg:hidden"
-                disabled={!threadId}
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <h1 className="text-2xl lg:text-3xl font-bold">{t('ugc.title')}</h1>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate("/create")}
+                  className="lg:hidden"
+                  disabled={!threadId}
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <h1 className="text-2xl lg:text-3xl font-bold">{t('ugc.title')}</h1>
+              </div>
+              
+              {/* Mobile Settings Button */}
+              {isMobile && (
+                <SettingsSheet
+                  settings={{
+                    numImages,
+                    style,
+                    timeOfDay,
+                    highlight,
+                    imageOrientation,
+                    imageQuality
+                  }}
+                  onSettingsChange={(newSettings) => {
+                    if (newSettings.numImages !== undefined) setNumImages(newSettings.numImages);
+                    if (newSettings.style !== undefined) setStyle(newSettings.style);
+                    if (newSettings.timeOfDay !== undefined) setTimeOfDay(newSettings.timeOfDay);
+                    if (newSettings.highlight !== undefined) setHighlight(newSettings.highlight);
+                    if (newSettings.imageOrientation !== undefined) setImageOrientation(newSettings.imageOrientation);
+                    if (newSettings.imageQuality !== undefined) setImageQuality(newSettings.imageQuality);
+                  }}
+                  remainingCredits={remainingCredits}
+                  calculateImageCost={calculateImageCost}
+                  canGenerate={!!productImage && !!selectedScenario && !isGenerating && canGenerateImages(numImages)}
+                  onGenerate={handleGenerate}
+                  isGenerating={isGenerating}
+                />
+              )}
             </div>
           </div>
 
           {/* Main Form */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className={`${isMobile ? 'col-span-12' : 'lg:col-span-7'} space-y-6`}>
             {/* Product & Niche Card */}
             <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'}`}>
               <CardContent className="p-6 lg:p-8 space-y-6">
@@ -764,234 +796,263 @@ const CreateUGC = () => {
 
           </div>
 
-          {/* Sidebar - Settings & Preview */}
-          <div className="lg:col-span-5 mt-6 lg:mt-0">
-            <div className={`bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
-              <div>
-                <h3 className="text-lg font-semibold mb-4">{t('ugc.generationSettings.title')}</h3>
-                
-                {/* Credits Progress Bar */}
-                <div className="space-y-2 mb-6">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Credits</span>
-                    <span className="font-medium">{remainingCredits} / {credits}</span>
+          {/* Desktop Sidebar - Settings & Preview */}
+          {!isMobile && (
+            <div className="lg:col-span-5 mt-6 lg:mt-0">
+              <div className={`bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">{t('ugc.generationSettings.title')}</h3>
+                  
+                  {/* Credits Progress Bar */}
+                  <div className="space-y-2 mb-6">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Credits</span>
+                      <span className="font-medium">{remainingCredits} / {credits}</span>
+                    </div>
+                    <Progress value={(remainingCredits / credits) * 100} className="h-2" />
+                    <div className="text-xs text-muted-foreground">
+                      {subscriptionData?.subscription_tier || 'Free'} Plan
+                    </div>
                   </div>
-                  <Progress value={(remainingCredits / credits) * 100} className="h-2" />
-                  <div className="text-xs text-muted-foreground">
-                    {subscriptionData?.subscription_tier || 'Free'} Plan
+
+                  {/* ... keep existing code (all desktop sidebar settings) */}
+
+                  {/* Number of Images */}
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="sidebar-numImages" className="text-sm font-medium">{t('ugc.numImages.title')}</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
+                              <HelpCircle className="h-2 w-2 text-muted-foreground" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">{t('ugc.numImages.tooltip')}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <Input
+                      id="sidebar-numImages"
+                      type="number"
+                      min="1"
+                      max="3"
+                      value={numImages}
+                      onChange={(e) => setNumImages(parseInt(e.target.value))}
+                      className="rounded-apple-sm shadow-sm"
+                    />
+                  </div>
+
+                  {/* Highlight */}
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="sidebar-highlight" className="text-sm font-medium">{t('ugc.advancedSettings.highlight.title')}</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
+                              <HelpCircle className="h-2 w-2 text-muted-foreground" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">{t('ugc.advancedSettings.highlight.tooltip')}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <select
+                      id="sidebar-highlight"
+                      value={highlight}
+                      onChange={(e) => setHighlight(e.target.value)}
+                      className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm text-sm"
+                    >
+                      <option value="yes">{t('ugc.advancedSettings.highlight.yes')}</option>
+                      <option value="no">{t('ugc.advancedSettings.highlight.no')}</option>
+                    </select>
+                  </div>
+
+                  {/* Time of Day */}
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="sidebar-timeOfDay" className="text-sm font-medium">{t('ugc.advancedSettings.timeOfDay.title')}</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
+                              <HelpCircle className="h-2 w-2 text-muted-foreground" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">{t('ugc.advancedSettings.timeOfDay.tooltip')}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <select
+                      id="sidebar-timeOfDay"
+                      value={timeOfDay}
+                      onChange={(e) => setTimeOfDay(e.target.value)}
+                      className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm text-sm"
+                    >
+                      <option value="natural">{t('ugc.advancedSettings.timeOfDay.natural')}</option>
+                      <option value="morning">{t('ugc.advancedSettings.timeOfDay.soft')}</option>
+                      <option value="golden">{t('ugc.advancedSettings.timeOfDay.golden')}</option>
+                      <option value="studio">{t('ugc.advancedSettings.timeOfDay.bright')}</option>
+                    </select>
+                  </div>
+
+                  {/* Style */}
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="sidebar-style" className="text-sm font-medium">{t('ugc.advancedSettings.style.title')}</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
+                              <HelpCircle className="h-2 w-2 text-muted-foreground" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">{t('ugc.advancedSettings.style.tooltip')}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <select
+                      id="sidebar-style"
+                      value={style}
+                      onChange={(e) => setStyle(e.target.value)}
+                      className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm text-sm"
+                    >
+                      <option value="lifestyle">{t('ugc.advancedSettings.style.lifestyle')}</option>
+                      <option value="minimal">{t('ugc.advancedSettings.style.minimalist')}</option>
+                      <option value="vibrant">Vibrant</option>
+                      <option value="professional">{t('ugc.advancedSettings.style.professional')}</option>
+                    </select>
+                  </div>
+
+                  {/* Orientation */}
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-sm font-medium">{t('ugc.orientation.title')}</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
+                              <HelpCircle className="h-2 w-2 text-muted-foreground" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">{t('ugc.orientation.tooltip')}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <OrientationSelector
+                      value={imageOrientation}
+                      onChange={setImageOrientation}
+                    />
+                  </div>
+
+                  {/* Image Quality */}
+                  <div className="space-y-2 mb-6">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="sidebar-imageQuality" className="text-sm font-medium">{t('ugc.imageQuality.title')}</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
+                              <HelpCircle className="h-2 w-2 text-muted-foreground" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">{t('ugc.imageQuality.tooltip')}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <select
+                      id="sidebar-imageQuality"
+                      value={imageQuality}
+                      onChange={(e) => setImageQuality(e.target.value as 'low' | 'medium' | 'high')}
+                      className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm text-sm"
+                    >
+                      <option value="high">{t('ugc.imageQuality.high')} (2 credits per image)</option>
+                      <option value="medium">{t('ugc.imageQuality.medium')} (1.5 credits per image)</option>
+                      <option value="low">{t('ugc.imageQuality.low')} (1 credit per image)</option>
+                    </select>
                   </div>
                 </div>
 
-                {/* Number of Images */}
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="sidebar-numImages" className="text-sm font-medium">{t('ugc.numImages.title')}</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
-                            <HelpCircle className="h-2 w-2 text-muted-foreground" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">{t('ugc.numImages.tooltip')}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <Input
-                    id="sidebar-numImages"
-                    type="number"
-                    min="1"
-                    max="3"
-                    value={numImages}
-                    onChange={(e) => setNumImages(parseInt(e.target.value))}
-                    className="rounded-apple-sm shadow-sm"
-                  />
-                </div>
-
-                {/* Highlight */}
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="sidebar-highlight" className="text-sm font-medium">{t('ugc.advancedSettings.highlight.title')}</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
-                            <HelpCircle className="h-2 w-2 text-muted-foreground" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">{t('ugc.advancedSettings.highlight.tooltip')}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <select
-                    id="sidebar-highlight"
-                    value={highlight}
-                    onChange={(e) => setHighlight(e.target.value)}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm text-sm"
-                  >
-                    <option value="yes">{t('ugc.advancedSettings.highlight.yes')}</option>
-                    <option value="no">{t('ugc.advancedSettings.highlight.no')}</option>
-                  </select>
-                </div>
-
-                {/* Time of Day */}
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="sidebar-timeOfDay" className="text-sm font-medium">{t('ugc.advancedSettings.timeOfDay.title')}</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
-                            <HelpCircle className="h-2 w-2 text-muted-foreground" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">{t('ugc.advancedSettings.timeOfDay.tooltip')}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <select
-                    id="sidebar-timeOfDay"
-                    value={timeOfDay}
-                    onChange={(e) => setTimeOfDay(e.target.value)}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm text-sm"
-                  >
-                    <option value="natural">{t('ugc.advancedSettings.timeOfDay.natural')}</option>
-                    <option value="morning">{t('ugc.advancedSettings.timeOfDay.soft')}</option>
-                    <option value="golden">{t('ugc.advancedSettings.timeOfDay.golden')}</option>
-                    <option value="studio">{t('ugc.advancedSettings.timeOfDay.bright')}</option>
-                  </select>
-                </div>
-
-                {/* Style */}
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="sidebar-style" className="text-sm font-medium">{t('ugc.advancedSettings.style.title')}</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
-                            <HelpCircle className="h-2 w-2 text-muted-foreground" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">{t('ugc.advancedSettings.style.tooltip')}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <select
-                    id="sidebar-style"
-                    value={style}
-                    onChange={(e) => setStyle(e.target.value)}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm text-sm"
-                  >
-                    <option value="lifestyle">{t('ugc.advancedSettings.style.lifestyle')}</option>
-                    <option value="minimal">{t('ugc.advancedSettings.style.minimalist')}</option>
-                    <option value="vibrant">Vibrant</option>
-                    <option value="professional">{t('ugc.advancedSettings.style.professional')}</option>
-                  </select>
-                </div>
-
-                {/* Orientation */}
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2">
-                    <Label className="text-sm font-medium">{t('ugc.orientation.title')}</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
-                            <HelpCircle className="h-2 w-2 text-muted-foreground" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">{t('ugc.orientation.tooltip')}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <OrientationSelector
-                    value={imageOrientation}
-                    onChange={setImageOrientation}
-                  />
-                </div>
-
-                {/* Image Quality */}
-                <div className="space-y-2 mb-6">
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="sidebar-imageQuality" className="text-sm font-medium">{t('ugc.imageQuality.title')}</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
-                            <HelpCircle className="h-2 w-2 text-muted-foreground" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">{t('ugc.imageQuality.tooltip')}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <select
-                    id="sidebar-imageQuality"
-                    value={imageQuality}
-                    onChange={(e) => setImageQuality(e.target.value as 'low' | 'medium' | 'high')}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm text-sm"
-                  >
-                    <option value="high">{t('ugc.imageQuality.high')} (2 credits per image)</option>
-                    <option value="medium">{t('ugc.imageQuality.medium')} (1.5 credits per image)</option>
-                    <option value="low">{t('ugc.imageQuality.low')} (1 credit per image)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="border-t pt-4">
-                <Button 
-                  variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "default"}
-                  size="lg" 
-                  className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
-                  onClick={handleGenerate}
-                  disabled={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages)}
-                >
-                  {isGenerating ? (
-                    <>
-                      <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-5 w-5 mr-2" />
-                      Generate Images ({calculateImageCost(imageQuality, numImages)} credits)
-                    </>
-                  )}
-                </Button>
-
-                <p className="text-xs text-muted-foreground mt-2 text-center">
-                  {isGenerating ? t('ugc.generating') : 
-                   !canGenerateImages(numImages) ? `Insufficient credits (${remainingCredits} remaining, need ${calculateImageCost(imageQuality, numImages)})` :
-                   'Generation typically takes 30-60 seconds'}
-                </p>
-
-                {!canGenerateImages(numImages) && (
+                <div className="border-t pt-4">
                   <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full mt-2"
-                    onClick={() => window.location.href = '/pricing'}
+                    variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "default"}
+                    size="lg" 
+                    className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
+                    onClick={handleGenerate}
+                    disabled={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages)}
                   >
-                    Upgrade for More Credits
+                    {isGenerating ? (
+                      <>
+                        <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-5 w-5 mr-2" />
+                        Generate Images ({calculateImageCost(imageQuality, numImages)} credits)
+                      </>
+                    )}
                   </Button>
-                )}
+
+                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                    {isGenerating ? t('ugc.generating') : 
+                     !canGenerateImages(numImages) ? `Insufficient credits (${remainingCredits} remaining, need ${calculateImageCost(imageQuality, numImages)})` :
+                     'Generation typically takes 30-60 seconds'}
+                  </p>
+
+                  {!canGenerateImages(numImages) && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full mt-2"
+                      onClick={() => window.location.href = '/pricing'}
+                    >
+                      Upgrade for More Credits
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
+
+        {/* Mobile Generate Button */}
+        {isMobile && (
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border z-50">
+            <Button 
+              variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "default"}
+              size="lg" 
+              className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
+              onClick={handleGenerate}
+              disabled={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages)}
+            >
+              {isGenerating ? (
+                <>
+                  <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                  A gerar...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-5 w-5 mr-2" />
+                  Gerar Imagens ({calculateImageCost(imageQuality, numImages)} créditos)
+                </>
+              )}
+            </Button>
+          </div>
+        )}
 
         {/* Results Section */}
         {(isGenerating || generatedImages.length > 0) && (
