@@ -57,13 +57,25 @@ export const GeneratingImagePlaceholders = ({
                         )}
                       </>
                     ) : (
-                      // Show subtle glow loading placeholder
-                      <div className="gen-glow-soft h-full w-full bg-muted/20 flex items-center justify-center">
-                        <div className="text-center relative z-10">
-                          <Image className="h-8 w-8 text-muted-foreground mx-auto mb-2 animate-pulse" />
-                          <p className="text-xs text-muted-foreground">Generating...</p>
+                      // Show futuristic loading placeholder
+                      <>
+                        {/* Grainy loading effect */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-muted/30 to-muted/60 animate-pulse">
+                          <div className="absolute inset-0 opacity-30" 
+                               style={{
+                                 backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E")`,
+                                 backgroundSize: '100px 100px'
+                               }}>
+                          </div>
                         </div>
-                      </div>
+
+                        <div className="absolute inset-0 gen-glow flex items-center justify-center">
+                          <div className="text-center relative z-10">
+                            <Image className="h-8 w-8 text-muted-foreground mx-auto mb-2 animate-pulse text-white" />
+                            <p className="text-xs text-muted-foreground text-white">Generating...</p>
+                          </div>
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
