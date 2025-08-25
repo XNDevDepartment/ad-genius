@@ -443,7 +443,7 @@ const CreateUGC = () => {
             prompt,
             {
               number: 1,
-              size: imageOrientation === '1:1' ? '1024x1024' : imageOrientation === '4:3' ? '1536x1024' : '1024x1536',
+              size: imageOrientation === '1:1' ? '1024x1024' : imageOrientation === '3:2' ? '1536x1024' : '1024x1536',
               quality: imageQuality,
               output_format: 'png',
             }
@@ -741,7 +741,6 @@ const CreateUGC = () => {
             </Card>
 
             {/* UGC Scenarios Card */}
-            {!isLoadingScenarios && aiScenarios.length > 0 && (
               <Card ref={scenariosRef} className={`${!threadId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'} scroll-mt-6`}>
                 <CardContent className="p-6 lg:p-8">
                   <div>
@@ -761,6 +760,7 @@ const CreateUGC = () => {
                       </TooltipProvider>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">{t('ugc.scenarios.subtitle')}</p>
+            {!isLoadingScenarios && aiScenarios.length > 0 && (
                     <div className="space-y-4">
                       <div className="grid gap-2">
                         {aiScenarios.map((scenario, index) => (
@@ -793,10 +793,10 @@ const CreateUGC = () => {
                         {t('ugc.scenarios.generateMoreButton')}
                       </Button>
                     </div>
+                )}
                   </div>
                 </CardContent>
               </Card>
-            )}
 
           </div>
 

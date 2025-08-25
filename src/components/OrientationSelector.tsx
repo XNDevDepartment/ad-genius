@@ -8,8 +8,8 @@ interface OrientationSelectorProps {
 
 const orientationOptions = [
   {
-    value: '4:3',
-    label: ' Landscape (4:3)',
+    value: '3:2',
+    label: ' Landscape (3:2)',
     description: 'Horizontal format',
     iconWidth: 'w-7',
     iconHeight: 'h-5'
@@ -22,8 +22,8 @@ const orientationOptions = [
     iconHeight: 'h-5'
   },
   {
-    value: '3:4',
-    label: 'Portrait (3:4)',
+    value: '2:3',
+    label: 'Portrait (2:3)',
     description: 'Vertical format ',
     iconWidth: 'w-5',
     iconHeight: 'h-7'

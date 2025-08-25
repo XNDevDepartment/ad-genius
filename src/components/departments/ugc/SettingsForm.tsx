@@ -132,7 +132,7 @@ export const SettingsForm = ({
           onValueChange={(value) => value && onSettingsChange({ imageOrientation: value })}
           className="justify-start grid grid-cols-3 gap-1"
         >
-          {["square(1:1)", "4:5", "16:9"].map((o) => (
+          {["1:1", "2:3", "3:2"].map((o) => (
             <ToggleGroupItem key={o} value={o} className="text-xs px-2 py-1">
               {o}
             </ToggleGroupItem>
