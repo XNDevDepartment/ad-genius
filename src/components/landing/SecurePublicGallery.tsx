@@ -108,12 +108,13 @@ const SecurePublicGallery = () => {
         {/* Featured before/after slider */}
         {featured && (
           <div className="relative max-w-5xl mx-auto sm:w-5/6 lg:w-2/6">
-            <div className="rounded-2xl overflow-hidden border border-border/50 shadow-xl bg-background aspect-[1/1]">
+            <div className="rounded-2xl overflow-visible border border-border/50 shadow-xl bg-background aspect-[1/1]">
               <BeforeAfterSlider
                 beforeImage={featured.source_url || featured.public_url}
                 afterImage={featured.public_url}
                 alt={`Generated: ${featured.prompt?.slice(0, 80) || "image"}`}
                 className="w-full h-full"
+                initialX={50}
                 grayscaleBefore={!featured.source_url}
               />
             </div>
@@ -126,7 +127,7 @@ const SecurePublicGallery = () => {
                 size="icon"
                 onClick={prev}
                 aria-label="Previous image"
-                className="pointer-events-auto absolute left-3 top-1/2 -translate-y-1/2 rounded-full shadow-md"
+                className="pointer-events-auto absolute -left-14 top-1/2 -translate-y-1/2 rounded-full shadow-md"
               >
                 <ChevronLeft className="h-5 w-5" />
               </Button>
@@ -136,7 +137,7 @@ const SecurePublicGallery = () => {
                 size="icon"
                 onClick={next}
                 aria-label="Next image"
-                className="pointer-events-auto absolute right-3 top-1/2 -translate-y-1/2 rounded-full shadow-md"
+                className="pointer-events-auto absolute -right-14 top-1/2 -translate-y-1/2 rounded-full shadow-md"
               >
                 <ChevronRight className="h-5 w-5" />
               </Button>

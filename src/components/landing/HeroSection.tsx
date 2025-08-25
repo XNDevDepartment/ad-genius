@@ -7,7 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play, ArrowRight, Users, Zap, Trophy } from "lucide-react";
 import heroProduct from "@/assets/example_image.jpeg";
+import { BeforeAfterSlider } from "../ui/before-after";
+import { supabase } from "@/integrations/supabase/client";
 
+
+interface PublicImage {
+  id: string;
+  public_url: string;
+  prompt: string;
+  created_at: string;
+  settings?: any;
+  source_url?: string;
+}
 
 const HeroSection = () => {
   const { t } = useTranslation();
@@ -34,6 +45,33 @@ const HeroSection = () => {
     }, 3000);
     return () => clearInterval(interval);
   }, [headlines.length]);
+
+
+    const [images, setImages] = useState<PublicImage[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedIndex, setSelectedIndex] = useState(0);
+  
+    useEffect(() => {
+      const fetchPublicImages = async () => {
+        try {
+          const { data, error } = await supabase.functions.invoke("public-gallery");
+          if (error) {
+            console.error("Error fetching public images:", error);
+            setImages([]);
+          } else {
+            const list: PublicImage[] = data?.images || [];
+            setImages(list);
+            setSelectedIndex(0);
+          }
+        } catch (e) {
+          console.error("Error fetching public images:", e);
+          setImages([]);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchPublicImages();
+    }, []);
 
   return (
     <section ref={ref} className="relative min-h-[90vh] bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden">
@@ -152,41 +190,27 @@ const HeroSection = () => {
             <div className="relative">
               {/* Main Preview Card */}
               <motion.div
-                whileHover={{ scale: 1.02 }}
+                // whileHover={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300 }}
                 className="bg-card border border-border/50 rounded-apple-lg shadow-apple-lg backdrop-blur-sm"
               >
-                {/* <div className="space-y-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm text-muted-foreground">AI Generation in Progress</span>
-                  </div> */}
-                  
-                  {/* Mock Generation Preview */}
-                  {/* <div className="aspect-square bg-gradient-to-br from-primary/10 to-secondary/10 rounded-apple border-2 border-dashed border-primary/20 flex items-center justify-center">
-                    <div className="text-center space-y-4">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                        className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full mx-auto"
-                      />
-                      <p className="text-muted-foreground">Generating stunning product image...</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-between items-center text-sm text-muted-foreground">
-                    <span>Style: Professional</span>
-                    <span>Quality: Ultra HD</span>
-                  </div>
-                </div> */}
-                {/* Hero Image */}
                 <div className="relative">
-                  <div className="relative z-10 transform hover:scale-105 transition-smooth">
-                    <img 
+                  <div className="relative z-10 transform transition-smooth">
+                    {images.length > 0 &&
+                      <BeforeAfterSlider
+                        beforeImage={images[0].source_url || images[0].public_url}
+                        afterImage={images[0].public_url}
+                        alt={`Generated: ${images[0].prompt?.slice(0, 80) || "image"}`}
+                        className="w-full h-full"
+                        initialX={15}
+                        grayscaleBefore={!images[0].source_url}
+                      />
+                    }
+                    {/* <img 
                       src={heroProduct}
                       alt="AI-generated product photography"
                       className="w-full max-w-lg mx-auto rounded-2xl shadow-elegant"
-                    />
+                    /> */}
                   </div>
                   <div className="absolute inset-0 bg-brand-gradient rounded-2xl blur-xl opacity-30 animate-pulse" />
                 </div>
