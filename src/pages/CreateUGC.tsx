@@ -99,6 +99,8 @@ const CreateUGC = () => {
 
   // Move all refs and effects to the top, before any conditional returns
   const taRef = useRef<HTMLTextAreaElement>(null);
+  const scenariosRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   // Block access if not authenticated
   useEffect(() => {
@@ -153,6 +155,24 @@ const CreateUGC = () => {
   useEffect(() => {
     initializeThread();
   }, []);
+
+  // Auto-scroll to scenarios when they appear
+  useEffect(() => {
+    if (aiScenarios.length > 0) {
+      setTimeout(() => {
+        scenariosRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }, [aiScenarios.length]);
+
+  // Auto-scroll to results when generating starts or images appear
+  useEffect(() => {
+    if (isGenerating || generatedImages.length > 0) {
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }, [isGenerating, generatedImages.length]);
 
   const handleImageUpload = async (file: File) => {
     setProductImage(file);
@@ -717,7 +737,7 @@ const CreateUGC = () => {
 
             {/* UGC Scenarios Card */}
             {!isLoadingScenarios && aiScenarios.length > 0 && (
-              <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'}`}>
+              <Card ref={scenariosRef} className={`${!threadId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'} scroll-mt-6`}>
                 <CardContent className="p-6 lg:p-8">
                   <div>
                     <div className="flex items-center gap-2 mb-4">
@@ -1087,7 +1107,7 @@ const CreateUGC = () => {
 
         {/* Results Section */}
         {(isGenerating || generatedImages.length > 0) && (
-          <div id="generating-images" className="scroll-mt-6 space-y-8">
+          <div ref={resultsRef} id="generating-images" className="scroll-mt-6 space-y-8">
             <GeneratingImagePlaceholders
               numberOfImages={numImages}
               isGenerating={isGenerating}
