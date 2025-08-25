@@ -38,7 +38,7 @@
     },
     "productNiche": {
       "title": "Detalhes e Nicho do Produto",
-      "subtitle": "Descreva seu mercado-alvo, audiência ou caso de uso",
+      "subtitle": "Detalhe o produto e audiência ou caso de uso",
       "placeholder": "Exemplo: Entusiastas de fitness, aventureiros ao ar livre, profissionais ocupados...",
       "tooltip": "Descreva para quem é o seu produto ou como é usado. Isto ajuda a IA a gerar cenários relevantes que correspondem à sua audiência-alvo."
     },

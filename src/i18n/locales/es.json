@@ -38,7 +38,7 @@
     },
     "productNiche": {
       "title": "Detalles y Nicho del produto",
-      "subtitle": "Describe tu mercado objetivo, audiencia o caso de uso",
+      "subtitle": "Detalle el producto y audiencia o caso de uso",
       "placeholder": "Ejemplo: Entusiastas del fitness, aventureros al aire libre, profesionales ocupados...",
       "tooltip": "Describe para quién es tu producto o cómo se usa. Esto ayuda a la IA a generar escenarios relevantes que coincidan con tu audiencia objetivo."
     },

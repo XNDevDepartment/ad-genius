@@ -38,7 +38,7 @@
     },
     "productNiche": {
       "title": "Détails et Niche du produit",
-      "subtitle": "Décrivez votre marché cible, audience ou cas d'usage",
+      "subtitle": "Détaillez le produit et le public ou votre cas d'utilisation",
       "placeholder": "Exemple : Passionnés de fitness, aventuriers en plein air, professionnels occupés...",
       "tooltip": "Décrivez pour qui est votre produit ou comment il est utilisé. Cela aide l'IA à générer des scénarios pertinents qui correspondent à votre audience cible."
     },

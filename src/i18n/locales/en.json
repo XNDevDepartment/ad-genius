@@ -38,7 +38,7 @@
     },
     "productNiche": {
       "title": "Product Niche & Details",
-      "subtitle": "Describe your target market, audience, or use case",
+      "subtitle": "Detail the product and audience, or use case",
       "placeholder": "Example: Fitness enthusiasts, outdoor adventurers, busy professionals...",
       "tooltip": "Describe who your product is for or how it's used. This helps the AI generate relevant scenarios that match your target audience."
     },

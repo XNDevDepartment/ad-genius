@@ -638,7 +638,7 @@ const CreateUGC = () => {
                           </Tooltip>
                         </TooltipProvider>
                       </div>
-                      <p className="text-sm text-muted-foreground">{t('ugc.productImage.subtitle')}</p>
+                      {/* <p className="text-sm text-muted-foreground">{t('ugc.productImage.subtitle')}</p> */}
                       <ImageUploader 
                         onImageSelect={handleImageUpload}
                         selectedImage={productImage}
@@ -667,7 +667,7 @@ const CreateUGC = () => {
                       <Textarea
                         ref={taRef}
                         id="niche"
-                        placeholder={t('ugc.productNiche.placeholder')}
+                        // placeholder={t('ugc.productNiche.placeholder')}
                         value={niche}
                         maxLength={250}
                         onChange={(e) => handleNicheChange(e.target.value)}
