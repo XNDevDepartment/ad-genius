@@ -416,8 +416,8 @@ const CreateUGC = () => {
       'The focus is on accurately replicating my product with sharp details, clear labeling, and realistic textures. ' +
       'Surroundings should enhance the scene but remain slightly out of focus, ensuring the product looks authentic and integrated. ' +
       'Include only partial human presence if relevant (e.g., a hand holding the product, someone reaching for it), but avoid full human bodies. ' +
-      'Lighting should be natural, with soft shadows and reflections consistent with the environment, shot in ' + timeOfDay + '. ' +
-      'Include ' + style + ' textures, surfaces, and props that reinforce authenticity (e.g., fruits, shaker bottle, towels, books, plants), ultra-realistic. ' +
+      'Lighting should be ' + timeOfDay + ', with soft shadows and reflections consistent with the environment. ' +
+      'Include ' + style + ' textures, surfaces, and props that reinforce authenticity but always related with the product or scenario (e.g., fruits, shaker bottle, towels, books, plants), ultra-realistic. ' +
       'The composition should feel casual, as if captured in daily life, not staged. ' +
       '--negative "AI artifacts, text overlays, watermark, lens flare, distorted or rotated labels, invented branding, extra limbs, full bodies, low resolution, out-of-focus product, over-saturation" --ar ';
 
