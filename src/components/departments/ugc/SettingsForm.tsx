@@ -43,9 +43,8 @@ export const SettingsForm = ({
   compact = false 
 }: SettingsFormProps) => {
   const { t } = useTranslation();
-  
-  const usedCredits = totalCredits - remainingCredits;
-  const usagePercentage = (usedCredits / totalCredits) * 100;
+
+  const usagePercentage = (remainingCredits / totalCredits) * 100;
   const creditsNeeded = calculateImageCost(settings.imageQuality, settings.numImages);
 
   return (
@@ -77,6 +76,20 @@ export const SettingsForm = ({
         </ToggleGroup>
       </div>
 
+      {/* Highlight Product */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Destacar Produto</Label>
+        <ToggleGroup 
+          type="single" 
+          value={settings.highlight} 
+          onValueChange={(value) => value && onSettingsChange({ highlight: value })}
+          className="justify-start"
+        >
+          <ToggleGroupItem value="yes" className="flex-1 text-xs">Sim</ToggleGroupItem>
+          <ToggleGroupItem value="no" className="flex-1 text-xs">Não</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+
       {/* Style */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">Estilo</Label>
@@ -96,17 +109,17 @@ export const SettingsForm = ({
 
       {/* Time of Day */}
       <div className="space-y-2">
-        <Label className="text-sm font-medium">Hora do Dia</Label>
+        <Label className="text-sm font-medium">Tipo de Luz</Label>
         <ToggleGroup 
           type="single" 
           value={settings.timeOfDay} 
           onValueChange={(value) => value && onSettingsChange({ timeOfDay: value as GenerationSettings['timeOfDay'] })}
           className="justify-start grid grid-cols-2 gap-1"
         >
-          <ToggleGroupItem value="natural" className="text-xs px-2 py-1">Natural</ToggleGroupItem>
-          <ToggleGroupItem value="golden" className="text-xs px-2 py-1">Golden</ToggleGroupItem>
-          <ToggleGroupItem value="night" className="text-xs px-2 py-1">Night</ToggleGroupItem>
-          <ToggleGroupItem value="morning" className="text-xs px-2 py-1">Morning</ToggleGroupItem>
+          <ToggleGroupItem value="natural" className="text-xs px-2 py-1">{t('ugc.advancedSettings.timeOfDay.natural')}</ToggleGroupItem>
+          <ToggleGroupItem value="morning" className="text-xs px-2 py-1">{t('ugc.advancedSettings.timeOfDay.soft')}</ToggleGroupItem>
+          <ToggleGroupItem value="golden" className="text-xs px-2 py-1">{t('ugc.advancedSettings.timeOfDay.golden')}</ToggleGroupItem>
+          <ToggleGroupItem value="night" className="text-xs px-2 py-1">{t('ugc.advancedSettings.timeOfDay.night')}</ToggleGroupItem>
         </ToggleGroup>
       </div>
 
@@ -119,7 +132,7 @@ export const SettingsForm = ({
           onValueChange={(value) => value && onSettingsChange({ imageOrientation: value })}
           className="justify-start grid grid-cols-3 gap-1"
         >
-          {["1:1", "4:5", "16:9"].map((o) => (
+          {["square(1:1)", "4:5", "16:9"].map((o) => (
             <ToggleGroupItem key={o} value={o} className="text-xs px-2 py-1">
               {o}
             </ToggleGroupItem>
@@ -165,19 +178,6 @@ export const SettingsForm = ({
         </ToggleGroup>
       </div>
 
-      {/* Highlight Product */}
-      <div className="space-y-2">
-        <Label className="text-sm font-medium">Destacar Produto</Label>
-        <ToggleGroup 
-          type="single" 
-          value={settings.highlight} 
-          onValueChange={(value) => value && onSettingsChange({ highlight: value })}
-          className="justify-start"
-        >
-          <ToggleGroupItem value="yes" className="flex-1 text-xs">Sim</ToggleGroupItem>
-          <ToggleGroupItem value="no" className="flex-1 text-xs">Não</ToggleGroupItem>
-        </ToggleGroup>
-      </div>
     </div>
   );
 };

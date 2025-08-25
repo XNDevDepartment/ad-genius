@@ -1009,7 +1009,7 @@ const CreateUGC = () => {
         </div>
 
         {/* Mobile Floating Action Panel */}
-        {isMobile && (
+        {(isMobile && !settingsOpen) && (
           <div className="fixed left-0 right-0 bottom-[76px] sm:bottom-[80px] z-[60] px-4 pb-safe backdrop-blur supports-backdrop-blur:bg-background/60">
             <div className="max-w-lg mx-auto bg-card/95 border border-border/50 rounded-2xl shadow-lg p-3 space-y-3">
               {/* Top row: Summary pill and Edit button */}
@@ -1026,7 +1026,7 @@ const CreateUGC = () => {
                   <Pencil className="h-3 w-3" />
                 </Button>
               </div>
-              
+
               {/* Bottom row: Generate button */}
               <Button 
                 variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "default"}

@@ -51,7 +51,7 @@
       "tooltip": "Choose from AI-generated scenarios that show your product in realistic, engaging situations."
     },
     "generationSettings": {
-      "title": "Generation Settings",
+      "title": "Image Settings",
       "subtitle": "Customize your image output preferences",
       "tooltip": "Adjust these settings to control the style, quality, and format of your generated images."
     },
@@ -76,7 +76,7 @@
         "title": "Time of Day",
         "natural": "Natural",
         "golden": "Golden Hour",
-        "bright": "Bright Daylight",
+        "night": "Night Light",
         "soft": "Soft Morning",
         "tooltip": "Controls the lighting mood in your generated images."
       },

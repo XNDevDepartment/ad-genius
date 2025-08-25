@@ -51,7 +51,7 @@
       "tooltip": "Elige entre escenarios generados por IA que muestran tu producto en situaciones realistas y atractivas."
     },
     "generationSettings": {
-      "title": "Configuraciones de Generación",
+      "title": "Configuraciones de Imagen",
       "subtitle": "Personaliza tus preferencias de salida de imagen",
       "tooltip": "Ajusta estas configuraciones para controlar el estilo, calidad y formato de tus imágenes generadas."
     },
@@ -76,7 +76,7 @@
         "title": "Hora del Día",
         "natural": "Natural",
         "golden": "Hora Dorada",
-        "bright": "Luz Diurna Brillante",
+        "night": "Luz de noche",
         "soft": "Mañana Suave",
         "tooltip": "Controla el ambiente de iluminación en tus imágenes generadas."
       },
