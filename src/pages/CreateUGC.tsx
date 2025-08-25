@@ -432,7 +432,7 @@ const CreateUGC = () => {
         2️⃣  // Generate all images in parallel
       ------------------------------------------------------------------*/
       const imagePromises = Array.from({ length: numImages }, async (_, i) => {
-        if(highlight === "true"){
+        if(highlight === "yes"){
           prompt = highlightedProdPrompt
         }else{
           prompt = blendedProdPrompt
@@ -844,7 +844,7 @@ const CreateUGC = () => {
                       onValueChange={(e) => setNumImages(parseInt(e))}
                       className="justify-start"
                     >
-                      <ToggleGroupItem value="1" className="flex-1">1</ToggleGroupItem>
+                      <ToggleGroupItem value="1" className="flex-1 bg-slate-300">1</ToggleGroupItem>
                       <ToggleGroupItem value="2" className="flex-1">2</ToggleGroupItem>
                       <ToggleGroupItem value="3" className="flex-1">3</ToggleGroupItem>
                     </ToggleGroup>
@@ -1126,7 +1126,7 @@ const CreateUGC = () => {
             <GeneratingImagePlaceholders
               numberOfImages={numImages}
               isGenerating={isGenerating}
-              images={generatedImages.map(img => img.url)}
+              images={generatedImages}
               onImageSelect={handleImageSelect}
             />
 

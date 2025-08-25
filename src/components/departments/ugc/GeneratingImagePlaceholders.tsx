@@ -2,12 +2,21 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Image } from "lucide-react";
 import './../../../costumn.css';
+import ImageGallery from "@/components/ImageGallery";
+
+
+interface GeneratedImage {
+  id: string;
+  url: string;
+  prompt: string;
+  selected: boolean;
+}
 
 interface GeneratingImagePlaceholdersProps {
   numberOfImages: number;
   isGenerating?: boolean;
-  images?: string[];
-  onImageSelect?: (imageId: string) => void;
+  images: GeneratedImage[];
+  onImageSelect: (imageId: string) => void;
 }
 
 export const GeneratingImagePlaceholders = ({ 
@@ -30,22 +39,24 @@ export const GeneratingImagePlaceholders = ({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: numberOfImages }, (_, i) => {
-              const hasImage = images[i] && !isGenerating;
-              const imageId = `image-${i}`;
-              
-              return (
-                <div key={i} className="space-y-3 animate-scale-in">
+                <div className="space-y-3 animate-scale-in">
                   <div className="aspect-square rounded-lg overflow-hidden border border-border/50 bg-muted/20 relative group">
-                    {hasImage ? (
+                  <div className="lg:grid lg:grid-cols-3 lg:gap-8">
+                    {images && !isGenerating ? (
                       // Show actual image
                       <>
-                        <img
+                      <div className="lg:col-span-2">
+                        <ImageGallery
+                          images={images}
+                          onImageSelect={onImageSelect}
+                        />
+                      </div>
+                        {/* <img
                           src={images[i]}
                           alt={`Generated image ${i + 1}`}
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                        {onImageSelect && (
+                        /> */}
+                        {/* {onImageSelect && (
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300">
                             <button
                               onClick={() => onImageSelect(imageId)}
@@ -54,7 +65,7 @@ export const GeneratingImagePlaceholders = ({
                               <div className="w-3 h-3 rounded-full bg-primary"></div>
                             </button>
                           </div>
-                        )}
+                        )} */}
                       </>
                     ) : (
                       // Show futuristic loading placeholder
@@ -79,9 +90,8 @@ export const GeneratingImagePlaceholders = ({
                     )}
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+        </div>
         </CardContent>
       </Card>
     </div>
