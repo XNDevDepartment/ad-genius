@@ -157,7 +157,7 @@ export function AppSidebar() {
             )}
             {!isCollapsed && (
               <div className="text-xs text-sidebar-foreground/40 text-center">
-                Genius UGC v1.0
+                Genius UGC v3.0
               </div>
             )}
           </div>

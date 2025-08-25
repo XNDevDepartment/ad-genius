@@ -10,7 +10,7 @@ All colors MUST be HSL.
   :root {
 
     /* Apple-inspired Design System */
-    --background: 0 0% 100%;          /* Base: #FFFFFF */
+    --background: 0 0% 98%;          /* Base: #FFFFFF */
     --foreground: 0 0% 11%;           /* Text-Primary: #1C1C1E */
 
     --card: 0 0% 95%;                 /* Surface: #F2F3F5 */
