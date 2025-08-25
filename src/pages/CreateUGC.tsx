@@ -582,7 +582,7 @@ const CreateUGC = () => {
     <div className="min-h-screen bg-background relative">
       {/* Loading Overlay */}
       {!threadId && (
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-[30] flex items-center justify-center">
           <div className="text-center space-y-4">
             <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
               <Sparkles className="h-10 w-10 text-primary animate-pulse" />
