@@ -610,7 +610,7 @@ const CreateUGC = () => {
                 </Button>
                 <h1 className="text-2xl lg:text-3xl font-bold">{t('ugc.title')}</h1>
               </div>
-              
+
               {/* Mobile Settings Button - Removed since we now have fixed bottom bar */}
             </div>
           </div>
@@ -674,7 +674,7 @@ const CreateUGC = () => {
                         value={niche}
                         maxLength={250}
                         onChange={(e) => handleNicheChange(e.target.value)}
-                        className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full"
+                        className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full text-base md:text-sm"
                         style={{ lineHeight: '1.5rem' }}
                         disabled={!threadId || isAnalyzingImage}
                         rows={1}
