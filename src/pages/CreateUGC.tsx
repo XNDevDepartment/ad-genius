@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
-import { ArrowLeft, Upload, Sparkles, RefreshCw, Loader2, HelpCircle, Settings } from "lucide-react";
+import { ArrowLeft, Upload, Sparkles, RefreshCw, Loader2, HelpCircle, Settings, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -92,6 +92,9 @@ const CreateUGC = () => {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Compute compact summary for mobile panel
+  const summary = `${numImages} img • ${imageQuality.charAt(0).toUpperCase() + imageQuality.slice(1)} • ${highlight === 'yes' ? 'Focus On' : 'Blend In'} • ${imageOrientation} • ${style} • ${timeOfDay}`;
 
 
   // Move all refs and effects to the top, before any conditional returns
@@ -1005,23 +1008,30 @@ const CreateUGC = () => {
           )}
         </div>
 
-        {/* Mobile Fixed Bottom Bar */}
+        {/* Mobile Floating Action Panel */}
         {isMobile && (
-          <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border z-50">
-            <div className="flex gap-3">
-              <Button 
-                variant="outline"
-                size="lg"
-                onClick={() => setSettingsOpen(true)}
-                className="flex-1"
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                Opções
-              </Button>
+          <div className="fixed left-0 right-0 bottom-[76px] sm:bottom-[80px] z-[60] px-4 pb-safe backdrop-blur supports-backdrop-blur:bg-background/60">
+            <div className="max-w-lg mx-auto bg-card/95 border border-border/50 rounded-2xl shadow-lg p-3 space-y-3">
+              {/* Top row: Summary pill and Edit button */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 px-3 py-2 bg-muted/40 rounded-full text-xs text-muted-foreground truncate">
+                  {summary}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSettingsOpen(true)}
+                  className="rounded-full h-8 w-8 p-0"
+                >
+                  <Pencil className="h-3 w-3" />
+                </Button>
+              </div>
+              
+              {/* Bottom row: Generate button */}
               <Button 
                 variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "default"}
                 size="lg" 
-                className={`flex-[2] ${isGenerating ? 'animate-pulse' : ''}`}
+                className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
                 onClick={handleGenerate}
                 disabled={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages)}
               >
@@ -1072,8 +1082,8 @@ const CreateUGC = () => {
           />
         )}
 
-        {/* Padding for mobile fixed bottom bar */}
-        {isMobile && <div className="h-20" />}
+        {/* Padding for mobile floating panel and navigation */}
+        {isMobile && <div className="h-[160px]" />}
 
         {/* Results Section */}
         {(isGenerating || generatedImages.length > 0) && (
