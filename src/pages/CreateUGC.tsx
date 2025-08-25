@@ -674,8 +674,8 @@ const CreateUGC = () => {
                         value={niche}
                         maxLength={250}
                         onChange={(e) => handleNicheChange(e.target.value)}
-                        className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full text-base md:text-sm"
-                        style={{ lineHeight: '1.5rem' }}
+                        className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full text-base md:text-sm "
+                        style={{ lineHeight: '1.25rem, font-size: 16px' }}
                         disabled={!threadId || isAnalyzingImage}
                         rows={1}
                       />
