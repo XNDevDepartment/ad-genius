@@ -60,4 +60,56 @@
     50%      { background-position:   0% 0; }
     90%,100% { background-position: 250% 0; }
   }
+
+  /* Futuristic tile animations */
+  @keyframes scan-diagonal {
+    0% { transform: translateX(-100%) translateY(-100%); }
+    100% { transform: translateX(100%) translateY(100%); }
+  }
+
+  @keyframes orbit {
+    0% { transform: rotate(0deg) translateX(20px) rotate(0deg); }
+    100% { transform: rotate(360deg) translateX(20px) rotate(-360deg); }
+  }
+
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+  }
+
+  /* Futuristic tile component styles */
+  .futuristic-tile {
+    @apply relative overflow-hidden;
+  }
+
+  .futuristic-tile::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      45deg,
+      transparent,
+      rgba(var(--primary), 0.1),
+      transparent
+    );
+    animation: scan-diagonal 3s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .futuristic-tile::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4px;
+    height: 4px;
+    background: rgba(var(--primary), 0.6);
+    border-radius: 50%;
+    animation: orbit 4s linear infinite, pulse-soft 2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  
   
