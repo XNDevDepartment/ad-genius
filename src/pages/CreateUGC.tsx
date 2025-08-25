@@ -806,7 +806,7 @@ const CreateUGC = () => {
               <div className={`bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
                 <div>
                   <h3 className="text-lg font-semibold mb-4">{t('ugc.generationSettings.title')}</h3>
-                  
+
                   {/* Credits Progress Bar */}
                   <div className="space-y-2 mb-6">
                     <div className="flex justify-between items-center text-sm">
@@ -822,7 +822,7 @@ const CreateUGC = () => {
                   {/* ... keep existing code (all desktop sidebar settings) */}
 
                   {/* Number of Images */}
-                  <div className="space-y-2 mb-4">
+                  <div className="space-y-2 mb-6">
                     <div className="flex items-center gap-2">
                       <Label htmlFor="sidebar-numImages" className="text-sm font-medium">{t('ugc.numImages.title')}</Label>
                       <TooltipProvider>
@@ -844,14 +844,14 @@ const CreateUGC = () => {
                       onValueChange={(e) => setNumImages(parseInt(e))}
                       className="justify-start"
                     >
-                      <ToggleGroupItem value="1" className="flex-1 bg-slate-300">1</ToggleGroupItem>
-                      <ToggleGroupItem value="2" className="flex-1">2</ToggleGroupItem>
-                      <ToggleGroupItem value="3" className="flex-1">3</ToggleGroupItem>
+                      <ToggleGroupItem value="1" size="sm" className="flex-1 bg-muted">1</ToggleGroupItem>
+                      <ToggleGroupItem value="2" size="sm" className="flex-1 bg-muted">2</ToggleGroupItem>
+                      <ToggleGroupItem value="3" size="sm" className="flex-1 bg-muted">3</ToggleGroupItem>
                     </ToggleGroup>
                   </div>
 
                   {/* Highlight */}
-                  <div className="space-y-2 mb-4">
+                  <div className="space-y-2 mb-6">
                     <div className="flex items-center gap-2">
                       <Label htmlFor="sidebar-highlight" className="text-sm font-medium">{t('ugc.advancedSettings.highlight.title')}</Label>
                       <TooltipProvider>
@@ -873,13 +873,13 @@ const CreateUGC = () => {
                       onValueChange={(e) => setHighlight(e)}
                       className="justify-start"
                     >
-                      <ToggleGroupItem value="yes" className="flex-1 text-xs">{t('ugc.advancedSettings.highlight.yes')}</ToggleGroupItem>
-                      <ToggleGroupItem value="no" className="flex-1 text-xs">{t('ugc.advancedSettings.highlight.no')}</ToggleGroupItem>
+                      <ToggleGroupItem value="yes" size="sm" className="flex-1 text-xs bg-muted">{t('ugc.advancedSettings.highlight.yes')}</ToggleGroupItem>
+                      <ToggleGroupItem value="no" size="sm" className="flex-1 text-xs bg-muted">{t('ugc.advancedSettings.highlight.no')}</ToggleGroupItem>
                     </ToggleGroup>
                   </div>
 
                   {/* Time of Day */}
-                  <div className="space-y-2 mb-4">
+                  <div className="space-y-2 mb-6">
                     <div className="flex items-center gap-2">
                       <Label htmlFor="sidebar-timeOfDay" className="text-sm font-medium">{t('ugc.advancedSettings.timeOfDay.title')}</Label>
                       <TooltipProvider>
@@ -901,15 +901,15 @@ const CreateUGC = () => {
                       onValueChange={(e) => setTimeOfDay(e as typeof timeOfDay)}
                       className="justify-start grid grid-cols-4 gap-1"
                     >
-                        <ToggleGroupItem key={"natural"} className="text-xs px-2 py-1" value="natural">{t('ugc.advancedSettings.timeOfDay.natural')}</ToggleGroupItem>
-                        <ToggleGroupItem key={"night"} className="text-xs px-2 py-1" value="night">{t('ugc.advancedSettings.timeOfDay.night')}</ToggleGroupItem>
-                        <ToggleGroupItem key={"golden"} className="text-xs px-2 py-1" value="golden">{t('ugc.advancedSettings.timeOfDay.golden')}</ToggleGroupItem>
-                        <ToggleGroupItem key={"morning"} className="text-xs px-2 py-1" value="morning">{t('ugc.advancedSettings.timeOfDay.soft')}</ToggleGroupItem>
+                        <ToggleGroupItem key={"natural"} size="sm" className="text-xs px-2 py-1 bg-muted" value="natural">{t('ugc.advancedSettings.timeOfDay.natural')}</ToggleGroupItem>
+                        <ToggleGroupItem key={"night"} size="sm" className="text-xs px-2 py-1 bg-muted" value="night">{t('ugc.advancedSettings.timeOfDay.night')}</ToggleGroupItem>
+                        <ToggleGroupItem key={"golden"} size="sm" className="text-xs px-2 py-1 bg-muted" value="golden">{t('ugc.advancedSettings.timeOfDay.golden')}</ToggleGroupItem>
+                        <ToggleGroupItem key={"morning"} size="sm" className="text-xs px-2 py-1 bg-muted" value="morning">{t('ugc.advancedSettings.timeOfDay.soft')}</ToggleGroupItem>
                     </ToggleGroup>
                   </div>
 
                   {/* Style */}
-                  <div className="space-y-2 mb-4">
+                  <div className="space-y-2 mb-6">
                     <div className="flex items-center gap-2">
                       <Label htmlFor="sidebar-style" className="text-sm font-medium">{t('ugc.advancedSettings.style.title')}</Label>
                       <TooltipProvider>
@@ -931,15 +931,15 @@ const CreateUGC = () => {
                       onValueChange={(e) => setStyle(e as typeof style)}
                       className="justify-start grid grid-cols-4 gap-1"
                     >
-                        <ToggleGroupItem key={"lifestyle"} className="text-xs px-2 py-1" value="lifestyle">{t('ugc.advancedSettings.style.lifestyle')}</ToggleGroupItem>
-                        <ToggleGroupItem key={"minimal"} className="text-xs px-2 py-1" value="minimal">{t('ugc.advancedSettings.style.minimalist')}</ToggleGroupItem>
-                        <ToggleGroupItem key={"vibrant"} className="text-xs px-2 py-1" value="vibrant">Vibrant</ToggleGroupItem>
-                        <ToggleGroupItem key={"professional"} className="text-xs px-2 py-1" value="professional">{t('ugc.advancedSettings.style.professional')}</ToggleGroupItem>
+                        <ToggleGroupItem key={"lifestyle"} size="sm" className="text-xs px-2 py-1 bg-muted" value="lifestyle">{t('ugc.advancedSettings.style.lifestyle')}</ToggleGroupItem>
+                        <ToggleGroupItem key={"minimal"} size="sm" className="text-xs px-2 py-1 bg-muted" value="minimal">{t('ugc.advancedSettings.style.minimalist')}</ToggleGroupItem>
+                        <ToggleGroupItem key={"vibrant"} size="sm" className="text-xs px-2 py-1 bg-muted" value="vibrant">Vibrant</ToggleGroupItem>
+                        <ToggleGroupItem key={"professional"} size="sm" className="text-xs px-2 py-1 bg-muted" value="professional">{t('ugc.advancedSettings.style.professional')}</ToggleGroupItem>
                     </ToggleGroup>
                   </div>
 
                   {/* Orientation */}
-                  <div className="space-y-2 mb-4">
+                  <div className="space-y-2 mb-6">
                     <div className="flex items-center gap-2">
                       <Label className="text-sm font-medium">{t('ugc.orientation.title')}</Label>
                       <TooltipProvider>
@@ -984,15 +984,15 @@ const CreateUGC = () => {
                       onValueChange={(e) => setImageQuality(e as 'low' | 'medium' | 'high')}
                       className="justify-start grid grid-cols-3 gap-1"
                     >
-                      <ToggleGroupItem value="low" className="text-xs px-2 py-1 flex flex-col items-center">
+                      <ToggleGroupItem value="low" size="sm"className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
                         <span>Baixa</span>
                         <span className="text-[10px] opacity-70">1 crédito</span>
                       </ToggleGroupItem>
-                      <ToggleGroupItem value="medium" className="text-xs px-2 py-1 flex flex-col items-center">
+                      <ToggleGroupItem value="medium" size="sm" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
                         <span>Média</span>
                         <span className="text-[10px] opacity-70">1.5 créditos</span>
                       </ToggleGroupItem>
-                      <ToggleGroupItem value="high" className="text-xs px-2 py-1 flex flex-col items-center">
+                      <ToggleGroupItem value="high" size="sm" className="text-xs px-2 py-1 flex flex-col items-cente bg-mutedr">
                         <span>Alta</span>
                         <span className="text-[10px] opacity-70">2 créditos</span>
                       </ToggleGroupItem>
@@ -1049,17 +1049,20 @@ const CreateUGC = () => {
             <div className="max-w-lg mx-auto bg-card/95 border border-border/50 rounded-2xl shadow-lg p-3 space-y-3">
               {/* Top row: Summary pill and Edit button */}
               <div className="flex items-center gap-3">
-                <div className="flex-1 px-3 py-2 bg-muted/40 rounded-full text-xs text-muted-foreground truncate">
-                  {summary}
+                <div className="flex-1 px-3 py-2 bg-muted/40 rounded-full text-xs text-muted-foreground truncate" onClick={() => setSettingsOpen(true)}>
+                  {/* {summary} */}
+                  <Button className="w-full" variant="ghost">
+                  Abrir definições de imagem
+                  <Pencil className="h-3 w-3" />
+                  </Button>
                 </div>
-                <Button
-                  variant="outline"
+                {/* <Button
+                  variant="ghost"
                   size="sm"
                   onClick={() => setSettingsOpen(true)}
-                  className="rounded-full h-8 w-8 p-0"
+                  className="rounded-full h-8 w-8 p-0 "
                 >
-                  <Pencil className="h-3 w-3" />
-                </Button>
+                </Button> */}
               </div>
 
               {/* Bottom row: Generate button */}

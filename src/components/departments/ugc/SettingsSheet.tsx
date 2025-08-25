@@ -35,9 +35,7 @@ export const SettingsSheet = ({
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = controlledOnOpenChange || setInternalOpen;
-  const credits = calculateImageCost(settings.imageQuality, settings.numImages);
-  
-  const summary = `${settings.numImages} imagem${settings.numImages > 1 ? 'ns' : ''} • ${settings.style} • ${settings.imageQuality} • ${settings.imageOrientation}`;
+
 
   const { t } = useTranslation();
 
@@ -74,20 +72,6 @@ export const SettingsSheet = ({
               />
 
           </div>
-
-          {/* Fixed footer */}
-          {/* <div className="border-t bg-background p-4 space-y-3">
-            <Button 
-              onClick={() => {
-                setOpen(false);
-                onGenerate();
-              }} 
-              className="w-full"
-              disabled={!canGenerate || isGenerating}
-            >
-              {isGenerating ? "A gerar..." : `Usar estas definições (${credits} ${credits === 1 ? "crédito" : "créditos"})`}
-            </Button>
-          </div> */}
         </div>
       </SheetContent>
     </Sheet>

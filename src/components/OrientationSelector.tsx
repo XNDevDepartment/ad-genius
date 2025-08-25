@@ -43,7 +43,7 @@ const OrientationSelector = ({ value, onChange }: OrientationSelectorProps) => {
           className="justify-start grid grid-cols-3 gap-1"
         >
         {orientationOptions.map((option) => (
-          <ToggleGroupItem key={option.value} value={option.value} className="text-xs px-2 py-1">
+          <ToggleGroupItem key={option.value} value={option.value} size="sm" className="text-xs px-2 py-1 bg-muted">
             <div className={`bg-transparent border ${option.value === value ? 'border-white-500' : 'border-gray-500' } mr-2 ${option.iconWidth} ${option.iconHeight}`} />
             {option.label}
           </ToggleGroupItem>

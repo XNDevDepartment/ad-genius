@@ -70,9 +70,9 @@ export const SettingsForm = ({
           onValueChange={(value) => value && onSettingsChange({ numImages: parseInt(value) })}
           className="justify-start"
         >
-          <ToggleGroupItem value="1" className="flex-1">1</ToggleGroupItem>
-          <ToggleGroupItem value="2" className="flex-1">2</ToggleGroupItem>
-          <ToggleGroupItem value="3" className="flex-1">3</ToggleGroupItem>
+          <ToggleGroupItem value="1" size="sm" className="flex-1 bg-muted">1</ToggleGroupItem>
+          <ToggleGroupItem value="2" size="sm" className="flex-1 bg-muted">2</ToggleGroupItem>
+          <ToggleGroupItem value="3" size="sm" className="flex-1 bg-muted">3</ToggleGroupItem>
         </ToggleGroup>
       </div>
 
@@ -85,8 +85,8 @@ export const SettingsForm = ({
           onValueChange={(value) => value && onSettingsChange({ highlight: value })}
           className="justify-start"
         >
-          <ToggleGroupItem value="yes" className="flex-1 text-xs">Sim</ToggleGroupItem>
-          <ToggleGroupItem value="no" className="flex-1 text-xs">Não</ToggleGroupItem>
+          <ToggleGroupItem value="yes" size="sm" className="flex-1 text-xs bg-muted">Sim</ToggleGroupItem>
+          <ToggleGroupItem value="no" size="sm" className="flex-1 text-xs bg-muted">Não</ToggleGroupItem>
         </ToggleGroup>
       </div>
 
@@ -97,10 +97,10 @@ export const SettingsForm = ({
           type="single" 
           value={settings.style} 
           onValueChange={(value) => value && onSettingsChange({ style: value as GenerationSettings['style'] })}
-          className="justify-start grid grid-cols-2 gap-1"
+          className="justify-start grid grid-cols-4 gap-1"
         >
           {(["lifestyle", "studio", "editorial", "natural"] as const).map((s) => (
-            <ToggleGroupItem key={s} value={s} className="text-xs px-2 py-1">
+            <ToggleGroupItem key={s} value={s} size="sm" className="text-xs px-2 py-1 bg-muted">
               {capitalize(s)}
             </ToggleGroupItem>
           ))}
@@ -116,10 +116,10 @@ export const SettingsForm = ({
           onValueChange={(value) => value && onSettingsChange({ timeOfDay: value as GenerationSettings['timeOfDay'] })}
           className="justify-start grid grid-cols-2 gap-1"
         >
-          <ToggleGroupItem value="natural" className="text-xs px-2 py-1">{t('ugc.advancedSettings.timeOfDay.natural')}</ToggleGroupItem>
-          <ToggleGroupItem value="morning" className="text-xs px-2 py-1">{t('ugc.advancedSettings.timeOfDay.soft')}</ToggleGroupItem>
-          <ToggleGroupItem value="golden" className="text-xs px-2 py-1">{t('ugc.advancedSettings.timeOfDay.golden')}</ToggleGroupItem>
-          <ToggleGroupItem value="night" className="text-xs px-2 py-1">{t('ugc.advancedSettings.timeOfDay.night')}</ToggleGroupItem>
+          <ToggleGroupItem value="natural" size="sm" className="text-xs px-2 py-1 bg-muted">{t('ugc.advancedSettings.timeOfDay.natural')}</ToggleGroupItem>
+          <ToggleGroupItem value="morning" size="sm" className="text-xs px-2 py-1 bg-muted">{t('ugc.advancedSettings.timeOfDay.soft')}</ToggleGroupItem>
+          <ToggleGroupItem value="golden" size="sm" className="text-xs px-2 py-1 bg-muted">{t('ugc.advancedSettings.timeOfDay.golden')}</ToggleGroupItem>
+          <ToggleGroupItem value="night" size="sm" className="text-xs px-2 py-1 bg-muted">{t('ugc.advancedSettings.timeOfDay.night')}</ToggleGroupItem>
         </ToggleGroup>
       </div>
 
@@ -133,7 +133,7 @@ export const SettingsForm = ({
           className="justify-start grid grid-cols-3 gap-1"
         >
           {["1:1", "2:3", "3:2"].map((o) => (
-            <ToggleGroupItem key={o} value={o} className="text-xs px-2 py-1">
+            <ToggleGroupItem key={o} value={o} size="sm" className="text-xs px-2 py-1 bg-muted">
               {o}
             </ToggleGroupItem>
           ))}
@@ -163,15 +163,15 @@ export const SettingsForm = ({
           onValueChange={(value) => value && onSettingsChange({ imageQuality: value as 'low' | 'medium' | 'high' })}
           className="justify-start grid grid-cols-3 gap-1"
         >
-          <ToggleGroupItem value="low" className="text-xs px-2 py-1 flex flex-col items-center">
+          <ToggleGroupItem value="low" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
             <span>Baixa</span>
             <span className="text-[10px] opacity-70">1 crédito</span>
           </ToggleGroupItem>
-          <ToggleGroupItem value="medium" className="text-xs px-2 py-1 flex flex-col items-center">
+          <ToggleGroupItem value="medium" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
             <span>Média</span>
             <span className="text-[10px] opacity-70">1.5 créditos</span>
           </ToggleGroupItem>
-          <ToggleGroupItem value="high" className="text-xs px-2 py-1 flex flex-col items-center">
+          <ToggleGroupItem value="high" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
             <span>Alta</span>
             <span className="text-[10px] opacity-70">2 créditos</span>
           </ToggleGroupItem>
