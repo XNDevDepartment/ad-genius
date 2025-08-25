@@ -607,7 +607,7 @@ const CreateUGC = () => {
           {/* Main Form */}
           <div className="lg:col-span-7 space-y-6">
             {/* Product & Niche Card */}
-            <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : 'bg-white rounded-apple shadow-lg'}`}>
+            <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'}`}>
               <CardContent className="p-6 lg:p-8 space-y-6">
                 <div>
                   {/* <div className="flex items-center gap-2 mb-4">
@@ -706,7 +706,7 @@ const CreateUGC = () => {
 
             {/* UGC Scenarios Card */}
             {!isLoadingScenarios && aiScenarios.length > 0 && (
-              <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : 'bg-white rounded-apple shadow-lg'}`}>
+              <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'}`}>
                 <CardContent className="p-6 lg:p-8">
                   <div>
                     <div className="flex items-center gap-2 mb-4">
@@ -994,7 +994,7 @@ const CreateUGC = () => {
         </div>
 
         {/* Results Section */}
-        {(!isGenerating || generatedImages.length > 0) && (
+        {(isGenerating || generatedImages.length > 0) && (
           <div id="generating-images" className="scroll-mt-6 space-y-8">
             <GeneratingImagePlaceholders
               numberOfImages={numImages}

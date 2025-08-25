@@ -82,13 +82,6 @@ export const GeneratingImagePlaceholders = ({
               );
             })}
           </div>
-          {isGenerating && (
-            <div className="mt-4 text-center">
-              <div className="w-32 h-2 bg-secondary rounded-full mx-auto overflow-hidden">
-                <div className="h-full bg-gradient-primary animate-pulse rounded-full w-full"></div>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
