@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
-import { ArrowLeft, Upload, Sparkles, RefreshCw, Loader2, HelpCircle } from "lucide-react";
+import { ArrowLeft, Upload, Sparkles, RefreshCw, Loader2, HelpCircle, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,7 @@ const CreateUGC = () => {
   const isMobile = useIsMobile();
 
   const { user, subscriptionData } = useAuth();
-  const { credits, canAfford, deductCredits, getRemainingCredits } = useCredits();
+  const { credits, canAfford, deductCredits, getRemainingCredits, getTotalCredits } = useCredits();
   const { saveImages } = useSecureImageStorage();
   const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
   const [showAuthModal, setShowAuthModal] = useState(!user);
@@ -84,13 +84,14 @@ const CreateUGC = () => {
   const [productIdentification, setProductIdentification] = useState("");
   const [numImages, setNumImages] = useState(1);
   const [imageOrientation, setImageOrientation] = useState("1:1");
-  const [timeOfDay, setTimeOfDay] = useState("natural");
+  const [timeOfDay, setTimeOfDay] = useState<'natural' | 'golden' | 'night' | 'morning'>("natural");
   const [highlight, setHighlight] = useState("yes");
-  const [style, setStyle] = useState("lifestyle");
+  const [style, setStyle] = useState<'lifestyle' | 'studio' | 'editorial' | 'natural'>("lifestyle");
   const [progress, setProgress] = useState(0);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
 
   // Move all refs and effects to the top, before any conditional returns
@@ -607,32 +608,7 @@ const CreateUGC = () => {
                 <h1 className="text-2xl lg:text-3xl font-bold">{t('ugc.title')}</h1>
               </div>
               
-              {/* Mobile Settings Button */}
-              {isMobile && (
-                <SettingsSheet
-                  settings={{
-                    numImages,
-                    style,
-                    timeOfDay,
-                    highlight,
-                    imageOrientation,
-                    imageQuality
-                  }}
-                  onSettingsChange={(newSettings) => {
-                    if (newSettings.numImages !== undefined) setNumImages(newSettings.numImages);
-                    if (newSettings.style !== undefined) setStyle(newSettings.style);
-                    if (newSettings.timeOfDay !== undefined) setTimeOfDay(newSettings.timeOfDay);
-                    if (newSettings.highlight !== undefined) setHighlight(newSettings.highlight);
-                    if (newSettings.imageOrientation !== undefined) setImageOrientation(newSettings.imageOrientation);
-                    if (newSettings.imageQuality !== undefined) setImageQuality(newSettings.imageQuality);
-                  }}
-                  remainingCredits={remainingCredits}
-                  calculateImageCost={calculateImageCost}
-                  canGenerate={!!productImage && !!selectedScenario && !isGenerating && canGenerateImages(numImages)}
-                  onGenerate={handleGenerate}
-                  isGenerating={isGenerating}
-                />
-              )}
+              {/* Mobile Settings Button - Removed since we now have fixed bottom bar */}
             </div>
           </div>
 
@@ -893,7 +869,7 @@ const CreateUGC = () => {
                     <select
                       id="sidebar-timeOfDay"
                       value={timeOfDay}
-                      onChange={(e) => setTimeOfDay(e.target.value)}
+                      onChange={(e) => setTimeOfDay(e.target.value as typeof timeOfDay)}
                       className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm text-sm"
                     >
                       <option value="natural">{t('ugc.advancedSettings.timeOfDay.natural')}</option>
@@ -923,7 +899,7 @@ const CreateUGC = () => {
                     <select
                       id="sidebar-style"
                       value={style}
-                      onChange={(e) => setStyle(e.target.value)}
+                      onChange={(e) => setStyle(e.target.value as typeof style)}
                       className="w-full px-3 py-2 bg-background border border-border rounded-apple-sm shadow-sm text-sm"
                     >
                       <option value="lifestyle">{t('ugc.advancedSettings.style.lifestyle')}</option>
@@ -1029,30 +1005,75 @@ const CreateUGC = () => {
           )}
         </div>
 
-        {/* Mobile Generate Button */}
+        {/* Mobile Fixed Bottom Bar */}
         {isMobile && (
-          <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border z-50">
-            <Button 
-              variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "default"}
-              size="lg" 
-              className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
-              onClick={handleGenerate}
-              disabled={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages)}
-            >
-              {isGenerating ? (
-                <>
-                  <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                  A gerar...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-5 w-5 mr-2" />
-                  Gerar Imagens ({calculateImageCost(imageQuality, numImages)} créditos)
-                </>
-              )}
-            </Button>
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border z-50">
+            <div className="flex gap-3">
+              <Button 
+                variant="outline"
+                size="lg"
+                onClick={() => setSettingsOpen(true)}
+                className="flex-1"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Opções
+              </Button>
+              <Button 
+                variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "default"}
+                size="lg" 
+                className={`flex-[2] ${isGenerating ? 'animate-pulse' : ''}`}
+                onClick={handleGenerate}
+                disabled={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages)}
+              >
+                {isGenerating ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    A gerar...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Gerar ({calculateImageCost(imageQuality, numImages)} créditos)
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         )}
+
+        {/* Mobile Settings Sheet */}
+        {isMobile && (
+          <SettingsSheet
+            settings={{
+              numImages,
+              style,
+              timeOfDay,
+              highlight,
+              imageOrientation,
+              imageQuality
+            }}
+            onSettingsChange={(newSettings) => {
+              if (newSettings.numImages !== undefined) setNumImages(newSettings.numImages);
+              if (newSettings.style !== undefined) setStyle(newSettings.style);
+              if (newSettings.timeOfDay !== undefined) setTimeOfDay(newSettings.timeOfDay);
+              if (newSettings.highlight !== undefined) setHighlight(newSettings.highlight);
+              if (newSettings.imageOrientation !== undefined) setImageOrientation(newSettings.imageOrientation);
+              if (newSettings.imageQuality !== undefined) setImageQuality(newSettings.imageQuality);
+            }}
+            remainingCredits={remainingCredits}
+            totalCredits={getTotalCredits()}
+            calculateImageCost={calculateImageCost}
+            canGenerate={!!productImage && !!selectedScenario && !isGenerating && canGenerateImages(numImages)}
+            onGenerate={handleGenerate}
+            isGenerating={isGenerating}
+            open={settingsOpen}
+            onOpenChange={setSettingsOpen}
+            hideTrigger={true}
+          />
+        )}
+
+        {/* Padding for mobile fixed bottom bar */}
+        {isMobile && <div className="h-20" />}
 
         {/* Results Section */}
         {(isGenerating || generatedImages.length > 0) && (

@@ -10,8 +10,8 @@ import { useTranslation } from "react-i18next";
 
 export interface GenerationSettings {
   numImages: number;
-  style: string;
-  timeOfDay: string;
+  style: 'lifestyle' | 'studio' | 'editorial' | 'natural';
+  timeOfDay: 'natural' | 'golden' | 'night' | 'morning';
   highlight: string;
   imageOrientation: string;
   imageQuality: 'low' | 'medium' | 'high';
@@ -21,6 +21,7 @@ interface SettingsFormProps {
   settings: GenerationSettings;
   onSettingsChange: (settings: Partial<GenerationSettings>) => void;
   remainingCredits: number;
+  totalCredits: number;
   calculateImageCost: (quality: 'low' | 'medium' | 'high', count: number) => number;
   compact?: boolean;
 }
@@ -37,16 +38,11 @@ export const SettingsForm = ({
   settings, 
   onSettingsChange, 
   remainingCredits, 
+  totalCredits,
   calculateImageCost,
   compact = false 
 }: SettingsFormProps) => {
   const { t } = useTranslation();
-  
-  const totalCredits = {
-    'Free': 60,
-    'Pro': 500,
-    'Enterprise': 2000
-  }['Free']; // Default to Free for now
   
   const usedCredits = totalCredits - remainingCredits;
   const usagePercentage = (usedCredits / totalCredits) * 100;
@@ -77,6 +73,7 @@ export const SettingsForm = ({
         >
           <ToggleGroupItem value="1" className="flex-1">1</ToggleGroupItem>
           <ToggleGroupItem value="2" className="flex-1">2</ToggleGroupItem>
+          <ToggleGroupItem value="3" className="flex-1">3</ToggleGroupItem>
         </ToggleGroup>
       </div>
 
@@ -86,10 +83,10 @@ export const SettingsForm = ({
         <ToggleGroup 
           type="single" 
           value={settings.style} 
-          onValueChange={(value) => value && onSettingsChange({ style: value })}
-          className="justify-start grid grid-cols-3 gap-1"
+          onValueChange={(value) => value && onSettingsChange({ style: value as GenerationSettings['style'] })}
+          className="justify-start grid grid-cols-2 gap-1"
         >
-          {(["lifestyle", "studio", "editorial"] as const).map((s) => (
+          {(["lifestyle", "studio", "editorial", "natural"] as const).map((s) => (
             <ToggleGroupItem key={s} value={s} className="text-xs px-2 py-1">
               {capitalize(s)}
             </ToggleGroupItem>
@@ -103,12 +100,13 @@ export const SettingsForm = ({
         <ToggleGroup 
           type="single" 
           value={settings.timeOfDay} 
-          onValueChange={(value) => value && onSettingsChange({ timeOfDay: value })}
-          className="justify-start grid grid-cols-3 gap-1"
+          onValueChange={(value) => value && onSettingsChange({ timeOfDay: value as GenerationSettings['timeOfDay'] })}
+          className="justify-start grid grid-cols-2 gap-1"
         >
           <ToggleGroupItem value="natural" className="text-xs px-2 py-1">Natural</ToggleGroupItem>
           <ToggleGroupItem value="golden" className="text-xs px-2 py-1">Golden</ToggleGroupItem>
           <ToggleGroupItem value="night" className="text-xs px-2 py-1">Night</ToggleGroupItem>
+          <ToggleGroupItem value="morning" className="text-xs px-2 py-1">Morning</ToggleGroupItem>
         </ToggleGroup>
       </div>
 
@@ -152,17 +150,17 @@ export const SettingsForm = ({
           onValueChange={(value) => value && onSettingsChange({ imageQuality: value as 'low' | 'medium' | 'high' })}
           className="justify-start grid grid-cols-3 gap-1"
         >
-          <ToggleGroupItem value="low" className="text-xs px-2 py-1">
-            Baixa
-            <div className="text-[10px] opacity-70">1 crédito</div>
+          <ToggleGroupItem value="low" className="text-xs px-2 py-1 flex flex-col items-center">
+            <span>Baixa</span>
+            <span className="text-[10px] opacity-70">1 crédito</span>
           </ToggleGroupItem>
-          <ToggleGroupItem value="medium" className="text-xs px-2 py-1">
-            Média
-            <div className="text-[10px] opacity-70">1.5 créditos</div>
+          <ToggleGroupItem value="medium" className="text-xs px-2 py-1 flex flex-col items-center">
+            <span>Média</span>
+            <span className="text-[10px] opacity-70">1.5 créditos</span>
           </ToggleGroupItem>
-          <ToggleGroupItem value="high" className="text-xs px-2 py-1">
-            Alta
-            <div className="text-[10px] opacity-70">2 créditos</div>
+          <ToggleGroupItem value="high" className="text-xs px-2 py-1 flex flex-col items-center">
+            <span>Alta</span>
+            <span className="text-[10px] opacity-70">2 créditos</span>
           </ToggleGroupItem>
         </ToggleGroup>
       </div>

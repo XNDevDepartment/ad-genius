@@ -8,10 +8,14 @@ interface SettingsSheetProps {
   settings: GenerationSettings;
   onSettingsChange: (settings: Partial<GenerationSettings>) => void;
   remainingCredits: number;
+  totalCredits: number;
   calculateImageCost: (quality: 'low' | 'medium' | 'high', count: number) => number;
   canGenerate: boolean;
   onGenerate: () => void;
   isGenerating: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -32,28 +36,36 @@ export const SettingsSheet = ({
   settings, 
   onSettingsChange, 
   remainingCredits, 
+  totalCredits,
   calculateImageCost,
   canGenerate,
   onGenerate,
-  isGenerating
+  isGenerating,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+  hideTrigger = false
 }: SettingsSheetProps) => {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = controlledOnOpenChange || setInternalOpen;
   const credits = calculateImageCost(settings.imageQuality, settings.numImages);
   
   const summary = `${settings.numImages} imagem${settings.numImages > 1 ? 'ns' : ''} • ${settings.style} • ${settings.imageQuality} • ${settings.imageOrientation}`;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="bg-card shadow-sm border-border/50"
-        >
-          <Settings className="h-4 w-4 mr-2" />
-          Definições
-        </Button>
-      </SheetTrigger>
+      {!hideTrigger && (
+        <SheetTrigger asChild>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="bg-card shadow-sm border-border/50"
+          >
+            <Settings className="h-4 w-4 mr-2" />
+            Definições
+          </Button>
+        </SheetTrigger>
+      )}
 
       <SheetContent side="bottom" className="h-[80vh] overflow-hidden">
         <div className="flex flex-col h-full">
@@ -68,6 +80,7 @@ export const SettingsSheet = ({
                 settings={settings}
                 onSettingsChange={onSettingsChange}
                 remainingCredits={remainingCredits}
+                totalCredits={totalCredits}
                 calculateImageCost={calculateImageCost}
                 compact
               />
