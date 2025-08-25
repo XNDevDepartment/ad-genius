@@ -74,7 +74,7 @@ const HeroSection = () => {
     }, []);
 
   return (
-    <section ref={ref} className="relative min-h-[90vh] bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden">
+    <section ref={ref} className="relative min-h-[90vh] bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden mt-10">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
