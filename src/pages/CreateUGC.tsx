@@ -994,7 +994,7 @@ const CreateUGC = () => {
         </div>
 
         {/* Results Section */}
-        {(isGenerating || generatedImages.length > 0) && (
+        {(!isGenerating || generatedImages.length > 0) && (
           <div id="generating-images" className="scroll-mt-6 space-y-8">
             <GeneratingImagePlaceholders
               numberOfImages={numImages}
@@ -1002,7 +1002,7 @@ const CreateUGC = () => {
               images={generatedImages.map(img => img.url)}
               onImageSelect={handleImageSelect}
             />
-            
+
             {/* Action buttons when images are generated */}
             {!isGenerating && generatedImages.length > 0 && (
               <div className="flex justify-center">

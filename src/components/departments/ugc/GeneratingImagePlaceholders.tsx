@@ -71,8 +71,8 @@ export const GeneratingImagePlaceholders = ({
 
                         <div className="absolute inset-0 gen-glow flex items-center justify-center">
                           <div className="text-center relative z-10">
-                            <Image className="h-8 w-8 text-muted-foreground mx-auto mb-2 animate-pulse" />
-                            <p className="text-xs text-muted-foreground">Generating...</p>
+                            <Image className="h-8 w-8 text-muted-foreground mx-auto mb-2 animate-pulse text-white" />
+                            <p className="text-xs text-muted-foreground text-white">Generating...</p>
                           </div>
                         </div>
                       </>
