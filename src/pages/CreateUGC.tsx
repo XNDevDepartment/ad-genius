@@ -466,17 +466,11 @@ const CreateUGC = () => {
       const validImages = results.filter(Boolean) as GeneratedImage[];
 
       /* ------------------------------------------------------------------
-        3️⃣  Wrap‑up
-      ------------------------------------------------------------------*/
-      setGeneratedImages(validImages);
-      setProgress(100);
-
-      /* ------------------------------------------------------------------
         4️⃣  Save all generated images to secure storage via edge function
       ------------------------------------------------------------------*/
-      console.log('Generated', allGeneratedImages.length, 'images — saving to secure storage...');
+      console.log('Generated', validImages.length, 'images — saving to secure storage...');
       const savedImages = await saveImages({
-        base64Images: allGeneratedImages,
+        base64Images: validImages.map(img => img.url.replace('data:image/png;base64,', '')),
         prompt: prompt,
         settings: {
           orientation: imageOrientation,
@@ -488,6 +482,9 @@ const CreateUGC = () => {
         source_image_id: sourceImageId || undefined,
         job_id: jobId,
       });
+
+      setGeneratedImages(validImages);
+      setProgress(100);
       
       // Refresh image count after saving
       await refreshCount();
