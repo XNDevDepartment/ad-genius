@@ -414,7 +414,6 @@ const CreateUGC = () => {
       'Composition: product fills about 70 percent of the frame, slight background bokeh for depth while preserving scenario context; camera at eye‑level angle—no wide‑angle distortion. The product must have maximum quality and all the details of the original image must be preserved at all costs. ' +
       'Visual mood: ' + style + ' yet ultra-realistic. --negative "AI artifacts, text overlays, watermark, lens flare, distorted or rotated labels, invented branding, extra limbs, low resolution, out‑of‑focus product, over‑saturation" --ar ';
 
-
       const blendedProdPrompt =
       'A hyper-realistic lifestyle photograph where my product ' +
       'is naturally integrated into the scene. The setting is ' + selectedScenario.description + '. ' +
@@ -425,6 +424,41 @@ const CreateUGC = () => {
       'Include ' + style + ' textures, surfaces, and props that reinforce authenticity but always related with the product or scenario (e.g., fruits, shaker bottle, towels, books, plants), ultra-realistic. ' +
       'The composition should feel casual, as if captured in daily life, not staged. ' +
       '--negative "AI artifacts, text overlays, watermark, lens flare, distorted or rotated labels, invented branding, extra limbs, full bodies, low resolution, out-of-focus product, over-saturation" --ar ';
+
+      // Choose final prompt
+      if (highlight === 'yes') {
+        prompt = highlightedProdPrompt;
+      } else {
+        prompt = blendedProdPrompt;
+      }
+
+      // Create job for tracking/idempotency
+      const jobResult = await createImageJob(
+        prompt,
+        {
+          number: numImages,
+          size: imageOrientation === '1:1' ? '1024x1024' : imageOrientation === '3:2' ? '1536x1024' : '1024x1536',
+          quality: imageQuality,
+          output_format: 'png',
+        },
+        sourceImageId || undefined,
+      );
+      const jobId = jobResult.jobId;
+
+      // If job already completed, use existing images and exit
+      if (jobResult.status === 'completed' && jobResult.existingImages) {
+        const existingImages = jobResult.existingImages.map((img: any, index: number) => ({
+          id: `existing-${index}`,
+          url: img.url,
+          prompt: img.prompt,
+          selected: false,
+        }));
+        setGeneratedImages(existingImages);
+        setProgress(100);
+        setStage('results');
+        setIsGenerating(false);
+        return;
+      }
 
       const imageObjects: GeneratedImage[] = [];
 
