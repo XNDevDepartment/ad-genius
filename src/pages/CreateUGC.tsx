@@ -14,7 +14,7 @@ import { GeneratingImagePlaceholders } from "@/components/departments/ugc/Genera
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
-import { startConversationAPI, converse, sendImageAndRun, generateImagesFromBase } from '@/api/OpenAiChatClient';
+import { startConversationAPI, converse, sendImageAndRun, generateImagesFromBase, createImageJob } from '@/api/OpenAiChatClient';
 import { useSecureImageStorage } from "@/components/departments/ugc/SecureImageStorage";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
@@ -429,14 +429,9 @@ const CreateUGC = () => {
       const imageObjects: GeneratedImage[] = [];
 
       /* ------------------------------------------------------------------
-        2️⃣  // Generate all images in parallel
+        3️⃣  Generate all images in parallel with job tracking
       ------------------------------------------------------------------*/
       const imagePromises = Array.from({ length: numImages }, async (_, i) => {
-        if(highlight === "yes"){
-          prompt = highlightedProdPrompt
-        }else{
-          prompt = blendedProdPrompt
-        }
         try {
           const res = await generateImagesFromBase(
             baseFileData,
@@ -446,7 +441,8 @@ const CreateUGC = () => {
               size: imageOrientation === '1:1' ? '1024x1024' : imageOrientation === '3:2' ? '1536x1024' : '1024x1536',
               quality: imageQuality,
               output_format: 'png',
-            }
+            },
+            jobId
           );
 
           const images = Array.isArray(res) ? res : (res && (res as any).images) ? (res as any).images : [];
@@ -475,7 +471,23 @@ const CreateUGC = () => {
       setGeneratedImages(validImages);
       setProgress(100);
 
-      await handleSaveImages(validImages);
+      /* ------------------------------------------------------------------
+        4️⃣  Save all generated images to secure storage via edge function
+      ------------------------------------------------------------------*/
+      console.log('Generated', allGeneratedImages.length, 'images — saving to secure storage...');
+      const savedImages = await saveImages({
+        base64Images: allGeneratedImages,
+        prompt: prompt,
+        settings: {
+          orientation: imageOrientation,
+          style,
+          timeOfDay,
+          highlight,
+          quality: imageQuality,
+        },
+        source_image_id: sourceImageId || undefined,
+        job_id: jobId,
+      });
       
       // Refresh image count after saving
       await refreshCount();

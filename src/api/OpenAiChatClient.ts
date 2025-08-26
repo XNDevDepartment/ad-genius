@@ -81,6 +81,35 @@ export async function sendImageAndRun(
   return result.reply;
 }
 
+export async function createImageJob(
+  prompt: string,
+  settings: {
+    number?: number;
+    size?: string;
+    quality?: string;
+    output_format?: string;
+  } = {},
+  sourceImageId?: string
+) {
+  if (!prompt) {
+    throw new Error('Prompt is required');
+  }
+
+  if (prompt.length > 4000) {
+    throw new Error('Prompt is too long. Maximum length is 4000 characters.');
+  }
+
+  console.log('Creating image job...');
+  const result = await callEdgeFunction('new-openai-chat', {
+    action: 'createImageJob',
+    prompt,
+    settings,
+    sourceImageId
+  });
+
+  return result;
+}
+
 export async function generateImagesFromBase(
   baseFileData: string,
   prompt: string,
@@ -90,7 +119,8 @@ export async function generateImagesFromBase(
     quality?: string;
     output_format?: string;
     input_fidelity?: string;
-  } = {}
+  } = {},
+  jobId?: string
 ) {
   if (!baseFileData || !prompt) {
     throw new Error('Base file data and prompt are required');
@@ -113,7 +143,8 @@ export async function generateImagesFromBase(
     options: {
       ...options,
       input_fidelity: 'high'
-    }
+    },
+    jobId
   });
 
   return imageResult.images;

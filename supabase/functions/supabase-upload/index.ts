@@ -55,7 +55,7 @@ serve(async (req) => {
       throw new Error('Invalid authentication token');
     }
 
-    const { base64Images, prompt, settings, source_image_id } = await req.json();
+    const { base64Images, prompt, settings, source_image_id, job_id } = await req.json();
 
     if (!base64Images || !Array.isArray(base64Images)) {
       throw new Error('base64Images array is required');
@@ -65,89 +65,102 @@ serve(async (req) => {
       throw new Error('prompt is required');
     }
 
-    // Generate content hash for idempotency
-    const contentHash = generateContentHash(prompt, settings, source_image_id);
-
-    console.log('Processing image generation request:', {
+    console.log('Processing upload request:', {
       userId: user.id,
-      contentHash,
       prompt: prompt.substring(0, 50) + '...',
-      imageCount: base64Images.length
+      imageCount: base64Images.length,
+      jobId: job_id
     });
-
-    // Check for existing job with same content hash
-    const { data: existingJob } = await supabase
-      .from('image_jobs')
-      .select('id, status, created_at')
-      .eq('user_id', user.id)
-      .eq('content_hash', contentHash)
-      .single();
 
     let jobId: string;
 
-    if (existingJob) {
-      console.log('Found existing job:', existingJob.id, 'with status:', existingJob.status);
-      
-      // If job completed successfully, return existing results
-      if (existingJob.status === 'completed') {
-        const { data: existingImages } = await supabase
-          .from('generated_images')
-          .select('id, public_url, prompt, settings, created_at')
-          .eq('job_id', existingJob.id)
-          .order('created_at', { ascending: true });
-
-        if (existingImages && existingImages.length > 0) {
-          console.log('Returning existing completed results for job:', existingJob.id);
-          return new Response(JSON.stringify({ 
-            savedImages: existingImages.map(img => ({
-              id: img.id,
-              url: img.public_url,
-              prompt: img.prompt,
-              settings: img.settings,
-              created_at: img.created_at,
-            }))
-          }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
-      }
-      
-      // If job failed or is still processing, we'll reuse the job ID but update status
-      jobId = existingJob.id;
-      
-      // Update job status to processing
+    if (job_id) {
+      // Use provided job_id and update status to processing
+      jobId = job_id;
       await supabase
         .from('image_jobs')
         .update({ 
           status: 'processing',
           error: null 
         })
-        .eq('id', jobId);
+        .eq('id', jobId)
+        .eq('user_id', user.id); // Ensure user owns the job
         
+      console.log('Using provided job ID:', jobId);
+      
     } else {
-      // Create new job
-      const { data: newJob, error: jobError } = await supabase
+      // Legacy behavior: create job using content hash for idempotency
+      const contentHash = generateContentHash(prompt, settings, source_image_id);
+
+      // Check for existing job with same content hash
+      const { data: existingJob } = await supabase
         .from('image_jobs')
-        .insert({
-          user_id: user.id,
-          prompt,
-          settings: {
-            ...settings,
-            quality: settings.quality || 'high'
-          },
-          content_hash: contentHash,
-          status: 'processing'
-        })
-        .select('id')
+        .select('id, status, created_at')
+        .eq('user_id', user.id)
+        .eq('content_hash', contentHash)
         .single();
 
-      if (jobError) {
-        console.error('Failed to create job:', jobError);
-        throw new Error(`Failed to create image generation job: ${jobError.message}`);
-      }
+      if (existingJob) {
+        console.log('Found existing job:', existingJob.id, 'with status:', existingJob.status);
+        
+        // If job completed successfully, return existing results
+        if (existingJob.status === 'completed') {
+          const { data: existingImages } = await supabase
+            .from('generated_images')
+            .select('id, public_url, prompt, settings, created_at')
+            .eq('job_id', existingJob.id)
+            .order('created_at', { ascending: true });
 
-      jobId = newJob.id;
-      console.log('Created new job:', jobId);
+          if (existingImages && existingImages.length > 0) {
+            console.log('Returning existing completed results for job:', existingJob.id);
+            return new Response(JSON.stringify({ 
+              savedImages: existingImages.map(img => ({
+                id: img.id,
+                url: img.public_url,
+                prompt: img.prompt,
+                settings: img.settings,
+                created_at: img.created_at,
+              }))
+            }), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+        }
+        
+        jobId = existingJob.id;
+        await supabase
+          .from('image_jobs')
+          .update({ 
+            status: 'processing',
+            error: null 
+          })
+          .eq('id', jobId);
+          
+      } else {
+        // Create new job
+        const { data: newJob, error: jobError } = await supabase
+          .from('image_jobs')
+          .insert({
+            user_id: user.id,
+            prompt,
+            settings: {
+              ...settings,
+              quality: settings.quality || 'high'
+            },
+            content_hash: contentHash,
+            status: 'processing'
+          })
+          .select('id')
+          .single();
+
+        if (jobError) {
+          console.error('Failed to create job:', jobError);
+          throw new Error(`Failed to create image generation job: ${jobError.message}`);
+        }
+
+        jobId = newJob.id;
+        console.log('Created new job:', jobId);
+      }
     }
 
     const savedImages = [];

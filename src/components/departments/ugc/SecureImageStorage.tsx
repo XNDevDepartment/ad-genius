@@ -24,6 +24,7 @@ export const useSecureImageStorage = () => {
     prompt: string;
     settings: any;
     source_image_id?: string;
+    job_id?: string;
   }) => {
     if (!user) return [];
 
@@ -49,7 +50,8 @@ export const useSecureImageStorage = () => {
           prompt: imageData.prompt,
           settings: enhancedSettings,
           user_id: user.id,
-          source_image_id: imageData.source_image_id
+          source_image_id: imageData.source_image_id,
+          job_id: imageData.job_id
         }
       });
 

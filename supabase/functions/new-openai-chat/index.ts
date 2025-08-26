@@ -184,7 +184,121 @@ async function converse({ threadId, content, assistantId }) {
     reply
   });
 }
-async function generateImages({ baseFileData, prompt, options }, req: Request) {
+// Generate deterministic content hash for idempotency
+function generateContentHash(prompt: string, settings: any, sourceImageId?: string): string {
+  const content = JSON.stringify({
+    prompt: prompt.trim(),
+    settings: {
+      size: settings.size,
+      quality: settings.quality,
+      numberOfImages: settings.number,
+      format: settings.output_format || 'png'
+    },
+    source_image_id: sourceImageId || null
+  });
+  
+  let hash = 0;
+  for (let i = 0; i < content.length; i++) {
+    const char = content.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return hash.toString(36);
+}
+
+async function createImageJob({ prompt, settings, sourceImageId }, req: Request) {
+  if (!prompt || prompt.length > 4000) throw new Error('Invalid prompt');
+
+  // Auth user
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) return json({ error: 'Unauthorized' }, 401);
+  const token = authHeader.replace('Bearer ', '');
+  const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token);
+  if (userError || !userData.user) return json({ error: 'Unauthorized' }, 401);
+  const user = userData.user;
+
+  // Generate content hash for idempotency
+  const contentHash = generateContentHash(prompt, settings, sourceImageId);
+
+  console.log('Creating image job:', {
+    userId: user.id,
+    contentHash,
+    prompt: prompt.substring(0, 50) + '...'
+  });
+
+  // Check for existing job with same content hash
+  const { data: existingJob } = await supabaseService
+    .from('image_jobs')
+    .select('id, status, created_at')
+    .eq('user_id', user.id)
+    .eq('content_hash', contentHash)
+    .single();
+
+  if (existingJob) {
+    console.log('Found existing job:', existingJob.id, 'with status:', existingJob.status);
+    
+    // If job completed successfully, return existing results
+    if (existingJob.status === 'completed') {
+      const { data: existingImages } = await supabaseService
+        .from('generated_images')
+        .select('id, public_url, prompt, settings, created_at')
+        .eq('job_id', existingJob.id)
+        .order('created_at', { ascending: true });
+
+      if (existingImages && existingImages.length > 0) {
+        console.log('Returning existing completed job:', existingJob.id);
+        return json({ 
+          jobId: existingJob.id,
+          status: 'completed',
+          existingImages: existingImages.map(img => ({
+            id: img.id,
+            url: img.public_url,
+            prompt: img.prompt,
+            settings: img.settings,
+            created_at: img.created_at,
+          }))
+        });
+      }
+    }
+    
+    // Reuse existing job but reset status
+    await supabaseService
+      .from('image_jobs')
+      .update({ 
+        status: 'queued',
+        error: null 
+      })
+      .eq('id', existingJob.id);
+      
+    return json({ jobId: existingJob.id, status: 'queued' });
+  }
+
+  // Create new job
+  const { data: newJob, error: jobError } = await supabaseService
+    .from('image_jobs')
+    .insert({
+      user_id: user.id,
+      prompt,
+      settings: {
+        ...settings,
+        quality: settings.quality || 'high'
+      },
+      content_hash: contentHash,
+      status: 'queued'
+    })
+    .select('id')
+    .single();
+
+  if (jobError) {
+    console.error('Failed to create job:', jobError);
+    throw new Error(`Failed to create image generation job: ${jobError.message}`);
+  }
+
+  console.log('Created new job:', newJob.id);
+  return json({ jobId: newJob.id, status: 'queued' });
+}
+
+async function generateImages({ baseFileData, prompt, options, jobId }, req: Request) {
   if (!prompt || prompt.length > 4000) throw new Error('Invalid prompt');
 
   // Auth user
@@ -267,6 +381,14 @@ async function generateImages({ baseFileData, prompt, options }, req: Request) {
     }
   }
 
+  // Update job status to processing if jobId provided
+  if (jobId) {
+    await supabaseService
+      .from('image_jobs')
+      .update({ status: 'processing' })
+      .eq('id', jobId);
+  }
+
   try {
     const safePrompt = prompt.replace(/[<>]/g, '');
     const tasks = Array.from({ length: count }, async () => {
@@ -308,8 +430,27 @@ async function generateImages({ baseFileData, prompt, options }, req: Request) {
       }
     }
     
+    // Update job status to completed if jobId provided
+    if (jobId) {
+      await supabaseService
+        .from('image_jobs')
+        .update({ status: 'completed' })
+        .eq('id', jobId);
+    }
+    
     return json({ images });
   } catch (err) {
+    // Update job status to failed if jobId provided
+    if (jobId) {
+      await supabaseService
+        .from('image_jobs')
+        .update({ 
+          status: 'failed',
+          error: err.message 
+        })
+        .eq('id', jobId);
+    }
+    
     // No refund needed since credits weren't deducted yet
     throw err;
   }
@@ -338,6 +479,8 @@ async function generateImages({ baseFileData, prompt, options }, req: Request) {
         return await sendImageAndRun(params);
       case 'converse':
         return await converse(params);
+      case 'createImageJob':
+        return await createImageJob(params, req);
       case 'generateImages':
         return await generateImages(params, req);
       default:
