@@ -153,90 +153,6 @@ export type Database = {
           },
         ]
       }
-      generated_images_jobs: {
-        Row: {
-          created_at: string
-          generated_image_id: string
-          generation_job_id: string
-          id: string
-        }
-        Insert: {
-          created_at?: string
-          generated_image_id: string
-          generation_job_id: string
-          id?: string
-        }
-        Update: {
-          created_at?: string
-          generated_image_id?: string
-          generation_job_id?: string
-          id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "generated_images_jobs_generated_image_id_fkey"
-            columns: ["generated_image_id"]
-            isOneToOne: false
-            referencedRelation: "generated_images"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "generated_images_jobs_generation_job_id_fkey"
-            columns: ["generation_job_id"]
-            isOneToOne: false
-            referencedRelation: "generation_jobs"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      generation_jobs: {
-        Row: {
-          completed_at: string | null
-          created_at: string
-          error_message: string | null
-          generated_images_count: number
-          id: string
-          progress: number
-          prompt: string
-          settings: Json
-          started_at: string | null
-          status: string
-          total_images: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          completed_at?: string | null
-          created_at?: string
-          error_message?: string | null
-          generated_images_count?: number
-          id?: string
-          progress?: number
-          prompt: string
-          settings?: Json
-          started_at?: string | null
-          status?: string
-          total_images?: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          completed_at?: string | null
-          created_at?: string
-          error_message?: string | null
-          generated_images_count?: number
-          id?: string
-          progress?: number
-          prompt?: string
-          settings?: Json
-          started_at?: string | null
-          status?: string
-          total_images?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       image_favorites: {
         Row: {
           created_at: string | null
@@ -265,6 +181,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      image_jobs: {
+        Row: {
+          content_hash: string
+          created_at: string
+          error: string | null
+          id: string
+          output_url: string | null
+          prompt: string
+          settings: Json
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_hash: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          output_url?: string | null
+          prompt: string
+          settings?: Json
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_hash?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          output_url?: string | null
+          prompt?: string
+          settings?: Json
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       notification_preferences: {
         Row: {

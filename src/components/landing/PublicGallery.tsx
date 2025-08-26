@@ -1,163 +1,207 @@
+
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Sparkles, Users, Image as ImageIcon } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { Eye, Heart, Download, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { BeforeAfterSlider } from "@/components/ui/before-after";
+import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PublicImage {
   id: string;
-  public_url: string;
   prompt: string;
+  public_url: string;
+  settings: {
+    size: string;
+    quality: string;
+    numberOfImages: number;
+    format: string;
+  };
   created_at: string;
-  settings?: any;
-  source_url?: string;
 }
 
-const PublicGallery = () => {
+export const PublicGallery = () => {
   const [images, setImages] = useState<PublicImage[]>([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchPublicImages();
-  }, [loading]);
+    loadPublicImages();
+  }, []);
 
-  const fetchPublicImages = async () => {
+  const loadPublicImages = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('public-gallery');
       
-      if (error) {
-        console.error("Error fetching public images:", error);
-        setImages([]);
-      } else {
-        setImages(data?.images || []);
+      if (error) throw error;
+      
+      if (data?.images) {
+        setImages(data.images);
       }
     } catch (error) {
-      console.error("Error fetching public images:", error);
-      setImages([]);
+      console.error('Failed to load public images:', error);
     } finally {
       setLoading(false);
     }
   };
 
-
-  const handleTryCreating = () => {
-    navigate("/account");
+  const handleDownload = async (imageUrl: string, imageId: string) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `ugc-showcase-${imageId}.png`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download failed:', error);
+    }
   };
-
 
   if (loading) {
     return (
-      <section className="py-16 lg:py-24 bg-muted/30" id="explore">
-        <div className="container-responsive px-4">
-          <div className="text-center space-y-4 mb-12">
-            <Skeleton className="h-10 w-64 mx-auto" />
-            <Skeleton className="h-6 w-96 mx-auto" />
+      <div className="py-24 bg-gradient-to-br from-background via-background to-secondary/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <motion.h2 
+              className="text-3xl md:text-4xl font-bold mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              Galeria da Comunidade
+            </motion.h2>
+            <motion.p 
+              className="text-lg text-muted-foreground max-w-2xl mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              Descubra criações incríveis feitas pela nossa comunidade
+            </motion.p>
           </div>
-          
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Card key={i} className="overflow-hidden">
-                <Skeleton className="aspect-square w-full" />
-                <CardContent className="p-4">
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-3 w-20" />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Card key={i} className="overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm animate-pulse">
+                <div className="aspect-square bg-muted"></div>
+                <CardContent className="p-6">
+                  <div className="h-4 bg-muted rounded mb-2"></div>
+                  <div className="h-3 bg-muted rounded w-2/3"></div>
                 </CardContent>
               </Card>
             ))}
           </div>
         </div>
-      </section>
+      </div>
     );
   }
 
   return (
-    <section className="py-16 lg:py-24 bg-muted/30">
-      <div className="container-responsive px-4">
-        {/* Header */}
-        <div className="text-center space-y-4 mb-12">
-          <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
-            Created by Our Community
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Discover amazing images generated by our users. Join thousands of creators transforming their ideas into stunning visuals.
-          </p>
+    <div className="py-24 bg-gradient-to-br from-background via-background to-secondary/30">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16">
+          <motion.h2 
+            className="text-3xl md:text-4xl font-bold mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            Galeria da Comunidade
+          </motion.h2>
+          <motion.p 
+            className="text-lg text-muted-foreground max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            Descubra criações incríveis feitas pela nossa comunidade
+          </motion.p>
         </div>
 
+        {images.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {images.map((image, index) => (
+              <motion.div
+                key={image.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                <Card className="overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300 group">
+                  <div className="relative aspect-square overflow-hidden">
+                    <BeforeAfterSlider
+                      beforeImage={image.public_url}
+                      afterImage={image.public_url}
+                      alt={`Generated: ${image.prompt.substring(0, 50)}...`}
+                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                      grayscaleBefore={true}
+                      initialX={50}
+                    />
+                    
+                    <div className="absolute top-3 left-3">
+                      <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
+                        <Eye className="h-3 w-3 mr-1" />
+                        UGC
+                      </Badge>
+                    </div>
 
-        {/* Gallery Grid */}
-        <div className="grid gap-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-12">
-          {images.map((image, index) => (
-            <Card
-              key={image.id}
-              className={cn(
-                "group overflow-hidden border-2 border-transparent hover:border-primary/50 transition-all duration-300",
-                "hover:shadow-lg hover:scale-[1.02]"
-              )}
-            >
-              <div className="aspect-square">
-                <BeforeAfterSlider
-                  beforeImage={image.source_url || image.public_url}
-                  afterImage={image.public_url}
-                  alt={`Generated: ${image.prompt.slice(0, 50)}...`}
-                  className="w-full h-full"
-                  grayscaleBefore={!image.source_url}
-                />
-              </div>
-            </Card>
-          ))}
-        </div>
+                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => window.open(image.public_url, '_blank')}
+                        className="bg-background/80 hover:bg-background backdrop-blur-sm"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </div>
 
-        {/* CTA Section */}
-        <div className="text-center space-y-6 pt-8 border-t border-border/50">
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-foreground">
-              Ready to Create Your Own?
-            </h3>
-            <p className="text-muted-foreground">
-              Join our community and start generating amazing images today.
-            </p>
+                    <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleDownload(image.public_url, image.id)}
+                          className="bg-background/80 hover:bg-background backdrop-blur-sm"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <CardContent className="p-6">
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                      {image.prompt}
+                    </p>
+                    
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex gap-3">
+                        <span>{image.settings.size}</span>
+                        <span>{image.settings.quality}</span>
+                      </div>
+                      <span>{new Date(image.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
           </div>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              onClick={handleTryCreating}
-              className="gap-2"
-            >
-              <Sparkles className="h-4 w-4" />
-              Start Creating for Free
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            >
-              Learn More
-            </Button>
-          </div>
-        </div>
-
-        {/* Empty State */}
-        {!loading && images.length === 0 && (
+        ) : (
           <div className="text-center py-12">
-            <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              No images found
-            </h3>
+            <div className="mx-auto w-24 h-24 rounded-full bg-secondary/50 flex items-center justify-center mb-6">
+              <Eye className="h-12 w-12 text-muted-foreground" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Nenhuma imagem pública ainda</h3>
             <p className="text-muted-foreground">
-              Try selecting a different filter or check back later for new content.
+              Seja o primeiro a compartilhar uma criação incrível!
             </p>
           </div>
         )}
       </div>
-    </section>
+    </div>
   );
 };
-
-export default PublicGallery;
