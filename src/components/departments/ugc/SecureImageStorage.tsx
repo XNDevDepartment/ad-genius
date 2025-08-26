@@ -11,6 +11,7 @@ interface SecureImage {
   created_at: string;
   source_image_id?: string;
   sourceSignedUrl?: string;
+  job_id?: string;
 }
 
 export const useSecureImageStorage = () => {
@@ -35,7 +36,13 @@ export const useSecureImageStorage = () => {
         quality: imageData.settings.quality || 'high'
       };
 
-      // Use Supabase storage upload edge function
+      console.log('Submitting image generation request:', {
+        prompt: imageData.prompt.substring(0, 50) + '...',
+        imageCount: imageData.base64Images.length,
+        settings: enhancedSettings
+      });
+
+      // Use Supabase storage upload edge function (now with job system)
       const { data, error } = await supabase.functions.invoke('supabase-upload', {
         body: {
           base64Images: imageData.base64Images,
@@ -50,6 +57,8 @@ export const useSecureImageStorage = () => {
         console.error('Supabase upload error:', error);
         throw new Error(`Failed to upload images: ${error.message}`);
       }
+
+      console.log('Image generation completed successfully:', data);
 
       // Refresh the images list
       await loadImages();
@@ -69,9 +78,12 @@ export const useSecureImageStorage = () => {
     }
 
     try {
+      console.log('Loading images for user:', user.id);
+      
+      // Load generated images with job information
       const { data, error } = await supabase
         .from('generated_images')
-        .select('*, source_image_id')
+        .select('*, source_image_id, job_id')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -79,6 +91,8 @@ export const useSecureImageStorage = () => {
         console.error('Failed to load images:', error);
         return;
       }
+
+      console.log(`Loaded ${data?.length || 0} images from database`);
 
       // Get unique source image IDs
       const sourceImageIds = [...new Set(data.filter(img => img.source_image_id).map(img => img.source_image_id))];
@@ -92,6 +106,7 @@ export const useSecureImageStorage = () => {
           .in('id', sourceImageIds);
 
         if (!sourceError && sourceData) {
+          console.log(`Found ${sourceData.length} source images`);
           // Generate signed URLs for source images
           const sourceImagesWithUrls = await Promise.all(
             sourceData.map(async (source) => {
@@ -119,10 +134,12 @@ export const useSecureImageStorage = () => {
           created_at: img.created_at,
           source_image_id: img.source_image_id,
           sourceSignedUrl: sourceImage?.signedUrl || undefined,
+          job_id: img.job_id,
         };
       });
 
       setImages(formattedImages);
+      console.log(`Successfully formatted ${formattedImages.length} images`);
     } catch (error) {
       console.error('Failed to load images:', error);
     }
@@ -134,10 +151,12 @@ export const useSecureImageStorage = () => {
     try {
       setLoading(true);
 
+      console.log('Deleting image:', imageId);
+
       // First get the image details to get the storage path
       const { data: imageData, error: fetchError } = await supabase
         .from('generated_images')
-        .select('storage_path')
+        .select('storage_path, job_id')
         .eq('id', imageId)
         .eq('user_id', user.id)
         .single();
@@ -169,6 +188,25 @@ export const useSecureImageStorage = () => {
         throw new Error(`Failed to delete image: ${dbError.message}`);
       }
 
+      console.log('Image deleted successfully:', imageId);
+
+      // Check if this was the last image for a job, and if so, clean up the job
+      if (imageData?.job_id) {
+        const { data: remainingImages } = await supabase
+          .from('generated_images')
+          .select('id')
+          .eq('job_id', imageData.job_id);
+
+        if (!remainingImages || remainingImages.length === 0) {
+          console.log('No remaining images for job, cleaning up job:', imageData.job_id);
+          await supabase
+            .from('image_jobs')
+            .delete()
+            .eq('id', imageData.job_id)
+            .eq('user_id', user.id);
+        }
+      }
+
       // Refresh the images list
       await loadImages();
     } catch (error) {
@@ -180,7 +218,9 @@ export const useSecureImageStorage = () => {
   };
 
   useEffect(() => {
-    loadImages();
+    if (user) {
+      loadImages();
+    }
   }, [user]);
 
   return {
