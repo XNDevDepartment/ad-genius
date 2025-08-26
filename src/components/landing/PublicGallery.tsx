@@ -107,6 +107,7 @@ const PublicGallery = () => {
                   alt={`Generated: ${image.prompt.slice(0, 50)}...`}
                   className="w-full h-full"
                   grayscaleBefore={!image.source_url}
+                  initialX={50}
                 />
               </div>
             </Card>
