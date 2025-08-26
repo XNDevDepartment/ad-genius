@@ -1,28 +1,27 @@
 
 import { useState } from "react";
-import { ImageUploader } from "@/components/ImageUploader";
-import { SettingsForm } from "@/components/departments/ugc/SettingsForm";
+import ImageUploader from "@/components/ImageUploader";
 import { JobDetails } from "@/components/departments/ugc/JobDetails";
 import { JobsList } from "@/components/departments/ugc/JobsList";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, Upload, Zap, FileImage } from "lucide-react";
+import { Sparkles, FileImage } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useImageJobs } from "@/hooks/useImageJobs";
 import { useImageLimit } from "@/hooks/useImageLimit";
+import { SettingsPanel, ImageSettings } from "@/components/departments/ugc/SettingsPanel";
 
 export default function CreateUGC() {
   const [prompt, setPrompt] = useState("");
   const [selectedView, setSelectedView] = useState<'create' | 'job-details' | 'jobs-list'>('create');
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<ImageSettings>({
     size: "1024x1024",
     quality: "high" as const,
     numberOfImages: 1,
-    format: "png",
+    format: "png" as const,
   });
 
   const { user } = useAuth();
@@ -91,11 +90,6 @@ export default function CreateUGC() {
     setSelectedJobId(null);
   };
 
-  const handleBackToJobsList = () => {
-    setSelectedView('jobs-list');
-    setSelectedJobId(null);
-  };
-
   if (selectedView === 'job-details' && selectedJobId) {
     return (
       <JobDetails 
@@ -147,7 +141,7 @@ export default function CreateUGC() {
           <Card className="bg-gradient-card border-border/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5 text-primary" />
+                <Sparkles className="h-5 w-5 text-primary" />
                 Criar Imagem
               </CardTitle>
               <CardDescription>
@@ -159,13 +153,18 @@ export default function CreateUGC() {
                 <label htmlFor="prompt" className="text-sm font-medium">
                   Prompt de Geração
                 </label>
-                <Textarea
-                  id="prompt"
-                  placeholder="Descreva detalhadamente a imagem que você deseja criar..."
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  className="min-h-[120px] bg-background/50"
-                />
+                <div className="relative">
+                  <Textarea
+                    id="prompt"
+                    placeholder="Descreva detalhadamente a imagem que você deseja criar..."
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    className="min-h-[120px] bg-background/50 pr-12"
+                  />
+                  <div className="absolute bottom-3 right-3">
+                    <SettingsPanel settings={settings} onSettingsChange={setSettings} />
+                  </div>
+                </div>
                 <p className="text-xs text-muted-foreground">
                   Seja específico e detalhado para melhores resultados
                 </p>
@@ -201,13 +200,8 @@ export default function CreateUGC() {
           </Card>
         </div>
 
-        {/* Settings Panel */}
+        {/* Info Panel */}
         <div className="space-y-6">
-          <SettingsForm
-            settings={settings}
-            onSettingsChange={setSettings}
-          />
-
           <Card className="bg-gradient-card border-border/50">
             <CardHeader>
               <CardTitle className="text-sm">Créditos Disponíveis</CardTitle>

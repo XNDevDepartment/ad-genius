@@ -32,7 +32,6 @@ export const useImageJobs = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('image-jobs', {
-        method: 'POST',
         body: { prompt, settings }
       });
 
@@ -49,7 +48,6 @@ export const useImageJobs = () => {
 
   const getJob = async (jobId: string): Promise<ImageJob> => {
     const { data, error } = await supabase.functions.invoke('image-jobs', {
-      method: 'GET',
       body: {},
     });
 
@@ -63,7 +61,6 @@ export const useImageJobs = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('image-jobs', {
-        method: 'GET',
         body: {}
       });
 
@@ -77,7 +74,7 @@ export const useImageJobs = () => {
   };
 
   const pollJobStatus = async (jobId: string): Promise<ImageJob> => {
-    const response = await fetch(`${supabase.supabaseUrl}/functions/v1/image-jobs/${jobId}`, {
+    const response = await fetch(`https://dhqdamfisdbbcieqlpvt.supabase.co/functions/v1/image-jobs/${jobId}`, {
       headers: {
         'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
         'Content-Type': 'application/json'
