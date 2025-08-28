@@ -461,7 +461,7 @@ const CreateUGC = () => {
         settings: {
           number: numImages,
           size: orientationToSize(imageOrientation),
-          quality: imageQuality === 'high' ? 'hd' : 'standard',
+          quality: imageQuality,
           orientation: imageOrientation as '1:1' | '3:2' | '2:3',
           style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional',
           timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',
@@ -968,7 +968,7 @@ const CreateUGC = () => {
                       onValueChange={(e) => setImageQuality(e as 'low' | 'medium' | 'high')}
                       className="justify-start grid grid-cols-3 gap-1"
                     >
-                      <ToggleGroupItem value="low" size="sm"className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
+                      <ToggleGroupItem value="low" size="sm" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
                         <span>Baixa</span>
                         <span className="text-[10px] opacity-70">1 crédito</span>
                       </ToggleGroupItem>
@@ -976,7 +976,7 @@ const CreateUGC = () => {
                         <span>Média</span>
                         <span className="text-[10px] opacity-70">1.5 créditos</span>
                       </ToggleGroupItem>
-                      <ToggleGroupItem value="high" size="sm" className="text-xs px-2 py-1 flex flex-col items-cente bg-mutedr">
+                      <ToggleGroupItem value="high" size="sm" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
                         <span>Alta</span>
                         <span className="text-[10px] opacity-70">2 créditos</span>
                       </ToggleGroupItem>

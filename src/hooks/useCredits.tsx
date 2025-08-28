@@ -19,7 +19,9 @@ export const useCredits = () => {
 
   const canAfford = (amount: number): boolean => {
     const remaining = getRemainingCredits();
-    return remaining >= amount;
+    // Add epsilon tolerance for floating point precision
+    const epsilon = 0.001;
+    return remaining >= (amount - epsilon);
   };
 
   const getRemainingCredits = (): number => {
