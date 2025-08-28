@@ -41,6 +41,10 @@ export type UgcImageRow = {
   public_url: string;
   meta?: any;
   created_at: string;
+  prompt: string,
+  public_showcase: boolean,
+  source_image_id: string,
+  updated_at: string
 };
 
 async function callUgcFunction(action: string, payload: any = {}) {

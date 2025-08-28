@@ -349,53 +349,6 @@ const CreateUGC = () => {
     }
   };
 
-  const getScenarios = async () => {
-    if (!productImage || !niche.trim()) {
-      toast({
-        title: "Missing Information", 
-        description: "Please upload a product image and describe your niche.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoadingScenarios(true);
-
-    try {
-      // Convert image to base64
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const base64 = reader.result as string;
-        
-        const response = await sendImageAndRun(
-          threadId,
-          ASSISTANT_ID,
-          base64,
-          'product-image.jpg',
-          `Product niche: ${niche}. Please provide 6 creative UGC scenario ideas for this product. Return ONLY a JSON object.`
-        );
-
-        const responseText = response;
-        // Extract JSON from response
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const scenarios = JSON.parse(jsonMatch[0]);
-          setAiScenarios(scenarios.scenarios || []);
-        }
-      };
-      reader.readAsDataURL(productImage);
-
-    } catch (error) {
-      console.error('Error getting scenarios:', error);
-      toast({
-        title: "Error",
-        description: "Failed to get scenario suggestions. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoadingScenarios(false);
-    }
-  };
 
   const generateMoreScenarios = async () => {
     setAiScenarios([]); // Clear existing scenarios
@@ -440,7 +393,7 @@ const CreateUGC = () => {
       // Provide immediate feedback
       setStage('generating');
       setGeneratedImages([]);
-      
+
       // Save state to localStorage for persistence
       localStorage.setItem('currentStage', 'generating');
 
@@ -452,7 +405,7 @@ const CreateUGC = () => {
       /* ------------------------------------------------------------------
         1️⃣  Prepare payloads once (Data‑URL + prompt)
       ------------------------------------------------------------------*/
-      const baseFileData = await fileToDataUrl(productImage); // Data URL with prefix
+      // const baseFileData = await fileToDataUrl(productImage); // Data URL with prefix
 
       let prompt = "";
 
@@ -474,7 +427,7 @@ const CreateUGC = () => {
       'The composition should feel casual, as if captured in daily life, not staged. ' +
       '--negative "AI artifacts, text overlays, watermark, lens flare, distorted or rotated labels, invented branding, extra limbs, full bodies, low resolution, out-of-focus product, over-saturation" --ar ';
 
-      console.log('highlight value ->', highlight);
+
       // Choose final prompt
       if (highlight === 'yes') {
         prompt = highlightedProdPrompt;
@@ -493,15 +446,15 @@ const CreateUGC = () => {
           style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional',
           timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',
           highlight: highlight as 'yes' | 'no',
-          output_format: 'png'
+          output_format: 'webp'
         },
         source_image_id: sourceImageId || undefined
       });
-      
+
       // Save job ID and stage for recovery
       localStorage.setItem('currentJobId', jobId);
       localStorage.setItem('currentStage', 'generating');
-      
+
       toast({
         title: 'Generation Started',
         description: 'Your images are being generated. Progress will update automatically.',
@@ -512,7 +465,7 @@ const CreateUGC = () => {
 
     } catch (error) {
       console.error('Generation error:', error);
-      
+
       let errorMessage = "Failed to generate images. Please try again.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -522,9 +475,9 @@ const CreateUGC = () => {
           errorMessage = "Insufficient credits or rate limit reached. Please check your account.";
         }
       }
-      
+
       toast({
-        title: "Generation Failed", 
+        title: "Generation Failed",
         description: errorMessage,
         variant: "destructive",
       });

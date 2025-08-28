@@ -89,9 +89,9 @@ export function useImageJob(): UseImageJobReturn {
     try {
       setLoading(true);
       setError(null);
-      
+
       const result = await createImageJob(payload);
-      
+
       // If job was already completed, handle existing images
       if (result.status === 'completed' && result.existingImages) {
         // Create a mock job for display purposes
@@ -108,9 +108,9 @@ export function useImageJob(): UseImageJobReturn {
           created_at: new Date().toISOString(),
           finished_at: new Date().toISOString()
         };
-        
+
         setJob(mockJob);
-        
+
         // Convert existing images to UgcImageRow format
         const ugcImages: UgcImageRow[] = result.existingImages.map((img: any, index: number) => ({
           id: `existing-${index}`,
@@ -119,9 +119,13 @@ export function useImageJob(): UseImageJobReturn {
           storage_path: '',
           public_url: img.url,
           meta: { prompt: img.prompt },
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          prompt: payload.prompt,
+          public_showcase: false,
+          source_image_id: payload.source_image_id,
+          updated_at: new Date().toISOString(),
         }));
-        
+
         setImages(ugcImages);
         toast.success('Using existing images from recent identical request');
       } else {
