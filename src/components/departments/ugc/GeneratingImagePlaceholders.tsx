@@ -48,7 +48,6 @@ export const GeneratingImagePlaceholders = ({
                     // Show actual generated image with same sizing as placeholder
                     <>
                       <ImageGallery images={images} onImageSelect={onImageSelect}/>
-                      
                     </>
                   ) : (
                     // Show loading placeholder
