@@ -4,6 +4,7 @@ import {
   getJob, 
   getJobImages, 
   cancelJob, 
+  resumeJob,
   subscribeJob,
   type CreateJobPayload,
   type JobRow,
@@ -19,6 +20,7 @@ interface UseImageJobReturn {
   createJob: (payload: CreateJobPayload) => Promise<string>;
   loadJob: (jobId: string) => Promise<void>;
   cancelCurrentJob: () => Promise<void>;
+  resumeCurrentJob: () => Promise<void>;
   clearJob: () => void;
 }
 
@@ -27,6 +29,7 @@ export function useImageJob(): UseImageJobReturn {
   const [images, setImages] = useState<UgcImageRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [watchdogTimer, setWatchdogTimer] = useState<NodeJS.Timeout | null>(null);
 
   // Subscribe to job updates when job is set
   useEffect(() => {
@@ -34,6 +37,14 @@ export function useImageJob(): UseImageJobReturn {
 
     const unsubscribe = subscribeJob(job.id, (updatedJob: JobRow) => {
       setJob(updatedJob);
+      
+      // Clear watchdog if job progresses or completes
+      if (updatedJob.status !== 'queued' || updatedJob.progress > 0) {
+        if (watchdogTimer) {
+          clearTimeout(watchdogTimer);
+          setWatchdogTimer(null);
+        }
+      }
       
       // Load images when job completes
       if (updatedJob.status === 'completed' && updatedJob.completed > 0) {
@@ -46,8 +57,22 @@ export function useImageJob(): UseImageJobReturn {
       }
     });
 
-    return unsubscribe;
-  }, [job?.id]);
+    // Set watchdog for stuck jobs
+    if (job.status === 'queued' && job.progress === 0) {
+      const timer = setTimeout(() => {
+        console.log('Watchdog: Job appears stuck, attempting to resume...');
+        resumeJob(job.id).catch(console.error);
+      }, 30000); // 30 seconds
+      setWatchdogTimer(timer);
+    }
+
+    return () => {
+      unsubscribe();
+      if (watchdogTimer) {
+        clearTimeout(watchdogTimer);
+      }
+    };
+  }, [job?.id, watchdogTimer]);
 
   const loadJobImages = async (jobId: string) => {
     try {
@@ -148,11 +173,27 @@ export function useImageJob(): UseImageJobReturn {
     }
   }, [job?.id]);
 
+  const resumeCurrentJob = useCallback(async () => {
+    if (!job?.id) return;
+    
+    try {
+      await resumeJob(job.id);
+      toast.success('Resuming job processing...');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to resume job';
+      toast.error(message);
+    }
+  }, [job?.id]);
+
   const clearJob = useCallback(() => {
     setJob(null);
     setImages([]);
     setError(null);
-  }, []);
+    if (watchdogTimer) {
+      clearTimeout(watchdogTimer);
+      setWatchdogTimer(null);
+    }
+  }, [watchdogTimer]);
 
   return {
     job,
@@ -162,6 +203,7 @@ export function useImageJob(): UseImageJobReturn {
     createJob,
     loadJob,
     cancelCurrentJob,
+    resumeCurrentJob,
     clearJob
   };
 }

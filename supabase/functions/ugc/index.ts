@@ -175,25 +175,46 @@ async function createImageJob(userId: string, payload: any, supabase: any) {
 }
 
 async function generateImages(jobId: string, supabase: any) {
-  // Claim the job atomically
+  console.log(`Starting generateImages for job: ${jobId}`);
+  
+  // Claim the job atomically - improved to handle concurrent calls
   const { data: job, error } = await supabase
     .from('image_jobs')
     .update({
       status: 'processing',
-      started_at: new Date().toISOString()
+      started_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     })
     .eq('id', jobId)
-    .in('status', ['queued', 'processing'])
+    .eq('status', 'queued') // Only claim if still queued
     .select()
     .single();
 
   if (error || !job) {
     console.error('Failed to claim job:', error);
+    
+    // Check if job is already processing/completed
+    const { data: existingJob } = await supabase
+      .from('image_jobs')
+      .select('status')
+      .eq('id', jobId)
+      .single();
+    
+    if (existingJob?.status === 'processing') {
+      console.log('Job already being processed by another worker');
+      return new Response(JSON.stringify({ message: 'Job already processing' }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
     return new Response(JSON.stringify({ error: 'Job not found or already processed' }), {
       status: 404,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
+
+  console.log(`Successfully claimed job ${jobId}, starting generation...`);
 
   let completed = 0;
   let failed = 0;

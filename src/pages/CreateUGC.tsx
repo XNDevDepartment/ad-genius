@@ -94,7 +94,7 @@ const CreateUGC = () => {
   const [style, setStyle] = useState<'lifestyle' | 'studio' | 'editorial' | 'natural'>("lifestyle");
   
   // Job system integration
-  const { job, images: jobImages, createJob, clearJob, loadJob } = useImageJob();
+  const { job, images: jobImages, createJob, clearJob, loadJob, resumeCurrentJob } = useImageJob();
   
   // Sync job state with local state
   const isGenerating = job?.status === 'queued' || job?.status === 'processing';
@@ -1116,6 +1116,24 @@ const CreateUGC = () => {
               images={generatedImages}
               onImageSelect={handleImageSelect}
             />
+
+            {/* Resume button for stuck jobs */}
+            {isGenerating && job?.status === 'queued' && job?.progress === 0 && (
+              <div className="flex justify-center">
+                <div className="bg-card rounded-apple p-6 shadow-apple space-y-4 max-w-md w-full">
+                  <div className="text-center">
+                    <h3 className="font-semibold text-lg mb-2">Job seems stuck?</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      If your job has been queued for more than a minute, you can try resuming it manually.
+                    </p>
+                    <Button onClick={resumeCurrentJob} variant="outline" className="w-full">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Resume Processing
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Action buttons when images are generated */}
             {!isGenerating && generatedImages.length > 0 && (
