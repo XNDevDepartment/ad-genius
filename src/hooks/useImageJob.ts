@@ -37,7 +37,7 @@ export function useImageJob(): UseImageJobReturn {
 
     const unsubscribe = subscribeJob(job.id, (updatedJob: JobRow) => {
       setJob(updatedJob);
-      
+
       // Clear watchdog if job progresses or completes
       if (updatedJob.status !== 'queued' || updatedJob.progress > 0) {
         if (watchdogTimer) {
@@ -45,12 +45,12 @@ export function useImageJob(): UseImageJobReturn {
           setWatchdogTimer(null);
         }
       }
-      
+
       // Load images when job completes
       if (updatedJob.status === 'completed' && updatedJob.completed > 0) {
         loadJobImages(updatedJob.id);
       }
-      
+
       // Show error toast if job fails
       if (updatedJob.status === 'failed') {
         toast.error(`Image generation failed: ${updatedJob.error || 'Unknown error'}`);
@@ -76,7 +76,7 @@ export function useImageJob(): UseImageJobReturn {
 
   const loadJobImages = async (jobId: string) => {
     try {
-      const { images: jobImages } = await getJobImages('76069656-e420-4eb6-87a1-ebca666ff3df');
+      const { images: jobImages } = await getJobImages(jobId);
       console.log(jobImages);
       setImages(jobImages);
     } catch (err) {

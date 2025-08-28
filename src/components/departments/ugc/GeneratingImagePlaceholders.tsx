@@ -42,7 +42,7 @@ export const GeneratingImagePlaceholders = ({
         <CardContent>
           {/* Always show the grid layout to maintain consistent sizing */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: numberOfImages }, (_, i) => (
+            {Array.from({ length: images.length }, (_, i) => (
               <div key={i} className="space-y-3 animate-scale-in">
                 <div className="aspect-square rounded-lg overflow-hidden border border-border/50 bg-muted/20 relative group">
                   {!isGenerating && images[i] ? (
