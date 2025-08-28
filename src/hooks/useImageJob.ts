@@ -76,7 +76,7 @@ export function useImageJob(): UseImageJobReturn {
 
   const loadJobImages = async (jobId: string) => {
     try {
-      const { images: jobImages } = await getJobImages(jobId);
+      const { images: jobImages } = await getJobImages('76069656-e420-4eb6-87a1-ebca666ff3df');
       console.log(jobImages);
       setImages(jobImages);
     } catch (err) {

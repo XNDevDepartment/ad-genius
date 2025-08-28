@@ -525,7 +525,7 @@ async function getJobImages(userId: string, jobId: string, supabase: SupabaseCli
   const { data: images, error } = await supabase
     .from("ugc_images")
     .select("*")
-    .eq("job_id", '76069656-e420-4eb6-87a1-ebca666ff3df')
+    .eq("job_id", jobId)
     .eq("user_id", userId)
     .order("created_at", { ascending: true });
   if (error) throw new Error("Failed to fetch images");
