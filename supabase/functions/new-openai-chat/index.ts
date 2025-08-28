@@ -381,11 +381,11 @@ async function generateImages({ baseFileData, prompt, options, jobId }, req: Req
     }
   }
 
-  // Update job status to running if jobId provided
+  // Update job status to processing if jobId provided
   if (jobId) {
     await supabaseService
       .from('image_jobs')
-      .update({ status: 'running' })
+      .update({ status: 'processing' })
       .eq('id', jobId);
   }
 

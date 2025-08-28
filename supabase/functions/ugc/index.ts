@@ -194,7 +194,7 @@ async function generateImages(jobId: string, supabase: any) {
   const { data: job, error } = await supabase
     .from('image_jobs')
     .update({
-      status: 'running',
+      status: 'processing',
       started_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     })
@@ -213,9 +213,9 @@ async function generateImages(jobId: string, supabase: any) {
       .eq('id', jobId)
       .single();
     
-    if (existingJob?.status === 'running') {
+    if (existingJob?.status === 'processing') {
       console.log('Job already being processed by another worker');
-      return new Response(JSON.stringify({ message: 'Job already running' }), {
+      return new Response(JSON.stringify({ message: 'Job already processing' }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -458,7 +458,7 @@ async function cancelJob(userId: string, jobId: string, supabase: any) {
     .update({ status: 'canceled' })
     .eq('id', jobId)
     .eq('user_id', userId)
-    .in('status', ['queued', 'running', 'processing'])
+    .in('status', ['queued', 'processing'])
     .select()
     .single();
 

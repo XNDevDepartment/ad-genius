@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 
-export type ImageJobStatus = 'queued' | 'running' | 'processing' | 'completed' | 'failed' | 'canceled';
+export type ImageJobStatus = 'queued' | 'processing' | 'completed' | 'failed' | 'canceled';
 
 export type CreateJobPayload = {
   prompt: string;
