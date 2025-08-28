@@ -121,7 +121,7 @@ const ImageGallery = ({ images, onImageSelect }: ImageGalleryProps) => {
             {/* Image */}
             <div className="aspect-square bg-muted flex items-center justify-center">
               {/* In a real app, this would be: */}
-              <img src={image.url} alt={image.prompt} className="w-full h-full object-cover" />
+              <img src={image.url} alt={image.prompt} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
             </div>
 
           </div>
