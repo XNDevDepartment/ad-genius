@@ -136,9 +136,11 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="hidden lg:block">
-        <HeaderSection />
-      </div>
+      {!user &&
+        <div className="hidden lg:block">
+          <HeaderSection />
+        </div>
+      }
       {/* Header */}
       <div className="bg-gradient-hero text-primary-foreground py-20 mt-3">
         <div className="container mx-auto px-6 text-center">
