@@ -46,9 +46,9 @@ export const GeneratingImagePlaceholders = ({
                 <div className="aspect-square rounded-lg overflow-hidden border border-border/50 bg-muted/20 relative group">
                   {!isGenerating && images[i] ? (
                     // Show actual generated image with same sizing as placeholder
-                    <>
+                    <div className="w-full h-full object-cover">
                       <ImageGallery images={images} onImageSelect={onImageSelect}/>
-                    </>
+                    </div>
                   ) : (
                     // Show loading placeholder
                     <>
