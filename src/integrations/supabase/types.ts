@@ -194,38 +194,56 @@ export type Database = {
       }
       image_jobs: {
         Row: {
+          completed: number | null
           content_hash: string
           created_at: string
           error: string | null
+          failed: number | null
+          finished_at: string | null
           id: string
           output_url: string | null
+          progress: number | null
           prompt: string
           settings: Json
+          started_at: string | null
           status: string
+          total: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          completed?: number | null
           content_hash: string
           created_at?: string
           error?: string | null
+          failed?: number | null
+          finished_at?: string | null
           id?: string
           output_url?: string | null
+          progress?: number | null
           prompt: string
           settings?: Json
+          started_at?: string | null
           status?: string
+          total?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          completed?: number | null
           content_hash?: string
           created_at?: string
           error?: string | null
+          failed?: number | null
+          finished_at?: string | null
           id?: string
           output_url?: string | null
+          progress?: number | null
           prompt?: string
           settings?: Json
+          started_at?: string | null
           status?: string
+          total?: number | null
           updated_at?: string
           user_id?: string
         }
