@@ -1095,7 +1095,7 @@ const CreateUGC = () => {
             {/* Action buttons when images are generated */}
             {!isGenerating && generatedImages.length > 0 && (
               <div className="flex justify-center">
-                <div className="bg-card rounded-apple p-6 shadow-apple space-y-4 max-w-md w-full">
+                <div className="bg-card rounded-apple p-6 shadow-apple space-y-4 max-w-md w-full mb-28">
                   <h3 className="font-semibold text-lg text-center">Actions</h3>
                   <div className="grid grid-cols-1 gap-3">
                     <Button variant="default" className="w-full" onClick={handleDownloadAll}>
