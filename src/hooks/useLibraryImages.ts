@@ -41,7 +41,7 @@ export const useLibraryImages = () => {
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false }),
-        
+
         supabase
           .from('generated_images')
           .select('*')
@@ -63,7 +63,8 @@ export const useLibraryImages = () => {
           quality: (img.meta as any)?.quality || 'standard',
           numberOfImages: 1,
           format: 'png'
-        }
+        },
+        source_image_id: img.source_image_id
       }));
 
       const generatedImages: LibraryImage[] = (generatedResult.data || []).map(img => ({
