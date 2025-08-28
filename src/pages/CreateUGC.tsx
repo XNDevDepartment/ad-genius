@@ -470,6 +470,7 @@ const CreateUGC = () => {
       'The composition should feel casual, as if captured in daily life, not staged. ' +
       '--negative "AI artifacts, text overlays, watermark, lens flare, distorted or rotated labels, invented branding, extra limbs, full bodies, low resolution, out-of-focus product, over-saturation" --ar ';
 
+      console.log('highlight value ->', highlight);
       // Choose final prompt
       if (highlight === 'yes') {
         prompt = highlightedProdPrompt;
