@@ -488,14 +488,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "image_jobs"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ugc_images_source_image_id_fkey"
-            columns: ["source_image_id"]
-            isOneToOne: false
-            referencedRelation: "source_images"
-            referencedColumns: ["id"]
-          },
+          }
         ]
       }
       user_favorites: {

@@ -514,23 +514,6 @@ const CreateUGC = () => {
 
   const selectedImages = generatedImages.filter(img => img.selected);
 
-  const handleSaveImages = async (validImages: GeneratedImage[]) => {
-    // Images are automatically saved to ugc_images table server-side
-    // This function is now deprecated but kept for compatibility
-    if (validImages.length === 0) {
-      toast({
-        title: "No images to save",
-        description: "No generated images to save.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "Images saved!",
-      description: `Your ${validImages.length} images are already saved to your library.`,
-    });
-  };
 
   const handleDownloadAll = () => {
     const imagesToDownload = selectedImages.length > 0 ? selectedImages : generatedImages;
