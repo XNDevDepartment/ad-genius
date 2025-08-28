@@ -131,7 +131,7 @@ export function useImageJob(): UseImageJobReturn {
       } else {
         // Load the new job
         await loadJob(result.jobId);
-        toast.success('Image generation started');
+        // toast.success('Image generation started');
       }
       
       return result.jobId;

@@ -19,12 +19,14 @@ interface GeneratingImagePlaceholdersProps {
   onImageSelect: (imageId: string) => void;
 }
 
-export const GeneratingImagePlaceholders = ({ 
-  numberOfImages, 
-  isGenerating = true, 
-  images = [], 
-  onImageSelect 
+export const GeneratingImagePlaceholders = ({
+  numberOfImages,
+  isGenerating = true,
+  images = [],
+  onImageSelect
 }: GeneratingImagePlaceholdersProps) => {
+  console.log(numberOfImages)
+  console.log(images)
   return (
     <div id="generating-images" className="scroll-mt-6">
       <Card className="bg-gradient-card border-border/50">
