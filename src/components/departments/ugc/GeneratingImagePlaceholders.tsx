@@ -25,8 +25,7 @@ export const GeneratingImagePlaceholders = ({
   images = [],
   onImageSelect
 }: GeneratingImagePlaceholdersProps) => {
-  console.log(numberOfImages)
-  console.log(images)
+
   return (
     <div id="generating-images" className="scroll-mt-6">
       <Card className="bg-gradient-card border-border/50">
@@ -48,20 +47,8 @@ export const GeneratingImagePlaceholders = ({
                   {!isGenerating && images[i] ? (
                     // Show actual generated image with same sizing as placeholder
                     <>
-                      <img
-                        src={images[i].url}
-                        alt={`Generated image ${i + 1}`}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                      {/* Selection overlay for completed images */}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300">
-                        <button
-                          onClick={() => onImageSelect(images[i].id)}
-                          className="absolute top-2 left-2 w-6 h-6 rounded-full border-2 border-white bg-white/20 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center hover:bg-white/40"
-                        >
-                          <div className="w-3 h-3 rounded-full bg-primary"></div>
-                        </button>
-                      </div>
+                      <ImageGallery images={images} onImageSelect={onImageSelect}/>
+                      
                     </>
                   ) : (
                     // Show loading placeholder

@@ -24,7 +24,7 @@ const ImageGallery = ({ images, onImageSelect }: ImageGalleryProps) => {
   // };
 
   const handleOpenInNewTab = (imageUrl: string) => {
-    console.log("entrei")
+
     try {
       // If it's already http(s) or a blob URL, just open it.
       if (!imageUrl.startsWith("data:")) {
