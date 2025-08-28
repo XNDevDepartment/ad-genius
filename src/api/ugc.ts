@@ -11,7 +11,7 @@ export type CreateJobPayload = {
     orientation?: '1:1' | '3:2' | '2:3';
     style?: 'lifestyle' | 'minimal' | 'vibrant' | 'professional';
     timeOfDay?: 'natural' | 'golden' | 'night';
-    highlight?: boolean;
+    highlight?: 'yes' | 'no';
     output_format?: 'png' | 'webp';
   };
   source_image_id?: string;

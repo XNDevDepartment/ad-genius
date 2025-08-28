@@ -461,7 +461,7 @@ const CreateUGC = () => {
 
       const blendedProdPrompt =
       'A hyper-realistic lifestyle photograph where my product ' +
-      'is naturally integrated into the scene. The setting is ' + selectedScenario.description + '. ' +
+      'is naturally integrated into the scene. The scenerio is: ' + selectedScenario.description + '. Make sure the final image represents the scenario description. ' +
       'The focus is on accurately replicating my product with sharp details, clear labeling, and realistic textures. ' +
       'Surroundings should enhance the scene but remain slightly out of focus, ensuring the product looks authentic and integrated. ' +
       'Include only partial human presence if relevant (e.g., a hand holding the product, someone reaching for it), but avoid full human bodies. ' +
@@ -488,7 +488,7 @@ const CreateUGC = () => {
           orientation: imageOrientation as '1:1' | '3:2' | '2:3',
           style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional',
           timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',
-          highlight: highlight === 'yes',
+          highlight: highlight as 'yes' | 'no',
           output_format: 'png'
         },
         source_image_id: sourceImageId || undefined
