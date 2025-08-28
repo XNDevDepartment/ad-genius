@@ -14,8 +14,9 @@ import { GeneratingImagePlaceholders } from "@/components/departments/ugc/Genera
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
-import { startConversationAPI, converse, sendImageAndRun, generateImagesFromBase, createImageJob } from '@/api/OpenAiChatClient';
-import { useSecureImageStorage } from "@/components/departments/ugc/SecureImageStorage";
+import { startConversationAPI, converse, sendImageAndRun } from '@/api/OpenAiChatClient';
+import { useImageJob } from '@/hooks/useImageJob';
+import type { CreateJobPayload } from '@/api/ugc';
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
 import { useImageLimit } from "@/hooks/useImageLimit";
@@ -51,7 +52,7 @@ const CreateUGC = () => {
 
   const { user, subscriptionData } = useAuth();
   const { credits, canAfford, deductCredits, getRemainingCredits, getTotalCredits } = useCredits();
-  const { saveImages } = useSecureImageStorage();
+  const { saveImages, loadImages } = useSecureImageStorage();
   const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
   const [showAuthModal, setShowAuthModal] = useState(!user);
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
@@ -78,7 +79,7 @@ const CreateUGC = () => {
   }
   const { toast } = useToast();
   const { saveConversation, saveMessage, getActiveConversation } = useConversationStorage();
-  const [stage, setStage] = useState<"setup" | "generating" | "results">("setup");
+  const [stage, setStage] = useState<'setup' | 'generating' | 'results'>('setup');
   const [productImage, setProductImage] = useState<File | null>(null);
   const [sourceImageId, setSourceImageId] = useState<string | null>(null);
   const [niche, setNiche] = useState("");
@@ -92,10 +93,16 @@ const CreateUGC = () => {
   const [timeOfDay, setTimeOfDay] = useState<'natural' | 'golden' | 'night' | 'morning'>("natural");
   const [highlight, setHighlight] = useState("yes");
   const [style, setStyle] = useState<'lifestyle' | 'studio' | 'editorial' | 'natural'>("lifestyle");
-  const [progress, setProgress] = useState(0);
+  
+  // Job system integration
+  const { job, images: jobImages, createJob, clearJob } = useImageJob();
+  
+  // Sync job state with local state
+  const isGenerating = job?.status === 'queued' || job?.status === 'processing';
+  const progress = job?.progress || 0;
+  
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Compute compact summary for mobile panel
@@ -170,14 +177,27 @@ const CreateUGC = () => {
     }
   }, [aiScenarios.length]);
 
-  // Auto-scroll to results when generating starts or images appear
+  // Convert job images to display format when they change
   useEffect(() => {
-    if (isGenerating || generatedImages.length > 0) {
-      setTimeout(() => {
-        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
+    if (jobImages.length > 0 && job?.status === 'completed') {
+      const displayImages: GeneratedImage[] = jobImages.map((img, index) => ({
+        id: img.id,
+        url: img.public_url,
+        prompt: job.prompt,
+        selected: false
+      }));
+      setGeneratedImages(displayImages);
+      setStage('results');
     }
-  }, [isGenerating, generatedImages.length]);
+  }, [jobImages, job?.status, job?.prompt]);
+
+  // Restore job state from localStorage on mount
+  useEffect(() => {
+    const savedJobId = localStorage.getItem('currentJobId');
+    if (savedJobId && !job) {
+      // Job will be loaded by useImageJob hook if needed
+    }
+  }, [job]);
 
   const handleImageUpload = async (file: File) => {
     setProductImage(file);

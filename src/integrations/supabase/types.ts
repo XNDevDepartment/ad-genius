@@ -423,6 +423,44 @@ export type Database = {
         }
         Relationships: []
       }
+      ugc_images: {
+        Row: {
+          created_at: string
+          id: string
+          job_id: string
+          meta: Json | null
+          public_url: string
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_id: string
+          meta?: Json | null
+          public_url: string
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_id?: string
+          meta?: Json | null
+          public_url?: string
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ugc_images_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "image_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_favorites: {
         Row: {
           assistant_id: string
@@ -509,9 +547,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_image_cost: {
+        Args: { p_settings: Json }
+        Returns: number
+      }
       deduct_user_credits: {
         Args: { p_amount: number; p_reason?: string; p_user_id: string }
         Returns: Json
+      }
+      generate_idempotency_key: {
+        Args: {
+          p_prompt: string
+          p_settings: Json
+          p_source_image_id: string
+          p_user_id: string
+        }
+        Returns: string
       }
       get_image_credit_cost: {
         Args: { p_count?: number; p_quality?: string }
