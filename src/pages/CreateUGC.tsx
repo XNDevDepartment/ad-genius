@@ -209,10 +209,11 @@ const CreateUGC = () => {
       // Restore stage if saved
       if (savedStage === 'generating' || savedStage === 'results') {
         setStage(savedStage as 'generating' | 'results');
+        setNumImages(job.total);
       }
     }
   }, [job, loadJob]);
-  
+
   // Monitor job status and handle completion/failures
   useEffect(() => {
     if (job?.status === 'completed' || job?.status === 'failed' || job?.status === 'canceled') {
