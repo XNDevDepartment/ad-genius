@@ -84,6 +84,44 @@ export const useLibraryImages = () => {
       const allImages = [...ugcImages, ...generatedImages]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
+      // Get source image signed URLs for thumbnail overlays
+      const sourceImageIds = allImages
+        .map(img => img.source_image_id)
+        .filter(Boolean) as string[];
+
+      if (sourceImageIds.length > 0) {
+        // Fetch source images data
+        const { data: sourceImages } = await supabase
+          .from('source_images')
+          .select('id, storage_path')
+          .in('id', sourceImageIds);
+
+        if (sourceImages && sourceImages.length > 0) {
+          // Create signed URLs for source images
+          const sourceUrlPromises = sourceImages.map(async (sourceImg) => {
+            const { data } = await supabase.storage
+              .from('ugc-inputs')
+              .createSignedUrl(sourceImg.storage_path, 3600);
+            return {
+              id: sourceImg.id,
+              signedUrl: data?.signedUrl || null
+            };
+          });
+
+          const sourceUrls = await Promise.all(sourceUrlPromises);
+          const sourceUrlMap = Object.fromEntries(
+            sourceUrls.map(item => [item.id, item.signedUrl])
+          );
+
+          // Add source signed URLs to images
+          allImages.forEach(img => {
+            if (img.source_image_id && sourceUrlMap[img.source_image_id]) {
+              img.sourceSignedUrl = sourceUrlMap[img.source_image_id];
+            }
+          });
+        }
+      }
+
       setImages(allImages);
     } catch (err) {
       console.error('Failed to fetch library images:', err);

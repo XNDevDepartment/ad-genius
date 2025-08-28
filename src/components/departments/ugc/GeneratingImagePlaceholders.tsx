@@ -38,37 +38,27 @@ export const GeneratingImagePlaceholders = ({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="space-y-3 animate-scale-in">
+          {!isGenerating && images.length > 0 ? (
+            // Show completed images using ImageGallery
+            <ImageGallery
+              images={images}
+              onImageSelect={onImageSelect}
+            />
+          ) : (
+            // Show placeholders for generating images
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: numberOfImages }, (_, i) => (
+                <div key={i} className="space-y-3 animate-scale-in">
                   <div className="aspect-square rounded-lg overflow-hidden border border-border/50 bg-muted/20 relative group">
-                  <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-                    {images && !isGenerating ? (
-                      // Show actual image
-                      <>
-                      <div className="lg:col-span-2">
-                        <ImageGallery
-                          images={images}
-                          onImageSelect={onImageSelect}
-                        />
-                      </div>
-                        {/* <img
-                          src={images[i]}
-                          alt={`Generated image ${i + 1}`}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        /> */}
-                        {/* {onImageSelect && (
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300">
-                            <button
-                              onClick={() => onImageSelect(imageId)}
-                              className="absolute top-2 left-2 w-6 h-6 rounded-full border-2 border-white bg-white/20 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center hover:bg-white/40"
-                            >
-                              <div className="w-3 h-3 rounded-full bg-primary"></div>
-                            </button>
-                          </div>
-                        )} */}
-                      </>
+                    {images[i] ? (
+                      // Show actual generated image if available
+                      <img
+                        src={images[i].url}
+                        alt={`Generated image ${i + 1}`}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
                     ) : (
-                      // Show futuristic loading placeholder
+                      // Show loading placeholder
                       <>
                         {/* Grainy loading effect */}
                         <div className="absolute inset-0 bg-gradient-to-br from-muted/30 to-muted/60 animate-pulse">
@@ -83,15 +73,18 @@ export const GeneratingImagePlaceholders = ({
                         <div className="absolute inset-0 gen-glow flex items-center justify-center">
                           <div className="text-center relative z-10">
                             <Image className="h-8 w-8 text-muted-foreground mx-auto mb-2 animate-pulse text-white" />
-                            <p className="text-xs text-muted-foreground text-white">Generating...</p>
+                            <p className="text-xs text-muted-foreground text-white">
+                              {i === 0 ? 'Generating...' : `Image ${i + 1}`}
+                            </p>
                           </div>
                         </div>
                       </>
                     )}
                   </div>
                 </div>
-              </div>
-        </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

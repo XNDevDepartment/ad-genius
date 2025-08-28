@@ -187,6 +187,10 @@ const CreateUGC = () => {
       }));
       setGeneratedImages(displayImages);
       setStage('results');
+      
+      // Clear localStorage when completed
+      localStorage.removeItem('currentJobId');
+      localStorage.removeItem('currentStage');
     }
   }, [jobImages, job?.status, job?.prompt]);
 
@@ -205,6 +209,21 @@ const CreateUGC = () => {
       }
     }
   }, [job, loadJob]);
+  
+  // Monitor job status and handle completion/failures
+  useEffect(() => {
+    if (job?.status === 'completed' || job?.status === 'failed' || job?.status === 'canceled') {
+      // Clear localStorage when job finishes
+      localStorage.removeItem('currentJobId');
+      localStorage.removeItem('currentStage');
+    } else if ((job?.status === 'queued' || job?.status === 'processing') && stage !== 'generating') {
+      // Restore generating stage if job is in progress
+      setStage('generating');
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }, [job?.status, stage]);
 
   const handleImageUpload = async (file: File) => {
     setProductImage(file);
@@ -414,13 +433,16 @@ const CreateUGC = () => {
     }
 
     try {
-      // Credits are now deducted server-side during generation
+      // Provide immediate feedback
       setStage('generating');
       setGeneratedImages([]);
+      
+      // Save state to localStorage for persistence
+      localStorage.setItem('currentStage', 'generating');
 
-      // smooth‑scroll to progress area
+      // Immediate scroll to generation area
       setTimeout(() => {
-        document.getElementById('generating-images')?.scrollIntoView({ behavior: 'smooth' });
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
 
       /* ------------------------------------------------------------------
@@ -986,13 +1008,13 @@ const CreateUGC = () => {
 
                 <div className="border-t pt-4">
                   <Button 
-                    variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
+                    variant={!productImage || !selectedScenario || isGenerating || stage === 'generating' || !canGenerateImages(numImages) ? "secondary" : "alternative"}
                     size="lg" 
-                    className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
+                    className={`w-full ${(isGenerating || stage === 'generating') ? 'animate-pulse' : ''}`}
                     onClick={handleGenerate}
-                    disabled={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages)}
+                    disabled={!productImage || !selectedScenario || isGenerating || stage === 'generating' || !canGenerateImages(numImages)}
                   >
-                    {isGenerating ? (
+                    {(isGenerating || stage === 'generating') ? (
                       <>
                         <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
                         Generating...
@@ -1051,13 +1073,13 @@ const CreateUGC = () => {
 
               {/* Bottom row: Generate button */}
               <Button 
-                variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
+                variant={!productImage || !selectedScenario || isGenerating || stage === 'generating' || !canGenerateImages(numImages) ? "secondary" : "alternative"}
                 size="lg" 
-                className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
+                className={`w-full ${(isGenerating || stage === 'generating') ? 'animate-pulse' : ''}`}
                 onClick={handleGenerate}
-                disabled={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages)}
+                disabled={!productImage || !selectedScenario || isGenerating || stage === 'generating' || !canGenerateImages(numImages)}
               >
-                {isGenerating ? (
+                {(isGenerating || stage === 'generating') ? (
                   <>
                     <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                     A gerar...
