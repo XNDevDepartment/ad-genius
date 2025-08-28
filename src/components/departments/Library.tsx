@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLibraryImages } from "@/hooks/useLibraryImages";
 
 interface LibraryImage {
   id: string;
@@ -32,18 +33,7 @@ export const Library = ({ onBack }: LibraryProps) => {
   const [sortBy, setSortBy] = useState("newest");
   const { toast } = useToast();
   const { user } = useAuth();
-  
-  // Since we removed SecureImageStorage, show placeholder for now
-  const images: LibraryImage[] = [];
-  const loading = false;
-  
-  const deleteImage = async (imageId: string) => {
-    // Placeholder - will be implemented with new system
-    toast({
-      title: "Feature Coming Soon",
-      description: "Image library will be updated to use the new UGC system.",
-    });
-  };
+  const { images, loading, deleteImage: deleteImageFromDB } = useLibraryImages();
 
   const handleDownload = async (image: LibraryImage) => {
     toast({
@@ -75,7 +65,7 @@ export const Library = ({ onBack }: LibraryProps) => {
     if (!user) return;
     
     try {
-      await deleteImage(imageId);
+      await deleteImageFromDB(imageId);
       toast({
         title: "Imagem Excluída",
         description: "A imagem foi removida da sua biblioteca.",

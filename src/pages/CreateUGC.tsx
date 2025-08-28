@@ -94,7 +94,7 @@ const CreateUGC = () => {
   const [style, setStyle] = useState<'lifestyle' | 'studio' | 'editorial' | 'natural'>("lifestyle");
   
   // Job system integration
-  const { job, images: jobImages, createJob, clearJob } = useImageJob();
+  const { job, images: jobImages, createJob, clearJob, loadJob } = useImageJob();
   
   // Sync job state with local state
   const isGenerating = job?.status === 'queued' || job?.status === 'processing';
@@ -193,10 +193,18 @@ const CreateUGC = () => {
   // Restore job state from localStorage on mount
   useEffect(() => {
     const savedJobId = localStorage.getItem('currentJobId');
+    const savedStage = localStorage.getItem('currentStage');
+    
     if (savedJobId && !job) {
-      // Job will be loaded by useImageJob hook if needed
+      // Load the job using the existing hook instance
+      loadJob(savedJobId).catch(console.error);
+      
+      // Restore stage if saved
+      if (savedStage === 'generating' || savedStage === 'results') {
+        setStage(savedStage as 'generating' | 'results');
+      }
     }
-  }, [job]);
+  }, [job, loadJob]);
 
   const handleImageUpload = async (file: File) => {
     setProductImage(file);
@@ -463,8 +471,9 @@ const CreateUGC = () => {
         source_image_id: sourceImageId || undefined
       });
       
-      // Save job ID for recovery
+      // Save job ID and stage for recovery
       localStorage.setItem('currentJobId', jobId);
+      localStorage.setItem('currentStage', 'generating');
       
       toast({
         title: 'Generation Started',
