@@ -97,7 +97,7 @@ const CreateUGC = () => {
   const { job, images: jobImages, createJob, clearJob, loadJob, resumeCurrentJob } = useImageJob();
   
   // Sync job state with local state
-  const isGenerating = job?.status === 'queued' || job?.status === 'processing';
+  const isGenerating = job?.status === 'queued' || job?.status === 'processing' || job?.status === 'running';
   const progress = job?.progress || 0;
   
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
