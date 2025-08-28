@@ -1062,7 +1062,7 @@ const CreateUGC = () => {
         )}
 
         {/* Padding for mobile floating panel and navigation */}
-        {/* {isMobile && <div className="h-[160px]" />}
+        {isMobile && <div className="h-[50px]" />}
 
         {/* Results Section */}
         {(isGenerating || generatedImages.length > 0) && (
