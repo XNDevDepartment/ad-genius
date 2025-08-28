@@ -1065,7 +1065,7 @@ const CreateUGC = () => {
         {isMobile && <div className="h-[50px]" />}
 
         {/* Results Section */}
-        {(isGenerating || generatedImages.length > 0) && (
+        {(!isGenerating || generatedImages.length == 0) && (
           <div ref={resultsRef} id="generating-images" className="scroll-mt-6 space-y-8">
             <GeneratingImagePlaceholders
               numberOfImages={numImages}
