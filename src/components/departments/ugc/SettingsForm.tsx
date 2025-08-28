@@ -132,9 +132,31 @@ export const SettingsForm = ({
           onValueChange={(value) => value && onSettingsChange({ imageOrientation: value })}
           className="justify-start grid grid-cols-3 gap-1"
         >
-          {["1:1", "2:3", "3:2"].map((o) => (
-            <ToggleGroupItem key={o} value={o} size="sm" className="text-xs px-2 py-1 bg-muted">
-              {o}
+          {[
+            {
+              value: '3:2',
+              label: ' Landscape (3:2)',
+              description: 'Horizontal format',
+              iconWidth: 'w-7',
+              iconHeight: 'h-5'
+            },
+            {
+              value: '1:1',
+              label: 'Square (1:1)',
+              description: 'Square format ',
+              iconWidth: 'w-5',
+              iconHeight: 'h-5'
+            },
+            {
+              value: '2:3',
+              label: 'Portrait (2:3)',
+              description: 'Vertical format ',
+              iconWidth: 'w-5',
+              iconHeight: 'h-7'
+            }
+          ].map((o) => (
+            <ToggleGroupItem key={o.value} value={o.value} size="sm" className="text-xs px-2 py-1 bg-muted">
+              <div className={`bg-transparent border ${o.value === settings.imageOrientation ? 'border-white-500' : 'border-gray-500' } ${o.iconWidth} ${o.iconHeight}`} />
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
