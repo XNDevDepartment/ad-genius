@@ -91,25 +91,27 @@ export async function resumeJob(jobId: string): Promise<{success: boolean}> {
   return callUgcFunction('generateImages', { jobId });
 }
 
-export function subscribeJob(
-  jobId: string, 
-  onUpdate: (job: JobRow) => void
-): () => void {
+export function subscribeJob(jobId: string, onUpdate: (row: any) => void) {
   const channel = supabase
-    .channel(`job-${jobId}`)
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'image_jobs',
-      filter: `id=eq.${jobId}`
-    }, (payload) => {
-      if (payload.new) {
-        onUpdate(payload.new as JobRow);
+    .channel(`image-job:${jobId}`)
+    .on(
+      'postgres_changes',
+      { event: '*',
+        schema: 'public',
+        table: 'image_jobs',
+        filter: `id=eq.${jobId}`
+      },
+      (payload) => {
+        const row = (payload as any).new ?? (payload as any).record ?? null;
+        if (row) onUpdate(row);
       }
-    })
-    .subscribe();
+    )
+    .subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        const { data } = await supabase.from('image_jobs').select('*').eq('id', jobId).single();
+        if (data) onUpdate(data as JobRow); // initial sync
+      }
+    });
 
-  return () => {
-    supabase.removeChannel(channel);
-  };
+  return () => supabase.removeChannel(channel);
 }
