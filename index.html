@@ -21,9 +21,14 @@
       img-src 'self' data: blob: https://*.supabase.co;
       style-src 'self' 'unsafe-inline';
       script-src 'self';
-      connect-src 'self' https://dhqdamfisdbbcieqlpvt.supabase.co wss://dhqdamfisdbbcieqlpvt.supabase.co https://dhqdamfisdbbcieqlpvt.functions.supabase.co https://api.openai.com ws://localhost:* wss://localhost:*;
+      connect-src 'self'
+        https://dhqdamfisdbbcieqlpvt.supabase.co
+        wss://dhqdamfisdbbcieqlpvt.supabase.co
+        https://dhqdamfisdbbcieqlpvt.functions.supabase.co
+        ws://localhost:* wss://localhost:*;
       frame-ancestors 'self';
-    "/>
+    ">
+
   </head>
 
   <body>
