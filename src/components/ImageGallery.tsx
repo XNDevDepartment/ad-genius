@@ -46,7 +46,7 @@ const ImageGallery = ({ images, totalSlots, isGenerating = false, onImageSelect 
   const { favorites, toggleFavorite } = useFavorites();
 
   // render one square per requested image; if we already have more images, show them all
-  const slots = Math.max(totalSlots, 2);
+  const slots = Math.max(totalSlots, images.length);
 
   // safe accessor
   const imgAt = (i: number) => images[i];
