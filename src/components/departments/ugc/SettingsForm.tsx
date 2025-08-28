@@ -30,17 +30,13 @@ function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function labelTime(v: "natural" | "golden" | "night") {
-  return v === "natural" ? "Natural" : v === "golden" ? "Golden" : "Night";
-}
-
-export const SettingsForm = ({ 
-  settings, 
-  onSettingsChange, 
-  remainingCredits, 
+export const SettingsForm = ({
+  settings,
+  onSettingsChange,
+  remainingCredits,
   totalCredits,
   calculateImageCost,
-  compact = false 
+  compact = false
 }: SettingsFormProps) => {
   const { t } = useTranslation();
 
@@ -64,9 +60,9 @@ export const SettingsForm = ({
       {/* Number of Images */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">Número de Imagens</Label>
-        <ToggleGroup 
-          type="single" 
-          value={settings.numImages.toString()} 
+        <ToggleGroup
+          type="single"
+          value={settings.numImages.toString()}
           onValueChange={(value) => value && onSettingsChange({ numImages: parseInt(value) })}
           className="justify-start"
         >
@@ -99,7 +95,7 @@ export const SettingsForm = ({
           onValueChange={(value) => value && onSettingsChange({ style: value as GenerationSettings['style'] })}
           className="justify-start grid grid-cols-4 gap-1"
         >
-          {(["lifestyle", "studio", "editorial", "natural"] as const).map((s) => (
+          {(["lifestyle", "minimal", "vibrant", "professional"] as const).map((s) => (
             <ToggleGroupItem key={s} value={s} size="sm" className="text-xs px-2 py-1 bg-muted">
               {capitalize(s)}
             </ToggleGroupItem>
