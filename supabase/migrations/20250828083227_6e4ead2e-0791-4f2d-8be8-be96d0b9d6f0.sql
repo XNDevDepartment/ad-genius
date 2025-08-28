@@ -27,8 +27,29 @@ CREATE TABLE IF NOT EXISTS public.ugc_images (
   storage_path TEXT NOT NULL,
   public_url TEXT NOT NULL,
   meta JSONB DEFAULT '{}',
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  prompt TEXT NULL,
+  public_showcase BOOLEAN NULL,
+  source_image_id UUID NULL DEFAULT GEN_RANDOM_UUID(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 );
+
+create table public.ugc_images (
+  id uuid not null default gen_random_uuid (),
+  job_id uuid not null,
+  user_id uuid not null,
+  storage_path text not null,
+  public_url text not null,
+  meta jsonb null default '{}'::jsonb,
+  created_at timestamp with time zone not null default now(),
+  prompt text null,
+  public_showcase boolean null,
+  source_image_id uuid null default gen_random_uuid (),
+  updated_at timestamp with time zone null,
+  constraint ugc_images_pkey primary key (id),
+  constraint ugc_images_job_id_fkey foreign KEY (job_id) references image_jobs (id) on delete CASCADE,
+  constraint ugc_images_user_id_fkey foreign KEY (user_id) references auth.users (id) on delete CASCADE
+) TABLESPACE pg_default;
 
 -- Add RLS policies for image_jobs
 ALTER TABLE public.image_jobs ENABLE ROW LEVEL SECURITY;

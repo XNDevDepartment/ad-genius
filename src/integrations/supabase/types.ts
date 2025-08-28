@@ -450,6 +450,10 @@ export type Database = {
           public_url: string
           storage_path: string
           user_id: string
+          promtp: string
+          updated_at?: string
+          source_image_id: string
+          public_showcase: boolean
         }
         Insert: {
           created_at?: string
@@ -459,6 +463,10 @@ export type Database = {
           public_url: string
           storage_path: string
           user_id: string
+          promtp: string
+          updated_at?: string
+          source_image_id: string
+          public_showcase: boolean
         }
         Update: {
           created_at?: string
@@ -468,6 +476,10 @@ export type Database = {
           public_url?: string
           storage_path?: string
           user_id?: string
+          promtp: string
+          updated_at?: string
+          source_image_id: string
+          public_showcase: boolean
         }
         Relationships: [
           {
@@ -475,6 +487,13 @@ export type Database = {
             columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "image_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ugc_images_source_image_id_fkey"
+            columns: ["source_image_id"]
+            isOneToOne: false
+            referencedRelation: "source_images"
             referencedColumns: ["id"]
           },
         ]

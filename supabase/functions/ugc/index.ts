@@ -441,7 +441,7 @@ async function generateSingleImage(job: any, index: number, sourceImageUrl: stri
       }
 
       clearTimeout(timeout);
-      requestId = res.headers.get("x-request-id") || undefined;
+      const crequestId = res.headers.get("x-request-id") || undefined;
 
       if (!res.ok) {
         const text = await res.text();
@@ -481,6 +481,9 @@ async function generateSingleImage(job: any, index: number, sourceImageUrl: stri
         user_id: job.user_id,
         storage_path: storagePath,
         public_url: publicUrl.publicUrl,
+        source_image_id: job.source_image_id,
+        prompt: job.prompt,
+        public_showcase: false,
         meta: {
           index,
           size,
