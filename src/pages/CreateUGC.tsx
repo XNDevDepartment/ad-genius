@@ -21,6 +21,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
 import { useImageLimit } from "@/hooks/useImageLimit";
 import { useSourceImageUpload } from "@/hooks/useSourceImageUpload";
+import { useSecureImageStorage } from "@/components/departments/ugc/SecureImageStorage";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Description } from "@radix-ui/react-dialog";
@@ -52,7 +53,7 @@ const CreateUGC = () => {
 
   const { user, subscriptionData } = useAuth();
   const { credits, canAfford, deductCredits, getRemainingCredits, getTotalCredits } = useCredits();
-  const { saveImages, loadImages } = useSecureImageStorage();
+  const { saveImages } = useSecureImageStorage();
   const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
   const [showAuthModal, setShowAuthModal] = useState(!user);
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
@@ -331,7 +332,6 @@ const CreateUGC = () => {
     }
 
     setIsLoadingScenarios(true);
-    setProgress(0);
 
     try {
       // Convert image to base64
@@ -409,10 +409,7 @@ const CreateUGC = () => {
 
     try {
       // Credits are now deducted server-side during generation
-
-      setIsGenerating(true);
       setStage('generating');
-      setProgress(0);
       setGeneratedImages([]);
 
       // smooth‑scroll to progress area
@@ -452,122 +449,63 @@ const CreateUGC = () => {
         prompt = blendedProdPrompt;
       }
 
-      // Create job for tracking/idempotency
-      const jobResult = await createImageJob(
+      // Create job with new system
+      const jobId = await createJob({
         prompt,
-        {
-          number: numImages,
-          size: imageOrientation === '1:1' ? '1024x1024' : imageOrientation === '3:2' ? '1536x1024' : '1024x1536',
-          quality: imageQuality,
-          output_format: 'png',
-        },
-        sourceImageId || undefined,
-      );
-      const jobId = jobResult.jobId;
-
-      // If job already completed, use existing images and exit
-      if (jobResult.status === 'completed' && jobResult.existingImages) {
-        const existingImages = jobResult.existingImages.map((img: any, index: number) => ({
-          id: `existing-${index}`,
-          url: img.url,
-          prompt: img.prompt,
-          selected: false,
-        }));
-        setGeneratedImages(existingImages);
-        setProgress(100);
-        setStage('results');
-        setIsGenerating(false);
-        return;
-      }
-
-      const imageObjects: GeneratedImage[] = [];
-
-      /* ------------------------------------------------------------------
-        3️⃣  Generate all images in parallel with job tracking
-      ------------------------------------------------------------------*/
-      const imagePromises = Array.from({ length: numImages }, async (_, i) => {
-        try {
-          const res = await generateImagesFromBase(
-            baseFileData,
-            prompt,
-            {
-              number: 1,
-              size: imageOrientation === '1:1' ? '1024x1024' : imageOrientation === '3:2' ? '1536x1024' : '1024x1536',
-              quality: imageQuality,
-              output_format: 'png',
-            },
-            jobId
-          );
-
-          const images = Array.isArray(res) ? res : (res && (res as any).images) ? (res as any).images : [];
-          if (images && images.length > 0) {
-            return {
-              id: `${Date.now()}-${i}`,
-              url: `data:image/png;base64,${images[0]}`,
-              prompt,
-              selected: false,
-            };
-          }
-          return null;
-        } catch (err) {
-          console.error(`Image ${i + 1} failed:`, err);
-          return null;
-        }
-      });
-
-      // Wait for all images to complete
-      const results = await Promise.all(imagePromises);
-      const validImages = results.filter(Boolean) as GeneratedImage[];
-
-      /* ------------------------------------------------------------------
-        4️⃣  Save all generated images to secure storage via edge function
-      ------------------------------------------------------------------*/
-      console.log('Generated', validImages.length, 'images — saving to secure storage...');
-      const savedImages = await saveImages({
-        base64Images: validImages.map(img => img.url.replace('data:image/png;base64,', '')),
-        prompt: prompt,
         settings: {
-          orientation: imageOrientation,
-          style,
-          timeOfDay,
-          highlight,
-          quality: imageQuality,
+          number: numImages,
+          size: orientationToSize(imageOrientation),
+          quality: imageQuality === 'high' ? 'hd' : 'standard',
+          orientation: imageOrientation as '1:1' | '3:2' | '2:3',
+          style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional',
+          timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',
+          highlight: highlight === 'yes',
+          output_format: 'png'
         },
-        source_image_id: sourceImageId || undefined,
-        job_id: jobId,
+        source_image_id: sourceImageId || undefined
       });
-
-      setGeneratedImages(validImages);
-      setProgress(100);
       
-      // Refresh image count after saving
-      await refreshCount();
-
+      // Save job ID for recovery
+      localStorage.setItem('currentJobId', jobId);
+      
       toast({
-        title: 'Images generated!',
-        description: `Successfully created ${validImages.length} images.`
+        title: 'Generation Started',
+        description: 'Your images are being generated. Progress will update automatically.',
       });
 
-    } catch (error: any) {
+      // Job is now processing in the background
+      // The UI will update automatically through the subscription
+
+    } catch (error) {
       console.error('Generation error:', error);
       
-      // Check if it's a credit-related error
-      if (error.message?.includes('Insufficient credits') || error.message?.includes('Credit')) {
-        toast({
-          title: 'Insufficient credits',
-          description: error.message || 'Not enough credits to generate images.',
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: 'Generation failed',
-          description: error.message || 'Failed to generate images. Please try again.',
-          variant: 'destructive',
-        });
+      let errorMessage = "Failed to generate images. Please try again.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        if (error.message.includes('authentication') || error.message.includes('session')) {
+          errorMessage = "Session expired. Please refresh the page and try again.";
+        } else if (error.message.includes('credit') || error.message.includes('limit')) {
+          errorMessage = "Insufficient credits or rate limit reached. Please check your account.";
+        }
       }
-    } finally {
-      setIsGenerating(false);
-      await refreshCount(); // Refresh the credit count to get updated balance
+      
+      toast({
+        title: "Generation Failed", 
+        description: errorMessage,
+        variant: "destructive",
+      });
+
+      // Refresh credits after error
+      refreshCount();
+    }
+  };
+
+  // Helper function to convert orientation to OpenAI size format
+  const orientationToSize = (orientation: string): '1024x1024' | '1536x1024' | '1024x1536' => {
+    switch (orientation) {
+      case '3:2': return '1536x1024';
+      case '2:3': return '1024x1536';
+      default: return '1024x1024';
     }
   };
 
@@ -660,7 +598,7 @@ const CreateUGC = () => {
     setNiche("");
     setAiScenarios([]);
     setSelectedScenario(null);
-    setProgress(0);
+    
   };
 
 
