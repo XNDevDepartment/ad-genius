@@ -78,7 +78,7 @@ export const GeneratingImagePlaceholders = ({
                         <div className="text-center relative z-10">
                           <Image className="h-8 w-8 text-muted-foreground mx-auto mb-2 animate-pulse text-white" />
                           <p className="text-xs text-muted-foreground text-white">
-                            {i === 0 ? 'Generating...' : `Image ${i + 1}`}
+                            Generating...
                           </p>
                         </div>
                       </div>

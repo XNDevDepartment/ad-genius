@@ -77,6 +77,7 @@ export function useImageJob(): UseImageJobReturn {
   const loadJobImages = async (jobId: string) => {
     try {
       const { images: jobImages } = await getJobImages(jobId);
+      console.log(jobImages);
       setImages(jobImages);
     } catch (err) {
       console.error('Failed to load job images:', err);
@@ -144,10 +145,10 @@ export function useImageJob(): UseImageJobReturn {
     try {
       setLoading(true);
       setError(null);
-      
+
       const { job: jobData } = await getJob(jobId);
       setJob(jobData);
-      
+
       // Load images if job is completed
       if (jobData.status === 'completed' && jobData.completed > 0) {
         await loadJobImages(jobId);
@@ -155,7 +156,7 @@ export function useImageJob(): UseImageJobReturn {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load job';
       setError(message);
-      toast.error(message);
+      // toast.error(message);
     } finally {
       setLoading(false);
     }

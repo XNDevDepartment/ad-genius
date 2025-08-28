@@ -10,6 +10,9 @@ import heroProduct from "@/assets/example_image.jpeg";
 import { BeforeAfterSlider } from "../ui/before-after";
 import { supabase } from "@/integrations/supabase/client";
 
+import nike_before from './../../assets/nike_origin.jpeg';
+import nike_afer from './../../assets/nike_finish.png';
+
 
 interface PublicImage {
   id: string;
@@ -74,7 +77,7 @@ const HeroSection = () => {
     }, []);
 
   return (
-    <section ref={ref} className="relative min-h-[90vh] bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden mt-10">
+    <section ref={ref} className="relative min-h-[90vh] bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden mt-24">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -198,8 +201,8 @@ const HeroSection = () => {
                   <div className="relative z-10 transform transition-smooth">
                     {images.length > 0 &&
                       <BeforeAfterSlider
-                        beforeImage={images[0].source_url || images[0].public_url}
-                        afterImage={images[0].public_url}
+                        beforeImage={nike_before}
+                        afterImage={nike_afer}
                         alt={`Generated: ${images[0].prompt?.slice(0, 80) || "image"}`}
                         className="w-full h-full"
                         initialX={15}

@@ -73,9 +73,11 @@ const CreateUGC = () => {
     };
   }
 
-  function capitalize(s: string) {
-    return s.charAt(0).toUpperCase() + s.slice(1);
-  }
+  // function capitalize(s: string) {
+  //   return s.charAt(0).toUpperCase() + s.slice(1);
+  // }
+
+
   const { toast } = useToast();
   const { saveConversation, saveMessage, getActiveConversation } = useConversationStorage();
   const [stage, setStage] = useState<'setup' | 'generating' | 'results'>('setup');
@@ -92,14 +94,14 @@ const CreateUGC = () => {
   const [timeOfDay, setTimeOfDay] = useState<'natural' | 'golden' | 'night' | 'morning'>("natural");
   const [highlight, setHighlight] = useState("yes");
   const [style, setStyle] = useState<'lifestyle' | 'studio' | 'editorial' | 'natural'>("lifestyle");
-  
+
   // Job system integration
   const { job, images: jobImages, createJob, clearJob, loadJob, resumeCurrentJob } = useImageJob();
-  
+
   // Sync job state with local state
   const isGenerating = job?.status === 'queued' || job?.status === 'processing';
   const progress = job?.progress || 0;
-  
+
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -187,7 +189,7 @@ const CreateUGC = () => {
       }));
       setGeneratedImages(displayImages);
       setStage('results');
-      
+
       // Clear localStorage when completed
       localStorage.removeItem('currentJobId');
       localStorage.removeItem('currentStage');
@@ -198,11 +200,11 @@ const CreateUGC = () => {
   useEffect(() => {
     const savedJobId = localStorage.getItem('currentJobId');
     const savedStage = localStorage.getItem('currentStage');
-    
+
     if (savedJobId && !job) {
       // Load the job using the existing hook instance
       loadJob(savedJobId).catch(console.error);
-      
+
       // Restore stage if saved
       if (savedStage === 'generating' || savedStage === 'results') {
         setStage(savedStage as 'generating' | 'results');
@@ -228,7 +230,7 @@ const CreateUGC = () => {
   const handleImageUpload = async (file: File) => {
     setProductImage(file);
     setIsAnalyzingImage(true);
-    
+
     // Upload source image to secure storage
     try {
       const sourceImage = await uploadSourceImage(file);
@@ -240,7 +242,7 @@ const CreateUGC = () => {
       console.error('Failed to upload source image:', error);
       // Continue with the product analysis even if source upload fails
     }
-    
+
     // Start conversation with assistant to identify the product
     try {
       const reader = new FileReader();
