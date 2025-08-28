@@ -89,6 +89,7 @@ const CreateUGC = () => {
   const [isLoadingScenarios, setIsLoadingScenarios] = useState(false);
   const [threadId, setThreadId] = useState<string | null>(null);
   const [productIdentification, setProductIdentification] = useState("");
+  const [moreScenarios, setMoreScenarios] = useState(false);
   const [numImages, setNumImages] = useState(1);
   const [imageOrientation, setImageOrientation] = useState("1:1");
   const [timeOfDay, setTimeOfDay] = useState<'natural' | 'golden' | 'night' | 'morning'>("natural");
@@ -283,7 +284,7 @@ const CreateUGC = () => {
         });
       };
       reader.readAsDataURL(file);
-      
+
     } catch (error) {
       console.error('Error analyzing product image:', error);
       setIsAnalyzingImage(false);
@@ -299,13 +300,13 @@ const CreateUGC = () => {
     setNiche(nicheText);
   };
 
-  const getScenariosFromConversation = async (nicheText?: string) => {
+  const getScenariosFromConversation = async (nicheText?: string, moreScen?: boolean) => {
     const targetNiche = nicheText || niche;
     setIsLoadingScenarios(true);
     try {
       const responseText = await converse(
         threadId!,
-        `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 6 creative UGC scenario ideas. Return ONLY a compact JSON object with "scenarios" array.`,
+        `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas. Return ONLY a compact JSON object with "scenarios" array.`,
         ASSISTANT_ID
       );
       // Extract JSON from response
@@ -330,7 +331,7 @@ const CreateUGC = () => {
             metadata: { scenarioCount: scenarios.scenarios?.length || 0 }
           });
         }
-        
+
         toast({
           title: "Scenarios Generated",
           description: `Got ${scenarios.scenarios?.length || 0} UGC scenario ideas for your product.`,
@@ -398,7 +399,8 @@ const CreateUGC = () => {
 
   const generateMoreScenarios = async () => {
     setAiScenarios([]); // Clear existing scenarios
-    await getScenariosFromConversation();
+    setMoreScenarios(true)
+    await getScenariosFromConversation("",true);
   };
 
   // handleGenerate.ts – final version aligned with Supabase contract
@@ -1065,13 +1067,6 @@ const CreateUGC = () => {
                   <Pencil className="h-3 w-3" />
                   </Button>
                 </div>
-                {/* <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSettingsOpen(true)}
-                  className="rounded-full h-8 w-8 p-0 "
-                >
-                </Button> */}
               </div>
 
               {/* Bottom row: Generate button */}
