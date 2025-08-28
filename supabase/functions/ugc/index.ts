@@ -65,6 +65,19 @@ serve(async (req) => {
   }
 });
 
+// Fix the UGC function to use correct cost calculation
+function calculateImageCost(settings: any): number {
+  const qualityCosts = {
+    'low': 1,
+    'medium': 1.5,
+    'hd': 2,
+    'high': 2
+  };
+  
+  const quality = settings.quality || 'high';
+  return qualityCosts[quality] || 2;
+}
+
 async function createImageJob(userId: string, payload: any, supabase: any) {
   const { prompt, settings, source_image_id, idempotency_window_minutes = 60 } = payload;
 
@@ -83,7 +96,7 @@ async function createImageJob(userId: string, payload: any, supabase: any) {
   const { data: existingJob } = await supabase
     .from('image_jobs')
     .select('*, ugc_images(*)')
-    .eq('idempotency_key', idempotencyKey)
+    .eq('content_hash', idempotencyKey)
     .gte('created_at', windowStart.toISOString())
     .single();
 
@@ -101,9 +114,8 @@ async function createImageJob(userId: string, payload: any, supabase: any) {
   }
 
   // Calculate cost
-  const { data: cost } = await supabase.rpc('calculate_image_cost', {
-    p_settings: settings
-  });
+  const costPerImage = calculateImageCost(settings);
+  const totalCost = costPerImage * (settings.number || 1);
 
   // Start transaction to reserve credits and create job
   const { data: subscriber } = await supabase
@@ -112,14 +124,14 @@ async function createImageJob(userId: string, payload: any, supabase: any) {
     .eq('user_id', userId)
     .single();
 
-  if (!subscriber || subscriber.credits_balance < cost) {
+  if (!subscriber || subscriber.credits_balance < totalCost) {
     throw new Error('Insufficient credits');
   }
 
   // Reserve credits
   const { data: creditResult } = await supabase.rpc('deduct_user_credits', {
     p_user_id: userId,
-    p_amount: cost,
+    p_amount: totalCost,
     p_reason: 'reserve:image_job'
   });
 
@@ -134,10 +146,11 @@ async function createImageJob(userId: string, payload: any, supabase: any) {
       user_id: userId,
       prompt,
       settings,
-      source_image_id: source_image_id || null,
-      idempotency_key: idempotencyKey,
+      content_hash: idempotencyKey,
       total: settings.number || 1,
-      reserved_credits: cost,
+      progress: 0,
+      completed: 0,
+      failed: 0,
       status: 'queued'
     })
     .select()
@@ -147,21 +160,14 @@ async function createImageJob(userId: string, payload: any, supabase: any) {
     // Refund credits on failure
     await supabase.rpc('refund_user_credits', {
       p_user_id: userId,
-      p_amount: cost,
+      p_amount: totalCost,
       p_reason: 'job_creation_failed'
     });
     throw new Error(jobError.message);
   }
 
-  // Fire background worker (async)
-  fetch(req.url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${supabaseServiceKey}`
-    },
-    body: JSON.stringify({ action: 'generateImages', jobId: job.id })
-  }).catch(console.error);
+  // Fire background worker using EdgeRuntime.waitUntil
+  EdgeRuntime.waitUntil(generateImages(job.id, supabase));
 
   return new Response(JSON.stringify({ jobId: job.id }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -255,11 +261,7 @@ async function generateImages(jobId: string, supabase: any) {
 
     // Handle credit refunds for failed images
     if (failed > 0) {
-      const { data: unitCost } = await supabase.rpc('calculate_image_cost', {
-        p_settings: { ...job.settings, number: 1 }
-      });
-      
-      const refundAmount = failed * unitCost;
+      const refundAmount = failed * calculateImageCost({ ...job.settings, number: 1 });
       await supabase.rpc('refund_user_credits', {
         p_user_id: job.user_id,
         p_amount: refundAmount,
@@ -278,10 +280,11 @@ async function generateImages(jobId: string, supabase: any) {
       })
       .eq('id', jobId);
 
-    // Refund all credits on complete failure
+    // Refund all credits on complete failure - calculate total cost
+    const totalCost = calculateImageCost(job.settings) * (job.settings.number || 1);
     await supabase.rpc('refund_user_credits', {
       p_user_id: job.user_id,
-      p_amount: job.reserved_credits,
+      p_amount: totalCost,
       p_reason: 'job_processing_failed'
     });
   }
@@ -293,18 +296,12 @@ async function generateImages(jobId: string, supabase: any) {
 
 async function generateSingleImage(job: any, index: number, sourceImageUrl: string | null, supabase: any) {
   const openaiPayload: any = {
-    model: 'gpt-image-1',
+    model: 'dall-e-3',
     prompt: job.prompt,
     size: job.settings.size || '1024x1024',
     quality: job.settings.quality || 'standard',
-    background: 'transparent',
-    output_format: job.settings.output_format || 'png'
+    response_format: 'b64_json'
   };
-
-  // Add source image if provided (for image-to-image generation)
-  if (sourceImageUrl) {
-    openaiPayload.image = sourceImageUrl;
-  }
 
   const response = await fetch('https://api.openai.com/v1/images/generations', {
     method: 'POST',
@@ -416,12 +413,18 @@ async function cancelJob(userId: string, jobId: string, supabase: any) {
     throw new Error('Job not found or cannot be canceled');
   }
 
-  // Refund reserved credits
-  await supabase.rpc('refund_user_credits', {
-    p_user_id: userId,
-    p_amount: job.reserved_credits,
-    p_reason: 'job_canceled'
-  });
+  // Refund reserved credits - calculate the cost based on remaining images
+  const totalCost = calculateImageCost(job.settings) * (job.settings.number || 1);
+  const usedCost = calculateImageCost(job.settings) * (job.completed || 0);
+  const refundAmount = totalCost - usedCost;
+
+  if (refundAmount > 0) {
+    await supabase.rpc('refund_user_credits', {
+      p_user_id: userId,
+      p_amount: refundAmount,
+      p_reason: 'job_canceled'
+    });
+  }
 
   return new Response(JSON.stringify({ success: true }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }

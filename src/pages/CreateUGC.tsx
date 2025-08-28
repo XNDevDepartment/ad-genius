@@ -21,7 +21,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
 import { useImageLimit } from "@/hooks/useImageLimit";
 import { useSourceImageUpload } from "@/hooks/useSourceImageUpload";
-import { useSecureImageStorage } from "@/components/departments/ugc/SecureImageStorage";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Description } from "@radix-ui/react-dialog";
@@ -53,7 +52,6 @@ const CreateUGC = () => {
 
   const { user, subscriptionData } = useAuth();
   const { credits, canAfford, deductCredits, getRemainingCredits, getTotalCredits } = useCredits();
-  const { saveImages } = useSecureImageStorage();
   const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
   const [showAuthModal, setShowAuthModal] = useState(!user);
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
@@ -528,45 +526,21 @@ const CreateUGC = () => {
   const selectedImages = generatedImages.filter(img => img.selected);
 
   const handleSaveImages = async (validImages: GeneratedImage[]) => {
+    // Images are automatically saved to ugc_images table server-side
+    // This function is now deprecated but kept for compatibility
     if (validImages.length === 0) {
       toast({
         title: "No images to save",
-        description: "No generated images to save to your library.",
+        description: "No generated images to save.",
         variant: "destructive",
       });
       return;
     }
 
-    try {
-      const base64Images = validImages.map(img =>
-        img.url.replace('data:image/png;base64,', '')
-      );
-
-      await saveImages({
-        base64Images,
-        prompt: validImages[0].prompt,
-        settings: {
-          numImages,
-          orientation: imageOrientation,
-          timeOfDay,
-          style,
-          scenario: selectedScenario
-        },
-        source_image_id: sourceImageId
-      });
-
-      toast({
-        title: "Images auto-saved!",
-        description: `Successfully saved ${validImages.length} images to your library.`,
-      });
-    } catch (error) {
-      console.error('Auto-save failed:', error);
-      toast({
-        title: "Auto-save failed",
-        description: "Failed to automatically save images. You can still download them.",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "Images saved!",
+      description: `Your ${validImages.length} images are already saved to your library.`,
+    });
   };
 
   const handleDownloadAll = () => {

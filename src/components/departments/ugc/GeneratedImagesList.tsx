@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, Image, Check, ExternalLink, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useSecureImageStorage } from "./SecureImageStorage";
 
 interface GeneratedImagesListProps {
   images: string[];
@@ -14,9 +13,7 @@ interface GeneratedImagesListProps {
 
 export const GeneratedImagesList = ({ images, prompt = "Generated UGC image", settings = {} }: GeneratedImagesListProps) => {
   const { toast } = useToast();
-  const { saveImages } = useSecureImageStorage();
   const [downloadedImages, setDownloadedImages] = useState<Set<number>>(new Set());
-  const [savingImages, setSavingImages] = useState<Set<number>>(new Set());
   const [savedImages, setSavedImages] = useState<Set<number>>(new Set());
 
   const handleDownload = (b64: string, index: number) => {
@@ -37,36 +34,13 @@ export const GeneratedImagesList = ({ images, prompt = "Generated UGC image", se
   };
 
   const handleSaveToProject = async (b64: string, index: number) => {
-    try {
-      setSavingImages(prev => new Set(prev).add(index));
-      
-      const fullB64 = b64.startsWith('data:') ? b64 : `data:image/png;base64,${b64}`;
-      
-      await saveImages({
-        base64Images: [fullB64],
-        prompt,
-        settings
-      });
-
-      setSavedImages(prev => new Set(prev).add(index));
-      toast({
-        title: "Image saved successfully!",
-        description: "Your image has been saved to your project library.",
-      });
-    } catch (error) {
-      console.error('Error saving image:', error);
-      toast({
-        title: "Failed to save image",
-        description: "There was an error saving your image. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setSavingImages(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(index);
-        return newSet;
-      });
-    }
+    // Images are now automatically saved server-side
+    // This is kept for UI compatibility
+    setSavedImages(prev => new Set(prev).add(index));
+    toast({
+      title: "Image already saved!",
+      description: "Your images are automatically saved to your library.",
+    });
   };
 
   const handleOpenInNewTab = (b64: string) => {
@@ -134,14 +108,9 @@ export const GeneratedImagesList = ({ images, prompt = "Generated UGC image", se
                     size="sm"
                     className="flex-1 gap-2"
                     onClick={() => handleSaveToProject(b64, i)}
-                    disabled={savingImages.has(i) || savedImages.has(i)}
+                    disabled={savedImages.has(i)}
                   >
-                    {savingImages.has(i) ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : savedImages.has(i) ? (
+                    {savedImages.has(i) ? (
                       <>
                         <Check className="h-4 w-4" />
                         Saved

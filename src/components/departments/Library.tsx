@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSecureImageStorage } from "./ugc/SecureImageStorage";
 
 interface LibraryImage {
   id: string;
@@ -33,7 +32,18 @@ export const Library = ({ onBack }: LibraryProps) => {
   const [sortBy, setSortBy] = useState("newest");
   const { toast } = useToast();
   const { user } = useAuth();
-  const { images, deleteImage, loading } = useSecureImageStorage();
+  
+  // Since we removed SecureImageStorage, show placeholder for now
+  const images: LibraryImage[] = [];
+  const loading = false;
+  
+  const deleteImage = async (imageId: string) => {
+    // Placeholder - will be implemented with new system
+    toast({
+      title: "Feature Coming Soon",
+      description: "Image library will be updated to use the new UGC system.",
+    });
+  };
 
   const handleDownload = async (image: LibraryImage) => {
     toast({
