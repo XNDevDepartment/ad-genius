@@ -1,12 +1,14 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Check, X, Star, Zap, Shield } from "lucide-react";
+import { Check, X, Star, Zap, Shield, Crown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import HeaderSection from "@/components/landing/HeaderSection";
+import { useState } from "react";
 
 const plans = [
   {
@@ -15,19 +17,19 @@ const plans = [
     price: "Free",
     period: "",
     description: "Perfect for getting started with AI image generation",
-    credits: 30,
+    credits: 10,
     features: [
-      "30 credits per month",
-      "Medium quality images (1.5 credits each)",
-      "Up to 20 images per month",
-      "Basic templates",
-      "Community support",
-      "Standard processing time"
+      "10 credits per month",
+      "Generate 1 image at a time",
+      "4 UGC scenarios available",
+      "All quality levels (low: 1, medium: 1.5, high: 2 credits)",
+      "Up to 5 high-quality images",
+      "Ticket support only"
     ],
     limitations: [
-      "Medium quality only",
-      "Limited template access",
-      "Community support only"
+      "Limited to 1 image per generation",
+      "Only 4 scenarios available",
+      "Ticket support only"
     ],
     cta: "Get Started",
     popular: false,
@@ -35,50 +37,75 @@ const plans = [
     bgClass: "bg-gradient-to-br from-muted to-card"
   },
   {
-    id: "pro",
-    name: "Pro",
-    price: "€39",
+    id: "starter",
+    name: "Starter",
+    monthlyPrice: 29,
+    yearlyPrice: 24.17,
     period: "/month",
-    description: "Best for professionals and small businesses",
-    credits: 100,
+    description: "Perfect for small businesses and content creators",
+    credits: 80,
     features: [
-      "100 credits per month",
+      "80 credits per month",
+      "Generate up to 3 images at once",
+      "All 6 UGC scenarios available",
       "All quality levels available",
-      "High quality: 2 credits, Medium: 1.5 credits, Low: 1 credit",
-      "Up to 100 high-quality images per month",
-      "Premium templates & styles",
-      "Priority support",
-      "Faster processing",
-      "Custom dimensions",
+      "Up to 40 high-quality images",
+      "Priority email support",
       "Commercial usage rights"
     ],
     limitations: [],
-    cta: "Upgrade to Pro",
-    popular: true,
+    cta: "Start Creating",
+    popular: false,
     icon: <Star className="h-6 w-6" />,
+    bgClass: "bg-gradient-to-br from-primary/10 to-primary/5"
+  },
+  {
+    id: "plus",
+    name: "Plus",
+    monthlyPrice: 49,
+    yearlyPrice: 40.83,
+    period: "/month",
+    description: "Best for agencies and growing businesses",
+    credits: 200,
+    features: [
+      "200 credits per month",
+      "Generate up to 3 images at once",
+      "All 6 UGC scenarios available",
+      "All quality levels available",
+      "Up to 100 high-quality images",
+      "Priority support + Live chat",
+      "Advanced templates & styles",
+      "Commercial usage rights",
+      "Team collaboration (coming soon)"
+    ],
+    limitations: [],
+    cta: "Go Plus",
+    popular: true,
+    icon: <Crown className="h-6 w-6" />,
     bgClass: "bg-gradient-primary"
   },
   {
-    id: "enterprise",
-    name: "Enterprise",
-    price: "Custom",
-    period: "",
-    description: "For teams and high-volume users",
-    credits: "Unlimited",
+    id: "pro",
+    name: "Pro",
+    monthlyPrice: 99,
+    yearlyPrice: 82.50,
+    period: "/month",
+    description: "For high-volume users and enterprises",
+    credits: 400,
     features: [
-      "Unlimited credits",
-      "All quality levels",
-      "Unlimited image generation",
-      "Everything in Pro",
-      "Team collaboration tools",
-      "API access",
-      "White-label exports",
-      "Custom integrations",
+      "400 credits per month",
+      "Generate up to 3 images at once",
+      "All 6 UGC scenarios available",
+      "All quality levels available",
+      "Up to 200 high-quality images",
       "Dedicated account manager",
-      "SLA guarantee"
+      "Priority processing",
+      "API access (coming soon)",
+      "White-label exports (coming soon)",
+      "Custom integrations support"
     ],
     limitations: [],
-    cta: "Contact Sales",
+    cta: "Go Pro",
     popular: false,
     icon: <Shield className="h-6 w-6" />,
     bgClass: "bg-gradient-to-br from-accent to-secondary"
@@ -86,52 +113,65 @@ const plans = [
 ];
 
 const comparisonFeatures = [
-  { feature: "Monthly Credits", free: "30", pro: "100", enterprise: "Unlimited" },
-  { feature: "Image Quality", free: "Medium only", pro: "All levels", enterprise: "All levels" },
-  { feature: "High Quality Images/Month", free: "0", pro: "50", enterprise: "Unlimited" },
-  { feature: "Medium Quality Images/Month", free: "20", pro: "66", enterprise: "Unlimited" },
-  { feature: "Low Quality Images/Month", free: "0", pro: "100", enterprise: "Unlimited" },
-  { feature: "Premium Templates", free: false, pro: true, enterprise: true },
-  { feature: "Custom Dimensions", free: false, pro: true, enterprise: true },
-  { feature: "Commercial Usage", free: false, pro: true, enterprise: true },
-  { feature: "Priority Support", free: false, pro: true, enterprise: true },
-  { feature: "Team Collaboration", free: false, pro: false, enterprise: true },
-  { feature: "API Access", free: false, pro: false, enterprise: true },
-  { feature: "White-label Exports", free: false, pro: false, enterprise: true },
-  { feature: "SLA Guarantee", free: false, pro: false, enterprise: true }
+  { feature: "Monthly Credits", free: "10", starter: "80", plus: "200", pro: "400" },
+  { feature: "Max Images per Generation", free: "1", starter: "3", plus: "3", pro: "3" },
+  { feature: "High Quality Images/Month", free: "5", starter: "40", plus: "100", pro: "200" },
+  { feature: "Medium Quality Images/Month", free: "6", starter: "53", plus: "133", pro: "266" },
+  { feature: "Low Quality Images/Month", free: "10", starter: "80", plus: "200", pro: "400" },
+  { feature: "UGC Scenarios Available", free: "4", starter: "All 6", plus: "All 6", pro: "All 6" },
+  { feature: "All Quality Levels", free: true, starter: true, plus: true, pro: true },
+  { feature: "Commercial Usage", free: false, starter: true, plus: true, pro: true },
+  { feature: "Priority Support", free: false, starter: true, plus: true, pro: true },
+  { feature: "Live Chat Support", free: false, starter: false, plus: true, pro: true },
+  { feature: "Advanced Templates", free: false, starter: false, plus: true, pro: true },
+  { feature: "Team Collaboration", free: false, starter: false, plus: "Soon", pro: true },
+  { feature: "API Access", free: false, starter: false, plus: false, pro: "Soon" },
+  { feature: "Dedicated Manager", free: false, starter: false, plus: false, pro: true }
 ];
 
 const Pricing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [isYearly, setIsYearly] = useState(false);
 
   const handlePlanSelect = async (planId: string) => {
-    if (planId === "pro") {
-      if (!user) {
-        // Redirect to account page to sign up first
-        navigate('/account');
-        return;
-      }
-      
-      try {
-        const { data, error } = await supabase.functions.invoke('create-checkout');
-        if (data?.url) {
-          window.open(data.url, '_blank');
-        } else {
-          console.error('Error creating checkout:', error);
-          navigate('/account');
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        navigate('/account');
-      }
-    } else if (planId === "enterprise") {
-      // For now, redirect to account page - in the future could open a contact form
-      navigate('/account');
-    } else {
+    if (planId === "free") {
       // Free plan - redirect to account to sign up
       navigate('/account');
+      return;
     }
+
+    if (!user) {
+      // Redirect to account page to sign up first
+      navigate('/account');
+      return;
+    }
+    
+    try {
+      // For paid plans, create checkout session
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { 
+          planId,
+          interval: isYearly ? 'year' : 'month'
+        }
+      });
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      } else {
+        console.error('Error creating checkout:', error);
+        navigate('/account');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      navigate('/account');
+    }
+  };
+
+  const getDisplayPrice = (plan: any) => {
+    if (plan.price === "Free") return "Free";
+    
+    const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
+    return `€${price}`;
   };
 
   return (
@@ -141,6 +181,7 @@ const Pricing = () => {
           <HeaderSection />
         </div>
       }
+      
       {/* Header */}
       <div className="bg-gradient-hero text-primary-foreground py-20 mt-3">
         <div className="container mx-auto px-6 text-center">
@@ -150,10 +191,38 @@ const Pricing = () => {
           <p className="text-xl lg:text-2xl text-primary-foreground/90 max-w-3xl mx-auto mb-8">
             Start free and scale as you grow. Flexible credit-based pricing for all your AI image generation needs.
           </p>
+          
+          {/* Billing Toggle */}
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <span className={`text-sm ${!isYearly ? 'text-primary-foreground' : 'text-primary-foreground/70'}`}>
+              Monthly
+            </span>
+            <button
+              onClick={() => setIsYearly(!isYearly)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                isYearly ? 'bg-primary' : 'bg-primary-foreground/20'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  isYearly ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+            <span className={`text-sm ${isYearly ? 'text-primary-foreground' : 'text-primary-foreground/70'}`}>
+              Yearly
+            </span>
+            {isYearly && (
+              <Badge variant="secondary" className="ml-2">
+                Save 2 months!
+              </Badge>
+            )}
+          </div>
+
           <div className="flex flex-wrap justify-center gap-4 text-sm">
             <div className="flex items-center gap-2">
               <Check className="h-4 w-4" />
-              <span>14-day free trial on Pro</span>
+              <span>Start with 10 free credits</span>
             </div>
             <div className="flex items-center gap-2">
               <Check className="h-4 w-4" />
@@ -169,7 +238,7 @@ const Pricing = () => {
 
       {/* Pricing Cards */}
       <div className="container mx-auto px-6 py-16">
-        <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-20">
+        <div className="grid md:grid-cols-4 gap-6 max-w-7xl mx-auto mb-20">
           {plans.map((plan) => (
             <Card
               key={plan.id}
@@ -193,41 +262,45 @@ const Pricing = () => {
                     {plan.icon}
                   </div>
                 </div>
-                <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
+                <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
                 <div className="mb-4">
-                  <span className="text-4xl font-bold text-primary">{plan.price}</span>
+                  <span className="text-3xl font-bold text-primary">{getDisplayPrice(plan)}</span>
                   {plan.period && (
-                    <span className="text-muted-foreground text-lg">{plan.period}</span>
+                    <span className="text-muted-foreground text-sm">{plan.period}</span>
+                  )}
+                  {isYearly && plan.monthlyPrice && (
+                    <div className="text-xs text-muted-foreground">
+                      Billed annually (€{(plan.yearlyPrice * 12).toFixed(0)}/year)
+                    </div>
                   )}
                 </div>
-                <CardDescription className="text-base">
+                <CardDescription className="text-sm">
                   {plan.description}
                 </CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-6">
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold text-primary">{plan.credits}</div>
-                  <div className="text-sm text-muted-foreground">Credits per month</div>
+                <div className="text-center p-3 bg-muted rounded-lg">
+                  <div className="text-xl font-bold text-primary">{plan.credits}</div>
+                  <div className="text-xs text-muted-foreground">Credits per month</div>
                 </div>
 
-                <ul className="space-y-3">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">{feature}</span>
+                <ul className="space-y-2">
+                  {plan.features.slice(0, 4).map((feature, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span className="text-xs">{feature}</span>
                     </li>
                   ))}
                 </ul>
 
                 {plan.limitations.length > 0 && (
-                  <div className="border-t pt-4">
-                    <h4 className="text-sm font-medium text-muted-foreground mb-2">Limitations:</h4>
-                    <ul className="space-y-2">
+                  <div className="border-t pt-3">
+                    <ul className="space-y-1">
                       {plan.limitations.map((limitation, index) => (
-                        <li key={index} className="flex items-start gap-3">
-                          <X className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                          <span className="text-sm text-muted-foreground">{limitation}</span>
+                        <li key={index} className="flex items-start gap-2">
+                          <X className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                          <span className="text-xs text-muted-foreground">{limitation}</span>
                         </li>
                       ))}
                     </ul>
@@ -241,7 +314,7 @@ const Pricing = () => {
                       ? "bg-primary hover:bg-primary/90"
                       : "variant-outline"
                   }`}
-                  size="lg"
+                  size="sm"
                 >
                   {plan.cta}
                 </Button>
@@ -264,13 +337,14 @@ const Pricing = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-1/3">Feature</TableHead>
+                    <TableHead className="w-1/4">Feature</TableHead>
                     <TableHead className="text-center">Free</TableHead>
+                    <TableHead className="text-center">Starter</TableHead>
                     <TableHead className="text-center bg-primary/5">
-                      Pro
+                      Plus
                       <Badge variant="secondary" className="ml-2">Popular</Badge>
                     </TableHead>
-                    <TableHead className="text-center">Enterprise</TableHead>
+                    <TableHead className="text-center">Pro</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -288,7 +362,29 @@ const Pricing = () => {
                           item.free
                         )}
                       </TableCell>
+                      <TableCell className="text-center">
+                        {typeof item.starter === 'boolean' ? (
+                          item.starter ? (
+                            <Check className="h-5 w-5 text-primary mx-auto" />
+                          ) : (
+                            <X className="h-5 w-5 text-muted-foreground mx-auto" />
+                          )
+                        ) : (
+                          <span className="font-medium">{item.starter}</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-center bg-primary/5">
+                        {typeof item.plus === 'boolean' ? (
+                          item.plus ? (
+                            <Check className="h-5 w-5 text-primary mx-auto" />
+                          ) : (
+                            <X className="h-5 w-5 text-muted-foreground mx-auto" />
+                          )
+                        ) : (
+                          <span className="font-medium">{item.plus}</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
                         {typeof item.pro === 'boolean' ? (
                           item.pro ? (
                             <Check className="h-5 w-5 text-primary mx-auto" />
@@ -297,17 +393,6 @@ const Pricing = () => {
                           )
                         ) : (
                           <span className="font-medium">{item.pro}</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {typeof item.enterprise === 'boolean' ? (
-                          item.enterprise ? (
-                            <Check className="h-5 w-5 text-primary mx-auto" />
-                          ) : (
-                            <X className="h-5 w-5 text-muted-foreground mx-auto" />
-                          )
-                        ) : (
-                          <span className="font-medium">{item.enterprise}</span>
                         )}
                       </TableCell>
                     </TableRow>
@@ -366,13 +451,19 @@ const Pricing = () => {
             <div>
               <h3 className="font-medium mb-2">Do unused credits roll over?</h3>
               <p className="text-muted-foreground text-sm">
-                Credits reset monthly and don't carry over to the next billing period to keep pricing simple and fair.
+                Credits reset monthly and don't carry over to keep pricing simple and fair.
               </p>
             </div>
             <div>
-              <h3 className="font-medium mb-2">Is there a free trial?</h3>
+              <h3 className="font-medium mb-2">What's the difference between yearly and monthly billing?</h3>
               <p className="text-muted-foreground text-sm">
-                Yes! Pro plans come with a 14-day free trial. No credit card required to start with the Free plan.
+                Yearly plans save you 2 months - you pay for 10 months and get 12 months of service.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-medium mb-2">How many scenarios are available?</h3>
+              <p className="text-muted-foreground text-sm">
+                Free users get 4 scenarios. All paid plans include access to all 6 UGC scenarios.
               </p>
             </div>
           </div>

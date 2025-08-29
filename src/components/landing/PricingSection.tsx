@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,55 +9,72 @@ const plans = [
     price: "Free",
     description: "Perfect for trying out Ad Genius",
     features: [
-      "30 credits per month",
-      "720p image renders",
-      "Basic templates",
-      "Community support",
-      "Standard processing"
+      "10 credits per month",
+      "Generate 1 image at a time",
+      "4 UGC scenarios",
+      "All quality levels",
+      "Ticket support"
     ],
     cta: "Get started",
     popular: false,
-    entreprise: false
+    enterprise: false
+  },
+  {
+    name: "Starter",
+    price: "€29",
+    period: "/month",
+    description: "Perfect for small businesses",
+    features: [
+      "80 credits per month",
+      "Generate up to 3 images",
+      "All 6 UGC scenarios",
+      "Priority support",
+      "Commercial usage",
+      "Advanced templates"
+    ],
+    cta: "Start Creating",
+    popular: false,
+    enterprise: false
+  },
+  {
+    name: "Plus",
+    price: "€49",
+    period: "/month",
+    description: "Best for agencies and growing businesses",
+    features: [
+      "200 credits per month",
+      "Generate up to 3 images",
+      "All 6 UGC scenarios",
+      "Priority + Live chat",
+      "Advanced templates",
+      "Team collaboration"
+    ],
+    cta: "Go Plus",
+    popular: true,
+    enterprise: false
   },
   {
     name: "Pro",
-    price: "$29",
+    price: "€99",
     period: "/month",
-    description: "Best for small businesses and agencies",
+    description: "For high-volume users and enterprises",
     features: [
-      "Unlimited static ads",
-      "1080p video exports",
-      "Premium templates",
-      "Priority support",
-      "Brand kit storage",
-      "Custom dimensions"
-    ],
-    cta: "Unlock Your Success",
-    popular: true,
-    entreprise: false
-  },
-  {
-    name: "Entreprise",
-    price: "$99",
-    period: "/month",
-    description: "For teams and high-volume users",
-    features: [
-      "Everything in Pro",
-      "Team collaboration",
+      "400 credits per month",
+      "Generate up to 3 images",
+      "All 6 UGC scenarios",
+      "Dedicated manager",
       "API access",
-      "White-label exports",
-      "Custom integrations",
-      "Dedicated support"
+      "White-label exports"
     ],
-    cta: "Contact Sales",
+    cta: "Go Pro",
     popular: false,
-    entreprise: true
+    enterprise: true
   }
 ];
 
-
 const PricingSection = () => {
   const navigate = useNavigate();
+  
   return (
     <section className="py-5 bg-black text-white" id="pricing-section">
       <div className="container mx-auto px-6">
@@ -67,11 +85,11 @@ const PricingSection = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
           {plans.map((plan, index) => (
             <div
               key={index}
-              className={`relative rounded-2xl p-8 ${
+              className={`relative rounded-2xl p-6 ${
                 plan.popular
                   ? "bg-white text-foreground border-2 border-primary transform scale-105"
                   : "bg-white/5 backdrop-blur-sm border border-white/10"
@@ -85,31 +103,30 @@ const PricingSection = () => {
                 </div>
               )}
 
-              <div className="text-center mb-8">
-                <h3 className={`text-xl font-semibold mb-2 ${plan.popular ? "text-primary" : "text-white"}`}>
+              <div className="text-center mb-6">
+                <h3 className={`text-lg font-semibold mb-2 ${plan.popular ? "text-primary" : "text-white"}`}>
                   {plan.name}
                 </h3>
                 <div className="mb-3">
                   <span className={`text-2xl font-bold ${plan.popular ? "text-secondary" : "text-gray-400"}`}>
-                    {/* {plan.price} */}
-                    Soon
+                    {plan.price}
                   </span>
-                  {/* {plan.period && (
-                    <span className={`text-lg ${plan.popular ? "text-muted-foreground" : "text-gray-400"}`}>
+                  {plan.period && (
+                    <span className={`text-sm ${plan.popular ? "text-muted-foreground" : "text-gray-400"}`}>
                       {plan.period}
                     </span>
-                  )} */}
+                  )}
                 </div>
                 <p className={`text-sm ${plan.popular ? "text-muted-foreground" : "text-gray-400"}`}>
                   {plan.description}
                 </p>
               </div>
 
-              <ul className="space-y-3 mb-8">
+              <ul className="space-y-2 mb-6">
                 {plan.features.map((feature, featureIndex) => (
-                  <li key={featureIndex} className="flex items-center space-x-3">
+                  <li key={featureIndex} className="flex items-center space-x-2">
                     <svg 
-                      className={`w-5 h-5 ${plan.popular ? "text-primary" : "text-gray-400"}`} 
+                      className={`w-4 h-4 ${plan.popular ? "text-primary" : "text-gray-400"}`} 
                       fill="currentColor" 
                       viewBox="0 0 20 20"
                     >
@@ -133,6 +150,7 @@ const PricingSection = () => {
                     ? "btn-primary"
                     : "bg-white/10 hover:bg-white/20 text-white border border-white/20"
                 }`}
+                size="sm"
               >
                 View Details
               </Button>
@@ -142,7 +160,7 @@ const PricingSection = () => {
 
         <div className="text-center mt-12">
           <p className="text-gray-400 text-sm mb-6">
-            All plans include 7-day free trial • No credit card required • Cancel anytime
+            All plans include free trial • No credit card required • Cancel anytime
           </p>
           <Button 
             onClick={() => navigate('/pricing')} 

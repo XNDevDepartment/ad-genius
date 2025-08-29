@@ -1,12 +1,14 @@
+
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Progress } from "@/components/ui/progress";
 import OrientationSelector from "@/components/OrientationSelector";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslation } from "react-i18next";
+import { useCredits } from "@/hooks/useCredits";
 
 export interface GenerationSettings {
   numImages: number;
@@ -39,9 +41,14 @@ export const SettingsForm = ({
   compact = false
 }: SettingsFormProps) => {
   const { t } = useTranslation();
+  const { isFreeTier, getMaxImagesPerGeneration } = useCredits();
 
   const usagePercentage = (remainingCredits / totalCredits) * 100;
   const creditsNeeded = calculateImageCost(settings.imageQuality, settings.numImages);
+  const maxImages = getMaxImagesPerGeneration();
+
+  const freeScenarios = ['lifestyle', 'minimal', 'vibrant', 'professional'];
+  const premiumScenarios = ['editorial', 'natural'];
 
   return (
     <div className="space-y-4">
@@ -63,13 +70,46 @@ export const SettingsForm = ({
         <ToggleGroup
           type="single"
           value={settings.numImages.toString()}
-          onValueChange={(value) => value && onSettingsChange({ numImages: parseInt(value) })}
+          onValueChange={(value) => {
+            if (value) {
+              const numImages = parseInt(value);
+              if (numImages <= maxImages) {
+                onSettingsChange({ numImages });
+              }
+            }
+          }}
           className="justify-start"
         >
           <ToggleGroupItem value="1" size="sm" className="flex-1 bg-muted">1</ToggleGroupItem>
-          <ToggleGroupItem value="2" size="sm" className="flex-1 bg-muted">2</ToggleGroupItem>
-          <ToggleGroupItem value="3" size="sm" className="flex-1 bg-muted">3</ToggleGroupItem>
+          <ToggleGroupItem 
+            value="2" 
+            size="sm" 
+            className={`flex-1 bg-muted ${maxImages < 2 ? 'opacity-50' : ''}`}
+            disabled={maxImages < 2}
+          >
+            2 {maxImages < 2 && <Lock className="h-3 w-3 ml-1" />}
+          </ToggleGroupItem>
+          <ToggleGroupItem 
+            value="3" 
+            size="sm" 
+            className={`flex-1 bg-muted ${maxImages < 3 ? 'opacity-50' : ''}`}
+            disabled={maxImages < 3}
+          >
+            3 {maxImages < 3 && <Lock className="h-3 w-3 ml-1" />}
+          </ToggleGroupItem>
         </ToggleGroup>
+        {isFreeTier() && (
+          <div className="text-xs text-muted-foreground">
+            Free plan limited to 1 image per generation. 
+            <Button 
+              variant="link" 
+              className="h-auto p-0 text-xs text-primary"
+              onClick={() => window.location.href = '/pricing'}
+            >
+              Upgrade for more
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Highlight Product */}
@@ -92,15 +132,47 @@ export const SettingsForm = ({
         <ToggleGroup 
           type="single" 
           value={settings.style} 
-          onValueChange={(value) => value && onSettingsChange({ style: value as GenerationSettings['style'] })}
-          className="justify-start grid grid-cols-4 gap-1"
+          onValueChange={(value) => {
+            if (value) {
+              // Check if it's a premium scenario and user is on free tier
+              if (isFreeTier() && premiumScenarios.includes(value)) {
+                return; // Don't allow selection
+              }
+              onSettingsChange({ style: value as GenerationSettings['style'] });
+            }
+          }}
+          className="justify-start grid grid-cols-3 gap-1"
         >
-          {(["lifestyle", "minimal", "vibrant", "professional"] as const).map((s) => (
+          {freeScenarios.map((s) => (
             <ToggleGroupItem key={s} value={s} size="sm" className="text-xs px-2 py-1 bg-muted">
               {capitalize(s)}
             </ToggleGroupItem>
           ))}
+          {premiumScenarios.map((s) => (
+            <ToggleGroupItem 
+              key={s} 
+              value={s} 
+              size="sm" 
+              className={`text-xs px-2 py-1 bg-muted relative ${isFreeTier() ? 'opacity-50' : ''}`}
+              disabled={isFreeTier()}
+            >
+              {capitalize(s)}
+              {isFreeTier() && <Lock className="h-3 w-3 ml-1" />}
+            </ToggleGroupItem>
+          ))}
         </ToggleGroup>
+        {isFreeTier() && (
+          <div className="text-xs text-muted-foreground">
+            2 premium scenarios available with paid plans. 
+            <Button 
+              variant="link" 
+              className="h-auto p-0 text-xs text-primary"
+              onClick={() => window.location.href = '/pricing'}
+            >
+              Upgrade to unlock
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Time of Day */}
@@ -195,7 +267,6 @@ export const SettingsForm = ({
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
-
     </div>
   );
 };

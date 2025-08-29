@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -61,8 +62,32 @@ serve(async (req) => {
     const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
     const active = subscriptions.data.length > 0;
     let subscriptionEnd: string | null = null;
+    let subscriptionTier = "Free";
+
     if (active) {
-      subscriptionEnd = new Date(subscriptions.data[0].current_period_end * 1000).toISOString();
+      const subscription = subscriptions.data[0];
+      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      
+      // Determine tier based on price amount
+      const priceId = subscription.items.data[0].price.id;
+      const price = await stripe.prices.retrieve(priceId);
+      const amount = price.unit_amount || 0;
+      
+      // Map price amounts to tiers (in cents)
+      if (amount >= 8200 && amount <= 9900) { // €82-€99 range
+        subscriptionTier = "Pro";
+      } else if (amount >= 4000 && amount <= 4900) { // €40-€49 range
+        subscriptionTier = "Plus";
+      } else if (amount >= 2400 && amount <= 2900) { // €24-€29 range
+        subscriptionTier = "Starter";
+      } else {
+        // Fallback based on amount ranges
+        if (amount >= 8000) subscriptionTier = "Pro";
+        else if (amount >= 4000) subscriptionTier = "Plus";  
+        else if (amount >= 2000) subscriptionTier = "Starter";
+      }
+      
+      log("Determined subscription tier", { amount, subscriptionTier });
     }
 
     await supabaseService.from("subscribers").upsert({
@@ -70,12 +95,16 @@ serve(async (req) => {
       user_id: user.id,
       stripe_customer_id: customerId,
       subscribed: active,
-      subscription_tier: active ? "Pro" : "Free",
+      subscription_tier: subscriptionTier,
       subscription_end: subscriptionEnd,
       updated_at: new Date().toISOString(),
     }, { onConflict: "email" });
 
-    return new Response(JSON.stringify({ subscribed: active, subscription_tier: active ? "Pro" : "Free", subscription_end: subscriptionEnd }), {
+    return new Response(JSON.stringify({ 
+      subscribed: active, 
+      subscription_tier: subscriptionTier, 
+      subscription_end: subscriptionEnd 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

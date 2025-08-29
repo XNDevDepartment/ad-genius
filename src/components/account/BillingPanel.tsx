@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +20,8 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
     getRemainingCredits, 
     getTotalCredits, 
     getUsedCredits, 
-    getDaysUntilReset 
+    getDaysUntilReset,
+    tier
   } = useCredits();
   const { toast } = useToast();
 
@@ -50,6 +52,16 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const getPlanPrice = (tier: string) => {
+    const prices = {
+      'Free': 'Free',
+      'Starter': '€29/month',
+      'Plus': '€49/month', 
+      'Pro': '€99/month'
+    };
+    return prices[tier as keyof typeof prices] || 'Free';
   };
 
   if (subscriptionLoading) {
@@ -89,11 +101,9 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold">{subscriptionData?.subscription_tier || 'Free'} Plan</h3>
+              <h3 className="font-semibold">{tier} Plan</h3>
               <p className="text-sm text-muted-foreground">
-                {subscriptionData?.subscription_tier === 'Pro' ? '€39/month' : 
-                 subscriptionData?.subscription_tier === 'Enterprise' ? '€99/month' : 
-                 'Free forever'}
+                {getPlanPrice(tier)}
               </p>
             </div>
             <Badge variant={subscriptionData?.subscribed ? "default" : "secondary"}>

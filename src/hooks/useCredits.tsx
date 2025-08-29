@@ -19,7 +19,6 @@ export const useCredits = () => {
 
   const canAfford = (amount: number): boolean => {
     const remaining = getRemainingCredits();
-    // Add epsilon tolerance for floating point precision
     const epsilon = 0.001;
     return remaining >= (amount - epsilon);
   };
@@ -31,13 +30,13 @@ export const useCredits = () => {
 
   const getTotalCredits = (): number => {
     if (!subscriptionData) return 0;
-    // Get the monthly allowance based on subscription tier
     const tierCredits = {
-      'Free': 60,
-      'Pro': 500,
-      'Enterprise': 2000
+      'Free': 10,
+      'Starter': 80,
+      'Plus': 200,
+      'Pro': 400
     };
-    return tierCredits[subscriptionData.subscription_tier as keyof typeof tierCredits] || 60;
+    return tierCredits[subscriptionData.subscription_tier as keyof typeof tierCredits] || 10;
   };
 
   const getUsedCredits = (): number => {
@@ -53,10 +52,9 @@ export const useCredits = () => {
     return Math.min((used / total) * 100, 100);
   };
 
-  // Removed client-side deductCredits - all deductions now handled server-side
   const deductCredits = async (amount: number): Promise<boolean> => {
     console.warn('Client-side credit deduction is deprecated. Credits are now deducted server-side during image generation.');
-    return true; // Always return true to maintain compatibility
+    return true;
   };
 
   const getDaysUntilReset = (): number => {
@@ -70,6 +68,14 @@ export const useCredits = () => {
 
   const refreshCredits = async () => {
     await refreshSubscription();
+  };
+
+  const isFreeTier = (): boolean => {
+    return subscriptionData?.subscription_tier === 'Free' || !subscriptionData?.subscribed;
+  };
+
+  const getMaxImagesPerGeneration = (): number => {
+    return isFreeTier() ? 1 : 3;
   };
 
   return {
@@ -87,5 +93,7 @@ export const useCredits = () => {
     getDaysUntilReset,
     refreshCredits,
     calculateImageCost,
+    isFreeTier,
+    getMaxImagesPerGeneration,
   };
 };
