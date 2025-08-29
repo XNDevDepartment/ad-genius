@@ -441,7 +441,7 @@ async function generateSingleImage(job: any, index: number, sourceImageUrl: stri
       }
 
       clearTimeout(timeout);
-      const crequestId = res.headers.get("x-request-id") || undefined;
+      requestId = res.headers.get("x-request-id") || undefined;
 
       if (!res.ok) {
         const text = await res.text();

@@ -209,8 +209,12 @@ const CreateUGC = () => {
       // Restore stage if saved
       if (savedStage === 'generating' || savedStage === 'results') {
         setStage(savedStage as 'generating' | 'results');
-        setNumImages(job.total);
       }
+    }
+
+    // Set numImages when job is loaded and we have a saved stage
+    if (job && (savedStage === 'generating' || savedStage === 'results')) {
+      setNumImages(job.total);
     }
   }, [job, loadJob]);
 
@@ -220,6 +224,14 @@ const CreateUGC = () => {
       // Clear localStorage when job finishes
       localStorage.removeItem('currentJobId');
       localStorage.removeItem('currentStage');
+      
+      // Switch to results stage for completed jobs
+      if (job?.status === 'completed' && stage !== 'results') {
+        setStage('results');
+        setTimeout(() => {
+          resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
     } else if ((job?.status === 'queued' || job?.status === 'processing') && stage !== 'generating') {
       // Restore generating stage if job is in progress
       setStage('generating');
