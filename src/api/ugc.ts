@@ -88,7 +88,7 @@ export async function cancelJob(jobId: string): Promise<{success: boolean}> {
 }
 
 export async function resumeJob(jobId: string): Promise<{success: boolean}> {
-  return callUgcFunction('generateImages', { jobId });
+  return callUgcFunction('resumeJob', { jobId });
 }
 
 export async function getActiveJobForUser(): Promise<{job: JobRow | null}> {
