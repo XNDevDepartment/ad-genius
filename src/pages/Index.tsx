@@ -79,24 +79,6 @@ const Index = () => {
             </div>
           </div>
         </div>
-
-        {/* Stats or Additional Info for Desktop */}
-        <div className="hidden lg:block mt-16 pt-16 border-t border-border/50">
-          <div className="grid grid-cols-3 gap-8 text-center">
-            <div className="space-y-2">
-              <div className="text-3xl font-bold text-primary">10K+</div>
-              <div className="text-sm text-muted-foreground">Images Generated</div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-3xl font-bold text-primary">95%</div>
-              <div className="text-sm text-muted-foreground">Conversion Rate</div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-3xl font-bold text-primary">2.5x</div>
-              <div className="text-sm text-muted-foreground">Faster Creation</div>
-            </div>
-          </div>
-        </div>
       </div>
       </>
     :
