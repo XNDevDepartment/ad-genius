@@ -408,6 +408,7 @@ const CreateUGC = () => {
         description: `You need ${creditsNeeded} credits to generate ${numImages} ${imageQuality}-quality image(s). You have ${remainingCredits} credits remaining.`,
         variant: 'destructive',
       });
+      setStage('setup');
       return;
     }
 
