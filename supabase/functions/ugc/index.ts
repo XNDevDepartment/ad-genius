@@ -471,8 +471,9 @@ async function generateSingleImage(job: any, index: number, sourceImageUrl: stri
           quality,
           provider: "openai",
           model: "gpt-image-1",
-          prompt,
         },
+        prompt: prompt,
+        source_image_id: job.source_image_id,
       });
       if (saveErr) throw new Error(`Failed to save image record: ${saveErr.message}`);
 
