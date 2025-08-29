@@ -60,9 +60,9 @@ export const useLibraryImages = () => {
         created_at: img.created_at,
         settings: {
           size: (img.meta as any)?.size || '1024x1024',
-          quality: (img.meta as any)?.quality || 'standard',
+          quality: (img.meta as any)?.quality || 'high',
           numberOfImages: 1,
-          format: 'png'
+          format: 'webp'
         },
         source_image_id: img.source_image_id
       }));
@@ -74,9 +74,9 @@ export const useLibraryImages = () => {
         created_at: img.created_at,
         settings: {
           size: (img.settings as any)?.size || '1024x1024',
-          quality: (img.settings as any)?.quality || 'standard',
+          quality: (img.settings as any)?.quality || 'high',
           numberOfImages: (img.settings as any)?.number || 1,
-          format: (img.settings as any)?.output_format || 'png'
+          format: (img.settings as any)?.output_format || 'webp'
         },
         source_image_id: img.source_image_id || undefined
       }));
