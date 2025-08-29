@@ -127,6 +127,10 @@ serve(async (req) => {
         if (!payload?.jobId) throw new Error("Missing jobId");
         return await cancelJob(userId, payload.jobId, supabaseService);
 
+      case "getActiveJob":
+        if (!userId) throw new Error("Auth required");
+        return await getActiveJob(userId, supabaseClient);
+
       case "recoverQueued": // optional sweeper
         if (!(isInternalAction && isServiceCall)) throw new Error("Forbidden");
         return await recoverQueued(supabaseService);
@@ -534,6 +538,25 @@ async function getJobImages(userId: string, jobId: string, supabase: SupabaseCli
   if (error) throw new Error("Failed to fetch images");
 
   return new Response(JSON.stringify({ images }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" }
+  });
+}
+
+async function getActiveJob(userId: string, supabase: SupabaseClient) {
+  const { data: job, error } = await supabase
+    .from("image_jobs")
+    .select("*")
+    .eq("user_id", userId)
+    .in("status", ["queued", "processing"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error && error.code !== "PGRST116") { // PGRST116 = no rows found
+    throw new Error("Failed to fetch active job");
+  }
+
+  return new Response(JSON.stringify({ job: job || null }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" }
   });
 }

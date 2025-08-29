@@ -205,6 +205,7 @@ export type Database = {
           progress: number | null
           prompt: string
           settings: Json
+          source_image_id: string | null
           started_at: string | null
           status: string
           total: number | null
@@ -223,6 +224,7 @@ export type Database = {
           progress?: number | null
           prompt: string
           settings?: Json
+          source_image_id?: string | null
           started_at?: string | null
           status?: string
           total?: number | null
@@ -241,6 +243,7 @@ export type Database = {
           progress?: number | null
           prompt?: string
           settings?: Json
+          source_image_id?: string | null
           started_at?: string | null
           status?: string
           total?: number | null
@@ -447,39 +450,39 @@ export type Database = {
           id: string
           job_id: string
           meta: Json | null
+          prompt: string | null
+          public_showcase: boolean | null
           public_url: string
+          source_image_id: string | null
           storage_path: string
+          updated_at: string | null
           user_id: string
-          promtp: string
-          updated_at?: string
-          source_image_id: string
-          public_showcase: boolean
         }
         Insert: {
           created_at?: string
           id?: string
           job_id: string
           meta?: Json | null
+          prompt?: string | null
+          public_showcase?: boolean | null
           public_url: string
+          source_image_id?: string | null
           storage_path: string
+          updated_at?: string | null
           user_id: string
-          promtp: string
-          updated_at?: string
-          source_image_id: string
-          public_showcase: boolean
         }
         Update: {
           created_at?: string
           id?: string
           job_id?: string
           meta?: Json | null
+          prompt?: string | null
+          public_showcase?: boolean | null
           public_url?: string
+          source_image_id?: string | null
           storage_path?: string
+          updated_at?: string | null
           user_id?: string
-          promtp: string
-          updated_at?: string
-          source_image_id: string
-          public_showcase: boolean
         }
         Relationships: [
           {
@@ -488,7 +491,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "image_jobs"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       user_favorites: {

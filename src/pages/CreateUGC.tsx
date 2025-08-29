@@ -99,6 +99,7 @@ const CreateUGC = () => {
 
   // Job system integration
   const { job, images: jobImages, createJob, clearJob, loadJob, resumeCurrentJob } = useImageJob();
+  const { activeJob, activeImages } = useActiveJob();
 
   // Sync job state with local state
   const isGenerating = job?.status === 'queued' || job?.status === 'processing';
@@ -202,22 +203,28 @@ const CreateUGC = () => {
   useEffect(() => {
     const savedJobId = localStorage.getItem('currentJobId');
     const savedStage = localStorage.getItem('currentStage');
-
+    
+    // Priority: 1) saved job, 2) active job from server
     if (savedJobId && !job) {
       // Load the job using the existing hook instance
       loadJob(savedJobId).catch(console.error);
-
+      
       // Restore stage if saved
       if (savedStage === 'generating' || savedStage === 'results') {
         setStage(savedStage as 'generating' | 'results');
       }
+    } else if (!savedJobId && activeJob && !job) {
+      // Load active job from server if no local job
+      loadJob(activeJob.id).catch(console.error);
+      setStage('generating');
+      setNumImages(activeJob.total);
     }
 
     // Set numImages when job is loaded and we have a saved stage
     if (job && (savedStage === 'generating' || savedStage === 'results')) {
       setNumImages(job.total);
     }
-  }, [job, loadJob]);
+  }, [job, activeJob, loadJob]);
 
   // Monitor job status and handle completion/failures
   useEffect(() => {
@@ -1084,7 +1091,12 @@ const CreateUGC = () => {
             <GeneratingImagePlaceholders
               numberOfImages={numImages}
               isGenerating={isGenerating}
-              images={generatedImages}
+              images={[...generatedImages, ...activeImages.map(img => ({
+                id: img.id,
+                url: img.public_url,
+                prompt: img.prompt || '',
+                selected: false
+              }))]}
               onImageSelect={handleImageSelect}
             />
 
