@@ -244,7 +244,7 @@ const Pricing = () => {
               key={plan.id}
               className={`relative border-2 transition-all duration-300 hover:shadow-lg ${
                 plan.popular
-                  ? "border-primary shadow-lg scale-105"
+                  ? "border-primary shadow-lg scale-105 bg-white dark:bg-card"
                   : "border-border hover:border-primary/50"
               }`}
             >
@@ -432,7 +432,7 @@ const Pricing = () => {
               </div>
               
               <div className="text-center text-sm text-muted-foreground">
-                Credits reset monthly and don't roll over. Upgrade or downgrade anytime.
+                Credits roll over monthly - unused credits are added to your next billing cycle. Upgrade or downgrade anytime.
               </div>
             </CardContent>
           </Card>
@@ -451,7 +451,7 @@ const Pricing = () => {
             <div>
               <h3 className="font-medium mb-2">Do unused credits roll over?</h3>
               <p className="text-muted-foreground text-sm">
-                Credits reset monthly and don't carry over to keep pricing simple and fair.
+                Yes! Unused credits roll over to the next month. We believe in fair pricing - you keep what you don't use.
               </p>
             </div>
             <div>
@@ -464,6 +464,42 @@ const Pricing = () => {
               <h3 className="font-medium mb-2">How many scenarios are available?</h3>
               <p className="text-muted-foreground text-sm">
                 Free users get 4 scenarios. All paid plans include access to all 6 UGC scenarios.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-medium mb-2">What happens if I exceed my credit limit?</h3>
+              <p className="text-muted-foreground text-sm">
+                If you run out of credits, you can upgrade your plan or wait for the next billing cycle when new credits are added to your account.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-medium mb-2">Can I cancel my subscription anytime?</h3>
+              <p className="text-muted-foreground text-sm">
+                Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your billing period.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-medium mb-2">What payment methods do you accept?</h3>
+              <p className="text-muted-foreground text-sm">
+                We accept all major credit cards, debit cards, and digital wallets through our secure Stripe payment processing.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-medium mb-2">Is there a free trial for paid plans?</h3>
+              <p className="text-muted-foreground text-sm">
+                Every new user starts with our generous Free plan (10 credits) to try our service. Upgrade anytime to unlock more features.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-medium mb-2">Can I use the generated images commercially?</h3>
+              <p className="text-muted-foreground text-sm">
+                Commercial usage rights are included with Starter, Plus, and Pro plans. Free plan users have personal use rights only.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-medium mb-2">How does the credit system work?</h3>
+              <p className="text-muted-foreground text-sm">
+                Credits are consumed based on image quality: Low (1 credit), Medium (1.5 credits), High (2 credits). Credits roll over monthly.
               </p>
             </div>
           </div>

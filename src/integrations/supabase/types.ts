@@ -632,6 +632,7 @@ export type Database = {
       reset_monthly_credits: {
         Args: Record<PropertyKey, never>
         Returns: {
+          credits_added: number
           new_balance: number
           old_balance: number
           user_id: string
