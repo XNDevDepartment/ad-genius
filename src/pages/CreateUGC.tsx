@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
 import { startConversationAPI, converse, sendImageAndRun } from '@/api/OpenAiChatClient';
 import { useImageJob } from '@/hooks/useImageJob';
+import { useActiveJob } from '@/hooks/useActiveJob';
 import type { CreateJobPayload } from '@/api/ugc';
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";

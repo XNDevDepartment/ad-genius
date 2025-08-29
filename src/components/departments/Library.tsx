@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLibraryImages } from "@/hooks/useLibraryImages";
+import { useActiveJob } from "@/hooks/useActiveJob";
+import { GeneratingImagePlaceholders } from "@/components/departments/ugc/GeneratingImagePlaceholders";
 
 interface LibraryImage {
   id: string;
@@ -34,6 +36,7 @@ export const Library = ({ onBack }: LibraryProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { images, loading, deleteImage: deleteImageFromDB } = useLibraryImages();
+  const { activeJob, activeImages } = useActiveJob();
 
   const handleDownload = async (image: LibraryImage) => {
     toast({
@@ -110,6 +113,21 @@ export const Library = ({ onBack }: LibraryProps) => {
         </div>
       </div>
 
+
+      {/* Currently Generating Section */}
+      {activeJob && (
+        <GeneratingImagePlaceholders
+          numberOfImages={activeJob.total}
+          isGenerating={activeJob.status === 'processing' || activeJob.status === 'queued'}
+          images={activeImages.map(img => ({
+            id: img.id,
+            url: img.public_url,
+            prompt: img.prompt || '',
+            selected: false
+          }))}
+          onImageSelect={() => {}} // No selection needed in library
+        />
+      )}
 
       {/* Images Grid */}
       <Card className="bg-gradient-card border-border/50">

@@ -91,6 +91,10 @@ export async function resumeJob(jobId: string): Promise<{success: boolean}> {
   return callUgcFunction('generateImages', { jobId });
 }
 
+export async function getActiveJobForUser(): Promise<{job: JobRow | null}> {
+  return callUgcFunction('getActiveJob');
+}
+
 export function subscribeJob(jobId: string, onUpdate: (row: any) => void) {
   const channel = supabase
     .channel(`image-job:${jobId}`)
@@ -110,6 +114,41 @@ export function subscribeJob(jobId: string, onUpdate: (row: any) => void) {
       if (status === 'SUBSCRIBED') {
         const { data } = await supabase.from('image_jobs').select('*').eq('id', jobId).single();
         if (data) onUpdate(data as JobRow); // initial sync
+      }
+    });
+
+  return () => supabase.removeChannel(channel);
+}
+
+export function subscribeJobImages(jobId: string, onUpdate: (images: UgcImageRow[]) => void) {
+  const channel = supabase
+    .channel(`job-images:${jobId}`)
+    .on(
+      'postgres_changes',
+      { event: '*',
+        schema: 'public',
+        table: 'ugc_images',
+        filter: `job_id=eq.${jobId}`
+      },
+      async () => {
+        // Refetch all images for this job when any change occurs
+        try {
+          const { images } = await getJobImages(jobId);
+          onUpdate(images);
+        } catch (error) {
+          console.error('Failed to fetch updated images:', error);
+        }
+      }
+    )
+    .subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        // Initial sync
+        try {
+          const { images } = await getJobImages(jobId);
+          onUpdate(images);
+        } catch (error) {
+          console.error('Failed to fetch initial images:', error);
+        }
       }
     });
 
