@@ -23,7 +23,7 @@ const plans = [
     name: "Starter",
     price: "€29",
     period: "/month",
-    description: "Perfect for small businesses",
+    description: "Perfect for small businesses and single entrepreneurs",
     features: [
       "80 credits per month",
       "Generate up to 3 images",
