@@ -17,13 +17,15 @@ interface GeneratingImagePlaceholdersProps {
   isGenerating?: boolean;
   images: GeneratedImage[];
   onImageSelect: (imageId: string) => void;
+  imageOrientation: string;
 }
 
 export const GeneratingImagePlaceholders = ({
   numberOfImages,
   isGenerating = true,
   images = [],
-  onImageSelect
+  onImageSelect,
+  imageOrientation
 }: GeneratingImagePlaceholdersProps) => {
 
   return (
@@ -45,6 +47,7 @@ export const GeneratingImagePlaceholders = ({
             totalSlots={numberOfImages}     // from job.settings.number
             isGenerating={isGenerating}
             onImageSelect={onImageSelect}
+            imageOrientation={imageOrientation}
           />
         </CardContent>
       </Card>

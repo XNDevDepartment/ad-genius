@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useFavorites } from "@/hooks/useFavorites";
 
+
 interface GeneratedImage {
   id: string;
   url: string;
@@ -15,34 +16,52 @@ interface ImageGalleryProps {
   totalSlots: number;                // how many images user requested
   isGenerating?: boolean;            // show animated state for placeholders
   onImageSelect: (imageId: string) => void;
+  imageOrientation: string;
 }
 
-function PlaceholderCell({ isGenerating }: { isGenerating?: boolean }) {
-  // EXACT same sizing as image cell via aspect-square
-  return (
-    <>
-    <div className="absolute inset-0 bg-gradient-to-br from-muted/30 to-muted/60 animate-pulse">
-      <div className="absolute inset-0 opacity-30"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E")`,
-            backgroundSize: '100px 100px'
-          }}>
-      </div>
-    </div>
+function aspectFor(orientation: string) {
+  switch (orientation) {
+    case '3:2': return 'aspect-[3/2]';
+    case '2:3': return 'aspect-[2/3]';
+    case '1:1':
+    default:    return 'aspect-square';
+  }
+}
 
-    <div className="absolute inset-0 gen-glow flex items-center justify-center">
-      <div className="text-center relative z-10">
-        <Image className="h-8 w-8 text-muted-foreground mx-auto mb-2 animate-pulse text-white" />
-        <p className="text-xs text-muted-foreground text-white">
-          Generating...
-        </p>
+
+function PlaceholderCell({ imageOrientation, }: {  imageOrientation: '1:1' | '2:3' | '3:2' | string;}) {
+  const iconDims =
+    imageOrientation === '1:1' ? 'h-8 w-8'
+    : imageOrientation === '2:3' ? 'h-10 w-7'
+    : 'h-7 w-10';
+
+  return (
+    <div className="absolute inset-0">
+      {/* soft gradient pulse */}
+      <div className="absolute inset-0 bg-gradient-to-br from-muted/30 to-muted/60 animate-pulse" />
+
+      {/* subtle noise */}
+      <div
+        className="absolute inset-0 opacity-30"
+        style={{
+          backgroundImage:
+            `url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E")`,
+          backgroundSize: '100px 100px',
+        }}
+      />
+
+      {/* center content */}
+      <div className="absolute inset-0 gen-glow flex items-center justify-center">
+        <div className="text-center relative z-10">
+          <Image className={`${iconDims} text-white/90 mx-auto mb-2 animate-pulse`} />
+          <p className="text-xs text-white/90">Generating...</p>
+        </div>
       </div>
     </div>
-    </>
   );
 }
 
-const ImageGallery = ({ images, totalSlots, isGenerating = false, onImageSelect }: ImageGalleryProps) => {
+const ImageGallery = ({ images, totalSlots, isGenerating = false, onImageSelect, imageOrientation }: ImageGalleryProps) => {
   const { favorites, toggleFavorite } = useFavorites();
 
   // render one square per requested image; if we already have more images, show them all
@@ -50,6 +69,8 @@ const ImageGallery = ({ images, totalSlots, isGenerating = false, onImageSelect 
 
   // safe accessor
   const imgAt = (i: number) => images[i];
+
+  const aspectClass = aspectFor(imageOrientation);
 
   const handleOpenInNewTab = (imageUrl: string) => {
     try {
@@ -78,9 +99,9 @@ const ImageGallery = ({ images, totalSlots, isGenerating = false, onImageSelect 
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 mb-5 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-4 mb-5 lg:grid-cols-3 xl:grid-cols-3">
       {/* <div className={cn("grid gap-4 mb-5 lg:grid-cols-3 xl:grid-cols-6", images.length === 1 && "grid-cols-1", images.length === 2 && "grid-cols-2", images.length === 3 && "grid-cols-3" )}> */}
-        {Array.from({ length: slots }).map((_, i) => {
+        {Array.from({ length: 3 }).map((_, i) => {
           const image = imgAt(i);
           const selected = !!image?.selected;
 
@@ -88,7 +109,7 @@ const ImageGallery = ({ images, totalSlots, isGenerating = false, onImageSelect 
             <div
               key={image?.id ?? `slot-${i}`}
               className={cn(
-                "relative bg-card rounded-apple overflow-hidden shadow-apple transition-spring  group",
+                "relative bg-card rounded-apple overflow-hidden shadow-apple transition-spring group",
                 selected ? "border-primary" : "border-transparent"
               )}
             >
@@ -141,16 +162,17 @@ const ImageGallery = ({ images, totalSlots, isGenerating = false, onImageSelect 
               )}
 
               {/* Body — same aspect-square box in both cases */}
-              <div className="aspect-square bg-muted flex items-center justify-center">
+              {/* Aspect-ratio box (this provides height) */}
+              <div className={cn("relative bg-muted", aspectClass, "flex items-center justify-center")}>
                 {image ? (
                   <img
                     src={image.url}
                     alt={image.prompt}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
                 ) : (
-                  <PlaceholderCell isGenerating={isGenerating} />
+                  <PlaceholderCell imageOrientation={imageOrientation} />
                 )}
               </div>
             </div>
