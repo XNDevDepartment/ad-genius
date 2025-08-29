@@ -212,11 +212,9 @@ const Pricing = () => {
             <span className={`text-sm ${isYearly ? 'text-primary-foreground' : 'text-primary-foreground/70'}`}>
               Yearly
             </span>
-            {isYearly && (
-              <Badge variant="secondary" className="ml-2">
-                Save 2 months!
-              </Badge>
-            )}
+            <Badge variant="secondary">
+              Save 2 months!
+            </Badge>
           </div>
 
           <div className="flex flex-wrap justify-center gap-4 text-sm">

@@ -165,11 +165,11 @@ export const Library = ({ onBack }: LibraryProps) => {
               <p className="text-muted-foreground">Carregando sua biblioteca...</p>
             </div>
           ) : filteredAndSortedImages.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1">
               {filteredAndSortedImages.map((image) => {
                 return (
                   <div key={image.id} className="space-y-3 animate-scale-in group">
-                    <div className="rounded-lg overflow-hidden border border-border/50 relative aspect-square">
+                    <div className=" overflow-hidden border border-border/50 relative aspect-square">
                       <img 
                         src={image.url}
                         alt={`Generated: ${image.prompt.substring(0, 50)}...`}
@@ -186,7 +186,7 @@ export const Library = ({ onBack }: LibraryProps) => {
                           />
                         </div>
                       )}
-                      
+
                       {/* Bottom right corner button */}
                       <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                         <Button
@@ -219,12 +219,12 @@ export const Library = ({ onBack }: LibraryProps) => {
                         </div>
                       </div>
                     </div>
-                    <div className="space-y-2">
+                    {/* <div className="space-y-2">
                       <div className="flex justify-between items-center text-xs text-muted-foreground">
                         <span>{new Date(image.created_at).toLocaleDateString()}</span>
                         <span>{image.settings.size}</span>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 );
               })}
