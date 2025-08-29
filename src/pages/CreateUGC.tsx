@@ -31,6 +31,7 @@ import { Line } from "recharts";
 import { SettingsSheet } from "@/components/departments/ugc/SettingsSheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import GeneratedImagesRows from "@/components/GeneratedImagesRows";
 
 interface GeneratedImage {
   id: string;
@@ -768,6 +769,7 @@ const CreateUGC = () => {
                 </CardContent>
               </Card>
 
+
           </div>
 
           {/* Desktop Sidebar - Settings & Preview */}
@@ -1087,20 +1089,18 @@ const CreateUGC = () => {
         {isMobile && <div className="h-[50px]" />}
 
         {/* Results Section */}
-        {(isGenerating || generatedImages.length > 0) && (
-          <div ref={resultsRef} id="generating-images" className="scroll-mt-6 space-y-8">
-            <GeneratingImagePlaceholders
-              numberOfImages={numImages}
-              isGenerating={isGenerating}
-              images={[...generatedImages, ...activeImages.map(img => ({
-                id: img.id,
-                url: img.public_url,
-                prompt: img.prompt || '',
-                selected: false
-              }))]}
-              onImageSelect={handleImageSelect}
-              imageOrientation={imageOrientation}
-            />
+        {(!isGenerating || generatedImages.length > 0) && (
+          // <div className={`bg-card rounded-apple mt-10 mb-10 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
+            <div ref={resultsRef} id="generating-images" className="scroll-mt-6 space-y-8 mt-5">
+              <GeneratedImagesRows
+                images={generatedImages}                 // array with { id, url, prompt, created_at }
+                totalSlots={job?.total ?? job?.settings?.number ?? 0}
+                isGenerating={job?.status !== 'completed'}
+                onCreateNewScenario={(imageId) => { /* open modal / prefill prompt */ }}
+                onOpenInLibrary={() => navigate('/library')}
+                onStartFromScratch={() => clearJob()}   // or navigate back to the form
+                threadId={threadId}
+              />
 
             {/* Resume button for stuck jobs */}
             {isGenerating && job?.status === 'queued' && job?.progress === 0 && (
@@ -1141,6 +1141,9 @@ const CreateUGC = () => {
             )}
           </div>
         )}
+
+        {/* Results Section */}
+        
       </div>
     </div>
   );
