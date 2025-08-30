@@ -213,9 +213,9 @@ const Account = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="lg:hidden">
-        <div className="flex items-center gap-4 p-4 border-b bg-background/95 backdrop-blur-sm sticky top-0 z-40 safe-area-top">
+    <div className="min-h-screen bg-background container-responsive px-4 py-4">
+      <div className="lg:hidden flex items-center justify-between">
+        <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
@@ -224,7 +224,7 @@ const Account = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-bold">
+          <h1 className="text-2xl lg:text-3xl font-bold">
             {section === "" ? "Account" : 
              section === "edit-profile" ? "Edit Profile" :
              section === "settings" ? "Settings" :

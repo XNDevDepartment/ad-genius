@@ -126,22 +126,8 @@ export const Library = ({ onBack }: LibraryProps) => {
       }
     });
 
-    console.log(images)
   return (
-    <div className="p-4 lg:p-8 space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-5">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-gradient-primary shadow-glow">
-            <FileImage className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="text-xl lg:text-2xl font-bold">Biblioteca</h1>
-            <p className="text-sm lg:text-base text-muted-foreground">Todas as suas imagens UGC geradas num só lugar</p>
-          </div>
-        </div>
-      </div>
-
+    <div className="p-4 lg:p-8 space-y-6 animate-fade-in ">
 
       {/* Currently Generating Section */}
       {activeJob && (
@@ -169,33 +155,33 @@ export const Library = ({ onBack }: LibraryProps) => {
           </CardHeader>
           
           {/* Controls */}
-          <div className="flex items-center gap-4 p-6">
+        </div>
+        <CardContent>
+          <div className="flex items-start lg:items-center gap-4 mb-2 lg:justify-between flex-col lg:flex-row ">
+            {/* View Mode Toggle */}
+            <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "ai" | "source")}>
+              <ToggleGroupItem value="ai" className="text-sm bg-muted">
+                AI Generated
+              </ToggleGroupItem>
+              <ToggleGroupItem value="source" className="text-sm bg-muted">
+                Source Images
+              </ToggleGroupItem>
+            </ToggleGroup>
             {/* Source Thumbnails Toggle (only show in AI mode) */}
             {viewMode === "ai" && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center text-center gap-2">
                 <Switch
                   id="source-thumbnails"
                   checked={showSourceThumbnails}
                   onCheckedChange={setShowSourceThumbnails}
                 />
                 <label htmlFor="source-thumbnails" className="text-sm text-muted-foreground">
-                  Mostrar miniaturas fonte
+                  Mostrar Fonte
                 </label>
               </div>
             )}
-            {/* View Mode Toggle */}
-            <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "ai" | "source")}>
-              <ToggleGroupItem value="ai" className="text-sm">
-                AI Generated
-              </ToggleGroupItem>
-              <ToggleGroupItem value="source" className="text-sm">
-                Source Images
-              </ToggleGroupItem>
-            </ToggleGroup>
             
           </div>
-        </div>
-        <CardContent>
           {loading ? (
             <div className="text-center py-12">
               <div className="mx-auto w-16 h-16 rounded-lg bg-secondary/50 flex items-center justify-center mb-4">

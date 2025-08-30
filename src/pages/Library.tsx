@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileImage } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Library as LibraryComponent } from "@/components/departments/LibraryOld";
@@ -7,17 +7,20 @@ const Library = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="lg:hidden">
-        <div className="flex items-center gap-4 p-4 border-b">
+    <div className="min-h-screen bg-background container-responsive px-4 py-4">
+      <div className="lg:hidden flex items-center justify-between">
+        <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate("/")}
+            className="min-h-[44px] min-w-[44px] touch-manipulation active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-bold">Library</h1>
+          <div>
+            <h1 className="text-2xl lg:text-3xl font-bold">Library</h1>
+          </div>
         </div>
       </div>
 
