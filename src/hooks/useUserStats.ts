@@ -101,7 +101,7 @@ export const useUserStats = () => {
       } catch (err) {
         console.error('Error fetching user stats:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch user statistics');
-        
+
         setStats({
           totalImages: 0,
           imagesThisMonth: 0,
