@@ -95,23 +95,6 @@ export const Library = ({ onBack }: LibraryProps) => {
     }
   };
 
-  const handleDelete = async (imageId: string) => {
-    if (!user) return;
-    
-    try {
-      await deleteImageFromDB(imageId);
-      toast({
-        title: "Imagem Excluída",
-        description: "A imagem foi removida da sua biblioteca.",
-      });
-    } catch (error) {
-      toast({
-        title: "Exclusão Falhou",
-        description: "Falha ao excluir a imagem. Tente novamente.",
-        variant: "destructive",
-      });
-    }
-  };
 
   const filteredAndSortedImages = images
     .filter(image => 

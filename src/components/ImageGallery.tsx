@@ -101,7 +101,7 @@ const ImageGallery = ({ images, totalSlots, isGenerating = false, onImageSelect,
     <div className="space-y-4">
       <div className="grid gap-4 mb-5 lg:grid-cols-3 xl:grid-cols-3">
       {/* <div className={cn("grid gap-4 mb-5 lg:grid-cols-3 xl:grid-cols-6", images.length === 1 && "grid-cols-1", images.length === 2 && "grid-cols-2", images.length === 3 && "grid-cols-3" )}> */}
-        {Array.from({ length: 3 }).map((_, i) => {
+        {Array.from({ length: slots }).map((_, i) => {
           const image = imgAt(i);
           const selected = !!image?.selected;
 
