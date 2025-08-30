@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 
 export interface RecentImage {
   id: string;
@@ -14,48 +13,44 @@ export const useRecentImages = (limit: number = 10) => {
   const [images, setImages] = useState<RecentImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
 
   useEffect(() => {
-    if (!user) {
-      setImages([]);
-      setLoading(false);
-      return;
-    }
-
     const fetchRecentImages = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Fetch from both tables in parallel with retry logic
-        const fetchWithRetry = async (query: any, retries = 2): Promise<any> => {
-          for (let i = 0; i <= retries; i++) {
-            const result = await query;
-            if (!result.error) return result;
-            if (i === retries) throw result.error;
-            await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
-          }
-        };
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setImages([]);
+          setLoading(false);
+          return;
+        }
 
+        // Fetch from both tables in parallel
         const [generatedResult, ugcResult] = await Promise.all([
-          fetchWithRetry(
-            supabase
-              .from('generated_images')
-              .select('id, public_url, prompt, created_at')
-              .eq('user_id', user.id)
-              .order('created_at', { ascending: false })
-              .limit(limit)
-          ),
-          fetchWithRetry(
-            supabase
-              .from('ugc_images')
-              .select('id, public_url, prompt, created_at')
-              .eq('user_id', user.id)
-              .order('created_at', { ascending: false })
-              .limit(limit)
-          )
+          supabase
+            .from('generated_images')
+            .select('id, public_url, prompt, created_at')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(limit),
+          supabase
+            .from('ugc_images')
+            .select('id, public_url, prompt, created_at')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(limit)
         ]);
+
+        // Handle errors
+        if (generatedResult.error) {
+          console.error('Error fetching generated images:', generatedResult.error);
+        }
+        if (ugcResult.error) {
+          console.error('Error fetching UGC images:', ugcResult.error);
+        }
 
         // Combine and normalize the results
         const combinedImages: RecentImage[] = [
@@ -89,13 +84,8 @@ export const useRecentImages = (limit: number = 10) => {
       }
     };
 
-    // Only fetch if user is fully loaded
-    const timer = setTimeout(() => {
-      fetchRecentImages();
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [user?.id, limit]);
+    fetchRecentImages();
+  }, [limit]);
 
   return { images, loading, error };
 };
