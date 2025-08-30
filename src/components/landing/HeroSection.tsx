@@ -126,7 +126,7 @@ const HeroSection = () => {
               >
                 {headlines[currentHeadline]}
               </motion.h1>
-              
+
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -199,16 +199,14 @@ const HeroSection = () => {
               >
                 <div className="relative">
                   <div className="relative z-10 transform transition-smooth">
-                    {images.length > 0 &&
                       <BeforeAfterSlider
                         beforeImage={nike_before}
                         afterImage={nike_afer}
-                        alt={`Generated: ${images[0].prompt?.slice(0, 80) || "image"}`}
+                        alt='Demo Images'
                         className="w-full h-full"
                         initialX={15}
-                        grayscaleBefore={!images[0].source_url}
+
                       />
-                    }
                     {/* <img 
                       src={heroProduct}
                       alt="AI-generated product photography"

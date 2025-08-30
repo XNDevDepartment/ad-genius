@@ -93,7 +93,7 @@ const CreateUGC = () => {
   const [productIdentification, setProductIdentification] = useState("");
   const [moreScenarios, setMoreScenarios] = useState(false);
   const [numImages, setNumImages] = useState(1);
-  const [imageOrientation, setImageOrientation] = useState("2:3");
+  const [imageOrientation, setImageOrientation] = useState("1:1");
   const [timeOfDay, setTimeOfDay] = useState<'natural' | 'golden' | 'night' | 'morning'>("natural");
   const [highlight, setHighlight] = useState("yes");
   const [style, setStyle] = useState<'lifestyle' | 'studio' | 'editorial' | 'natural'>("lifestyle");
