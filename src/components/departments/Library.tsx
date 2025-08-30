@@ -126,6 +126,7 @@ export const Library = ({ onBack }: LibraryProps) => {
             selected: false
           }))}
           onImageSelect={() => {}} // No selection needed in library
+          imageOrientation="square"
         />
       )}
 
