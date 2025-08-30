@@ -105,53 +105,13 @@ const SecurePublicGallery = () => {
           </p>
         </div>
 
-        {/* Featured before/after slider */}
-        {featured && (
-          <div className="relative max-w-5xl mx-auto sm:w-5/6 lg:w-2/6">
-            <div className="rounded-2xl overflow-visible border border-border/50 shadow-xl bg-background aspect-[1/1]">
-              <BeforeAfterSlider
-                beforeImage={featured.source_url || featured.public_url}
-                afterImage={featured.public_url}
-                alt={`Generated: ${featured.prompt?.slice(0, 80) || "image"}`}
-                className="w-full h-full"
-                initialX={50}
-                grayscaleBefore={!featured.source_url}
-              />
-            </div>
-
-            {/* Arrows */}
-            <div className="pointer-events-none">
-              <Button
-                type="button"
-                variant="secondary"
-                size="icon"
-                onClick={prev}
-                aria-label="Previous image"
-                className="pointer-events-auto absolute -left-14 top-1/2 -translate-y-1/2 rounded-full shadow-md"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                size="icon"
-                onClick={next}
-                aria-label="Next image"
-                className="pointer-events-auto absolute -right-14 top-1/2 -translate-y-1/2 rounded-full shadow-md"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        )}
-
         {/* Gallery Grid - Masonry Layout */}
         {images.length > 0 && (
-          <div className="mt-8 columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
+          <div className="mt-8 columns-2 md:columns-3 lg:columns-4 gap-0.5 space-y-0.25">
             {images.map((img, idx) => (
               <div
                 key={img.id}
-                className="break-inside-avoid mb-3 group relative rounded-xl overflow-hidden border border-border/50 hover:border-foreground/40 transition-all cursor-pointer"
+                className="break-inside-avoid group relative rounded-lg overflow-hidden border border-border/50 hover:border-foreground/40 transition-all cursor-pointer"
                 onClick={() => setSelectedIndex(idx)}
               >
                 <img

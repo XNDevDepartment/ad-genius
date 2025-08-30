@@ -106,12 +106,12 @@ export const Library = ({ onBack }: LibraryProps) => {
     .filter(image => {
       // Filter by search term
       const matchesSearch = image.prompt.toLowerCase().includes(searchTerm.toLowerCase());
-      
+
       // Filter by view mode - if showing source images, only show images that have source
       if (viewMode === "source") {
         return matchesSearch && image.sourceSignedUrl;
       }
-      
+
       return matchesSearch;
     })
     .sort((a, b) => {
@@ -126,6 +126,7 @@ export const Library = ({ onBack }: LibraryProps) => {
       }
     });
 
+    console.log(images)
   return (
     <div className="p-4 lg:p-8 space-y-6 animate-fade-in">
       {/* Header */}
@@ -169,16 +170,6 @@ export const Library = ({ onBack }: LibraryProps) => {
           
           {/* Controls */}
           <div className="flex items-center gap-4 p-6">
-            {/* View Mode Toggle */}
-            <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "ai" | "source")}>
-              <ToggleGroupItem value="ai" className="text-sm">
-                IA
-              </ToggleGroupItem>
-              <ToggleGroupItem value="source" className="text-sm">
-                Fonte
-              </ToggleGroupItem>
-            </ToggleGroup>
-            
             {/* Source Thumbnails Toggle (only show in AI mode) */}
             {viewMode === "ai" && (
               <div className="flex items-center gap-2">
@@ -192,6 +183,16 @@ export const Library = ({ onBack }: LibraryProps) => {
                 </label>
               </div>
             )}
+            {/* View Mode Toggle */}
+            <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "ai" | "source")}>
+              <ToggleGroupItem value="ai" className="text-sm">
+                AI Generated
+              </ToggleGroupItem>
+              <ToggleGroupItem value="source" className="text-sm">
+                Source Images
+              </ToggleGroupItem>
+            </ToggleGroup>
+            
           </div>
         </div>
         <CardContent>
@@ -224,7 +225,7 @@ export const Library = ({ onBack }: LibraryProps) => {
                           />
                         </div>
                       )}
-                      
+
                       {/* Bottom right corner button - Modal Preview */}
                       <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                         <Dialog>
@@ -240,15 +241,15 @@ export const Library = ({ onBack }: LibraryProps) => {
                           </DialogTrigger>
                           <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
                             <div className="space-y-4">
-                              <img 
+                              <img
                                 src={viewMode === "ai" ? image.url : (image.sourceSignedUrl || image.url)}
                                 alt={image.prompt}
                                 className="w-full h-auto max-h-[70vh] object-contain rounded-lg"
                               />
-                              <div className="space-y-2">
-                                <h3 className="font-semibold">Prompt:</h3>
-                                <p className="text-sm text-muted-foreground">{image.prompt}</p>
-                              </div>
+                              {/* <div className="space-y-2">
+                                <h3 className="font-semibold">Settings:</h3>
+                                <p className="text-sm text-muted-foreground">{image.settings.quality}</p>
+                              </div> */}
                             </div>
                           </DialogContent>
                         </Dialog>
