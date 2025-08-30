@@ -10,6 +10,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLibraryImages } from "@/hooks/useLibraryImages";
 import { useActiveJob } from "@/hooks/useActiveJob";
 import { GeneratingImagePlaceholders } from "@/components/departments/ugc/GeneratingImagePlaceholders";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface LibraryImage {
   id: string;
@@ -33,6 +44,8 @@ interface LibraryProps {
 export const Library = ({ onBack }: LibraryProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("newest");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const { toast } = useToast();
   const { user } = useAuth();
   const { images, loading, deleteImage: deleteImageFromDB } = useLibraryImages();
@@ -61,6 +74,24 @@ export const Library = ({ onBack }: LibraryProps) => {
         description: "Falha ao baixar a imagem. Tente novamente.",
         variant: "destructive",
       });
+    }
+  };
+
+
+  const confirmDelete = async (imageId: string) => {
+    if (!user) return;
+    try {
+      setDeletingId(imageId);
+      await deleteImageFromDB(imageId);
+      toast({ title: "Imagem Excluída", description: "Removida da sua biblioteca." });
+    } catch {
+      toast({
+        title: "Exclusão Falhou",
+        description: "Falha ao excluir a imagem. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -209,14 +240,35 @@ export const Library = ({ onBack }: LibraryProps) => {
                           >
                             <Download className="h-4 w-4" />
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleDelete(image.id)}
-                            className="bg-destructive/90 hover:bg-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {/* Delete with confirmation */}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                disabled={deletingId === image.id}
+                                className="bg-destructive/90 hover:bg-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                          </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Eliminar esta imagem?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Esta ação é permanente. A imagem será removida da sua biblioteca e do armazenamento.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => confirmDelete(image.id)}
+                                >
+                                  {deletingId === image.id ? "A eliminar..." : "Eliminar"}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </div>
                     </div>

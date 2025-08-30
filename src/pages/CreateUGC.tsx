@@ -9,25 +9,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ImageUploader from "@/components/ImageUploader";
-import ImageGallery from "@/components/ImageGallery";
-import { GeneratingImagePlaceholders } from "@/components/departments/ugc/GeneratingImagePlaceholders";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
 import { startConversationAPI, converse, sendImageAndRun } from '@/api/OpenAiChatClient';
 import { useImageJob } from '@/hooks/useImageJob';
 import { useActiveJob } from '@/hooks/useActiveJob';
-import type { CreateJobPayload } from '@/api/ugc';
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
 import { useImageLimit } from "@/hooks/useImageLimit";
 import { useSourceImageUpload } from "@/hooks/useSourceImageUpload";
-import { AuthModal } from "@/components/auth/AuthModal";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Description } from "@radix-ui/react-dialog";
 import OrientationSelector from "@/components/OrientationSelector";
 import { Card, CardContent } from "@/components/ui/card";
-import { Line } from "recharts";
 import { SettingsSheet } from "@/components/departments/ugc/SettingsSheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -431,33 +423,29 @@ const CreateUGC = () => {
       ------------------------------------------------------------------*/
       // const baseFileData = await fileToDataUrl(productImage); // Data URL with prefix
 
-      let prompt = "";
+      const commonNeg = `--negative "AI artifacts, text overlays, watermark, extreme bokeh, macro close-up, center-composed product, invented branding, extra limbs, low resolution"`;
 
-      const highlightedProdPrompt =
-      'Ultra‑detailed UGC photograph of my product positioned ' + selectedScenario.description +
-      ', shot in ' + timeOfDay + ' light using a full‑frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125 s, ISO 200. ' +
-      'Center‑weighted autofocus locked on the product. True‑to‑life colors and surface texture with subtle, authentic imperfections. ' +
-      'Composition: product fills about 70 percent of the frame, slight background bokeh for depth while preserving scenario context; camera at eye‑level angle—no wide‑angle distortion. The product must have maximum quality and all the details of the original image must be preserved at all costs. ' +
-      'Visual mood: ' + style + ' yet ultra-realistic. --negative "AI artifacts, text overlays, watermark, lens flare, distorted or rotated labels, invented branding, extra limbs, low resolution, out‑of‑focus product, over‑saturation" --ar ';
+      const highlightYes = `
+      Ultra-realistic ${style} UGC photograph of my product in the following scenarion: ${selectedScenario.description}.
+      Lighting: ${timeOfDay}. Camera: full-frame DSLR, 50mm, f/2.8–f/4 (shallow DOF).
+      Framing: the product fills ~70% of the frame, centered or slight 1/3 offset.
+      Focus: tack-sharp on the product; background has gentle bokeh for depth.
+      Color/texture: true-to-life, clean edges, no motion blur.
+      ${commonNeg}
+      `;
 
-      const blendedProdPrompt =
-      'A hyper-realistic lifestyle photograph where my product ' +
-      'is naturally integrated into the scene. The scenerio is: ' + selectedScenario.description + '. Make sure the final image represents the scenario description. ' +
-      'The focus is on accurately replicating my product with sharp details, clear labeling, and realistic textures. ' +
-      'Surroundings should enhance the scene but remain slightly out of focus, ensuring the product looks authentic and integrated. ' +
-      'Include only partial human presence if relevant (e.g., a hand holding the product, someone reaching for it), but avoid full human bodies. ' +
-      'Lighting should be ' + timeOfDay + ', with soft shadows and reflections consistent with the environment. ' +
-      'Include ' + style + ' textures, surfaces, and props that reinforce authenticity but always related with the product or scenario (e.g., fruits, shaker bottle, towels, books, plants), ultra-realistic. ' +
-      'The composition should feel casual, as if captured in daily life, not staged. ' +
-      '--negative "AI artifacts, text overlays, watermark, lens flare, distorted or rotated labels, invented branding, extra limbs, full bodies, low resolution, out-of-focus product, over-saturation" --ar ';
+      const highlightNo = `
+      Ultra-realistic ${style} lifestyle photograph of this the following scenario: ${selectedScenario.description}. Where the **scene is primary** and the product appears naturally in context.
+      Composition: product occupies ~20–30% of the frame, placed off-center (rule of thirds) or partial crop; not a close-up.
+      Focus: background/scene in **sharp focus**; product is **slightly soft** (subtle defocus), no strong subject isolation, no heavy bokeh.
+      Depth of field: f/8–f/11 (deeper DOF) so environment reads clearly.
+      Lighting: ${timeOfDay}, natural reflections consistent with environment.
+      The product should be recognizable but not dominant; viewer attention should read the environment first.
+      --negative "centered product, product filling most of frame, macro, strong background blur, studio backdrop, heavy vignette, hero close-up, product-as-subject"
+      `;
 
+      const prompt = (highlight === 'yes' ? highlightYes : highlightNo).trim();
 
-      // Choose final prompt
-      if (highlight === 'yes') {
-        prompt = highlightedProdPrompt;
-      } else {
-        prompt = blendedProdPrompt;
-      }
 
       // Create job with new system
       const jobId = await createJob({
