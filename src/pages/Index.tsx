@@ -8,6 +8,8 @@ import FeatureTile from "@/components/FeatureTile";
 import { useAuth } from "@/contexts/AuthContext";
 import PricingSection from "@/components/landing/PricingSection";
 import HeaderSection from "@/components/landing/HeaderSection";
+import { RecentImagesSection } from "@/components/RecentImagesSection";
+import { UserStatsPanel } from "@/components/UserStatsPanel";
 
 const Index = () => {
 
@@ -15,16 +17,6 @@ const Index = () => {
 
   const navigate = useNavigate();
 
-  const features = [
-    {
-      id: "ugc",
-      title: "UGC Creator",
-      description: "Create authentic user-generated content that converts with AI-powered product photography",
-      icon: <Camera className="h-8 w-8 text-primary" />,
-      available: true,
-      onClick: () => navigate("/create/ugc"),
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -55,28 +47,15 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Feature Tiles */}
+          {/* User Stats Panel */}
           <div className="lg:col-span-5">
-            <div className="space-y-6">
-              {/* <h2 className="text-xl lg:text-2xl font-semibold text-center lg:text-left text-foreground">
-                Choose Your Workflow
-              </h2> */}
-
-              <div className="grid gap-4 lg:gap-6">
-                {features.map((feature) => (
-                  <FeatureTile
-                    key={feature.id}
-                    title={feature.title}
-                    description={feature.description}
-                    icon={feature.icon}
-                    available={feature.available}
-                    onClick={feature.onClick}
-                    className="lg:p-8"
-                  />
-                ))}
-              </div>
-            </div>
+            <UserStatsPanel />
           </div>
+        </div>
+
+        {/* Recent Images Section */}
+        <div className="mt-8">
+          <RecentImagesSection />
         </div>
       </div>
       </>

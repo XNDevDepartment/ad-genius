@@ -88,7 +88,8 @@ export const Library = ({ onBack }: LibraryProps) => {
             prompt: img.prompt || "",
             selected: false,
           }))}
-          onImageSelect={() => {}}
+          onImageSelect={() => {}} // No selection needed in library
+          imageOrientation="square"
         />
       )}
 
