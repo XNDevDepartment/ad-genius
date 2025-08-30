@@ -75,7 +75,7 @@ export default function GeneratedImagesRows({
   onStartFromScratch,
   threadId
 }: Props) {
-  const slots = Math.max(totalSlots || 0, images.length || 0); // ✅ use slots, not hard-coded 3
+  const slots = Math.max(totalSlots || 0, images.length || 0);
 
   return (
     <div className="space-y-4">

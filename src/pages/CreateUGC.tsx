@@ -769,6 +769,60 @@ const CreateUGC = () => {
                 </CardContent>
               </Card>
 
+              {/* Results Section */}
+              {(isGenerating || generatedImages.length > 0) && (
+                // <div className={`bg-card rounded-apple mt-10 mb-10 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <div ref={resultsRef} id="generating-images" className="scroll-mt-6 space-y-8 mt-5">
+                    <GeneratedImagesRows
+                      images={generatedImages}                 // array with { id, url, prompt, created_at }
+                      totalSlots={job?.total ?? job?.settings?.number ?? 0}
+                      isGenerating={job?.status !== 'completed'}
+                      onCreateNewScenario={(imageId) => { /* open modal / prefill prompt */ }}
+                      onOpenInLibrary={() => navigate('/library')}
+                      onStartFromScratch={() => clearJob()}   // or navigate back to the form
+                      threadId={threadId}
+                    />
+
+                  {/* Resume button for stuck jobs */}
+                  {isGenerating && job?.status === 'queued' && job?.progress === 0 && (
+                    <div className="flex justify-center">
+                      <div className="bg-card rounded-apple p-6 shadow-apple space-y-4 max-w-md w-full">
+                        <div className="text-center">
+                          <h3 className="font-semibold text-lg mb-2">Job seems stuck?</h3>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            If your job has been queued for more than a minute, you can try resuming it manually.
+                          </p>
+                          <Button onClick={resumeCurrentJob} variant="outline" className="w-full">
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            Resume Processing
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action buttons when images are generated */}
+                  {!isGenerating && generatedImages.length > 0 && (
+                    <div className="flex justify-center">
+                      <div className="bg-card rounded-apple p-6 shadow-apple space-y-4 max-w-md w-full mb-16">
+                        <h3 className="font-semibold text-lg text-center">Actions</h3>
+                        <div className="grid grid-cols-1 gap-3">
+                          <Button variant="default" className="w-full" onClick={handleDownloadAll}>
+                            Download {selectedImages.length > 0 ? 'Selected' : 'All'}
+                          </Button>
+                          <Button variant="outline" className="w-full" onClick={handleGenerateMore}>
+                            Generate More
+                          </Button>
+                          <Button variant="outline" className="w-full" onClick={handleNewCreation}>
+                            New Creation
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
 
           </div>
 
@@ -1087,63 +1141,6 @@ const CreateUGC = () => {
 
         {/* Padding for mobile floating panel and navigation */}
         {isMobile && <div className="h-[50px]" />}
-
-        {/* Results Section */}
-        {(!isGenerating || generatedImages.length > 0) && (
-          // <div className={`bg-card rounded-apple mt-10 mb-10 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
-            <div ref={resultsRef} id="generating-images" className="scroll-mt-6 space-y-8 mt-5">
-              <GeneratedImagesRows
-                images={generatedImages}                 // array with { id, url, prompt, created_at }
-                totalSlots={job?.total ?? job?.settings?.number ?? 0}
-                isGenerating={job?.status !== 'completed'}
-                onCreateNewScenario={(imageId) => { /* open modal / prefill prompt */ }}
-                onOpenInLibrary={() => navigate('/library')}
-                onStartFromScratch={() => clearJob()}   // or navigate back to the form
-                threadId={threadId}
-              />
-
-            {/* Resume button for stuck jobs */}
-            {isGenerating && job?.status === 'queued' && job?.progress === 0 && (
-              <div className="flex justify-center">
-                <div className="bg-card rounded-apple p-6 shadow-apple space-y-4 max-w-md w-full">
-                  <div className="text-center">
-                    <h3 className="font-semibold text-lg mb-2">Job seems stuck?</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      If your job has been queued for more than a minute, you can try resuming it manually.
-                    </p>
-                    <Button onClick={resumeCurrentJob} variant="outline" className="w-full">
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Resume Processing
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Action buttons when images are generated */}
-            {!isGenerating && generatedImages.length > 0 && (
-              <div className="flex justify-center">
-                <div className="bg-card rounded-apple p-6 shadow-apple space-y-4 max-w-md w-full mb-16">
-                  <h3 className="font-semibold text-lg text-center">Actions</h3>
-                  <div className="grid grid-cols-1 gap-3">
-                    <Button variant="default" className="w-full" onClick={handleDownloadAll}>
-                      Download {selectedImages.length > 0 ? 'Selected' : 'All'}
-                    </Button>
-                    <Button variant="outline" className="w-full" onClick={handleGenerateMore}>
-                      Generate More
-                    </Button>
-                    <Button variant="outline" className="w-full" onClick={handleNewCreation}>
-                      New Creation
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Results Section */}
-        
       </div>
     </div>
   );
