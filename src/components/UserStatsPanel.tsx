@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { useUserStats } from "@/hooks/useUserStats";
 import { BarChart3, Image, Heart, Coins } from "lucide-react";
 
@@ -38,9 +39,13 @@ export const UserStatsPanel = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-center py-4">
-            Failed to load statistics
-          </p>
+          <div className="text-center py-4 space-y-4">
+            <p className="text-muted-foreground">Failed to load statistics</p>
+            <p className="text-xs text-muted-foreground">{error}</p>
+            <Button onClick={() => window.location.reload()} variant="outline" size="sm">
+              Retry
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );

@@ -39,9 +39,13 @@ export const RecentImagesSection = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-center py-8">
-            Failed to load recent images
-          </p>
+          <div className="text-center py-8 space-y-4">
+            <p className="text-muted-foreground">Failed to load recent images</p>
+            <p className="text-sm text-muted-foreground">{error}</p>
+            <Button onClick={() => window.location.reload()} variant="outline" size="sm">
+              Retry
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );

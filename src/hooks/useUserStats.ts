@@ -49,7 +49,17 @@ export const useUserStats = () => {
         startOfMonth.setDate(1);
         startOfMonth.setHours(0, 0, 0, 0);
 
-        // Fetch all stats in parallel
+        // Fetch with retry logic
+        const fetchWithRetry = async (query: any, retries = 2): Promise<any> => {
+          for (let i = 0; i <= retries; i++) {
+            const result = await query;
+            if (!result.error) return result;
+            if (i === retries) throw result.error;
+            await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+          }
+        };
+
+        // Fetch all stats in parallel with retry
         const [
           generatedImagesResult,
           ugcImagesResult,
@@ -57,35 +67,39 @@ export const useUserStats = () => {
           ugcImagesThisMonthResult,
           favoritesResult
         ] = await Promise.all([
-          supabase
-            .from('generated_images')
-            .select('id', { count: 'exact', head: true })
-            .eq('user_id', user.id),
-          supabase
-            .from('ugc_images')
-            .select('id', { count: 'exact', head: true })
-            .eq('user_id', user.id),
-          supabase
-            .from('generated_images')
-            .select('id', { count: 'exact', head: true })
-            .eq('user_id', user.id)
-            .gte('created_at', startOfMonth.toISOString()),
-          supabase
-            .from('ugc_images')
-            .select('id', { count: 'exact', head: true })
-            .eq('user_id', user.id)
-            .gte('created_at', startOfMonth.toISOString()),
-          supabase
-            .from('image_favorites')
-            .select('id', { count: 'exact', head: true })
-            .eq('user_id', user.id)
+          fetchWithRetry(
+            supabase
+              .from('generated_images')
+              .select('id', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+          ),
+          fetchWithRetry(
+            supabase
+              .from('ugc_images')
+              .select('id', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+          ),
+          fetchWithRetry(
+            supabase
+              .from('generated_images')
+              .select('id', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+              .gte('created_at', startOfMonth.toISOString())
+          ),
+          fetchWithRetry(
+            supabase
+              .from('ugc_images')
+              .select('id', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+              .gte('created_at', startOfMonth.toISOString())
+          ),
+          fetchWithRetry(
+            supabase
+              .from('image_favorites')
+              .select('id', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+          )
         ]);
-
-        if (generatedImagesResult.error) throw generatedImagesResult.error;
-        if (ugcImagesResult.error) throw ugcImagesResult.error;
-        if (generatedImagesThisMonthResult.error) throw generatedImagesThisMonthResult.error;
-        if (ugcImagesThisMonthResult.error) throw ugcImagesThisMonthResult.error;
-        if (favoritesResult.error) throw favoritesResult.error;
 
         const totalImages = (generatedImagesResult.count || 0) + (ugcImagesResult.count || 0);
         const imagesThisMonth = (generatedImagesThisMonthResult.count || 0) + (ugcImagesThisMonthResult.count || 0);
@@ -95,20 +109,35 @@ export const useUserStats = () => {
           totalImages,
           imagesThisMonth,
           favoritesCount,
-          creditsBalance: remainingCredits,
-          creditsUsed: getUsedCredits(),
-          totalCredits: getTotalCredits()
+          creditsBalance: remainingCredits || 0,
+          creditsUsed: getUsedCredits() || 0,
+          totalCredits: getTotalCredits() || 0
         });
       } catch (err) {
         console.error('Error fetching user stats:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch user statistics');
+        
+        // Set fallback stats with credit data if available
+        setStats({
+          totalImages: 0,
+          imagesThisMonth: 0,
+          favoritesCount: 0,
+          creditsBalance: remainingCredits || 0,
+          creditsUsed: getUsedCredits() || 0,
+          totalCredits: getTotalCredits() || 0
+        });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserStats();
-  }, [user, remainingCredits, getUsedCredits, getTotalCredits]);
+    // Only fetch if user is fully loaded
+    const timer = setTimeout(() => {
+      fetchUserStats();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [user?.id, remainingCredits, getUsedCredits, getTotalCredits]);
 
   return { stats, loading, error };
 };
