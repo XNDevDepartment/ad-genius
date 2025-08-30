@@ -44,7 +44,7 @@ All colors MUST be HSL.
     --shadow: 0 0% 0%;                /* rgba(0,0,0,0.12) base */
     --gradient-hero: linear-gradient(135deg, hsl(225 86% 60%), hsl(248 95% 70%));
     --gradient-button: linear-gradient(135deg, hsl(225 86% 60%), hsl(248 95% 70%));
-    --gradient-main: linear-gradient(90deg, hsl(196, 86%, 60%), hsl(268, 85%, 58%));
+    --gradient-main: linear-gradient(90deg, hsl(268, 85%, 58%), hsl(268, 86%, 28%));
     --spacing-base: 0.5rem;           /* 8pt base rhythm */
 
     /* Mobile-first design tokens */
