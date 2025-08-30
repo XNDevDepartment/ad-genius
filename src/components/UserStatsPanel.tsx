@@ -51,6 +51,7 @@ export const UserStatsPanel = () => {
     );
   }
 
+
   const creditUsagePercentage = stats.totalCredits > 0 
     ? ((stats.totalCredits - stats.creditsBalance) / stats.totalCredits) * 100 
     : 0;

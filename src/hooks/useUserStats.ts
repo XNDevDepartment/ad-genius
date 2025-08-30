@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useCredits } from './useCredits';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface UserStats {
   totalImages: number;
@@ -21,6 +23,13 @@ export const useUserStats = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { getUsedCredits, getTotalCredits } = useCredits();
+
+
+  const creditsSnap = useMemo(() => ({
+    used:    getUsedCredits?.() ?? 0,
+    total:   getTotalCredits?.() ?? 0,
+  }), [loading]); 
 
   useEffect(() => {
     const fetchUserStats = async () => {
@@ -85,6 +94,7 @@ export const useUserStats = () => {
             .single()
         ]);
 
+
         const totalImages = (generatedImagesResult.count || 0) + (ugcImagesResult.count || 0);
         const imagesThisMonth = (generatedImagesThisMonthResult.count || 0) + (ugcImagesThisMonthResult.count || 0);
         const favoritesCount = favoritesResult.count || 0;
@@ -95,13 +105,15 @@ export const useUserStats = () => {
           imagesThisMonth,
           favoritesCount,
           creditsBalance,
-          creditsUsed: 0,
-          totalCredits: creditsBalance
+          creditsUsed: creditsSnap.used,
+          totalCredits: creditsSnap.total
         });
+
+
       } catch (err) {
         console.error('Error fetching user stats:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch user statistics');
-
+        
         setStats({
           totalImages: 0,
           imagesThisMonth: 0,
@@ -114,9 +126,9 @@ export const useUserStats = () => {
         setLoading(false);
       }
     };
-
+    
     fetchUserStats();
-  }, []);
+  }, [ creditsSnap.total]);
 
   return { stats, loading, error };
 };
