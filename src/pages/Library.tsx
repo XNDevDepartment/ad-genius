@@ -1,7 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Library as LibraryComponent } from "@/components/departments/Library";
+import { Library as LibraryComponent } from "@/components/departments/LibraryOld";
 
 const Library = () => {
   const navigate = useNavigate();
