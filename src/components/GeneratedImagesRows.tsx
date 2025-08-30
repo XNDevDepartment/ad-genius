@@ -4,6 +4,7 @@ import { Download, ExternalLink, PlusCircle, ArrowRight, Image as ImageIcon } fr
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import "./../costumn.css";
+import { useEffect, useState } from "react";
 
 export type GeneratedImage = {
   id: string;
@@ -20,11 +21,16 @@ type Props = {
   onOpenInLibrary: (imageId?: string) => void;
   onStartFromScratch: () => void;
   threadId?: string;
+  imageOrientation?: string;
 };
 
-const THUMB_CLASSES = "relative rounded-xl overflow-hidden w-60 h-60"; // ✅ same for image & placeholder
 
-function GrainPlaceholder({ label = "Generating..." }: { label?: string }) {
+
+
+// replace your broken line with this
+
+function GrainPlaceholder({ label = "Generating...", THUMB_CLASSES }: { label?: string, THUMB_CLASSES?: string }) {
+
   return (
     <div className={cn(THUMB_CLASSES, "border border-border/50 bg-muted/20")}>
       <div className="absolute inset-0 bg-gradient-to-br from-muted/30 to-muted/60 animate-pulse" />
@@ -73,9 +79,23 @@ export default function GeneratedImagesRows({
   onCreateNewScenario,
   onOpenInLibrary,
   onStartFromScratch,
-  threadId
+  threadId,
+  imageOrientation
 }: Props) {
   const slots = Math.max(totalSlots || 0, images.length || 0);
+
+  const [THUMB_CLASSES , setTHUMB_CLASSES] = useState("");
+
+  useEffect(() => {
+    if(imageOrientation === '1:1'){
+      setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-80 h-80")
+    }else if (imageOrientation === '2:3'){
+     setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-72 aspect-[2/3]")
+    }else{
+      setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-96 aspect-[3/2]");
+
+    }
+  }, [imageOrientation]);
 
   return (
     <div className="space-y-4">
@@ -102,17 +122,17 @@ export default function GeneratedImagesRows({
                       />
                     </div>
                   ) : (
-                    <GrainPlaceholder label={isGenerating ? "Generating..." : "Waiting"} />
+                    <GrainPlaceholder label={isGenerating ? "Generating..." : "Waiting"} THUMB_CLASSES={THUMB_CLASSES} />
                   )}
                 </div>
 
                 {/* Right: actions (stacked) */}
                 <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-1 gap-2">
                   <Button
-                    variant="secondary"
+                    variant="default"
                     size="sm"
                     className="w-full justify-center"
-                    disabled={!img?.url}
+                    // disabled={!img?.url}
                     onClick={() => img?.url && downloadBlob(img.url, `produktpix-${img.id || i + 1}.png`)}
                     title={!img?.url ? "Available when ready" : "Download image"}
                   >
@@ -150,7 +170,7 @@ export default function GeneratedImagesRows({
       })}
 
       {/* Bottom CTA */}
-      {/* <div className="pt-2">
+      <div className="pt-2 flex justify-center">
         <Button
           size="lg"
           className="w-full sm:w-auto rounded-full px-6"
@@ -159,7 +179,7 @@ export default function GeneratedImagesRows({
           Start from scratch
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
-      </div> */}
+      </div>
     </div>
   );
 }

@@ -660,7 +660,7 @@ const CreateUGC = () => {
                         onChange={(e) => handleNicheChange(e.target.value)}
                         className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full text-base md:text-sm"
                         style={{ lineHeight: '1.25rem, font-size: 16px' }}
-                        disabled={!threadId || isAnalyzingImage}
+                        disabled={!threadId}
                         rows={1}
                       />
                       <div className="flex justify-end text-sm text-muted-foreground">
@@ -769,6 +769,7 @@ const CreateUGC = () => {
                       onOpenInLibrary={() => navigate('/library')}
                       onStartFromScratch={() => clearJob()}   // or navigate back to the form
                       threadId={threadId}
+                      imageOrientation={imageOrientation}
                     />
 
                   {/* Resume button for stuck jobs */}
@@ -783,26 +784,6 @@ const CreateUGC = () => {
                           <Button onClick={resumeCurrentJob} variant="outline" className="w-full">
                             <RefreshCw className="h-4 w-4 mr-2" />
                             Resume Processing
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Action buttons when images are generated */}
-                  {!isGenerating && generatedImages.length > 0 && (
-                    <div className="flex justify-center">
-                      <div className="bg-card rounded-apple p-6 shadow-apple space-y-4 max-w-md w-full mb-16">
-                        <h3 className="font-semibold text-lg text-center">Actions</h3>
-                        <div className="grid grid-cols-1 gap-3">
-                          <Button variant="default" className="w-full" onClick={handleDownloadAll}>
-                            Download {selectedImages.length > 0 ? 'Selected' : 'All'}
-                          </Button>
-                          <Button variant="outline" className="w-full" onClick={handleGenerateMore}>
-                            Generate More
-                          </Button>
-                          <Button variant="outline" className="w-full" onClick={handleNewCreation}>
-                            New Creation
                           </Button>
                         </div>
                       </div>
