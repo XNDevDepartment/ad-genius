@@ -2,7 +2,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, FileImage, Download, Trash2, Search, Filter, ExternalLink } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { ArrowLeft, FileImage, Download, Trash2, Search, Filter, ExternalLink, Eye } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
@@ -45,6 +48,9 @@ export const Library = ({ onBack }: LibraryProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showSourceThumbnails, setShowSourceThumbnails] = useState(true);
+  const [viewMode, setViewMode] = useState<"ai" | "source">("ai");
+  const [selectedImage, setSelectedImage] = useState<LibraryImage | null>(null);
 
   const { toast } = useToast();
   const { user } = useAuth();
@@ -97,9 +103,17 @@ export const Library = ({ onBack }: LibraryProps) => {
 
 
   const filteredAndSortedImages = images
-    .filter(image => 
-      image.prompt.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    .filter(image => {
+      // Filter by search term
+      const matchesSearch = image.prompt.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Filter by view mode - if showing source images, only show images that have source
+      if (viewMode === "source") {
+        return matchesSearch && image.sourceSignedUrl;
+      }
+      
+      return matchesSearch;
+    })
     .sort((a, b) => {
       switch (sortBy) {
         case 'oldest':
@@ -147,29 +161,38 @@ export const Library = ({ onBack }: LibraryProps) => {
       {/* Images Grid */}
       <Card className="bg-gradient-card border-border/50">
         <div className="flex items-center justify-between mr-7">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {/* <FileImage className="h-5 w-5 text-primary" /> */}
-            Imagens Geradas ({filteredAndSortedImages.length})
-          </CardTitle>
-          {/* <CardDescription>
-            Sua coleção de conteúdo UGC gerado por IA
-          </CardDescription> */}
-        </CardHeader>
-         {/* Filters */}
-        {/* <div className="flex flex-col sm:flex-row gap-4">
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full sm:w-48">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Ordenar por" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Mais Recentes Primeiro</SelectItem>
-                <SelectItem value="oldest">Mais Antigos Primeiro</SelectItem>
-                {/* <SelectItem value="prompt">Por Prompt</SelectItem> */}
-              {/* </SelectContent>
-            </Select>
-          </div> */}
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              {viewMode === "ai" ? "Imagens Geradas" : "Imagens Fonte"} ({filteredAndSortedImages.length})
+            </CardTitle>
+          </CardHeader>
+          
+          {/* Controls */}
+          <div className="flex items-center gap-4 p-6">
+            {/* View Mode Toggle */}
+            <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "ai" | "source")}>
+              <ToggleGroupItem value="ai" className="text-sm">
+                IA
+              </ToggleGroupItem>
+              <ToggleGroupItem value="source" className="text-sm">
+                Fonte
+              </ToggleGroupItem>
+            </ToggleGroup>
+            
+            {/* Source Thumbnails Toggle (only show in AI mode) */}
+            {viewMode === "ai" && (
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="source-thumbnails"
+                  checked={showSourceThumbnails}
+                  onCheckedChange={setShowSourceThumbnails}
+                />
+                <label htmlFor="source-thumbnails" className="text-sm text-muted-foreground">
+                  Mostrar miniaturas fonte
+                </label>
+              </div>
+            )}
+          </div>
         </div>
         <CardContent>
           {loading ? (
@@ -186,13 +209,13 @@ export const Library = ({ onBack }: LibraryProps) => {
                   <div key={image.id} className="space-y-3 animate-scale-in group">
                     <div className=" overflow-hidden border border-border/50 relative aspect-square">
                       <img 
-                        src={image.url}
-                        alt={`Generated: ${image.prompt.substring(0, 50)}...`}
+                        src={viewMode === "ai" ? image.url : (image.sourceSignedUrl || image.url)}
+                        alt={`${viewMode === "ai" ? "Generated" : "Source"}: ${image.prompt.substring(0, 50)}...`}
                         className="w-full h-full object-cover shadow-card transition-transform group-hover:scale-105"
                       />
 
-                      {/* Source image thumbnail in bottom-left */}
-                      {image.sourceSignedUrl && (
+                      {/* Source image thumbnail in bottom-left (only in AI mode and when toggle is on) */}
+                      {viewMode === "ai" && showSourceThumbnails && image.sourceSignedUrl && (
                         <div className="absolute bottom-2 left-2 w-20 h-20 rounded-lg overflow-hidden border-2 border-white shadow-lg z-20">
                           <img 
                             src={image.sourceSignedUrl}
@@ -202,16 +225,33 @@ export const Library = ({ onBack }: LibraryProps) => {
                         </div>
                       )}
                       
-                      {/* Bottom right corner button */}
+                      {/* Bottom right corner button - Modal Preview */}
                       <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => window.open(image.url, '_blank')}
-                          className="bg-background/90 hover:bg-background"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => setSelectedImage(image)}
+                              className="bg-background/90 hover:bg-background"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+                            <div className="space-y-4">
+                              <img 
+                                src={viewMode === "ai" ? image.url : (image.sourceSignedUrl || image.url)}
+                                alt={image.prompt}
+                                className="w-full h-auto max-h-[70vh] object-contain rounded-lg"
+                              />
+                              <div className="space-y-2">
+                                <h3 className="font-semibold">Prompt:</h3>
+                                <p className="text-sm text-muted-foreground">{image.prompt}</p>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 z-10">
                         <div className="flex gap-2">

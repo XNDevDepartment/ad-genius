@@ -17,10 +17,10 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Query public showcase images
+    // Query public showcase UGC images
     const { data: images, error: imagesError } = await supabaseClient
-      .from('generated_images')
-      .select('id, prompt, public_url, created_at, settings, source_image_id')
+      .from('ugc_images')
+      .select('id, prompt, public_url, created_at, meta, source_image_id')
       .eq('public_showcase', true)
       .order('created_at', { ascending: false })
       .limit(12);
@@ -66,10 +66,10 @@ Deno.serve(async (req) => {
       const sourceImage = sourceImagesWithUrls.find(src => src.id === img.source_image_id);
       return {
         id: img.id,
-        prompt: img.prompt,
+        prompt: img.prompt || (img.meta as any)?.prompt || '',
         public_url: img.public_url,
         created_at: img.created_at,
-        settings: img.settings,
+        settings: img.meta || {},
         source_url: sourceImage?.signedUrl || null
       };
     }) || [];

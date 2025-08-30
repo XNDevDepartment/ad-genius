@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { AdminAccessButton } from "@/components/AdminAccessButton";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import symbol from './../assets/favicon2.png';
@@ -132,6 +133,9 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>}
           <div className="space-y-3">
+            {/* Admin Access Button */}
+            {user && <AdminAccessButton />}
+            
             {user ? (
               <Button
                 variant="ghost"

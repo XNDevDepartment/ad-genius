@@ -145,42 +145,25 @@ const SecurePublicGallery = () => {
           </div>
         )}
 
-        {/* Thumbnail library */}
+        {/* Gallery Grid - Masonry Layout */}
         {images.length > 0 && (
-          <div className="mt-8 grid gap-3 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {images.map((img, idx) => {
-              const active = idx === selectedIndex;
-              return (
-                <button
-                  key={img.id}
-                  onClick={() => setSelectedIndex(idx)}
-                  className={cn(
-                    "group relative rounded-xl overflow-hidden border transition-all",
-                    active
-                      ? "ring-2 ring-primary border-transparent"
-                      : "border-border/50 hover:border-foreground/40"
-                  )}
-                >
-                  <img
-                    src={img.public_url}
-                    alt={`Generated: ${img.prompt?.slice(0, 60) || "image"}`}
-                    className="w-full aspect-square object-cover"
-                    loading="lazy"
-                  />
-                  {/* small source thumb */}
-                  {img.source_url && (
-                    <div className="absolute bottom-2 left-2 w-14 h-14 rounded-md overflow-hidden border-2 border-white shadow-md">
-                      <img
-                        src={img.source_url}
-                        alt="Source"
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-                  )}
-                </button>
-              );
-            })}
+          <div className="mt-8 columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
+            {images.map((img, idx) => (
+              <div
+                key={img.id}
+                className="break-inside-avoid mb-3 group relative rounded-xl overflow-hidden border border-border/50 hover:border-foreground/40 transition-all cursor-pointer"
+                onClick={() => setSelectedIndex(idx)}
+              >
+                <img
+                  src={img.public_url}
+                  alt={`Generated: ${img.prompt?.slice(0, 60) || "image"}`}
+                  className="w-full h-auto object-cover"
+                  loading="lazy"
+                />
+                {/* Hover overlay */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+              </div>
+            ))}
           </div>
         )}
 
