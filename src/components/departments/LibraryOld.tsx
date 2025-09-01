@@ -114,6 +114,18 @@ export const Library = ({ onBack }: LibraryProps) => {
 
       return matchesSearch;
     })
+    .reduce((acc, image) => {
+      // If in source view mode, deduplicate by source_image_id
+      if (viewMode === "source" && image.source_image_id) {
+        const existing = acc.find(item => item.source_image_id === image.source_image_id);
+        if (!existing) {
+          acc.push(image);
+        }
+      } else if (viewMode === "ai") {
+        acc.push(image);
+      }
+      return acc;
+    }, [] as LibraryImage[])
     .sort((a, b) => {
       switch (sortBy) {
         case 'oldest':

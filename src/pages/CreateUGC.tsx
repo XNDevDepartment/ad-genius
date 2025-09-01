@@ -24,6 +24,11 @@ import { SettingsSheet } from "@/components/departments/ugc/SettingsSheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import GeneratedImagesRows from "@/components/GeneratedImagesRows";
+import { SourceImagePicker } from "@/components/SourceImagePicker";
+import type { SourceImage } from "@/hooks/useSourceImages";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Link as LinkIcon, Images } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GeneratedImage {
   id: string;
@@ -101,6 +106,10 @@ const CreateUGC = () => {
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [sourceImagePickerOpen, setSourceImagePickerOpen] = useState(false);
+  const [urlImportOpen, setUrlImportOpen] = useState(false);
+  const [importUrl, setImportUrl] = useState("");
+  const [importingFromUrl, setImportingFromUrl] = useState(false);
 
   // Compute compact summary for mobile panel
   const summary = `${numImages} img • ${imageQuality.charAt(0).toUpperCase() + imageQuality.slice(1)} • ${highlight === 'yes' ? 'Focus On' : 'Blend In'} • ${imageOrientation} • ${style} • ${timeOfDay}`;
@@ -313,6 +322,171 @@ const CreateUGC = () => {
 
   const handleNicheChange = (nicheText: string) => {
     setNiche(nicheText);
+  };
+
+  const handleSourceImageSelect = async (image: SourceImage) => {
+    try {
+      // Create signed URL and fetch the image
+      const response = await fetch(image.signedUrl);
+      const blob = await response.blob();
+      
+      // Convert blob to File object
+      const file = new File([blob], image.fileName, { type: blob.type });
+      
+      // Set as product image and source ID
+      setProductImage(file);
+      setSourceImageId(image.id);
+      
+      // Start AI analysis
+      setIsAnalyzingImage(true);
+      
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+
+        const reply = await sendImageAndRun(
+          threadId!,
+          ASSISTANT_ID,
+          base64,
+          file.name,
+          'I have uploaded a product image. Please analyze it. Dont answer this message.'
+        );
+
+        setProductIdentification(reply);
+
+        // Save message if authenticated
+        if (conversationId) {
+          await saveMessage({
+            conversationId,
+            role: 'user',
+            content: 'I have uploaded a product image from my source library. Please analyze it. Dont answer this message',
+            metadata: { hasImage: true, source: 'library' }
+          });
+
+          await saveMessage({
+            conversationId,
+            role: 'assistant',
+            content: reply,
+            metadata: { analysisType: 'product_identification' }
+          });
+        }
+
+        setIsAnalyzingImage(false);
+        toast({
+          title: "Product Loaded",
+          description: "Selected image from your library and AI has analyzed it."
+        });
+
+        // Focus on niche input
+        document.getElementById("niche")?.focus();
+      };
+      reader.readAsDataURL(file);
+
+    } catch (error) {
+      console.error('Error selecting source image:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load the selected image. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleImportFromUrl = async () => {
+    if (!importUrl.trim()) {
+      toast({
+        title: "Missing URL",
+        description: "Please enter a valid image URL.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setImportingFromUrl(true);
+
+      const { data, error } = await supabase.functions.invoke('upload-source-image-from-url', {
+        body: { imageUrl: importUrl.trim() }
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Failed to import image from URL');
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to import image from URL');
+      }
+
+      // Create a signed URL and fetch the imported image
+      const { data: signedUrlData } = await supabase.storage
+        .from('ugc-inputs')
+        .createSignedUrl(data.sourceImage.storage_path, 3600);
+
+      if (signedUrlData?.signedUrl) {
+        const response = await fetch(signedUrlData.signedUrl);
+        const blob = await response.blob();
+        const file = new File([blob], data.sourceImage.fileName, { type: blob.type });
+
+        setProductImage(file);
+        setSourceImageId(data.sourceImage.id);
+        setImportUrl("");
+        setUrlImportOpen(false);
+
+        // Start AI analysis
+        setIsAnalyzingImage(true);
+        
+        const reader = new FileReader();
+        reader.onload = async () => {
+          const base64 = reader.result as string;
+
+          const reply = await sendImageAndRun(
+            threadId!,
+            ASSISTANT_ID,
+            base64,
+            file.name,
+            'I have uploaded a product image from URL. Please analyze it. Dont answer this message.'
+          );
+
+          setProductIdentification(reply);
+
+          if (conversationId) {
+            await saveMessage({
+              conversationId,
+              role: 'user',
+              content: 'I have imported a product image from URL. Please analyze it. Dont answer this message',
+              metadata: { hasImage: true, source: 'url', originalUrl: importUrl.trim() }
+            });
+
+            await saveMessage({
+              conversationId,
+              role: 'assistant',
+              content: reply,
+              metadata: { analysisType: 'product_identification' }
+            });
+          }
+
+          setIsAnalyzingImage(false);
+          toast({
+            title: "Image Imported",
+            description: "Successfully imported and analyzed image from URL."
+          });
+
+          // Focus on niche input
+          document.getElementById("niche")?.focus();
+        };
+        reader.readAsDataURL(file);
+      }
+
+    } catch (error) {
+      console.error('Error importing from URL:', error);
+      toast({
+        title: "Import Failed",
+        description: error instanceof Error ? error.message : "Failed to import image from URL.",
+        variant: "destructive",
+      });
+    } finally {
+      setImportingFromUrl(false);
+    }
   };
 
   const getScenariosFromConversation = async (nicheText?: string, moreScen?: boolean) => {
@@ -632,6 +806,33 @@ const CreateUGC = () => {
                         isAnalyzing={isAnalyzingImage}
                         analyzingText={t('ugc.productImage.analyzing')}
                       />
+                      
+                      {/* Additional Image Options */}
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSourceImagePickerOpen(true)}
+                          className="flex-1"
+                          disabled={!threadId}
+                        >
+                          <Images className="h-4 w-4 mr-2" />
+                          Choose from Library
+                        </Button>
+                        
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setUrlImportOpen(true)}
+                          className="flex-1"
+                          disabled={!threadId}
+                        >
+                          <LinkIcon className="h-4 w-4 mr-2" />
+                          Import from URL
+                        </Button>
+                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -1111,6 +1312,52 @@ const CreateUGC = () => {
         {/* Padding for mobile floating panel and navigation */}
         {isMobile && <div className="h-[50px]" />}
       </div>
+
+      {/* Source Image Picker Modal */}
+      <SourceImagePicker
+        open={sourceImagePickerOpen}
+        onClose={() => setSourceImagePickerOpen(false)}
+        onSelect={handleSourceImageSelect}
+      />
+
+      {/* URL Import Modal */}
+      <Dialog open={urlImportOpen} onOpenChange={setUrlImportOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Import Image from URL</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="imageUrl">Image URL</Label>
+              <Input
+                id="imageUrl"
+                placeholder="https://example.com/image.jpg"
+                value={importUrl}
+                onChange={(e) => setImportUrl(e.target.value)}
+                disabled={importingFromUrl}
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter a direct link to an image (JPG, PNG, WEBP, GIF)
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setUrlImportOpen(false)} disabled={importingFromUrl}>
+                Cancel
+              </Button>
+              <Button onClick={handleImportFromUrl} disabled={!importUrl.trim() || importingFromUrl}>
+                {importingFromUrl ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Importing...
+                  </>
+                ) : (
+                  'Import Image'
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
