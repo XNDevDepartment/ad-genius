@@ -14,10 +14,6 @@ const faqCategories = [
     badge: "Popular",
     questions: [
       {
-        q: "How do I create an account?",
-        a: "Creating an account is simple! Click the 'Sign Up' button on the homepage, enter your email and password, then verify your email address. You'll be ready to start creating content immediately."
-      },
-      {
         q: "Can I change my email address?",
         a: "Yes, you can update your email address in your account settings. Go to Account > Settings > Profile Information to make changes."
       },
@@ -33,15 +29,15 @@ const faqCategories = [
     questions: [
       {
         q: "What types of content can I create?",
-        a: "Genius UGC supports creating various types of user-generated content including social media posts, product reviews, testimonials, and marketing materials using AI-powered tools."
+        a: "Genius UGC supports creating various types of user-generated content including social media posts, product environment demonstrations, product positionings, and marketing materials using AI-powered tools."
       },
       {
         q: "How does the AI content generation work?",
-        a: "Our AI analyzes your input prompts and preferences to generate relevant, high-quality content. You can customize the tone, style, and format to match your brand."
+        a: "Our Genius AI analyzes your input prompts and preferences to generate relevant, high-quality content. You can customize the light, style, and format to match your desire."
       },
       {
         q: "Can I edit generated content?",
-        a: "Absolutely! All generated content can be edited, refined, and customized to perfectly match your needs before downloading or sharing."
+        a: "For the moment you cannot! We are working on developing the ProducktPix with a goal to become the number one mobile marketing agent in order to quickly and efficiently help people sell their products."
       },
       {
         q: "What file formats are supported?",
@@ -80,7 +76,7 @@ const faqCategories = [
       },
       {
         q: "My generated content doesn't match my request",
-        a: "Try being more specific in your prompts. Include details about tone, style, target audience, and specific requirements for better results."
+        a: "Try being more specific in your details and audience. Include details about usability, size, niched target audience, and specific requirements for better results."
       },
       {
         q: "Can I use the platform on mobile devices?",

@@ -58,7 +58,7 @@ export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
               <Label>Show Generation History</Label>
               <p className="text-sm text-muted-foreground">Allow others to see your public generations</p>
             </div>
-            <Switch />
+              <Switch defaultChecked />
           </div>
 
           <div className="flex items-center justify-between">
@@ -97,7 +97,7 @@ export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
             <Switch />
           </div>
 
-          <div className="flex items-center justify-between">
+          {/* <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Search Indexing</Label>
               <p className="text-sm text-muted-foreground">Allow search engines to index your public content</p>
@@ -111,7 +111,7 @@ export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
               <p className="text-sm text-muted-foreground">Enable social media sharing buttons</p>
             </div>
             <Switch defaultChecked />
-          </div>
+          </div> */}
         </CardContent>
       </Card>
 

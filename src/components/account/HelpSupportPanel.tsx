@@ -265,7 +265,7 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
         <CardContent className="space-y-2">
           <div className="flex justify-between">
             <span className="text-sm">Email Support</span>
-            <span className="text-sm text-muted-foreground">manager@formulaxn.com</span>
+            <span className="text-sm text-muted-foreground">info@producktpix.com</span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm">Business Hours</span>

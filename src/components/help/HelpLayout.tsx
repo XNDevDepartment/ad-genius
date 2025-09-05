@@ -27,13 +27,13 @@ const helpNavItems = [
     path: "/help/tutorials",
     description: "Learn with videos"
   },
-  { 
-    id: "api-docs", 
-    label: "API Documentation", 
-    icon: Code, 
-    path: "/help/api-docs",
-    description: "Technical reference"
-  },
+  // { 
+  //   id: "api-docs", 
+  //   label: "API Documentation", 
+  //   icon: Code, 
+  //   path: "/help/api-docs",
+  //   description: "Technical reference"
+  // },
 ];
 
 interface HelpLayoutProps {

@@ -45,14 +45,14 @@ const steps = [
 ];
 
 const tips = [
-  {
-    title: "Start with Templates",
-    description: "Use our pre-built templates to create content faster and learn the platform."
-  },
-  {
-    title: "Save Your Favorites",
-    description: "Mark your best content as favorites for easy access later."
-  },
+  // {
+  //   title: "Start with Templates",
+  //   description: "Use our pre-built templates to create content faster and learn the platform."
+  // },
+  // {
+  //   title: "Save Your Favorites",
+  //   description: "Mark your best content as favorites for easy access later."
+  // },
   {
     title: "Explore Different Styles",
     description: "Experiment with various AI models and settings to find your unique style."
