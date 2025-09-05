@@ -11,12 +11,12 @@ import HeaderSection from "@/components/landing/HeaderSection";
 import { RecentImagesSection } from "@/components/RecentImagesSection";
 import { UserStatsPanel } from "@/components/UserStatsPanel";
 import FeatureShowcase from "@/components/landing/FeatureShowcase";
+import { useTranslation } from "react-i18next";
 
 const Index = () => {
-
   const { user } = useAuth();
-
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
 
   return (
@@ -31,10 +31,10 @@ const Index = () => {
             <div className="bg-gradient-hero rounded-apple p-8 lg:p-12 shadow-apple-lg text-center lg:text-left text-background relative overflow-hidden">
               <div className="relative z-10 space-y-4 lg:space-y-6">
                 <h1 className="text-3xl lg:text-5xl font-bold leading-tight">
-                  Create product images that sell
+                  {t("index.auth.title")}
                 </h1>
                 <p className="text-lg lg:text-xl opacity-90 leading-relaxed max-w-2xl">
-                  Transform your products into stunning, conversion-focused imagery with AI
+                  {t("index.auth.subtitle")}
                 </p>
                 <Button 
                   variant="default" 
@@ -42,7 +42,7 @@ const Index = () => {
                   onClick={() => navigate("/create")}
                   className="mt-6 lg:text-lg lg:px-8 lg:py-4 bg-white text-primary hover:bg-white/90"
                 >
-                  Start Creating
+                  {t("index.auth.startCreating")}
                 </Button>
               </div>
             </div>

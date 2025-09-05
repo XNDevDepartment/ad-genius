@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface HelpSupportPanelProps {
   onClose: () => void;
@@ -18,6 +19,7 @@ interface HelpSupportPanelProps {
 export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     to: '',
@@ -128,7 +130,7 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Help & Support</h2>
+        <h2 className="text-2xl font-semibold">{t("account.helpSupport.title")}</h2>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
@@ -138,15 +140,15 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <HelpCircle className="h-5 w-5" />
-            Quick Help
+            {t("account.helpSupport.quickHelp")}
           </CardTitle>
-          <CardDescription>Find answers to common questions</CardDescription>
+          <CardDescription>{t("account.helpSupport.quickHelpDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <Button asChild variant="outline" className="w-full justify-start">
             <Link to="/help/getting-started">
               <Book className="h-4 w-4 mr-2" />
-              Getting Started Guide
+              {t("account.helpSupport.gettingStarted")}
               <ExternalLink className="h-4 w-4 ml-auto" />
             </Link>
           </Button>
@@ -154,7 +156,7 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
           <Button asChild variant="outline" className="w-full justify-start">
             <Link to="/help/faq">
               <HelpCircle className="h-4 w-4 mr-2" />
-              FAQ
+              {t("account.helpSupport.faq")}
               <ExternalLink className="h-4 w-4 ml-auto" />
             </Link>
           </Button>
@@ -181,42 +183,42 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5" />
-            Contact Support
+            {t("account.helpSupport.contactSupport")}
           </CardTitle>
-          <CardDescription>Send us a message and we'll help you out</CardDescription>
+          <CardDescription>{t("account.helpSupport.contactSupportDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="subject">Subject</Label>
+            <Label htmlFor="subject">{t("account.helpSupport.subject")}</Label>
             <Input 
               id="subject" 
-              placeholder="Brief description of your issue" 
+              placeholder={t("account.helpSupport.subjectPlaceholder")} 
               value={formData.subject}
               onChange={(e) => handleInputChange('subject', e.target.value)}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
+            <Label htmlFor="category">{t("account.helpSupport.category")}</Label>
             <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select a category" />
+                <SelectValue placeholder={t("account.helpSupport.categoryPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="technical">Technical Issue</SelectItem>
-                <SelectItem value="billing">Billing Question</SelectItem>
-                <SelectItem value="feature">Feature Request</SelectItem>
-                <SelectItem value="account">Account Help</SelectItem>
-                <SelectItem value="general">General</SelectItem>
+                <SelectItem value="technical">{t("account.helpSupport.technical")}</SelectItem>
+                <SelectItem value="billing">{t("account.helpSupport.billing")}</SelectItem>
+                <SelectItem value="feature">{t("account.helpSupport.feature")}</SelectItem>
+                <SelectItem value="account">{t("account.helpSupport.account")}</SelectItem>
+                <SelectItem value="general">{t("account.helpSupport.general")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="message">Message</Label>
+            <Label htmlFor="message">{t("account.helpSupport.message")}</Label>
             <Textarea
               id="message"
-              placeholder="Please describe your issue in detail..."
+              placeholder={t("account.helpSupport.messagePlaceholder")}
               rows={4}
               value={formData.message}
               onChange={(e) => handleInputChange('message', e.target.value)}
@@ -225,7 +227,7 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
 
           <Button onClick={handleSubmitTicket} className="w-full" disabled={isSubmitting}>
             <Send className="h-4 w-4 mr-2" />
-            {isSubmitting ? "Submitting..." : "Submit Ticket"}
+            {isSubmitting ? t("account.helpSupport.submitting") : t("account.helpSupport.submitTicket")}
           </Button>
         </CardContent>
       </Card>
@@ -259,21 +261,21 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Contact Information</CardTitle>
-          <CardDescription>Other ways to reach us</CardDescription>
+          <CardTitle>{t("account.helpSupport.contactInfo")}</CardTitle>
+          <CardDescription>{t("account.helpSupport.contactInfoDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
           <div className="flex justify-between">
-            <span className="text-sm">Email Support</span>
+            <span className="text-sm">{t("account.helpSupport.emailSupport")}</span>
             <span className="text-sm text-muted-foreground">info@producktpix.com</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-sm">Business Hours</span>
-            <span className="text-sm text-muted-foreground">9 AM - 6 PM ECT</span>
+            <span className="text-sm">{t("account.helpSupport.businessHours")}</span>
+            <span className="text-sm text-muted-foreground">{t("account.helpSupport.businessHoursValue")}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-sm">Response Time</span>
-            <span className="text-sm text-muted-foreground">Within 24 hours</span>
+            <span className="text-sm">{t("account.helpSupport.responseTime")}</span>
+            <span className="text-sm text-muted-foreground">{t("account.helpSupport.responseTimeValue")}</span>
           </div>
         </CardContent>
       </Card>

@@ -4,6 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { X, Shield, Download, Trash2, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface PrivacyPanelProps {
   onClose: () => void;
@@ -11,6 +12,7 @@ interface PrivacyPanelProps {
 
 export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleDownloadData = () => {
     toast({
@@ -30,7 +32,7 @@ export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Privacy & Security</h2>
+        <h2 className="text-2xl font-semibold">{t("account.privacy.title")}</h2>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
@@ -40,9 +42,9 @@ export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Privacy Settings
+            {t("account.privacy.privacySettings")}
           </CardTitle>
-          <CardDescription>Control how your data is used and shared</CardDescription>
+          <CardDescription>{t("account.privacy.privacySettingsDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* <div className="flex items-center justify-between">
@@ -55,16 +57,16 @@ export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Show Generation History</Label>
-              <p className="text-sm text-muted-foreground">Allow others to see your public generations</p>
+              <Label>{t("account.privacy.showGenerationHistory")}</Label>
+              <p className="text-sm text-muted-foreground">{t("account.privacy.showGenerationHistoryDesc")}</p>
             </div>
               <Switch defaultChecked />
           </div>
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Analytics Data</Label>
-              <p className="text-sm text-muted-foreground">Help improve our service with usage analytics</p>
+              <Label>{t("account.privacy.analyticsData")}</Label>
+              <p className="text-sm text-muted-foreground">{t("account.privacy.analyticsDataDesc")}</p>
             </div>
             <Switch defaultChecked />
           </div>
@@ -84,15 +86,15 @@ export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Eye className="h-5 w-5" />
-            Content Visibility
+            {t("account.privacy.contentVisibility")}
           </CardTitle>
-          <CardDescription>Control who can see your generated content</CardDescription>
+          <CardDescription>{t("account.privacy.contentVisibilityDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Public Gallery</Label>
-              <p className="text-sm text-muted-foreground">Show your images in the public gallery</p>
+              <Label>{t("account.privacy.publicGallery")}</Label>
+              <p className="text-sm text-muted-foreground">{t("account.privacy.publicGalleryDesc")}</p>
             </div>
             <Switch />
           </div>
@@ -117,8 +119,8 @@ export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Data Management</CardTitle>
-          <CardDescription>Manage your personal data and account</CardDescription>
+          <CardTitle>{t("account.privacy.dataManagement")}</CardTitle>
+          <CardDescription>{t("account.privacy.dataManagementDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -134,12 +136,12 @@ export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
 
           <div className="flex items-center justify-between p-4 border rounded-lg border-destructive/20">
             <div>
-              <h4 className="font-medium text-destructive">Delete Account</h4>
-              <p className="text-sm text-muted-foreground">Permanently delete your account and all data</p>
+              <h4 className="font-medium text-destructive">{t("account.privacy.deleteAccount")}</h4>
+              <p className="text-sm text-muted-foreground">{t("account.privacy.deleteAccountDesc")}</p>
             </div>
             <Button variant="destructive" onClick={handleDeleteAccount}>
               <Trash2 className="h-4 w-4 mr-2" />
-              Delete
+              {t("account.privacy.delete")}
             </Button>
           </div>
         </CardContent>
@@ -147,8 +149,8 @@ export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Security</CardTitle>
-          <CardDescription>Manage your account security settings</CardDescription>
+          <CardTitle>{t("account.privacy.security")}</CardTitle>
+          <CardDescription>{t("account.privacy.securityDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* <div className="flex items-center justify-between">
@@ -163,14 +165,14 @@ export const PrivacyPanel = ({ onClose }: PrivacyPanelProps) => {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Login Notifications</Label>
-              <p className="text-sm text-muted-foreground">Get notified when someone logs into your account</p>
+              <Label>{t("account.privacy.loginNotifications")}</Label>
+              <p className="text-sm text-muted-foreground">{t("account.privacy.loginNotificationsDesc")}</p>
             </div>
             <Switch defaultChecked />
           </div>
 
           <Button variant="outline" className="w-full">
-            Change Password
+            {t("account.privacy.changePassword")}
           </Button>
         </CardContent>
       </Card>

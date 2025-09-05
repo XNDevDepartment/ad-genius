@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface NotificationsPanelProps {
   onClose: () => void;
@@ -26,6 +27,7 @@ interface NotificationPreferences {
 export const NotificationsPanel = ({ onClose }: NotificationsPanelProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     email_generation_complete: true,
     email_monthly_summary: true,
@@ -80,21 +82,21 @@ export const NotificationsPanel = ({ onClose }: NotificationsPanelProps) => {
       if (error) {
         console.error('Error saving notification preferences:', error);
         toast({
-          title: "Error",
-          description: "Failed to save notification preferences. Please try again.",
+          title: t("common.error"),
+          description: t("account.errorSaving"),
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Preferences saved",
-          description: "Your notification preferences have been updated successfully.",
+          title: t("account.notifications.saveChanges"),
+          description: t("account.profileUpdated"),
         });
       }
     } catch (error) {
       console.error('Error saving notification preferences:', error);
       toast({
-        title: "Error",
-        description: "Failed to save notification preferences. Please try again.",
+        title: t("common.error"),
+        description: t("account.errorSaving"),
         variant: "destructive",
       });
     } finally {
@@ -135,7 +137,7 @@ export const NotificationsPanel = ({ onClose }: NotificationsPanelProps) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Notifications</h2>
+        <h2 className="text-2xl font-semibold">{t("account.notifications.title")}</h2>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
@@ -145,31 +147,31 @@ export const NotificationsPanel = ({ onClose }: NotificationsPanelProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Mail className="h-5 w-5" />
-            Email Notifications
+            {t("account.notifications.emailNotifications")}
           </CardTitle>
-          <CardDescription>Choose which emails you want to receive</CardDescription>
+          <CardDescription>{t("account.notifications.emailNotificationsDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Generation Complete</Label>
-              <p className="text-sm text-muted-foreground">When your image generation is finished</p>
+              <Label>{t("account.notifications.generationComplete")}</Label>
+              <p className="text-sm text-muted-foreground">{t("account.notifications.generationCompleteDesc")}</p>
             </div>
             <Switch checked={preferences.email_generation_complete} onCheckedChange={(checked) => handlePreferenceChange('email_generation_complete', checked)} />
           </div>
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Monthly Summary</Label>
-              <p className="text-sm text-muted-foreground">Monthly report of your activity and credits</p>
+              <Label>{t("account.notifications.monthlySummary")}</Label>
+              <p className="text-sm text-muted-foreground">{t("account.notifications.monthlySummaryDesc")}</p>
             </div>
             <Switch checked={preferences.email_monthly_summary} onCheckedChange={(checked) => handlePreferenceChange('email_monthly_summary', checked)} />
           </div>
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>New Features</Label>
-              <p className="text-sm text-muted-foreground">Updates about new features and improvements</p>
+              <Label>{t("account.notifications.newFeatures")}</Label>
+              <p className="text-sm text-muted-foreground">{t("account.notifications.newFeaturesDesc")}</p>
             </div>
             <Switch checked={preferences.email_new_features} onCheckedChange={(checked) => handlePreferenceChange('email_new_features', checked)} />
           </div>
@@ -185,8 +187,8 @@ export const NotificationsPanel = ({ onClose }: NotificationsPanelProps) => {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Marketing & Promotions</Label>
-              <p className="text-sm text-muted-foreground">Special offers and promotional content</p>
+              <Label>{t("account.notifications.marketing")}</Label>
+              <p className="text-sm text-muted-foreground">{t("account.notifications.marketingDesc")}</p>
             </div>
             <Switch checked={preferences.email_marketing} onCheckedChange={(checked) => handlePreferenceChange('email_marketing', checked)} />
           </div>
@@ -253,7 +255,7 @@ export const NotificationsPanel = ({ onClose }: NotificationsPanelProps) => {
 
           <div className="flex gap-2 pt-4">
             <Button onClick={saveNotificationPreferences} disabled={isLoading}>
-              {isLoading ? "Saving..." : "Save Changes"}
+              {isLoading ? t("account.notifications.saving") : t("account.notifications.saveChanges")}
             </Button>
           </div>
 

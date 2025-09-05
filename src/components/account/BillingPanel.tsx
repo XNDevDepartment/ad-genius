@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 interface BillingPanelProps {
   onClose: () => void;
@@ -24,6 +25,7 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
     tier
   } = useCredits();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleManageSubscription = async () => {
     if (!user) return;
@@ -38,8 +40,8 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
     } catch (error) {
       console.error('Error opening customer portal:', error);
       toast({
-        title: "Error",
-        description: "Failed to open subscription management. Please try again.",
+        title: t("common.error"),
+        description: t("account.errorSaving"),
         variant: "destructive",
       });
     }
@@ -56,19 +58,19 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
 
   const getPlanPrice = (tier: string) => {
     const prices = {
-      'Free': 'Free',
+      'Free': t("account.billing.free"),
       'Starter': '€29/month',
       'Plus': '€49/month', 
       'Pro': '€99/month'
     };
-    return prices[tier as keyof typeof prices] || 'Free';
+    return prices[tier as keyof typeof prices] || t("account.billing.free");
   };
 
   if (subscriptionLoading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold">Billing & Usage</h2>
+          <h2 className="text-2xl font-semibold">{t("account.billing.title")}</h2>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
@@ -84,7 +86,7 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Billing & Usage</h2>
+        <h2 className="text-2xl font-semibold">{t("account.billing.title")}</h2>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
@@ -94,33 +96,33 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Crown className="h-5 w-5 text-primary" />
-            Current Plan
+            {t("account.billing.currentPlan")}
           </CardTitle>
-          <CardDescription>Manage your subscription and billing details</CardDescription>
+          <CardDescription>{t("account.billing.currentPlanDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold">{tier} Plan</h3>
+              <h3 className="font-semibold">{tier} {t("account.billing.plan")}</h3>
               <p className="text-sm text-muted-foreground">
                 {getPlanPrice(tier)}
               </p>
             </div>
             <Badge variant={subscriptionData?.subscribed ? "default" : "secondary"}>
-              {subscriptionData?.subscribed ? "Active" : "Free"}
+              {subscriptionData?.subscribed ? t("account.billing.active") : t("account.billing.free")}
             </Badge>
           </div>
 
           <div className="space-y-2">
             {subscriptionData?.subscribed && (
               <div className="flex justify-between text-sm">
-                <span>Next billing date</span>
+                <span>{t("account.billing.nextBilling")}</span>
                 <span>{formatSubscriptionEnd(subscriptionData.subscription_end)}</span>
               </div>
             )}
             <div className="flex justify-between text-sm">
-              <span>Monthly credit allowance</span>
-              <span>{getTotalCredits()} credits</span>
+              <span>{t("account.billing.monthlyCredits")}</span>
+              <span>{getTotalCredits()} {t("account.billing.credits")}</span>
             </div>
           </div>
 
@@ -132,7 +134,7 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
                 onClick={handleManageSubscription}
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
-                Manage Subscription
+                {t("account.billing.manageSubscription")}
               </Button>
             ) : (
               <Button 
@@ -140,7 +142,7 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
                 className="flex-1"
                 onClick={() => window.location.href = '/pricing'}
               >
-                Upgrade Plan
+                {t("account.billing.upgradePlan")}
               </Button>
             )}
           </div>
@@ -151,14 +153,14 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Zap className="h-5 w-5" />
-            Credit Usage
+            {t("account.billing.creditUsage")}
           </CardTitle>
-          <CardDescription>Track your monthly generation credits</CardDescription>
+          <CardDescription>{t("account.billing.creditUsageDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Credits used this month</span>
+              <span>{t("account.billing.creditsUsed")}</span>
               <span>{getUsedCredits()} / {getTotalCredits()}</span>
             </div>
             <Progress value={getUsagePercentage()} className="h-2" />
@@ -167,11 +169,11 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
           <div className="grid grid-cols-2 gap-4 text-center">
             <div className="p-3 border rounded-lg">
               <div className="text-2xl font-semibold">{getRemainingCredits()}</div>
-              <div className="text-sm text-muted-foreground">Remaining</div>
+              <div className="text-sm text-muted-foreground">{t("account.billing.remaining")}</div>
             </div>
             <div className="p-3 border rounded-lg">
               <div className="text-2xl font-semibold">{getDaysUntilReset()}</div>
-              <div className="text-sm text-muted-foreground">Days left</div>
+              <div className="text-sm text-muted-foreground">{t("account.billing.daysLeft")}</div>
             </div>
           </div>
 
@@ -180,7 +182,7 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
               className="w-full"
               onClick={() => window.location.href = '/pricing'}
             >
-              Upgrade for More Credits
+              {t("account.billing.upgradeForMore")}
             </Button>
           )}
         </CardContent>
@@ -191,25 +193,25 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              Subscription Management
+              {t("account.billing.subscriptionManagement")}
             </CardTitle>
-            <CardDescription>Manage your subscription and billing details</CardDescription>
+            <CardDescription>{t("account.billing.subscriptionManagementDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="bg-muted/50 p-4 rounded-lg">
-                <h4 className="font-medium mb-2">Subscription Details</h4>
+                <h4 className="font-medium mb-2">{t("account.billing.subscriptionDetails")}</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span>Plan:</span>
+                    <span>{t("account.billing.plan")}:</span>
                     <span>{subscriptionData.subscription_tier}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Status:</span>
-                    <span className="text-green-600">Active</span>
+                    <span>{t("account.billing.status")}:</span>
+                    <span className="text-green-600">{t("account.billing.active")}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Renewal:</span>
+                    <span>{t("account.billing.renewal")}:</span>
                     <span>{formatSubscriptionEnd(subscriptionData.subscription_end)}</span>
                   </div>
                 </div>
@@ -221,11 +223,11 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
                 onClick={handleManageSubscription}
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
-                Open Stripe Customer Portal
+                {t("account.billing.openStripePortal")}
               </Button>
               
               <p className="text-xs text-muted-foreground">
-                Manage your subscription, update payment methods, and view billing history in Stripe's secure portal.
+                {t("account.billing.stripePortalDesc")}
               </p>
             </div>
           </CardContent>

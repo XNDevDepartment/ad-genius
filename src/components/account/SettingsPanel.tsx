@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import { LanguageSelector } from "../LanguageSelector";
+import { useTranslation } from "react-i18next";
 
 interface SettingsPanelProps {
   layout: string;
@@ -30,6 +31,7 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [preferences, setPreferences] = useState<UserPreferences>({
     default_aspect_ratio: '1:1',
     auto_save_images: true,
@@ -84,21 +86,21 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
       if (error) {
         console.error('Error saving preferences:', error);
         toast({
-          title: "Error",
-          description: "Failed to save preferences. Please try again.",
+          title: t("common.error"),
+          description: t("account.errorSaving"),
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Settings saved",
-          description: "Your preferences have been updated successfully.",
+          title: t("account.settings.saveChanges"),
+          description: t("account.profileUpdated"),
         });
       }
     } catch (error) {
       console.error('Error saving preferences:', error);
       toast({
-        title: "Error",
-        description: "Failed to save preferences. Please try again.",
+        title: t("common.error"),
+        description: t("account.errorSaving"),
         variant: "destructive",
       });
     } finally {
@@ -116,7 +118,7 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Settings</h2>
+        <h2 className="text-2xl font-semibold">{t("account.settings.title")}</h2>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
@@ -124,8 +126,8 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
 
       <Card>
         <CardHeader>
-          <CardTitle>Generation Defaults</CardTitle>
-          <CardDescription>Set your preferred image generation settings</CardDescription>
+          <CardTitle>{t("account.settings.generationDefaults")}</CardTitle>
+          <CardDescription>{t("account.settings.generationDefaultsDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/** NOT NECESSARY AT THE MOMENT */}
@@ -170,8 +172,8 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Auto Save Images</Label>
-              <p className="text-sm text-muted-foreground">Automatically save images when finished</p>
+              <Label>{t("account.settings.autoSaveImages")}</Label>
+              <p className="text-sm text-muted-foreground">{t("account.settings.autoSaveImagesDesc")}</p>
             </div>
             <Switch checked={preferences.auto_save_images} onCheckedChange={(checked) => handlePreferenceChange('auto_save_images', checked)} />
           </div>
@@ -180,20 +182,20 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
 
       <Card>
         <CardHeader>
-          <CardTitle>Interface Preferences</CardTitle>
-          <CardDescription>Customize your app experience</CardDescription>
+          <CardTitle>{t("account.settings.interfacePreferences")}</CardTitle>
+          <CardDescription>{t("account.settings.interfacePreferencesDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="theme">Theme</Label>
+            <Label htmlFor="theme">{t("account.settings.theme")}</Label>
             <Select value={theme} onValueChange={(value) => handlePreferenceChange('theme', value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="light">Light</SelectItem>
-                <SelectItem value="dark">Dark</SelectItem>
-                <SelectItem value="auto">System</SelectItem>
+                <SelectItem value="light">{t("account.settings.light")}</SelectItem>
+                <SelectItem value="dark">{t("account.settings.dark")}</SelectItem>
+                <SelectItem value="auto">{t("account.settings.system")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -232,8 +234,8 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
 
       <Card>
         <CardHeader>
-          <CardTitle>Language</CardTitle>
-          <CardDescription>Set your language preference</CardDescription>
+          <CardTitle>{t("account.settings.language")}</CardTitle>
+          <CardDescription>{t("account.settings.languageDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <LanguageSelector variant="ghost" size={"default"} />
@@ -255,7 +257,7 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
 
           <div className="flex gap-2 pt-4">
             <Button onClick={saveUserPreferences} disabled={isLoading}>
-              {isLoading ? "Saving..." : "Save Changes"}
+              {isLoading ? t("account.settings.saving") : t("account.settings.saveChanges")}
             </Button>
           </div>
         </CardContent>
