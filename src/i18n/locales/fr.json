@@ -69,16 +69,67 @@
     },
     "settings": {
       "title": "Paramètres",
-      "generationDefaults": "Paramètres par Défaut de Génération",
-      "generationDefaultsDescription": "Définissez vos paramètres préférés de génération d'images",
-      "autoSaveImages": "Enregistrer les Images Automatiquement",
-      "autoSaveImagesDescription": "Enregistrer automatiquement les images une fois terminées",
+      "desc": "Gérez vos préférences de compte",
+      "generationDefaults": "Paramètres par Défaut",
       "interfacePreferences": "Préférences d'Interface",
-      "interfacePreferencesDescription": "Personnalisez votre expérience dans l'app",
-      "theme": "Thème",
       "language": "Langue",
-      "languageDescription": "Définissez votre préférence de langue"
+      "autoSave": "Sauvegarde Automatique",
+      "autoSaveDesc": "Sauvegarder les paramètres automatiquement",
+      "saveChanges": "Sauvegarder les Modifications"
     },
+    "notifications": {
+      "title": "Notifications",
+      "desc": "Gérez vos préférences de notification",
+      "emailNotifications": "Notifications par Email",
+      "newFeatures": "Nouvelles Fonctionnalités et Mises à Jour",
+      "newFeaturesDesc": "Être notifié des nouvelles fonctionnalités et améliorations",
+      "accountUpdates": "Mises à Jour du Compte",
+      "accountUpdatesDesc": "Mises à jour importantes concernant votre compte",
+      "promotions": "Offres Promotionnelles",
+      "promotionsDesc": "Offres spéciales et promotions",
+      "saveChanges": "Sauvegarder les Modifications"
+    },
+    "privacy": {
+      "title": "Confidentialité",
+      "desc": "Contrôlez vos paramètres de confidentialité et de données",
+      "dataCollection": "Collecte de Données",
+      "analytics": "Données d'Analyse",
+      "analyticsDesc": "Aidez-nous à améliorer en partageant des données d'utilisation anonymes",
+      "marketing": "Communications Marketing",
+      "marketingDesc": "Recevoir des emails promotionnels et des mises à jour de produits",
+      "dataSharing": "Partage de Données",
+      "thirdParty": "Services Tiers",
+      "thirdPartyDesc": "Permettre l'intégration avec des services tiers approuvés",
+      "saveChanges": "Sauvegarder les Modifications"
+    },
+    "billing": {
+      "title": "Facturation",
+      "desc": "Gérez votre abonnement et vos informations de paiement",
+      "currentPlan": "Plan Actuel",
+      "planDetails": "Détails du Plan",
+      "billingHistory": "Historique de Facturation",
+      "paymentMethod": "Méthode de Paiement",
+      "nextBilling": "Prochaine Facturation",
+      "managePlan": "Gérer le Plan",
+      "viewHistory": "Voir l'Historique",
+      "updatePayment": "Mettre à Jour le Paiement"
+    },
+    "helpSupport": {
+      "title": "Aide et Support",
+      "desc": "Obtenez de l'aide ou contactez-nous",
+      "quickHelp": "Aide Rapide",
+      "gettingStarted": "Guide de Démarrage",
+      "faq": "Questions Fréquentes",
+      "contactSupport": "Contacter le Support",
+      "subject": "Sujet",
+      "category": "Catégorie",
+      "message": "Message",
+      "submitTicket": "Soumettre un Ticket",
+      "contactInfo": "Informations de Contact",
+      "businessHours": "Heures d'Ouverture"
+    },
+    "displayName": "Nom d'Affichage",
+    "displayNameDesc": "Comment vous voulez être appelé",
     "toasts": {
       "profileUpdated": {
         "title": "Profil mis à jour",
@@ -173,10 +224,22 @@
     "upgradeToUnlock": "Mettre à niveau pour débloquer"
   },
   "a11y": {
-    "logoAlt": "Logo",
-    "toggleTheme": "Changer le thème",
-    "changeLanguage": "Changer la langue"
+    "logo": "Logo de l'application",
+    "themeToggle": "Basculer le thème",
+    "languageToggle": "Basculer la langue"
   },
+  "index": {
+    "auth": {
+      "welcome": "Bon retour",
+      "welcomeDesc": "Prêt à créer du contenu incroyable ?",
+      "quickActions": "Actions Rapides",
+      "recentActivity": "Activité Récente",
+      "noRecentActivity": "Aucune activité récente",
+      "viewLibrary": "Voir la Bibliothèque",
+      "createContent": "Créer du Contenu",
+      "accountSettings": "Paramètres du Compte"
+    }
+  }
   "ugc": {
     "title": "Créer du Contenu UGC",
     "productImage": {

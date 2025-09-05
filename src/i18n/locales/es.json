@@ -69,16 +69,67 @@
     },
     "settings": {
       "title": "Configuración",
-      "generationDefaults": "Configuración Predeterminada de Generación",
-      "generationDefaultsDescription": "Establece tus configuraciones preferidas de generación de imágenes",
-      "autoSaveImages": "Guardar Imágenes Automáticamente",
-      "autoSaveImagesDescription": "Guardar imágenes automáticamente cuando terminen",
+      "desc": "Administra las preferencias de tu cuenta",
+      "generationDefaults": "Configuración Predeterminada",
       "interfacePreferences": "Preferencias de Interfaz",
-      "interfacePreferencesDescription": "Personaliza tu experiencia en la app",
-      "theme": "Tema",
       "language": "Idioma",
-      "languageDescription": "Establece tu preferencia de idioma"
+      "autoSave": "Guardado Automático",
+      "autoSaveDesc": "Guardar configuración automáticamente",
+      "saveChanges": "Guardar Cambios"
     },
+    "notifications": {
+      "title": "Notificaciones",
+      "desc": "Administra tus preferencias de notificación",
+      "emailNotifications": "Notificaciones por Email",
+      "newFeatures": "Nuevas Funciones y Actualizaciones",
+      "newFeaturesDesc": "Recibe notificaciones sobre nuevas funciones y mejoras",
+      "accountUpdates": "Actualizaciones de Cuenta",
+      "accountUpdatesDesc": "Actualizaciones importantes sobre tu cuenta",
+      "promotions": "Ofertas Promocionales",
+      "promotionsDesc": "Ofertas especiales y promociones",
+      "saveChanges": "Guardar Cambios"
+    },
+    "privacy": {
+      "title": "Privacidad",
+      "desc": "Controla tu configuración de privacidad y datos",
+      "dataCollection": "Recopilación de Datos",
+      "analytics": "Datos de Análisis",
+      "analyticsDesc": "Ayúdanos a mejorar compartiendo datos de uso anónimos",
+      "marketing": "Comunicaciones de Marketing",
+      "marketingDesc": "Recibir emails promocionales y actualizaciones de productos",
+      "dataSharing": "Intercambio de Datos",
+      "thirdParty": "Servicios de Terceros",
+      "thirdPartyDesc": "Permitir integración con servicios de terceros aprobados",
+      "saveChanges": "Guardar Cambios"
+    },
+    "billing": {
+      "title": "Facturación",
+      "desc": "Administra tu suscripción e información de pago",
+      "currentPlan": "Plan Actual",
+      "planDetails": "Detalles del Plan",
+      "billingHistory": "Historial de Facturación",
+      "paymentMethod": "Método de Pago",
+      "nextBilling": "Próxima Facturación",
+      "managePlan": "Administrar Plan",
+      "viewHistory": "Ver Historial",
+      "updatePayment": "Actualizar Pago"
+    },
+    "helpSupport": {
+      "title": "Ayuda y Soporte",
+      "desc": "Obtén ayuda o contáctanos",
+      "quickHelp": "Ayuda Rápida",
+      "gettingStarted": "Guía de Inicio",
+      "faq": "Preguntas Frecuentes",
+      "contactSupport": "Contactar Soporte",
+      "subject": "Asunto",
+      "category": "Categoría",
+      "message": "Mensaje",
+      "submitTicket": "Enviar Ticket",
+      "contactInfo": "Información de Contacto",
+      "businessHours": "Horario Comercial"
+    },
+    "displayName": "Nombre para Mostrar",
+    "displayNameDesc": "Cómo quieres que te llamen",
     "toasts": {
       "profileUpdated": {
         "title": "Perfil actualizado",
@@ -173,10 +224,22 @@
     "upgradeToUnlock": "Actualizar para desbloquear"
   },
   "a11y": {
-    "logoAlt": "Logo",
-    "toggleTheme": "Cambiar tema",
-    "changeLanguage": "Cambiar idioma"
+    "logo": "Logo de la aplicación",
+    "themeToggle": "Cambiar tema",
+    "languageToggle": "Cambiar idioma"
   },
+  "index": {
+    "auth": {
+      "welcome": "Bienvenido de vuelta",
+      "welcomeDesc": "¿Listo para crear contenido increíble?",
+      "quickActions": "Acciones Rápidas",
+      "recentActivity": "Actividad Reciente",
+      "noRecentActivity": "No hay actividad reciente",
+      "viewLibrary": "Ver Biblioteca",
+      "createContent": "Crear Contenido",
+      "accountSettings": "Configuración de Cuenta"
+    }
+  }
   "ugc": {
     "title": "Crear Contenido UGC",
     "productImage": {

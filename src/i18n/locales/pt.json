@@ -69,16 +69,67 @@
     },
     "settings": {
       "title": "Configurações",
+      "desc": "Gerencie suas preferências de conta",
       "generationDefaults": "Padrões de Geração",
-      "generationDefaultsDescription": "Defina suas configurações preferidas de geração de imagem",
-      "autoSaveImages": "Salvar Imagens Automaticamente",
-      "autoSaveImagesDescription": "Salvar imagens automaticamente quando concluído",
       "interfacePreferences": "Preferências da Interface",
-      "interfacePreferencesDescription": "Personalize sua experiência no app",
-      "theme": "Tema",
       "language": "Idioma",
-      "languageDescription": "Defina sua preferência de idioma"
+      "autoSave": "Salvamento Automático",
+      "autoSaveDesc": "Salvar configurações automaticamente",
+      "saveChanges": "Salvar Alterações"
     },
+    "notifications": {
+      "title": "Notificações",
+      "desc": "Gerencie suas preferências de notificação",
+      "emailNotifications": "Notificações por Email",
+      "newFeatures": "Novos Recursos e Atualizações",
+      "newFeaturesDesc": "Seja notificado sobre novos recursos e melhorias",
+      "accountUpdates": "Atualizações da Conta",
+      "accountUpdatesDesc": "Atualizações importantes sobre sua conta",
+      "promotions": "Ofertas Promocionais",
+      "promotionsDesc": "Ofertas especiais e promoções",
+      "saveChanges": "Salvar Alterações"
+    },
+    "privacy": {
+      "title": "Privacidade",
+      "desc": "Controle suas configurações de privacidade e dados",
+      "dataCollection": "Coleta de Dados",
+      "analytics": "Dados de Análise",
+      "analyticsDesc": "Ajude-nos a melhorar compartilhando dados de uso anônimos",
+      "marketing": "Comunicações de Marketing",
+      "marketingDesc": "Receber emails promocionais e atualizações de produtos",
+      "dataSharing": "Compartilhamento de Dados",
+      "thirdParty": "Serviços de Terceiros",
+      "thirdPartyDesc": "Permitir integração com serviços de terceiros aprovados",
+      "saveChanges": "Salvar Alterações"
+    },
+    "billing": {
+      "title": "Cobrança",
+      "desc": "Gerencie sua assinatura e informações de pagamento",
+      "currentPlan": "Plano Atual",
+      "planDetails": "Detalhes do Plano",
+      "billingHistory": "Histórico de Cobrança",
+      "paymentMethod": "Método de Pagamento",
+      "nextBilling": "Próxima Cobrança",
+      "managePlan": "Gerenciar Plano",
+      "viewHistory": "Ver Histórico",
+      "updatePayment": "Atualizar Pagamento"
+    },
+    "helpSupport": {
+      "title": "Ajuda e Suporte",
+      "desc": "Obtenha ajuda ou entre em contato conosco",
+      "quickHelp": "Ajuda Rápida",
+      "gettingStarted": "Guia de Introdução",
+      "faq": "Perguntas Frequentes",
+      "contactSupport": "Contatar Suporte",
+      "subject": "Assunto",
+      "category": "Categoria",
+      "message": "Mensagem",
+      "submitTicket": "Enviar Ticket",
+      "contactInfo": "Informações de Contato",
+      "businessHours": "Horário Comercial"
+    },
+    "displayName": "Nome de Exibição",
+    "displayNameDesc": "Como você quer ser chamado",
     "toasts": {
       "profileUpdated": {
         "title": "Perfil atualizado",
@@ -173,10 +224,22 @@
     "upgradeToUnlock": "Upgrade para desbloquear"
   },
   "a11y": {
-    "logoAlt": "Logo",
-    "toggleTheme": "Alternar tema",
-    "changeLanguage": "Alterar idioma"
+    "logo": "Logo da aplicação",
+    "themeToggle": "Alternar tema",
+    "languageToggle": "Alternar idioma"
   },
+  "index": {
+    "auth": {
+      "welcome": "Bem-vindo de volta",
+      "welcomeDesc": "Pronto para criar conteúdo incrível?",
+      "quickActions": "Ações Rápidas",
+      "recentActivity": "Atividade Recente",
+      "noRecentActivity": "Nenhuma atividade recente",
+      "viewLibrary": "Ver Biblioteca",
+      "createContent": "Criar Conteúdo",
+      "accountSettings": "Configurações da Conta"
+    }
+  }
   "ugc": {
     "title": "Criar Conteúdo UGC",
     "productImage": {
