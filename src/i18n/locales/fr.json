@@ -31,11 +31,6 @@
   "account": {
     "title": "Compte",
     "editProfile": "Modifier le Profil",
-    "settings": "Paramètres",
-    "notifications": "Notifications",
-    "privacy": "Confidentialité",
-    "billing": "Facturation",
-    "helpSupport": "Aide et Support",
     "signOut": "Se Déconnecter",
     "member": "Membre",
     "sections": {
@@ -230,6 +225,9 @@
   },
   "index": {
     "auth": {
+      "title": "Créez des images de produits qui vendent",
+      "subtitle": "Transformez vos produits en images époustouflantes et génératrices de conversion grâce à l'IA",
+      "startCreating": "Commencez à créer",
       "welcome": "Bon retour",
       "welcomeDesc": "Prêt à créer du contenu incroyable ?",
       "quickActions": "Actions Rapides",

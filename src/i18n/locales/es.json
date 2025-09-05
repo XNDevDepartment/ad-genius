@@ -31,11 +31,6 @@
   "account": {
     "title": "Cuenta",
     "editProfile": "Editar Perfil",
-    "settings": "Configuración",
-    "notifications": "Notificaciones",
-    "privacy": "Privacidad",
-    "billing": "Facturación",
-    "helpSupport": "Ayuda y Soporte",
     "signOut": "Cerrar Sesión",
     "member": "Miembro",
     "sections": {
@@ -230,6 +225,9 @@
   },
   "index": {
     "auth": {
+      "title": "Crea imágenes de productos que vendan",
+      "subtitle": "Convierte tus productos en imágenes impactantes y centradas en la conversión con IA",
+      "startCreating": "Empieza a crear",
       "welcome": "Bienvenido de vuelta",
       "welcomeDesc": "¿Listo para crear contenido increíble?",
       "quickActions": "Acciones Rápidas",

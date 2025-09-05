@@ -29,6 +29,7 @@ import type { SourceImage } from "@/hooks/useSourceImages";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Link as LinkIcon, Images } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface GeneratedImage {
   id: string;
@@ -84,7 +85,7 @@ const CreateUGC = () => {
   const [sourceImageId, setSourceImageId] = useState<string | null>(null);
   const [niche, setNiche] = useState("");
   const [aiScenarios, setAiScenarios] = useState<AIScenario[]>([]);
-  const [selectedScenario, setSelectedScenario] = useState<AIScenario | null>(null);
+  const [selectedScenario, setSelectedScenario] = useState<AIScenario | null>({'idea': "", "small-description" : "", "description": ""});
   const [isLoadingScenarios, setIsLoadingScenarios] = useState(false);
   const [threadId, setThreadId] = useState<string | null>(null);
   const [productIdentification, setProductIdentification] = useState("");
@@ -97,11 +98,13 @@ const CreateUGC = () => {
 
   // Job system integration
   const { job, images: jobImages, createJob, clearJob, loadJob, resumeCurrentJob } = useImageJob();
+  const { language, setLanguage } = useLanguage();
   const { activeJob, activeImages } = useActiveJob();
 
   // Sync job state with local state
   const isGenerating = job?.status === 'queued' || job?.status === 'processing';
   const progress = job?.progress || 0;
+
 
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -117,6 +120,7 @@ const CreateUGC = () => {
 
   // Move all refs and effects to the top, before any conditional returns
   const taRef = useRef<HTMLTextAreaElement>(null);
+  const scnRef = useRef<HTMLTextAreaElement>(null);
   const scenariosRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -304,7 +308,7 @@ const CreateUGC = () => {
         setIsAnalyzingImage(false);
         toast({
           title: "Product Analyzed",
-          description: "AI has identified your product. Now describe your niche to get scenario suggestions."
+          description: "AI has identified your product. Now describe your niche to get scenario suggestions"
         });
       };
       reader.readAsDataURL(file);
@@ -495,7 +499,7 @@ const CreateUGC = () => {
     try {
       const responseText = await converse(
         threadId!,
-        `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas. Return ONLY a compact JSON object with "scenarios" array.`,
+        `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas. Return ONLY a compact JSON object with "scenarios" array and in this language: ` + language,
         ASSISTANT_ID
       );
       // Extract JSON from response
@@ -952,7 +956,23 @@ const CreateUGC = () => {
                         <RefreshCw className="h-4 w-4 mr-2" />
                         {t('ugc.scenarios.generateMoreButton')}
                       </Button>
+
+                    <Textarea
+                      ref={scnRef}
+                      id="scenario description"
+                      placeholder={'Here will fall the scenario description'}
+                      value={selectedScenario.description}
+                      onChange={(e) => setSelectedScenario((val) => { return {...val, 'description': e.target.value }})}
+                      className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full text-base md:text-sm"
+                      style={{ lineHeight: '1.25rem, font-size: 16px' }}
+                      disabled={!threadId}
+                      rows={3}
+                    />
+                      <div className="flex justify-end text-sm text-muted-foreground">
+                      {niche.length > 0 && niche.length}
+                      </div>
                     </div>
+
                 )}
                   </div>
                 </CardContent>

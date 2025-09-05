@@ -30,12 +30,6 @@
   },
   "account": {
     "title": "Account",
-    "editProfile": "Edit Profile",
-    "settings": "Settings",
-    "notifications": "Notifications",
-    "privacy": "Privacy",
-    "billing": "Billing",
-    "helpSupport": "Help & Support",
     "signOut": "Sign Out",
     "member": "Member",
     "sections": {
