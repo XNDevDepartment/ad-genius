@@ -228,12 +228,12 @@ const Account = () => {
           </Button>
           <h1 className="text-2xl lg:text-3xl font-bold">
             {section === "" ? t('account.title') : 
-             section === "edit-profile" ? t('account.editProfile') :
-             section === "settings" ? t('account.settings') :
-             section === "notifications" ? t('account.notifications') :
-             section === "privacy" ? t('account.privacy') :
-             section === "billing" ? t('account.billing') :
-             section === "help" ? t('account.helpSupport') : t('account.title')}
+             section === "edit-profile" ? t('account.editProfile.title') :
+             section === "settings" ? t('account.settings.title') :
+             section === "notifications" ? t('account.notifications.title') :
+             section === "privacy" ? t('account.privacy.title') :
+             section === "billing" ? t('account.billing.title') :
+             section === "help" ? t('account.helpSupport.title') : t('account.title')}
           </h1>
         </div>
       </div>
@@ -252,12 +252,12 @@ const Account = () => {
           )}
           <h1 className="text-2xl lg:text-3xl font-bold">
             {section === "" ? t('account.title') : 
-             section === "edit-profile" ? t('account.editProfile') :
-             section === "settings" ? t('account.settings') :
-             section === "notifications" ? t('account.notifications') :
-             section === "privacy" ? t('account.privacy') :
-             section === "billing" ? t('account.billing') :
-             section === "help" ? t('account.helpSupport') : t('account.title')}
+             section === "edit-profile" ? t('account.editProfile.title') :
+             section === "settings" ? t('account.settings.title') :
+             section === "notifications" ? t('account.notifications.title') :
+             section === "privacy" ? t('account.privacy.title') :
+             section === "billing" ? t('account.billing.title') :
+             section === "help" ? t('account.helpSupport.title') : t('account.title')}
           </h1>
         </div>
 
