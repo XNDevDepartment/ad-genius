@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLibraryImages } from "@/hooks/useLibraryImages";
 import { useActiveJob } from "@/hooks/useActiveJob";
+import { useSourceImages } from "@/hooks/useSourceImages";
 import { GeneratingImagePlaceholders } from "@/components/departments/ugc/GeneratingImagePlaceholders";
 import {
   AlertDialog,
@@ -55,6 +56,7 @@ export const Library = ({ onBack }: LibraryProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { images, loading, deleteImage: deleteImageFromDB } = useLibraryImages();
+  const { sourceImages, loading: sourceLoading } = useSourceImages();
   const { activeJob, activeImages } = useActiveJob();
 
   const handleDownload = async (image: LibraryImage) => {
@@ -102,30 +104,9 @@ export const Library = ({ onBack }: LibraryProps) => {
   };
 
 
-  const filteredAndSortedImages = images
-    .filter(image => {
-      // Filter by search term
-      const matchesSearch = image.prompt.toLowerCase().includes(searchTerm.toLowerCase());
-
-      // Filter by view mode - if showing source images, only show images that have source
-      if (viewMode === "source") {
-        return matchesSearch && image.sourceSignedUrl;
-      }
-
-      return matchesSearch;
-    })
-    .reduce((acc, image) => {
-      // If in source view mode, deduplicate by source_image_id
-      if (viewMode === "source" && image.source_image_id) {
-        const existing = acc.find(item => item.source_image_id === image.source_image_id);
-        if (!existing) {
-          acc.push(image);
-        }
-      } else if (viewMode === "ai") {
-        acc.push(image);
-      }
-      return acc;
-    }, [] as LibraryImage[])
+  // For AI images, use generated images
+  const aiImages = images
+    .filter(image => image.prompt.toLowerCase().includes(searchTerm.toLowerCase()))
     .sort((a, b) => {
       switch (sortBy) {
         case 'oldest':
@@ -137,6 +118,24 @@ export const Library = ({ onBack }: LibraryProps) => {
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
     });
+
+  // For source images, use source images with filename search
+  const filteredSourceImages = sourceImages
+    .filter(image => image.fileName.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'oldest':
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case 'prompt':
+          return a.fileName.localeCompare(b.fileName);
+        case 'newest':
+        default:
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+    });
+
+  const filteredAndSortedImages = viewMode === "ai" ? aiImages : filteredSourceImages;
+  const isLoading = viewMode === "ai" ? loading : sourceLoading;
 
   return (
     <div className="p-4 lg:p-8 space-y-6 animate-fade-in ">
@@ -194,7 +193,7 @@ export const Library = ({ onBack }: LibraryProps) => {
             )}
             
           </div>
-          {loading ? (
+          {isLoading ? (
             <div className="text-center py-12">
               <div className="mx-auto w-16 h-16 rounded-lg bg-secondary/50 flex items-center justify-center mb-4">
                 <FileImage className="h-8 w-8 text-muted-foreground animate-pulse" />
@@ -204,20 +203,25 @@ export const Library = ({ onBack }: LibraryProps) => {
           ) : filteredAndSortedImages.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0.5">
               {filteredAndSortedImages.map((image) => {
+                // Handle both AI images and source images
+                const isSourceView = viewMode === "source";
+                const imageUrl = isSourceView ? (image as any).signedUrl : (image as any).url;
+                const imageAlt = isSourceView ? `Source: ${(image as any).fileName}` : `Generated: ${(image as any).prompt.substring(0, 50)}...`;
+                
                 return (
                   <div key={image.id} className="space-y-3 animate-scale-in group">
                     <div className=" overflow-hidden border border-border/50 relative aspect-square">
                       <img 
-                        src={viewMode === "ai" ? image.url : (image.sourceSignedUrl || image.url)}
-                        alt={`${viewMode === "ai" ? "Generated" : "Source"}: ${image.prompt.substring(0, 50)}...`}
+                        src={imageUrl}
+                        alt={imageAlt}
                         className="w-full h-full object-cover shadow-card transition-transform group-hover:scale-105"
                       />
 
                       {/* Source image thumbnail in bottom-left (only in AI mode and when toggle is on) */}
-                      {viewMode === "ai" && showSourceThumbnails && image.sourceSignedUrl && (
+                      {viewMode === "ai" && showSourceThumbnails && (image as any).sourceSignedUrl && (
                         <div className="absolute bottom-2 left-2 w-20 h-20 rounded-lg overflow-hidden border-2 border-white shadow-lg z-20">
                           <img 
-                            src={image.sourceSignedUrl}
+                            src={(image as any).sourceSignedUrl}
                             alt="Source image"
                             className="w-full h-full object-cover"
                           />
@@ -231,7 +235,7 @@ export const Library = ({ onBack }: LibraryProps) => {
                             <Button
                               size="sm"
                               variant="secondary"
-                              onClick={() => setSelectedImage(image)}
+                              onClick={() => setSelectedImage(image as any)}
                               className="bg-background/90 hover:bg-background"
                             >
                               <Eye className="h-4 w-4" />
@@ -240,14 +244,10 @@ export const Library = ({ onBack }: LibraryProps) => {
                           <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
                             <div className="space-y-4">
                               <img
-                                src={viewMode === "ai" ? image.url : (image.sourceSignedUrl || image.url)}
-                                alt={image.prompt}
+                                src={imageUrl}
+                                alt={imageAlt}
                                 className="w-full h-auto max-h-[70vh] object-contain rounded-lg"
                               />
-                              {/* <div className="space-y-2">
-                                <h3 className="font-semibold">Settings:</h3>
-                                <p className="text-sm text-muted-foreground">{image.settings.quality}</p>
-                              </div> */}
                             </div>
                           </DialogContent>
                         </Dialog>
@@ -257,40 +257,42 @@ export const Library = ({ onBack }: LibraryProps) => {
                           <Button
                             size="sm"
                             variant="secondary"
-                            onClick={() => handleDownload(image)}
+                            onClick={() => handleDownload(image as any)}
                             className="bg-background/90 hover:bg-background"
                           >
                             <Download className="h-4 w-4" />
                           </Button>
-                          {/* Delete with confirmation */}
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                disabled={deletingId === image.id}
-                                className="bg-destructive/90 hover:bg-destructive"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                          </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Eliminar esta imagem?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Esta ação é permanente. A imagem será removida da sua biblioteca e do armazenamento.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => confirmDelete(image.id)}
+                          {/* Delete with confirmation - only show for AI images */}
+                          {viewMode === "ai" && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  disabled={deletingId === image.id}
+                                  className="bg-destructive/90 hover:bg-destructive"
                                 >
-                                  {deletingId === image.id ? "A eliminar..." : "Eliminar"}
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Eliminar esta imagem?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Esta ação é permanente. A imagem será removida da sua biblioteca e do armazenamento.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => confirmDelete(image.id)}
+                                  >
+                                    {deletingId === image.id ? "A eliminar..." : "Eliminar"}
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
                         </div>
                       </div>
                     </div>

@@ -32,10 +32,23 @@ export const useSourceImages = () => {
 
       if (dbError) throw dbError;
 
-      // Create signed URLs for each image
+      // Deduplicate images based on storage_path (keep the most recent)
+      const uniqueImages = (images || []).reduce((acc, current) => {
+        const existing = acc.find(img => img.storage_path === current.storage_path);
+        if (!existing) {
+          acc.push(current);
+        } else if (new Date(current.created_at) > new Date(existing.created_at)) {
+          // Replace with more recent version
+          const index = acc.indexOf(existing);
+          acc[index] = current;
+        }
+        return acc;
+      }, [] as typeof images);
+
+      // Create signed URLs for each unique image
       const imagesWithSignedUrls: SourceImage[] = [];
       
-      for (const image of images || []) {
+      for (const image of uniqueImages || []) {
         const { data: signedUrlData } = await supabase.storage
           .from('ugc-inputs')
           .createSignedUrl(image.storage_path, 3600); // 1 hour expiry
