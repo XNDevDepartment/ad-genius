@@ -29,7 +29,7 @@ export const useUserStats = () => {
   const creditsSnap = useMemo(() => ({
     used:    getUsedCredits?.() ?? 0,
     total:   getTotalCredits?.() ?? 0,
-  }), [loading]); 
+  }), [loading, getUsedCredits]); 
 
   useEffect(() => {
     const fetchUserStats = async () => {
