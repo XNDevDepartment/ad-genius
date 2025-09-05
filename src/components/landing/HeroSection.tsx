@@ -31,9 +31,9 @@ const HeroSection = () => {
 
   const headlines = [
     "Showcase your products in real, authentic contexts",
-    "Make them look like they’re already in customers’ hands.",
+    "Make them look they’re already in customers’ hands.",
     "Build instant trust and credibility for your brand.",
-    "Create product images that sell",
+    "Create product images that sell for you",
   ];
 
   const socialProofStats = [
@@ -122,7 +122,7 @@ const HeroSection = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
-                className="text-4xl lg:text-6xl font-bold leading-tight text-foreground h-[20vh]"
+                className="text-4xl lg:text-6xl font-bold leading-tight text-foreground"
               >
                 {headlines[currentHeadline]}
               </motion.h1>

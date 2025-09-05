@@ -600,16 +600,16 @@ const CreateUGC = () => {
       const commonNeg = `--negative "AI artifacts, text overlays, watermark, extreme bokeh, macro close-up, center-composed product, invented branding, extra limbs, low resolution"`;
 
       const highlightYes = `
-      Ultra-realistic ${style} UGC photograph of my product in the following scenarion: ${selectedScenario.description}.
-      Lighting: ${timeOfDay}. Camera: full-frame DSLR, 50mm, f/2.8–f/4 (shallow DOF).
-      Framing: the product fills ~70% of the frame, centered or slight 1/3 offset.
+      16K resolution, crystal clear ${style} UGC photo of my product in this scenario: ${selectedScenario.description}.
+      Lighting: ${timeOfDay}. Camera: full-frame DSLR, 65mm, f/2.8–f/4 (shallow DOF).
+      Framing: the product must fills between 40%~70% of the frame, centered or slight 1/3 offset.
       Focus: tack-sharp on the product; background has gentle bokeh for depth.
-      Color/texture: true-to-life, clean edges, no motion blur.
+      Color/texture: true-to-life, clean edges, no motion blur. Must include realism on texture, making the most human photography.
       ${commonNeg}
       `;
 
       const highlightNo = `
-      Ultra-realistic ${style} lifestyle photograph of this the following scenario: ${selectedScenario.description}. Where the **scene is primary** and the product appears naturally in context.
+      16K resolution, crystal clear ${style} lifestyle photograph in this scenario: ${selectedScenario.description}. Where the **scene is primary** and the product appears naturally in context.
       Composition: product occupies ~20–30% of the frame, placed off-center (rule of thirds) or partial crop; not a close-up.
       Focus: background/scene in **sharp focus**; product is **slightly soft** (subtle defocus), no strong subject isolation, no heavy bokeh.
       Depth of field: f/8–f/11 (deeper DOF) so environment reads clearly.
