@@ -221,7 +221,7 @@ const FeatureShowcase = () => {
                           feature.available ? "text-primary group-hover:scale-110" : "text-muted-foreground"
                         }`} />
                       </div>
-                      
+
                       <div className="flex flex-col items-end gap-2">
                         <Badge variant={feature.available ? "default" : "secondary"} className="text-xs">
                           {feature.category}

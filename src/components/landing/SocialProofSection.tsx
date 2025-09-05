@@ -4,6 +4,14 @@ import { Star, Quote, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import shopify from '@/assets/logos/shopify.png'
+import woocommerce from '@/assets/logos/woocommerce.png'
+import etsy from '@/assets/logos/etsy.png'
+import amazon from '@/assets/logos/amazon.png'
+import magento from '@/assets/logos/magento.png'
+import bigcommerce from '@/assets/logos/bigcommerce.png'
+
+
 
 const SocialProofSection = () => {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
@@ -11,44 +19,45 @@ const SocialProofSection = () => {
   const testimonials = [
     {
       id: 1,
-      name: "Sarah Chen",
-      role: "E-commerce Manager",
-      company: "StyleCo",
+      name: "Andreia Vieira",
+      role: "CEO",
+      company: "OGatoDasFraldas",
       avatar: "/api/placeholder/40/40",
       rating: 5,
-      text: "This AI tool completely transformed our product photography workflow. We went from hours of editing to minutes of generation.",
-      metrics: "300% faster product launches"
+      text: "A tool with great potential. A valuable addition for generating stand-out, unique images.",
+      metrics: ""
     },
     {
       id: 2,
-      name: "Marcus Rodriguez",
+      name: "Sofia Santos",
       role: "Creative Director",
-      company: "BrandFlow",
+      company: "Bug Hug",
       avatar: "/api/placeholder/40/40",
       rating: 5,
-      text: "The quality is incredible. Our customers can't tell the difference between AI-generated and professionally shot photos.",
-      metrics: "45% increase in conversions"
+      text: "We are already achieving very, very interesting results! The results were shocking! They were so good!!",
+      metrics: ""
     },
     {
       id: 3,
-      name: "Emily Watson",
-      role: "Marketing Lead",
-      company: "TechStart",
+      name: "Luís Alves ",
+      role: "Founder",
+      company: "Yonos",
       avatar: "/api/placeholder/40/40",
       rating: 5,
-      text: "We've saved thousands on product photography costs while maintaining premium quality. Game-changer for small businesses.",
-      metrics: "80% cost reduction"
+      text: "Good ease of use is a fact but the end result...what a show",
+      metrics: ""
     },
   ];
 
   const companies = [
-    { name: "Shopify", logo: "🛍️" },
-    { name: "Amazon", logo: "📦" },
-    { name: "Etsy", logo: "🎨" },
-    { name: "WooCommerce", logo: "🛒" },
-    { name: "BigCommerce", logo: "💼" },
-    { name: "Magento", logo: "🏪" },
+    { name: <img src={shopify} alt="shopify" className="h-8 md:h-10" /> },
+    { name: <img src={amazon} alt="amazon" className="h-8 md:h-10" /> },
+    { name: <img src={etsy} alt="etsy" className="h-8 md:h-10" /> },
+    { name: <img src={woocommerce} alt="woocommerce" className="h-8 md:h-10" /> },
+    { name: <img src={bigcommerce} alt="bigcommerce" className="h-8 md:h-10" /> },
+    { name: <img src={magento} alt="magento" className="h-8 md:h-10" /> },
   ];
+
 
   const stats = [
     { value: "500", label: "Happy Customers", change: "+23% this month" },
@@ -56,6 +65,8 @@ const SocialProofSection = () => {
     { value: "98%", label: "Satisfaction Rate", change: "Consistently high" },
     { value: "25s", label: "Average Generation Time", change: "50% faster than v1" },
   ];
+
+  const DURATION = 28;
 
   return (
     <section ref={ref} className="py-24 bg-muted/30" id="community">
@@ -67,20 +78,48 @@ const SocialProofSection = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <p className="text-sm text-muted-foreground mb-8">Trusted by leading e-commerce platforms</p>
-          <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
-            {companies.map((company, index) => (
+          <p className="text-sm text-muted-foreground mb-8">Works with Shopify, Amazon and other platforms</p>
+          <div className="w-full">
+            {/* Desktop: static row */}
+            <div className="hidden md:flex flex-nowrap justify-center items-center gap-10 opacity-70">
+              {companies.map((c, i) => (
+                <div
+                  key={`desk-${i}`}
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {c.name}
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile: auto-rotating marquee */}
+            <div
+              className="md:hidden relative w-full overflow-hidden opacity-70 
+                        [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]"
+            >
               <motion.div
-                key={company.name}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={inView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                // Move one full set width left across time; duplicate content makes it seamless.
+                animate={inView ? { x: ["0%", "-50%"] } : { x: 0 }}
+                transition={{
+                  duration: DURATION,
+                  ease: "linear",
+                  repeat: Infinity,
+                }}
+                className="flex flex-nowrap gap-10 items-center"
+                // Ensure the row never collapses
+                style={{ width: "max-content" }}
               >
-                <span className="text-2xl">{company.logo}</span>
-                <span className="font-medium">{company.name}</span>
+                {/* 2 copies for the loop */}
+                {[...companies, ...companies].map((c, i) => (
+                  <div
+                    key={`mob-${i}`}
+                    className="flex-shrink-0 flex items-center gap-2 text-muted-foreground"
+                  >
+                    {c.name}
+                  </div>
+                ))}
               </motion.div>
-            ))}
+            </div>
           </div>
         </motion.div>
 

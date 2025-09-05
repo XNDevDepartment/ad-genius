@@ -5,21 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 const plans = [
   {
-    name: "Free",
-    price: "Free",
-    description: "Perfect for trying out Ad Genius",
-    features: [
-      "10 credits per month",
-      "Generate 1 image at a time",
-      "4 UGC scenarios",
-      "All quality levels",
-      "Ticket support"
-    ],
-    cta: "Get started",
-    popular: false,
-    enterprise: false
-  },
-  {
     name: "Starter",
     price: "€29",
     period: "/month",
@@ -85,7 +70,7 @@ const PricingSection = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {plans.map((plan, index) => (
             <div
               key={index}
@@ -152,7 +137,7 @@ const PricingSection = () => {
                 }`}
                 size="sm"
               >
-                View Details
+               Star Your Trial
               </Button>
             </div>
           ))}

@@ -11,31 +11,31 @@ import HeaderSection from "@/components/landing/HeaderSection";
 import { useState } from "react";
 
 const plans = [
-  {
-    id: "free",
-    name: "Free",
-    price: "Free",
-    period: "",
-    description: "Perfect for getting started with AI image generation",
-    credits: 10,
-    features: [
-      "10 credits per month",
-      "Generate 1 image at a time",
-      "4 UGC scenarios available",
-      "All quality levels (low: 1, medium: 1.5, high: 2 credits)",
-      "Up to 5 high-quality images",
-      "Ticket support only"
-    ],
-    limitations: [
-      "Limited to 1 image per generation",
-      "Only 4 scenarios available",
-      "Ticket support only"
-    ],
-    cta: "Get Started",
-    popular: false,
-    icon: <Zap className="h-6 w-6" />,
-    bgClass: "bg-gradient-to-br from-muted to-card"
-  },
+  // {
+  //   id: "free",
+  //   name: "Free",
+  //   price: "Free",
+  //   period: "",
+  //   description: "Perfect for getting started with AI image generation",
+  //   credits: 10,
+  //   features: [
+  //     "10 credits per month",
+  //     "Generate 1 image at a time",
+  //     "4 UGC scenarios available",
+  //     "All quality levels (low: 1, medium: 1.5, high: 2 credits)",
+  //     "Up to 5 high-quality images",
+  //     "Ticket support only"
+  //   ],
+  //   limitations: [
+  //     "Limited to 1 image per generation",
+  //     "Only 4 scenarios available",
+  //     "Ticket support only"
+  //   ],
+  //   cta: "Get Started",
+  //   popular: false,
+  //   icon: <Zap className="h-6 w-6" />,
+  //   bgClass: "bg-gradient-to-br from-muted to-card"
+  // },
   {
     id: "starter",
     name: "Starter",
@@ -113,20 +113,18 @@ const plans = [
 ];
 
 const comparisonFeatures = [
-  { feature: "Monthly Credits", free: "10", starter: "80", plus: "200", pro: "400" },
-  { feature: "Max Images per Generation", free: "1", starter: "3", plus: "3", pro: "3" },
-  { feature: "High Quality Images/Month", free: "5", starter: "40", plus: "100", pro: "200" },
-  { feature: "Medium Quality Images/Month", free: "6", starter: "53", plus: "133", pro: "266" },
-  { feature: "Low Quality Images/Month", free: "10", starter: "80", plus: "200", pro: "400" },
-  { feature: "UGC Scenarios Available", free: "4", starter: "All 6", plus: "All 6", pro: "All 6" },
-  { feature: "All Quality Levels", free: true, starter: true, plus: true, pro: true },
-  { feature: "Commercial Usage", free: false, starter: true, plus: true, pro: true },
-  { feature: "Priority Support", free: false, starter: true, plus: true, pro: true },
-  { feature: "Live Chat Support", free: false, starter: false, plus: true, pro: true },
-  { feature: "Advanced Templates", free: false, starter: false, plus: true, pro: true },
-  { feature: "Team Collaboration", free: false, starter: false, plus: "Soon", pro: true },
-  { feature: "API Access", free: false, starter: false, plus: false, pro: "Soon" },
-  { feature: "Dedicated Manager", free: false, starter: false, plus: false, pro: true }
+  { feature: "Monthly Credits", starter: "80", plus: "200", pro: "400" },
+  { feature: "Max Images per Generation", starter: "3", plus: "3", pro: "3" },
+  { feature: "High Quality Images/Month", starter: "40", plus: "100", pro: "200" },
+  { feature: "Medium Quality Images/Month", starter: "53", plus: "133", pro: "266" },
+  { feature: "Low Quality Images/Month", starter: "80", plus: "200", pro: "400" },
+  { feature: "UGC Scenarios Available", starter: "unlimited", plus: "unlimited", pro: "unlimited" },
+  { feature: "All Quality Levels", starter: true, plus: true, pro: true },
+  { feature: "Commercial Usage", starter: true, plus: true, pro: true },
+  { feature: "Priority Support", starter: true, plus: true, pro: true },
+  { feature: "Live Chat Support", starter: false, plus: true, pro: true },
+  { feature: "Advanced Templates", starter: false, plus: true, pro: true },
+  { feature: "Dedicated Manager", starter: false, plus: false, pro: true }
 ];
 
 const Pricing = () => {
@@ -183,7 +181,7 @@ const Pricing = () => {
       }
       
       {/* Header */}
-      <div className="bg-gradient-hero text-primary-foreground py-20 mt-3">
+      <div className="bg-gradient-hero text-primary-foreground py-20 ">
         <div className="container mx-auto px-6 text-center">
           <h1 className="text-4xl lg:text-6xl font-bold mb-6">
             Choose Your Perfect Plan
@@ -212,11 +210,9 @@ const Pricing = () => {
             <span className={`text-sm ${isYearly ? 'text-primary-foreground' : 'text-primary-foreground/70'}`}>
               Yearly
             </span>
-            {isYearly && (
-              <Badge variant="secondary" className="ml-2">
-                Save 2 months!
-              </Badge>
-            )}
+            <Badge variant="secondary" className="ml-2">
+              Save 2 months!
+            </Badge>
           </div>
 
           <div className="flex flex-wrap justify-center gap-4 text-sm">
@@ -238,7 +234,7 @@ const Pricing = () => {
 
       {/* Pricing Cards */}
       <div className="container mx-auto px-6 py-16">
-        <div className="grid md:grid-cols-4 gap-6 max-w-7xl mx-auto mb-20">
+        <div className="grid md:grid-cols-3 gap-6 max-w-7xl mx-auto mb-20">
           {plans.map((plan) => (
             <Card
               key={plan.id}
@@ -338,7 +334,6 @@ const Pricing = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-1/4">Feature</TableHead>
-                    <TableHead className="text-center">Free</TableHead>
                     <TableHead className="text-center">Starter</TableHead>
                     <TableHead className="text-center bg-primary/5">
                       Plus
@@ -351,17 +346,6 @@ const Pricing = () => {
                   {comparisonFeatures.map((item, index) => (
                     <TableRow key={index}>
                       <TableCell className="font-medium">{item.feature}</TableCell>
-                      <TableCell className="text-center">
-                        {typeof item.free === 'boolean' ? (
-                          item.free ? (
-                            <Check className="h-5 w-5 text-primary mx-auto" />
-                          ) : (
-                            <X className="h-5 w-5 text-muted-foreground mx-auto" />
-                          )
-                        ) : (
-                          item.free
-                        )}
-                      </TableCell>
                       <TableCell className="text-center">
                         {typeof item.starter === 'boolean' ? (
                           item.starter ? (
@@ -463,7 +447,7 @@ const Pricing = () => {
             <div>
               <h3 className="font-medium mb-2">How many scenarios are available?</h3>
               <p className="text-muted-foreground text-sm">
-                Free users get 4 scenarios. All paid plans include access to all 6 UGC scenarios.
+                All paid plans include access to all 6 UGC scenarios options. Then if they don't like them, they can ask for the system to generate more.
               </p>
             </div>
             <div>
@@ -493,7 +477,7 @@ const Pricing = () => {
             <div>
               <h3 className="font-medium mb-2">Can I use the generated images commercially?</h3>
               <p className="text-muted-foreground text-sm">
-                Commercial usage rights are included with Starter, Plus, and Pro plans. Free plan users have personal use rights only.
+                Commercial usage rights are included with Starter, Plus, and Pro plans. Free trial users have personal use rights only.
               </p>
             </div>
             <div>

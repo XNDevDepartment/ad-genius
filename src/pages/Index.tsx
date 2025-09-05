@@ -10,6 +10,7 @@ import PricingSection from "@/components/landing/PricingSection";
 import HeaderSection from "@/components/landing/HeaderSection";
 import { RecentImagesSection } from "@/components/RecentImagesSection";
 import { UserStatsPanel } from "@/components/UserStatsPanel";
+import FeatureShowcase from "@/components/landing/FeatureShowcase";
 
 const Index = () => {
 
@@ -69,6 +70,9 @@ const Index = () => {
 
       {/* Enhanced Hero Section */}
       <HeroSection />
+
+      {/* Feature Section */}
+      {/* <FeatureShowcase /> */}
 
       {/* Public Gallery */}
       <SecurePublicGallery />

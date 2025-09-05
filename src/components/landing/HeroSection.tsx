@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, ArrowRight, Users, Zap, Trophy } from "lucide-react";
+import { Play, ArrowRight, Users, Zap, Trophy, Image } from "lucide-react";
 import heroProduct from "@/assets/example_image.jpeg";
 import { BeforeAfterSlider } from "../ui/before-after";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,16 +30,16 @@ const HeroSection = () => {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
 
   const headlines = [
+    "Showcase your products in real, authentic contexts",
+    "Make them look like they’re already in customers’ hands.",
+    "Build instant trust and credibility for your brand.",
     "Create product images that sell",
-    "Transform products with AI",
-    "Generate stunning visuals instantly",
-    "Turn ideas into compelling images"
   ];
 
   const socialProofStats = [
-    { icon: Zap, value: "10k+", label: "Images Generated" },
-    { icon: Users, value: "500+", label: "Active Users" },
-    { icon: Trophy, value: "98%", label: "Satisfaction Rate" }
+    { icon: Zap, value: "60s", label: "Average Time for Everything" },
+    { icon: Image, value: "50+", label: "Generated Images Per User Monthly" },
+    { icon: Trophy, value: "98%", label: "Satisfaction Rate on our Users" }
   ];
 
   useEffect(() => {
@@ -122,7 +122,7 @@ const HeroSection = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
-                className="text-4xl lg:text-6xl font-bold leading-tight text-foreground"
+                className="text-4xl lg:text-6xl font-bold leading-tight text-foreground h-[20vh]"
               >
                 {headlines[currentHeadline]}
               </motion.h1>
@@ -133,8 +133,7 @@ const HeroSection = () => {
                 transition={{ duration: 0.6, delay: 0.4 }}
                 className="text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-xl"
               >
-                Transform your products into stunning, conversion-focused imagery with our advanced AI technology. 
-                No design skills required.
+                <p>Transform any product into authentic, UGC-style visuals that build credibility and boost conversions — powered by our proprietary <b>Genius AI Intelligence</b>.</p><p className="hidden sm:"><br/><br/> No studios, no photographers, no designers. Just upload and get sales-ready images instantly.</p>
               </motion.p>
             </div>
 

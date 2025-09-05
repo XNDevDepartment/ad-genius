@@ -1,99 +1,120 @@
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Sparkles, Image as ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { BeforeAfterSlider } from "@/components/ui/before-after";
+// SecurePublicGallery.tsx
+import { useEffect, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
-interface PublicImage {
-  id: string;
-  public_url: string;
-  prompt: string;
-  created_at: string;
-  settings?: any;
-  source_url?: string;
+/** ---------- Local asset loader (Vite) ---------- */
+type PublicImage = { id: string; url: string; alt: string };
+
+const localPngs = import.meta.glob("@/assets/landing_gallery/*.png", {
+  eager: true,
+  as: "url",
+}) as Record<string, string>;
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
-const SecurePublicGallery = () => {
-  const [images, setImages] = useState<PublicImage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const navigate = useNavigate();
+function toImages(map: Record<string, string>): PublicImage[] {
+  return Object.entries(map)
+    .sort((a, b) => {
+      const an = parseInt(a[0].match(/(\d+)\.png$/)?.[1] ?? "0", 10);
+      const bn = parseInt(b[0].match(/(\d+)\.png$/)?.[1] ?? "0", 10);
+      return an - bn;
+    })
+    .map(([path, url], i) => ({
+      id: `local-${i + 1}`,
+      url,
+      alt: path.split("/").pop() || `image-${i + 1}`,
+    }));
+}
 
-  useEffect(() => {
-    const fetchPublicImages = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke("public-gallery");
-        if (error) {
-          console.error("Error fetching public images:", error);
-          setImages([]);
-        } else {
-          const list: PublicImage[] = data?.images || [];
-          setImages(list);
-          setSelectedIndex(0);
-        }
-      } catch (e) {
-        console.error("Error fetching public images:", e);
-        setImages([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPublicImages();
+function chunk<T>(arr: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
+
+/** ---------- Config ---------- */
+const PAGE_SIZE = 12;     // 12 images per “page”
+const AUTO_MS = 14500;     // auto-advance cadence
+const TRANSITION_MS = 550;
+
+/** ---------- Component ---------- */
+export default function SecurePublicGallery() {
+  const reduceMotion = useReducedMotion();
+
+  // Build once: load → shuffle → paginate
+  const pages = useMemo(() => {
+    const randomized = shuffle(toImages(localPngs));
+    const pool =
+      randomized.length >= PAGE_SIZE
+        ? randomized
+        : Array.from({ length: Math.ceil(PAGE_SIZE / randomized.length) })
+            .flatMap(() => randomized)
+            .slice(0, PAGE_SIZE);
+    return chunk(pool, PAGE_SIZE);
   }, []);
 
-  const prev = useCallback(() => {
-    setSelectedIndex((i) => (i === 0 ? Math.max(images.length - 1, 0) : i - 1));
-  }, [images.length]);
+  const [pageIdx, setPageIdx] = useState(0);
+  const intervalRef = useRef<number | null>(null);
 
-  const next = useCallback(() => {
-    setSelectedIndex((i) => (images.length ? (i + 1) % images.length : 0));
-  }, [images.length]);
-
-  // keyboard nav
+  // Auto-advance (pause when tab hidden)
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (!images.length) return;
-      if (e.key === "ArrowLeft") prev();
-      if (e.key === "ArrowRight") next();
+    const start = () => {
+      stop();
+      intervalRef.current = window.setInterval(() => {
+        setPageIdx((p) => (p + 1) % pages.length);
+      }, AUTO_MS);
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [images.length, prev, next]);
+    const stop = () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+    const onVis = () => (document.hidden ? stop() : start());
 
-  const handleTryCreating = () => navigate("/account");
+    start();
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [pages.length]);
 
-  if (loading) {
+  if (!pages.length) {
     return (
-      <section className="py-16 lg:py-24 bg-muted/30" id="explore">
-        <div className="container-responsive px-4">
-          <div className="text-center space-y-4 mb-12">
-            <Skeleton className="h-10 w-64 mx-auto" />
-            <Skeleton className="h-6 w-96 mx-auto" />
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Card key={i} className="overflow-hidden">
-                <Skeleton className="aspect-square w-full" />
-                <CardContent className="p-4">
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-3 w-20" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+      <section className="py-16 lg:py-24 bg-muted/30">
+        <div className="container-responsive px-4 text-center">
+          <h3 className="text-lg font-semibold">No images found</h3>
+          <p className="text-muted-foreground">
+            Add PNGs to <code>/assets/landing_gallery</code> and rebuild.
+          </p>
         </div>
       </section>
     );
   }
 
-  const featured = images[selectedIndex];
+  // Per-tile motion
+  const item = {
+    initial: { opacity: 0, y: reduceMotion ? 0 : 12, scale: reduceMotion ? 1 : 0.995 },
+    animate: { opacity: 1, y: 0, scale: 1, transition: { duration: TRANSITION_MS / 1000 } },
+    exit: { opacity: 0, y: reduceMotion ? 0 : -12, scale: reduceMotion ? 1 : 0.995, transition: { duration: TRANSITION_MS / 1000 } },
+  };
+  const container = {
+    animate: { transition: { staggerChildren: 0.04, delayChildren: 0.05 } },
+    exit: { transition: { staggerChildren: 0.03, staggerDirection: -1 } },
+  };
+
+  const current = pages[pageIdx];
 
   return (
-    <section className="py-16 lg:py-24 bg-muted/30">
+    <section className="py-16 lg:py-24 bg-muted/30" id="explore">
       <div className="container-responsive px-4">
         {/* Header */}
         <div className="text-center space-y-4 mb-10">
@@ -101,66 +122,48 @@ const SecurePublicGallery = () => {
             Created by Our Community
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Discover amazing images generated by our users. Join thousands of creators transforming their ideas into stunning visuals.
+            Discover amazing images generated by our users. Join hundreds of creators transforming their ideas into stunning visuals.
           </p>
         </div>
 
-        {/* Gallery Grid - Masonry Layout */}
-        {images.length > 0 && (
-          <div className="mt-8 columns-2 md:columns-3 lg:columns-4 gap-0.5 space-y-0.25">
-            {images.map((img, idx) => (
-              <div
-                key={img.id}
-                className="break-inside-avoid group relative rounded-lg overflow-hidden border border-border/50 hover:border-foreground/40 transition-all cursor-pointer"
-                onClick={() => setSelectedIndex(idx)}
+        {/* Masonry container: columns-based layout */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`page-${pageIdx}`}
+            variants={container}
+            initial="animate"
+            animate="animate"
+            exit="exit"
+            className="
+              columns-2 md:columns-3 lg:columns-4 gap-0
+            "
+          >
+            {current.map((img, i) => (
+              <motion.figure
+                key={`${img.id}-${pageIdx}-${i}`}
+                variants={item}
+                className="
+                  break-inside-avoid
+                  overflow-hidden
+                  border border-border/50 bg-background
+                "
               >
+                {/* Native aspect ratio preserved */}
                 <img
-                  src={img.public_url}
-                  alt={`Generated: ${img.prompt?.slice(0, 60) || "image"}`}
-                  className="w-full h-auto object-cover"
+                  src={img.url}
+                  alt={img.alt}
+                  className="w-full h-auto block"
                   loading="lazy"
                 />
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-              </div>
+              </motion.figure>
             ))}
-          </div>
-        )}
+          </motion.div>
+        </AnimatePresence>
 
-        {/* CTA Section */}
-        <div className="text-center space-y-6 pt-10 border-t border-border/50 mt-12">
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-foreground">Ready to Create Your Own?</h3>
-            <p className="text-muted-foreground">Join our community and start generating amazing images today.</p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" onClick={handleTryCreating} className="gap-2">
-              <Sparkles className="h-4 w-4" />
-              Start Creating for Free
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            >
-              Learn More
-            </Button>
-          </div>
-        </div>
-
-        {/* Empty State */}
-        {!loading && images.length === 0 && (
-          <div className="text-center py-12">
-            <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">No images found</h3>
-            <p className="text-muted-foreground">
-              Try selecting a different filter or check back later for new content.
-            </p>
-          </div>
-        )}
+        <p className="text-center text-xs text-muted-foreground mt-6">
+          Rotates every {(AUTO_MS / 1000).toFixed(0)}s.
+        </p>
       </div>
     </section>
   );
-};
-
-export default SecurePublicGallery;
+}
