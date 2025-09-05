@@ -22,12 +22,14 @@ import { NotificationsPanel } from "@/components/account/NotificationsPanel";
 import { PrivacyPanel } from "@/components/account/PrivacyPanel";
 import { BillingPanel } from "@/components/account/BillingPanel";
 import { HelpSupportPanel } from "@/components/account/HelpSupportPanel";
+import { useTranslation } from "react-i18next";
 
 const Account = () => {
   const navigate = useNavigate();
   const { user, signOut, subscriptionData } = useAuth();
   const { tier } = useCredits();
   const [section, setSection] = useState<string>("");
+  const { t } = useTranslation();
   
   const [layout, setLayout] = useState("grid");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -46,8 +48,8 @@ const Account = () => {
   const handleSaveProfile = () => {
     setIsEditingProfile(false);
     toast({
-      title: "Profile updated",
-      description: "Your profile has been successfully updated.",
+      title: t('account.toasts.profileUpdated.title'),
+      description: t('account.toasts.profileUpdated.description'),
     });
   };
 
@@ -61,15 +63,15 @@ const Account = () => {
 
   const handleDownloadData = () => {
     toast({
-      title: "Data export requested",
-      description: "Your data export will be sent to your email within 24 hours.",
+      title: t('account.toasts.dataExportRequested.title'),
+      description: t('account.toasts.dataExportRequested.description'),
     });
   };
 
   const handleDeleteAccount = () => {
     toast({
-      title: "Account deletion requested",
-      description: "A confirmation email has been sent to verify this action.",
+      title: t('account.toasts.accountDeletionRequested.title'),
+      description: t('account.toasts.accountDeletionRequested.description'),
       variant: "destructive",
     });
   };
@@ -96,7 +98,7 @@ const Account = () => {
                 </h2>
                 <p className="text-muted-foreground">{user.email}</p>
                 <Badge variant={subscriptionData?.subscribed ? "default" : "secondary"}>
-                  {tier} Member
+                  {tier} {t('account.member')}
                 </Badge>
               </div>
 
@@ -105,7 +107,7 @@ const Account = () => {
                 className="w-full"
                 onClick={() => handleMenuClick("edit-profile")}
               >
-                Edit Profile
+                {t('account.editProfile')}
               </Button>
             </div>
           </CardContent>
@@ -124,8 +126,8 @@ const Account = () => {
               <Settings className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
-              <h3 className="font-medium">Settings</h3>
-              <p className="text-sm text-muted-foreground">App preferences and notifications</p>
+              <h3 className="font-medium">{t('account.sections.settings')}</h3>
+              <p className="text-sm text-muted-foreground">{t('account.sections.settingsDescription')}</p>
             </div>
           </CardContent>
         </Card>
@@ -140,8 +142,8 @@ const Account = () => {
               <Bell className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
-              <h3 className="font-medium">Notifications</h3>
-              <p className="text-sm text-muted-foreground">Manage your notification preferences</p>
+              <h3 className="font-medium">{t('account.sections.notifications')}</h3>
+              <p className="text-sm text-muted-foreground">{t('account.sections.notificationsDescription')}</p>
             </div>
           </CardContent>
         </Card>
@@ -156,8 +158,8 @@ const Account = () => {
               <Shield className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
-              <h3 className="font-medium">Privacy</h3>
-              <p className="text-sm text-muted-foreground">Data and privacy settings</p>
+              <h3 className="font-medium">{t('account.sections.privacy')}</h3>
+              <p className="text-sm text-muted-foreground">{t('account.sections.privacyDescription')}</p>
             </div>
           </CardContent>
         </Card>
@@ -172,8 +174,8 @@ const Account = () => {
               <CreditCard className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
-              <h3 className="font-medium">Billing</h3>
-              <p className="text-sm text-muted-foreground">Manage your subscription</p>
+              <h3 className="font-medium">{t('account.sections.billing')}</h3>
+              <p className="text-sm text-muted-foreground">{t('account.sections.billingDescription')}</p>
             </div>
           </CardContent>
         </Card>
@@ -188,8 +190,8 @@ const Account = () => {
               <HelpCircle className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
-              <h3 className="font-medium">Help & Support</h3>
-              <p className="text-sm text-muted-foreground">Get help and contact support</p>
+              <h3 className="font-medium">{t('account.sections.helpSupport')}</h3>
+              <p className="text-sm text-muted-foreground">{t('account.sections.helpSupportDescription')}</p>
             </div>
           </CardContent>
         </Card>
@@ -204,7 +206,7 @@ const Account = () => {
               <LogOut className="h-5 w-5 text-destructive" />
             </div>
             <div className="flex-1">
-              <h3 className="font-medium text-destructive">Sign Out</h3>
+              <h3 className="font-medium text-destructive">{t('account.signOut')}</h3>
             </div>
           </CardContent>
         </Card>
@@ -225,13 +227,13 @@ const Account = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-2xl lg:text-3xl font-bold">
-            {section === "" ? "Account" : 
-             section === "edit-profile" ? "Edit Profile" :
-             section === "settings" ? "Settings" :
-             section === "notifications" ? "Notifications" :
-             section === "privacy" ? "Privacy" :
-             section === "billing" ? "Billing" :
-             section === "help" ? "Help & Support" : "Account"}
+            {section === "" ? t('account.title') : 
+             section === "edit-profile" ? t('account.editProfile') :
+             section === "settings" ? t('account.settings') :
+             section === "notifications" ? t('account.notifications') :
+             section === "privacy" ? t('account.privacy') :
+             section === "billing" ? t('account.billing') :
+             section === "help" ? t('account.helpSupport') : t('account.title')}
           </h1>
         </div>
       </div>
@@ -249,13 +251,13 @@ const Account = () => {
             </Button>
           )}
           <h1 className="text-2xl lg:text-3xl font-bold">
-            {section === "" ? "Account" : 
-             section === "edit-profile" ? "Edit Profile" :
-             section === "settings" ? "Settings" :
-             section === "notifications" ? "Notifications" :
-             section === "privacy" ? "Privacy" :
-             section === "billing" ? "Billing" :
-             section === "help" ? "Help & Support" : "Account"}
+            {section === "" ? t('account.title') : 
+             section === "edit-profile" ? t('account.editProfile') :
+             section === "settings" ? t('account.settings') :
+             section === "notifications" ? t('account.notifications') :
+             section === "privacy" ? t('account.privacy') :
+             section === "billing" ? t('account.billing') :
+             section === "help" ? t('account.helpSupport') : t('account.title')}
           </h1>
         </div>
 

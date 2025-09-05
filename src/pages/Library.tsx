@@ -2,9 +2,11 @@ import { ArrowLeft, FileImage } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Library as LibraryComponent } from "@/components/departments/LibraryOld";
+import { useTranslation } from "react-i18next";
 
 const Library = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-background container-responsive px-4 py-4">
@@ -19,7 +21,7 @@ const Library = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold">Library</h1>
+            <h1 className="text-2xl lg:text-3xl font-bold">{t('library.title')}</h1>
           </div>
         </div>
       </div>

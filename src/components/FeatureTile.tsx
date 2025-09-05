@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface FeatureTileProps {
   title: string;
@@ -11,6 +12,7 @@ interface FeatureTileProps {
 }
 
 const FeatureTile = ({ title, description, icon, available, onClick, className }: FeatureTileProps) => {
+  const { t } = useTranslation();
   return (
     <div 
       className={cn(
@@ -29,11 +31,11 @@ const FeatureTile = ({ title, description, icon, available, onClick, className }
           <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
           {available && (
             <Button variant="outline" size="sm" className="mt-3">
-              Get Started
+              {t('common.getStarted')}
             </Button>
           )}
           {!available && (
-            <span className="text-xs text-muted-foreground">Coming Soon</span>
+            <span className="text-xs text-muted-foreground">{t('common.comingSoon')}</span>
           )}
         </div>
       </div>

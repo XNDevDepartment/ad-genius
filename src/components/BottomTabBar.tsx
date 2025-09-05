@@ -2,16 +2,18 @@ import { Home, Plus, Image, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 const BottomTabBar = () => {
   const location = useLocation();
   const currentPath = location.pathname;
+  const { t } = useTranslation();
 
   const tabs = [
-    { id: "home", label: "Home", icon: Home, path: "/" },
-    { id: "create", label: "Criar", icon: Plus, path: "/create", primary: true },
-    { id: "library", label: "Biblioteca", icon: Image, path: "/library" },
-    { id: "account", label: "Conta", icon: User, path: "/account" },
+    { id: "home", label: t('navigation.home'), icon: Home, path: "/" },
+    { id: "create", label: t('navigation.create'), icon: Plus, path: "/create", primary: true },
+    { id: "library", label: t('navigation.library'), icon: Image, path: "/library" },
+    { id: "account", label: t('navigation.account'), icon: User, path: "/account" },
   ];
 
   return (

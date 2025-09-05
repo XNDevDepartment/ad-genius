@@ -28,6 +28,155 @@
   "header": {
     "tagline": "Marketing IA"
   },
+  "account": {
+    "title": "Compte",
+    "editProfile": "Modifier le Profil",
+    "settings": "Paramètres",
+    "notifications": "Notifications",
+    "privacy": "Confidentialité",
+    "billing": "Facturation",
+    "helpSupport": "Aide et Support",
+    "signOut": "Se Déconnecter",
+    "member": "Membre",
+    "sections": {
+      "settings": "Paramètres",
+      "settingsDescription": "Préférences de l'app et notifications",
+      "notifications": "Notifications", 
+      "notificationsDescription": "Gérez vos préférences de notification",
+      "privacy": "Confidentialité",
+      "privacyDescription": "Paramètres de données et confidentialité",
+      "billing": "Facturation",
+      "billingDescription": "Gérez votre abonnement",
+      "helpSupport": "Aide et Support",
+      "helpSupportDescription": "Obtenez de l'aide et contactez le support"
+    },
+    "profile": {
+      "title": "Informations du Profil",
+      "description": "Mettez à jour vos informations personnelles et préférences",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "displayName": "Nom d'Affichage",
+      "displayNamePlaceholder": "Comment devons-nous afficher votre nom ?",
+      "email": "Email",
+      "profession": "Profession",
+      "professionPlaceholder": "ex : Développeur Logiciel",
+      "bio": "Bio",
+      "bioPlaceholder": "Parlez-nous de vous...",
+      "changePhoto": "Changer la Photo",
+      "saving": "Enregistrement...",
+      "saveChanges": "Enregistrer les Modifications",
+      "cancel": "Annuler"
+    },
+    "settings": {
+      "title": "Paramètres",
+      "generationDefaults": "Paramètres par Défaut de Génération",
+      "generationDefaultsDescription": "Définissez vos paramètres préférés de génération d'images",
+      "autoSaveImages": "Enregistrer les Images Automatiquement",
+      "autoSaveImagesDescription": "Enregistrer automatiquement les images une fois terminées",
+      "interfacePreferences": "Préférences d'Interface",
+      "interfacePreferencesDescription": "Personnalisez votre expérience dans l'app",
+      "theme": "Thème",
+      "language": "Langue",
+      "languageDescription": "Définissez votre préférence de langue"
+    },
+    "toasts": {
+      "profileUpdated": {
+        "title": "Profil mis à jour",
+        "description": "Votre profil a été mis à jour avec succès."
+      },
+      "settingsSaved": {
+        "title": "Paramètres enregistrés",
+        "description": "Vos préférences ont été mises à jour avec succès."
+      },
+      "dataExportRequested": {
+        "title": "Exportation de données demandée",
+        "description": "Votre exportation de données sera envoyée à votre email dans les 24 heures."
+      },
+      "accountDeletionRequested": {
+        "title": "Suppression de compte demandée",
+        "description": "Un email de confirmation a été envoyé pour vérifier cette action."
+      },
+      "error": {
+        "title": "Erreur",
+        "description": "Échec de mise à jour du profil. Veuillez réessayer.",
+        "settingsDescription": "Échec d'enregistrement des préférences. Veuillez réessayer."
+      },
+      "warning": {
+        "title": "Avertissement",
+        "description": "Données du profil enregistrées mais la mise à jour du profil d'authentification a échoué."
+      }
+    }
+  },
+  "library": {
+    "title": "Bibliothèque",
+    "generatedImages": "Images Générées",
+    "sourceImages": "Images Source",
+    "aiGenerated": "IA Générée",
+    "sourceImagesToggle": "Images Source",
+    "showSource": "Afficher la Source",
+    "loading": "Chargement de votre bibliothèque...",
+    "empty": {
+      "title": "Aucune image dans votre bibliothèque pour le moment",
+      "description": "Générez du contenu UGC pour le voir ici",
+      "searchDescription": "Essayez d'ajuster vos termes de recherche"
+    },
+    "actions": {
+      "downloadStarted": "Téléchargement Commencé",
+      "downloading": "Téléchargement de l'image...",
+      "downloadFailed": {
+        "title": "Téléchargement Échoué",
+        "description": "Échec du téléchargement de l'image. Veuillez réessayer."
+      },
+      "imageDeleted": {
+        "title": "Image Supprimée",
+        "description": "Supprimée de votre bibliothèque."
+      },
+      "deleteFailed": {
+        "title": "Suppression Échouée",
+        "description": "Échec de suppression de l'image. Veuillez réessayer."
+      },
+      "deleteConfirm": {
+        "title": "Supprimer cette image ?",
+        "description": "Cette action est permanente. L'image sera supprimée de votre bibliothèque et du stockage.",
+        "cancel": "Annuler",
+        "delete": "Supprimer",
+        "deleting": "Suppression..."
+      }
+    }
+  },
+  "createSelection": {
+    "title": "Choisissez votre Flux de Travail",
+    "description": "Sélectionnez le type de contenu que vous voulez créer",
+    "ugcCreator": {
+      "title": "Créateur UGC",
+      "description": "Créez du contenu authentique généré par les utilisateurs avec l'assistance IA"
+    },
+    "studioPhotos": {
+      "title": "Photos de Studio", 
+      "description": "Générez de la photographie professionnelle de produits"
+    },
+    "comingSoon": "Bientôt Disponible"
+  },
+  "common": {
+    "getStarted": "Commencer",
+    "comingSoon": "Bientôt Disponible",
+    "startNow": "Commencer Maintenant",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "download": "Télécharger",
+    "loading": "Chargement...",
+    "saving": "Enregistrement...",
+    "deleting": "Suppression...",
+    "upgrade": "Mettre à Niveau",
+    "upgradeForMore": "Mettre à niveau pour plus",
+    "upgradeToUnlock": "Mettre à niveau pour débloquer"
+  },
+  "a11y": {
+    "logoAlt": "Logo",
+    "toggleTheme": "Changer le thème",
+    "changeLanguage": "Changer la langue"
+  },
   "ugc": {
     "title": "Créer du Contenu UGC",
     "productImage": {
@@ -55,6 +204,10 @@
       "subtitle": "Personnalisez vos préférences de sortie d'image",
       "tooltip": "Ajustez ces paramètres pour contrôler le style, la qualité et le format de vos images générées."
     },
+    "credits": "Crédits",
+    "thisGeneration": "Cette génération",
+    "credit": "crédit",
+    "credits_plural": "crédits",
     "numImages": {
       "title": "Nombre d'Images",
       "tooltip": "Choisissez combien de variations vous voulez générer. Plus d'images = plus d'options mais coût de crédits plus élevé."
@@ -70,6 +223,36 @@
       "title": "Orientation d'Image",
       "tooltip": "Choisissez le rapport d'aspect pour vos images en fonction de l'endroit où vous prévoyez de les utiliser."
     },
+    "highlight": {
+      "title": "Mettre en Évidence le Produit",
+      "yes": "Oui",
+      "no": "Non"
+    },
+    "style": {
+      "title": "Style",
+      "lifestyle": "Lifestyle",
+      "studio": "Studio",
+      "editorial": "Éditorial",
+      "natural": "Naturel",
+      "professional": "Professionnel",
+      "minimal": "Minimal",
+      "vibrant": "Vibrant"
+    },
+    "lighting": {
+      "title": "Type de Lumière"
+    },
+    "qualitySettings": {
+      "title": "Qualité",
+      "tooltip": "Une meilleure qualité utilise plus de crédits mais produit de meilleurs résultats",
+      "low": "Basse",
+      "medium": "Moyenne",
+      "high": "Haute",
+      "lowCredits": "1 crédit",
+      "mediumCredits": "1,5 crédits", 
+      "highCredits": "2 crédits"
+    },
+    "freePlanLimited": "Le plan gratuit est limité à 1 image par génération.",
+    "premiumScenariosAvailable": "2 scénarios premium disponibles avec les plans payants.",
     "advancedSettings": {
       "title": "Paramètres Avancés",
       "timeOfDay": {

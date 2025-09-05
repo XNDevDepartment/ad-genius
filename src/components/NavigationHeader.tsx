@@ -4,11 +4,13 @@ import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from "react-i18next";
 
 const NavigationHeader = () => {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
   const navigate = useNavigate()
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   return (
     <header ref={ref} className="bg-background/90 backdrop-blur-sm border-b border-border flex justify-between items-center px-4 py-2 safe-area-top">
@@ -22,7 +24,7 @@ const NavigationHeader = () => {
         <div className="shadow-glow">
           <img 
             src={symbol}
-            alt="Genius UGC Logo"
+            alt={t('a11y.logoAlt')}
             className="h-10 w-10 object-contain"
           />
         </div>
@@ -43,7 +45,7 @@ const NavigationHeader = () => {
           size="sm"
           className="min-h-[24px] p-4 mt-2"
         >
-          Start Now
+          {t('common.startNow')}
         </Button>
       </motion.div>}
     </header>

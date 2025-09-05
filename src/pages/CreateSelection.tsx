@@ -4,10 +4,12 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 const CreateSelection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   // Block access if not authenticated
   useEffect(() => {
@@ -19,15 +21,15 @@ const CreateSelection = () => {
   const workflows = [
     {
       id: "ugc",
-      title: "UGC Creator",
-      description: "Create authentic user-generated content with AI assistance",
+      title: t('createSelection.ugcCreator.title'),
+      description: t('createSelection.ugcCreator.description'),
       icon: Users,
       path: "/create/ugc"
     },
     {
       id: "studio",
-      title: "Studio Photos",
-      description: "Generate professional product photography",
+      title: t('createSelection.studioPhotos.title'),
+      description: t('createSelection.studioPhotos.description'),
       icon: Camera,
       path: "/create/studio",
       disabled: true
@@ -48,10 +50,10 @@ const CreateSelection = () => {
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-foreground">
-              Escolha seu Fluxo de Trabalho
+              {t('createSelection.title')}
             </h1>
             <p className="text-muted-foreground">
-              Selecione o tipo de conteúdo que deseja criar
+              {t('createSelection.description')}
             </p>
           </div>
         </div>
@@ -76,7 +78,7 @@ const CreateSelection = () => {
                 {workflow.disabled && (
                   <div className="text-center">
                     <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-apple-sm">
-                      Em breve
+                      {t('createSelection.comingSoon')}
                     </span>
                   </div>
                 )}

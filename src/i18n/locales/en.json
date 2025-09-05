@@ -28,6 +28,155 @@
   "header": {
     "tagline": "AI Marketing"
   },
+  "account": {
+    "title": "Account",
+    "editProfile": "Edit Profile",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "billing": "Billing",
+    "helpSupport": "Help & Support",
+    "signOut": "Sign Out",
+    "member": "Member",
+    "sections": {
+      "settings": "Settings",
+      "settingsDescription": "App preferences and notifications",
+      "notifications": "Notifications", 
+      "notificationsDescription": "Manage your notification preferences",
+      "privacy": "Privacy",
+      "privacyDescription": "Data and privacy settings",
+      "billing": "Billing",
+      "billingDescription": "Manage your subscription",
+      "helpSupport": "Help & Support",
+      "helpSupportDescription": "Get help and contact support"
+    },
+    "profile": {
+      "title": "Profile Information",
+      "description": "Update your personal information and preferences",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "displayName": "Display Name",
+      "displayNamePlaceholder": "How should we display your name?",
+      "email": "Email",
+      "profession": "Profession",
+      "professionPlaceholder": "e.g., Software Developer",
+      "bio": "Bio",
+      "bioPlaceholder": "Tell us about yourself...",
+      "changePhoto": "Change Photo",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "cancel": "Cancel"
+    },
+    "settings": {
+      "title": "Settings",
+      "generationDefaults": "Generation Defaults",
+      "generationDefaultsDescription": "Set your preferred image generation settings",
+      "autoSaveImages": "Auto Save Images",
+      "autoSaveImagesDescription": "Automatically save images when finished",
+      "interfacePreferences": "Interface Preferences",
+      "interfacePreferencesDescription": "Customize your app experience",
+      "theme": "Theme",
+      "language": "Language",
+      "languageDescription": "Set your language preference"
+    },
+    "toasts": {
+      "profileUpdated": {
+        "title": "Profile updated",
+        "description": "Your profile has been successfully updated."
+      },
+      "settingsSaved": {
+        "title": "Settings saved",
+        "description": "Your preferences have been updated successfully."
+      },
+      "dataExportRequested": {
+        "title": "Data export requested",
+        "description": "Your data export will be sent to your email within 24 hours."
+      },
+      "accountDeletionRequested": {
+        "title": "Account deletion requested",
+        "description": "A confirmation email has been sent to verify this action."
+      },
+      "error": {
+        "title": "Error",
+        "description": "Failed to update profile. Please try again.",
+        "settingsDescription": "Failed to save preferences. Please try again."
+      },
+      "warning": {
+        "title": "Warning",
+        "description": "Profile data saved but authentication profile update failed."
+      }
+    }
+  },
+  "library": {
+    "title": "Library",
+    "generatedImages": "Generated Images",
+    "sourceImages": "Source Images",
+    "aiGenerated": "AI Generated",
+    "sourceImagesToggle": "Source Images",
+    "showSource": "Show Source",
+    "loading": "Loading your library...",
+    "empty": {
+      "title": "No images in your library yet",
+      "description": "Generate some UGC content to see it here",
+      "searchDescription": "Try adjusting your search terms"
+    },
+    "actions": {
+      "downloadStarted": "Download Started",
+      "downloading": "Downloading image...",
+      "downloadFailed": {
+        "title": "Download Failed",
+        "description": "Failed to download image. Please try again."
+      },
+      "imageDeleted": {
+        "title": "Image Deleted",
+        "description": "Removed from your library."
+      },
+      "deleteFailed": {
+        "title": "Delete Failed",
+        "description": "Failed to delete image. Please try again."
+      },
+      "deleteConfirm": {
+        "title": "Delete this image?",
+        "description": "This action is permanent. The image will be removed from your library and storage.",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "deleting": "Deleting..."
+      }
+    }
+  },
+  "createSelection": {
+    "title": "Choose your Workflow",
+    "description": "Select the type of content you want to create",
+    "ugcCreator": {
+      "title": "UGC Creator",
+      "description": "Create authentic user-generated content with AI assistance"
+    },
+    "studioPhotos": {
+      "title": "Studio Photos", 
+      "description": "Generate professional product photography"
+    },
+    "comingSoon": "Coming Soon"
+  },
+  "common": {
+    "getStarted": "Get Started",
+    "comingSoon": "Coming Soon",
+    "startNow": "Start Now",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "download": "Download",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "deleting": "Deleting...",
+    "upgrade": "Upgrade",
+    "upgradeForMore": "Upgrade for more",
+    "upgradeToUnlock": "Upgrade to unlock"
+  },
+  "a11y": {
+    "logoAlt": "Logo",
+    "toggleTheme": "Toggle theme",
+    "changeLanguage": "Change language"
+  },
   "ugc": {
     "title": "Create UGC Content",
     "productImage": {
@@ -55,6 +204,10 @@
       "subtitle": "Customize your image output preferences",
       "tooltip": "Adjust these settings to control the style, quality, and format of your generated images."
     },
+    "credits": "Credits",
+    "thisGeneration": "This generation",
+    "credit": "credit",
+    "credits_plural": "credits",
     "numImages": {
       "title": "Number of Images",
       "tooltip": "Choose how many variations you want to generate. More images = more options but higher credit cost."
@@ -70,6 +223,36 @@
       "title": "Image Orientation",
       "tooltip": "Choose the aspect ratio for your images based on where you plan to use them."
     },
+    "highlight": {
+      "title": "Highlight Product",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "style": {
+      "title": "Style",
+      "lifestyle": "Lifestyle",
+      "studio": "Studio",
+      "editorial": "Editorial",
+      "natural": "Natural",
+      "professional": "Professional",
+      "minimal": "Minimal",
+      "vibrant": "Vibrant"
+    },
+    "lighting": {
+      "title": "Light Type"
+    },
+    "qualitySettings": {
+      "title": "Quality",
+      "tooltip": "Higher quality uses more credits but produces better results",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "lowCredits": "1 credit",
+      "mediumCredits": "1.5 credits", 
+      "highCredits": "2 credits"
+    },
+    "freePlanLimited": "Free plan limited to 1 image per generation.",
+    "premiumScenariosAvailable": "2 premium scenarios available with paid plans.",
     "advancedSettings": {
       "title": "Advanced Settings",
       "timeOfDay": {
