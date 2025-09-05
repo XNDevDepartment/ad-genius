@@ -102,7 +102,7 @@ const CreateUGC = () => {
   const { activeJob, activeImages } = useActiveJob();
 
   // Sync job state with local state
-  const isGenerating = job?.status === 'queued' || job?.status === 'processing';
+  const isGenerating = stage === 'generating' || job?.status === 'queued' || job?.status === 'processing';
   const progress = job?.progress || 0;
 
 
@@ -113,6 +113,7 @@ const CreateUGC = () => {
   const [urlImportOpen, setUrlImportOpen] = useState(false);
   const [importUrl, setImportUrl] = useState("");
   const [importingFromUrl, setImportingFromUrl] = useState(false);
+  const [pendingSlots, setPendingSlots] = useState(0);
 
   // Compute compact summary for mobile panel
   const summary = `${numImages} img • ${imageQuality.charAt(0).toUpperCase() + imageQuality.slice(1)} • ${highlight === 'yes' ? 'Focus On' : 'Blend In'} • ${imageOrientation} • ${style} • ${timeOfDay}`;
@@ -587,6 +588,7 @@ const CreateUGC = () => {
       // Provide immediate feedback
       setStage('generating');
       setGeneratedImages([]);
+      setPendingSlots(numImages);
 
       // Save state to localStorage for persistence
       localStorage.setItem('currentStage', 'generating');
@@ -984,7 +986,7 @@ const CreateUGC = () => {
                   <div ref={resultsRef} id="generating-images" className="scroll-mt-6 space-y-8 mt-5">
                     <GeneratedImagesRows
                       images={generatedImages}                 // array with { id, url, prompt, created_at }
-                      totalSlots={job?.total ?? job?.settings?.number ?? 0}
+                      totalSlots={job?.total ?? pendingSlots}
                       isGenerating={job?.status !== 'completed'}
                       onCreateNewScenario={(imageId) => { /* open modal / prefill prompt */ }}
                       onOpenInLibrary={() => navigate('/library')}
