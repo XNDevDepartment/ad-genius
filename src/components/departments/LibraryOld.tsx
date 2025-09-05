@@ -254,14 +254,16 @@ export const Library = ({ onBack }: LibraryProps) => {
                       </div>
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 z-10">
                         <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => handleDownload(image as any)}
-                            className="bg-background/90 hover:bg-background"
-                          >
-                            <Download className="h-4 w-4" />
-                          </Button>
+                          {viewMode === "ai" && (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => handleDownload(image as any)}
+                              className="bg-background/90 hover:bg-background"
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          )}
                           {/* Delete with confirmation - only show for AI images */}
                           {viewMode === "ai" && (
                             <AlertDialog>
@@ -274,7 +276,7 @@ export const Library = ({ onBack }: LibraryProps) => {
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
-                            </AlertDialogTrigger>
+                              </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Eliminar esta imagem?</AlertDialogTitle>
