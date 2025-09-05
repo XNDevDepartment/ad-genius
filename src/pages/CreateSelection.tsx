@@ -1,4 +1,4 @@
-import { ArrowLeft, Users, Camera, Edit3 } from "lucide-react";
+import { ArrowLeft, Users, Camera, Sparkle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -27,11 +27,11 @@ const CreateSelection = () => {
       path: "/create/ugc"
     },
     {
-      id: "studio",
-      title: t('createSelection.studioPhotos.title'),
-      description: t('createSelection.studioPhotos.description'),
-      icon: Camera,
-      path: "/create/studio",
+      id: "soon",
+      title: "In Progress",
+      description: 'We are working daily on improving our platform. You will be the first to know the news!',
+      icon: Sparkle,
+      path: "",
       disabled: true
     },
   ];
