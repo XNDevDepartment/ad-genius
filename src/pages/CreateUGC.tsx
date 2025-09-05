@@ -988,7 +988,7 @@ const CreateUGC = () => {
                       images={generatedImages}                 // array with { id, url, prompt, created_at }
                       totalSlots={job?.total ?? pendingSlots}
                       isGenerating={job?.status !== 'completed'}
-                      onCreateNewScenario={(imageId) => { /* open modal / prefill prompt */ }}
+                      onCreateNewScenario={(imageId) => {setSelectedScenario({"idea":"", "small-description": "", "description": ""})}}
                       onOpenInLibrary={() => navigate('/library')}
                       onStartFromScratch={() => clearJob()}   // or navigate back to the form
                       threadId={threadId}
