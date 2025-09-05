@@ -9,6 +9,7 @@ import { Camera, Save, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
+import { useTranslation } from 'react-i18next';
 
 interface ProfileEditPanelProps {
   onClose: () => void;
@@ -17,6 +18,7 @@ interface ProfileEditPanelProps {
 export const ProfileEditPanel = ({ onClose }: ProfileEditPanelProps) => {
   const { user, updateProfile } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState({
     first_name: '',
