@@ -135,7 +135,7 @@ export const ProfileEditPanel = ({ onClose }: ProfileEditPanelProps) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Edit Profile</h2>
+        <h2 className="text-2xl font-semibold">{t('account.editProfile.title')}</h2>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
@@ -143,8 +143,8 @@ export const ProfileEditPanel = ({ onClose }: ProfileEditPanelProps) => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Profile Information</CardTitle>
-          <CardDescription>Update your personal information and preferences</CardDescription>
+          <CardTitle>{t('account.editProfile.profileInfo')}</CardTitle>
+          <CardDescription>{t('account.editProfile.profileDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center gap-4">

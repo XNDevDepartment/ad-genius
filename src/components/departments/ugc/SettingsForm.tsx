@@ -55,18 +55,18 @@ export const SettingsForm = ({
       {/* Credits Overview */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>Créditos</span>
-          <span>{remainingCredits} de {totalCredits}</span>
+          <span>{t('ugc.credits')}</span>
+          <span>{remainingCredits} {t('common.of')} {totalCredits}</span>
         </div>
         <Progress value={usagePercentage} className="h-2" />
         <div className="text-xs text-muted-foreground text-center">
-          Esta geração: {creditsNeeded} crédito{creditsNeeded !== 1 ? 's' : ''}
+          {t('ugc.thisGeneration')}: {t('ugc.credits', { count: creditsNeeded })}
         </div>
       </div>
 
       {/* Number of Images */}
       <div className="space-y-2">
-        <Label className="text-sm font-medium">Número de Imagens</Label>
+        <Label className="text-sm font-medium">{t('ugc.numImages.title')}</Label>
         <ToggleGroup
           type="single"
           value={settings.numImages.toString()}
@@ -100,13 +100,13 @@ export const SettingsForm = ({
         </ToggleGroup>
         {isFreeTier() && (
           <div className="text-xs text-muted-foreground">
-            Free plan limited to 1 image per generation. 
+            {t('ugc.freePlanLimited')}
             <Button 
               variant="link" 
               className="h-auto p-0 text-xs text-primary"
               onClick={() => window.location.href = '/pricing'}
             >
-              Upgrade for more
+              {t('common.upgradeForMore')}
             </Button>
           </div>
         )}
