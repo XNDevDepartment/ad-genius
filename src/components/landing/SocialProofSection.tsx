@@ -60,10 +60,10 @@ const SocialProofSection = () => {
 
 
   const stats = [
-    { value: "500", label: "Happy Customers", change: "+23% this month" },
-    { value: "10k", label: "Images Generated", change: "+156% this quarter" },
-    { value: "98%", label: "Satisfaction Rate", change: "Consistently high" },
-    { value: "25s", label: "Average Generation Time", change: "50% faster than v1" },
+    { value: "60s", label: "Average Time for Everything", change: "20% faster then beta version" },
+    { value: "50+", label: "Generated Images Per User Monthly", change: "+156% last month" },
+    { value: "98%", label: "Satisfaction Rate on our Users", change: "Consistently high" },
+    { value: "20k+", label: "Saved on photoshoots and studios", change: "+35% money reinvested" },
   ];
 
   const DURATION = 28;
