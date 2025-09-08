@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 /** ---------- Local asset loader (Vite) ---------- */
 type PublicImage = { id: string; url: string; alt: string };
 
-const localPngs = import.meta.glob("@/assets/landing_gallery/*.png", {
+const localPngs = import.meta.glob("@/assets/landing_gallery/*.webp", {
   eager: true,
   as: "url",
 }) as Record<string, string>;
@@ -22,8 +22,8 @@ function shuffle<T>(arr: T[]): T[] {
 function toImages(map: Record<string, string>): PublicImage[] {
   return Object.entries(map)
     .sort((a, b) => {
-      const an = parseInt(a[0].match(/(\d+)\.png$/)?.[1] ?? "0", 10);
-      const bn = parseInt(b[0].match(/(\d+)\.png$/)?.[1] ?? "0", 10);
+      const an = parseInt(a[0].match(/(\d+)\.webp$/)?.[1] ?? "0", 10);
+      const bn = parseInt(b[0].match(/(\d+)\.webp$/)?.[1] ?? "0", 10);
       return an - bn;
     })
     .map(([path, url], i) => ({
@@ -93,7 +93,7 @@ export default function SecurePublicGallery() {
         <div className="container-responsive px-4 text-center">
           <h3 className="text-lg font-semibold">No images found</h3>
           <p className="text-muted-foreground">
-            Add PNGs to <code>/assets/landing_gallery</code> and rebuild.
+            Add WEBPs to <code>/assets/landing_gallery</code> and rebuild.
           </p>
         </div>
       </section>
