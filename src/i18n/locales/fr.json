@@ -34,6 +34,9 @@
     "ctrStat": "CTR plus élevé sur les publicités avec UGC",
     "source": "Source"
   },
+  "ugcTrustSection": {
+    "title": "Pourquoi le Contenu Généré par les Utilisateurs compte"
+  },
   "account": {
     "title": "Compte",
     "editProfile": "Modifier le Profil",

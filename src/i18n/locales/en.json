@@ -34,6 +34,9 @@
     "ctrStat": "higher CTR on ads with UGC",
     "source": "Source"
   },
+  "ugcTrustSection": {
+    "title": "Why User Generated Content matters"
+  },
   "account": {
     "title": "Account",
     "signOut": "Sign Out",

@@ -11,6 +11,7 @@ import HeaderSection from "@/components/landing/HeaderSection";
 import { RecentImagesSection } from "@/components/RecentImagesSection";
 import { UserStatsPanel } from "@/components/UserStatsPanel";
 import FeatureShowcase from "@/components/landing/FeatureShowcase";
+import UGCTrustSection from "@/components/landing/UGCTrustSection";
 import { useTranslation } from "react-i18next";
 
 const Index = () => {
@@ -70,6 +71,9 @@ const Index = () => {
 
       {/* Enhanced Hero Section */}
       <HeroSection />
+
+      {/* UGC Trust Section */}
+      <UGCTrustSection />
 
       {/* Feature Section */}
       {/* <FeatureShowcase /> */}

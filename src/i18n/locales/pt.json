@@ -34,6 +34,9 @@
     "ctrStat": "maior CTR em anúncios com UGC",
     "source": "Fonte"
   },
+  "ugcTrustSection": {
+    "title": "Por que o Conteúdo Gerado pelo Usuário importa"
+  },
   "account": {
     "title": "Conta",
     "editProfile": "Editar Perfil",
