@@ -11,11 +11,9 @@ const plans = [
     description: "Perfect for small businesses and single entrepreneurs",
     features: [
       "80 credits per month",
-      "Generate up to 3 images",
-      "All 6 UGC scenarios",
-      "Priority support",
-      "Commercial usage",
-      "Advanced templates"
+      "Generate up to 3 images simultaneously",
+      "Unlimited Scenarios",
+      "Team support",
     ],
     cta: "Start Creating",
     popular: false,
@@ -28,11 +26,10 @@ const plans = [
     description: "Best for agencies and growing businesses",
     features: [
       "200 credits per month",
-      "Generate up to 3 images",
-      "All 6 UGC scenarios",
+      "Generate up to 3 images simultaneously",
+      "Unlimited Scenarios",
       "Priority + Live chat",
-      "Advanced templates",
-      "Team collaboration"
+      "Commercial usage",
     ],
     cta: "Go Plus",
     popular: true,
@@ -45,11 +42,9 @@ const plans = [
     description: "For high-volume users and enterprises",
     features: [
       "400 credits per month",
-      "Generate up to 3 images",
-      "All 6 UGC scenarios",
+      "Generate up to 3 images simultaneously",
+      "Unlimited Scenarios",
       "Dedicated manager",
-      "API access",
-      "White-label exports"
     ],
     cta: "Go Pro",
     popular: false,
@@ -137,7 +132,7 @@ const PricingSection = () => {
                 }`}
                 size="sm"
               >
-               Star Your Trial
+               Start Your Trial
               </Button>
             </div>
           ))}
