@@ -7,23 +7,26 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { Suspense, lazy } from "react";
 import "@/i18n";
 import AppLayout from "./components/AppLayout";
 import Index from "./pages/Index";
-import CreateSelection from "./pages/CreateSelection";
-import CreateUGC from "./pages/CreateUGC";
-import Library from "./pages/Library";
-import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
-import ResetPassword from "./pages/ResetPassword";
-import AdminDashboard from "./pages/AdminDashboard";
-import GettingStartedGuide from "./pages/help/GettingStartedGuide";
-import FAQPage from "./pages/help/FAQPage";
-import VideoTutorialsPage from "./pages/help/VideoTutorialsPage";
-import APIDocsPage from "./pages/help/APIDocsPage";
-import Pricing from "./pages/Pricing";
-import Success from "./pages/Success";
-import Cancel from "./pages/Cancel";
+
+// Lazy load non-critical routes for better code splitting
+const CreateSelection = lazy(() => import("./pages/CreateSelection"));
+const CreateUGC = lazy(() => import("./pages/CreateUGC"));
+const Library = lazy(() => import("./pages/Library"));
+const Account = lazy(() => import("./pages/Account"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const GettingStartedGuide = lazy(() => import("./pages/help/GettingStartedGuide"));
+const FAQPage = lazy(() => import("./pages/help/FAQPage"));
+const VideoTutorialsPage = lazy(() => import("./pages/help/VideoTutorialsPage"));
+const APIDocsPage = lazy(() => import("./pages/help/APIDocsPage"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Success = lazy(() => import("./pages/Success"));
+const Cancel = lazy(() => import("./pages/Cancel"));
 
 
 const queryClient = new QueryClient();
@@ -43,20 +46,72 @@ const App = () => {
             <Routes>
               <Route path="/" element={<AppLayout />}>
                 <Route index element={<Index />} />
-                <Route path="create" element={<CreateSelection />} />
-                <Route path="create/ugc" element={<CreateUGC />} />
-                <Route path="library" element={<Library />} />
-                <Route path="account" element={<Account />} />
-                <Route path="pricing" element={<Pricing />} />
-                <Route path="help/getting-started" element={<GettingStartedGuide />} />
-                <Route path="help/faq" element={<FAQPage />} />
-                <Route path="help/tutorials" element={<VideoTutorialsPage />} />
-                <Route path="help/api-docs" element={<APIDocsPage />} />
+                <Route path="create" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <CreateSelection />
+                  </Suspense>
+                } />
+                <Route path="create/ugc" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <CreateUGC />
+                  </Suspense>
+                } />
+                <Route path="library" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <Library />
+                  </Suspense>
+                } />
+                <Route path="account" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <Account />
+                  </Suspense>
+                } />
+                <Route path="pricing" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <Pricing />
+                  </Suspense>
+                } />
+                <Route path="help/getting-started" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <GettingStartedGuide />
+                  </Suspense>
+                } />
+                <Route path="help/faq" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <FAQPage />
+                  </Suspense>
+                } />
+                <Route path="help/tutorials" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <VideoTutorialsPage />
+                  </Suspense>
+                } />
+                <Route path="help/api-docs" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <APIDocsPage />
+                  </Suspense>
+                } />
               </Route>
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/success" element={<Success />} />
-              <Route path="/cancel" element={<Cancel />} />
-              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/reset-password" element={
+                <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                  <ResetPassword />
+                </Suspense>
+              } />
+              <Route path="/success" element={
+                <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                  <Success />
+                </Suspense>
+              } />
+              <Route path="/cancel" element={
+                <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                  <Cancel />
+                </Suspense>
+              } />
+              <Route path="/admin" element={
+                <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                  <AdminDashboard />
+                </Suspense>
+              } />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -22,10 +22,20 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        // Enable proper chunking for better caching
+        // Enable proper chunking for better caching and code splitting
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-tooltip', '@radix-ui/react-tabs'],
+          // Core React libraries
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          // UI libraries
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-tooltip', '@radix-ui/react-tabs', '@radix-ui/react-select'],
+          // Animation and motion libraries
+          motion: ['framer-motion'],
+          // Backend and data fetching
+          backend: ['@supabase/supabase-js', '@tanstack/react-query'],
+          // Form and validation
+          forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
+          // Heavy utility libraries
+          utils: ['date-fns', 'clsx', 'tailwind-merge'],
         },
         // Ensure consistent file hashing for cache busting
         entryFileNames: 'assets/[name]-[hash].js',
