@@ -47,10 +47,9 @@ const plans = [
     features: [
       "80 credits per month",
       "Generate up to 3 images at once",
-      "All 6 UGC scenarios available",
       "All quality levels available",
       "Up to 40 high-quality images",
-      "Priority email support",
+      "Access to email support",
       "Commercial usage rights"
     ],
     limitations: [],
@@ -70,13 +69,10 @@ const plans = [
     features: [
       "200 credits per month",
       "Generate up to 3 images at once",
-      "All 6 UGC scenarios available",
       "All quality levels available",
       "Up to 100 high-quality images",
       "Priority support + Live chat",
-      "Advanced templates & styles",
       "Commercial usage rights",
-      "Team collaboration (coming soon)"
     ],
     limitations: [],
     cta: "Go Plus",
@@ -95,13 +91,10 @@ const plans = [
     features: [
       "400 credits per month",
       "Generate up to 3 images at once",
-      "All 6 UGC scenarios available",
       "All quality levels available",
       "Up to 200 high-quality images",
       "Dedicated account manager",
       "Priority processing",
-      "API access (coming soon)",
-      "White-label exports (coming soon)",
       "Custom integrations support"
     ],
     limitations: [],
