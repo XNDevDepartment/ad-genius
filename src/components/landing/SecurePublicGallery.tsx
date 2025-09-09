@@ -41,7 +41,7 @@ function chunk<T>(arr: T[], size: number): T[][] {
 }
 
 /** ---------- Config ---------- */
-const PAGE_SIZE = 12;     // 12 images per “page”
+const PAGE_SIZE = 16;     // 12 images per “page”
 const AUTO_MS = 14500;     // auto-advance cadence
 const TRANSITION_MS = 550;
 
@@ -65,28 +65,28 @@ export default function SecurePublicGallery() {
   const intervalRef = useRef<number | null>(null);
 
   // Auto-advance (pause when tab hidden)
-  useEffect(() => {
-    const start = () => {
-      stop();
-      intervalRef.current = window.setInterval(() => {
-        setPageIdx((p) => (p + 1) % pages.length);
-      }, AUTO_MS);
-    };
-    const stop = () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-    const onVis = () => (document.hidden ? stop() : start());
+  // useEffect(() => {
+  //   const start = () => {
+  //     stop();
+  //     intervalRef.current = window.setInterval(() => {
+  //       setPageIdx((p) => (p + 1) % pages.length);
+  //     }, AUTO_MS);
+  //   };
+  //   const stop = () => {
+  //     if (intervalRef.current) {
+  //       clearInterval(intervalRef.current);
+  //       intervalRef.current = null;
+  //     }
+  //   };
+  //   const onVis = () => (document.hidden ? stop() : start());
 
-    start();
-    document.addEventListener("visibilitychange", onVis);
-    return () => {
-      stop();
-      document.removeEventListener("visibilitychange", onVis);
-    };
-  }, [pages.length]);
+  //   start();
+  //   document.addEventListener("visibilitychange", onVis);
+  //   return () => {
+  //     stop();
+  //     document.removeEventListener("visibilitychange", onVis);
+  //   };
+  // }, [pages.length]);
 
   if (!pages.length) {
     return (
@@ -161,9 +161,9 @@ export default function SecurePublicGallery() {
           </motion.div>
         </AnimatePresence>
 
-        <p className="text-center text-xs text-muted-foreground mt-6">
+        {/* <p className="text-center text-xs text-muted-foreground mt-6">
           Rotates every {(AUTO_MS / 1000).toFixed(0)}s.
-        </p>
+        </p> */}
 
 
         {/* UGC Trust Section */}

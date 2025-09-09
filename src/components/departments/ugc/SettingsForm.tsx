@@ -45,7 +45,8 @@ export const SettingsForm = ({
 
   const usagePercentage = (remainingCredits / totalCredits) * 100;
   const creditsNeeded = calculateImageCost(settings.imageQuality, settings.numImages);
-  const maxImages = getMaxImagesPerGeneration();
+  // const maxImages = getMaxImagesPerGeneration();
+  const maxImages = 3;
 
   const freeScenarios = ['lifestyle', 'minimal', 'vibrant', 'professional'];
   const premiumScenarios = ['editorial', 'natural'];
@@ -81,35 +82,35 @@ export const SettingsForm = ({
           className="justify-start"
         >
           <ToggleGroupItem value="1" size="sm" className="flex-1 bg-muted">1</ToggleGroupItem>
-          <ToggleGroupItem 
-            value="2" 
-            size="sm" 
+          <ToggleGroupItem
+            value="2"
+            size="sm"
             className={`flex-1 bg-muted ${maxImages < 2 ? 'opacity-50' : ''}`}
             disabled={maxImages < 2}
           >
             2 {maxImages < 2 && <Lock className="h-3 w-3 ml-1" />}
           </ToggleGroupItem>
-          <ToggleGroupItem 
-            value="3" 
-            size="sm" 
+          <ToggleGroupItem
+            value="3"
+            size="sm"
             className={`flex-1 bg-muted ${maxImages < 3 ? 'opacity-50' : ''}`}
             disabled={maxImages < 3}
           >
             3 {maxImages < 3 && <Lock className="h-3 w-3 ml-1" />}
           </ToggleGroupItem>
         </ToggleGroup>
-        {isFreeTier() && (
+        {/* {isFreeTier() && (
           <div className="text-xs text-muted-foreground">
             {t('ugc.freePlanLimited')}
-            <Button 
-              variant="link" 
+            <Button
+              variant="link"
               className="h-auto p-0 text-xs text-primary"
               onClick={() => window.location.href = '/pricing'}
             >
               {t('common.upgradeForMore')}
             </Button>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Highlight Product */}
@@ -135,9 +136,9 @@ export const SettingsForm = ({
           onValueChange={(value) => {
             if (value) {
               // Check if it's a premium scenario and user is on free tier
-              if (isFreeTier() && premiumScenarios.includes(value)) {
-                return; // Don't allow selection
-              }
+              // if (isFreeTier() && premiumScenarios.includes(value)) {
+              //   return; // Don't allow selection
+              // }
               onSettingsChange({ style: value as GenerationSettings['style'] });
             }
           }}
@@ -149,19 +150,20 @@ export const SettingsForm = ({
             </ToggleGroupItem>
           ))}
           {premiumScenarios.map((s) => (
-            <ToggleGroupItem 
-              key={s} 
-              value={s} 
-              size="sm" 
-              className={`text-xs px-2 py-1 bg-muted relative ${isFreeTier() ? 'opacity-50' : ''}`}
-              disabled={isFreeTier()}
+            <ToggleGroupItem
+              key={s}
+              value={s}
+              size="sm"
+              // className={`text-xs px-2 py-1 bg-muted relative ${isFreeTier() ? 'opacity-50' : ''}`}
+              className='text-xs px-2 py-1 bg-muted relative'
+              // disabled={isFreeTier()}
             >
               {capitalize(s)}
-              {isFreeTier() && <Lock className="h-3 w-3 ml-1" />}
+              {/* {isFreeTier() && <Lock className="h-3 w-3 ml-1" />} */}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-        {isFreeTier() && (
+        {/* {isFreeTier() && (
           <div className="text-xs text-muted-foreground">
             2 premium scenarios available with paid plans. 
             <Button 
@@ -172,7 +174,7 @@ export const SettingsForm = ({
               Upgrade to unlock
             </Button>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Time of Day */}

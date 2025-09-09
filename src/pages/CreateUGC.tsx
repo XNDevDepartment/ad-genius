@@ -635,7 +635,7 @@ const CreateUGC = () => {
           size: orientationToSize(imageOrientation),
           quality: imageQuality,
           orientation: imageOrientation as '1:1' | '3:2' | '2:3',
-          style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional',
+          style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'editorial' | 'natural',
           timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',
           highlight: highlight as 'yes' | 'no',
           output_format: 'webp'
@@ -647,10 +647,10 @@ const CreateUGC = () => {
       localStorage.setItem('currentJobId', jobId);
       localStorage.setItem('currentStage', 'generating');
 
-      toast({
-        title: 'Generation Started',
-        description: 'Your images are being generated. Progress will update automatically.',
-      });
+      // toast({
+      //   title: 'Generation Started',
+      //   description: 'Your images are being generated. Progress will update automatically.',
+      // });
 
       // Job is now processing in the background
       // The UI will update automatically through the subscription
@@ -812,7 +812,7 @@ const CreateUGC = () => {
                         isAnalyzing={isAnalyzingImage}
                         analyzingText={t('ugc.productImage.analyzing')}
                       />
-                      
+
                       {/* Additional Image Options */}
                       <div className="flex gap-2">
                         <Button
@@ -820,19 +820,19 @@ const CreateUGC = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => setSourceImagePickerOpen(true)}
-                          className="flex-1"
+                          className="flex-1 flex-wrap p-2 overflow-hidden"
                           disabled={!threadId}
                         >
                           <Images className="h-4 w-4 mr-2" />
                           Choose from Library
                         </Button>
-                        
+
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
                           onClick={() => setUrlImportOpen(true)}
-                          className="flex-1"
+                          className="flex-1 flex-wrap p-2 overflow-hidden"
                           disabled={!threadId}
                         >
                           <LinkIcon className="h-4 w-4 mr-2" />
@@ -1147,12 +1147,14 @@ const CreateUGC = () => {
                       type="single" 
                       value={style}
                       onValueChange={(e) => setStyle(e as typeof style)}
-                      className="justify-start grid grid-cols-4 gap-1"
+                      className="justify-start grid grid-cols-3 gap-1"
                     >
                         <ToggleGroupItem key={"lifestyle"} size="sm" className="text-xs px-2 py-1 bg-muted" value="lifestyle">{t('ugc.advancedSettings.style.lifestyle')}</ToggleGroupItem>
                         <ToggleGroupItem key={"minimal"} size="sm" className="text-xs px-2 py-1 bg-muted" value="minimal">{t('ugc.advancedSettings.style.minimalist')}</ToggleGroupItem>
                         <ToggleGroupItem key={"vibrant"} size="sm" className="text-xs px-2 py-1 bg-muted" value="vibrant">Vibrant</ToggleGroupItem>
                         <ToggleGroupItem key={"professional"} size="sm" className="text-xs px-2 py-1 bg-muted" value="professional">{t('ugc.advancedSettings.style.professional')}</ToggleGroupItem>
+                        <ToggleGroupItem key={"editorial"} size="sm" className="text-xs px-2 py-1 bg-muted" value="editorial">editorial</ToggleGroupItem>
+                        <ToggleGroupItem key={"natural"} size="sm" className="text-xs px-2 py-1 bg-muted" value="natural">natural</ToggleGroupItem>
                     </ToggleGroup>
                   </div>
 
@@ -1270,7 +1272,7 @@ const CreateUGC = () => {
                 <div className="flex-1 px-3 py-2 bg-muted/40 rounded-full text-xs text-muted-foreground truncate" onClick={() => setSettingsOpen(true)}>
                   {/* {summary} */}
                   <Button className="w-full" variant="ghost">
-                  Abrir definições de imagem
+                  Open image settings
                   <Pencil className="h-3 w-3" />
                   </Button>
                 </div>
@@ -1278,24 +1280,25 @@ const CreateUGC = () => {
 
               {/* Bottom row: Generate button */}
               <Button 
-                variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
-                size="lg" 
-                className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
-                onClick={handleGenerate}
-                disabled={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages)}
-              >
-                {isGenerating ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    A gerar...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Gerar ({calculateImageCost(imageQuality, numImages)} créditos)
-                  </>
-                )}
-              </Button>
+                    variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
+                    size="lg" 
+                    className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
+                    onClick={handleGenerate}
+                    disabled={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages)}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-5 w-5 mr-2" />
+                        Generate Images ({calculateImageCost(imageQuality, numImages)} credits)
+                      </>
+                    )}
+                  </Button>
+
             </div>
           </div>
         )}
