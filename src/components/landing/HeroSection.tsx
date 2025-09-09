@@ -31,10 +31,10 @@ const HeroSection = () => {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
 
   const headlines = [
+    "Create AI Product Images that sell for you",
     "Showcase your products in real, authentic contexts",
     "Make them look they’re already in customers’ hands.",
     "Build instant trust and credibility for your brand.",
-    "Create product images that sell for you",
   ];
 
   const socialProofStats = [
