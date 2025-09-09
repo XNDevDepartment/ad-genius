@@ -18,6 +18,8 @@ const CreateSelection = lazy(() => import("./pages/CreateSelection"));
 const CreateUGC = lazy(() => import("./pages/CreateUGC"));
 const Library = lazy(() => import("./pages/Library"));
 const Account = lazy(() => import("./pages/Account"));
+const SignIn = lazy(() => import("./pages/SignIn"));
+const SignUp = lazy(() => import("./pages/SignUp"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const GettingStartedGuide = lazy(() => import("./pages/help/GettingStartedGuide"));
@@ -64,6 +66,16 @@ const App = () => {
                 <Route path="account" element={
                   <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
                     <Account />
+                  </Suspense>
+                } />
+                <Route path="signin" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <SignIn />
+                  </Suspense>
+                } />
+                <Route path="signup" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <SignUp />
                   </Suspense>
                 } />
                 <Route path="pricing" element={

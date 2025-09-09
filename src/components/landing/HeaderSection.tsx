@@ -64,27 +64,39 @@ const HeaderSection = () => {
           >
           <a href="#community" className="btn-ghost">Community</a>
         </motion.div> */}
-        <motion.div
-          initial={{ opacity: 0, y: -20, x: 30 }}
-          animate={inView ? { opacity: 1, y: 0, x: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          >
-          {/* <a href="#login" className="btn-ghost">Log in</a> */}
-          <Button className="btn-primary" onClick={() => navigate("/account")}>
-            Start generating
-          </Button>
-          </motion.div>
+         <motion.div
+           initial={{ opacity: 0, y: -20, x: 30 }}
+           animate={inView ? { opacity: 1, y: 0, x: 0 } : {}}
+           transition={{ duration: 0.6, delay: 0.2 }}
+           className="flex items-center gap-3"
+           >
+           <Button 
+             variant="outline"
+             size="sm"
+             onClick={() => navigate("/signin")}
+             className="border-border hover:bg-muted"
+           >
+             Sign In
+           </Button>
+           <Button 
+             size="sm"
+             onClick={() => navigate("/signup")}
+             className="bg-gradient-primary text-primary-foreground hover:opacity-90"
+           >
+             Start generating
+           </Button>
+           </motion.div>
         </nav>
 
-        {/* Mobile CTA */}
-        <div className="md:hidden">
-          <Button 
-            className="btn-primary text-sm px-4 py-2" 
-            onClick={() => navigate("/account")}
-          >
-            Start
-          </Button>
-        </div>
+         {/* Mobile CTA */}
+         <div className="md:hidden">
+           <Button 
+             className="btn-primary text-sm px-4 py-2" 
+             onClick={() => navigate("/signup")}
+           >
+             Start
+           </Button>
+         </div>
       </div>
     </header>
   );

@@ -41,7 +41,7 @@ const NavigationHeader = () => {
         transition={{ duration: 0.6, delay: 0.3 }}
       >
         <Button
-          onClick={() => navigate("/account")}
+          onClick={() => navigate("/signup")}
           size="sm"
           className="min-h-[24px] p-4 mt-2"
         >

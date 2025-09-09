@@ -124,7 +124,7 @@ const PricingSection = () => {
               </ul>
 
               <Button
-                onClick={() => navigate('/pricing')}
+                onClick={() => navigate('/signup')}
                 className={`w-full ${
                   plan.popular
                     ? "btn-primary"

@@ -14,11 +14,12 @@ interface AuthModalProps {
   onSuccess?: () => void;
   isOpen?: boolean;
   onClose?: () => void;
+  defaultMode?: 'signin' | 'signup';
 }
 
-export const AuthModal = ({ onSuccess, isOpen, onClose }: AuthModalProps) => {
+export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }: AuthModalProps) => {
   const { signIn, signUp, signInWithGoogle } = useAuth();
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(defaultMode === 'signup');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 

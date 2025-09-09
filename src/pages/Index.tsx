@@ -1,6 +1,7 @@
 import HeroSection from "@/components/landing/HeroSection";
 import SecurePublicGallery from "@/components/landing/SecurePublicGallery";
 import SocialProofSection from "@/components/landing/SocialProofSection";
+import Footer from "@/components/landing/Footer";
 import { useNavigate } from "react-router-dom";
 import { Camera, Wand2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -83,6 +84,9 @@ const Index = () => {
 
       {/* Plans & Pricing */}
       <PricingSection />
+      
+      {/* Footer */}
+      <Footer />
     </>
     }
     </div>

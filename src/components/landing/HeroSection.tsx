@@ -147,7 +147,7 @@ const HeroSection = () => {
             >
               <Button 
                 size="lg"
-                onClick={() => navigate("/create")}
+                onClick={() => navigate("/signup")}
                 className="group bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-elegant text-lg px-8 py-4"
               >
                 Start Creating Free

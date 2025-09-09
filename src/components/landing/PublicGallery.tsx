@@ -47,7 +47,7 @@ const PublicGallery = () => {
 
 
   const handleTryCreating = () => {
-    navigate("/account");
+    navigate("/signup");
   };
 
 
