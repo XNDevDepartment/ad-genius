@@ -18,7 +18,7 @@ const handler = async (req)=>{
     const emailResponse = await resend.emails.send({
       from: "Lovable <onboarding@resend.dev>",
       to: [
-        "info@formulaxn.com"
+        "info@produktpix.com"
       ],
       subject,
       html

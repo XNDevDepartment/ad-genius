@@ -445,9 +445,9 @@ const Pricing = () => {
               </p>
             </div>
             <div>
-              <h3 className="font-medium mb-2">How many scenarios are available?</h3>
+              <h3 className="font-medium mb-2">What are scenarios?</h3>
               <p className="text-muted-foreground text-sm">
-                All paid plans include access to all 6 UGC scenarios options. Then if they don't like them, they can ask for the system to generate more.
+                Scenarios are pre-designed UGC settings tailored to your product and niche. For example: a cosmetic placed on a backstage table at a fashion show.
               </p>
             </div>
             <div>

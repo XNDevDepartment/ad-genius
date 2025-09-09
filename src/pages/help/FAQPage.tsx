@@ -37,7 +37,7 @@ const faqCategories = [
       },
       {
         q: "Can I edit generated content?",
-        a: "For the moment you cannot! We are working on developing the ProducktPix with a goal to become the number one mobile marketing agent in order to quickly and efficiently help people sell their products."
+        a: "For the moment you cannot! We are working on developing the ProduktPix with a goal to become the number one mobile marketing agent in order to quickly and efficiently help people sell their products."
       },
       {
         q: "What file formats are supported?",

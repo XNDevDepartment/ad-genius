@@ -78,7 +78,7 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
       try {
         await supabase.functions.invoke('send-email', {
           body: {
-            to: "info@formulaxn.com",
+            to: "info@produktpix.com",
             subject: `Support Ticket Created: ${formData.subject}`,
             html: `
               <h2>Support Ticket Creation</h2>
@@ -267,7 +267,7 @@ export const HelpSupportPanel = ({ onClose }: HelpSupportPanelProps) => {
         <CardContent className="space-y-2">
           <div className="flex justify-between">
             <span className="text-sm">{t("account.helpSupport.emailSupport")}</span>
-            <span className="text-sm text-muted-foreground">info@producktpix.com</span>
+            <span className="text-sm text-muted-foreground">info@produktpix.com</span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm">{t("account.helpSupport.businessHours")}</span>
