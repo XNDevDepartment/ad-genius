@@ -124,12 +124,12 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
         </Button>
       </div>
 
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>{t("account.settings.generationDefaults")}</CardTitle>
           <CardDescription>{t("account.settings.generationDefaultsDesc")}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4"> */}
           {/** NOT NECESSARY AT THE MOMENT */}
           {/* <div className="space-y-2">
             <Label>Image Quality</Label>
@@ -170,7 +170,7 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
             </Select>
           </div> */}
 
-          <div className="flex items-center justify-between">
+          {/* <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>{t("account.settings.autoSaveImages")}</Label>
               <p className="text-sm text-muted-foreground">{t("account.settings.autoSaveImagesDesc")}</p>
@@ -178,7 +178,7 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
             <Switch checked={preferences.auto_save_images} onCheckedChange={(checked) => handlePreferenceChange('auto_save_images', checked)} />
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       <Card>
         <CardHeader>
