@@ -792,7 +792,8 @@ const CreateUGC = () => {
 
 
   return (
-    <div ref={topRef} className="min-h-screen bg-background relative">
+    <TooltipProvider delayDuration={120} skipDelayDuration={400}>
+      <div ref={topRef} className="min-h-screen bg-background relative">
       {/* Loading Overlay */}
       {!threadId && (
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-[30] flex items-center justify-center">
@@ -1461,7 +1462,8 @@ const CreateUGC = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 };
 
