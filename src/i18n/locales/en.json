@@ -28,6 +28,12 @@
   "header": {
     "tagline": "AI Marketing"
   },
+  "trustBar": {
+    "conversionStat": "average conversion when UGC is present in PDPs",
+    "trustStat": "trust consumer content more than brand content",
+    "ctrStat": "higher CTR on ads with UGC",
+    "source": "Source"
+  },
   "account": {
     "title": "Account",
     "signOut": "Sign Out",

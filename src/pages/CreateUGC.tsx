@@ -1220,13 +1220,13 @@ const CreateUGC = () => {
 
                 <div className="border-t pt-4">
                   <Button 
-                    variant={!productImage || !selectedScenario || isGenerating || stage === 'generating' || !canGenerateImages(numImages) ? "secondary" : "alternative"}
+                    variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
                     size="lg" 
-                    className={`w-full ${(isGenerating || stage === 'generating') ? 'animate-pulse' : ''}`}
+                    className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
                     onClick={handleGenerate}
-                    disabled={!productImage || !selectedScenario || isGenerating || stage === 'generating' || !canGenerateImages(numImages)}
+                    disabled={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages)}
                   >
-                    {(isGenerating || stage === 'generating') ? (
+                    {isGenerating ? (
                       <>
                         <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
                         Generating...
@@ -1278,13 +1278,13 @@ const CreateUGC = () => {
 
               {/* Bottom row: Generate button */}
               <Button 
-                variant={!productImage || !selectedScenario || isGenerating || stage === 'generating' || !canGenerateImages(numImages) ? "secondary" : "alternative"}
+                variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
                 size="lg" 
-                className={`w-full ${(isGenerating || stage === 'generating') ? 'animate-pulse' : ''}`}
+                className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
                 onClick={handleGenerate}
-                disabled={!productImage || !selectedScenario || isGenerating || stage === 'generating' || !canGenerateImages(numImages)}
+                disabled={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages)}
               >
-                {(isGenerating || stage === 'generating') ? (
+                {isGenerating ? (
                   <>
                     <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                     A gerar...

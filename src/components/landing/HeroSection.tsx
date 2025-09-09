@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Play, ArrowRight, Users, Zap, Trophy, Image } from "lucide-react";
 import heroProduct from "@/assets/example_image.jpeg";
 import { BeforeAfterSlider } from "../ui/before-after";
+import TrustBar from "./TrustBar";
 import { supabase } from "@/integrations/supabase/client";
 
 import nike_before from './../../assets/nike_origin.jpeg';
@@ -162,6 +163,9 @@ const HeroSection = () => {
                 Watch Demo
               </Button>
             </motion.div>
+
+            {/* Trust Bar */}
+            <TrustBar />
 
             {/* Social Proof Stats */}
             <motion.div

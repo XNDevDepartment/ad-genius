@@ -28,6 +28,12 @@
   "header": {
     "tagline": "Marketing IA"
   },
+  "trustBar": {
+    "conversionStat": "conversion moyenne lorsque UGC est présent dans les PDPs",
+    "trustStat": "font plus confiance au contenu consommateur qu'au contenu de marque",
+    "ctrStat": "CTR plus élevé sur les publicités avec UGC",
+    "source": "Source"
+  },
   "account": {
     "title": "Compte",
     "editProfile": "Modifier le Profil",
