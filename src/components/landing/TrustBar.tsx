@@ -7,17 +7,17 @@ export default function TrustBar() {
   const stats = [
     {
       value: "+29%",
-      text: t('trustBar.conversionStat'),
+      text: "Average conversion when UGC is present in PDPs",
       source: "Yotpo"
     },
     {
       value: "84%",
-      text: t('trustBar.trustStat'),
+      text: "Trust consumer content more than brand content",
       source: "Nielsen"
     },
     {
       value: "4x",
-      text: t('trustBar.ctrStat'),
+      text: "Higher CTR on ads with UGC",
       source: "AdWeek"
     }
   ];

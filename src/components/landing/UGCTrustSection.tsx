@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import TrustBar from "./TrustBar";
 
 export default function UGCTrustSection() {
-  const { t } = useTranslation();
+
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
 
   return (
@@ -17,7 +17,7 @@ export default function UGCTrustSection() {
           className="max-w-4xl mx-auto text-center space-y-8"
         >
           <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
-            {t('ugcTrustSection.title')}
+            Why User Generated Content matters
           </h2>
           
           <motion.div
