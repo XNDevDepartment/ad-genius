@@ -8,7 +8,7 @@ export default function UGCTrustSection() {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
 
   return (
-    <section ref={ref} className="py-16 lg:py-24 bg-muted/20">
+    <section ref={ref} className="py-16 lg:py-12 bg-muted/20">
       <div className="container-responsive px-4">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

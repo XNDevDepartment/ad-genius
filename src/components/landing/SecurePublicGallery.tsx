@@ -1,6 +1,7 @@
 // SecurePublicGallery.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import UGCTrustSection from "./UGCTrustSection";
 
 /** ---------- Local asset loader (Vite) ---------- */
 type PublicImage = { id: string; url: string; alt: string };
@@ -163,6 +164,10 @@ export default function SecurePublicGallery() {
         <p className="text-center text-xs text-muted-foreground mt-6">
           Rotates every {(AUTO_MS / 1000).toFixed(0)}s.
         </p>
+
+
+        {/* UGC Trust Section */}
+        <UGCTrustSection />
       </div>
     </section>
   );

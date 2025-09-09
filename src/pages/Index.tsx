@@ -78,9 +78,6 @@ const Index = () => {
       {/* Public Gallery */}
       <SecurePublicGallery />
 
-      {/* UGC Trust Section */}
-      <UGCTrustSection />
-
       {/* Social Proof and Testimonials */}
       <SocialProofSection />
 
