@@ -206,7 +206,7 @@ const HeroSection = () => {
                         alt='Demo Images'
                         className="w-full h-full"
                         initialX={15}
-
+                        eager={true}
                       />
                     {/* <img 
                       src={heroProduct}

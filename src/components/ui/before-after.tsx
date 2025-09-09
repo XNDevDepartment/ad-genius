@@ -8,6 +8,7 @@ interface BeforeAfterSliderProps {
   className?: string;
   grayscaleBefore?: boolean;
   initialX: number;
+  eager?: boolean;
 }
 
 export const BeforeAfterSlider = ({
@@ -16,7 +17,8 @@ export const BeforeAfterSlider = ({
   alt,
   className,
   grayscaleBefore = true,
-  initialX
+  initialX,
+  eager = false
 }: BeforeAfterSliderProps) => {
   const [sliderPosition, setSliderPosition] = useState(initialX);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -169,6 +171,9 @@ export const BeforeAfterSlider = ({
         alt={alt}
         className="w-full h-full object-cover"
         draggable={false}
+        loading={eager ? "eager" : "lazy"}
+        width="502"
+        height="502"
       />
       
       {/* Before Image (clipped) */}
@@ -181,6 +186,9 @@ export const BeforeAfterSlider = ({
           alt={`${alt} (before)`}
           className={`w-full h-full object-cover ${grayscaleBefore ? 'filter grayscale' : ''}`}
           draggable={false}
+          loading={eager ? "eager" : "lazy"}
+          width="502"
+          height="502"
         />
       </div>
       

@@ -50,12 +50,12 @@ const SocialProofSection = () => {
   ];
 
   const companies = [
-    { name: <img src={shopify} alt="shopify" className="h-8 md:h-10" /> },
-    { name: <img src={amazon} alt="amazon" className="h-8 md:h-10" /> },
-    { name: <img src={etsy} alt="etsy" className="h-8 md:h-10" /> },
-    { name: <img src={woocommerce} alt="woocommerce" className="h-8 md:h-10" /> },
-    { name: <img src={bigcommerce} alt="bigcommerce" className="h-8 md:h-10" /> },
-    { name: <img src={magento} alt="magento" className="h-8 md:h-10" /> },
+    { name: <img src={shopify} alt="shopify" className="h-8 md:h-10" width="156" height="40" /> },
+    { name: <img src={amazon} alt="amazon" className="h-8 md:h-10" width="68" height="40" /> },
+    { name: <img src={etsy} alt="etsy" className="h-8 md:h-10" width="40" height="40" /> },
+    { name: <img src={woocommerce} alt="woocommerce" className="h-8 md:h-10" width="78" height="40" /> },
+    { name: <img src={bigcommerce} alt="bigcommerce" className="h-8 md:h-10" width="177" height="40" /> },
+    { name: <img src={magento} alt="magento" className="h-8 md:h-10" width="126" height="40" /> },
   ];
 
 
