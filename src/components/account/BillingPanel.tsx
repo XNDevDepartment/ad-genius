@@ -85,12 +85,12 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">{t("account.billing.title")}</h2>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
-      </div>
+      </div> */}
 
       <Card>
         <CardHeader>
