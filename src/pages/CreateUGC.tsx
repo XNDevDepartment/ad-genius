@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
-import { ArrowLeft, Upload, Sparkles, RefreshCw, Loader2, HelpCircle, Settings, Pencil } from "lucide-react";
+import { ArrowLeft, Upload, Sparkles, RefreshCw, Loader2, HelpCircle, Settings, Pencil, ArrowDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -114,6 +114,7 @@ const CreateUGC = () => {
   const [importUrl, setImportUrl] = useState("");
   const [importingFromUrl, setImportingFromUrl] = useState(false);
   const [pendingSlots, setPendingSlots] = useState(0);
+  const [showScrollDown, setShowScrollDown] = useState(false);
 
   // Compute compact summary for mobile panel
   const summary = `${numImages} img • ${imageQuality.charAt(0).toUpperCase() + imageQuality.slice(1)} • ${highlight === 'yes' ? 'Focus On' : 'Blend In'} • ${imageOrientation} • ${style} • ${timeOfDay}`;
@@ -124,6 +125,7 @@ const CreateUGC = () => {
   const scnRef = useRef<HTMLTextAreaElement>(null);
   const scenariosRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const topRef = useRef<HTMLDivElement>(null);
 
   // Block access if not authenticated
   useEffect(() => {
@@ -739,11 +741,58 @@ const CreateUGC = () => {
     
   };
 
+  const handleStartFromScratch = () => {
+    // Clear job state
+    clearJob();
+    
+    // Reset all UI states
+    setGeneratedImages([]);
+    setProductImage(null);
+    setSourceImageId(null);
+    setNiche("");
+    setAiScenarios([]);
+    setSelectedScenario({'idea': "", "small-description" : "", "description": ""});
+    setStage('setup');
+    setPendingSlots(0);
+    
+    // Clear localStorage
+    localStorage.removeItem('currentJobId');
+    localStorage.removeItem('currentStage');
+    
+    // Scroll to top
+    setTimeout(() => {
+      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+    
+    toast({
+      title: "Starting fresh",
+      description: "All data cleared. Ready for a new generation.",
+    });
+  };
+
+  // Scroll detection for floating button
+  useEffect(() => {
+    const handleScroll = () => {
+      const hasContent = generatedImages.length > 0 || isGenerating || stage === 'results';
+      const isScrolledUp = window.scrollY < window.innerHeight * 0.5;
+      setShowScrollDown(hasContent && isScrolledUp);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Check initial state
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [generatedImages.length, isGenerating, stage]);
+
+  const handleScrollToResults = () => {
+    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
 
 
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div ref={topRef} className="min-h-screen bg-background relative">
       {/* Loading Overlay */}
       {!threadId && (
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-[30] flex items-center justify-center">
@@ -990,7 +1039,7 @@ const CreateUGC = () => {
                       isGenerating={job?.status !== 'completed'}
                       onCreateNewScenario={(imageId) => {setSelectedScenario({"idea":"", "small-description": "", "description": ""})}}
                       onOpenInLibrary={() => navigate('/library')}
-                      onStartFromScratch={() => clearJob()}   // or navigate back to the form
+                      onStartFromScratch={handleStartFromScratch}
                       threadId={threadId}
                       imageOrientation={imageOrientation}
                     />
@@ -1332,6 +1381,35 @@ const CreateUGC = () => {
             onOpenChange={setSettingsOpen}
             hideTrigger={true}
           />
+        )}
+
+        {/* Floating Scroll Down Button */}
+        {showScrollDown && !isMobile && (
+          <div className="fixed bottom-8 right-8 z-[15]">
+            <Button
+              size="icon"
+              className="rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all duration-300 animate-bounce"
+              onClick={handleScrollToResults}
+              title="Scroll to results"
+            >
+              <ArrowDown className="h-5 w-5" />
+            </Button>
+          </div>
+        )}
+
+        {/* Mobile Floating Scroll Down Button */}
+        {showScrollDown && isMobile && (
+          <div className="fixed bottom-[120px] right-4 z-[15]">
+            <Button
+              size="sm"
+              className="rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all duration-300 animate-bounce px-3"
+              onClick={handleScrollToResults}
+              title="Scroll to results"
+            >
+              <ArrowDown className="h-4 w-4 mr-1" />
+              Results
+            </Button>
+          </div>
         )}
 
         {/* Padding for mobile floating panel and navigation */}
