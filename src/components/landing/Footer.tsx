@@ -4,10 +4,10 @@ const Footer = () => {
   const navigate = useNavigate();
 
   return (
-    <footer className="bg-muted/30 border-t border-border py-6">
+    <footer className=" py-2 bg-black">
       <div className="container-responsive px-4">
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-muted-foreground">
-          <span>© 2024 ProduktPix Genius. All rights reserved.</span>
+          <span>© 2025 ProduktPix Genius. All rights reserved.</span>
           <div className="flex gap-4">
             <button 
               onClick={() => navigate("/privacy")}
