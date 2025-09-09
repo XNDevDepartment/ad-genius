@@ -19,7 +19,7 @@ export default function UGCTrustSection() {
           <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
             Why User Generated Content matters
           </h2>
-          
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}

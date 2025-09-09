@@ -72,14 +72,14 @@ const Index = () => {
       {/* Enhanced Hero Section */}
       <HeroSection />
 
-      {/* UGC Trust Section */}
-      <UGCTrustSection />
-
       {/* Feature Section */}
       {/* <FeatureShowcase /> */}
 
       {/* Public Gallery */}
       <SecurePublicGallery />
+
+      {/* UGC Trust Section */}
+      <UGCTrustSection />
 
       {/* Social Proof and Testimonials */}
       <SocialProofSection />
