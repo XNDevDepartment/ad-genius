@@ -23,15 +23,32 @@ export const BeforeAfterSlider = ({
   const [sliderPosition, setSliderPosition] = useState(initialX);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
+  const cachedRect = useRef<DOMRect | null>(null);
 
   // tune these
   const STIFFNESS = 10;  // higher = snappier
   const DAMPING   = 5;  // higher = less bounce
   const EPS       = 0.05;
 
+  // Cache the bounding rect to avoid forced reflows
+  const updateCachedRect = useCallback(() => {
+    if (containerRef.current) {
+      cachedRect.current = containerRef.current.getBoundingClientRect();
+    }
+  }, []);
+
+  // Update cached rect on mount and resize
+  React.useEffect(() => {
+    updateCachedRect();
+    const handleResize = () => updateCachedRect();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [updateCachedRect]);
+
   const handleMouseDown = useCallback(() => {
     isDragging.current = true;
-  }, []);
+    updateCachedRect(); // Update rect when dragging starts
+  }, [updateCachedRect]);
 
   const handleMouseUp = useCallback(() => {
     isDragging.current = false;
@@ -44,20 +61,18 @@ export const BeforeAfterSlider = ({
   }, [])
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging.current || !containerRef.current) return;
+    if (!isDragging.current || !cachedRect.current) return;
 
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    const x = e.clientX - cachedRect.current.left;
+    const percentage = Math.max(0, Math.min(100, (x / cachedRect.current.width) * 100));
     setSliderPosition(percentage);
   }, []);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!containerRef.current) return;
+    if (!cachedRect.current) return;
 
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = e.touches[0].clientX - rect.left;
-    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    const x = e.touches[0].clientX - cachedRect.current.left;
+    const percentage = Math.max(0, Math.min(100, (x / cachedRect.current.width) * 100));
     setSliderPosition(percentage);
   }, []);
 
@@ -197,7 +212,10 @@ export const BeforeAfterSlider = ({
         className="absolute top-0 bottom-0 w-1 bg-white shadow-lg cursor-col-resize z-10"
         style={{ left: `${sliderPosition}%` }}
         onMouseDown={handleMouseDown}
-        onTouchStart={() => isDragging.current = true}
+        onTouchStart={() => {
+          isDragging.current = true;
+          updateCachedRect();
+        }}
         onTouchMove={handleTouchMove}
         onTouchEnd={() => isDragging.current = false}
       >
