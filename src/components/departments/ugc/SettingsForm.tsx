@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import OrientationSelector from "@/components/OrientationSelector";
 import { HelpCircle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslation } from "react-i18next";
 import { useCredits } from "@/hooks/useCredits";
 
@@ -236,18 +236,16 @@ export const SettingsForm = ({
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <Label className="text-sm font-medium">Qualidade</Label>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
-                  <HelpCircle className="h-2 w-2 text-muted-foreground" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="max-w-xs">Higher quality uses more credits but produces better results</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
+                <HelpCircle className="h-2 w-2 text-muted-foreground" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="max-w-xs">Higher quality uses more credits but produces better results</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
         <ToggleGroup 
           type="single" 
