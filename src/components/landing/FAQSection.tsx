@@ -28,7 +28,7 @@ import {
     },
     {
       question: "What's included in the free plan?",
-      answer: "The free plan includes 30 generation credits per month, access to basic templates, 720p resolution exports, and community support. It's perfect for testing our platform and small projects."
+      answer: "The free plan includes 10 generation credits, 4k resolution exports, and community support. It's perfect for testing our platform and small projects."
     },
     {
       question: "Can I integrate Ad Genius with my existing tools?",

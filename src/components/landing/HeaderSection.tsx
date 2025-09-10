@@ -25,7 +25,7 @@ const HeaderSection = () => {
       className={`fixed top-0 left-0 right-0 z-50 h-16 transition-all duration-300 ${
         isScrolled 
           ? "bg-background/90 backdrop-blur-sm border-b border-border" 
-          : "bg-transparent"
+          : "bg-background backdrop-blur-sm"
       }`}
       ref={ref}
     >
@@ -94,7 +94,7 @@ const HeaderSection = () => {
              className="btn-primary text-sm px-4 py-2" 
              onClick={() => navigate("/signup")}
            >
-             Start
+             Sign Up
            </Button>
          </div>
       </div>

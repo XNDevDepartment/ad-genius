@@ -116,7 +116,6 @@ const comparisonFeatures = [
   { feature: "Commercial Usage", starter: true, plus: true, pro: true },
   { feature: "Priority Support", starter: true, plus: true, pro: true },
   { feature: "Live Chat Support", starter: false, plus: true, pro: true },
-  { feature: "Advanced Templates", starter: false, plus: true, pro: true },
   { feature: "Dedicated Manager", starter: false, plus: false, pro: true }
 ];
 
@@ -160,19 +159,19 @@ const Pricing = () => {
 
   const getDisplayPrice = (plan: any) => {
     if (plan.price === "Free") return "Free";
-    
+
     const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
     return `€${price}`;
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background mt-10 lg:mt-0">
       {!user &&
-        <div className="hidden lg:block">
+        <div className="lg:block">
           <HeaderSection />
         </div>
       }
-      
+
       {/* Header */}
       <div className="bg-gradient-hero text-primary-foreground py-20 ">
         <div className="container mx-auto px-6 text-center">
