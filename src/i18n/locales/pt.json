@@ -232,6 +232,148 @@
     "themeToggle": "Alternar tema",
     "languageToggle": "Alternar idioma"
   },
+  "help": {
+    "gettingStarted": {
+      "title": "Guia de Primeiros Passos",
+      "welcome": {
+        "title": "Bem-vindo ao Genius UGC! 🚀",
+        "description": "Comece em minutos com nosso guia passo a passo. Crie conteúdo UGC incrível com o poder da IA."
+      },
+      "steps": {
+        "title": "Passos de Configuração Rápida",
+        "createAccount": {
+          "title": "Crie Sua Conta",
+          "description": "Cadastre-se e verifique seu e-mail para começar com o Genius UGC",
+          "action": "Ir ao Perfil"
+        },
+        "exploreCreate": {
+          "title": "Explore a Seção Criar",
+          "description": "Aprenda a gerar conteúdo UGC usando nossas ferramentas alimentadas por IA",
+          "action": "Começar a Criar"
+        },
+        "manageLibrary": {
+          "title": "Gerencie Sua Biblioteca",
+          "description": "Organize e acesse todo seu conteúdo gerado em um só lugar",
+          "action": "Ver Biblioteca"
+        },
+        "customizeSettings": {
+          "title": "Personalize Configurações",
+          "description": "Personalize sua experiência e preferências de notificação",
+          "action": "Abrir Configurações"
+        },
+        "completed": "Concluído"
+      },
+      "readyToCreate": {
+        "title": "Pronto para Criar?",
+        "description": "Agora que você está configurado, vamos criar seu primeiro conteúdo UGC!",
+        "action": "Começar a Criar Conteúdo"
+      },
+      "needMoreHelp": {
+        "title": "Precisa de Mais Ajuda?",
+        "description": "Explore nossos outros recursos ou entre em contato com o suporte",
+        "viewFaq": "Ver FAQ",
+        "watchTutorials": "Assistir Tutoriais"
+      }
+    },
+    "faq": {
+      "title": "Perguntas Frequentes",
+      "subtitle": "Como podemos ajudá-lo?",
+      "description": "Pesquise nossa base de conhecimento ou navegue pelas categorias abaixo",
+      "searchPlaceholder": "Pesquisar perguntas...",
+      "categories": {
+        "accountSetup": {
+          "name": "Conta e Configuração",
+          "badge": "Popular",
+          "questions": {
+            "changeEmail": {
+              "q": "Posso alterar meu endereço de e-mail?",
+              "a": "Sim, você pode atualizar seu endereço de e-mail nas configurações da conta. Vá para Conta > Configurações > Informações do Perfil para fazer alterações."
+            },
+            "resetPassword": {
+              "q": "Como redefinir minha senha?",
+              "a": "Clique em 'Esqueci a Senha' na página de login, insira seu e-mail e enviaremos um link para redefinir a senha."
+            }
+          }
+        },
+        "contentCreation": {
+          "name": "Criação de Conteúdo",
+          "badge": "Essencial",
+          "questions": {
+            "contentTypes": {
+              "q": "Que tipos de conteúdo posso criar?",
+              "a": "O Genius UGC suporta a criação de vários tipos de conteúdo gerado pelo usuário, incluindo posts de mídia social, demonstrações de ambiente de produto, posicionamentos de produto e materiais de marketing usando ferramentas alimentadas por IA."
+            },
+            "aiGeneration": {
+              "q": "Como funciona a geração de conteúdo por IA?",
+              "a": "Nossa IA Genius analisa suas sugestões e preferências para gerar conteúdo relevante e de alta qualidade. Você pode personalizar luz, estilo e formato para combinar com seu desejo."
+            },
+            "editContent": {
+              "q": "Posso editar conteúdo gerado?",
+              "a": "No momento você não pode! Estamos trabalhando no desenvolvimento do ProduktPix com o objetivo de nos tornarmos o agente de marketing móvel número um para ajudar as pessoas a vender seus produtos de forma rápida e eficiente."
+            },
+            "fileFormats": {
+              "q": "Quais formatos de arquivo são suportados?",
+              "a": "Suportamos formatos populares incluindo JPG, PNG para imagens e vários formatos de texto para conteúdo escrito."
+            }
+          }
+        },
+        "billingPlans": {
+          "name": "Cobrança e Planos",
+          "badge": "Importante",
+          "questions": {
+            "paymentMethods": {
+              "q": "Que métodos de pagamento vocês aceitam?",
+              "a": "Aceitamos todos os principais cartões de crédito Visa, MasterCard e American Express para sua conveniência."
+            },
+            "cancelSubscription": {
+              "q": "Posso cancelar minha assinatura a qualquer momento?",
+              "a": "Sim, você pode cancelar sua assinatura a qualquer momento nas configurações de cobrança. Seu acesso continuará até o final do período de cobrança atual."
+            },
+            "refunds": {
+              "q": "Vocês oferecem reembolsos?",
+              "a": "Oferecemos uma garantia de devolução do dinheiro de 14 dias para novos assinantes. Entre em contato com nossa equipe de suporte se não estiver satisfeito com o serviço."
+            },
+            "usageLimit": {
+              "q": "O que acontece quando atinjo meu limite de uso?",
+              "a": "Quando você atingir o limite do seu plano, pode fazer upgrade para um plano superior ou aguardar o próximo ciclo de cobrança para redefinir seu uso."
+            }
+          }
+        },
+        "technicalSupport": {
+          "name": "Suporte Técnico",
+          "questions": {
+            "generationTime": {
+              "q": "Quanto tempo leva para a geração ser concluída?",
+              "a": "Os tempos de geração podem variar com base na complexidade e carga do servidor. A maioria do conteúdo é gerada em 30-60 segundos. Se experimentar atrasos maiores, tente atualizar a página."
+            },
+            "contentMismatch": {
+              "q": "Meu conteúdo gerado não corresponde à minha solicitação",
+              "a": "Tente ser mais específico em seus detalhes e público. Inclua detalhes sobre usabilidade, tamanho, público-alvo de nicho e requisitos específicos para melhores resultados."
+            },
+            "mobileSupport": {
+              "q": "Posso usar a plataforma em dispositivos móveis?",
+              "a": "Sim! O Genius UGC é totalmente responsivo e funciona muito bem em dispositivos móveis, tablets e computadores desktop."
+            },
+            "reportBug": {
+              "q": "Como relatar um bug ou problema?",
+              "a": "Você pode relatar bugs através do nosso formulário de contato de suporte ou nos enviar um e-mail diretamente. Por favor, inclua detalhes sobre o que estava fazendo quando o problema ocorreu."
+            }
+          }
+        }
+      },
+      "noResults": {
+        "title": "Nenhum resultado encontrado",
+        "description": "Tente ajustar seus termos de pesquisa ou navegue por todas as categorias",
+        "clearSearch": "Limpar Pesquisa"
+      },
+      "stillNeedHelp": {
+        "title": "Ainda precisa de ajuda?",
+        "description": "Não encontrou o que procura? Nossa equipe de suporte está aqui para ajudar.",
+        "contactSupport": "Contatar Suporte",
+        "gettingStarted": "Guia de Primeiros Passos"
+      }
+    }
+  },
   "index": {
     "auth": {
       "title": "Cria imagens de produto que vendem",

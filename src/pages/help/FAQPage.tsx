@@ -7,91 +7,93 @@ import { Input } from "@/components/ui/input";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { HelpLayout } from "@/components/help/HelpLayout";
-
-const faqCategories = [
-  {
-    name: "Account & Setup",
-    badge: "Popular",
-    questions: [
-      {
-        q: "Can I change my email address?",
-        a: "Yes, you can update your email address in your account settings. Go to Account > Settings > Profile Information to make changes."
-      },
-      {
-        q: "How do I reset my password?",
-        a: "Click on 'Forgot Password' on the login page, enter your email, and we'll send you a password reset link."
-      }
-    ]
-  },
-  {
-    name: "Content Creation",
-    badge: "Essential",
-    questions: [
-      {
-        q: "What types of content can I create?",
-        a: "Genius UGC supports creating various types of user-generated content including social media posts, product environment demonstrations, product positionings, and marketing materials using AI-powered tools."
-      },
-      {
-        q: "How does the AI content generation work?",
-        a: "Our Genius AI analyzes your input prompts and preferences to generate relevant, high-quality content. You can customize the light, style, and format to match your desire."
-      },
-      {
-        q: "Can I edit generated content?",
-        a: "For the moment you cannot! We are working on developing the ProduktPix with a goal to become the number one mobile marketing agent in order to quickly and efficiently help people sell their products."
-      },
-      {
-        q: "What file formats are supported?",
-        a: "We support popular formats including JPG, PNG for images, and various text formats for written content."
-      }
-    ]
-  },
-  {
-    name: "Billing & Plans",
-    badge: "Important",
-    questions: [
-      {
-        q: "What payment methods do you accept?",
-        a: "We accept all major credit cards Visa, MasterCard and American Express for your convenience."
-      },
-      {
-        q: "Can I cancel my subscription anytime?",
-        a: "Yes, you can cancel your subscription at any time from your billing settings. Your access will continue until the end of your current billing period."
-      },
-      {
-        q: "Do you offer refunds?",
-        a: "We offer a 14-day money-back guarantee for new subscribers. Contact our support team if you're not satisfied with the service."
-      },
-      {
-        q: "What happens when I reach my usage limit?",
-        a: "When you reach your plan's limit, you can either upgrade to a higher plan or wait for your next billing cycle to reset your usage."
-      }
-    ]
-  },
-  {
-    name: "Technical Support",
-    questions: [
-      {
-        q: "How long does generating takes to complete?",
-        a: "Generation times can vary based on complexity and server load. Most content is generated within 30-60 seconds. If you experience longer delays, try refreshing the page."
-      },
-      {
-        q: "My generated content doesn't match my request",
-        a: "Try being more specific in your details and audience. Include details about usability, size, niched target audience, and specific requirements for better results."
-      },
-      {
-        q: "Can I use the platform on mobile devices?",
-        a: "Yes! Genius UGC is fully responsive and works great on mobile devices, tablets, and desktop computers."
-      },
-      {
-        q: "How do I report a bug or issue?",
-        a: "You can report bugs through our support contact form or email us directly. Please include details about what you were doing when the issue occurred."
-      }
-    ]
-  }
-];
+import { useTranslation } from "react-i18next";
 
 const FAQPage = () => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
+
+  const faqCategories = [
+    {
+      name: t('help.faq.categories.accountSetup.name'),
+      badge: t('help.faq.categories.accountSetup.badge'),
+      questions: [
+        {
+          q: t('help.faq.categories.accountSetup.questions.changeEmail.q'),
+          a: t('help.faq.categories.accountSetup.questions.changeEmail.a')
+        },
+        {
+          q: t('help.faq.categories.accountSetup.questions.resetPassword.q'),
+          a: t('help.faq.categories.accountSetup.questions.resetPassword.a')
+        }
+      ]
+    },
+    {
+      name: t('help.faq.categories.contentCreation.name'),
+      badge: t('help.faq.categories.contentCreation.badge'),
+      questions: [
+        {
+          q: t('help.faq.categories.contentCreation.questions.contentTypes.q'),
+          a: t('help.faq.categories.contentCreation.questions.contentTypes.a')
+        },
+        {
+          q: t('help.faq.categories.contentCreation.questions.aiGeneration.q'),
+          a: t('help.faq.categories.contentCreation.questions.aiGeneration.a')
+        },
+        {
+          q: t('help.faq.categories.contentCreation.questions.editContent.q'),
+          a: t('help.faq.categories.contentCreation.questions.editContent.a')
+        },
+        {
+          q: t('help.faq.categories.contentCreation.questions.fileFormats.q'),
+          a: t('help.faq.categories.contentCreation.questions.fileFormats.a')
+        }
+      ]
+    },
+    {
+      name: t('help.faq.categories.billingPlans.name'),
+      badge: t('help.faq.categories.billingPlans.badge'),
+      questions: [
+        {
+          q: t('help.faq.categories.billingPlans.questions.paymentMethods.q'),
+          a: t('help.faq.categories.billingPlans.questions.paymentMethods.a')
+        },
+        {
+          q: t('help.faq.categories.billingPlans.questions.cancelSubscription.q'),
+          a: t('help.faq.categories.billingPlans.questions.cancelSubscription.a')
+        },
+        {
+          q: t('help.faq.categories.billingPlans.questions.refunds.q'),
+          a: t('help.faq.categories.billingPlans.questions.refunds.a')
+        },
+        {
+          q: t('help.faq.categories.billingPlans.questions.usageLimit.q'),
+          a: t('help.faq.categories.billingPlans.questions.usageLimit.a')
+        }
+      ]
+    },
+    {
+      name: t('help.faq.categories.technicalSupport.name'),
+      questions: [
+        {
+          q: t('help.faq.categories.technicalSupport.questions.generationTime.q'),
+          a: t('help.faq.categories.technicalSupport.questions.generationTime.a')
+        },
+        {
+          q: t('help.faq.categories.technicalSupport.questions.contentMismatch.q'),
+          a: t('help.faq.categories.technicalSupport.questions.contentMismatch.a')
+        },
+        {
+          q: t('help.faq.categories.technicalSupport.questions.mobileSupport.q'),
+          a: t('help.faq.categories.technicalSupport.questions.mobileSupport.a')
+        },
+        {
+          q: t('help.faq.categories.technicalSupport.questions.reportBug.q'),
+          a: t('help.faq.categories.technicalSupport.questions.reportBug.a')
+        }
+      ]
+    }
+  ];
 
   const filteredCategories = faqCategories.map(category => ({
     ...category,
@@ -103,20 +105,20 @@ const FAQPage = () => {
   })).filter(category => category.questions.length > 0);
 
   return (
-    <HelpLayout title="Frequently Asked Questions" breadcrumbTitle="FAQ">
+    <HelpLayout title={t('help.faq.title')} breadcrumbTitle="FAQ">
       <div className="space-y-8">
         {/* Search Section */}
         <div className="space-y-4">
           <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold">How can we help you?</h2>
+            <h2 className="text-2xl font-bold">{t('help.faq.subtitle')}</h2>
             <p className="text-muted-foreground">
-              Search our knowledge base or browse categories below
+              {t('help.faq.description')}
             </p>
           </div>
           <div className="relative max-w-md mx-auto">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search questions..."
+              placeholder={t('help.faq.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -156,15 +158,15 @@ const FAQPage = () => {
           ) : (
             <Card className="text-center p-8">
               <CardContent className="space-y-4">
-                <h3 className="text-lg font-medium">No results found</h3>
+                <h3 className="text-lg font-medium">{t('help.faq.noResults.title')}</h3>
                 <p className="text-muted-foreground">
-                  Try adjusting your search terms or browse all categories
+                  {t('help.faq.noResults.description')}
                 </p>
                 <Button 
                   variant="outline" 
                   onClick={() => setSearchTerm("")}
                 >
-                  Clear Search
+                  {t('help.faq.noResults.clearSearch')}
                 </Button>
               </CardContent>
             </Card>
@@ -176,17 +178,17 @@ const FAQPage = () => {
           <CardContent className="p-6 text-center space-y-4">
             <MessageCircle className="h-12 w-12 mx-auto text-primary" />
             <div className="space-y-2">
-              <h3 className="text-xl font-semibold">Still need help?</h3>
+              <h3 className="text-xl font-semibold">{t('help.faq.stillNeedHelp.title')}</h3>
               <p className="text-muted-foreground">
-                Can't find what you're looking for? Our support team is here to help.
+                {t('help.faq.stillNeedHelp.description')}
               </p>
             </div>
             <div className="flex gap-2 justify-center">
               <Button asChild variant="outline">
-                <Link to="/account">Contact Support</Link>
+                <Link to="/account">{t('help.faq.stillNeedHelp.contactSupport')}</Link>
               </Button>
               <Button asChild>
-                <Link to="/help/getting-started">Getting Started Guide</Link>
+                <Link to="/help/getting-started">{t('help.faq.stillNeedHelp.gettingStarted')}</Link>
               </Button>
             </div>
           </CardContent>

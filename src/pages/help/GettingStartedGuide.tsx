@@ -4,83 +4,66 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { HelpLayout } from "@/components/help/HelpLayout";
-
-const steps = [
-  {
-    id: 1,
-    title: "Create Your Account",
-    description: "Sign up and verify your email to get started with Genius UGC",
-    icon: User,
-    completed: true,
-    action: "Go to Profile",
-    link: "/account"
-  },
-  {
-    id: 2,
-    title: "Explore the Create Section",
-    description: "Learn how to generate UGC content using our AI-powered tools",
-    icon: Sparkles,
-    completed: false,
-    action: "Start Creating",
-    link: "/create"
-  },
-  {
-    id: 3,
-    title: "Manage Your Library",
-    description: "Organize and access all your generated content in one place",
-    icon: Image,
-    completed: false,
-    action: "View Library",
-    link: "/library"
-  },
-  {
-    id: 4,
-    title: "Customize Settings",
-    description: "Personalize your experience and notification preferences",
-    icon: Settings,
-    completed: false,
-    action: "Open Settings",
-    link: "/account"
-  }
-];
-
-const tips = [
-  // {
-  //   title: "Start with Templates",
-  //   description: "Use our pre-built templates to create content faster and learn the platform."
-  // },
-  // {
-  //   title: "Save Your Favorites",
-  //   description: "Mark your best content as favorites for easy access later."
-  // },
-  {
-    title: "Explore Different Styles",
-    description: "Experiment with various AI models and settings to find your unique style."
-  },
-  {
-    title: "Join the Community",
-    description: "Connect with other creators and share your experiences."
-  }
-];
+import { useTranslation } from "react-i18next";
 
 const GettingStartedGuide = () => {
+  const { t } = useTranslation();
+
+  const steps = [
+    {
+      id: 1,
+      title: t('help.gettingStarted.steps.createAccount.title'),
+      description: t('help.gettingStarted.steps.createAccount.description'),
+      icon: User,
+      completed: true,
+      action: t('help.gettingStarted.steps.createAccount.action'),
+      link: "/account"
+    },
+    {
+      id: 2,
+      title: t('help.gettingStarted.steps.exploreCreate.title'),
+      description: t('help.gettingStarted.steps.exploreCreate.description'),
+      icon: Sparkles,
+      completed: false,
+      action: t('help.gettingStarted.steps.exploreCreate.action'),
+      link: "/create"
+    },
+    {
+      id: 3,
+      title: t('help.gettingStarted.steps.manageLibrary.title'),
+      description: t('help.gettingStarted.steps.manageLibrary.description'),
+      icon: Image,
+      completed: false,
+      action: t('help.gettingStarted.steps.manageLibrary.action'),
+      link: "/library"
+    },
+    {
+      id: 4,
+      title: t('help.gettingStarted.steps.customizeSettings.title'),
+      description: t('help.gettingStarted.steps.customizeSettings.description'),
+      icon: Settings,
+      completed: false,
+      action: t('help.gettingStarted.steps.customizeSettings.action'),
+      link: "/account"
+    }
+  ];
+
   return (
-    <HelpLayout title="Getting Started Guide" breadcrumbTitle="Getting Started">
+    <HelpLayout title={t('help.gettingStarted.title')} breadcrumbTitle={t('help.gettingStarted.title')}>
       <div className="space-y-8">
         {/* Welcome Section */}
         <div className="text-center space-y-4">
           <h2 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Welcome to Genius UGC! 🚀
+            {t('help.gettingStarted.welcome.title')}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Get up and running in minutes with our step-by-step guide. 
-            Create amazing UGC content with the power of AI.
+            {t('help.gettingStarted.welcome.description')}
           </p>
         </div>
 
         {/* Steps Section */}
         <div className="space-y-6">
-          <h3 className="text-xl font-semibold">Quick Setup Steps</h3>
+          <h3 className="text-xl font-semibold">{t('help.gettingStarted.steps.title')}</h3>
           <div className="grid gap-4">
             {steps.map((step) => {
               const Icon = step.icon;
@@ -97,7 +80,7 @@ const GettingStartedGuide = () => {
                           {step.completed && (
                             <Badge variant="secondary" className="bg-green-100 text-green-700">
                               <CheckCircle className="h-3 w-3 mr-1" />
-                              Completed
+                              {t('help.gettingStarted.steps.completed')}
                             </Badge>
                           )}
                         </div>
@@ -139,13 +122,13 @@ const GettingStartedGuide = () => {
         {/* Next Steps */}
         <Card className="bg-gradient-primary text-primary-foreground">
           <CardContent className="p-6 text-center space-y-4">
-            <h3 className="text-xl font-semibold">Ready to Create?</h3>
+            <h3 className="text-xl font-semibold">{t('help.gettingStarted.readyToCreate.title')}</h3>
             <p className="opacity-90">
-              Now that you're set up, let's create your first UGC content!
+              {t('help.gettingStarted.readyToCreate.description')}
             </p>
             <Button asChild variant="secondary" size="lg">
               <Link to="/create">
-                Start Creating Content
+                {t('help.gettingStarted.readyToCreate.action')}
                 <Sparkles className="h-4 w-4 ml-2" />
               </Link>
             </Button>
@@ -155,16 +138,16 @@ const GettingStartedGuide = () => {
         {/* Need More Help */}
         <Card className="border-dashed">
           <CardContent className="p-6 text-center space-y-3">
-            <h4 className="font-medium">Need More Help?</h4>
+            <h4 className="font-medium">{t('help.gettingStarted.needMoreHelp.title')}</h4>
             <p className="text-sm text-muted-foreground">
-              Explore our other resources or contact support
+              {t('help.gettingStarted.needMoreHelp.description')}
             </p>
             <div className="flex gap-2 justify-center">
               <Button asChild variant="outline" size="sm">
-                <Link to="/help/faq">View FAQ</Link>
+                <Link to="/help/faq">{t('help.gettingStarted.needMoreHelp.viewFaq')}</Link>
               </Button>
               <Button asChild variant="outline" size="sm">
-                <Link to="/help/tutorials">Watch Tutorials</Link>
+                <Link to="/help/tutorials">{t('help.gettingStarted.needMoreHelp.watchTutorials')}</Link>
               </Button>
             </div>
           </CardContent>
