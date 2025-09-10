@@ -4,9 +4,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useUserStats } from "@/hooks/useUserStats";
 import { BarChart3, Image, Heart, Coins } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 export const UserStatsPanel = () => {
   const { stats, loading, error } = useUserStats();
+  const { t } = useTranslation();
 
   if (loading) {
     return (
@@ -14,7 +16,7 @@ export const UserStatsPanel = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
-            Your Activity
+            {t('userStats.title')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -35,15 +37,15 @@ export const UserStatsPanel = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
-            Your Activity
+            {t('userStats.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-4 space-y-4">
-            <p className="text-muted-foreground">Failed to load statistics</p>
+            <p className="text-muted-foreground">{t('userStats.errorLoading')}</p>
             <p className="text-xs text-muted-foreground">{error}</p>
             <Button onClick={() => window.location.reload()} variant="outline" size="sm">
-              Retry
+              {t('userStats.retry')}
             </Button>
           </div>
         </CardContent>
@@ -61,7 +63,7 @@ export const UserStatsPanel = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-primary" />
-          Your Activity
+          {t('userStats.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -70,7 +72,7 @@ export const UserStatsPanel = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Coins className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Credits</span>
+              <span className="text-sm font-medium">{t('userStats.credits')}</span>
             </div>
             <span className="text-sm text-muted-foreground">
               {stats.creditsBalance} / {stats.totalCredits}
@@ -84,7 +86,7 @@ export const UserStatsPanel = () => {
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <Image className="h-4 w-4 text-primary" />
-              <span className="text-xs text-muted-foreground">Total Images</span>
+              <span className="text-xs text-muted-foreground">{t('userStats.totalImages')}</span>
             </div>
             <p className="text-2xl font-bold">{stats.totalImages}</p>
           </div>
@@ -92,7 +94,7 @@ export const UserStatsPanel = () => {
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <Image className="h-4 w-4 text-primary" />
-              <span className="text-xs text-muted-foreground">This Month</span>
+              <span className="text-xs text-muted-foreground">{t('userStats.thisMonth')}</span>
             </div>
             <p className="text-2xl font-bold">{stats.imagesThisMonth}</p>
           </div>
@@ -100,7 +102,7 @@ export const UserStatsPanel = () => {
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <Heart className="h-4 w-4 text-primary" />
-              <span className="text-xs text-muted-foreground">Favorites</span>
+              <span className="text-xs text-muted-foreground">{t('userStats.favorites')}</span>
             </div>
             <p className="text-2xl font-bold">{stats.favoritesCount}</p>
           </div>
@@ -108,7 +110,7 @@ export const UserStatsPanel = () => {
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <Coins className="h-4 w-4 text-primary" />
-              <span className="text-xs text-muted-foreground">Used</span>
+              <span className="text-xs text-muted-foreground">{t('userStats.used')}</span>
             </div>
             <p className="text-2xl font-bold">{stats.creditsUsed}</p>
           </div>

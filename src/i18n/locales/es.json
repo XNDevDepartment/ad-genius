@@ -389,6 +389,16 @@
       "accountSettings": "Configuración de Cuenta"
     }
   },
+  "userStats": {
+    "title": "Tu Actividad",
+    "credits": "Créditos",
+    "totalImages": "Total de Imágenes",
+    "thisMonth": "Este Mes",
+    "favorites": "Favoritos",
+    "used": "Usado",
+    "errorLoading": "Error al cargar estadísticas",
+    "retry": "Reintentar"
+  },
   "ugc": {
     "title": "Crear Contenido UGC",
     "productImage": {

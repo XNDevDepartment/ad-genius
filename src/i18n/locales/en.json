@@ -338,6 +338,16 @@
     "toggleTheme": "Toggle theme",
     "changeLanguage": "Change language"
   },
+  "userStats": {
+    "title": "Your Activity",
+    "credits": "Credits",
+    "totalImages": "Total Images",
+    "thisMonth": "This Month",
+    "favorites": "Favorites",
+    "used": "Used",
+    "errorLoading": "Failed to load statistics",
+    "retry": "Retry"
+  },
   "ugc": {
     "title": "Create UGC Content",
     "productImage": {
