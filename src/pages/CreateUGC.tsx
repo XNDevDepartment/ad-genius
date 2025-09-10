@@ -86,6 +86,9 @@ const CreateUGC = () => {
   const [niche, setNiche] = useState("");
   const [aiScenarios, setAiScenarios] = useState<AIScenario[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<AIScenario | null>({'idea': "", "small-description" : "", "description": ""});
+  
+  // Check if a scenario is actually selected (has content in the idea field)
+  const hasSelectedScenario = selectedScenario && selectedScenario.idea && selectedScenario.idea.trim().length > 0;
   const [isLoadingScenarios, setIsLoadingScenarios] = useState(false);
   const [threadId, setThreadId] = useState<string | null>(null);
   const [productIdentification, setProductIdentification] = useState("");
@@ -565,7 +568,7 @@ const CreateUGC = () => {
     });
 
   const handleGenerate = async () => {
-    if (!productImage || !selectedScenario) {
+    if (!productImage || !hasSelectedScenario) {
       toast({
         title: 'Missing information',
         description: 'Please upload a product image and select a scenario.',
@@ -1013,7 +1016,7 @@ const CreateUGC = () => {
                       ref={scnRef}
                       id="scenario description"
                       placeholder={'Here will fall the scenario description'}
-                      value={selectedScenario.description}
+                      value={selectedScenario?.description || ''}
                       onChange={(e) => setSelectedScenario((val) => { return {...val, 'description': e.target.value }})}
                       className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full text-base md:text-sm"
                       style={{ lineHeight: '1.25rem, font-size: 16px' }}
@@ -1272,11 +1275,11 @@ const CreateUGC = () => {
 
                 <div className="border-t pt-4">
                   <Button 
-                    variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
+                    variant={!productImage || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
                     size="lg" 
                     className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
                     onClick={handleGenerate}
-                    disabled={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages)}
+                    disabled={!productImage || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages)}
                   >
                     {isGenerating ? (
                       <>
@@ -1330,11 +1333,11 @@ const CreateUGC = () => {
 
               {/* Bottom row: Generate button */}
               <Button 
-                    variant={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
+                    variant={!productImage || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
                     size="lg" 
                     className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
                     onClick={handleGenerate}
-                    disabled={!productImage || !selectedScenario || isGenerating || !canGenerateImages(numImages)}
+                    disabled={!productImage || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages)}
                   >
                     {isGenerating ? (
                       <>
@@ -1375,7 +1378,7 @@ const CreateUGC = () => {
             remainingCredits={remainingCredits}
             totalCredits={getTotalCredits()}
             calculateImageCost={calculateImageCost}
-            canGenerate={!!productImage && !!selectedScenario && !isGenerating && canGenerateImages(numImages)}
+            canGenerate={!!productImage && hasSelectedScenario && !isGenerating && canGenerateImages(numImages)}
             onGenerate={handleGenerate}
             isGenerating={isGenerating}
             open={settingsOpen}
