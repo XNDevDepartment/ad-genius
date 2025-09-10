@@ -120,7 +120,7 @@ const GettingStartedGuide = () => {
         </div>
 
         {/* Tips Section */}
-        <div className="space-y-6">
+        {/* <div className="space-y-6">
           <h3 className="text-xl font-semibold">Pro Tips for Success</h3>
           <div className="grid gap-4 md:grid-cols-2">
             {tips.map((tip, index) => (
@@ -134,7 +134,7 @@ const GettingStartedGuide = () => {
               </Card>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Next Steps */}
         <Card className="bg-gradient-primary text-primary-foreground">

@@ -6,31 +6,31 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { cn } from "@/lib/utils";
 
 const helpNavItems = [
-  { 
-    id: "getting-started", 
-    label: "Getting Started", 
-    icon: BookOpen, 
+  {
+    id: "getting-started",
+    label: "Getting Started",
+    icon: BookOpen,
     path: "/help/getting-started",
     description: "Quick setup guide"
   },
-  { 
-    id: "faq", 
-    label: "FAQ", 
-    icon: HelpCircle, 
+  {
+    id: "faq",
+    label: "FAQ",
+    icon: HelpCircle,
     path: "/help/faq",
     description: "Common questions"
   },
-  { 
-    id: "tutorials", 
-    label: "Video Tutorials", 
-    icon: Video, 
-    path: "/help/tutorials",
-    description: "Learn with videos"
-  },
-  // { 
-  //   id: "api-docs", 
-  //   label: "API Documentation", 
-  //   icon: Code, 
+  // {
+  //   id: "tutorials",
+  //   label: "Video Tutorials",
+  //   icon: Video,
+  //   path: "/help/tutorials",
+  //   description: "Learn with videos"
+  // },
+  // {
+  //   id: "api-docs",
+  //   label: "API Documentation",
+  //   icon: Code,
   //   path: "/help/api-docs",
   //   description: "Technical reference"
   // },

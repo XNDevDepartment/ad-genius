@@ -51,7 +51,7 @@ const faqCategories = [
     questions: [
       {
         q: "What payment methods do you accept?",
-        a: "We accept all major credit cards (Visa, MasterCard, American Express) and PayPal for your convenience."
+        a: "We accept all major credit cards Visa, MasterCard and American Express for your convenience."
       },
       {
         q: "Can I cancel my subscription anytime?",
@@ -71,7 +71,7 @@ const faqCategories = [
     name: "Technical Support",
     questions: [
       {
-        q: "Why is content generation taking so long?",
+        q: "How long does generating takes to complete?",
         a: "Generation times can vary based on complexity and server load. Most content is generated within 30-60 seconds. If you experience longer delays, try refreshing the page."
       },
       {
