@@ -76,7 +76,7 @@
 
   .gen-glow {
     position: relative;
-    overflow: hidden;
+    overflow: default;
   }
 
   .gen-glow::after {
@@ -93,5 +93,3 @@
     animation: animateGlow 10s ease infinite;
     pointer-events: none;
   }
-  
-  

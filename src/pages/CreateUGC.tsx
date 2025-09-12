@@ -1206,8 +1206,8 @@ const CreateUGC = () => {
                         <ToggleGroupItem key={"minimal"} size="sm" className="text-xs px-2 py-1 bg-muted" value="minimal">{t('ugc.advancedSettings.style.minimalist')}</ToggleGroupItem>
                         <ToggleGroupItem key={"vibrant"} size="sm" className="text-xs px-2 py-1 bg-muted" value="vibrant">Vibrant</ToggleGroupItem>
                         <ToggleGroupItem key={"professional"} size="sm" className="text-xs px-2 py-1 bg-muted" value="professional">{t('ugc.advancedSettings.style.professional')}</ToggleGroupItem>
-                        <ToggleGroupItem key={"editorial"} size="sm" className="text-xs px-2 py-1 bg-muted" value="editorial">editorial</ToggleGroupItem>
-                        <ToggleGroupItem key={"natural"} size="sm" className="text-xs px-2 py-1 bg-muted" value="natural">natural</ToggleGroupItem>
+                        <ToggleGroupItem key={"editorial"} size="sm" className="text-xs px-2 py-1 bg-muted" value="editorial">Editorial</ToggleGroupItem>
+                        <ToggleGroupItem key={"natural"} size="sm" className="text-xs px-2 py-1 bg-muted" value="natural">Natural</ToggleGroupItem>
                     </ToggleGroup>
                   </div>
 
