@@ -63,6 +63,7 @@ export function useImageJob(): UseImageJobReturn {
     if (!job?.id) return;
 
     const unsubscribe = subscribeJob(job.id, (updatedJob: JobRow) => {
+      console.log(`[useImageJob] Job update received:`, updatedJob);
       setJob(updatedJob);
 
       // Clear watchdog once we see any progress or different status
@@ -79,7 +80,10 @@ export function useImageJob(): UseImageJobReturn {
       }
 
       if (updatedJob.status === 'failed') {
-        toast.error(`Image generation failed: ${updatedJob.error || 'Unknown error'}`);
+        const errorMsg = `Image generation failed: ${updatedJob.error || 'Unknown error'}`;
+        console.error(`[useImageJob] Job failed:`, errorMsg);
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     });
 
@@ -103,12 +107,15 @@ export function useImageJob(): UseImageJobReturn {
   useEffect(() => {
     if (!job?.id) return;
 
+    console.log(`[useImageJob] Setting up images realtime subscription for job ${job.id}`);
+
     const channel = supabase
       .channel(`ugc_images_job_${job.id}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'ugc_images', filter: `job_id=eq.${job.id}` },
         (payload) => {
+          console.log(`[useImageJob] New image received:`, payload);
           const incoming = payload.new as UgcImageRow;
 
           setImages((prev) => {
@@ -119,20 +126,31 @@ export function useImageJob(): UseImageJobReturn {
                 (p) => (p as any)?.meta?.index === inIdx && (p as any)?.meta?.placeholder
               );
               if (pos !== -1) {
+                console.log(`[useImageJob] Replacing placeholder at index ${inIdx}`);
                 const next = prev.slice();
                 next[pos] = incoming;
                 return next;
               }
             }
             // Else append if not already present
-            if (prev.some((p) => p.id === incoming.id)) return prev;
+            if (prev.some((p) => p.id === incoming.id)) {
+              console.log(`[useImageJob] Image already exists, skipping`);
+              return prev;
+            }
+            console.log(`[useImageJob] Adding new image to list`);
             return [...prev, incoming];
           });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`[useImageJob] Images realtime subscription status: ${status}`);
+        if (status === 'CHANNEL_ERROR') {
+          console.error(`[useImageJob] Images realtime subscription error for job ${job.id}`);
+        }
+      });
 
     return () => {
+      console.log(`[useImageJob] Cleaning up images realtime subscription for job ${job.id}`);
       supabase.removeChannel(channel);
     };
   }, [job?.id]);
@@ -140,28 +158,43 @@ export function useImageJob(): UseImageJobReturn {
   /** Fetch all images for a job (used on completion and first load) */
   const loadJobImages = async (jobId: string) => {
     try {
+      console.log(`[useImageJob] Loading images for job ${jobId}`);
       const { images: jobImages } = await getJobImages(jobId);
+      console.log(`[useImageJob] Loaded ${jobImages.length} images for job ${jobId}`, jobImages);
+      
       // If we had placeholders, merge by index to keep order stable
       setImages((prev) => {
         if (!prev.some(p => (p as any)?.meta?.placeholder)) {
+          console.log(`[useImageJob] No placeholders, replacing all images`);
           return jobImages;
         }
+        
+        console.log(`[useImageJob] Merging ${jobImages.length} loaded images with ${prev.length} placeholders`);
         const next = [...prev];
         for (const img of jobImages) {
           const idx = (img as any)?.meta?.index as number | undefined;
           if (typeof idx === 'number') {
             const p = next.findIndex((x) => (x as any)?.meta?.index === idx);
-            if (p !== -1) next[p] = img as any;
-            else next.push(img as any);
+            if (p !== -1) {
+              console.log(`[useImageJob] Replacing placeholder at index ${idx}`);
+              next[p] = img as any;
+            } else {
+              console.log(`[useImageJob] Adding image at new index ${idx}`);
+              next.push(img as any);
+            }
           } else if (!next.some((x) => x.id === (img as any).id)) {
+            console.log(`[useImageJob] Adding image without index`);
             next.push(img as any);
           }
         }
-        return next.filter(Boolean);
+        const result = next.filter(Boolean);
+        console.log(`[useImageJob] Final merged result: ${result.length} images`);
+        return result;
       });
     } catch (err) {
-      console.error('Failed to load job images:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load images');
+      const errorMsg = err instanceof Error ? err.message : 'Failed to load images';
+      console.error('[useImageJob] Failed to load job images:', err);
+      setError(errorMsg);
     }
   };
 

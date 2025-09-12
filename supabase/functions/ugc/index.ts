@@ -292,8 +292,14 @@ async function generateImages(jobId: string, supabase: SupabaseClient) {
       .from("image_jobs")
       .select("status")
       .eq("id", jobId)
-      .single();
-    if (existing?.status === "processing") return json({ message: "Already processing" });
+      .maybeSingle(); // Use maybeSingle to handle missing jobs gracefully
+      
+    if (existing?.status === "processing") {
+      log("Job already processing", { jobId });
+      return json({ message: "Already processing" });
+    }
+    
+    log("Job not found or already processed", { jobId, existing });
     return errorJson("Job not found or already processed", 404);
   }
 
@@ -304,21 +310,27 @@ async function generateImages(jobId: string, supabase: SupabaseClient) {
   try {
     // prepare source image (optional)
     const sourceImageUrl = await getSignedSourceUrl(job.source_image_id, supabase);
+    log("Source image prepared", { jobId, hasSourceImage: !!sourceImageUrl });
 
     // loop images
     for (let i = 0; i < (job.total ?? 1); i++) {
       try {
+        log("Starting image generation", { jobId, imageIndex: i });
         await generateSingleImage(job, i, sourceImageUrl, supabase);
         completed++;
         const progress = Math.floor((completed / (job.total ?? 1)) * 100);
+        
+        log("Image generation completed", { jobId, imageIndex: i, completed, progress });
+        
         await supabase
           .from("image_jobs")
           .update({ completed, progress, updated_at: new Date().toISOString() })
           .eq("id", jobId);
       } catch (e: any) {
         failed++;
-        errors.push(e?.message ?? String(e));
-        log("Image generation failed", { jobId, index: i, error: e?.message ?? String(e) });
+        const errorMsg = e?.message ?? String(e);
+        errors.push(errorMsg);
+        log("Image generation failed", { jobId, index: i, error: errorMsg });
       }
     }
 
@@ -332,6 +344,8 @@ async function generateImages(jobId: string, supabase: SupabaseClient) {
       updated_at: new Date().toISOString(),
     };
     if (finalStatus === "failed") update.error = errors.join("; ");
+    
+    log("Job processing completed", { jobId, finalStatus, completed, failed });
     await supabase.from("image_jobs").update(update).eq("id", jobId);
 
     // partial refunds (skip admins)
@@ -339,6 +353,7 @@ async function generateImages(jobId: string, supabase: SupabaseClient) {
       const { data: isAdmin } = await supabase.rpc("is_user_admin", { check_user_id: job.user_id });
       if (!isAdmin) {
         const refundAmount = failed * calculateImageCost({ ...(job.settings ?? {}), number: 1 });
+        log("Issuing partial refund", { jobId, refundAmount, failed });
         await supabase.rpc("refund_user_credits", {
           p_user_id: job.user_id,
           p_amount: refundAmount,
@@ -347,12 +362,16 @@ async function generateImages(jobId: string, supabase: SupabaseClient) {
       }
     }
   } catch (e: any) {
+    const errorMsg = e?.message ?? String(e);
+    log("Job processing catastrophic failure", { jobId, error: errorMsg });
+    
     await supabase
       .from("image_jobs")
       .update({
         status: "failed",
-        error: e?.message ?? String(e),
+        error: errorMsg,
         finished_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       })
       .eq("id", jobId);
 
@@ -360,6 +379,7 @@ async function generateImages(jobId: string, supabase: SupabaseClient) {
     const { data: isAdmin } = await supabase.rpc("is_user_admin", { check_user_id: job.user_id });
     if (!isAdmin) {
       const cost = calculateImageCost(job.settings ?? {}) * ((job.settings?.number ?? job.total) || 1);
+      log("Issuing full refund", { jobId, cost });
       await supabase.rpc("refund_user_credits", {
         p_user_id: job.user_id,
         p_amount: cost,
