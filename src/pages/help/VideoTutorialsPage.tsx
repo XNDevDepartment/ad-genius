@@ -129,13 +129,13 @@ const VideoTutorialsPage = () => {
         <div className="text-center space-y-4">
           <h2 className="text-2xl font-bold">Learn with Video Tutorials</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Master Genius UGC with our comprehensive video library. 
+            Master ProduktPix with our comprehensive video library.
             From beginner basics to advanced techniques.
           </p>
         </div>
 
         {/* Featured Workshops */}
-        <div className="space-y-4">
+        {/* <div className="space-y-4">
           <h3 className="text-xl font-semibold">Featured Workshops</h3>
           <div className="grid gap-4 md:grid-cols-2">
             {featuredWorkshops.map((workshop, index) => {
@@ -176,10 +176,10 @@ const VideoTutorialsPage = () => {
               );
             })}
           </div>
-        </div>
+        </div> */}
 
         {/* Tutorial Categories */}
-        <div className="space-y-4">
+        {/* <div className="space-y-4">
           <h3 className="text-xl font-semibold">Browse by Skill Level</h3>
           <Tabs defaultValue="beginner" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
@@ -235,10 +235,10 @@ const VideoTutorialsPage = () => {
               </TabsContent>
             ))}
           </Tabs>
-        </div>
+        </div> */}
 
         {/* Quick Tips */}
-        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+        {/* <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Palette className="h-5 w-5" />
@@ -273,7 +273,7 @@ const VideoTutorialsPage = () => {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </HelpLayout>
   );
