@@ -170,16 +170,18 @@ export default function GeneratedImagesRows({
       })}
 
       {/* Bottom CTA */}
-      <div className="pt-2 flex justify-center">
-        <Button
-          size="lg"
-          className="w-full sm:w-auto rounded-full px-6"
-          onClick={onStartFromScratch}
-        >
-          Start from scratch
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </div>
+      {(!isGenerating || images.length > 0) && (
+        <div className="pt-2 flex justify-center">
+          <Button
+            size="lg"
+            className="w-full sm:w-auto rounded-full px-6"
+            onClick={onStartFromScratch}
+          >
+            Start from scratch
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
