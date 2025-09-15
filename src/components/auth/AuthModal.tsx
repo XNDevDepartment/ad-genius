@@ -11,7 +11,7 @@ import NavigationHeader from '../NavigationHeader';
 
 
 interface AuthModalProps {
-  onSuccess?: () => void;
+  onSuccess?: (email?: string) => void;
   isOpen?: boolean;
   onClose?: () => void;
   defaultMode?: 'signin' | 'signup';
@@ -53,7 +53,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
           }
         } else {
           toast.success('Conta criada com sucesso! Verifique seu email.');
-          onSuccess?.();
+          onSuccess?.(formData.email);
           onClose?.();
         }
       } else {

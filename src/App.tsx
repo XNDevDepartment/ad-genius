@@ -21,6 +21,7 @@ const Account = lazy(() => import("./pages/Account"));
 const SignIn = lazy(() => import("./pages/SignIn"));
 const SignUp = lazy(() => import("./pages/SignUp"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const EmailConfirmation = lazy(() => import("./pages/EmailConfirmation"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const GettingStartedGuide = lazy(() => import("./pages/help/GettingStartedGuide"));
 const FAQPage = lazy(() => import("./pages/help/FAQPage"));
@@ -104,6 +105,11 @@ const App = () => {
                   </Suspense>
                 } />
               </Route>
+              <Route path="/email-confirmation" element={
+                <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                  <EmailConfirmation />
+                </Suspense>
+              } />
               <Route path="/reset-password" element={
                 <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
                   <ResetPassword />

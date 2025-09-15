@@ -22,6 +22,7 @@ interface AuthContextType {
   updateProfile: (updates: any) => Promise<{ error?: any }>;
   resetPassword: (email: string) => Promise<{ error?: any }>;
   refreshSubscription: () => Promise<void>;
+  resendConfirmationEmail: (email: string) => Promise<{ error?: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -163,6 +164,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error };
   };
 
+  const resendConfirmationEmail = async (email: string) => {
+    const redirectUrl = `${window.location.origin}/`;
+    
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: redirectUrl
+      }
+    });
+    return { error };
+  };
+
   const value = {
     user,
     session,
@@ -173,9 +187,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signUp,
     signInWithGoogle,
     signOut,
-    updateProfile,
-    resetPassword,
-    refreshSubscription,
+        updateProfile,
+        resetPassword,
+        refreshSubscription,
+        resendConfirmationEmail,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -13,8 +13,12 @@ const SignUp = () => {
     }
   }, [user, navigate]);
 
-  const handleSuccess = () => {
-    navigate('/');
+  const handleSuccess = (email?: string) => {
+    if (email) {
+      navigate('/email-confirmation', { state: { email } });
+    } else {
+      navigate('/');
+    }
   };
 
   return (
