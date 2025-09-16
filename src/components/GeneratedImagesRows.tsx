@@ -94,14 +94,14 @@ export default function GeneratedImagesRows({
     }else if (imageOrientation === '2:3'){
      setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-72 aspect-[2/3]")
     }else{
-      setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-full max-w-80 aspect-[3/2]");
+      setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-[22rem] aspect-[3/2]");
 
     }
   }, [imageOrientation]);
 
   return (
     <div className="space-y-4">
-      {Array.from({ length: slots }).map((_, i) => {
+      {Array.from({ length: 1 }).map((_, i) => {
         const img = images[i];
 
         return (
@@ -111,7 +111,7 @@ export default function GeneratedImagesRows({
           >
             <CardContent className="p-4">
               {/* Mobile: stack; ≥sm: row */}
-              <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="flex flex-col  sm:flex-row items-center gap-4">
                 {/* Left: thumbnail */}
                 <div className="shrink-0">
                   {img?.url ? (
