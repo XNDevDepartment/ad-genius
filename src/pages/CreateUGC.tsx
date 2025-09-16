@@ -224,15 +224,53 @@ const CreateUGC = () => {
   useEffect(() => {
     const savedJobId = localStorage.getItem('currentJobId');
     const savedStage = localStorage.getItem('currentStage');
+    const jobMetadata = localStorage.getItem('jobMetadata');
     
-    // Priority: 1) saved job, 2) active job from server
+    // Enhanced mobile recovery with metadata fallback
     if (savedJobId && !job) {
-      // Load the job using the existing hook instance
-      loadJob(savedJobId).catch(console.error);
-      
-      // Restore stage if saved
-      if (savedStage === 'generating' || savedStage === 'results') {
-        setStage(savedStage as 'generating' | 'results');
+      try {
+        // Parse saved job metadata for immediate UI restoration
+        if (jobMetadata) {
+          const metadata = JSON.parse(jobMetadata);
+          setNumImages(metadata.numImages || 1);
+          
+          // Set placeholders immediately for better mobile UX
+          if (metadata.numImages && (savedStage === 'generating' || savedStage === 'results')) {
+            setStage('generating');
+            // Create minimal placeholders to show loading state
+            const placeholders = Array.from({ length: metadata.numImages }, (_, i) => ({
+              id: `recovery-placeholder-${i}`,
+              url: '',
+              prompt: '',
+              selected: false,
+              format: 'webp'
+            }));
+            setGeneratedImages(placeholders);
+          }
+        }
+        
+        // Load the actual job data
+        loadJob(savedJobId).catch((error) => {
+          console.error('Failed to recover job on mobile:', error);
+          // Fallback to active job if recovery fails
+          if (activeJob) {
+            loadJob(activeJob.id).catch(console.error);
+          } else {
+            // Clear corrupted state
+            localStorage.removeItem('currentJobId');
+            localStorage.removeItem('currentStage');
+            localStorage.removeItem('jobMetadata');
+          }
+        });
+        
+        // Restore stage if saved
+        if (savedStage === 'generating' || savedStage === 'results') {
+          setStage(savedStage as 'generating' | 'results');
+        }
+      } catch (error) {
+        console.error('Error parsing job metadata:', error);
+        // Clear corrupted localStorage data
+        localStorage.removeItem('jobMetadata');
       }
     } else if (!savedJobId && activeJob && !job) {
       // Load active job from server if no local job
@@ -253,6 +291,7 @@ const CreateUGC = () => {
       // Clear localStorage when job finishes
       localStorage.removeItem('currentJobId');
       localStorage.removeItem('currentStage');
+      localStorage.removeItem('jobMetadata');
       
       // Switch to results stage for completed jobs
       if (job?.status === 'completed' && stage !== 'results') {
@@ -771,9 +810,27 @@ const CreateUGC = () => {
         source_image_id: sourceImageId || undefined
       });
 
-      // Save job ID and stage for recovery
+      // Save job ID, stage and metadata for mobile recovery
       localStorage.setItem('currentJobId', jobId);
       localStorage.setItem('currentStage', 'generating');
+      
+      // Enhanced mobile persistence with job metadata
+      const jobMetadata = {
+        id: jobId,
+        numImages: numImages,
+        settings: {
+          number: numImages,
+          quality: imageQuality,
+          orientation: imageOrientation,
+          style: style,
+          timeOfDay: timeOfDay,
+          highlight: highlight,
+          output_format: 'webp'
+        },
+        prompt: prompt,
+        createdAt: new Date().toISOString()
+      };
+      localStorage.setItem('jobMetadata', JSON.stringify(jobMetadata));
 
       // toast({
       //   title: 'Generation Started',
@@ -883,9 +940,10 @@ const CreateUGC = () => {
     setStage('setup');
     setPendingSlots(0);
     
-    // Clear localStorage
+    // Clear localStorage with mobile-specific cleanup
     localStorage.removeItem('currentJobId');
     localStorage.removeItem('currentStage');
+    localStorage.removeItem('jobMetadata');
     
     // Scroll to top
     setTimeout(() => {

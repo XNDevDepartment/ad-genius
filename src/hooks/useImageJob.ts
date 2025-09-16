@@ -43,7 +43,7 @@ function buildPlaceholders(count: number, payload: CreateJobPayload): UgcImageRo
     created_at: now,
     updated_at: now,
     meta: { index: i, placeholder: true, settings: payload.settings } as ImageMeta,
-  }) as unknown as UgcImageRow[]);
+  } satisfies UgcImageRow));
 }
 
 /** Deterministic merge by meta.index preserving array length */
@@ -218,6 +218,32 @@ export function useImageJob() {
     }
   }, []);
 
+  const loadJob = useCallback(async (jobId: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { job: jobData } = await getJob(jobId);
+      setJob(jobData);
+      
+      // Save job metadata for mobile persistence
+      const jobMetadata = {
+        id: jobData.id,
+        numImages: jobData.total,
+        settings: jobData.settings,
+        status: jobData.status,
+        createdAt: jobData.created_at
+      };
+      localStorage.setItem('jobMetadata', JSON.stringify(jobMetadata));
+      
+      await loadJobImages(jobId);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load job';
+      setError(message);
+    } finally {
+      if (isMountedRef.current) setLoading(false);
+    }
+  }, [loadJobImages]);
+
   const createJob = useCallback(async (payload: CreateJobPayload): Promise<string> => {
     setLoading(true);
     setError(null);
@@ -296,21 +322,6 @@ export function useImageJob() {
     }
   }, [loadJob]);
 
-  const loadJob = useCallback(async (jobId: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const { job: jobData } = await getJob(jobId);
-      setJob(jobData);
-      await loadJobImages(jobId);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load job';
-      setError(message);
-    } finally {
-      if (isMountedRef.current) setLoading(false);
-    }
-  }, [loadJobImages]);
-
   const cancelCurrentJob = useCallback(async () => {
     if (!job?.id) return;
     try {
@@ -340,6 +351,8 @@ export function useImageJob() {
     if (watchdogRef.current) clearTimeout(watchdogRef.current);
     watchdogRef.current = null;
     resumeAttemptsRef.current = 0;
+    // Clear mobile persistence metadata
+    localStorage.removeItem('jobMetadata');
   }, []);
 
   return {
