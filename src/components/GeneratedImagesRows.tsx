@@ -42,7 +42,7 @@ function GrainPlaceholder({ label = "Generating...", THUMB_CLASSES }: { label?: 
           backgroundSize: "100px 100px",
         }}
       />
-      <div className="absolute inset-0 gen-glow flex items-center justify-center w-80 h-80">
+      <div className="absolute inset-0 gen-glow flex items-center justify-center ">
         <div className="text-center relative z-10">
           <ImageIcon className="h-7 w-7 mx-auto mb-2 text-white/90" />
           <p className="text-xs text-white/90">{label}</p>

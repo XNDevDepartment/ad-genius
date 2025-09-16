@@ -11,7 +11,7 @@ export const useImageLimit = (imageQuality: 'low' | 'medium' | 'high' = 'high') 
     // Allow generation if admin status is still loading (to prevent blocking admins)
     if (isAdminLoading) return true;
     if (isAdmin) return true;
-    
+
     const creditsNeeded = calculateImageCost(imageQuality, count);
     return canAfford(creditsNeeded);
   };
