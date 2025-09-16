@@ -106,7 +106,7 @@ const CreateUGC = () => {
   const { activeJob, activeImages } = useActiveJob();
 
   // Sync job state with local state
-  const isGenerating = stage === 'generating' || job?.status === 'queued' || job?.status === 'processing';
+  const isGenerating = (stage === 'generating' || job?.status === 'queued' || job?.status === 'processing') && job?.status !== 'completed';
   const progress = job?.progress || 0;
 
 
@@ -294,11 +294,13 @@ const CreateUGC = () => {
       localStorage.removeItem('jobMetadata');
       
       // Switch to results stage for completed jobs
-      if (job?.status === 'completed' && stage !== 'results') {
+      if (job?.status === 'completed') {
         setStage('results');
         setTimeout(() => {
           resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
+      } else if (job?.status === 'failed' || job?.status === 'canceled') {
+        setStage('setup');
       }
     } else if ((job?.status === 'queued' || job?.status === 'processing') && stage !== 'generating') {
       // Restore generating stage if job is in progress
@@ -1228,7 +1230,10 @@ const CreateUGC = () => {
                       images={generatedImages}                 // array with { id, url, prompt, created_at }
                       totalSlots={job?.total ?? pendingSlots}
                       isGenerating={job?.status !== 'completed'}
-                      onCreateNewScenario={(imageId) => {setSelectedScenario({"idea":"", "small-description": "", "description": ""})}}
+                      onCreateNewScenario={(imageId) => {
+                        setSelectedScenario({"idea":"", "small-description": "", "description": ""});
+                        generateMoreScenarios();
+                      }}
                       onOpenInLibrary={() => navigate('/library')}
                       onStartFromScratch={handleStartFromScratch}
                       threadId={threadId}
