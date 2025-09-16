@@ -277,12 +277,18 @@ export function useImageJob() {
 
         setImages(ugcImages);
         toast.success('Using existing images from recent identical request');
-        // Backfill real DB state in the background for consistency
-        void loadJob(result.jobId);
+        // Backfill directly without calling loadJob to avoid TDZ issues
+        try {
+          const { job: jobData } = await getJob(result.jobId);
+          setJob(jobData);
+        } catch { /* silent backfill */ }
         return result.jobId;
       }
 
-      await loadJob(result.jobId);
+      // Inline load to avoid referencing loadJob before init
+      const { job: jobData } = await getJob(result.jobId);
+      setJob(jobData);
+      await loadJobImages(result.jobId);
       return result.jobId;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create job';
@@ -294,7 +300,7 @@ export function useImageJob() {
     } finally {
       if (isMountedRef.current) setLoading(false);
     }
-  }, [loadJob]);
+  }, [loadJobImages]);
 
   const loadJob = useCallback(async (jobId: string) => {
     setLoading(true);

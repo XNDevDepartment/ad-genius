@@ -621,77 +621,7 @@ const CreateUGC = () => {
       const commonNeg = `--negative "AI artifacts, text overlays, watermark, extreme bokeh, macro close-up, center-composed product, invented branding, extra limbs, low resolution"`;
 
 
-      const highlightYes = `Ultra-realistic, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. Shot with the organic, unpolished authenticity of real user-generated content.
-
-        CAMERA & TECHNICAL SPECS:
-        - Equipment: Full-frame DSLR with 85mm portrait lens (natural compression and perspective)
-        - Aperture: f/2.8 to f/4 for controlled shallow depth of field
-        - Focus: Tack-sharp product detail with natural focus fall-off
-        - Image quality: 16K native resolution with pixel-level detail clarity
-
-        COMPOSITION & PRODUCT EMPHASIS:
-        - Product prominence: 50-70% of frame coverage for clear product showcase
-        - Positioning: Center-weighted with slight rule-of-thirds offset for natural appeal
-        - Framing: Close enough to show product details, wide enough for context storytelling
-        - Perspective: Slight elevation or natural hand-held angle (avoiding tripod perfection)
-
-        LIGHTING & ATMOSPHERE:
-        - Primary lighting: ${timeOfDay} with authentic light direction and quality
-        - Light behavior: Natural shadow gradation with realistic contrast ratios
-        - Color temperature: Accurate to time/environment with natural color cast
-        - Highlight control: Preserved detail in bright areas, no blown-out surfaces
-        - Shadow detail: Visible information in darker areas with natural density
-
-        REALISM & AUTHENTICITY ENHANCERS:
-        - Surface textures: Microscopic fabric weave, material grain, natural surface variations
-        - Wear patterns: Subtle use marks, natural settling, authentic aging where appropriate
-        - Environmental interaction: Realistic contact shadows, surface impressions, natural draping
-        - Atmospheric elements: Appropriate environmental particles (dust, moisture, air quality)
-        - Human touch indicators: Slight asymmetries, natural positioning imperfections
-        - Color accuracy: True material colors with authentic light interaction
-
-        UGC-SPECIFIC CHARACTERISTICS:
-        - Shooting style: Handheld naturalness with micro-movements and slight imperfections
-        - Moment capture: Genuine use scenario, not staged perfection
-        - Background context: Real environment with lived-in authenticity
-        - Lighting inconsistencies: Natural lighting variations (not studio-controlled)
-        - Composition quirks: Slightly off-perfect framing that feels human-captured
-
-        BACKGROUND & DEPTH CONTROL:
-        - Depth of field: Gentle, natural bokeh with smooth transition zones
-        - Background blur: Creamy, optical blur (not digital/artificial)
-        - Environmental context: Identifiable but softly rendered background elements
-        - Separation: Clear subject-to-background distinction without harsh edges
-        - Bokeh quality: Circular, smooth out-of-focus highlights
-
-        MATERIAL & DETAIL RENDERING:
-        - Edge definition: Clean, sharp product boundaries with natural anti-aliasing
-        - Surface reflectance: Accurate material properties (matte, glossy, textured responses)
-        - Color fidelity: True-to-life color reproduction with natural saturation
-        - Micro-contrast: Enhanced local detail without over-sharpening
-        - Texture clarity: Visible material structure at pixel level
-
-        POST-PROCESSING AUTHENTICITY:
-        - Color grading: Natural, unfiltered appearance with real-world color balance
-        - Contrast: Realistic dynamic range without HDR over-processing
-        - Sharpness: Optical sharpness only, no artificial enhancement halos
-        - Noise handling: Clean image with natural grain structure where appropriate
-
-        CRITICAL AVOIDANCE ELEMENTS:
-        - Studio perfection or overly controlled lighting setups
-        - Digital artifacts, over-sharpening, or artificial enhancement
-        - Unrealistic color saturation or Instagram-filter appearances
-        - Perfect symmetry or tripod-locked composition
-        - Floating objects or gravity-defying product placement
-        - Background distractions or competing visual elements
-        - Motion blur, camera shake, or focus hunting
-        - Artificial bokeh effects or digital depth simulation
-        - Stock photography aesthetics or commercial polish
-        - Unrealistic cleanliness or showroom presentation
-        ${commonNeg}
-
-        FINAL QUALITY TARGETS: Image should pass for authentic user photography while maintaining professional technical quality. The viewer should believe this was captured by a real person using the product naturally.
-      `;
+      const highlightYes = `Ultra-realistic, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. Shot with the organic, unpolished authenticity of real user-generated content at ${timeOfDay} with authentic light direction and quality.`;
 
       const highlightNo = `
         Ultra-realistic, high-fidelity ${style} lifestyle photograph captured in this environment: ${selectedScenario.description}. 
