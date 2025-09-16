@@ -43,19 +43,19 @@ const NavigationHeader = () => {
         className="flex items-center gap-2"
       >
         <Button
+          onClick={() => navigate("/signup")}
+          size="sm"
+          className="min-h-[24px] p-4 mt-2"
+        >
+          {t('common.startNow')}
+        </Button>
+        <Button
           onClick={() => navigate("/signin")}
           size="sm"
           variant="outline"
           className="min-h-[24px] p-2 mt-2"
         >
           <LogIn className="h-4 w-4" />
-        </Button>
-        <Button
-          onClick={() => navigate("/signup")}
-          size="sm"
-          className="min-h-[24px] p-4 mt-2"
-        >
-          {t('common.startNow')}
         </Button>
       </motion.div>}
     </header>
