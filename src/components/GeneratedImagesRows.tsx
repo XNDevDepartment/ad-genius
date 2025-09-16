@@ -90,11 +90,11 @@ export default function GeneratedImagesRows({
 
   useEffect(() => {
     if(imageOrientation === '1:1'){
-      setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-full max-w-80 h-80 sm:w-80")
+      setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-80 h-80")
     }else if (imageOrientation === '2:3'){
-     setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-full max-w-72 aspect-[2/3] sm:w-72")
+     setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-72 aspect-[2/3]")
     }else{
-      setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-full max-w-96 aspect-[3/2] sm:w-96");
+      setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-full max-w-80 aspect-[3/2]");
 
     }
   }, [imageOrientation]);
