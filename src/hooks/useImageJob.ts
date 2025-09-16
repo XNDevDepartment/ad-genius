@@ -1,5 +1,7 @@
-// hooks/useImageJob.ts
-import { useState, useEffect, useCallback } from 'react';
+// hooks/useImageJob.optimized.ts
+// Drop-in replacement with tighter effects, watchdog via refs, and realtime fallback polling.
+
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   createImageJob,
   getJob,
@@ -9,234 +11,249 @@ import {
   subscribeJob,
   type CreateJobPayload,
   type JobRow,
-  type UgcImageRow
+  type UgcImageRow,
 } from '@/api/ugc';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
-// Use browser friendly timeout type
-type Timer = ReturnType<typeof setTimeout>;
-
-interface UseImageJobReturn {
-  job: JobRow | null;
-  images: UgcImageRow[];
-  loading: boolean;
-  error: string | null;
-  createJob: (payload: CreateJobPayload) => Promise<string>;
-  loadJob: (jobId: string) => Promise<void>;
-  cancelCurrentJob: () => Promise<void>;
-  resumeCurrentJob: () => Promise<void>;
-  clearJob: () => void;
+/** Guard + helpers */
+interface ImageMeta {
+  index?: number;
+  placeholder?: boolean;
+  settings?: CreateJobPayload['settings'];
+  prompt?: string;
 }
 
-/** Build placeholder rows (by index) so UI shows “generating” slots immediately */
+function isUgcImageRow(x: any): x is UgcImageRow {
+  return x && typeof x === 'object' && 'id' in x && 'public_url' in x;
+}
+
 function buildPlaceholders(count: number, payload: CreateJobPayload): UgcImageRow[] {
+  const len = Math.max(1, count || 1);
   const now = new Date().toISOString();
-  const format = payload.settings?.output_format ?? 'png';
-  return Array.from({ length: Math.max(1, count || 1) }, (_, i) => ({
-    id: `placeholder-${Date.now()}-${i}`,
+  return Array.from({ length: len }, (_, i) => ({
+    id: `placeholder-${i}-${now}`,
     job_id: 'pending',
     user_id: 'current',
     storage_path: '',
-    public_url: '',                     // empty => your UI treats as “not ready”
+    public_url: '',
     prompt: payload.prompt,
     public_showcase: false,
     source_image_id: payload.source_image_id,
     created_at: now,
     updated_at: now,
-    meta: {
-      index: i,
-      placeholder: true,
-      settings: payload.settings,
-      format
-    }
-  }) as unknown as UgcImageRow);
+    meta: { index: i, placeholder: true, settings: payload.settings } as ImageMeta,
+  }) as unknown as UgcImageRow[]);
 }
 
-export function useImageJob(): UseImageJobReturn {
+/** Deterministic merge by meta.index preserving array length */
+function mergeByIndex(placeholders: UgcImageRow[], incoming: UgcImageRow[]): UgcImageRow[] {
+  const byIdx: Map<number, UgcImageRow> = new Map();
+  for (const img of incoming) {
+    const idx = (img as any)?.meta?.index as number | undefined;
+    if (typeof idx === 'number') byIdx.set(idx, img);
+  }
+  const maxIndex = Math.max(
+    ...[...byIdx.keys(), ...placeholders.map((p) => (p as any)?.meta?.index ?? -1)],
+    -1,
+  );
+  const size = Math.max(maxIndex + 1, placeholders.length, incoming.length);
+  const result: UgcImageRow[] = Array.from({ length: size }, (_, i) => {
+    if (byIdx.has(i)) return byIdx.get(i)!;
+    const ph = placeholders.find((p) => (p as any)?.meta?.index === i);
+    return ph ?? placeholders[i] ?? (incoming[i] && isUgcImageRow(incoming[i]) ? incoming[i] : (null as any));
+  }).filter(Boolean);
+  return result;
+}
+
+export function useImageJob() {
   const [job, setJob] = useState<JobRow | null>(null);
   const [images, setImages] = useState<UgcImageRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [watchdogTimer, setWatchdogTimer] = useState<Timer | null>(null);
 
-  /** ---- Subscribe to job row updates (you already had this) ---- */
+  // Refs to avoid stale closures & unnecessary renders
+  const isMountedRef = useRef(true);
+  const watchdogRef = useRef<number | null>(null);
+  const resumeAttemptsRef = useRef(0);
+  const pollRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      if (watchdogRef.current) clearTimeout(watchdogRef.current);
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
+  /** Job row subscription (minimal deps) */
   useEffect(() => {
     if (!job?.id) return;
 
     const unsubscribe = subscribeJob(job.id, (updatedJob: JobRow) => {
-      console.log(`[useImageJob] Job update received:`, updatedJob);
       setJob(updatedJob);
 
-      // Clear watchdog once we see any progress or different status
+      // Any progress/state change => clear watchdog & reset attempts
       if (updatedJob.status !== 'queued' || (updatedJob.progress ?? 0) > 0) {
-        if (watchdogTimer) {
-          clearTimeout(watchdogTimer);
-          setWatchdogTimer(null);
-        }
+        if (watchdogRef.current) clearTimeout(watchdogRef.current);
+        watchdogRef.current = null;
+        resumeAttemptsRef.current = 0;
       }
 
-      // Optional: if job completes, make sure we’ve got all images from DB
       if (updatedJob.status === 'completed' && (updatedJob.completed ?? 0) > 0) {
-        loadJobImages(updatedJob.id);
+        void loadJobImages(updatedJob.id);
       }
 
       if (updatedJob.status === 'failed') {
         const errorMsg = `Image generation failed: ${updatedJob.error || 'Unknown error'}`;
-        console.error(`[useImageJob] Job failed:`, errorMsg);
         setError(errorMsg);
         toast.error(errorMsg);
+        // Clear placeholders on fail to avoid "ghost" slots
+        setImages([]);
       }
     });
 
-    // Watchdog: auto-resume if it looks stuck
-    if (job.status === 'queued' && (job.progress ?? 0) === 0) {
-      const timer = setTimeout(() => {
-        console.log('Watchdog: Job appears stuck, attempting to resume…');
-        resumeJob(job.id).catch(console.error);
-      }, 30_000);
-      setWatchdogTimer(timer);
-    }
-
     return () => {
       unsubscribe();
-      if (watchdogTimer) clearTimeout(watchdogTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [job?.id]); // keep deps minimal so subscription isn’t recreated needlessly
+  }, [job?.id]);
 
-  /** ---- NEW: Realtime stream of ugc_images inserts for this job ---- */
+  /** Images realtime subscription + fallback polling */
   useEffect(() => {
     if (!job?.id) return;
 
-    console.log(`[useImageJob] Setting up images realtime subscription for job ${job.id}`);
-
     const channel = supabase
-      .channel(`ugc_images_job_${job.id}`)
+      .channel(`ugc_images_job_${job.id}_${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'ugc_images', filter: `job_id=eq.${job.id}` },
         (payload) => {
-          console.log(`[useImageJob] New image received:`, payload);
           const incoming = payload.new as UgcImageRow;
-
           setImages((prev) => {
-            // If we know the index, replace matching placeholder slot
             const inIdx = (incoming as any)?.meta?.index as number | undefined;
             if (typeof inIdx === 'number') {
               const pos = prev.findIndex(
-                (p) => (p as any)?.meta?.index === inIdx && (p as any)?.meta?.placeholder
+                (p) => (p as any)?.meta?.index === inIdx && (p as any)?.meta?.placeholder,
               );
               if (pos !== -1) {
-                console.log(`[useImageJob] Replacing placeholder at index ${inIdx}`);
                 const next = prev.slice();
                 next[pos] = incoming;
                 return next;
               }
             }
-            // Else append if not already present
-            if (prev.some((p) => p.id === incoming.id)) {
-              console.log(`[useImageJob] Image already exists, skipping`);
-              return prev;
-            }
-            console.log(`[useImageJob] Adding new image to list`);
+            if (prev.some((p) => p.id === incoming.id)) return prev;
             return [...prev, incoming];
           });
-        }
+        },
       )
       .subscribe((status) => {
-        console.log(`[useImageJob] Images realtime subscription status: ${status}`);
-        if (status === 'CHANNEL_ERROR') {
-          console.error(`[useImageJob] Images realtime subscription error for job ${job.id}`);
+        if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
+          // Realtime flaky? Fallback to short polling until completion
+          if (pollRef.current) clearInterval(pollRef.current);
+          pollRef.current = window.setInterval(async () => {
+            if (!job?.id) return;
+            try {
+              const { images: list } = await getJobImages(job.id);
+              setImages((prev) => mergeByIndex(prev, list));
+              // Stop polling if completed
+              if (job?.status === 'completed') {
+                if (pollRef.current) clearInterval(pollRef.current);
+                pollRef.current = null;
+              }
+            } catch {
+              // no-op
+            }
+          }, 3000);
         }
       });
 
     return () => {
-      console.log(`[useImageJob] Cleaning up images realtime subscription for job ${job.id}`);
       supabase.removeChannel(channel);
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [job?.id]);
 
-  /** Fetch all images for a job (used on completion and first load) */
-  const loadJobImages = async (jobId: string) => {
+  /** Watchdog: auto-resume if job stays in queued with no progress */
+  useEffect(() => {
+    if (!job?.id) return;
+
+    const stuck = job.status === 'queued' && (job.progress ?? 0) === 0;
+    if (!stuck) {
+      if (watchdogRef.current) clearTimeout(watchdogRef.current);
+      watchdogRef.current = null;
+      resumeAttemptsRef.current = 0;
+      return;
+    }
+
+    if (watchdogRef.current) return; // already armed
+
+    watchdogRef.current = window.setTimeout(async () => {
+      try {
+        if (resumeAttemptsRef.current < 3) {
+          resumeAttemptsRef.current += 1;
+          await resumeJob(job.id);
+          toast.message('Auto-resume triggered');
+        }
+      } catch {
+        // swallow
+      } finally {
+        watchdogRef.current = null; // allow re-arm if it remains stuck
+      }
+    }, 20_000); // 20s vs 30s for snappier recovery
+  }, [job?.id, job?.status, job?.progress]);
+
+  /** Fetch all images for a job */
+  const loadJobImages = useCallback(async (jobId: string) => {
     try {
-      console.log(`[useImageJob] Loading images for job ${jobId}`);
       const { images: jobImages } = await getJobImages(jobId);
-      console.log(`[useImageJob] Loaded ${jobImages.length} images for job ${jobId}`, jobImages);
-      
-      // If we had placeholders, merge by index to keep order stable
-      setImages((prev) => {
-        if (!prev.some(p => (p as any)?.meta?.placeholder)) {
-          console.log(`[useImageJob] No placeholders, replacing all images`);
-          return jobImages;
-        }
-        
-        console.log(`[useImageJob] Merging ${jobImages.length} loaded images with ${prev.length} placeholders`);
-        const next = [...prev];
-        for (const img of jobImages) {
-          const idx = (img as any)?.meta?.index as number | undefined;
-          if (typeof idx === 'number') {
-            const p = next.findIndex((x) => (x as any)?.meta?.index === idx);
-            if (p !== -1) {
-              console.log(`[useImageJob] Replacing placeholder at index ${idx}`);
-              next[p] = img as any;
-            } else {
-              console.log(`[useImageJob] Adding image at new index ${idx}`);
-              next.push(img as any);
-            }
-          } else if (!next.some((x) => x.id === (img as any).id)) {
-            console.log(`[useImageJob] Adding image without index`);
-            next.push(img as any);
-          }
-        }
-        const result = next.filter(Boolean);
-        console.log(`[useImageJob] Final merged result: ${result.length} images`);
-        return result;
-      });
+      setImages((prev) => mergeByIndex(prev, jobImages));
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to load images';
-      console.error('[useImageJob] Failed to load job images:', err);
       setError(errorMsg);
     }
-  };
+  }, []);
 
-  /** ---- UPDATED: Optimistic placeholders + fast feedback ---- */
   const createJob = useCallback(async (payload: CreateJobPayload): Promise<string> => {
+    setLoading(true);
+    setError(null);
+
+    const total = payload?.settings?.number || 1;
+    const optimisticJobId = `local-${Date.now()}`;
+
+    setJob({
+      id: optimisticJobId,
+      user_id: 'current',
+      status: 'queued',
+      progress: 0,
+      total,
+      completed: 0,
+      failed: 0,
+      prompt: payload.prompt,
+      settings: payload.settings,
+      created_at: new Date().toISOString(),
+      finished_at: null,
+    } as unknown as JobRow);
+
+    setImages(buildPlaceholders(total, payload));
+
     try {
-      setLoading(true);
-      setError(null);
-
-      // 1) Show optimistic queued job + placeholders immediately
-      const total = payload?.settings?.number || 1;
-      const tempJobId = `local-${Date.now()}`;
-      setJob({
-        id: tempJobId,
-        user_id: 'current',
-        status: 'queued',
-        progress: 0,
-        total,
-        completed: 0,
-        failed: 0,
-        prompt: payload.prompt,
-        settings: payload.settings,
-        created_at: new Date().toISOString(),
-        finished_at: null
-      } as unknown as JobRow);
-
-      setImages(buildPlaceholders(total, payload));
-
-      // 2) Call backend to create the real job
       const result = await createImageJob(payload);
 
-      // If backend deduplicated and returned completed images, short-circuit
+      // Fast-path for idempotent reuse
       if ((result as any).status === 'completed' && (result as any).existingImages) {
-        const ugcImages: UgcImageRow[] = (result as any).existingImages.map((img: any, index: number) => ({
-          id: `existing-${index}`,
+        const existing = (result as any).existingImages as Array<{ url: string; prompt?: string }>;
+        const ugcImages: UgcImageRow[] = existing.map((img, index) => ({
+          id: `existing-${index}-${result.jobId}`,
           job_id: result.jobId,
           user_id: 'current',
           storage_path: '',
           public_url: img.url,
-          meta: { prompt: img.prompt, index, format: img.format || payload.settings?.output_format || 'png' },
+          meta: { prompt: img.prompt, index } as ImageMeta,
           created_at: new Date().toISOString(),
           prompt: payload.prompt,
           public_showcase: false,
@@ -260,43 +277,39 @@ export function useImageJob(): UseImageJobReturn {
 
         setImages(ugcImages);
         toast.success('Using existing images from recent identical request');
+        // Backfill real DB state in the background for consistency
+        void loadJob(result.jobId);
         return result.jobId;
       }
 
-      // 3) Replace optimistic job id with the real one and start tracking it
       await loadJob(result.jobId);
       return result.jobId;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create job';
       setError(message);
       toast.error(message);
-      // Roll back optimistic UI
       setJob(null);
       setImages([]);
       throw err;
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) setLoading(false);
     }
-  }, []);
+  }, [loadJob]);
 
   const loadJob = useCallback(async (jobId: string) => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-
       const { job: jobData } = await getJob(jobId);
       setJob(jobData);
-
-      // Load any images already present (useful if we navigated away and came back)
       await loadJobImages(jobId);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load job';
       setError(message);
-      // optional: toast.error(message);
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) setLoading(false);
     }
-  }, []);
+  }, [loadJobImages]);
 
   const cancelCurrentJob = useCallback(async () => {
     if (!job?.id) return;
@@ -324,11 +337,10 @@ export function useImageJob(): UseImageJobReturn {
     setJob(null);
     setImages([]);
     setError(null);
-    if (watchdogTimer) {
-      clearTimeout(watchdogTimer);
-    }
-    setWatchdogTimer(null);
-  }, [watchdogTimer]);
+    if (watchdogRef.current) clearTimeout(watchdogRef.current);
+    watchdogRef.current = null;
+    resumeAttemptsRef.current = 0;
+  }, []);
 
   return {
     job,
@@ -339,6 +351,6 @@ export function useImageJob(): UseImageJobReturn {
     loadJob,
     cancelCurrentJob,
     resumeCurrentJob,
-    clearJob
-  };
+    clearJob,
+  } as const;
 }
