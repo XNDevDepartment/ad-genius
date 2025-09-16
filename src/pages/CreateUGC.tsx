@@ -662,64 +662,138 @@ const CreateUGC = () => {
 
       const highlightYes = `Ultra-realistic, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. Shot with the organic, unpolished authenticity of real user-generated content at ${timeOfDay} with authentic light direction and quality.`;
 
-      const highlightNo = `
-        Ultra-realistic, high-fidelity ${style} lifestyle photograph captured in this environment: ${selectedScenario.description}. 
+    //   const highlightYes = `Ultra-realistic, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. Shot with the organic, unpolished authenticity of real user-generated content.
 
-        SCENE PRIORITY: The environment and atmosphere are the primary subjects, with the product naturally integrated into the scene as a believable element of the setting.
+    //   CAMERA & TECHNICAL SPECS:
+    //   - Equipment: Full-frame DSLR with 85mm portrait lens (natural compression and perspective)
+    //   - Aperture: f/2.8 to f/4 for controlled shallow depth of field
+    //   - Focus: Tack-sharp product detail with natural focus fall-off
+    //   - Image quality: 16K native resolution with pixel-level detail clarity
 
-        COMPOSITION & FRAMING:
-        - Product placement: 15-25% of total frame area, positioned using rule of thirds or golden ratio
-        - Camera angle: ${
-          style === 'cinematic' ? 'slightly elevated or dutch angle' :
-          style === 'lifestyle' ? 'natural, candid eye-level perspective' :
-          style === 'minimal' ? 'straight-on, clean symmetrical framing' :
-          style === 'professional' ? 'precise, controlled perspective with standard focal length' :
-          style === 'natural' ? 'organic, unobtrusive eye-level view' :
-          style === 'studio' ? 'dynamic, slightly lower angle for energy' :
-          'natural eye-level perspective'
-        }
-        - Framing: medium to wide shot showing full context and environmental storytelling
+    //   COMPOSITION & PRODUCT EMPHASIS:
+    //   - Product prominence: 50-70% of frame coverage for clear product showcase
+    //   - Positioning: Center-weighted with slight rule-of-thirds offset for natural appeal
+    //   - Framing: Close enough to show product details, wide enough for context storytelling
+    //   - Perspective: Slight elevation or natural hand-held angle (avoiding tripod perfection)
 
-        TECHNICAL CAMERA SETTINGS:
-        - Depth of field: f/5.6 to f/8 for natural focus transition
-        - Focus priority: Environment in tack-sharp focus, product in natural contextual focus (not artificially soft)
-        - Sensor simulation: Full-frame equivalent with natural perspective distortion
-        - ${timeOfDay} lighting with accurate shadow direction and color temperature
+    //   LIGHTING & ATMOSPHERE:
+    //   - Primary lighting: ${timeOfDay} with authentic light direction and quality
+    //   - Light behavior: Natural shadow gradation with realistic contrast ratios
+    //   - Color temperature: Accurate to time/environment with natural color cast
+    //   - Highlight control: Preserved detail in bright areas, no blown-out surfaces
+    //   - Shadow detail: Visible information in darker areas with natural density
 
-        REALISM ENHANCERS:
-        - Authentic imperfections: subtle dust, natural wear, realistic surface textures
-        - Environmental interaction: product shows believable interaction with surroundings (shadows, reflections, surface contact)
-        - Atmospheric elements: appropriate environmental effects (steam, dust motes, natural haze, humidity)
-        - Color grading: natural color palette with authentic material reflectance
-        - Micro-details: fabric weave, surface scratches, natural aging, environmental deposits
+    //   REALISM & AUTHENTICITY ENHANCERS:
+    //   - Surface textures: Microscopic fabric weave, material grain, natural surface variations
+    //   - Wear patterns: Subtle use marks, natural settling, authentic aging where appropriate
+    //   - Environmental interaction: Realistic contact shadows, surface impressions, natural draping
+    //   - Atmospheric elements: Appropriate environmental particles (dust, moisture, air quality)
+    //   - Human touch indicators: Slight asymmetries, natural positioning imperfections
+    //   - Color accuracy: True material colors with authentic light interaction
 
-        LIGHTING & ATMOSPHERE:
-        - Light source: ${timeOfDay} with physically accurate illumination
-        - Shadow behavior: realistic shadow casting with proper edge softness and color
-        - Reflective surfaces: accurate environmental reflections and specular highlights
-        - Ambient occlusion: natural shadowing in crevices and contact points
+    //   UGC-SPECIFIC CHARACTERISTICS:
+    //   - Shooting style: Handheld naturalness with micro-movements and slight imperfections
+    //   - Moment capture: Genuine use scenario, not staged perfection
+    //   - Background context: Real environment with lived-in authenticity
+    //   - Lighting inconsistencies: Natural lighting variations (not studio-controlled)
+    //   - Composition quirks: Slightly off-perfect framing that feels human-captured
 
-        AVOID (Critical exclusions):
-        - Studio-perfect lighting or artificial softbox effects
-        - Unrealistic color saturation or HDR over-processing
-        - Floating or gravity-defying product placement
-        - Perfect cleanliness or showroom condition
-        - Artificial background blur or bokeh effects
-        - Central product placement or hero-shot composition
-        - Stock photo aesthetics or overly posed arrangements
-        - Digital artifacts, noise, or compression issues
+    //   BACKGROUND & DEPTH CONTROL:
+    //   - Depth of field: Gentle, natural bokeh with smooth transition zones
+    //   - Background blur: Creamy, optical blur (not digital/artificial)
+    //   - Environmental context: Identifiable but softly rendered background elements
+    //   - Separation: Clear subject-to-background distinction without harsh edges
+    //   - Bokeh quality: Circular, smooth out-of-focus highlights
 
-        STYLE NOTES:
-        Emulate ${
-          style === 'lifestyle' ? 'photojournalistic authenticity with natural, candid moments' :
-          style === 'minimal' ? 'clean editorial aesthetics with negative space and simplicity' :
-          style === 'professional' ? 'refined corporate photography with balanced, consistent lighting' :
-          style === 'cinematic' ? 'film-grade cinematography with dramatic yet natural lighting' :
-          style === 'natural' ? 'organic documentary style with true-to-life colors and textures' :
-          style === 'studio' ? 'energetic editorial look with bold colors and dynamic compositions' :
-          'editorial photography with refined but believable aesthetics'
-        }
-        `;
+    //   MATERIAL & DETAIL RENDERING:
+    //   - Edge definition: Clean, sharp product boundaries with natural anti-aliasing
+    //   - Surface reflectance: Accurate material properties (matte, glossy, textured responses)
+    //   - Color fidelity: True-to-life color reproduction with natural saturation
+    //   - Micro-contrast: Enhanced local detail without over-sharpening
+    //   - Texture clarity: Visible material structure at pixel level
+
+    //   POST-PROCESSING AUTHENTICITY:
+    //   - Color grading: Natural, unfiltered appearance with real-world color balance
+    //   - Contrast: Realistic dynamic range without HDR over-processing
+    //   - Sharpness: Optical sharpness only, no artificial enhancement halos
+    //   - Noise handling: Clean image with natural grain structure where appropriate
+
+    //   CRITICAL AVOIDANCE ELEMENTS:
+    //   - Studio perfection or overly controlled lighting setups
+    //   - Digital artifacts, over-sharpening, or artificial enhancement
+    //   - Unrealistic color saturation or Instagram-filter appearances
+    //   - Perfect symmetry or tripod-locked composition
+    //   - Floating objects or gravity-defying product placement
+    //   - Background distractions or competing visual elements
+    //   - Motion blur, camera shake, or focus hunting
+    //   - Artificial bokeh effects or digital depth simulation
+    //   - Stock photography aesthetics or commercial polish
+    //   - Unrealistic cleanliness or showroom presentation
+    //   ${commonNeg}
+
+    //   FINAL QUALITY TARGETS: Image should pass for authentic user photography while maintaining professional technical quality. The viewer should believe this was captured by a real person using the product naturally.
+    // `;
+
+        const highlightNo = `Photorealistic ${style} scene: ${selectedScenario.description}. Product naturally placed (20% of frame, off-center). Environment-first composition with sharp background detail. ${timeOfDay} lighting with authentic shadows and reflections. Natural imperfections, realistic textures, believable environmental interaction. Avoid: centered product, studio lighting, artificial blur, stock photo aesthetics, perfect cleanliness.`
+
+      // const highlightNo = `
+      //   Ultra-realistic, high-fidelity ${style} lifestyle photograph captured in this environment: ${selectedScenario.description}. 
+
+      //   SCENE PRIORITY: The environment and atmosphere are the primary subjects, with the product naturally integrated into the scene as a believable element of the setting.
+
+      //   COMPOSITION & FRAMING:
+      //   - Product placement: 15-25% of total frame area, positioned using rule of thirds or golden ratio
+      //   - Camera angle: ${
+      //     style === 'cinematic' ? 'slightly elevated or dutch angle' :
+      //     style === 'lifestyle' ? 'natural, candid eye-level perspective' :
+      //     style === 'minimal' ? 'straight-on, clean symmetrical framing' :
+      //     style === 'professional' ? 'precise, controlled perspective with standard focal length' :
+      //     style === 'natural' ? 'organic, unobtrusive eye-level view' :
+      //     style === 'studio' ? 'dynamic, slightly lower angle for energy' :
+      //     'natural eye-level perspective'
+      //   }
+      //   - Framing: medium to wide shot showing full context and environmental storytelling
+
+      //   TECHNICAL CAMERA SETTINGS:
+      //   - Depth of field: f/5.6 to f/8 for natural focus transition
+      //   - Focus priority: Environment in tack-sharp focus, product in natural contextual focus (not artificially soft)
+      //   - Sensor simulation: Full-frame equivalent with natural perspective distortion
+      //   - ${timeOfDay} lighting with accurate shadow direction and color temperature
+
+      //   REALISM ENHANCERS:
+      //   - Authentic imperfections: subtle dust, natural wear, realistic surface textures
+      //   - Environmental interaction: product shows believable interaction with surroundings (shadows, reflections, surface contact)
+      //   - Atmospheric elements: appropriate environmental effects (steam, dust motes, natural haze, humidity)
+      //   - Color grading: natural color palette with authentic material reflectance
+      //   - Micro-details: fabric weave, surface scratches, natural aging, environmental deposits
+
+      //   LIGHTING & ATMOSPHERE:
+      //   - Light source: ${timeOfDay} with physically accurate illumination
+      //   - Shadow behavior: realistic shadow casting with proper edge softness and color
+      //   - Reflective surfaces: accurate environmental reflections and specular highlights
+      //   - Ambient occlusion: natural shadowing in crevices and contact points
+
+      //   AVOID (Critical exclusions):
+      //   - Studio-perfect lighting or artificial softbox effects
+      //   - Unrealistic color saturation or HDR over-processing
+      //   - Floating or gravity-defying product placement
+      //   - Perfect cleanliness or showroom condition
+      //   - Artificial background blur or bokeh effects
+      //   - Central product placement or hero-shot composition
+      //   - Stock photo aesthetics or overly posed arrangements
+      //   - Digital artifacts, noise, or compression issues
+
+      //   STYLE NOTES:
+      //   Emulate ${
+      //     style === 'lifestyle' ? 'photojournalistic authenticity with natural, candid moments' :
+      //     style === 'minimal' ? 'clean editorial aesthetics with negative space and simplicity' :
+      //     style === 'professional' ? 'refined corporate photography with balanced, consistent lighting' :
+      //     style === 'cinematic' ? 'film-grade cinematography with dramatic yet natural lighting' :
+      //     style === 'natural' ? 'organic documentary style with true-to-life colors and textures' :
+      //     style === 'studio' ? 'energetic editorial look with bold colors and dynamic compositions' :
+      //     'editorial photography with refined but believable aesthetics'
+      //   }
+      //   `;
 
       const prompt = (highlight === 'yes' ? highlightYes : highlightNo).trim();
 
