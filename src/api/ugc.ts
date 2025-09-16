@@ -9,7 +9,7 @@ export type CreateJobPayload = {
     size: '1024x1024' | '1536x1024' | '1024x1536';
     quality: 'low' | 'medium' | 'high';
     orientation?: '1:1' | '3:2' | '2:3';
-    style?: 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'editorial' | 'natural';
+    style?: 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'cinematic' | 'natural';
     timeOfDay?: 'natural' | 'golden' | 'night';
     highlight?: 'yes' | 'no';
     output_format?: 'png' | 'webp';

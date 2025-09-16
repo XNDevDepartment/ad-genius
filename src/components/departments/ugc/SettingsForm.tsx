@@ -12,7 +12,7 @@ import { useCredits } from "@/hooks/useCredits";
 
 export interface GenerationSettings {
   numImages: number;
-  style: 'lifestyle' | 'studio' | 'editorial' | 'natural';
+  style: 'lifestyle' | 'studio' | 'cinematic' | 'natural' | 'minimal' | 'professional';
   timeOfDay: 'natural' | 'golden' | 'night' | 'morning';
   highlight: string;
   imageOrientation: string;
@@ -49,7 +49,7 @@ export const SettingsForm = ({
   const maxImages = 3;
 
   const freeScenarios = ['lifestyle', 'minimal', 'vibrant', 'professional'];
-  const premiumScenarios = ['editorial', 'natural'];
+  const premiumScenarios = ['cinematic', 'natural'];
 
   return (
     <div className="space-y-4">

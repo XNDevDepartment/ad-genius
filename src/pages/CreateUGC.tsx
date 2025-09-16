@@ -98,7 +98,7 @@ const CreateUGC = () => {
   const [imageOrientation, setImageOrientation] = useState("1:1");
   const [timeOfDay, setTimeOfDay] = useState<'natural' | 'golden' | 'night' | 'morning'>("natural");
   const [highlight, setHighlight] = useState("yes");
-  const [style, setStyle] = useState<'lifestyle' | 'studio' | 'editorial' | 'natural'>("lifestyle");
+  const [style, setStyle] = useState<'lifestyle' | 'studio' | 'cinematic' | 'natural' | 'minimal' | 'professional'>("lifestyle");
 
   // Job system integration
   const { job, images: jobImages, createJob, clearJob, loadJob, resumeCurrentJob } = useImageJob();
@@ -348,17 +348,17 @@ const CreateUGC = () => {
       // Create signed URL and fetch the image
       const response = await fetch(image.signedUrl);
       const blob = await response.blob();
-      
+
       // Convert blob to File object
       const file = new File([blob], image.fileName, { type: blob.type });
-      
+
       // Set as product image and source ID
       setProductImage(file);
       setSourceImageId(image.id);
-      
+
       // Start AI analysis
       setIsAnalyzingImage(true);
-      
+
       const reader = new FileReader();
       reader.onload = async () => {
         const base64 = reader.result as string;
@@ -453,7 +453,7 @@ const CreateUGC = () => {
 
         // Start AI analysis
         setIsAnalyzingImage(true);
-        
+
         const reader = new FileReader();
         reader.onload = async () => {
           const base64 = reader.result as string;
@@ -577,6 +577,7 @@ const CreateUGC = () => {
     });
 
   const handleGenerate = async () => {
+    //check if the necessary data is available
     if (!productImage || !hasSelectedScenario) {
       toast({
         title: 'Missing information',
@@ -610,7 +611,7 @@ const CreateUGC = () => {
       // Immediate scroll to generation area
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
+      }, 200);
 
       /* ------------------------------------------------------------------
         1️⃣  Prepare payloads once (Data‑URL + prompt)
@@ -619,24 +620,137 @@ const CreateUGC = () => {
 
       const commonNeg = `--negative "AI artifacts, text overlays, watermark, extreme bokeh, macro close-up, center-composed product, invented branding, extra limbs, low resolution"`;
 
-      const highlightYes = `
-      16K resolution, crystal clear ${style} UGC photo of my product in this scenario: ${selectedScenario.description}.
-      Lighting: ${timeOfDay}. Camera: full-frame DSLR, 65mm, f/2.8–f/4 (shallow DOF).
-      Framing: the product must fills between 40%~70% of the frame, centered or slight 1/3 offset.
-      Focus: tack-sharp on the product; background has gentle bokeh for depth.
-      Color/texture: true-to-life, clean edges, no motion blur. Must include realism on texture, making the most human photography.
-      ${commonNeg}
+
+      const highlightYes = `Ultra-realistic, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. Shot with the organic, unpolished authenticity of real user-generated content.
+
+        CAMERA & TECHNICAL SPECS:
+        - Equipment: Full-frame DSLR with 85mm portrait lens (natural compression and perspective)
+        - Aperture: f/2.8 to f/4 for controlled shallow depth of field
+        - Focus: Tack-sharp product detail with natural focus fall-off
+        - Image quality: 16K native resolution with pixel-level detail clarity
+
+        COMPOSITION & PRODUCT EMPHASIS:
+        - Product prominence: 50-70% of frame coverage for clear product showcase
+        - Positioning: Center-weighted with slight rule-of-thirds offset for natural appeal
+        - Framing: Close enough to show product details, wide enough for context storytelling
+        - Perspective: Slight elevation or natural hand-held angle (avoiding tripod perfection)
+
+        LIGHTING & ATMOSPHERE:
+        - Primary lighting: ${timeOfDay} with authentic light direction and quality
+        - Light behavior: Natural shadow gradation with realistic contrast ratios
+        - Color temperature: Accurate to time/environment with natural color cast
+        - Highlight control: Preserved detail in bright areas, no blown-out surfaces
+        - Shadow detail: Visible information in darker areas with natural density
+
+        REALISM & AUTHENTICITY ENHANCERS:
+        - Surface textures: Microscopic fabric weave, material grain, natural surface variations
+        - Wear patterns: Subtle use marks, natural settling, authentic aging where appropriate
+        - Environmental interaction: Realistic contact shadows, surface impressions, natural draping
+        - Atmospheric elements: Appropriate environmental particles (dust, moisture, air quality)
+        - Human touch indicators: Slight asymmetries, natural positioning imperfections
+        - Color accuracy: True material colors with authentic light interaction
+
+        UGC-SPECIFIC CHARACTERISTICS:
+        - Shooting style: Handheld naturalness with micro-movements and slight imperfections
+        - Moment capture: Genuine use scenario, not staged perfection
+        - Background context: Real environment with lived-in authenticity
+        - Lighting inconsistencies: Natural lighting variations (not studio-controlled)
+        - Composition quirks: Slightly off-perfect framing that feels human-captured
+
+        BACKGROUND & DEPTH CONTROL:
+        - Depth of field: Gentle, natural bokeh with smooth transition zones
+        - Background blur: Creamy, optical blur (not digital/artificial)
+        - Environmental context: Identifiable but softly rendered background elements
+        - Separation: Clear subject-to-background distinction without harsh edges
+        - Bokeh quality: Circular, smooth out-of-focus highlights
+
+        MATERIAL & DETAIL RENDERING:
+        - Edge definition: Clean, sharp product boundaries with natural anti-aliasing
+        - Surface reflectance: Accurate material properties (matte, glossy, textured responses)
+        - Color fidelity: True-to-life color reproduction with natural saturation
+        - Micro-contrast: Enhanced local detail without over-sharpening
+        - Texture clarity: Visible material structure at pixel level
+
+        POST-PROCESSING AUTHENTICITY:
+        - Color grading: Natural, unfiltered appearance with real-world color balance
+        - Contrast: Realistic dynamic range without HDR over-processing
+        - Sharpness: Optical sharpness only, no artificial enhancement halos
+        - Noise handling: Clean image with natural grain structure where appropriate
+
+        CRITICAL AVOIDANCE ELEMENTS:
+        - Studio perfection or overly controlled lighting setups
+        - Digital artifacts, over-sharpening, or artificial enhancement
+        - Unrealistic color saturation or Instagram-filter appearances
+        - Perfect symmetry or tripod-locked composition
+        - Floating objects or gravity-defying product placement
+        - Background distractions or competing visual elements
+        - Motion blur, camera shake, or focus hunting
+        - Artificial bokeh effects or digital depth simulation
+        - Stock photography aesthetics or commercial polish
+        - Unrealistic cleanliness or showroom presentation
+        ${commonNeg}
+
+        FINAL QUALITY TARGETS: Image should pass for authentic user photography while maintaining professional technical quality. The viewer should believe this was captured by a real person using the product naturally.
       `;
 
       const highlightNo = `
-      16K resolution, crystal clear ${style} lifestyle photograph in this scenario: ${selectedScenario.description}. Where the **scene is primary** and the product appears naturally in context.
-      Composition: product occupies ~20–30% of the frame, placed off-center (rule of thirds) or partial crop; not a close-up.
-      Focus: background/scene in **sharp focus**; product is **slightly soft** (subtle defocus), no strong subject isolation, no heavy bokeh.
-      Depth of field: f/8–f/11 (deeper DOF) so environment reads clearly.
-      Lighting: ${timeOfDay}, natural reflections consistent with environment.
-      The product should be recognizable but not dominant; viewer attention should read the environment first.
-      --negative "centered product, product filling most of frame, macro, strong background blur, studio backdrop, heavy vignette, hero close-up, product-as-subject"
-      `;
+        Ultra-realistic, high-fidelity ${style} lifestyle photograph captured in this environment: ${selectedScenario.description}. 
+
+        SCENE PRIORITY: The environment and atmosphere are the primary subjects, with the product naturally integrated into the scene as a believable element of the setting.
+
+        COMPOSITION & FRAMING:
+        - Product placement: 15-25% of total frame area, positioned using rule of thirds or golden ratio
+        - Camera angle: ${
+          style === 'cinematic' ? 'slightly elevated or dutch angle' :
+          style === 'lifestyle' ? 'natural, candid eye-level perspective' :
+          style === 'minimal' ? 'straight-on, clean symmetrical framing' :
+          style === 'professional' ? 'precise, controlled perspective with standard focal length' :
+          style === 'natural' ? 'organic, unobtrusive eye-level view' :
+          style === 'studio' ? 'dynamic, slightly lower angle for energy' :
+          'natural eye-level perspective'
+        }
+        - Framing: medium to wide shot showing full context and environmental storytelling
+
+        TECHNICAL CAMERA SETTINGS:
+        - Depth of field: f/5.6 to f/8 for natural focus transition
+        - Focus priority: Environment in tack-sharp focus, product in natural contextual focus (not artificially soft)
+        - Sensor simulation: Full-frame equivalent with natural perspective distortion
+        - ${timeOfDay} lighting with accurate shadow direction and color temperature
+
+        REALISM ENHANCERS:
+        - Authentic imperfections: subtle dust, natural wear, realistic surface textures
+        - Environmental interaction: product shows believable interaction with surroundings (shadows, reflections, surface contact)
+        - Atmospheric elements: appropriate environmental effects (steam, dust motes, natural haze, humidity)
+        - Color grading: natural color palette with authentic material reflectance
+        - Micro-details: fabric weave, surface scratches, natural aging, environmental deposits
+
+        LIGHTING & ATMOSPHERE:
+        - Light source: ${timeOfDay} with physically accurate illumination
+        - Shadow behavior: realistic shadow casting with proper edge softness and color
+        - Reflective surfaces: accurate environmental reflections and specular highlights
+        - Ambient occlusion: natural shadowing in crevices and contact points
+
+        AVOID (Critical exclusions):
+        - Studio-perfect lighting or artificial softbox effects
+        - Unrealistic color saturation or HDR over-processing
+        - Floating or gravity-defying product placement
+        - Perfect cleanliness or showroom condition
+        - Artificial background blur or bokeh effects
+        - Central product placement or hero-shot composition
+        - Stock photo aesthetics or overly posed arrangements
+        - Digital artifacts, noise, or compression issues
+
+        STYLE NOTES:
+        Emulate ${
+          style === 'lifestyle' ? 'photojournalistic authenticity with natural, candid moments' :
+          style === 'minimal' ? 'clean editorial aesthetics with negative space and simplicity' :
+          style === 'professional' ? 'refined corporate photography with balanced, consistent lighting' :
+          style === 'cinematic' ? 'film-grade cinematography with dramatic yet natural lighting' :
+          style === 'natural' ? 'organic documentary style with true-to-life colors and textures' :
+          style === 'studio' ? 'energetic editorial look with bold colors and dynamic compositions' :
+          'editorial photography with refined but believable aesthetics'
+        }
+        `;
 
       const prompt = (highlight === 'yes' ? highlightYes : highlightNo).trim();
 
@@ -649,7 +763,7 @@ const CreateUGC = () => {
           size: orientationToSize(imageOrientation),
           quality: imageQuality,
           orientation: imageOrientation as '1:1' | '3:2' | '2:3',
-          style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'editorial' | 'natural',
+          style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'cinematic' | 'natural',
           timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',
           highlight: highlight as 'yes' | 'no',
           output_format: 'webp'
@@ -1045,7 +1159,7 @@ const CreateUGC = () => {
               </Card>
 
               {/* Results Section */}
-              {(isGenerating || generatedImages.length > 0) && (
+              {(!isGenerating || generatedImages.length == 0) && (
                 // <div className={`bg-card rounded-apple mt-10 mb-10 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
                   <div ref={resultsRef} id="generating-images" className="scroll-mt-6 space-y-8 mt-5">
                     <GeneratedImagesRows
@@ -1217,7 +1331,7 @@ const CreateUGC = () => {
                         <ToggleGroupItem key={"minimal"} size="sm" className="text-xs px-2 py-1 bg-muted" value="minimal">{t('ugc.advancedSettings.style.minimalist')}</ToggleGroupItem>
                         <ToggleGroupItem key={"vibrant"} size="sm" className="text-xs px-2 py-1 bg-muted" value="vibrant">Vibrant</ToggleGroupItem>
                         <ToggleGroupItem key={"professional"} size="sm" className="text-xs px-2 py-1 bg-muted" value="professional">{t('ugc.advancedSettings.style.professional')}</ToggleGroupItem>
-                        <ToggleGroupItem key={"editorial"} size="sm" className="text-xs px-2 py-1 bg-muted" value="editorial">Editorial</ToggleGroupItem>
+                        <ToggleGroupItem key={"cinematic"} size="sm" className="text-xs px-2 py-1 bg-muted" value="cinematic">Cinematic</ToggleGroupItem>
                         <ToggleGroupItem key={"natural"} size="sm" className="text-xs px-2 py-1 bg-muted" value="natural">Natural</ToggleGroupItem>
                     </ToggleGroup>
                   </div>
