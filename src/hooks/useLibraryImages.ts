@@ -62,7 +62,7 @@ export const useLibraryImages = () => {
           size: (img.meta as any)?.size || '1024x1024',
           quality: (img.meta as any)?.quality || 'high',
           numberOfImages: 1,
-          format: 'webp'
+          format: (img.meta as any)?.format || 'png'
         },
         source_image_id: img.source_image_id
       }));

@@ -32,6 +32,7 @@ interface UseImageJobReturn {
 /** Build placeholder rows (by index) so UI shows “generating” slots immediately */
 function buildPlaceholders(count: number, payload: CreateJobPayload): UgcImageRow[] {
   const now = new Date().toISOString();
+  const format = payload.settings?.output_format ?? 'png';
   return Array.from({ length: Math.max(1, count || 1) }, (_, i) => ({
     id: `placeholder-${Date.now()}-${i}`,
     job_id: 'pending',
@@ -46,7 +47,8 @@ function buildPlaceholders(count: number, payload: CreateJobPayload): UgcImageRo
     meta: {
       index: i,
       placeholder: true,
-      settings: payload.settings
+      settings: payload.settings,
+      format
     }
   }) as unknown as UgcImageRow);
 }
@@ -234,7 +236,7 @@ export function useImageJob(): UseImageJobReturn {
           user_id: 'current',
           storage_path: '',
           public_url: img.url,
-          meta: { prompt: img.prompt, index },
+          meta: { prompt: img.prompt, index, format: img.format || payload.settings?.output_format || 'png' },
           created_at: new Date().toISOString(),
           prompt: payload.prompt,
           public_showcase: false,

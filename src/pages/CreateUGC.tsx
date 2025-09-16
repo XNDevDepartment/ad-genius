@@ -36,6 +36,7 @@ interface GeneratedImage {
   url: string;
   prompt: string;
   selected: boolean;
+  format?: string;
 }
 
 
@@ -195,21 +196,29 @@ const CreateUGC = () => {
 
   // Convert job images to display format when they change
   useEffect(() => {
-    if (jobImages.length > 0 && job?.status === 'completed') {
-      const displayImages: GeneratedImage[] = jobImages.map((img, index) => ({
+    if (jobImages.length === 0) return;
+
+    const readyImages = jobImages.filter(img => Boolean(img.public_url));
+    if (readyImages.length === 0) return;
+
+    setGeneratedImages(prev => {
+      const previousSelections = new Map(prev.map(image => [image.id, image.selected]));
+
+      return readyImages.map((img) => ({
         id: img.id,
         url: img.public_url,
-        prompt: job.prompt,
-        selected: false
+        prompt: job?.prompt || img.prompt || '',
+        format: (img.meta as any)?.format || job?.settings?.output_format || 'png',
+        selected: previousSelections.get(img.id) ?? false,
       }));
-      setGeneratedImages(displayImages);
-      setStage('results');
+    });
 
-      // Clear localStorage when completed
+    if (job?.status === 'completed') {
+      setStage('results');
       localStorage.removeItem('currentJobId');
       localStorage.removeItem('currentStage');
     }
-  }, [jobImages, job?.status, job?.prompt]);
+  }, [jobImages, job?.status, job?.prompt, job?.settings?.output_format]);
 
   // Restore job state from localStorage on mount
   useEffect(() => {
@@ -716,9 +725,11 @@ const CreateUGC = () => {
     const imagesToDownload = selectedImages.length > 0 ? selectedImages : generatedImages;
 
     imagesToDownload.forEach((img, index) => {
+      if (!img.url) return;
       const link = document.createElement('a');
       link.href = img.url;
-      link.download = `ugc-image-${index + 1}.png`;
+      const extension = img.format || 'png';
+      link.download = `ugc-image-${index + 1}.${extension}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
