@@ -1,7 +1,9 @@
 // functions/ugc/index.ts
 // Supabase Edge Function (Deno)
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { Image } from "https://deno.land/x/imagescript@1.2.16/mod.ts";
 // ---------- CORS ----------
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,6 +37,17 @@ function sleep(ms) {
 function backoffMs(attempt) {
   return 900 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 250);
 }
+
+
+type Settings = {
+  size?: string; // "1024x1024"
+  quality?: "low" | "medium" | "high";
+  number?: number;
+  input_fidelity?: "low" | "medium" | "high"; // optional for edits
+  output_format?: "png" | "webp";
+  [k: string]: unknown;
+};
+
 // credit price table (fallback; you can move to DB as discussed)
 function calculateImageCost(settings) {
   const qualityCosts = {
@@ -163,10 +176,12 @@ async function createImageJob(userId, payload, supabase) {
       status: existing.status
     };
     if (existing.status === "completed") {
-      res.existingImages = (existing.ugc_images ?? []).map((img)=>({
-          url: img.public_url,
-          prompt: existing.prompt
-        }));
+
+      res.existingImages = (existing.ugc_images ?? []).map((img: any) => ({
+        url: img.public_url,
+        prompt: existing.prompt,
+        format: img.meta?.format ?? "webp",
+      }));
     }
     return json(res, 200);
   }
@@ -384,9 +399,17 @@ async function generateImages(jobId, supabase) {
 async function generateSingleImage(job, index, sourceImageUrl, supabase) {
   const MAX_ATTEMPTS = 3;
   const size = job?.settings?.size ?? "1024x1024";
-  const quality = job?.settings?.quality ?? "high";
+
+  const quality = (job?.settings?.quality ?? "high") as "low" | "medium" | "high";
+  const outputFormat = (job?.settings?.output_format ?? "png") as "png" | "webp";
   const prompt = String(job?.prompt ?? "");
-  for(let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++){
+
+  const webpQualityBySetting: Record<string, number> = { low: 60, medium: 75, high: 90 };
+
+  const resolveFormat = (requested: "png" | "webp") => (requested === "webp" ? "webp" : "webp");
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+
     try {
       const controller = new AbortController();
       const timeout = setTimeout(()=>controller.abort(), 120000);
@@ -406,6 +429,7 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
         form.append("prompt", prompt);
         form.append("size", size);
         form.append("quality", quality);
+        form.append("response_format", "b64_json");
         if (job?.settings?.input_fidelity) {
           form.append("input_fidelity", String(job.settings.input_fidelity));
         }
@@ -429,58 +453,90 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
             model: "gpt-image-1",
             prompt,
             size,
-            quality
+            quality,
+            response_format: "b64_json",
           }),
           signal: controller.signal
         });
       }
-      clearTimeout(timeout);
-      const reqId = res.headers.get("x-request-id") || undefined;
-      if (!res.ok) {
-        const text = await res.text();
-        const retryable = res.status >= 500 || res.status === 429;
-        if (retryable && attempt < MAX_ATTEMPTS) {
-          await sleep(backoffMs(attempt));
-          continue;
+
+
+      try {
+        const reqId = res.headers.get("x-request-id") || undefined;
+        if (!res.ok) {
+          const text = await res.text();
+          const retryable = res.status >= 500 || res.status === 429;
+          if (retryable && attempt < MAX_ATTEMPTS) {
+            await sleep(backoffMs(attempt));
+            continue;
+          }
+          throw new Error(`OpenAI error ${res.status}${reqId ? ` req=${reqId}` : ""}: ${text}`);
         }
-        throw new Error(`OpenAI error ${res.status}${reqId ? ` req=${reqId}` : ""}: ${text}`);
-      }
-      const jsonResp = await res.json();
-      const b64 = jsonResp?.data?.[0]?.b64_json;
-      if (!b64) {
-        if (attempt < MAX_ATTEMPTS) {
-          await sleep(backoffMs(attempt));
-          continue;
+
+        const jsonResp = await res.json();
+        const b64 = jsonResp?.data?.[0]?.b64_json;
+        if (!b64) {
+          if (attempt < MAX_ATTEMPTS) {
+            await sleep(backoffMs(attempt));
+            continue;
+          }
+          throw new Error(`Missing b64_json in response${reqId ? ` req=${reqId}` : ""}`);
         }
-        throw new Error(`Missing b64_json in response${reqId ? ` req=${reqId}` : ""}`);
+
+        // upload to storage
+        const decodedBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+
+        let fileBytes = decodedBytes;
+        let storedFormat = resolveFormat(outputFormat);
+        let contentType = storedFormat === "webp" ? "image/webp" : "image/png";
+        let extension = storedFormat;
+
+        if (storedFormat === "webp") {
+          try {
+            const image = await Image.decode(decodedBytes);
+            const webpQuality = webpQualityBySetting[quality] ?? 90;
+            fileBytes = await image.encodeWEBP(webpQuality);
+          } catch (err) {
+            storedFormat = "png";
+            contentType = "image/png";
+            extension = "png";
+            fileBytes = decodedBytes;
+            log("WEBP conversion failed, falling back to PNG", { jobId: job.id, index, error: err?.message });
+          }
+        }
+
+        const storagePath = `${job.user_id}/${job.id}/${index}.${extension}`;
+        const { error: upErr } = await supabase.storage
+          .from("ugc")
+          .upload(storagePath, fileBytes, { contentType, upsert: false });
+        if (upErr) throw new Error(`Storage upload failed: ${upErr.message}`);
+
+        const { data: pub } = supabase.storage.from("ugc").getPublicUrl(storagePath);
+
+        const { error: saveErr } = await supabase.from("ugc_images").insert({
+          job_id: job.id,
+          user_id: job.user_id,
+          storage_path: storagePath,
+          public_url: pub.publicUrl,
+          meta: {
+            index,
+            size,
+            quality,
+            format: storedFormat,
+            provider: "openai",
+            model: "gpt-image-1",
+          },
+          prompt: prompt,
+          source_image_id: job.source_image_id,
+        });
+        if (saveErr) throw new Error(`Failed to save image record: ${saveErr.message}`);
+
+        return; // success
+      } finally {
+        clearTimeout(timeout);
       }
-      // upload to storage
-      const bytes = Uint8Array.from(atob(b64), (c)=>c.charCodeAt(0));
-      const storagePath = `${job.user_id}/${job.id}/${index}.webp`;
-      const { error: upErr } = await supabase.storage.from("ugc").upload(storagePath, bytes, {
-        contentType: "image/webp",
-        upsert: false
-      });
-      if (upErr) throw new Error(`Storage upload failed: ${upErr.message}`);
-      const { data: pub } = supabase.storage.from("ugc").getPublicUrl(storagePath);
-      const { error: saveErr } = await supabase.from("ugc_images").insert({
-        job_id: job.id,
-        user_id: job.user_id,
-        storage_path: storagePath,
-        public_url: pub.publicUrl,
-        meta: {
-          index,
-          size,
-          quality,
-          provider: "openai",
-          model: "gpt-image-1"
-        },
-        prompt: prompt,
-        source_image_id: job.source_image_id
-      });
-      if (saveErr) throw new Error(`Failed to save image record: ${saveErr.message}`);
-      return; // success
-    } catch (e) {
+    } catch (e: any) {
+
       const msg = e?.message ?? String(e);
       const retryable = /AbortError/.test(e?.name) || /OpenAI error 5\d\d/.test(msg) || /429/.test(msg) || /Missing b64_json/.test(msg);
       if (retryable && attempt < MAX_ATTEMPTS) {

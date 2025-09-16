@@ -11,6 +11,7 @@ export type GeneratedImage = {
   url?: string;
   prompt?: string;
   created_at?: string;
+  format?: string;
 };
 
 type Props = {
@@ -53,6 +54,7 @@ function GrainPlaceholder({ label = "Generating...", THUMB_CLASSES }: { label?: 
 }
 
 function downloadBlob(url: string, filename = "image.png") {
+  const finalFilename = filename.includes('.') ? filename : `${filename}.png`;
   if (url.startsWith("data:")) {
     const [meta, base64] = url.split(",");
     const mime = meta.split(":")[1]?.split(";")[0] || "image/png";
@@ -61,13 +63,13 @@ function downloadBlob(url: string, filename = "image.png") {
     for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
     const blob = new Blob([bytes], { type: mime });
     const tmp = URL.createObjectURL(blob);
-    const a = Object.assign(document.createElement("a"), { href: tmp, download: filename });
+    const a = Object.assign(document.createElement("a"), { href: tmp, download: finalFilename });
     a.click(); setTimeout(() => URL.revokeObjectURL(tmp), 30000);
     return;
   }
   fetch(url).then(r => r.blob()).then(blob => {
     const tmp = URL.createObjectURL(blob);
-    const a = Object.assign(document.createElement("a"), { href: tmp, download: filename });
+    const a = Object.assign(document.createElement("a"), { href: tmp, download: finalFilename });
     a.click(); setTimeout(() => URL.revokeObjectURL(tmp), 30000);
   }).catch(console.error);
 }
@@ -133,7 +135,11 @@ export default function GeneratedImagesRows({
                     size="sm"
                     className="w-full justify-center"
                     // disabled={!img?.url}
-                    onClick={() => img?.url && downloadBlob(img.url, `produktpix-${img.id || i + 1}.png`)}
+                    onClick={() => {
+                      if (!img?.url) return;
+                      const extension = img?.format || 'png';
+                      downloadBlob(img.url, `produktpix-${img.id || i + 1}.${extension}`);
+                    }}
                     title={!img?.url ? "Available when ready" : "Download image"}
                   >
                     <Download className="h-4 w-4 mr-2" />

@@ -73,7 +73,8 @@ export const Library = ({ onBack }: LibraryProps) => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `ugc-${image.id}.png`;
+      const extension = image.settings?.format || 'png';
+      link.download = `ugc-${image.id}.${extension}`;
       link.click();
       URL.revokeObjectURL(url);
     } catch (error) {
