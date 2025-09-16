@@ -963,7 +963,7 @@ const CreateUGC = () => {
   // Scroll detection for floating button
   useEffect(() => {
     const handleScroll = () => {
-      const hasContent = generatedImages.length > 0 || isGenerating || stage === 'results';
+      const hasContent = generatedImages.length > 0 || jobImages.length > 0 || isGenerating || stage === 'results';
       const isScrolledUp = window.scrollY < window.innerHeight * 0.5;
       setShowScrollDown(hasContent && isScrolledUp);
     };
@@ -972,7 +972,7 @@ const CreateUGC = () => {
     handleScroll(); // Check initial state
     
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [generatedImages.length, isGenerating, stage]);
+  }, [generatedImages.length, jobImages.length, isGenerating, stage]);
 
   const handleScrollToResults = () => {
     resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1221,7 +1221,7 @@ const CreateUGC = () => {
               </Card>
 
               {/* Results Section */}
-              {(!isGenerating || generatedImages.length == 0) && (
+              {(isGenerating || generatedImages.length > 0 || jobImages.length > 0 || stage === 'results') && (
                 // <div className={`bg-card rounded-apple mt-10 mb-10 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
                   <div ref={resultsRef} id="generating-images" className="scroll-mt-6 space-y-8 mt-5">
                     <GeneratedImagesRows
