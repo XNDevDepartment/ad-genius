@@ -9,7 +9,7 @@ const Library = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-background container-responsive px-4 py-4">
+    <div className="min-h-screen bg-background container-responsive px-0 py-4">
       <div className="lg:hidden flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button

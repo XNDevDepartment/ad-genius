@@ -49,7 +49,7 @@ export const Library = ({ onBack }: LibraryProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [showSourceThumbnails, setShowSourceThumbnails] = useState(true);
+  const [showSourceThumbnails, setShowSourceThumbnails] = useState(false);
   const [viewMode, setViewMode] = useState<"ai" | "source">("ai");
   const [selectedImage, setSelectedImage] = useState<LibraryImage | null>(null);
 
@@ -139,7 +139,7 @@ export const Library = ({ onBack }: LibraryProps) => {
   const isLoading = viewMode === "ai" ? loading : sourceLoading;
 
   return (
-    <div className="p-4 lg:p-8 space-y-6 animate-fade-in ">
+    <div className=" lg:p-8 space-y-6 animate-fade-in ">
 
       {/* Currently Generating Section */}
       {activeJob && (
