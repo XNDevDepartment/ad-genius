@@ -734,7 +734,7 @@ const CreateUGC = () => {
     //   FINAL QUALITY TARGETS: Image should pass for authentic user photography while maintaining professional technical quality. The viewer should believe this was captured by a real person using the product naturally.
     // `;
 
-        const highlightNo = `Photorealistic ${style} scene: ${selectedScenario.description}. Product naturally placed (20% of frame, off-center). Environment-first composition with sharp background detail. ${timeOfDay} lighting with authentic shadows and reflections. Natural imperfections, realistic textures, believable environmental interaction. Avoid: centered product, studio lighting, artificial blur, stock photo aesthetics, perfect cleanliness.`
+      const highlightNo = `Photorealistic ${style} scene: ${selectedScenario.description}. Product naturally placed (20% of frame, off-center). Environment-first composition with sharp background detail. ${timeOfDay} lighting with authentic shadows and reflections. Natural imperfections, realistic textures, believable environmental interaction. Avoid: centered product, studio lighting, artificial blur, stock photo aesthetics, perfect cleanliness.`
 
       // const highlightNo = `
       //   Ultra-realistic, high-fidelity ${style} lifestyle photograph captured in this environment: ${selectedScenario.description}. 
@@ -1590,15 +1590,14 @@ const CreateUGC = () => {
 
         {/* Mobile Floating Scroll Down Button */}
         {showScrollDown && isMobile && (
-          <div className="fixed bottom-[120px] right-4 z-[15]">
+          <div className="fixed bottom-[155px] right-4 z-[15]">
             <Button
               size="sm"
-              className="rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all duration-300 animate-bounce px-3"
+              className="rounded-full shadow-lg bg-primary-glow hover:bg-primary/90 transition-all duration-300 animate-bounce px-3"
               onClick={handleScrollToResults}
               title="Scroll to results"
             >
-              <ArrowDown className="h-4 w-4 mr-1" />
-              Results
+              <ArrowDown className="h-4 w-4" />
             </Button>
           </div>
         )}
