@@ -5,6 +5,7 @@ import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from "react-i18next";
+import { LogIn } from "lucide-react";
 
 const NavigationHeader = () => {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
@@ -39,7 +40,16 @@ const NavigationHeader = () => {
         initial={{ opacity: 0, y: -20 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.6, delay: 0.3 }}
+        className="flex items-center gap-2"
       >
+        <Button
+          onClick={() => navigate("/signin")}
+          size="sm"
+          variant="outline"
+          className="min-h-[24px] p-2 mt-2"
+        >
+          <LogIn className="h-4 w-4" />
+        </Button>
         <Button
           onClick={() => navigate("/signup")}
           size="sm"
