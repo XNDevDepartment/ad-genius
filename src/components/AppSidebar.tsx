@@ -9,7 +9,8 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { AdminAccessButton } from "@/components/AdminAccessButton";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import symbol from './../assets/favicon2.png';
+import logoApp from './../assets/logos/logo_horizontal.webp';
+
 
 import {
   Sidebar,
@@ -58,23 +59,23 @@ export function AppSidebar() {
           <div className="flex items-center justify-center">
             <div className={cn(
               "flex items-center justify-center ",
-              isCollapsed ? "w-14 h-14" : "w-12 h-12"
+              isCollapsed ? "w-14 h-14" : "w-36 h-12"
             )}>
-              <img 
-                src={symbol} 
+              <img
+                src={logoApp}
                 alt="Genius_logo"
                 className={cn(
                   "object-contain",
-                  isCollapsed ? "w-10 h-10" : "w-8 h-8"
+                  isCollapsed ? "w-10 h-10" : "w-40 h-16"
                 )}
               />
             </div>
-            {!isCollapsed && (
+            {/* {!isCollapsed && (
               <div className="ml-3">
                 <h1 className="text-lg font-bold text-sidebar-foreground">Produkt Pix</h1>
                 <p className="text-xs text-sidebar-foreground/60">Genius</p>
               </div>
-            )}
+            )} */}
           </div>
         </SidebarHeader>
 
