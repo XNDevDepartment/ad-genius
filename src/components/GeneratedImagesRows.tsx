@@ -101,7 +101,7 @@ export default function GeneratedImagesRows({
 
   return (
     <div className="space-y-4">
-      {Array.from({ length: 1 }).map((_, i) => {
+      {Array.from({ length: slots }).map((_, i) => {
         const img = images[i];
 
         return (
