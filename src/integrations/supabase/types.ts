@@ -201,6 +201,7 @@ export type Database = {
           failed: number | null
           finished_at: string | null
           id: string
+          model_type: string | null
           output_url: string | null
           progress: number | null
           prompt: string
@@ -220,6 +221,7 @@ export type Database = {
           failed?: number | null
           finished_at?: string | null
           id?: string
+          model_type?: string | null
           output_url?: string | null
           progress?: number | null
           prompt: string
@@ -239,6 +241,7 @@ export type Database = {
           failed?: number | null
           finished_at?: string | null
           id?: string
+          model_type?: string | null
           output_url?: string | null
           progress?: number | null
           prompt?: string
