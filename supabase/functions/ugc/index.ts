@@ -3,7 +3,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { Image } from "https://deno.land/x/imagescript@1.2.16/mod.ts";
+import { Image } from "https://deno.land/x/imagescript@1.4.0/mod.ts";
 // ---------- CORS ----------
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
