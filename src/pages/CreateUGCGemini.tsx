@@ -77,7 +77,7 @@ const CreateUGCGemini = () => {
   const [moreScenarios, setMoreScenarios] = useState(false);
   const [numImages, setNumImages] = useState(1);
   const [imageOrientation, setImageOrientation] = useState("1:1");
-  const [timeOfDay, setTimeOfDay] = useState<'natural' | 'golden' | 'night' | 'morning'>("natural");
+  const [timeOfDay, setTimeOfDay] = useState<'natural' | 'golden' | 'night'>("natural");
   const [highlight, setHighlight] = useState("yes");
   const [style, setStyle] = useState<'lifestyle' | 'vibrant' | 'cinematic' | 'natural' | 'minimal' | 'professional'>("lifestyle");
 
@@ -508,7 +508,7 @@ const CreateUGCGemini = () => {
         ? `Generate 3 more completely different UGC scenario ideas for this niche: "${niche}". Make them unique and different from previous suggestions.`
         : `Based on the product analysis and this niche: "${niche}", generate 3 creative UGC scenario ideas that would work well with the product.`;
 
-      const response = await converse(threadId, prompt);
+      const response = await converse(threadId, ASSISTANT_ID, prompt);
       
       // Save messages
       if (conversationId) {
@@ -647,7 +647,7 @@ Style: ${style}, Time of day: ${timeOfDay}, Product highlight: ${highlight}, Qua
           orientation: imageOrientation as '1:1' | '3:2' | '2:3',
           style: style,
           timeOfDay: timeOfDay,
-          highlight: highlight,
+          highlight: highlight as 'yes' | 'no',
           output_format: 'png' as const
         },
         source_image_id: sourceImageId
@@ -660,7 +660,7 @@ Style: ${style}, Time of day: ${timeOfDay}, Product highlight: ${highlight}, Qua
       if (result) {
         // Deduct credits
         const creditsUsed = calculateImageCost(imageQuality, numImages);
-        await deductCredits(creditsUsed);
+        deductCredits(creditsUsed);
         
         toast({
           title: "Generation Started",
@@ -1028,6 +1028,19 @@ Style: ${style}, Time of day: ${timeOfDay}, Product highlight: ${highlight}, Qua
                     images={generatedImages}
                     isGenerating={stage === 'generating'}
                     imageOrientation={imageOrientation}
+                    totalSlots={numImages}
+                    onCreateNewScenario={() => {
+                      setStage('setup');
+                      setAiScenarios([]);
+                      setSelectedScenario({'idea': "", "small-description": "", "description": ""});
+                    }}
+                    onOpenInLibrary={() => {
+                      // Navigate to library or show library modal
+                      console.log('Open in library');
+                    }}
+                    onStartFromScratch={() => {
+                      handleClearAll();
+                    }}
                   />
                 )}
               </CardContent>
@@ -1043,7 +1056,7 @@ Style: ${style}, Time of day: ${timeOfDay}, Product highlight: ${highlight}, Qua
           onOpenChange={setSettingsOpen}
           settings={{
             numImages,
-            style,
+            style: style as 'lifestyle' | 'cinematic' | 'natural' | 'minimal' | 'professional' | 'studio',
             timeOfDay,
             highlight,
             imageOrientation,
@@ -1051,8 +1064,8 @@ Style: ${style}, Time of day: ${timeOfDay}, Product highlight: ${highlight}, Qua
           }}
           onSettingsChange={(changes) => {
             if ('numImages' in changes) setNumImages(changes.numImages!);
-            if ('style' in changes) setStyle(changes.style!);
-            if ('timeOfDay' in changes) setTimeOfDay(changes.timeOfDay!);
+            if ('style' in changes) setStyle(changes.style as 'lifestyle' | 'vibrant' | 'cinematic' | 'natural' | 'minimal' | 'professional');
+            if ('timeOfDay' in changes && changes.timeOfDay !== 'morning') setTimeOfDay(changes.timeOfDay as 'natural' | 'golden' | 'night');
             if ('highlight' in changes) setHighlight(changes.highlight!);
             if ('imageOrientation' in changes) setImageOrientation(changes.imageOrientation!);
             if ('imageQuality' in changes) setImageQuality(changes.imageQuality!);
@@ -1060,6 +1073,9 @@ Style: ${style}, Time of day: ${timeOfDay}, Product highlight: ${highlight}, Qua
           remainingCredits={remainingCredits}
           totalCredits={getTotalCredits()}
           calculateImageCost={calculateImageCost}
+          canGenerate={canGenerateImages(numImages)}
+          onGenerate={handleGenerate}
+          isGenerating={isGenerating}
         />
       )}
 
