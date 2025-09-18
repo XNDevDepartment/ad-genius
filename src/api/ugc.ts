@@ -53,15 +53,15 @@ async function callUgcFunction(action: string, payload: any = {}, maxRetries = 3
     throw new Error('Not authenticated');
   }
 
-  // Set timeout based on action type
-  const timeout = action === 'createImageJob' ? 60000 : 30000; // 60s for job creation, 30s for others
+  // Set timeout based on action type - no timeout for job creation
+  const timeout = action === 'createImageJob' ? null : 30000; // No timeout for job creation, 30s for others
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       console.log(`[UGC API] ${action} - Attempt ${attempt}/${maxRetries}`, payload);
       
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      const timeoutId = timeout ? setTimeout(() => controller.abort(), timeout) : null;
 
       const response = await fetch(`https://dhqdamfisdbbcieqlpvt.supabase.co/functions/v1/ugc`, {
         method: 'POST',
@@ -73,7 +73,7 @@ async function callUgcFunction(action: string, payload: any = {}, maxRetries = 3
         signal: controller.signal,
       });
 
-      clearTimeout(timeoutId);
+      if (timeoutId) clearTimeout(timeoutId);
 
       const data = await response.json();
       
@@ -106,7 +106,7 @@ async function callUgcFunction(action: string, payload: any = {}, maxRetries = 3
       
       // Don't retry on abort/timeout or non-retryable errors
       if (error.name === 'AbortError') {
-        throw new Error(`Request timeout after ${timeout/1000}s`);
+        throw new Error(timeout ? `Request timeout after ${timeout/1000}s` : 'Request was aborted');
       }
       
       if (attempt === maxRetries || error.message.includes('Authentication failed')) {
