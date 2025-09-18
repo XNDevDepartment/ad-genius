@@ -422,7 +422,6 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
         form.append("prompt", prompt);
         form.append("size", size);
         form.append("quality", quality);
-        form.append("response_format", "b64_json");
         if (job?.settings?.input_fidelity) {
           form.append("input_fidelity", String(job.settings.input_fidelity));
         }
@@ -447,7 +446,6 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
             prompt,
             size,
             quality,
-            response_format: "b64_json",
           }),
           signal: controller.signal
         });
@@ -466,6 +464,8 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
           throw new Error(`OpenAI error ${res.status}${reqId ? ` req=${reqId}` : ""}: ${text}`);
         }
 
+        const jsonResp = await res.json();
+        
         // upload to storage
         const b64 = jsonResp?.data?.[0]?.b64_json;
         if (!b64) {
