@@ -169,13 +169,6 @@ export type Database = {
             foreignKeyName: "gemini_messages_conversation_id_fkey"
             columns: ["conversation_id"]
             isOneToOne: false
-            referencedRelation: "gemini_conversation_summaries"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "gemini_messages_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
             referencedRelation: "gemini_conversations"
             referencedColumns: ["id"]
           },
@@ -655,21 +648,7 @@ export type Database = {
       }
     }
     Views: {
-      gemini_conversation_summaries: {
-        Row: {
-          audience: string | null
-          created_at: string | null
-          id: string | null
-          image_analysis_preview: string | null
-          image_url: string | null
-          last_message_at: string | null
-          message_count: number | null
-          niche: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       calculate_image_cost: {
