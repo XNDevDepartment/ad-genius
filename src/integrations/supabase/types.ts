@@ -169,6 +169,13 @@ export type Database = {
             foreignKeyName: "gemini_messages_conversation_id_fkey"
             columns: ["conversation_id"]
             isOneToOne: false
+            referencedRelation: "gemini_conversation_summaries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gemini_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
             referencedRelation: "gemini_conversations"
             referencedColumns: ["id"]
           },
@@ -648,11 +655,29 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      gemini_conversation_summaries: {
+        Row: {
+          audience: string | null
+          created_at: string | null
+          id: string | null
+          image_analysis_preview: string | null
+          image_url: string | null
+          last_message_at: string | null
+          message_count: number | null
+          niche: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_image_cost: {
         Args: { p_settings: Json }
+        Returns: number
+      }
+      cleanup_old_gemini_conversations: {
+        Args: { p_days_old?: number }
         Returns: number
       }
       deduct_user_credits: {
@@ -667,6 +692,25 @@ export type Database = {
           p_user_id: string
         }
         Returns: string
+      }
+      get_gemini_conversation_message_count: {
+        Args: { p_conversation_id: string }
+        Returns: number
+      }
+      get_gemini_conversations_with_latest_message: {
+        Args: { p_user_id: string }
+        Returns: {
+          audience: string
+          conversation_created_at: string
+          conversation_id: string
+          conversation_updated_at: string
+          image_analysis: string
+          image_url: string
+          latest_message_content: string
+          latest_message_created_at: string
+          latest_message_role: string
+          niche: string
+        }[]
       }
       get_image_credit_cost: {
         Args: { p_count?: number; p_quality?: string }
@@ -712,6 +756,18 @@ export type Database = {
       reset_user_monthly_credits: {
         Args: { p_user_id: string }
         Returns: Json
+      }
+      search_gemini_conversations: {
+        Args: { p_limit?: number; p_search_term: string; p_user_id: string }
+        Returns: {
+          audience: string
+          conversation_id: string
+          created_at: string
+          image_analysis: string
+          niche: string
+          relevance_score: number
+          updated_at: string
+        }[]
       }
     }
     Enums: {
