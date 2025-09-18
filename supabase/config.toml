@@ -35,6 +35,9 @@ jwt_expiry = 3600
 refresh_token_rotation_enabled = true
 security_update_enabled = true
 
+[functions.gemini-chat]
+verify_jwt = true
+
 [functions.new-openai-chat]
 verify_jwt = true
 

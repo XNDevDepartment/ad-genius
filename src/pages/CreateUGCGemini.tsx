@@ -30,6 +30,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Link as LinkIcon, Images } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useGeminiConversationSync } from "@/hooks/useGeminiConversationSync";
 
 interface GeneratedImage {
   id: string;
@@ -151,6 +152,11 @@ const CreateUGC = () => {
 
   // Initialize a new Gemini conversation when component mounts
   const initializeConversation = async () => {
+    if (!user) {
+      console.log('Cannot initialize conversation: user not authenticated');
+      return;
+    }
+
     try {
       const result = await startGeminiConversation(niche);
 
@@ -167,10 +173,15 @@ const CreateUGC = () => {
     }
   };
 
-  // Initialize thread on component mount
+  // Initialize Gemini conversation when component mounts and user is authenticated
   useEffect(() => {
-    initializeConversation();
-  }, []);
+    if (user) {
+      console.log('User authenticated, initializing Gemini conversation...');
+      initializeConversation();
+    } else {
+      console.log('User not authenticated');
+    }
+  }, [user]);
 
   // Helper function to parse scenarios from Gemini response  
   const parseScenarios = (responseText: string): AIScenario[] => {
