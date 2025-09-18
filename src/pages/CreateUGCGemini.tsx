@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import ImageUploader from "@/components/ImageUploader";
 import { useToast } from "@/hooks/use-toast";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
-import { startConversationAPI, converse, sendImageAndRun } from '@/api/OpenAiChatClient';
+import { startGeminiConversation, converseWithGemini, sendImageToGemini, generateGeminiScenarios } from '@/api/gemini-chat';
 import { useImageJob } from '@/hooks/useImageJob';
 import { useActiveJob } from '@/hooks/useActiveJob';
 import { useAuth } from "@/contexts/AuthContext";
@@ -91,7 +91,7 @@ const CreateUGC = () => {
   // Check if a scenario is actually selected (has content in the idea field)
   const hasSelectedScenario = selectedScenario && selectedScenario.idea && selectedScenario.idea.trim().length > 0;
   const [isLoadingScenarios, setIsLoadingScenarios] = useState(false);
-  const [threadId, setThreadId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [productIdentification, setProductIdentification] = useState("");
   const [moreScenarios, setMoreScenarios] = useState(false);
   const [numImages, setNumImages] = useState(1);
@@ -111,7 +111,6 @@ const CreateUGC = () => {
 
 
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
-  const [conversationId, setConversationId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [sourceImagePickerOpen, setSourceImagePickerOpen] = useState(false);
   const [urlImportOpen, setUrlImportOpen] = useState(false);
@@ -150,31 +149,19 @@ const CreateUGC = () => {
   }, [niche]);
  
 
-  const ASSISTANT_ID = "asst_zX2cHyZXHY1mj5CT4wzdJLU6";
-
-  // Initialize a new OpenAI thread when component mounts
-  const initializeThread = async () => {
+  // Initialize a new Gemini conversation when component mounts
+  const initializeConversation = async () => {
     try {
-      const result = await startConversationAPI(ASSISTANT_ID);
+      const result = await startGeminiConversation(niche);
 
-      setThreadId(result.threadId);
-      console.log('New thread created with new-openai-chat:', result.threadId);
-
-      // Save conversation to database
-      const conversation = await saveConversation({
-        threadId: result.threadId,
-        assistantId: ASSISTANT_ID
-      });
-
-      if (conversation) {
-        setConversationId(conversation.id);
-      }
+      setConversationId(result.conversationId);
+      console.log('New Gemini conversation created:', result.conversationId);
 
     } catch (error) {
-      console.error('Error initializing thread:', error);
+      console.error('Failed to initialize Gemini conversation:', error);
       toast({
-        title: "Initialization Error",
-        description: "Failed to start conversation with AI assistant. Please try again.",
+        title: t('error'),
+        description: 'Failed to initialize conversation',
         variant: "destructive",
       });
     }
@@ -182,8 +169,40 @@ const CreateUGC = () => {
 
   // Initialize thread on component mount
   useEffect(() => {
-    initializeThread();
+    initializeConversation();
   }, []);
+
+  // Helper function to parse scenarios from Gemini response  
+  const parseScenarios = (responseText: string): AIScenario[] => {
+    try {
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return parsed.scenarios || [];
+      }
+      
+      const lines = responseText.split('\n').filter(line => line.trim());
+      const scenarios: AIScenario[] = [];
+      
+      for (const line of lines) {
+        if (/^\d+\./.test(line.trim())) {
+          const content = line.replace(/^\d+\.\s*/, '').trim();
+          if (content) {
+            scenarios.push({
+              idea: content.split(':')[0] || content,
+              description: content,
+              'small-description': content.substring(0, 100) + '...'
+            });
+          }
+        }
+      }
+      
+      return scenarios.slice(0, 6);
+    } catch (error) {
+      console.error('Error parsing scenarios:', error);
+      return [];
+    }
+  };
 
   // Auto-scroll to scenarios when they appear
   useEffect(() => {
@@ -334,12 +353,11 @@ const CreateUGC = () => {
       reader.onload = async () => {
         const base64 = reader.result as string;
 
-        const reply = await sendImageAndRun(
-          threadId!,
-          ASSISTANT_ID,
+        const reply = await sendImageToGemini(
+          conversationId!,
           base64,
           file.name,
-          'I have uploaded a product image. Please analyze it. Dont answer this message.'
+          'I have uploaded a product image. Please analyze it for UGC content creation.'
         );
 
         setProductIdentification(reply);
@@ -404,12 +422,11 @@ const CreateUGC = () => {
       reader.onload = async () => {
         const base64 = reader.result as string;
 
-        const reply = await sendImageAndRun(
-          threadId!,
-          ASSISTANT_ID,
+        const reply = await sendImageToGemini(
+          conversationId!,
           base64,
           file.name,
-          'I have uploaded a product image. Please analyze it. Dont answer this message.'
+          'I have uploaded a product image. Please analyze it for UGC content creation.'
         );
 
         setProductIdentification(reply);
@@ -499,12 +516,11 @@ const CreateUGC = () => {
         reader.onload = async () => {
           const base64 = reader.result as string;
 
-          const reply = await sendImageAndRun(
-            threadId!,
-            ASSISTANT_ID,
+          const reply = await sendImageToGemini(
+            conversationId!,
             base64,
             file.name,
-            'I have uploaded a product image from URL. Please analyze it. Dont answer this message.'
+            'I have uploaded a product image from URL. Please analyze it for UGC content creation.'
           );
 
           setProductIdentification(reply);
@@ -553,39 +569,38 @@ const CreateUGC = () => {
     const targetNiche = nicheText || niche;
     setIsLoadingScenarios(true);
     try {
-      const responseText = await converse(
-        threadId!,
-        `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas. Return ONLY a compact JSON object with "scenarios" array and in this language: ` + language,
-        ASSISTANT_ID
+      const responseText = await generateGeminiScenarios(
+        conversationId!,
+        targetNiche,
+        '',
+        6
       );
-      // Extract JSON from response
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const scenarios = JSON.parse(jsonMatch[0]);
-        setAiScenarios(scenarios.scenarios || []);
+      
+      // Parse scenarios from Gemini response
+      const scenarios = parseScenarios(responseText);
+      setAiScenarios(scenarios);
 
-        // Save user message and assistant response
-        if (conversationId) {
-          await saveMessage({
-            conversationId,
-            role: 'user',
-            content: `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 6 creative UGC scenario ideas.`,
-            metadata: { requestType: 'scenario_generation' }
-          });
+      // Save user message and assistant response  
+      if (conversationId) {
+        await saveMessage({
+          conversationId,
+          role: 'user',
+          content: `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 6 creative UGC scenario ideas.`,
+          metadata: { requestType: 'scenario_generation' }
+        });
 
-          await saveMessage({
-            conversationId,
-            role: 'assistant',
-            content: responseText,
-            metadata: { scenarioCount: scenarios.scenarios?.length || 0 }
-          });
-        }
-
-        toast({
-          title: "Scenarios Generated",
-          description: `Got ${scenarios.scenarios?.length || 0} UGC scenario ideas for your product.`,
+        await saveMessage({
+          conversationId,
+          role: 'assistant',
+          content: responseText,
+          metadata: { scenarioCount: scenarios?.length || 0 }
         });
       }
+
+      toast({
+        title: "Scenarios Generated",
+        description: `Got ${scenarios?.length || 0} UGC scenario ideas for your product.`,
+      });
     } catch (error) {
       console.error('Error getting scenarios:', error);
       toast({
@@ -987,7 +1002,7 @@ const CreateUGC = () => {
     <TooltipProvider delayDuration={120} skipDelayDuration={400}>
       <div ref={topRef} className="min-h-screen bg-background relative">
       {/* Loading Overlay */}
-      {!threadId && (
+      {!conversationId && (
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-[30] flex items-center justify-center">
           <div className="text-center space-y-4">
             <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
@@ -1010,7 +1025,7 @@ const CreateUGC = () => {
                   size="icon"
                   onClick={() => navigate("/create")}
                   className="lg:hidden"
-                  disabled={!threadId}
+                  disabled={!conversationId}
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
@@ -1024,7 +1039,7 @@ const CreateUGC = () => {
           {/* Main Form */}
           <div className={`${isMobile ? 'col-span-12' : 'lg:col-span-7'} space-y-6`}>
             {/* Product & Niche Card */}
-            <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'}`}>
+            <Card className={`${!conversationId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'}`}>
               <CardContent className="p-6 lg:p-8 space-y-6">
                 <div>
                   {/* <div className="flex items-center gap-2 mb-4">
@@ -1063,7 +1078,7 @@ const CreateUGC = () => {
                           size="sm"
                           onClick={() => setSourceImagePickerOpen(true)}
                           className="flex-1 flex-wrap p-2 overflow-hidden"
-                          disabled={!threadId}
+                          disabled={!conversationId}
                         >
                           <Images className="h-4 w-4 mr-2" />
                           Choose from Library
@@ -1075,7 +1090,7 @@ const CreateUGC = () => {
                           size="sm"
                           onClick={() => setUrlImportOpen(true)}
                           className="flex-1 flex-wrap p-2 overflow-hidden"
-                          disabled={!threadId}
+                          disabled={!conversationId}
                         >
                           <LinkIcon className="h-4 w-4 mr-2" />
                           Import from URL
@@ -1109,7 +1124,7 @@ const CreateUGC = () => {
                         onChange={(e) => handleNicheChange(e.target.value)}
                         className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full text-base md:text-sm"
                         style={{ lineHeight: '1.25rem, font-size: 16px' }}
-                        disabled={!threadId}
+                        disabled={!conversationId}
                         rows={1}
                       />
                       <div className="flex justify-end text-sm text-muted-foreground">
@@ -1121,7 +1136,7 @@ const CreateUGC = () => {
                       type="button"
                       variant="default"
                       onClick={() => getScenariosFromConversation()}
-                      disabled={isLoadingScenarios || !productImage || !niche.trim() || !threadId || isAnalyzingImage}
+                      disabled={isLoadingScenarios || !productImage || !niche.trim() || !conversationId || isAnalyzingImage}
                       className="w-full"
                     >
                       {isLoadingScenarios ? (
@@ -1149,7 +1164,7 @@ const CreateUGC = () => {
             </Card>
 
             {/* UGC Scenarios Card */}
-              <Card ref={scenariosRef} className={`${!threadId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'} scroll-mt-6`}>
+              <Card ref={scenariosRef} className={`${!conversationId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'} scroll-mt-6`}>
                 <CardContent className="p-6 lg:p-8">
                   <div>
                     <div className="flex items-center gap-2 mb-4">
@@ -1209,7 +1224,7 @@ const CreateUGC = () => {
                       onChange={(e) => setSelectedScenario((val) => { return {...val, 'description': e.target.value }})}
                       className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full text-base md:text-sm"
                       style={{ lineHeight: '1.25rem, font-size: 16px' }}
-                      disabled={!threadId}
+                      disabled={!conversationId}
                       rows={3}
                     />
                       <div className="flex justify-end text-sm text-muted-foreground">
@@ -1236,7 +1251,7 @@ const CreateUGC = () => {
                       }}
                       onOpenInLibrary={() => navigate('/library')}
                       onStartFromScratch={handleStartFromScratch}
-                      threadId={threadId}
+                      threadId={conversationId}
                       imageOrientation={imageOrientation}
                     />
 
@@ -1266,7 +1281,7 @@ const CreateUGC = () => {
           {/* Desktop Sidebar - Settings & Preview */}
           {!isMobile && (
             <div className="lg:col-span-5 mt-6 lg:mt-0">
-              <div className={`bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
+              <div className={`bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6 lg:sticky lg:top-8 ${!conversationId ? 'opacity-50 pointer-events-none' : ''}`}>
                 <div>
                   <h3 className="text-lg font-semibold mb-4">{t('ugc.generationSettings.title')}</h3>
 
