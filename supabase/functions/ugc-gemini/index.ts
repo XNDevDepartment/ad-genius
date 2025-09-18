@@ -2,7 +2,6 @@
 // Supabase Edge Function (Deno) for Google Gemini image generation
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { Image } from "https://deno.land/x/imagescript@1.4.0/mod.ts";
 
 // ---------- CORS ----------
 const corsHeaders = {
@@ -470,11 +469,7 @@ async function generateSingleImageWithGemini(job: any, index: number, sourceImag
   const MAX_ATTEMPTS = 3;
   const size = job?.settings?.size ?? "1024x1024";
   const quality = (job?.settings?.quality ?? "high") as "low" | "medium" | "high";
-  const outputFormat = (job?.settings?.output_format ?? "png") as "png" | "webp";
   const prompt = String(job?.prompt ?? "");
-
-  const webpQualityBySetting: Record<string, number> = { low: 60, medium: 75, high: 90 };
-  const resolveFormat = (requested: "png" | "webp") => (requested === "webp" ? "webp" : "webp");
 
   // Map size to Gemini format
   const mapSizeToGemini = (size: string) => {
@@ -580,28 +575,11 @@ async function generateSingleImageWithGemini(job: any, index: number, sourceImag
         const b64 = generatedImages[0].bytesBase64Encoded;
         const decodedBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
 
+        // Store as PNG directly (no WEBP conversion since WASM is not supported in edge functions)
         let fileBytes = decodedBytes;
-        let storedFormat = resolveFormat(outputFormat);
-        let contentType = storedFormat === "webp" ? "image/webp" : "image/png";
-        let extension = storedFormat;
-
-        if (storedFormat === "webp") {
-          try {
-            const image = await Image.decode(decodedBytes);
-            const webpQuality = webpQualityBySetting[quality] ?? 90;
-            fileBytes = await image.encodeWEBP(webpQuality);
-          } catch (err: any) {
-            storedFormat = "png";
-            contentType = "image/png";
-            extension = "png";
-            fileBytes = decodedBytes;
-            log("WEBP conversion failed, falling back to PNG", { 
-              jobId: job.id, 
-              index, 
-              error: err?.message 
-            });
-          }
-        }
+        let storedFormat = "png";
+        let contentType = "image/png";
+        let extension = "png";
 
         const storagePath = `${job.user_id}/${job.id}/${index}.${extension}`;
         const { error: upErr } = await supabase.storage
