@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 // Lazy load non-critical routes for better code splitting
 const CreateSelection = lazy(() => import("./pages/CreateSelection"));
 const CreateUGC = lazy(() => import("./pages/CreateUGC"));
+const CreateUGCGemini = lazy(() => import("./pages/CreateUGCGemini"));
 const Library = lazy(() => import("./pages/Library"));
 const Account = lazy(() => import("./pages/Account"));
 const SignIn = lazy(() => import("./pages/SignIn"));
@@ -57,6 +58,11 @@ const App = () => {
                 <Route path="create/ugc" element={
                   <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
                     <CreateUGC />
+                  </Suspense>
+                } />
+                <Route path="create/ugc-gemini" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <CreateUGCGemini />
                   </Suspense>
                 } />
                 <Route path="library" element={

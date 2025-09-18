@@ -1,15 +1,17 @@
-import { ArrowLeft, Users, Camera, Sparkle } from "lucide-react";
+import { ArrowLeft, Users, Camera, Sparkle, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 const CreateSelection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation();
+  const { isAdmin } = useAdminAuth();
 
   // Block access if not authenticated
   useEffect(() => {
@@ -26,6 +28,14 @@ const CreateSelection = () => {
       icon: Users,
       path: "/create/ugc"
     },
+    ...(isAdmin ? [{
+      id: "ugc-gemini",
+      title: "Gemini UGC Creator (Admin Only)",
+      description: "Create UGC content using Google Gemini Nano Banana 2.5 model - Admin testing environment",
+      icon: Zap,
+      path: "/create/ugc-gemini",
+      isAdmin: true
+    }] : []),
     {
       id: "soon",
       title: "In Progress",
@@ -64,14 +74,21 @@ const CreateSelection = () => {
               key={workflow.id}
               className={`bg-transparent shadow-md cursor-pointer transition-all hover:shadow-lg ${
                 workflow.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'
-              }`}
+              } ${workflow.isAdmin ? 'border-2 border-orange-500/30 bg-orange-500/5' : ''}`}
               onClick={() => !workflow.disabled && navigate(workflow.path)}
             >
               <CardHeader className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-apple bg-primary/10 flex items-center justify-center">
-                  <workflow.icon className="h-8 w-8 text-primary" />
+                <div className={`w-16 h-16 mx-auto mb-4 rounded-apple flex items-center justify-center ${
+                  workflow.isAdmin ? 'bg-orange-500/20' : 'bg-primary/10'
+                }`}>
+                  <workflow.icon className={`h-8 w-8 ${workflow.isAdmin ? 'text-orange-500' : 'text-primary'}`} />
                 </div>
-                <CardTitle className="text-xl">{workflow.title}</CardTitle>
+                <CardTitle className="text-xl flex items-center gap-2 justify-center">
+                  {workflow.title}
+                  {workflow.isAdmin && (
+                    <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full">ADMIN</span>
+                  )}
+                </CardTitle>
                 <CardDescription>{workflow.description}</CardDescription>
               </CardHeader>
               <CardContent>
