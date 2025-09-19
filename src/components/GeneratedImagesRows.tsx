@@ -91,14 +91,14 @@ export default function GeneratedImagesRows({
 
   // Store initial aspect ratio when job starts, preserve during generation
   useEffect(() => {
-    if (threadId && images.length > 0 && !jobAspectRatio) {
-      // Job is active, store the initial aspect ratio
+    if (threadId && !jobAspectRatio) {
+      // Job is active, store the initial aspect ratio immediately
       setJobAspectRatio(imageOrientation);
     } else if (!threadId) {
       // No active job, allow aspect ratio changes
       setJobAspectRatio(null);
     }
-  }, [threadId, images.length, imageOrientation, jobAspectRatio]);
+  }, [threadId, imageOrientation, jobAspectRatio]);
 
   // Use preserved aspect ratio during generation, current setting otherwise
   useEffect(() => {

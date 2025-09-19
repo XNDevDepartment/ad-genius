@@ -660,7 +660,7 @@ const CreateUGC = () => {
       
       // Provide immediate feedback
       setStage('generating');
-      setGeneratedImages([]);
+      // Keep previous images visible alongside new generation
       setPendingSlots(numImages);
 
       // Save state to localStorage for persistence
