@@ -1,5 +1,6 @@
 import { useActionData, useNavigate } from 'react-router-dom';
 import symbol from '../assets/favicon2.png';
+import logo from '../assets/logos/logo_horizontal.webp';
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ const NavigationHeader = () => {
   const { t } = useTranslation();
 
   return (
-    <header ref={ref} className="bg-background/90 backdrop-blur-sm border-b border-border flex justify-between items-center px-4 py-2 safe-area-top">
+    <header ref={ref} className="bg-background/90 backdrop-blur-sm flex justify-between items-center px-4 py-2 safe-area-top">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -22,17 +23,17 @@ const NavigationHeader = () => {
         className="flex items-center gap-3 cursor-pointer"
         onClick={() => navigate("/")}
       >
-        <div className="shadow-glow">
-          <img 
-            src={symbol}
+        <div className="shadow-glow pt-2">
+          <img
+            src={logo}
             alt={t('a11y.logoAlt')}
-            className="h-10 w-10 object-contain"
+            className="h-10 w-32 object-contain"
           />
         </div>
-        <div>
+        {/* <div>
           <h1 className="font-bold text-lg leading-tight">ProduktPix</h1>
           <p className="text-xs font-bold leading-none" style={{color: '#0C60FE'}}>Genius</p>
-        </div>
+        </div> */}
       </motion.div>
 
       {!user &&
