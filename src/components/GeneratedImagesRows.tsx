@@ -87,17 +87,31 @@ export default function GeneratedImagesRows({
   const slots = Math.max(totalSlots || 0, images.length || 0);
 
   const [THUMB_CLASSES , setTHUMB_CLASSES] = useState("");
+  const [jobAspectRatio, setJobAspectRatio] = useState<string | null>(null);
 
+  // Store initial aspect ratio when job starts, preserve during generation
   useEffect(() => {
-    if(imageOrientation === '1:1'){
+    if (threadId && images.length > 0 && !jobAspectRatio) {
+      // Job is active, store the initial aspect ratio
+      setJobAspectRatio(imageOrientation);
+    } else if (!threadId) {
+      // No active job, allow aspect ratio changes
+      setJobAspectRatio(null);
+    }
+  }, [threadId, images.length, imageOrientation, jobAspectRatio]);
+
+  // Use preserved aspect ratio during generation, current setting otherwise
+  useEffect(() => {
+    const activeOrientation = jobAspectRatio || imageOrientation;
+    
+    if(activeOrientation === '1:1'){
       setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-80 h-80")
-    }else if (imageOrientation === '2:3'){
+    }else if (activeOrientation === '2:3'){
      setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-72 aspect-[2/3]")
     }else{
       setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-[22rem] aspect-[3/2]");
-
     }
-  }, [imageOrientation]);
+  }, [jobAspectRatio, imageOrientation]);
 
   return (
     <div className="space-y-4">

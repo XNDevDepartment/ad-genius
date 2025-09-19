@@ -196,24 +196,36 @@ const CreateUGC = () => {
 
   // Convert job images to display format when they change
   useEffect(() => {
+    console.log('[CreateUGC] Job images changed:', { 
+      jobImagesLength: jobImages.length, 
+      jobStatus: job?.status,
+      jobImagesWithUrls: jobImages.filter(img => Boolean(img.public_url)).length 
+    });
+    
     if (jobImages.length === 0) return;
 
     const readyImages = jobImages.filter(img => Boolean(img.public_url));
+    console.log('[CreateUGC] Ready images:', readyImages.length, 'out of', jobImages.length);
+    
     if (readyImages.length === 0) return;
 
     setGeneratedImages(prev => {
       const previousSelections = new Map(prev.map(image => [image.id, image.selected]));
 
-      return readyImages.map((img) => ({
+      const newImages = readyImages.map((img) => ({
         id: img.id,
         url: img.public_url,
         prompt: job?.prompt || img.prompt || '',
         format: (img.meta as any)?.format || job?.settings?.output_format || 'png',
         selected: previousSelections.get(img.id) ?? false,
       }));
+      
+      console.log('[CreateUGC] Setting generated images:', newImages.length, 'images');
+      return newImages;
     });
 
     if (job?.status === 'completed') {
+      console.log('[CreateUGC] Job completed, transitioning to results stage');
       setStage('results');
       localStorage.removeItem('currentJobId');
       localStorage.removeItem('currentStage');
@@ -641,6 +653,11 @@ const CreateUGC = () => {
     }
 
     try {
+      console.log('[CreateUGC] Starting new generation, clearing previous job state');
+      
+      // Clear any existing job state first
+      clearJob();
+      
       // Provide immediate feedback
       setStage('generating');
       setGeneratedImages([]);

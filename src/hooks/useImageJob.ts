@@ -48,21 +48,50 @@ function buildPlaceholders(count: number, payload: CreateJobPayload): UgcImageRo
 
 /** Deterministic merge by meta.index preserving array length */
 function mergeByIndex(placeholders: UgcImageRow[], incoming: UgcImageRow[]): UgcImageRow[] {
+  console.log('[useImageJob] mergeByIndex called:', { 
+    placeholders: placeholders.length, 
+    incoming: incoming.length,
+    placeholderIndexes: placeholders.map(p => ({ id: p.id, index: (p as any)?.meta?.index })),
+    incomingIndexes: incoming.map(p => ({ id: p.id, index: (p as any)?.meta?.index }))
+  });
+
   const byIdx: Map<number, UgcImageRow> = new Map();
+  
+  // Map incoming images by their index
   for (const img of incoming) {
     const idx = (img as any)?.meta?.index as number | undefined;
-    if (typeof idx === 'number') byIdx.set(idx, img);
+    if (typeof idx === 'number') {
+      byIdx.set(idx, img);
+    } else {
+      // If no index, try to infer from existing placeholders or use array position
+      const existingPlaceholder = placeholders.find(p => p.id.includes('placeholder') && 
+        !byIdx.has((p as any)?.meta?.index ?? -1));
+      if (existingPlaceholder) {
+        const inferredIdx = (existingPlaceholder as any)?.meta?.index ?? placeholders.indexOf(existingPlaceholder);
+        if (typeof inferredIdx === 'number') {
+          byIdx.set(inferredIdx, { ...img, meta: { ...img.meta, index: inferredIdx } });
+        }
+      }
+    }
   }
+  
   const maxIndex = Math.max(
     ...[...byIdx.keys(), ...placeholders.map((p) => (p as any)?.meta?.index ?? -1)],
     -1,
   );
   const size = Math.max(maxIndex + 1, placeholders.length, incoming.length);
+  
   const result: UgcImageRow[] = Array.from({ length: size }, (_, i) => {
     if (byIdx.has(i)) return byIdx.get(i)!;
     const ph = placeholders.find((p) => (p as any)?.meta?.index === i);
     return ph ?? placeholders[i] ?? (incoming[i] && isUgcImageRow(incoming[i]) ? incoming[i] : (null as any));
   }).filter(Boolean);
+  
+  console.log('[useImageJob] mergeByIndex result:', {
+    resultLength: result.length,
+    resultItems: result.map(r => ({ id: r.id, hasUrl: !!r.public_url, index: (r as any)?.meta?.index }))
+  });
+  
   return result;
 }
 
@@ -245,10 +274,27 @@ export function useImageJob() {
   }, [loadJobImages]);
 
   const createJob = useCallback(async (payload: CreateJobPayload): Promise<string> => {
-    setLoading(true);
+    console.log('[useImageJob] Creating new job, clearing previous state first');
+    
+    // Always clear previous job state before creating new one
+    setJob(null);
+    setImages([]);
     setError(null);
+    
+    // Clear all timers
+    if (watchdogRef.current) {
+      clearTimeout(watchdogRef.current);
+      watchdogRef.current = null;
+    }
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+    
+    setLoading(true);
 
     const total = payload?.settings?.number || 1;
+    console.log('[useImageJob] Creating job for', total, 'images');
     const optimisticJobId = `local-${Date.now()}`;
 
     setJob({
@@ -351,14 +397,30 @@ export function useImageJob() {
   }, [job?.id]);
 
   const clearJob = useCallback(() => {
+    console.log('[useImageJob] Clearing job state');
     setJob(null);
     setImages([]);
     setError(null);
-    if (watchdogRef.current) clearTimeout(watchdogRef.current);
-    watchdogRef.current = null;
+    setLoading(false);
+    
+    // Clear all timers and refs
+    if (watchdogRef.current) {
+      clearTimeout(watchdogRef.current);
+      watchdogRef.current = null;
+    }
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+    
     resumeAttemptsRef.current = 0;
-    // Clear mobile persistence metadata
+    
+    // Clear all persistence data
     localStorage.removeItem('jobMetadata');
+    localStorage.removeItem('currentJobId');
+    localStorage.removeItem('currentStage');
+    
+    console.log('[useImageJob] Job state cleared');
   }, []);
 
   return {
