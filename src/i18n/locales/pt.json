@@ -485,6 +485,16 @@
       "medium": "Média",
       "high": "Alta",
       "lowCredits": "1 crédito",
+      "mediumCredits": "1.5 créditos", 
+      "highCredits": "2 créditos"
+    },
+    "qualitySettings": {
+      "title": "Qualidade",
+      "tooltip": "Maior qualidade usa mais créditos mas produz melhores resultados",
+      "low": "Baixa",
+      "medium": "Média",
+      "high": "Alta",
+      "lowCredits": "1 crédito",
       "mediumCredits": "1,5 créditos", 
       "highCredits": "2 créditos"
     },

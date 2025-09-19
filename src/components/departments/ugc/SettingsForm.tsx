@@ -235,7 +235,7 @@ export const SettingsForm = ({
       {/* Image Quality */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Label className="text-sm font-medium">Qualidade</Label>
+          <Label className="text-sm font-medium">{t('ugc.qualitySettings.title')}</Label>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
@@ -243,7 +243,7 @@ export const SettingsForm = ({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="max-w-xs">Higher quality uses more credits but produces better results</p>
+              <p className="max-w-xs">{t('ugc.qualitySettings.tooltip')}</p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -254,16 +254,16 @@ export const SettingsForm = ({
           className="justify-start grid grid-cols-3 gap-1"
         >
           <ToggleGroupItem value="low" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
-            <span>Baixa</span>
-            <span className="text-[10px] opacity-70">1 crédito</span>
+            <span>{t('ugc.qualitySettings.low')}</span>
+            <span className="text-[10px] opacity-70">{t('ugc.qualitySettings.lowCredits')}</span>
           </ToggleGroupItem>
           <ToggleGroupItem value="medium" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
-            <span>Média</span>
-            <span className="text-[10px] opacity-70">1.5 créditos</span>
+            <span>{t('ugc.qualitySettings.medium')}</span>
+            <span className="text-[10px] opacity-70">{t('ugc.qualitySettings.mediumCredits')}</span>
           </ToggleGroupItem>
           <ToggleGroupItem value="high" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
-            <span>Alta</span>
-            <span className="text-[10px] opacity-70">2 créditos</span>
+            <span>{t('ugc.qualitySettings.high')}</span>
+            <span className="text-[10px] opacity-70">{t('ugc.qualitySettings.highCredits')}</span>
           </ToggleGroupItem>
         </ToggleGroup>
       </div>

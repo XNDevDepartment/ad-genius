@@ -488,6 +488,16 @@
       "mediumCredits": "1,5 crédits", 
       "highCredits": "2 crédits"
     },
+    "qualitySettings": {
+      "title": "Qualité",
+      "tooltip": "Une meilleure qualité utilise plus de crédits mais produit de meilleurs résultats",
+      "low": "Basse",
+      "medium": "Moyenne",
+      "high": "Haute",
+      "lowCredits": "1 crédit",
+      "mediumCredits": "1,5 crédits", 
+      "highCredits": "2 crédits"
+    },
     "freePlanLimited": "Le plan gratuit est limité à 1 image par génération.",
     "premiumScenariosAvailable": "2 scénarios premium disponibles avec les plans payants.",
     "advancedSettings": {

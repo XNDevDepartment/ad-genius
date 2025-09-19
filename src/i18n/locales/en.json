@@ -453,7 +453,17 @@
       "vibrant": "Vibrant"
     },
     "lighting": {
-      "title": "Light Type"
+      "title": "Time of Day"
+    },
+    "qualitySettings": {
+      "title": "Quality",
+      "tooltip": "Higher quality uses more credits but produces better results",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "lowCredits": "1 credit",
+      "mediumCredits": "1.5 credits", 
+      "highCredits": "2 credits"
     },
     "qualitySettings": {
       "title": "Quality",
