@@ -225,7 +225,16 @@
     "deleting": "Eliminando...",
     "upgrade": "Actualizar",
     "upgradeForMore": "Actualizar para más",
-    "upgradeToUnlock": "Actualizar para desbloquear"
+    "upgradeToUnlock": "Actualizar para desbloquear",
+    "of": "de",
+    "remove": "Eliminar",
+    "search": "Buscar",
+    "sort": "Ordenar",
+    "filter": "Filtrar",
+    "newest": "Más Reciente",
+    "oldest": "Más Antiguo",
+    "noResults": "No se encontraron resultados",
+    "currentlyGenerating": "Generando Actualmente"
   },
   "a11y": {
     "logo": "Logo de la aplicación",
@@ -443,7 +452,13 @@
     },
     "orientation": {
       "title": "Orientación de Imagen",
-      "tooltip": "Elige la relación de aspecto para tus imágenes basado en dónde planeas usarlas."
+      "tooltip": "Elige la relación de aspecto para tus imágenes según donde planees usarlas.",
+      "landscape": "Paisaje (3:2)",
+      "landscapeDesc": "Formato horizontal",
+      "square": "Cuadrado (1:1)",
+      "squareDesc": "Formato cuadrado",
+      "portrait": "Retrato (2:3)",
+      "portraitDesc": "Formato vertical"
     },
     "highlight": {
       "title": "Destacar Producto",

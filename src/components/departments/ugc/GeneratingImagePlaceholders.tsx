@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Image } from "lucide-react";
 import './../../../costumn.css';
 import ImageGallery from "@/components/ImageGallery";
+import { useTranslation } from "react-i18next";
 
 
 interface GeneratedImage {
@@ -27,6 +28,7 @@ export const GeneratingImagePlaceholders = ({
   onImageSelect,
   imageOrientation
 }: GeneratingImagePlaceholdersProps) => {
+  const { t } = useTranslation();
 
   return (
     <div id="generating-images" className="scroll-mt-6">
@@ -34,10 +36,10 @@ export const GeneratingImagePlaceholders = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Image className="h-5 w-5 text-primary" />
-            Generating Images
+            {t('common.currentlyGenerating')}
           </CardTitle>
           <CardDescription>
-            AI is creating your UGC content...
+            {t('ugc.generating')}
           </CardDescription>
         </CardHeader>
         <CardContent>

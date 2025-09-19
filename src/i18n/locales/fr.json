@@ -225,7 +225,16 @@
     "deleting": "Suppression...",
     "upgrade": "Mettre à Niveau",
     "upgradeForMore": "Mettre à niveau pour plus",
-    "upgradeToUnlock": "Mettre à niveau pour débloquer"
+    "upgradeToUnlock": "Mettre à niveau pour débloquer",
+    "of": "de",
+    "remove": "Supprimer",
+    "search": "Rechercher",
+    "sort": "Trier",
+    "filter": "Filtrer",
+    "newest": "Plus Récent",
+    "oldest": "Plus Ancien",
+    "noResults": "Aucun résultat trouvé",
+    "currentlyGenerating": "Génération en Cours"
   },
   "a11y": {
     "logo": "Logo de l'application",
@@ -442,8 +451,14 @@
       "tooltip": "Les images de meilleure qualité sont plus belles mais coûtent plus de crédits. Basse=1 crédit, Moyenne=2 crédits, Haute=3 crédits par image."
     },
     "orientation": {
-      "title": "Orientation d'Image",
-      "tooltip": "Choisissez le rapport d'aspect pour vos images en fonction de l'endroit où vous prévoyez de les utiliser."
+      "title": "Orientation de l'Image",
+      "tooltip": "Choisissez le format d'image selon où vous prévoyez les utiliser.",
+      "landscape": "Paysage (3:2)",
+      "landscapeDesc": "Format horizontal",
+      "square": "Carré (1:1)",
+      "squareDesc": "Format carré",
+      "portrait": "Portrait (2:3)",
+      "portraitDesc": "Format vertical"
     },
     "highlight": {
       "title": "Mettre en Évidence le Produit",

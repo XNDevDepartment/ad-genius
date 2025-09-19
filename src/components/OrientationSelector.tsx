@@ -1,41 +1,41 @@
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useTranslation } from "react-i18next";
 
 interface OrientationSelectorProps {
   value: string;
   onChange: (value: string) => void;
 }
 
-const orientationOptions = [
-  {
-    value: '3:2',
-    label: ' Landscape (3:2)',
-    description: 'Horizontal format',
-    iconWidth: 'w-7',
-    iconHeight: 'h-5'
-  },
-  {
-    value: '1:1',
-    label: 'Square (1:1)',
-    description: 'Square format ',
-    iconWidth: 'w-5',
-    iconHeight: 'h-5'
-  },
-  {
-    value: '2:3',
-    label: 'Portrait (2:3)',
-    description: 'Vertical format ',
-    iconWidth: 'w-5',
-    iconHeight: 'h-7'
-  }
-];
-
 const OrientationSelector = ({ value, onChange }: OrientationSelectorProps) => {
+  const { t } = useTranslation();
+  
+  const orientationOptions = [
+    {
+      value: '3:2',
+      label: t('ugc.orientation.landscape'),
+      description: t('ugc.orientation.landscapeDesc'),
+      iconWidth: 'w-7',
+      iconHeight: 'h-5'
+    },
+    {
+      value: '1:1',
+      label: t('ugc.orientation.square'),
+      description: t('ugc.orientation.squareDesc'),
+      iconWidth: 'w-5',
+      iconHeight: 'h-5'
+    },
+    {
+      value: '2:3',
+      label: t('ugc.orientation.portrait'),
+      description: t('ugc.orientation.portraitDesc'),
+      iconWidth: 'w-5',
+      iconHeight: 'h-7'
+    }
+  ];
+
   return (
     <div className="space-y-3">
-      {/* <Label className="text-sm font-medium text-foreground">
-        Image Orientation
-      </Label> */}
       <ToggleGroup
           type="single"
           value={value}

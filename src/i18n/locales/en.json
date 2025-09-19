@@ -331,7 +331,16 @@
     "deleting": "Deleting...",
     "upgrade": "Upgrade",
     "upgradeForMore": "Upgrade for more",
-    "upgradeToUnlock": "Upgrade to unlock"
+    "upgradeToUnlock": "Upgrade to unlock",
+    "of": "of",
+    "remove": "Remove",
+    "search": "Search",
+    "sort": "Sort",
+    "filter": "Filter",
+    "newest": "Newest",
+    "oldest": "Oldest",
+    "noResults": "No results found",
+    "currentlyGenerating": "Currently Generating"
   },
   "a11y": {
     "logoAlt": "Logo",
@@ -420,7 +429,13 @@
     },
     "orientation": {
       "title": "Image Orientation",
-      "tooltip": "Choose the aspect ratio for your images based on where you plan to use them."
+      "tooltip": "Choose the aspect ratio for your images based on where you plan to use them.",
+      "landscape": "Landscape (3:2)",
+      "landscapeDesc": "Horizontal format",
+      "square": "Square (1:1)", 
+      "squareDesc": "Square format",
+      "portrait": "Portrait (2:3)",
+      "portraitDesc": "Vertical format"
     },
     "highlight": {
       "title": "Highlight Product",

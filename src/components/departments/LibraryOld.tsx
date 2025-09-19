@@ -14,6 +14,7 @@ import { useLibraryImages } from "@/hooks/useLibraryImages";
 import { useActiveJob } from "@/hooks/useActiveJob";
 import { useSourceImages } from "@/hooks/useSourceImages";
 import { GeneratingImagePlaceholders } from "@/components/departments/ugc/GeneratingImagePlaceholders";
+import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,6 +56,7 @@ export const Library = ({ onBack }: LibraryProps) => {
 
   const { toast } = useToast();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { images, loading, deleteImage: deleteImageFromDB } = useLibraryImages();
   const { sourceImages, loading: sourceLoading } = useSourceImages();
   const { activeJob, activeImages } = useActiveJob();
@@ -162,7 +164,7 @@ export const Library = ({ onBack }: LibraryProps) => {
         <div className="flex items-center justify-between mr-7">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              {viewMode === "ai" ? "Imagens Geradas" : "Imagens Fonte"} ({filteredAndSortedImages.length})
+              {viewMode === "ai" ? t('library.aiGenerated') : t('library.sourceImages')} ({filteredAndSortedImages.length})
             </CardTitle>
           </CardHeader>
           
@@ -173,10 +175,10 @@ export const Library = ({ onBack }: LibraryProps) => {
             {/* View Mode Toggle */}
             <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "ai" | "source")}>
               <ToggleGroupItem value="ai" className="text-sm bg-muted">
-                AI Generated
+                {t('library.aiGenerated')}
               </ToggleGroupItem>
               <ToggleGroupItem value="source" className="text-sm bg-muted">
-                Source Images
+                {t('library.sourceImages')}
               </ToggleGroupItem>
             </ToggleGroup>
             {/* Source Thumbnails Toggle (only show in AI mode) */}
@@ -188,7 +190,7 @@ export const Library = ({ onBack }: LibraryProps) => {
                   onCheckedChange={setShowSourceThumbnails}
                 />
                 <label htmlFor="source-thumbnails" className="text-sm text-muted-foreground">
-                  Mostrar Fonte
+                  {t('library.showSource')}
                 </label>
               </div>
             )}
@@ -199,7 +201,7 @@ export const Library = ({ onBack }: LibraryProps) => {
               <div className="mx-auto w-16 h-16 rounded-lg bg-secondary/50 flex items-center justify-center mb-4">
                 <FileImage className="h-8 w-8 text-muted-foreground animate-pulse" />
               </div>
-              <p className="text-muted-foreground">Carregando sua biblioteca...</p>
+              <p className="text-muted-foreground">{t('library.loading')}</p>
             </div>
           ) : filteredAndSortedImages.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0.5">
@@ -280,17 +282,17 @@ export const Library = ({ onBack }: LibraryProps) => {
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Eliminar esta imagem?</AlertDialogTitle>
+                                  <AlertDialogTitle>{t('library.actions.deleteConfirm.title')}</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Esta ação é permanente. A imagem será removida da sua biblioteca e do armazenamento.
+                                    {t('library.actions.deleteConfirm.description')}
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogCancel>{t('library.actions.deleteConfirm.cancel')}</AlertDialogCancel>
                                   <AlertDialogAction
                                     onClick={() => confirmDelete(image.id)}
                                   >
-                                    {deletingId === image.id ? "A eliminar..." : "Eliminar"}
+                                    {deletingId === image.id ? t('library.actions.deleteConfirm.deleting') : t('library.actions.deleteConfirm.delete')}
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -308,9 +310,9 @@ export const Library = ({ onBack }: LibraryProps) => {
               <div className="mx-auto w-16 h-16 rounded-lg bg-secondary/50 flex items-center justify-center mb-4">
                 <FileImage className="h-8 w-8 text-muted-foreground" />
               </div>
-              <p className="text-muted-foreground mb-2">Ainda não há imagens na sua biblioteca</p>
+              <p className="text-muted-foreground mb-2">{t('library.empty.title')}</p>
               <p className="text-sm text-muted-foreground">
-                {searchTerm ? "Tente ajustar seus termos de busca" : "Gere algum conteúdo UGC para vê-lo aqui"}
+                {searchTerm ? t('library.empty.searchDescription') : t('library.empty.description')}
               </p>
             </div>
           )}

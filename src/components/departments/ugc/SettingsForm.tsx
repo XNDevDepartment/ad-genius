@@ -115,21 +115,21 @@ export const SettingsForm = ({
 
       {/* Highlight Product */}
       <div className="space-y-2">
-        <Label className="text-sm font-medium">Destacar Produto</Label>
+        <Label className="text-sm font-medium">{t('ugc.highlight.title')}</Label>
         <ToggleGroup 
           type="single" 
           value={settings.highlight} 
           onValueChange={(value) => value && onSettingsChange({ highlight: value })}
           className="justify-start"
         >
-          <ToggleGroupItem value="yes" size="sm" className="flex-1 text-xs bg-muted">Sim</ToggleGroupItem>
-          <ToggleGroupItem value="no" size="sm" className="flex-1 text-xs bg-muted">Não</ToggleGroupItem>
+          <ToggleGroupItem value="yes" size="sm" className="flex-1 bg-muted">{t('ugc.highlight.yes')}</ToggleGroupItem>
+          <ToggleGroupItem value="no" size="sm" className="flex-1 bg-muted">{t('ugc.highlight.no')}</ToggleGroupItem>
         </ToggleGroup>
       </div>
 
       {/* Style */}
       <div className="space-y-2">
-        <Label className="text-sm font-medium">Estilo</Label>
+        <Label className="text-sm font-medium">{t('ugc.style.title')}</Label>
         <ToggleGroup 
           type="single" 
           value={settings.style} 
@@ -146,7 +146,7 @@ export const SettingsForm = ({
         >
           {freeScenarios.map((s) => (
             <ToggleGroupItem key={s} value={s} size="sm" className="text-xs px-2 py-1 bg-muted">
-              {capitalize(s)}
+              {t(`ugc.style.${s}`)}
             </ToggleGroupItem>
           ))}
           {premiumScenarios.map((s) => (
@@ -158,7 +158,7 @@ export const SettingsForm = ({
               className='text-xs px-2 py-1 bg-muted relative'
               // disabled={isFreeTier()}
             >
-              {capitalize(s)}
+              {t(`ugc.style.${s}`)}
               {/* {isFreeTier() && <Lock className="h-3 w-3 ml-1" />} */}
             </ToggleGroupItem>
           ))}
@@ -179,7 +179,7 @@ export const SettingsForm = ({
 
       {/* Time of Day */}
       <div className="space-y-2">
-        <Label className="text-sm font-medium">Tipo de Luz</Label>
+        <Label className="text-sm font-medium">{t('ugc.lighting.title')}</Label>
         <ToggleGroup 
           type="single" 
           value={settings.timeOfDay} 
@@ -195,7 +195,7 @@ export const SettingsForm = ({
 
       {/* Orientation */}
       <div className="space-y-2">
-        <Label className="text-sm font-medium">Orientação</Label>
+        <Label className="text-sm font-medium">{t('ugc.orientation.title')}</Label>
         <ToggleGroup 
           type="single" 
           value={settings.imageOrientation} 
@@ -205,22 +205,22 @@ export const SettingsForm = ({
           {[
             {
               value: '3:2',
-              label: ' Landscape (3:2)',
-              description: 'Horizontal format',
+              label: t('ugc.orientation.landscape'),
+              description: t('ugc.orientation.landscapeDesc'),
               iconWidth: 'w-7',
               iconHeight: 'h-5'
             },
             {
               value: '1:1',
-              label: 'Square (1:1)',
-              description: 'Square format ',
+              label: t('ugc.orientation.square'),
+              description: t('ugc.orientation.squareDesc'),
               iconWidth: 'w-5',
               iconHeight: 'h-5'
             },
             {
               value: '2:3',
-              label: 'Portrait (2:3)',
-              description: 'Vertical format ',
+              label: t('ugc.orientation.portrait'),
+              description: t('ugc.orientation.portraitDesc'),
               iconWidth: 'w-5',
               iconHeight: 'h-7'
             }
