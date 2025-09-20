@@ -6,11 +6,11 @@
     "account": "Compte"
   },
   "auth": {
-    "signIn": "Se Connecter / S'inscrire",
-    "signOut": "Se Déconnecter"
+    "signIn": "Se connecter / S'inscrire",
+    "signOut": "Se déconnecter"
   },
   "settings": {
-    "quickSettings": "Paramètres Rapides",
+    "quickSettings": "Réglages Rapides",
     "theme": "Thème",
     "language": "Langue"
   },
@@ -23,172 +23,48 @@
     "english": "Anglais",
     "portuguese": "Portugais",
     "spanish": "Espagnol",
-    "french": "Français"
+    "french": "Français",
+    "german": "Allemand"
   },
   "header": {
-    "tagline": "Marketing IA"
+    "tagline": "Marketing avec l'IA"
   },
   "trustBar": {
-    "conversionStat": "conversion moyenne lorsque UGC est présent dans les PDPs",
-    "trustStat": "font plus confiance au contenu consommateur qu'au contenu de marque",
-    "ctrStat": "CTR plus élevé sur les publicités avec UGC",
+    "conversionStat": "taux de conversion moyen lorsque l'UGC est présent sur les PDP",
+    "trustStat": "font davantage confiance au contenu des consommateurs qu'à celui des marques",
+    "ctrStat": "CTR plus élevé sur les annonces avec UGC",
     "source": "Source"
   },
   "ugcTrustSection": {
     "title": "Pourquoi le Contenu Généré par les Utilisateurs compte"
   },
-  "account": {
-    "title": "Compte",
-    "editProfile": "Modifier le Profil",
-    "signOut": "Se Déconnecter",
-    "member": "Membre",
-    "sections": {
-      "settings": "Paramètres",
-      "settingsDescription": "Préférences de l'app et notifications",
-      "notifications": "Notifications", 
-      "notificationsDescription": "Gérez vos préférences de notification",
-      "privacy": "Confidentialité",
-      "privacyDescription": "Paramètres de données et confidentialité",
-      "billing": "Facturation",
-      "billingDescription": "Gérez votre abonnement",
-      "helpSupport": "Aide et Support",
-      "helpSupportDescription": "Obtenez de l'aide et contactez le support"
-    },
-    "profile": {
-      "title": "Informations du Profil",
-      "description": "Mettez à jour vos informations personnelles et préférences",
-      "firstName": "Prénom",
-      "lastName": "Nom",
-      "displayName": "Nom d'Affichage",
-      "displayNamePlaceholder": "Comment devons-nous afficher votre nom ?",
-      "email": "Email",
-      "profession": "Profession",
-      "professionPlaceholder": "ex : Développeur Logiciel",
-      "bio": "Bio",
-      "bioPlaceholder": "Parlez-nous de vous...",
-      "changePhoto": "Changer la Photo",
-      "saving": "Enregistrement...",
-      "saveChanges": "Enregistrer les Modifications",
-      "cancel": "Annuler"
-    },
-    "settings": {
-      "title": "Paramètres",
-      "desc": "Gérez vos préférences de compte",
-      "generationDefaults": "Paramètres par Défaut",
-      "interfacePreferences": "Préférences d'Interface",
-      "language": "Langue",
-      "autoSave": "Sauvegarde Automatique",
-      "autoSaveDesc": "Sauvegarder les paramètres automatiquement",
-      "saveChanges": "Sauvegarder les Modifications"
-    },
-    "notifications": {
-      "title": "Notifications",
-      "desc": "Gérez vos préférences de notification",
-      "emailNotifications": "Notifications par Email",
-      "newFeatures": "Nouvelles Fonctionnalités et Mises à Jour",
-      "newFeaturesDesc": "Être notifié des nouvelles fonctionnalités et améliorations",
-      "accountUpdates": "Mises à Jour du Compte",
-      "accountUpdatesDesc": "Mises à jour importantes concernant votre compte",
-      "promotions": "Offres Promotionnelles",
-      "promotionsDesc": "Offres spéciales et promotions",
-      "saveChanges": "Sauvegarder les Modifications"
-    },
-    "privacy": {
-      "title": "Confidentialité",
-      "desc": "Contrôlez vos paramètres de confidentialité et de données",
-      "dataCollection": "Collecte de Données",
-      "analytics": "Données d'Analyse",
-      "analyticsDesc": "Aidez-nous à améliorer en partageant des données d'utilisation anonymes",
-      "marketing": "Communications Marketing",
-      "marketingDesc": "Recevoir des emails promotionnels et des mises à jour de produits",
-      "dataSharing": "Partage de Données",
-      "thirdParty": "Services Tiers",
-      "thirdPartyDesc": "Permettre l'intégration avec des services tiers approuvés",
-      "saveChanges": "Sauvegarder les Modifications"
-    },
-    "billing": {
-      "title": "Facturation",
-      "desc": "Gérez votre abonnement et vos informations de paiement",
-      "currentPlan": "Plan Actuel",
-      "planDetails": "Détails du Plan",
-      "billingHistory": "Historique de Facturation",
-      "paymentMethod": "Méthode de Paiement",
-      "nextBilling": "Prochaine Facturation",
-      "managePlan": "Gérer le Plan",
-      "viewHistory": "Voir l'Historique",
-      "updatePayment": "Mettre à Jour le Paiement"
-    },
-    "helpSupport": {
-      "title": "Aide et Support",
-      "desc": "Obtenez de l'aide ou contactez-nous",
-      "quickHelp": "Aide Rapide",
-      "gettingStarted": "Guide de Démarrage",
-      "faq": "Questions Fréquentes",
-      "contactSupport": "Contacter le Support",
-      "subject": "Sujet",
-      "category": "Catégorie",
-      "message": "Message",
-      "submitTicket": "Soumettre un Ticket",
-      "contactInfo": "Informations de Contact",
-      "businessHours": "Heures d'Ouverture"
-    },
-    "displayName": "Nom d'Affichage",
-    "displayNameDesc": "Comment vous voulez être appelé",
-    "toasts": {
-      "profileUpdated": {
-        "title": "Profil mis à jour",
-        "description": "Votre profil a été mis à jour avec succès."
-      },
-      "settingsSaved": {
-        "title": "Paramètres enregistrés",
-        "description": "Vos préférences ont été mises à jour avec succès."
-      },
-      "dataExportRequested": {
-        "title": "Exportation de données demandée",
-        "description": "Votre exportation de données sera envoyée à votre email dans les 24 heures."
-      },
-      "accountDeletionRequested": {
-        "title": "Suppression de compte demandée",
-        "description": "Un email de confirmation a été envoyé pour vérifier cette action."
-      },
-      "error": {
-        "title": "Erreur",
-        "description": "Échec de mise à jour du profil. Veuillez réessayer.",
-        "settingsDescription": "Échec d'enregistrement des préférences. Veuillez réessayer."
-      },
-      "warning": {
-        "title": "Avertissement",
-        "description": "Données du profil enregistrées mais la mise à jour du profil d'authentification a échoué."
-      }
-    }
-  },
   "library": {
     "title": "Bibliothèque",
     "generatedImages": "Images Générées",
     "sourceImages": "Images Source",
-    "aiGenerated": "IA Générée",
+    "aiGenerated": "Généré par IA",
     "sourceImagesToggle": "Images Source",
     "showSource": "Afficher la Source",
     "loading": "Chargement de votre bibliothèque...",
     "empty": {
-      "title": "Aucune image dans votre bibliothèque pour le moment",
-      "description": "Générez du contenu UGC pour le voir ici",
+      "title": "Pas encore d'images dans votre bibliothèque",
+      "description": "Générez du contenu UGC pour l'afficher ici",
       "searchDescription": "Essayez d'ajuster vos termes de recherche"
     },
     "actions": {
-      "downloadStarted": "Téléchargement Commencé",
+      "downloadStarted": "Téléchargement démarré",
       "downloading": "Téléchargement de l'image...",
       "downloadFailed": {
-        "title": "Téléchargement Échoué",
-        "description": "Échec du téléchargement de l'image. Veuillez réessayer."
+        "title": "Échec du téléchargement",
+        "description": "Impossible de télécharger l'image. Veuillez réessayer."
       },
       "imageDeleted": {
-        "title": "Image Supprimée",
-        "description": "Supprimée de votre bibliothèque."
+        "title": "Image supprimée",
+        "description": "Retirée de votre bibliothèque."
       },
       "deleteFailed": {
-        "title": "Suppression Échouée",
-        "description": "Échec de suppression de l'image. Veuillez réessayer."
+        "title": "Échec de la suppression",
+        "description": "Impossible de supprimer l'image. Veuillez réessayer."
       },
       "deleteConfirm": {
         "title": "Supprimer cette image ?",
@@ -201,20 +77,20 @@
   },
   "createSelection": {
     "title": "Choisissez votre Flux de Travail",
-    "description": "Sélectionnez le type de contenu que vous voulez créer",
+    "description": "Sélectionnez le type de contenu que vous souhaitez créer",
     "ugcCreator": {
-      "title": "Créateur UGC",
-      "description": "Créez du contenu authentique généré par les utilisateurs avec l'assistance IA"
+      "title": "Créateur d'UGC",
+      "description": "Créez du contenu authentique généré par les utilisateurs avec l'aide de l'IA"
     },
     "studioPhotos": {
-      "title": "Photos de Studio", 
-      "description": "Générez de la photographie professionnelle de produits"
+      "title": "Photos de Studio",
+      "description": "Générez des photos de produit professionnelles"
     },
-    "comingSoon": "Bientôt Disponible"
+    "comingSoon": "Bientôt disponible"
   },
   "common": {
     "getStarted": "Commencer",
-    "comingSoon": "Bientôt Disponible",
+    "comingSoon": "Bientôt disponible",
     "startNow": "Commencer Maintenant",
     "cancel": "Annuler",
     "save": "Enregistrer",
@@ -223,45 +99,398 @@
     "loading": "Chargement...",
     "saving": "Enregistrement...",
     "deleting": "Suppression...",
-    "upgrade": "Mettre à Niveau",
+    "upgrade": "Mettre à niveau",
     "upgradeForMore": "Mettre à niveau pour plus",
     "upgradeToUnlock": "Mettre à niveau pour débloquer",
-    "of": "de",
-    "remove": "Supprimer",
+    "of": "sur",
+    "remove": "Retirer",
     "search": "Rechercher",
     "sort": "Trier",
     "filter": "Filtrer",
-    "newest": "Plus Récent",
-    "oldest": "Plus Ancien",
-    "noResults": "Aucun résultat trouvé",
-    "currentlyGenerating": "Génération en Cours"
+    "newest": "Plus récent",
+    "oldest": "Plus ancien",
+    "noResults": "Aucun résultat",
+    "currentlyGenerating": "Génération en cours"
   },
   "a11y": {
+    "logoAlt": "Logo",
+    "toggleTheme": "Basculer le thème",
+    "changeLanguage": "Changer de langue",
     "logo": "Logo de l'application",
     "themeToggle": "Basculer le thème",
     "languageToggle": "Basculer la langue"
+  },
+  "userStats": {
+    "title": "Votre Activité",
+    "credits": "Crédits",
+    "totalImages": "Total d'Images",
+    "thisMonth": "Ce Mois-ci",
+    "favorites": "Favoris",
+    "used": "Utilisés",
+    "errorLoading": "Échec du chargement des statistiques",
+    "retry": "Réessayer"
+  },
+  "ugc": {
+    "title": "Créer du Contenu UGC",
+    "productImage": {
+      "title": "Image du Produit",
+      "subtitle": "Téléversez une image de votre produit pour analyse",
+      "analyzing": "Analyse de l'image...",
+      "tooltip": "Téléversez une image claire et de haute qualité de votre produit. L'IA l'analysera pour comprendre ce que vous vendez et suggérer des scénarios pertinents.",
+      "dragDrop": "Déposez votre image ici",
+      "clickUpload": "Téléverser l'Image du Produit",
+      "releaseUpload": "Relâcher pour téléverser",
+      "supportedFormats": "PNG, JPG jusqu'à 10 Mo • Cliquez ou glissez-déposez",
+      "preview": "Aperçu du produit",
+      "remove": "Retirer l'image"
+    },
+    "productNiche": {
+      "title": "Niche & Détails du Produit",
+      "subtitle": "Détaillez le produit et l'audience, ou le cas d'usage",
+      "placeholder": "Ex. : Passionnés de fitness, aventuriers, professionnels pressés...",
+      "tooltip": "Décrivez pour qui est votre produit ou comment il est utilisé. L'IA génèrera des scénarios pertinents adaptés à votre audience cible."
+    },
+    "scenarios": {
+      "title": "Scénarios UGC",
+      "subtitle": "Idées de contenu générées par l'IA pour votre produit",
+      "generateButton": "Obtenir des Idées de Scénarios",
+      "generateMoreButton": "Générer Plus d'Idées",
+      "loading": "Génération des scénarios...",
+      "tooltip": "Choisissez parmi des scénarios générés par l'IA montrant votre produit dans des situations réalistes et engageantes."
+    },
+    "generationSettings": {
+      "title": "Paramètres d'Image",
+      "subtitle": "Personnalisez vos préférences de sortie",
+      "tooltip": "Réglez ces paramètres pour contrôler le style, la qualité et le format des images générées.",
+      "settings": "Paramètres"
+    },
+    "settings": {
+      "imageSize": "Taille de l'Image",
+      "quality": "Qualité",
+      "numberOfImages": "Nombre d'Images",
+      "outputFormat": "Format de Sortie",
+      "selectSize": "Sélectionner la taille",
+      "selectQuality": "Sélectionner la qualité",
+      "selectNumber": "Sélectionner le nombre",
+      "selectFormat": "Sélectionner le format",
+      "portrait": "Portrait",
+      "square": "Carré",
+      "landscape": "Paysage",
+      "low": "Faible",
+      "medium": "Moyenne",
+      "high": "Élevée",
+      "png": "PNG (Sans perte)",
+      "jpg": "JPG (Fichier plus léger)",
+      "image": "Image",
+      "images": "Images",
+      "openSettings": "Ouvrir les paramètres d'image"
+    },
+    "credits": "Crédits",
+    "thisGeneration": "Cette génération",
+    "credit": "crédit",
+    "credits_plural": "crédits",
+    "numImages": {
+      "title": "Nombre d'Images",
+      "tooltip": "Choisissez le nombre de variantes à générer. Plus d'images = plus d'options mais plus de crédits."
+    },
+    "imageQuality": {
+      "title": "Qualité de l'Image",
+      "low": "Faible",
+      "medium": "Moyenne",
+      "high": "Élevée",
+      "tooltip": "Une qualité supérieure offre un meilleur rendu mais coûte plus de crédits. Faible=1, Moyenne=2, Élevée=3 par image."
+    },
+    "orientation": {
+      "title": "Orientation de l'Image",
+      "tooltip": "Choisissez le ratio selon l'usage prévu.",
+      "landscape": "Paysage (3:2)",
+      "landscapeDesc": "Format horizontal",
+      "square": "Carré (1:1)",
+      "squareDesc": "Format carré",
+      "portrait": "Portrait (2:3)",
+      "portraitDesc": "Format vertical"
+    },
+    "highlight": {
+      "title": "Mettre le Produit en Avant",
+      "yes": "Oui",
+      "no": "Non"
+    },
+    "style": {
+      "title": "Style",
+      "lifestyle": "Lifestyle",
+      "studio": "Studio",
+      "cinematic": "Cinématographique",
+      "natural": "Naturel",
+      "professional": "Professionnel",
+      "minimal": "Minimal",
+      "vibrant": "Vibrant"
+    },
+    "lighting": {
+      "title": "Moment de la Journée"
+    },
+    "qualitySettings": {
+      "title": "Qualité",
+      "tooltip": "Une meilleure qualité consomme plus de crédits mais donne de meilleurs résultats",
+      "low": "Faible",
+      "medium": "Moyenne",
+      "high": "Élevée",
+      "lowCredits": "1 crédit",
+      "mediumCredits": "1,5 crédit",
+      "highCredits": "2 crédits"
+    },
+    "freePlanLimited": "Offre gratuite limitée à 1 image par génération.",
+    "premiumScenariosAvailable": "2 scénarios premium disponibles avec les offres payantes.",
+    "advancedSettings": {
+      "title": "Paramètres Avancés",
+      "timeOfDay": {
+        "title": "Moment de la Journée",
+        "natural": "Naturel",
+        "golden": "Heure Dorée",
+        "night": "Lumière Nocturne",
+        "soft": "Matin Doux",
+        "tooltip": "Contrôle l'ambiance lumineuse des images générées."
+      },
+      "highlight": {
+        "title": "Focus sur le Produit",
+        "yes": "Oui",
+        "no": "Non",
+        "tooltip": "Choisissez de mettre le produit au premier plan ou de l'intégrer naturellement dans la scène."
+      },
+      "style": {
+        "title": "Style Visuel",
+        "lifestyle": "Lifestyle",
+        "professional": "Professionnel",
+        "casual": "Décontracté",
+        "minimalist": "Minimaliste",
+        "tooltip": "Définit l'esthétique et l'ambiance générales des images générées."
+      }
+    },
+    "generateButton": "Générer des Images",
+    "generating": "Génération de vos images UGC...",
+    "results": {
+      "title": "Images Générées",
+      "downloadAll": "Tout Télécharger",
+      "downloadSelected": "Télécharger la Sélection",
+      "generateMore": "Générer Davantage",
+      "newCreation": "Nouvelle Création"
+    }
+  },
+  "account": {
+    "title": "Compte",
+    "signOut": "Se déconnecter",
+    "member": "Membre",
+    "sections": {
+      "settings": "Paramètres",
+      "settingsDescription": "Préférences de l'application et notifications",
+      "notifications": "Notifications",
+      "notificationsDescription": "Gérez vos préférences de notification",
+      "privacy": "Confidentialité",
+      "privacyDescription": "Paramètres de données et confidentialité",
+      "billing": "Facturation",
+      "billingDescription": "Gérez votre abonnement",
+      "helpSupport": "Aide & Support",
+      "helpSupportDescription": "Obtenez de l'aide et contactez le support"
+    },
+    "editProfile": {
+      "title": "Modifier le Profil",
+      "profileInfo": "Informations du Profil",
+      "profileDescription": "Retrouvez ici toutes vos informations"
+    },
+    "profile": {
+      "title": "Informations du Profil",
+      "description": "Mettez à jour vos informations personnelles et préférences",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "displayName": "Nom d'Affichage",
+      "displayNamePlaceholder": "Comment devons-nous afficher votre nom ?",
+      "email": "Email",
+      "profession": "Profession",
+      "professionPlaceholder": "ex. : Développeur Logiciel",
+      "bio": "Bio",
+      "bioPlaceholder": "Parlez-nous de vous...",
+      "changePhoto": "Changer la Photo",
+      "saving": "Enregistrement...",
+      "saveChanges": "Enregistrer les Modifications",
+      "cancel": "Annuler"
+    },
+    "displayName": "Nom d'Affichage",
+    "displayNameDesc": "Comment vous souhaitez être appelé",
+    "settings": {
+      "title": "Paramètres",
+      "desc": "Gérez les préférences de votre compte",
+      "generationDefaults": "Paramètres par Défaut de Génération",
+      "generationDefaultsDesc": "Définissez vos préférences de génération d'images",
+      "autoSaveImages": "Enregistrer les Images Automatiquement",
+      "autoSaveImagesDesc": "Enregistrer automatiquement les images lorsqu'elles sont prêtes",
+      "interfacePreferences": "Préférences d'Interface",
+      "interfacePreferencesDesc": "Personnalisez votre expérience",
+      "theme": "Thème",
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système",
+      "language": "Langue",
+      "languageDesc": "Définissez votre langue préférée",
+      "autoSave": "Enregistrement automatique",
+      "autoSaveDesc": "Enregistrer automatiquement les paramètres",
+      "saveChanges": "Enregistrer les Modifications",
+      "saving": "Enregistrement..."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "desc": "Gérez vos préférences de notification",
+      "emailNotifications": "Notifications par Email",
+      "emailNotificationsDesc": "Choisissez les emails que vous souhaitez recevoir",
+      "generationComplete": "Génération Terminée",
+      "generationCompleteDesc": "Lorsque la génération de votre image est terminée",
+      "monthlySummary": "Résumé Mensuel",
+      "monthlySummaryDesc": "Rapport mensuel de votre activité et de vos crédits",
+      "newFeatures": "Nouvelles Fonctionnalités",
+      "newFeaturesDesc": "Mises à jour des nouveautés et améliorations",
+      "marketing": "Marketing & Promotions",
+      "marketingDesc": "Offres spéciales et contenu promotionnel",
+      "accountUpdates": "Mises à Jour du Compte",
+      "accountUpdatesDesc": "Mises à jour importantes concernant votre compte",
+      "promotions": "Offres Promotionnelles",
+      "promotionsDesc": "Offres spéciales et promotions",
+      "saveChanges": "Enregistrer les Modifications",
+      "saving": "Enregistrement..."
+    },
+    "privacy": {
+      "title": "Confidentialité & Sécurité",
+      "desc": "Contrôlez votre confidentialité et vos données",
+      "privacySettings": "Paramètres de Confidentialité",
+      "privacySettingsDesc": "Contrôlez l'utilisation et le partage de vos données",
+      "showGenerationHistory": "Afficher l'Historique des Générations",
+      "showGenerationHistoryDesc": "Permettre aux autres de voir vos générations publiques",
+      "analyticsData": "Données Analytiques",
+      "analyticsDataDesc": "Aidez-nous à améliorer le service grâce à l'analyse d'usage",
+      "contentVisibility": "Visibilité du Contenu",
+      "contentVisibilityDesc": "Contrôlez qui peut voir votre contenu généré",
+      "publicGallery": "Galerie Publique",
+      "publicGalleryDesc": "Afficher vos images dans la galerie publique",
+      "dataManagement": "Gestion des Données",
+      "dataManagementDesc": "Gérez vos données personnelles et votre compte",
+      "deleteAccount": "Supprimer le Compte",
+      "deleteAccountDesc": "Supprimer définitivement votre compte et toutes les données",
+      "delete": "Supprimer",
+      "security": "Sécurité",
+      "securityDesc": "Gérez les paramètres de sécurité de votre compte",
+      "loginNotifications": "Notifications de Connexion",
+      "loginNotificationsDesc": "Recevez une alerte lorsqu'une connexion a lieu",
+      "changePassword": "Changer le Mot de Passe"
+    },
+    "billing": {
+      "title": "Facturation & Utilisation",
+      "desc": "Gérez votre abonnement et vos paiements",
+      "currentPlan": "Offre Actuelle",
+      "currentPlanDesc": "Gérez votre abonnement et vos détails de facturation",
+      "plan": "Offre",
+      "active": "Actif",
+      "free": "Gratuit",
+      "nextBilling": "Prochaine date de facturation",
+      "monthlyCredits": "Crédits mensuels",
+      "credits": "crédits",
+      "manageSubscription": "Gérer l'Abonnement",
+      "upgradePlan": "Mettre à Niveau l'Offre",
+      "creditUsage": "Utilisation des Crédits",
+      "creditUsageDesc": "Suivez vos crédits de génération mensuels",
+      "creditsUsed": "Crédits utilisés ce mois-ci",
+      "remaining": "Restants",
+      "daysLeft": "Jours restants",
+      "upgradeForMore": "Mettre à niveau pour plus de crédits",
+      "subscriptionManagement": "Gestion de l'Abonnement",
+      "subscriptionManagementDesc": "Gérez votre abonnement et votre facturation",
+      "subscriptionDetails": "Détails de l'Abonnement",
+      "status": "Statut",
+      "renewal": "Renouvellement",
+      "openStripePortal": "Ouvrir le Portail Client Stripe",
+      "stripePortalDesc": "Gérez votre abonnement, mettez à jour vos paiements et consultez l'historique dans le portail sécurisé de Stripe.",
+      "planDetails": "Détails de l'Offre",
+      "billingHistory": "Historique de Facturation",
+      "paymentMethod": "Moyen de Paiement",
+      "managePlan": "Gérer l'Offre",
+      "viewHistory": "Voir l'Historique",
+      "updatePayment": "Mettre à Jour le Paiement"
+    },
+    "helpSupport": {
+      "title": "Aide & Support",
+      "desc": "Obtenez de l'aide ou contactez-nous",
+      "quickHelp": "Aide Rapide",
+      "quickHelpDesc": "Trouvez des réponses aux questions courantes",
+      "gettingStarted": "Guide de Démarrage",
+      "faq": "FAQ",
+      "contactSupport": "Contacter le Support",
+      "contactSupportDesc": "Envoyez-nous un message et nous vous aiderons",
+      "subject": "Objet",
+      "subjectPlaceholder": "Brève description de votre problème",
+      "category": "Catégorie",
+      "categoryPlaceholder": "Sélectionnez une catégorie",
+      "technical": "Problème Technique",
+      "billing": "Question de Facturation",
+      "feature": "Demande de Fonctionnalité",
+      "account": "Aide Compte",
+      "general": "Général",
+      "message": "Message",
+      "messagePlaceholder": "Veuillez décrire votre problème en détail...",
+      "submitTicket": "Envoyer la Demande",
+      "submitting": "Envoi...",
+      "contactInfo": "Informations de Contact",
+      "contactInfoDesc": "Autres moyens de nous joindre",
+      "emailSupport": "Support Email",
+      "businessHours": "Horaires",
+      "responseTime": "Délai de Réponse",
+      "businessHoursValue": "9h00 - 18h00 ECT",
+      "responseTimeValue": "Sous 24 heures"
+    },
+    "toasts": {
+      "profileUpdated": {
+        "title": "Profil mis à jour",
+        "description": "Votre profil a été mis à jour avec succès."
+      },
+      "settingsSaved": {
+        "title": "Paramètres enregistrés",
+        "description": "Vos préférences ont été mises à jour avec succès."
+      },
+      "dataExportRequested": {
+        "title": "Export de données demandé",
+        "description": "Votre export vous sera envoyé par email sous 24 heures."
+      },
+      "accountDeletionRequested": {
+        "title": "Suppression du compte demandée",
+        "description": "Un email de confirmation a été envoyé pour valider cette action."
+      },
+      "error": {
+        "title": "Erreur",
+        "description": "Échec de la mise à jour du profil. Veuillez réessayer.",
+        "settingsDescription": "Échec de l'enregistrement des préférences. Veuillez réessayer."
+      },
+      "warning": {
+        "title": "Avertissement",
+        "description": "Données du profil enregistrées, mais la mise à jour du profil d'authentification a échoué."
+      }
+    }
   },
   "help": {
     "gettingStarted": {
       "title": "Guide de Démarrage",
       "welcome": {
         "title": "Bienvenue sur Genius UGC ! 🚀",
-        "description": "Démarrez en quelques minutes avec notre guide étape par étape. Créez du contenu UGC incroyable avec la puissance de l'IA."
+        "description": "Mettez-vous en route en quelques minutes grâce à notre guide pas à pas. Créez un UGC incroyable avec la puissance de l'IA."
       },
       "steps": {
         "title": "Étapes de Configuration Rapide",
         "createAccount": {
-          "title": "Créez Votre Compte",
+          "title": "Créez votre Compte",
           "description": "Inscrivez-vous et vérifiez votre email pour commencer avec Genius UGC",
           "action": "Aller au Profil"
         },
         "exploreCreate": {
           "title": "Explorez la Section Créer",
-          "description": "Apprenez à générer du contenu UGC en utilisant nos outils alimentés par l'IA",
+          "description": "Apprenez à générer du contenu UGC avec nos outils propulsés par l'IA",
           "action": "Commencer à Créer"
         },
         "manageLibrary": {
-          "title": "Gérez Votre Bibliothèque",
+          "title": "Gérez votre Bibliothèque",
           "description": "Organisez et accédez à tout votre contenu généré en un seul endroit",
           "action": "Voir la Bibliothèque"
         },
@@ -274,33 +503,33 @@
       },
       "readyToCreate": {
         "title": "Prêt à Créer ?",
-        "description": "Maintenant que vous êtes configuré, créons votre premier contenu UGC !",
+        "description": "Maintenant que tout est prêt, créons votre premier contenu UGC !",
         "action": "Commencer à Créer du Contenu"
       },
       "needMoreHelp": {
-        "title": "Besoin d'Aide Supplémentaire ?",
+        "title": "Besoin d'aide supplémentaire ?",
         "description": "Explorez nos autres ressources ou contactez le support",
         "viewFaq": "Voir la FAQ",
-        "watchTutorials": "Regarder les Tutoriels"
+        "watchTutorials": "Voir les Tutoriels"
       }
     },
     "faq": {
-      "title": "Questions Fréquemment Posées",
+      "title": "Foire aux Questions",
       "subtitle": "Comment pouvons-nous vous aider ?",
       "description": "Recherchez dans notre base de connaissances ou parcourez les catégories ci-dessous",
       "searchPlaceholder": "Rechercher des questions...",
       "categories": {
         "accountSetup": {
-          "name": "Compte et Configuration",
+          "name": "Compte & Configuration",
           "badge": "Populaire",
           "questions": {
             "changeEmail": {
-              "q": "Puis-je changer mon adresse e-mail ?",
-              "a": "Oui, vous pouvez mettre à jour votre adresse e-mail dans les paramètres de votre compte. Allez dans Compte > Paramètres > Informations du Profil pour apporter des modifications."
+              "q": "Puis-je changer mon adresse email ?",
+              "a": "Oui. Vous pouvez la mettre à jour dans les paramètres du compte : Compte > Paramètres > Informations du Profil."
             },
             "resetPassword": {
               "q": "Comment réinitialiser mon mot de passe ?",
-              "a": "Cliquez sur 'Mot de passe oublié' sur la page de connexion, entrez votre e-mail et nous vous enverrons un lien de réinitialisation du mot de passe."
+              "a": "Cliquez sur « Mot de passe oublié » sur la page de connexion, entrez votre email et nous vous enverrons un lien de réinitialisation."
             }
           }
         },
@@ -310,41 +539,41 @@
           "questions": {
             "contentTypes": {
               "q": "Quels types de contenu puis-je créer ?",
-              "a": "Genius UGC prend en charge la création de divers types de contenu généré par les utilisateurs, y compris les publications sur les réseaux sociaux, les démonstrations d'environnement de produit, les positionnements de produit et les matériaux de marketing utilisant des outils alimentés par l'IA."
+              "a": "Genius UGC permet de créer divers contenus générés par les utilisateurs : publications sociales, mises en situation produit, positionnements et supports marketing à l'aide d'outils IA."
             },
             "aiGeneration": {
-              "q": "Comment fonctionne la génération de contenu par IA ?",
-              "a": "Notre IA Genius analyse vos suggestions et préférences pour générer du contenu pertinent et de haute qualité. Vous pouvez personnaliser la lumière, le style et le format pour correspondre à votre désir."
+              "q": "Comment fonctionne la génération IA ?",
+              "a": "Notre IA analyse vos indications et préférences pour générer un contenu pertinent et de haute qualité. Vous pouvez personnaliser la lumière, le style et le format."
             },
             "editContent": {
               "q": "Puis-je modifier le contenu généré ?",
-              "a": "Pour le moment, vous ne pouvez pas ! Nous travaillons sur le développement de ProduktPix avec l'objectif de devenir l'agent de marketing mobile numéro un pour aider rapidement et efficacement les gens à vendre leurs produits."
+              "a": "Pour le moment, non. Nous développons ProduktPix afin de devenir l'agent de marketing mobile n°1 pour aider à vendre rapidement et efficacement."
             },
             "fileFormats": {
               "q": "Quels formats de fichier sont pris en charge ?",
-              "a": "Nous supportons les formats populaires incluant JPG, PNG pour les images et divers formats de texte pour le contenu écrit."
+              "a": "Nous prenons en charge les formats populaires, dont JPG et PNG pour les images, et divers formats texte pour le contenu écrit."
             }
           }
         },
         "billingPlans": {
-          "name": "Facturation et Plans",
+          "name": "Facturation & Offres",
           "badge": "Important",
           "questions": {
             "paymentMethods": {
               "q": "Quels moyens de paiement acceptez-vous ?",
-              "a": "Nous acceptons toutes les principales cartes de crédit Visa, MasterCard et American Express pour votre commodité."
+              "a": "Nous acceptons les principales cartes : Visa, MasterCard et American Express."
             },
             "cancelSubscription": {
               "q": "Puis-je annuler mon abonnement à tout moment ?",
-              "a": "Oui, vous pouvez annuler votre abonnement à tout moment depuis vos paramètres de facturation. Votre accès continuera jusqu'à la fin de votre période de facturation actuelle."
+              "a": "Oui. Vous pouvez l'annuler à tout moment dans les paramètres de facturation. L'accès continue jusqu'à la fin de la période en cours."
             },
             "refunds": {
-              "q": "Offrez-vous des remboursements ?",
-              "a": "Nous offrons une garantie de remboursement de 14 jours pour les nouveaux abonnés. Contactez notre équipe de support si vous n'êtes pas satisfait du service."
+              "q": "Proposez-vous des remboursements ?",
+              "a": "Nous offrons une garantie de remboursement de 14 jours pour les nouveaux abonnés. Contactez le support si vous n'êtes pas satisfait."
             },
             "usageLimit": {
-              "q": "Que se passe-t-il quand j'atteins ma limite d'usage ?",
-              "a": "Quand vous atteignez la limite de votre plan, vous pouvez soit passer à un plan supérieur soit attendre votre prochain cycle de facturation pour réinitialiser votre usage."
+              "q": "Que se passe-t-il lorsque j'atteins ma limite d'utilisation ?",
+              "a": "Vous pouvez passer à une offre supérieure ou attendre le prochain cycle de facturation."
             }
           }
         },
@@ -352,28 +581,28 @@
           "name": "Support Technique",
           "questions": {
             "generationTime": {
-              "q": "Combien de temps prend la génération pour se terminer ?",
-              "a": "Les temps de génération peuvent varier selon la complexité et la charge du serveur. La plupart du contenu est généré en 30-60 secondes. Si vous rencontrez des délais plus longs, essayez d'actualiser la page."
+              "q": "Combien de temps dure la génération ?",
+              "a": "Cela dépend de la complexité et de la charge serveur. La plupart se terminent en 30–60 secondes. Si c'est plus long, essayez d'actualiser la page."
             },
             "contentMismatch": {
-              "q": "Mon contenu généré ne correspond pas à ma demande",
-              "a": "Essayez d'être plus spécifique dans vos détails et votre audience. Incluez des détails sur l'utilisabilité, la taille, l'audience cible de niche et les exigences spécifiques pour de meilleurs résultats."
+              "q": "Le contenu généré ne correspond pas à ma demande",
+              "a": "Soyez plus précis sur les détails et l'audience. Incluez l'usage, la taille, le segment de niche et vos exigences."
             },
             "mobileSupport": {
-              "q": "Puis-je utiliser la plateforme sur des appareils mobiles ?",
-              "a": "Oui ! Genius UGC est entièrement responsive et fonctionne parfaitement sur les appareils mobiles, tablettes et ordinateurs de bureau."
+              "q": "Puis-je utiliser la plateforme sur mobile ?",
+              "a": "Oui. Genius UGC est entièrement responsive et fonctionne sur mobile, tablette et ordinateur."
             },
             "reportBug": {
-              "q": "Comment signaler un bug ou un problème ?",
-              "a": "Vous pouvez signaler des bugs via notre formulaire de contact de support ou nous envoyer un e-mail directement. Veuillez inclure des détails sur ce que vous faisiez quand le problème s'est produit."
+              "q": "Comment signaler un bug ?",
+              "a": "Utilisez notre formulaire de contact ou envoyez-nous un email. Décrivez ce que vous faisiez quand le problème est survenu."
             }
           }
         }
       },
       "noResults": {
-        "title": "Aucun résultat trouvé",
-        "description": "Essayez d'ajuster vos termes de recherche ou parcourez toutes les catégories",
-        "clearSearch": "Effacer la Recherche"
+        "title": "Aucun résultat",
+        "description": "Ajustez vos termes de recherche ou parcourez toutes les catégories",
+        "clearSearch": "Effacer la recherche"
       },
       "stillNeedHelp": {
         "title": "Besoin d'aide ?",
@@ -385,154 +614,17 @@
   },
   "index": {
     "auth": {
-      "title": "Créez des images de produits qui vendent",
-      "subtitle": "Transformez vos produits en images époustouflantes et génératrices de conversion grâce à l'IA",
-      "startCreating": "Commencez à créer",
+      "title": "Créez des images produit qui vendent",
+      "subtitle": "Transformez vos produits en visuels percutants, orientés conversion, grâce à l'IA",
+      "startCreating": "Commencer à Créer",
       "welcome": "Bon retour",
-      "welcomeDesc": "Prêt à créer du contenu incroyable ?",
+      "welcomeDesc": "Prêt à créer un contenu incroyable ?",
       "quickActions": "Actions Rapides",
       "recentActivity": "Activité Récente",
       "noRecentActivity": "Aucune activité récente",
       "viewLibrary": "Voir la Bibliothèque",
       "createContent": "Créer du Contenu",
       "accountSettings": "Paramètres du Compte"
-    }
-  },
-  "userStats": {
-    "title": "Votre Activité",
-    "credits": "Crédits",
-    "totalImages": "Total d'Images",
-    "thisMonth": "Ce Mois",
-    "favorites": "Favoris",
-    "used": "Utilisé",
-    "errorLoading": "Échec du chargement des statistiques",
-    "retry": "Réessayer"
-  },
-  "ugc": {
-    "title": "Créer du Contenu UGC",
-    "productImage": {
-      "title": "Image du Produit",
-      "subtitle": "Téléchargez une image de votre produit pour analyse",
-      "analyzing": "Analyse de l'image...",
-      "tooltip": "Téléchargez une image claire et de haute qualité de votre produit. L'IA l'analysera pour comprendre ce que vous vendez et suggérer des scénarios pertinents."
-    },
-    "productNiche": {
-      "title": "Détails et Niche du produit",
-      "subtitle": "Détaillez le produit et le public ou votre cas d'utilisation",
-      "placeholder": "Exemple : Passionnés de fitness, aventuriers en plein air, professionnels occupés...",
-      "tooltip": "Décrivez pour qui est votre produit ou comment il est utilisé. Cela aide l'IA à générer des scénarios pertinents qui correspondent à votre audience cible."
-    },
-    "scenarios": {
-      "title": "Scénarios UGC",
-      "subtitle": "Idées de contenu générées par IA pour votre produit",
-      "generateButton": "Obtenir des Idées de Scénarios",
-      "generateMoreButton": "Générer Plus d'Idées",
-      "loading": "Génération de scénarios...",
-      "tooltip": "Choisissez parmi les scénarios générés par IA qui montrent votre produit dans des situations réalistes et engageantes."
-    },
-    "generationSettings": {
-      "title": "Paramètres de Image",
-      "subtitle": "Personnalisez vos préférences de sortie d'image",
-      "tooltip": "Ajustez ces paramètres pour contrôler le style, la qualité et le format de vos images générées."
-    },
-    "credits": "Crédits",
-    "thisGeneration": "Cette génération",
-    "credit": "crédit",
-    "credits_plural": "crédits",
-    "numImages": {
-      "title": "Nombre d'Images",
-      "tooltip": "Choisissez combien de variations vous voulez générer. Plus d'images = plus d'options mais coût de crédits plus élevé."
-    },
-    "imageQuality": {
-      "title": "Qualité d'Image",
-      "low": "Basse",
-      "medium": "Moyenne",
-      "high": "Haute",
-      "tooltip": "Les images de meilleure qualité sont plus belles mais coûtent plus de crédits. Basse=1 crédit, Moyenne=2 crédits, Haute=3 crédits par image."
-    },
-    "orientation": {
-      "title": "Orientation de l'Image",
-      "tooltip": "Choisissez le format d'image selon où vous prévoyez les utiliser.",
-      "landscape": "Paysage (3:2)",
-      "landscapeDesc": "Format horizontal",
-      "square": "Carré (1:1)",
-      "squareDesc": "Format carré",
-      "portrait": "Portrait (2:3)",
-      "portraitDesc": "Format vertical"
-    },
-    "highlight": {
-      "title": "Mettre en Évidence le Produit",
-      "yes": "Oui",
-      "no": "Non"
-    },
-    "style": {
-      "title": "Style",
-      "lifestyle": "Lifestyle",
-      "studio": "Studio",
-      "cinematic": "Éditorial",
-      "natural": "Naturel",
-      "professional": "Professionnel",
-      "minimal": "Minimal",
-      "vibrant": "Vibrant"
-    },
-    "lighting": {
-      "title": "Type de Lumière"
-    },
-    "qualitySettings": {
-      "title": "Qualité",
-      "tooltip": "Une meilleure qualité utilise plus de crédits mais produit de meilleurs résultats",
-      "low": "Basse",
-      "medium": "Moyenne",
-      "high": "Haute",
-      "lowCredits": "1 crédit",
-      "mediumCredits": "1,5 crédits", 
-      "highCredits": "2 crédits"
-    },
-    "qualitySettings": {
-      "title": "Qualité",
-      "tooltip": "Une meilleure qualité utilise plus de crédits mais produit de meilleurs résultats",
-      "low": "Basse",
-      "medium": "Moyenne",
-      "high": "Haute",
-      "lowCredits": "1 crédit",
-      "mediumCredits": "1,5 crédits", 
-      "highCredits": "2 crédits"
-    },
-    "freePlanLimited": "Le plan gratuit est limité à 1 image par génération.",
-    "premiumScenariosAvailable": "2 scénarios premium disponibles avec les plans payants.",
-    "advancedSettings": {
-      "title": "Paramètres Avancés",
-      "timeOfDay": {
-        "title": "Heure de la Journée",
-        "natural": "Naturel",
-        "golden": "Heure Dorée",
-        "night" : "Veilleuse",
-        "soft": "Matin Doux",
-        "tooltip": "Contrôle l'ambiance d'éclairage dans vos images générées."
-      },
-      "highlight": {
-        "title": "Concentrer sur le Produit",
-        "yes": "Oui",
-        "no": "Non",
-        "tooltip": "Choisissez de faire de votre produit le focus principal ou de le mélanger naturellement dans la scène."
-      },
-      "style": {
-        "title": "Style Visuel",
-        "lifestyle": "Lifestyle",
-        "professional": "Professionnel",
-        "casual": "Décontracté",
-        "minimalist": "Minimaliste",
-        "tooltip": "Définit l'esthétique générale et l'ambiance des images générées."
-      }
-    },
-    "generateButton": "Générer des Images",
-    "generating": "Génération de vos images UGC...",
-    "results": {
-      "title": "Images Générées",
-      "downloadAll": "Télécharger Tout",
-      "downloadSelected": "Télécharger Sélectionnées",
-      "generateMore": "Générer Plus",
-      "newCreation": "Nouvelle Création"
     }
   }
 }

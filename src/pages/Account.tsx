@@ -100,7 +100,7 @@ const Account = () => {
                 className="w-full"
                 onClick={() => handleMenuClick("edit-profile")}
               >
-                {t('account.editProfile')}
+                {t('account.editProfile.title')}
               </Button>
             </div>
           </CardContent>

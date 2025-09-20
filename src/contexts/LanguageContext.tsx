@@ -3,7 +3,7 @@ import { useAuth } from './AuthContext';
 import { supabase } from '@/lib/supabase';
 import i18n from '@/i18n';
 
-type Language = 'en' | 'pt' | 'es' | 'fr';
+type Language = 'en' | 'pt' | 'es' | 'fr' | 'de';
 
 interface LanguageContextType {
   language: Language;
@@ -32,7 +32,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         console.log('[LanguageProvider] Loading language, user:', user?.id, 'authLoading:', authLoading);
 
         // Wait for i18n to be ready
-        await i18n.loadLanguages(['en', 'pt', 'es', 'fr']);
+        await i18n.loadLanguages(['en', 'pt', 'es', 'fr', 'de']);
 
         if (user && !authLoading) {
           // Load from user preferences if logged in
@@ -60,14 +60,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         // Fallback to localStorage and browser detection
         try {
           const savedLanguage = localStorage.getItem('language') as Language;
-          if (savedLanguage && ['en', 'pt', 'es', 'fr'].includes(savedLanguage)) {
+          if (savedLanguage && ['en', 'pt', 'es', 'fr', 'de'].includes(savedLanguage)) {
             console.log('[LanguageProvider] Loaded language from localStorage:', savedLanguage);
             setLanguageState(savedLanguage);
             await i18n.changeLanguage(savedLanguage);
           } else {
             // Use browser language detection
             const browserLang = navigator.language.split('-')[0] as Language;
-            const supportedLang = ['en', 'pt', 'es', 'fr'].includes(browserLang) ? browserLang : 'pt';
+            const supportedLang = ['en', 'pt', 'es', 'fr', 'de'].includes(browserLang) ? browserLang : 'pt';
             console.log('[LanguageProvider] Using browser/default language:', supportedLang);
             setLanguageState(supportedLang);
             await i18n.changeLanguage(supportedLang);

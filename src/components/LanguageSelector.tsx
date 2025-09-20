@@ -19,6 +19,7 @@ const languageOptions = [
   { code: 'en', flag: '🇺🇸', key: 'english' },
   { code: 'fr', flag: '🇫🇷', key: 'french' },
   { code: 'es', flag: '🇪🇸', key: 'spanish' },
+  { code: 'de', flag: '🇩🇪', key: 'german' },
 ] as const;
 
 export const LanguageSelector = ({ variant = 'ghost', size = 'icon' }: LanguageSelectorProps) => {

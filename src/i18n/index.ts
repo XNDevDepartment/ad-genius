@@ -7,12 +7,14 @@ import en from './locales/en.json';
 import pt from './locales/pt.json';
 import es from './locales/es.json';
 import fr from './locales/fr.json';
+import de from './locales/de.json';
 
 const resources = {
   en: { translation: en },
   pt: { translation: pt },
   es: { translation: es },
   fr: { translation: fr },
+  de: { translation: de },
 };
 
 i18n

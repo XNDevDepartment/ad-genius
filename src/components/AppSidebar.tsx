@@ -136,7 +136,7 @@ export function AppSidebar() {
           <div className="space-y-3">
             {/* Admin Access Button */}
             {user && <AdminAccessButton />}
-            
+
             {user ? (
               <Button
                 variant="ghost"
