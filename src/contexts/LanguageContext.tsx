@@ -30,10 +30,10 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const loadLanguage = async () => {
       try {
         console.log('[LanguageProvider] Loading language, user:', user?.id, 'authLoading:', authLoading);
-        
+
         // Wait for i18n to be ready
         await i18n.loadLanguages(['en', 'pt', 'es', 'fr']);
-        
+
         if (user && !authLoading) {
           // Load from user preferences if logged in
           try {
@@ -42,7 +42,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
               .select('language')
               .eq('user_id', user.id)
               .maybeSingle();
-            
+
             if (error) {
               console.error('[LanguageProvider] Database error:', error);
             } else if (data?.language) {
@@ -56,7 +56,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             console.error('[LanguageProvider] Error loading language from user preferences:', error);
           }
         }
-        
+
         // Fallback to localStorage and browser detection
         try {
           const savedLanguage = localStorage.getItem('language') as Language;

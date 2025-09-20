@@ -1,16 +1,9 @@
-import { ArrowLeft, User, Settings, CreditCard, HelpCircle, LogOut, Bell, Shield, Upload, Mail, Lock, UserX, Download, Globe, Moon, Sun, Monitor, Grid, List, Eye, EyeOff, Camera, Edit2, Trash2, RefreshCw, ExternalLink, MessageCircle } from "lucide-react";
+import { ArrowLeft, Settings, CreditCard, HelpCircle, LogOut, Bell, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -30,7 +23,7 @@ const Account = () => {
   const { tier } = useCredits();
   const [section, setSection] = useState<string>("");
   const { t } = useTranslation();
-  
+
   const [layout, setLayout] = useState("grid");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
@@ -61,20 +54,20 @@ const Account = () => {
     }
   };
 
-  const handleDownloadData = () => {
-    toast({
-      title: t('account.toasts.dataExportRequested.title'),
-      description: t('account.toasts.dataExportRequested.description'),
-    });
-  };
+  // const handleDownloadData = () => {
+  //   toast({
+  //     title: t('account.toasts.dataExportRequested.title'),
+  //     description: t('account.toasts.dataExportRequested.description'),
+  //   });
+  // };
 
-  const handleDeleteAccount = () => {
-    toast({
-      title: t('account.toasts.accountDeletionRequested.title'),
-      description: t('account.toasts.accountDeletionRequested.description'),
-      variant: "destructive",
-    });
-  };
+  // const handleDeleteAccount = () => {
+  //   toast({
+  //     title: t('account.toasts.accountDeletionRequested.title'),
+  //     description: t('account.toasts.accountDeletionRequested.description'),
+  //     variant: "destructive",
+  //   });
+  // };
 
   const AccountPanel = (
     <div className="grid gap-8 lg:grid-cols-5">
@@ -227,7 +220,7 @@ const Account = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-2xl lg:text-3xl font-bold">
-            {section === "" ? t('account.title') : 
+            {section === "" ? t('account.title') :
              section === "edit-profile" ? t('account.editProfile.title') :
              section === "settings" ? t('account.settings.title') :
              section === "notifications" ? t('account.notifications.title') :

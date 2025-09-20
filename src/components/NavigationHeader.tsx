@@ -1,6 +1,6 @@
 import { useActionData, useNavigate } from 'react-router-dom';
 import symbol from '../assets/favicon2.png';
-import logo from '../assets/logos/logo_horizontal.webp';
+import logo from '../assets/logos/logo_horizontal.png';
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ const NavigationHeader = () => {
         className="flex items-center gap-3 cursor-pointer"
         onClick={() => navigate("/")}
       >
-        <div className="shadow-glow pt-2">
+        <div className="pt-2">
           <img
             src={logo}
             alt={t('a11y.logoAlt')}

@@ -9,7 +9,7 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { AdminAccessButton } from "@/components/AdminAccessButton";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import logoApp from './../assets/logos/logo_horizontal.webp';
+import logoApp from './../assets/logos/logo_horizontal.png';
 
 
 import {
