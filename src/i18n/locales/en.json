@@ -513,7 +513,6 @@
     }
   },
   "help": {
-  "help": {
     "gettingStarted": {
       "title": "Getting Started Guide",
       "welcome": {
@@ -653,6 +652,13 @@
         "contactSupport": "Contact Support",
         "gettingStarted": "Getting Started Guide"
       }
+    }
+  },
+  "index": {
+    "auth": {
+      "title": "Create product images that sell",
+      "subtitle": "Transform your products into stunning, conversion-focused imagery with AI",
+      "startCreating": "Start Creating"
     }
   },
   "index": {
