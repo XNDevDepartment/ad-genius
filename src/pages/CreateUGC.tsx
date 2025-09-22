@@ -575,7 +575,7 @@ const CreateUGC = () => {
       console.error('Error importing from URL:', error);
       toast({
         title: "Import Failed",
-        description: error instanceof Error ? error.message : "Failed to import image from URL.",
+        description: error instanceof Error ? error.message + '. The image may have protection and copyrights license. Please use another ULR.' : "Failed to import image from URL.",
         variant: "destructive",
       });
     } finally {
