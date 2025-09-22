@@ -237,11 +237,19 @@ const CreateUGC = () => {
       setCurrentBatchImages(current => {
         if (current.length > 0) {
           console.log('[CreateUGC] Moving', current.length, 'images from current to previous');
+          console.log('[CreateUGC] Current batch IDs:', current.map(img => img.id));
+          
           setPreviousImages(prev => {
-            // Deduplication: only add images that aren't already in previous
+            console.log('[CreateUGC] Previous images count before merge:', prev.length);
+            // Improved deduplication: only add images with valid URLs that aren't placeholders
             const existingIds = new Set(prev.map(img => img.id));
-            const newImages = current.filter(img => !existingIds.has(img.id));
-            return [...newImages, ...prev];
+            const validNewImages = current.filter(img => 
+              img.url && // Only real images, not placeholders
+              !img.id.startsWith('recovery-placeholder-') && // Skip recovery placeholders
+              !existingIds.has(img.id) // Skip duplicates
+            );
+            console.log('[CreateUGC] Adding', validNewImages.length, 'new images to previous');
+            return [...validNewImages, ...prev];
           });
         }
         return []; // Clear current batch
@@ -263,28 +271,39 @@ const CreateUGC = () => {
     // Enhanced mobile recovery with metadata fallback
     if (savedJobId && !job) {
       try {
-        // Parse saved job metadata for immediate UI restoration
-        if (jobMetadata) {
-          const metadata = JSON.parse(jobMetadata);
-          setNumImages(metadata.numImages || 1);
-          
-          // Set placeholders immediately for better mobile UX
-          if (metadata.numImages && (savedStage === 'generating' || savedStage === 'results')) {
-            setStage('generating');
-            // Create minimal placeholders to show loading state
-            const placeholders = Array.from({ length: metadata.numImages }, (_, i) => ({
-              id: `recovery-placeholder-${i}`,
-              url: '',
-              prompt: '',
-              selected: false,
-              format: 'webp'
-            }));
-            setCurrentBatchImages(placeholders);
-          }
-        }
+        console.log('[CreateUGC] Attempting to recover job:', savedJobId);
         
-        // Load the actual job data
-        loadJob(savedJobId).catch((error) => {
+        // Load the actual job data first to check status
+        loadJob(savedJobId).then(() => {
+          // Parse saved job metadata for UI restoration
+          if (jobMetadata) {
+            const metadata = JSON.parse(jobMetadata);
+            setNumImages(metadata.numImages || 1);
+            
+            // Use the job from hook state after loading
+            setTimeout(() => {
+              console.log('[CreateUGC] Job status on recovery:', job?.status);
+              
+              // Only create placeholders if job is actually still running
+              if (metadata.numImages && job && (job.status === 'queued' || job.status === 'processing')) {
+                console.log('[CreateUGC] Creating placeholders for active job');
+                setStage('generating');
+                // Create minimal placeholders to show loading state
+                const placeholders = Array.from({ length: metadata.numImages }, (_, i) => ({
+                  id: `recovery-placeholder-${i}`,
+                  url: '',
+                  prompt: '',
+                  selected: false,
+                  format: 'webp'
+                }));
+                setCurrentBatchImages(placeholders);
+              } else if (job && job.status === 'completed') {
+                console.log('[CreateUGC] Job already completed, setting to results stage');
+                setStage('results');
+              }
+            }, 100); // Small delay to ensure job state is updated
+          }
+        }).catch((error) => {
           console.error('Failed to recover job on mobile:', error);
           // Fallback to active job if recovery fails
           if (activeJob) {

@@ -71,8 +71,10 @@ export default function GeneratedImagesRows({
   imageOrientation
 }: Props) {
   // Tower behavior: animated slots at top, then completed images
-  // Calculate pending slots based only on current batch, not combined arrays
-  const pendingSlots = isGenerating ? Math.max(0, (totalSlots || 0) - currentBatchImages.filter(img => img.url).length) : 0;
+  // Calculate pending slots more accurately based on job status and current images
+  const pendingSlots = isGenerating && currentBatchImages.some(img => !img.url) 
+    ? Math.max(0, (totalSlots || 0) - currentBatchImages.filter(img => img.url && !img.id.startsWith('recovery-placeholder-')).length) 
+    : 0;
   const allImages = [...currentBatchImages, ...previousImages];
   const slots = pendingSlots + allImages.length;
 
