@@ -196,7 +196,7 @@ const CreateUGC = () => {
     }
   }, [aiScenarios.length]);
 
-  // Update current batch images when job images change (with deduplication)
+  // Replace current batch with job images when ready (Tower behavior)
   useEffect(() => {
     console.log('[CreateUGC] Job images changed:', { 
       jobImagesLength: jobImages.length, 
@@ -211,28 +211,20 @@ const CreateUGC = () => {
     
     if (readyImages.length === 0) return;
 
+    // For tower effect: completely replace current batch with new images
     setCurrentBatchImages(prev => {
       const previousSelections = new Map(prev.map(image => [image.id, image.selected]));
-      const existingIds = new Set(prev.map(image => image.id));
 
-      // Only add new images that aren't already in the current batch
-      const newImages = readyImages
-        .filter(img => !existingIds.has(img.id))
-        .map((img) => ({
-          id: img.id,
-          url: img.public_url,
-          prompt: job?.prompt || img.prompt || '',
-          format: (img.meta as any)?.format || job?.settings?.output_format || 'png',
-          selected: previousSelections.get(img.id) ?? false,
-        }));
+      const newImages = readyImages.map((img) => ({
+        id: img.id,
+        url: img.public_url,
+        prompt: job?.prompt || img.prompt || '',
+        format: (img.meta as any)?.format || job?.settings?.output_format || 'png',
+        selected: previousSelections.get(img.id) ?? false,
+      }));
       
-      if (newImages.length === 0) {
-        console.log('[CreateUGC] No new images to add, keeping current batch');
-        return prev;
-      }
-
-      console.log('[CreateUGC] Adding', newImages.length, 'new images to current batch');
-      return [...prev, ...newImages];
+      console.log('[CreateUGC] Replacing current batch with', newImages.length, 'ready images');
+      return newImages; // Complete replacement, not append
     });
   }, [jobImages, job?.prompt, job?.settings?.output_format]);
 
