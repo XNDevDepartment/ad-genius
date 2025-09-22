@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, PlusCircle, ExternalLink, RotateCcw } from "lucide-react";
+import { Download, PlusCircle, ExternalLink, RotateCcw, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import './../costumn.css';
 import { useState, useEffect } from "react";
@@ -23,10 +23,20 @@ type Props = {
 // Placeholder component
 function GrainPlaceholder({ label = "Generating...", THUMB_CLASSES }: { label?: string, THUMB_CLASSES?: string }) {
   return (
-    <div className={`${THUMB_CLASSES} bg-gradient-to-br from-muted/80 to-muted/40 flex items-center justify-center border border-border/50 grain-pattern`}>
-      <div className="text-muted-foreground text-sm font-medium text-center px-4">
-        <div className="animate-pulse">
-          {label}
+    <div className={cn(THUMB_CLASSES, "border border-border/50 bg-muted/20")}>
+      <div className="absolute inset-0 bg-gradient-to-br from-muted/30 to-muted/60 animate-pulse" />
+      <div
+        className="absolute inset-0 opacity-30"
+        style={{
+          backgroundImage:
+            `url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E")`,
+          backgroundSize: "100px 100px",
+        }}
+      />
+      <div className="absolute inset-0 gen-glow flex items-center justify-center ">
+        <div className="text-center relative z-10">
+          <ImageIcon className="h-7 w-7 mx-auto mb-2 text-white/90" />
+          <p className="text-xs text-white/90">{label}</p>
         </div>
       </div>
     </div>
@@ -83,7 +93,7 @@ export default function GeneratedImagesRows({
   // Use preserved aspect ratio during generation, current setting otherwise
   useEffect(() => {
     const activeOrientation = jobAspectRatio || imageOrientation;
-    
+
     if(activeOrientation === '1:1'){
       setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-80 h-80")
     }else if (activeOrientation === '2:3'){

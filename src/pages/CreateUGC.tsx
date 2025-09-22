@@ -665,10 +665,10 @@ const CreateUGC = () => {
 
     try {
       console.log('[CreateUGC] Starting new generation, clearing previous job state');
-      
+
       // Clear any existing job state first
       clearJob();
-      
+
       // Tower behavior: Move current batch to previous images, clear current batch
       setCurrentBatchImages(current => {
         if (current.length > 0) {
@@ -676,7 +676,7 @@ const CreateUGC = () => {
         }
         return [];
       });
-      
+
       // Provide immediate feedback
       setStage('generating');
       // Set pending slots for new generation (animated placeholders)
@@ -1280,7 +1280,7 @@ const CreateUGC = () => {
                   <div ref={resultsRef} id="generating-images" className="scroll-mt-6 space-y-8 mt-5">
                     
                     {/* Enhanced progress indicator with better error messaging */}
-                    {isGenerating && job && (
+                    {/* {isGenerating && job && (
                       <div className="bg-card rounded-lg p-4 border">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-medium">
@@ -1314,8 +1314,8 @@ const CreateUGC = () => {
                           </p>
                         )}
                       </div>
-                    )}
-                    
+                    )} */}
+
                     <GeneratedImagesRows
                       currentBatchImages={currentBatchImages}
                       previousImages={previousImages}
