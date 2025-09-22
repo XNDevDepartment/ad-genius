@@ -196,7 +196,7 @@ const CreateUGC = () => {
     }
   }, [aiScenarios.length]);
 
-  // Convert job images to display format when they change (Tower behavior)  
+  // Update current batch images when job images change (with deduplication)
   useEffect(() => {
     console.log('[CreateUGC] Job images changed:', { 
       jobImagesLength: jobImages.length, 
@@ -213,35 +213,54 @@ const CreateUGC = () => {
 
     setCurrentBatchImages(prev => {
       const previousSelections = new Map(prev.map(image => [image.id, image.selected]));
+      const existingIds = new Set(prev.map(image => image.id));
 
-      const newImages = readyImages.map((img) => ({
-        id: img.id,
-        url: img.public_url,
-        prompt: job?.prompt || img.prompt || '',
-        format: (img.meta as any)?.format || job?.settings?.output_format || 'png',
-        selected: previousSelections.get(img.id) ?? false,
-      }));
+      // Only add new images that aren't already in the current batch
+      const newImages = readyImages
+        .filter(img => !existingIds.has(img.id))
+        .map((img) => ({
+          id: img.id,
+          url: img.public_url,
+          prompt: job?.prompt || img.prompt || '',
+          format: (img.meta as any)?.format || job?.settings?.output_format || 'png',
+          selected: previousSelections.get(img.id) ?? false,
+        }));
       
-      console.log('[CreateUGC] Setting current batch images:', newImages.length, 'images');
-      return newImages;
-    });
+      if (newImages.length === 0) {
+        console.log('[CreateUGC] No new images to add, keeping current batch');
+        return prev;
+      }
 
+      console.log('[CreateUGC] Adding', newImages.length, 'new images to current batch');
+      return [...prev, ...newImages];
+    });
+  }, [jobImages, job?.prompt, job?.settings?.output_format]);
+
+  // Handle job completion separately (Tower behavior)
+  useEffect(() => {
     if (job?.status === 'completed') {
       console.log('[CreateUGC] Job completed, transitioning to results stage');
+      
       // Move current batch to previous images when job completes (newest at top)
       setCurrentBatchImages(current => {
         if (current.length > 0) {
-          setPreviousImages(prev => [...current, ...prev]);
-          return [];
+          console.log('[CreateUGC] Moving', current.length, 'images from current to previous');
+          setPreviousImages(prev => {
+            // Deduplication: only add images that aren't already in previous
+            const existingIds = new Set(prev.map(img => img.id));
+            const newImages = current.filter(img => !existingIds.has(img.id));
+            return [...newImages, ...prev];
+          });
         }
-        return current;
+        return []; // Clear current batch
       });
+      
       setPendingSlots(0);
       setStage('results');
       localStorage.removeItem('currentJobId');
       localStorage.removeItem('currentStage');
     }
-  }, [jobImages, job?.status, job?.prompt, job?.settings?.output_format]);
+  }, [job?.status]);
 
   // Restore job state from localStorage on mount
   useEffect(() => {
@@ -669,13 +688,8 @@ const CreateUGC = () => {
       // Clear any existing job state first
       clearJob();
 
-      // Tower behavior: Move current batch to previous images, clear current batch
-      setCurrentBatchImages(current => {
-        if (current.length > 0) {
-          setPreviousImages(prev => [...current, ...prev]);
-        }
-        return [];
-      });
+      // Clear current batch - the job completion handler will move completed images to previous
+      setCurrentBatchImages([]);
 
       // Provide immediate feedback
       setStage('generating');
