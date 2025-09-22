@@ -1131,7 +1131,7 @@ const CreateUGC = () => {
                         id="niche"
                         // placeholder={t('ugc.productNiche.placeholder')}
                         value={niche}
-                        maxLength={250}
+                        maxLength={1000}
                         onChange={(e) => handleNicheChange(e.target.value)}
                         className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full text-base md:text-sm"
                         style={{ lineHeight: '1.25rem, font-size: 16px' }}
@@ -1139,7 +1139,7 @@ const CreateUGC = () => {
                         rows={1}
                       />
                       <div className="flex justify-end text-sm text-muted-foreground">
-                        {niche.length} / 250
+                        {niche.length} / 1000
                       </div>
                     </div>
 
