@@ -1253,7 +1253,8 @@ const CreateUGC = () => {
                 // <div className={`bg-card rounded-apple mt-10 mb-10 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
                   <div ref={resultsRef} id="generating-images" className="scroll-mt-6 space-y-8 mt-5">
                     <GeneratedImagesRows
-                      images={generatedImages}                 // array with { id, url, prompt, created_at }
+                      currentBatchImages={generatedImages}
+                      previousImages={[]}
                       totalSlots={job?.total ?? pendingSlots}
                       isGenerating={job?.status !== 'completed'}
                       onCreateNewScenario={(imageId) => {

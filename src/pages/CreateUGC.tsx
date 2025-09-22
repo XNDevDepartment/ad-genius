@@ -228,7 +228,7 @@ const CreateUGC = () => {
 
     if (job?.status === 'completed') {
       console.log('[CreateUGC] Job completed, transitioning to results stage');
-      // Move current batch to previous images when job completes
+      // Move current batch to previous images when job completes (newest at top)
       setCurrentBatchImages(current => {
         if (current.length > 0) {
           setPreviousImages(prev => [...current, ...prev]);
@@ -1317,7 +1317,8 @@ const CreateUGC = () => {
                     )}
                     
                     <GeneratedImagesRows
-                      images={allImages}                 // Combined array with current batch + previous
+                      currentBatchImages={currentBatchImages}
+                      previousImages={previousImages}
                       totalSlots={job?.total ?? pendingSlots}
                       isGenerating={isGenerating}
                       onCreateNewScenario={(imageId) => {
