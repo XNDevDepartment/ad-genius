@@ -1278,6 +1278,44 @@ const CreateUGC = () => {
               {(isGenerating || allImages.length > 0 || jobImages.length > 0 || stage === 'results') && (
                 // <div className={`bg-card rounded-apple mt-10 mb-10 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
                   <div ref={resultsRef} id="generating-images" className="scroll-mt-6 space-y-8 mt-5">
+                    
+                    {/* Enhanced progress indicator with better error messaging */}
+                    {isGenerating && job && (
+                      <div className="bg-card rounded-lg p-4 border">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">
+                            Generating {job.total || pendingSlots} image{(job.total || pendingSlots) !== 1 ? 's' : ''}...
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            {job.completed || 0}/{job.total || pendingSlots}
+                          </span>
+                        </div>
+                        <div className="w-full bg-secondary rounded-full h-2">
+                          <div 
+                            className="bg-primary h-2 rounded-full transition-all duration-300"
+                            style={{ 
+                              width: `${Math.min(100, ((job.completed || 0) / (job.total || pendingSlots || 1)) * 100)}%` 
+                            }}
+                          />
+                        </div>
+                        {job.status === 'processing' && (
+                          <div className="text-xs text-muted-foreground mt-2 space-y-1">
+                            <p>Processing images... This may take 1-2 minutes per image.</p>
+                            {job.completed > 0 && (
+                              <p className="text-green-600">
+                                ✓ {job.completed} completed {job.failed > 0 && `• ${job.failed} failed`}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        {job.status === 'queued' && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Queued... Starting generation shortly.
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    
                     <GeneratedImagesRows
                       images={allImages}                 // Combined array with current batch + previous
                       totalSlots={job?.total ?? pendingSlots}

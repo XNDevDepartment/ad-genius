@@ -289,80 +289,132 @@ async function generateImages(jobId, supabase) {
       jobId,
       hasSourceImage: !!sourceImageUrl
     });
-    // Process images in parallel with concurrency control
-    const MAX_CONCURRENT = 2; // Process up to 2 images simultaneously
-    const promises = [];
-    
-    for(let i = 0; i < (job.total ?? 1); i++){
-      const promise = generateSingleImage(job, i, sourceImageUrl, supabase)
-        .then(() => {
-          completed++;
-          const progress = Math.floor(completed / (job.total ?? 1) * 100);
-          log("Image generation completed", {
+      // Enhanced batch processing with better error recovery
+      const processImagesBatch = async (imagePromises: Array<() => Promise<any>>, maxConcurrency = 2) => {
+        const results = [];
+        let completedCount = 0;
+        
+        for (let i = 0; i < imagePromises.length; i += maxConcurrency) {
+          const batch = imagePromises.slice(i, i + maxConcurrency).map(fn => fn());
+          const batchResults = await Promise.allSettled(batch);
+          
+          // Update progress after each batch
+          completedCount += batchResults.filter(r => r.status === 'fulfilled').length;
+          const failedInBatch = batchResults.filter(r => r.status === 'rejected').length;
+          
+          await supabase
+            .from('image_jobs')
+            .update({ 
+              progress: Math.round((completedCount / numImages) * 100),
+              completed: completedCount,
+              failed: failed + failedInBatch,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', jobId);
+            
+          // Update global failed count
+          failed += failedInBatch;
+          
+          log(`Batch ${Math.ceil((i + maxConcurrency) / maxConcurrency)} completed`, {
             jobId,
-            imageIndex: i,
-            completed,
-            progress
+            completedCount,
+            totalImages: numImages,
+            failedInBatch
           });
-          return supabase.from("image_jobs").update({
-            completed,
-            progress,
+          
+          results.push(...batchResults);
+        }
+        return results;
+      };
+
+      // Create array of image generation functions with timeout wrapper
+      const generateSingleImageWithTimeout = async (jobData, index) => {
+        const TIMEOUT_MS = 90000; // 90 seconds per image
+        
+        return Promise.race([
+          generateSingleImage(jobData, index, sourceImageUrl, supabase),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error(`Image ${index + 1} timed out after 90 seconds`)), TIMEOUT_MS)
+          )
+        ]);
+      };
+
+      const imageGenerationTasks = Array.from({ length: numImages }, (_, index) => 
+        () => generateSingleImageWithTimeout(job, index)
+      );
+
+      // Process all images with enhanced concurrency control
+      const imageResults = await processImagesBatch(imageGenerationTasks, 2);
+      // Enhanced result processing with better error reporting
+      const successful = imageResults.filter(result => result.status === 'fulfilled').length;
+      const failedResults = imageResults.filter(result => result.status === 'rejected');
+      
+      // Collect detailed error information for better debugging
+      const errorDetails = failedResults.map((result, index) => {
+        const error = (result as PromiseRejectedResult).reason;
+        return {
+          imageIndex: index,
+          message: error?.message || String(error),
+          type: error?.name || 'Unknown'
+        };
+      });
+      
+      const errorSummary = errorDetails.map(e => `Image ${e.imageIndex + 1}: ${e.message}`);
+      
+      log("Job processing completed", {
+        jobId,
+        successful,
+        failed: failedResults.length,
+        errorDetails: errorDetails.slice(0, 3) // Log first 3 errors in detail
+      });
+
+      // Update job status with enhanced error handling
+      if (successful > 0) {
+        const isPartialFailure = failedResults.length > 0;
+        const statusUpdate = {
+          status: isPartialFailure ? 'partially_completed' : 'completed',
+          progress: 100,
+          completed: successful,
+          failed: failedResults.length,
+          finished_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          ...(isPartialFailure && { 
+            error: `${failedResults.length} of ${numImages} images failed. ${errorSummary.slice(0, 2).join('; ')}${errorSummary.length > 2 ? '...' : ''}` 
+          })
+        };
+        
+        await supabase
+          .from('image_jobs')
+          .update(statusUpdate)
+          .eq('id', jobId);
+      } else {
+        // All images failed
+        await supabase
+          .from('image_jobs')
+          .update({ 
+            status: 'failed',
+            error: `All ${numImages} images failed. Common issues: ${errorSummary.slice(0, 3).join('; ')}${errorSummary.length > 3 ? '...' : ''}`,
+            failed: failedResults.length,
+            finished_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
-          }).eq("id", jobId);
-        })
-        .catch(e => {
-          failed++;
-          const errorMsg = e?.message ?? String(e);
-          errors.push(errorMsg);
-          log("Image generation failed", {
-            jobId,
-            index: i,
-            error: errorMsg
-          });
-          return Promise.resolve(); // Don't fail the entire batch
-        });
-      
-      promises.push(promise);
-      
-      // Limit concurrency - wait for some to complete before starting more
-      if (promises.length >= MAX_CONCURRENT) {
-        await Promise.allSettled(promises.splice(0, Math.floor(MAX_CONCURRENT / 2)));
+          })
+          .eq('id', jobId);
       }
-    }
-    
-    // Wait for all remaining promises to complete
-    await Promise.allSettled(promises);
-    const finalStatus = completed > 0 ? "completed" : "failed";
-    const update = {
-      status: finalStatus,
-      completed,
-      failed,
-      progress: completed > 0 ? 100 : 0,
-      finished_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    if (finalStatus === "failed") update.error = errors.join("; ");
-    log("Job processing completed", {
-      jobId,
-      finalStatus,
-      completed,
-      failed
-    });
-    await supabase.from("image_jobs").update(update).eq("id", jobId);
-    // partial refunds (skip admins)
-    if (failed > 0) {
+    // Handle partial refunds for failed images (skip admins)
+    if (failedResults.length > 0) {
       const { data: isAdmin } = await supabase.rpc("is_user_admin", {
         check_user_id: job.user_id
       });
       if (!isAdmin) {
-        const refundAmount = failed * calculateImageCost({
+        const refundAmount = failedResults.length * calculateImageCost({
           ...job.settings ?? {},
           number: 1
         });
-        log("Issuing partial refund", {
+        log("Issuing partial refund for failed images", {
           jobId,
           refundAmount,
-          failed
+          failedCount: failedResults.length,
+          successful
         });
         await supabase.rpc("refund_user_credits", {
           p_user_id: job.user_id,

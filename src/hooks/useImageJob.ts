@@ -207,12 +207,15 @@ export function useImageJob() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [job?.id]);
 
-  /** Watchdog: auto-resume if job stays in queued with no progress */
+  /** Enhanced watchdog with better error recovery and progress indication */
   useEffect(() => {
     if (!job?.id) return;
 
     const stuck = job.status === 'queued' && (job.progress ?? 0) === 0;
-    if (!stuck) {
+    const longRunning = job.status === 'processing' && job.created_at && 
+      (Date.now() - new Date(job.created_at).getTime()) > 300_000; // 5 minutes
+
+    if (!stuck && !longRunning) {
       if (watchdogRef.current) clearTimeout(watchdogRef.current);
       watchdogRef.current = null;
       resumeAttemptsRef.current = 0;
@@ -221,32 +224,44 @@ export function useImageJob() {
 
     if (watchdogRef.current) return; // already armed
 
+    const timeoutDelay = stuck ? 15_000 : 30_000; // 15s for stuck, 30s for long-running
     watchdogRef.current = window.setTimeout(async () => {
       try {
-        if (resumeAttemptsRef.current < 5) { // Increased from 3 to 5 attempts
-          const backoffDelay = Math.min(1000 * Math.pow(2, resumeAttemptsRef.current), 8000); // 1s, 2s, 4s, 8s, 8s
+        if (resumeAttemptsRef.current < 5) {
+          const backoffDelay = Math.min(1000 * Math.pow(2, resumeAttemptsRef.current), 8000);
           resumeAttemptsRef.current += 1;
+          
+          const jobType = stuck ? 'stuck' : 'long-running';
+          console.log(`[useImageJob] ${jobType} job detected, attempting resume #${resumeAttemptsRef.current}`);
           
           // Add exponential backoff before resume attempt
           setTimeout(async () => {
             try {
               await resumeJob(job.id);
-              toast.message(`Auto-resume triggered (attempt ${resumeAttemptsRef.current})`);
+              if (stuck) {
+                toast.message(`Resuming stuck job (attempt ${resumeAttemptsRef.current})`);
+              } else {
+                toast.message(`Checking long-running job (attempt ${resumeAttemptsRef.current})`);
+              }
             } catch (error) {
               console.error('[useImageJob] Auto-resume failed:', error);
+              if (resumeAttemptsRef.current >= 3) {
+                toast.error('Job recovery failed. Please try generating again.');
+              }
             }
           }, backoffDelay);
         } else {
           console.log('[useImageJob] Max resume attempts reached, giving up');
-          toast.message('Job appears stuck. Please try again or contact support.');
+          setError('Job appears to be stuck. Please try generating new images.');
+          toast.error('Generation seems stuck. Please try again or refresh the page.');
         }
       } catch {
         // swallow
       } finally {
         watchdogRef.current = null; // allow re-arm if it remains stuck
       }
-    }, 15_000); // Reduced from 20s to 15s for faster detection
-  }, [job?.id, job?.status, job?.progress]);
+    }, timeoutDelay);
+  }, [job?.id, job?.status, job?.progress, job?.created_at]);
 
   /** Fetch all images for a job */
   const loadJobImages = useCallback(async (jobId: string) => {
