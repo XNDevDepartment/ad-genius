@@ -110,7 +110,9 @@ const CreateUGC = () => {
   const progress = job?.progress || 0;
 
 
-  const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
+  // Tower behavior: separate current batch from previous images
+  const [currentBatchImages, setCurrentBatchImages] = useState<GeneratedImage[]>([]);
+  const [previousImages, setPreviousImages] = useState<GeneratedImage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [sourceImagePickerOpen, setSourceImagePickerOpen] = useState(false);
@@ -194,7 +196,7 @@ const CreateUGC = () => {
     }
   }, [aiScenarios.length]);
 
-  // Convert job images to display format when they change
+  // Convert job images to display format when they change (Tower behavior)  
   useEffect(() => {
     console.log('[CreateUGC] Job images changed:', { 
       jobImagesLength: jobImages.length, 
@@ -209,7 +211,7 @@ const CreateUGC = () => {
     
     if (readyImages.length === 0) return;
 
-    setGeneratedImages(prev => {
+    setCurrentBatchImages(prev => {
       const previousSelections = new Map(prev.map(image => [image.id, image.selected]));
 
       const newImages = readyImages.map((img) => ({
@@ -220,12 +222,21 @@ const CreateUGC = () => {
         selected: previousSelections.get(img.id) ?? false,
       }));
       
-      console.log('[CreateUGC] Setting generated images:', newImages.length, 'images');
+      console.log('[CreateUGC] Setting current batch images:', newImages.length, 'images');
       return newImages;
     });
 
     if (job?.status === 'completed') {
       console.log('[CreateUGC] Job completed, transitioning to results stage');
+      // Move current batch to previous images when job completes
+      setCurrentBatchImages(current => {
+        if (current.length > 0) {
+          setPreviousImages(prev => [...current, ...prev]);
+          return [];
+        }
+        return current;
+      });
+      setPendingSlots(0);
       setStage('results');
       localStorage.removeItem('currentJobId');
       localStorage.removeItem('currentStage');
@@ -257,7 +268,7 @@ const CreateUGC = () => {
               selected: false,
               format: 'webp'
             }));
-            setGeneratedImages(placeholders);
+            setCurrentBatchImages(placeholders);
           }
         }
         
@@ -658,9 +669,17 @@ const CreateUGC = () => {
       // Clear any existing job state first
       clearJob();
       
+      // Tower behavior: Move current batch to previous images, clear current batch
+      setCurrentBatchImages(current => {
+        if (current.length > 0) {
+          setPreviousImages(prev => [...current, ...prev]);
+        }
+        return [];
+      });
+      
       // Provide immediate feedback
       setStage('generating');
-      // Keep previous images visible alongside new generation
+      // Set pending slots for new generation (animated placeholders)
       setPendingSlots(numImages);
 
       // Save state to localStorage for persistence
@@ -897,7 +916,19 @@ const CreateUGC = () => {
   };
 
   const handleImageSelect = (imageId: string) => {
-    setGeneratedImages(prev => 
+    // Check current batch first
+    setCurrentBatchImages(prev => {
+      const found = prev.find(img => img.id === imageId);
+      if (found) {
+        return prev.map(img => 
+          img.id === imageId ? { ...img, selected: !img.selected } : img
+        );
+      }
+      return prev;
+    });
+    
+    // Then check previous images
+    setPreviousImages(prev => 
       prev.map(img => 
         img.id === imageId ? { ...img, selected: !img.selected } : img
       )
@@ -905,18 +936,16 @@ const CreateUGC = () => {
   };
 
   const toggleImageSelection = (imageId: string) => {
-    setGeneratedImages(prev => 
-      prev.map(img => 
-        img.id === imageId ? { ...img, selected: !img.selected } : img
-      )
-    );
+    handleImageSelect(imageId);
   };
 
-  const selectedImages = generatedImages.filter(img => img.selected);
+  // Combine both arrays for selection calculations
+  const allImages = [...currentBatchImages, ...previousImages];
+  const selectedImages = allImages.filter(img => img.selected);
 
 
   const handleDownloadAll = () => {
-    const imagesToDownload = selectedImages.length > 0 ? selectedImages : generatedImages;
+    const imagesToDownload = selectedImages.length > 0 ? selectedImages : allImages;
 
     imagesToDownload.forEach((img, index) => {
       if (!img.url) return;
@@ -936,11 +965,15 @@ const CreateUGC = () => {
   };
 
   const handleGenerateMore = () => {
-    setGeneratedImages([]);
+    // Clear current batch and set pending slots for new generation
+    setCurrentBatchImages([]);
+    setPendingSlots(numImages);
   };
 
   const handleNewCreation = () => {
-    setGeneratedImages([]);
+    setCurrentBatchImages([]);
+    setPreviousImages([]);
+    setPendingSlots(0);
     setProductImage(null);
     setSourceImageId(null);
     setNiche("");
@@ -954,7 +987,9 @@ const CreateUGC = () => {
     clearJob();
     
     // Reset all UI states
-    setGeneratedImages([]);
+    setCurrentBatchImages([]);
+    setPreviousImages([]);
+    setPendingSlots(0);
     setProductImage(null);
     setSourceImageId(null);
     setNiche("");
@@ -982,7 +1017,7 @@ const CreateUGC = () => {
   // Scroll detection for floating button
   useEffect(() => {
     const handleScroll = () => {
-      const hasContent = generatedImages.length > 0 || jobImages.length > 0 || isGenerating || stage === 'results';
+      const hasContent = allImages.length > 0 || jobImages.length > 0 || isGenerating || stage === 'results';
       const isScrolledUp = window.scrollY < window.innerHeight * 0.5;
       setShowScrollDown(hasContent && isScrolledUp);
     };
@@ -991,7 +1026,7 @@ const CreateUGC = () => {
     handleScroll(); // Check initial state
     
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [generatedImages.length, jobImages.length, isGenerating, stage]);
+  }, [allImages.length, jobImages.length, isGenerating, stage]);
 
   const handleScrollToResults = () => {
     resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1240,13 +1275,13 @@ const CreateUGC = () => {
               </Card>
 
               {/* Results Section */}
-              {(isGenerating || generatedImages.length > 0 || jobImages.length > 0 || stage === 'results') && (
+              {(isGenerating || allImages.length > 0 || jobImages.length > 0 || stage === 'results') && (
                 // <div className={`bg-card rounded-apple mt-10 mb-10 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
                   <div ref={resultsRef} id="generating-images" className="scroll-mt-6 space-y-8 mt-5">
                     <GeneratedImagesRows
-                      images={generatedImages}                 // array with { id, url, prompt, created_at }
+                      images={allImages}                 // Combined array with current batch + previous
                       totalSlots={job?.total ?? pendingSlots}
-                      isGenerating={job?.status !== 'completed'}
+                      isGenerating={isGenerating}
                       onCreateNewScenario={(imageId) => {
                         setSelectedScenario({"idea":"", "small-description": "", "description": ""});
                         generateMoreScenarios();

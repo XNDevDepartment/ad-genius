@@ -223,17 +223,29 @@ export function useImageJob() {
 
     watchdogRef.current = window.setTimeout(async () => {
       try {
-        if (resumeAttemptsRef.current < 3) {
+        if (resumeAttemptsRef.current < 5) { // Increased from 3 to 5 attempts
+          const backoffDelay = Math.min(1000 * Math.pow(2, resumeAttemptsRef.current), 8000); // 1s, 2s, 4s, 8s, 8s
           resumeAttemptsRef.current += 1;
-          await resumeJob(job.id);
-          toast.message('Auto-resume triggered');
+          
+          // Add exponential backoff before resume attempt
+          setTimeout(async () => {
+            try {
+              await resumeJob(job.id);
+              toast.message(`Auto-resume triggered (attempt ${resumeAttemptsRef.current})`);
+            } catch (error) {
+              console.error('[useImageJob] Auto-resume failed:', error);
+            }
+          }, backoffDelay);
+        } else {
+          console.log('[useImageJob] Max resume attempts reached, giving up');
+          toast.message('Job appears stuck. Please try again or contact support.');
         }
       } catch {
         // swallow
       } finally {
         watchdogRef.current = null; // allow re-arm if it remains stuck
       }
-    }, 20_000); // 20s vs 30s for snappier recovery
+    }, 15_000); // Reduced from 20s to 15s for faster detection
   }, [job?.id, job?.status, job?.progress]);
 
   /** Fetch all images for a job */

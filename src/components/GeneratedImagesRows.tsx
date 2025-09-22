@@ -84,7 +84,9 @@ export default function GeneratedImagesRows({
   threadId,
   imageOrientation
 }: Props) {
-  const slots = Math.max(totalSlots || 0, images.length || 0);
+  // Tower behavior: animated slots at top, then completed images
+  const pendingSlots = isGenerating ? Math.max(0, (totalSlots || 0) - images.filter(img => img.url).length) : 0;
+  const slots = pendingSlots + images.length;
 
   const [THUMB_CLASSES , setTHUMB_CLASSES] = useState("");
   const [jobAspectRatio, setJobAspectRatio] = useState<string | null>(null);
@@ -115,79 +117,121 @@ export default function GeneratedImagesRows({
 
   return (
     <div className="space-y-4">
-      {Array.from({ length: slots }).map((_, i) => {
-        const img = images[i];
-
-        return (
-          <Card
-            key={img?.id ?? `slot-${i}`}
-            className={cn(!threadId && "opacity-50 pointer-events-none", "rounded-apple shadow-sm")}
-          >
-            <CardContent className="p-4">
-              {/* Mobile: stack; ≥sm: row */}
-              <div className="flex flex-col  sm:flex-row items-center gap-4">
-                {/* Left: thumbnail */}
-                <div className="shrink-0">
-                  {img?.url ? (
-                    <div className={THUMB_CLASSES}>
-                      <img
-                        src={img.url}
-                        alt={img.prompt || `Generated image ${i + 1}`}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-                  ) : (
-                    <GrainPlaceholder label={isGenerating ? "Generating..." : "Waiting"} THUMB_CLASSES={THUMB_CLASSES} />
-                  )}
-                </div>
-
-                {/* Right: actions (stacked) */}
-                <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-1 gap-2">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="w-full justify-center"
-                    // disabled={!img?.url}
-                    onClick={() => {
-                      if (!img?.url) return;
-                      const extension = img?.format || 'png';
-                      downloadBlob(img.url, `produktpix-${img.id || i + 1}.${extension}`);
-                    }}
-                    title={!img?.url ? "Available when ready" : "Download image"}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-center"
-                    disabled={!img?.id}
-                    onClick={() => img?.id && onCreateNewScenario(img.id)}
-                    title={!img?.id ? "Available when ready" : "Create with new scenario"}
-                  >
-                    <PlusCircle className="h-4 w-4 mr-2" />
-                    New Scenario
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-center"
-                    onClick={() => onOpenInLibrary(img?.id)}
-                    title="Open in library"
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Library
-                  </Button>
-                </div>
+      {/* Animated slots first (when generating) */}
+      {isGenerating && Array.from({ length: pendingSlots }).map((_, i) => (
+        <Card
+          key={`pending-slot-${i}`}
+          className={cn("rounded-apple shadow-sm")}
+        >
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="shrink-0">
+                <GrainPlaceholder label="Generating..." THUMB_CLASSES={THUMB_CLASSES} />
               </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+              <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-1 gap-2">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="w-full justify-center opacity-50"
+                  disabled
+                  title="Available when ready"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-center opacity-50"
+                  disabled
+                  title="Available when ready"
+                >
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  New Scenario
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-center"
+                  onClick={() => onOpenInLibrary()}
+                  title="Open in library"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Library
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+
+      {/* Completed images */}
+      {images.map((img, i) => (
+        <Card
+          key={img?.id ?? `image-${i}`}
+          className={cn(!threadId && "opacity-50 pointer-events-none", "rounded-apple shadow-sm")}
+        >
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="shrink-0">
+                {img?.url ? (
+                  <div className={THUMB_CLASSES}>
+                    <img
+                      src={img.url}
+                      alt={img.prompt || `Generated image ${i + 1}`}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : (
+                  <GrainPlaceholder label="Processing..." THUMB_CLASSES={THUMB_CLASSES} />
+                )}
+              </div>
+
+              <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-1 gap-2">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="w-full justify-center"
+                  disabled={!img?.url}
+                  onClick={() => {
+                    if (!img?.url) return;
+                    const extension = img?.format || 'png';
+                    downloadBlob(img.url, `produktpix-${img.id || i + 1}.${extension}`);
+                  }}
+                  title={!img?.url ? "Available when ready" : "Download image"}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-center"
+                  disabled={!img?.id}
+                  onClick={() => img?.id && onCreateNewScenario(img.id)}
+                  title={!img?.id ? "Available when ready" : "Create with new scenario"}
+                >
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  New Scenario
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-center"
+                  onClick={() => onOpenInLibrary(img?.id)}
+                  title="Open in library"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Library
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
 
       {/* Bottom CTA */}
       {(!isGenerating || images.length > 0) && (

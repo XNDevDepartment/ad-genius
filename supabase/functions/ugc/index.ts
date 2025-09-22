@@ -289,38 +289,49 @@ async function generateImages(jobId, supabase) {
       jobId,
       hasSourceImage: !!sourceImageUrl
     });
-    // loop images
+    // Process images in parallel with concurrency control
+    const MAX_CONCURRENT = 2; // Process up to 2 images simultaneously
+    const promises = [];
+    
     for(let i = 0; i < (job.total ?? 1); i++){
-      try {
-        log("Starting image generation", {
-          jobId,
-          imageIndex: i
+      const promise = generateSingleImage(job, i, sourceImageUrl, supabase)
+        .then(() => {
+          completed++;
+          const progress = Math.floor(completed / (job.total ?? 1) * 100);
+          log("Image generation completed", {
+            jobId,
+            imageIndex: i,
+            completed,
+            progress
+          });
+          return supabase.from("image_jobs").update({
+            completed,
+            progress,
+            updated_at: new Date().toISOString()
+          }).eq("id", jobId);
+        })
+        .catch(e => {
+          failed++;
+          const errorMsg = e?.message ?? String(e);
+          errors.push(errorMsg);
+          log("Image generation failed", {
+            jobId,
+            index: i,
+            error: errorMsg
+          });
+          return Promise.resolve(); // Don't fail the entire batch
         });
-        await generateSingleImage(job, i, sourceImageUrl, supabase);
-        completed++;
-        const progress = Math.floor(completed / (job.total ?? 1) * 100);
-        log("Image generation completed", {
-          jobId,
-          imageIndex: i,
-          completed,
-          progress
-        });
-        await supabase.from("image_jobs").update({
-          completed,
-          progress,
-          updated_at: new Date().toISOString()
-        }).eq("id", jobId);
-      } catch (e) {
-        failed++;
-        const errorMsg = e?.message ?? String(e);
-        errors.push(errorMsg);
-        log("Image generation failed", {
-          jobId,
-          index: i,
-          error: errorMsg
-        });
+      
+      promises.push(promise);
+      
+      // Limit concurrency - wait for some to complete before starting more
+      if (promises.length >= MAX_CONCURRENT) {
+        await Promise.allSettled(promises.splice(0, Math.floor(MAX_CONCURRENT / 2)));
       }
     }
+    
+    // Wait for all remaining promises to complete
+    await Promise.allSettled(promises);
     const finalStatus = completed > 0 ? "completed" : "failed";
     const update = {
       status: finalStatus,
@@ -396,16 +407,23 @@ async function generateImages(jobId, supabase) {
 // Generate 1 image (with retries/backoff). Supports generations and edits.
 async function generateSingleImage(job, index, sourceImageUrl, supabase) {
   const MAX_ATTEMPTS = 3;
+  const INDIVIDUAL_TIMEOUT = 90000; // 90 seconds per attempt (reduced from 120s)
   const size = job?.settings?.size ?? "1024x1024";
 
   const quality = (job?.settings?.quality ?? "high") as "low" | "medium" | "high";
   const prompt = String(job?.prompt ?? "");
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    log("Starting image generation attempt", {
+      jobId: job.id,
+      imageIndex: index,
+      attempt,
+      maxAttempts: MAX_ATTEMPTS
+    });
 
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(()=>controller.abort(), 120000);
+      const timeout = setTimeout(()=>controller.abort(), INDIVIDUAL_TIMEOUT);
       let res;
       if (sourceImageUrl) {
         // ----- edits -----
@@ -453,12 +471,29 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
 
 
       try {
+        clearTimeout(timeout); // Clear timeout on successful response
         const reqId = res.headers.get("x-request-id") || undefined;
         if (!res.ok) {
           const text = await res.text();
           const retryable = res.status >= 500 || res.status === 429;
+          log("OpenAI API error", {
+            jobId: job.id,
+            imageIndex: index,
+            attempt,
+            status: res.status,
+            error: text,
+            retryable,
+            reqId
+          });
           if (retryable && attempt < MAX_ATTEMPTS) {
-            await sleep(backoffMs(attempt));
+            const backoffDelay = backoffMs(attempt);
+            log("Retrying after backoff", {
+              jobId: job.id,
+              imageIndex: index,
+              attempt,
+              delay: backoffDelay
+            });
+            await sleep(backoffDelay);
             continue;
           }
           throw new Error(`OpenAI error ${res.status}${reqId ? ` req=${reqId}` : ""}: ${text}`);
@@ -510,21 +545,46 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
         });
         if (saveErr) throw new Error(`Failed to save image record: ${saveErr.message}`);
 
+        log("Image generation successful", {
+          jobId: job.id,
+          imageIndex: index,
+          attempt,
+          storagePath
+        });
         return; // success
       } finally {
         clearTimeout(timeout);
       }
     } catch (e: any) {
-
+      clearTimeout(timeout);
       const msg = e?.message ?? String(e);
       const retryable = /AbortError/.test(e?.name) || /OpenAI error 5\d\d/.test(msg) || /429/.test(msg) || /Missing b64_json/.test(msg);
+      
+      log("Image generation error", {
+        jobId: job.id,
+        imageIndex: index,
+        attempt,
+        error: msg,
+        retryable,
+        errorName: e?.name
+      });
+      
       if (retryable && attempt < MAX_ATTEMPTS) {
-        await sleep(backoffMs(attempt));
+        const backoffDelay = backoffMs(attempt);
+        log("Retrying after error", {
+          jobId: job.id,
+          imageIndex: index,
+          attempt,
+          delay: backoffDelay
+        });
+        await sleep(backoffDelay);
         continue;
       }
       throw new Error(`OpenAI API error (attempt ${attempt}/${MAX_ATTEMPTS}): ${msg}`);
     }
   }
+  
+  throw new Error(`Failed to generate image after ${MAX_ATTEMPTS} attempts`);
 }
 // Signed URL for user-provided source image (optional)
 async function getSignedSourceUrl(source_image_id, supabase) {
