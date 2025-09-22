@@ -289,6 +289,9 @@ async function generateImages(jobId, supabase) {
       jobId,
       hasSourceImage: !!sourceImageUrl
     });
+    
+    const numImages = job.total;
+    
       // Enhanced batch processing with better error recovery
       const processImagesBatch = async (imagePromises: Array<() => Promise<any>>, maxConcurrency = 2) => {
         const results = [];
