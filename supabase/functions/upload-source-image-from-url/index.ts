@@ -77,12 +77,64 @@ serve(async (req) => {
 
     console.log('Fetching image from URL:', imageUrl);
 
-    // Fetch the image
-    const imageResponse = await fetch(imageUrl);
+    // Fetch the image with proper headers and retry logic
+    let imageResponse;
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    while (retryCount <= maxRetries) {
+      try {
+        imageResponse = await fetch(imageUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+          },
+          signal: AbortSignal.timeout(30000), // 30 second timeout
+        });
+        break;
+      } catch (error) {
+        retryCount++;
+        console.error(`Fetch attempt ${retryCount} failed:`, error);
+        
+        if (retryCount > maxRetries) {
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: `Failed to fetch image after ${maxRetries} attempts: ${error.message}` 
+            }),
+            { 
+              status: 400, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        }
+        
+        // Wait before retry (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
+      }
+    }
+    
+    console.log('Image fetch response:', {
+      status: imageResponse.status,
+      statusText: imageResponse.statusText,
+      headers: Object.fromEntries(imageResponse.headers.entries()),
+    });
     
     if (!imageResponse.ok) {
+      console.error('Failed to fetch image:', {
+        status: imageResponse.status,
+        statusText: imageResponse.statusText,
+        url: imageUrl
+      });
+      
       return new Response(
-        JSON.stringify({ success: false, error: 'Failed to fetch image from URL' }),
+        JSON.stringify({ 
+          success: false, 
+          error: `Failed to fetch image from URL (${imageResponse.status}: ${imageResponse.statusText})` 
+        }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -91,9 +143,23 @@ serve(async (req) => {
     }
 
     const contentType = imageResponse.headers.get('content-type');
-    if (!contentType || !contentType.startsWith('image/')) {
+    console.log('Content-Type received:', contentType);
+    
+    // More flexible content-type validation
+    const isValidImage = contentType && (
+      contentType.startsWith('image/') || 
+      contentType.includes('image') ||
+      // Some servers might return generic content types for images
+      contentType === 'application/octet-stream'
+    );
+    
+    if (!isValidImage) {
+      console.error('Invalid content type:', contentType);
       return new Response(
-        JSON.stringify({ success: false, error: 'URL does not point to a valid image' }),
+        JSON.stringify({ 
+          success: false, 
+          error: `URL does not point to a valid image (Content-Type: ${contentType})` 
+        }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -104,11 +170,27 @@ serve(async (req) => {
     // Get image buffer
     const imageBuffer = await imageResponse.arrayBuffer();
     const fileSize = imageBuffer.byteLength;
+    
+    console.log('Image file size:', {
+      bytes: fileSize,
+      mb: (fileSize / (1024 * 1024)).toFixed(2),
+      url: imageUrl
+    });
 
-    // Check file size limit (10MB)
-    if (fileSize > 10 * 1024 * 1024) {
+    // Check file size limit (20MB for high-resolution images)
+    const maxFileSize = 20 * 1024 * 1024; // 20MB
+    if (fileSize > maxFileSize) {
+      console.error('File size exceeds limit:', {
+        fileSize,
+        maxFileSize,
+        fileSizeMB: (fileSize / (1024 * 1024)).toFixed(2)
+      });
+      
       return new Response(
-        JSON.stringify({ success: false, error: 'Image file size exceeds 10MB limit' }),
+        JSON.stringify({ 
+          success: false, 
+          error: `Image file size (${(fileSize / (1024 * 1024)).toFixed(2)}MB) exceeds 20MB limit` 
+        }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -116,16 +198,30 @@ serve(async (req) => {
       );
     }
 
-    // Determine file extension from content type
+    // Determine file extension from content type with more flexibility
     const extensionMap: { [key: string]: string } = {
       'image/jpeg': 'jpg',
       'image/jpg': 'jpg',
       'image/png': 'png',
       'image/webp': 'webp',
       'image/gif': 'gif',
+      'image/svg+xml': 'svg',
+      'image/tiff': 'tiff',
+      'image/bmp': 'bmp',
+      'application/octet-stream': 'jpg', // fallback for generic content-type
     };
     
-    const extension = extensionMap[contentType] || 'jpg';
+    let extension = extensionMap[contentType];
+    
+    // If no direct match, try to extract from URL or default to jpg
+    if (!extension) {
+      const urlExtension = imageUrl.split('.').pop()?.toLowerCase().split('?')[0];
+      extension = urlExtension && ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'tiff', 'bmp'].includes(urlExtension) 
+        ? (urlExtension === 'jpeg' ? 'jpg' : urlExtension)
+        : 'jpg';
+    }
+    
+    console.log('File extension determined:', { contentType, extension, url: imageUrl });
     
     // Generate unique filename
     const timestamp = Date.now();
@@ -144,9 +240,19 @@ serve(async (req) => {
       });
 
     if (storageError) {
-      console.error('Storage upload error:', storageError);
+      console.error('Storage upload error:', {
+        error: storageError,
+        storagePath,
+        contentType,
+        fileSize,
+        bucketName: 'ugc-inputs'
+      });
+      
       return new Response(
-        JSON.stringify({ success: false, error: 'Failed to upload image to storage' }),
+        JSON.stringify({ 
+          success: false, 
+          error: `Failed to upload image to storage: ${storageError.message}` 
+        }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
