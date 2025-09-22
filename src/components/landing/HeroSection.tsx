@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 import nike_before from './../../assets/nike_origin.jpeg';
 import nike_afer from './../../assets/nike_finish.png';
+import { ArcadeEmbed } from "../ArcadeEmbed";
 
 
 interface PublicImage {
@@ -50,32 +51,6 @@ const HeroSection = () => {
     return () => clearInterval(interval);
   }, [headlines.length]);
 
-
-    const [images, setImages] = useState<PublicImage[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedIndex, setSelectedIndex] = useState(0);
-  
-    useEffect(() => {
-      const fetchPublicImages = async () => {
-        try {
-          const { data, error } = await supabase.functions.invoke("public-gallery");
-          if (error) {
-            console.error("Error fetching public images:", error);
-            setImages([]);
-          } else {
-            const list: PublicImage[] = data?.images || [];
-            setImages(list);
-            setSelectedIndex(0);
-          }
-        } catch (e) {
-          console.error("Error fetching public images:", e);
-          setImages([]);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchPublicImages();
-    }, []);
 
   return (
     <section ref={ref} className="relative min-h-[90vh] bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden mt-24">
@@ -158,6 +133,7 @@ const HeroSection = () => {
                 variant="outline"
                 size="lg"
                 className="border-2 border-primary/20 hover:border-primary/40 text-lg px-8 py-4"
+                // onClick={handleClick}
               >
                 <Play className="mr-2 h-5 w-5" />
                 Watch Demo
