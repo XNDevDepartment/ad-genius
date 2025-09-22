@@ -218,11 +218,16 @@ const CreateUGC = () => {
       const newImages = readyImages.map((img) => ({
         id: img.id,
         url: img.public_url,
-        prompt: job?.prompt || img.prompt || '',
-        format: (img.meta as any)?.format || job?.settings?.output_format || 'png',
+        prompt: job?.prompt || img.prompt || "",
+        format: (img.meta as any)?.format || job?.settings?.output_format || "png",
         selected: previousSelections.get(img.id) ?? false,
+        orientation:
+          (img.meta as any)?.orientation ||
+          (img.meta as any)?.aspect_ratio ||
+          job?.settings?.orientation || // saved when creating the job
+          imageOrientation,              // final fallback to current UI
       }));
-      
+
       console.log('[CreateUGC] Replacing current batch with', newImages.length, 'ready images');
       return newImages; // Complete replacement, not append
     });
@@ -294,7 +299,8 @@ const CreateUGC = () => {
                   url: '',
                   prompt: '',
                   selected: false,
-                  format: 'webp'
+                  format: 'webp',
+                  orientation: metadata.imageOrientation || imageOrientation,
                 }));
                 setCurrentBatchImages(placeholders);
               } else if (job && job.status === 'completed') {
@@ -699,11 +705,19 @@ const CreateUGC = () => {
       // Clear any existing job state first
       clearJob();
 
+      // Freeze the current results into the tower (newest on top)
+      setPreviousImages(prev => {
+        if (currentBatchImages.length === 0) return prev;
+        const finished = currentBatchImages.filter(img => Boolean(img.url));
+        return finished.length ? [...finished, ...prev] : prev;
+      });
+
       // Clear current batch - the job completion handler will move completed images to previous
       setCurrentBatchImages([]);
 
       // Provide immediate feedback
       setStage('generating');
+
       // Set pending slots for new generation (animated placeholders)
       setPendingSlots(numImages);
 
@@ -880,7 +894,7 @@ const CreateUGC = () => {
       // Save job ID, stage and metadata for mobile recovery
       localStorage.setItem('currentJobId', jobId);
       localStorage.setItem('currentStage', 'generating');
-      
+
       // Enhanced mobile persistence with job metadata
       const jobMetadata = {
         id: jobId,
@@ -1342,6 +1356,7 @@ const CreateUGC = () => {
                     )} */}
 
                     <GeneratedImagesRows
+                      // images={allImages}                 // Combined array with current batch + previous
                       currentBatchImages={currentBatchImages}
                       previousImages={previousImages}
                       totalSlots={job?.total ?? pendingSlots}
@@ -1352,7 +1367,7 @@ const CreateUGC = () => {
                       }}
                       onOpenInLibrary={() => navigate('/library')}
                       onStartFromScratch={handleStartFromScratch}
-                      threadId={threadId}
+                      jobId={job?.id}
                       imageOrientation={imageOrientation}
                     />
 
