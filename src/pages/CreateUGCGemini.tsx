@@ -1263,8 +1263,6 @@ const CreateUGC = () => {
                       }}
                       onOpenInLibrary={() => navigate('/library')}
                       onStartFromScratch={handleStartFromScratch}
-                      threadId={conversationId}
-                      imageOrientation={imageOrientation}
                     />
 
                   {/* Resume button for stuck jobs */}

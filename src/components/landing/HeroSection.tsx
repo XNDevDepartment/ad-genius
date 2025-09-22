@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 import nike_before from './../../assets/nike_origin.jpeg';
 import nike_afer from './../../assets/nike_finish.png';
-import { ArcadeEmbed } from "../ArcadeEmbed";
+import { DemoModal } from "../DemoModal";
 
 
 interface PublicImage {
@@ -29,6 +29,7 @@ const HeroSection = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [currentHeadline, setCurrentHeadline] = useState(0);
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
 
   const headlines = [
@@ -133,7 +134,7 @@ const HeroSection = () => {
                 variant="outline"
                 size="lg"
                 className="border-2 border-primary/20 hover:border-primary/40 text-lg px-8 py-4"
-                // onClick={handleClick}
+                onClick={() => setIsDemoModalOpen(true)}
               >
                 <Play className="mr-2 h-5 w-5" />
                 Watch Demo
@@ -217,6 +218,11 @@ const HeroSection = () => {
           </motion.div>
         </div>
       </div>
+
+      <DemoModal
+        isOpen={isDemoModalOpen}
+        onClose={() => setIsDemoModalOpen(false)}
+      />
     </section>
   );
 };
