@@ -95,7 +95,7 @@ export default function GeneratedImagesRows({
     const activeOrientation = jobAspectRatio || imageOrientation;
 
     if(activeOrientation === '1:1'){
-      setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-80 h-80 object-cover")
+      setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-80 h-80")
     }else if (activeOrientation === '2:3'){
      setTHUMB_CLASSES("relative rounded-xl overflow-hidden w-72 aspect-[2/3]")
     }else{
