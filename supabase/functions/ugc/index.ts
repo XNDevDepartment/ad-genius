@@ -291,63 +291,169 @@ async function generateImages(jobId, supabase) {
     });
     
     const numImages = job.total;
+    const quality = job?.settings?.quality ?? "high";
     
-      // Enhanced batch processing with better error recovery
-      const processImagesBatch = async (imagePromises: Array<() => Promise<any>>, maxConcurrency = 2) => {
+    // Quality-aware timeout and concurrency settings
+    const getQualitySettings = (quality: string) => {
+      switch (quality) {
+        case "low":
+          return { timeout: 210000, concurrency: 3 }; // 3.5 minutes, 3 concurrent
+        case "medium":
+          return { timeout: 300000, concurrency: 2 }; // 5 minutes, 2 concurrent
+        case "high":
+        default:
+          return { timeout: 420000, concurrency: 1 }; // 7 minutes, 1 concurrent (sequential)
+      }
+    };
+    
+    const qualitySettings = getQualitySettings(quality);
+    
+    log("Quality-aware processing settings", {
+      jobId,
+      quality,
+      timeout: `${qualitySettings.timeout / 1000}s`,
+      concurrency: qualitySettings.concurrency,
+      totalImages: numImages
+    });
+    
+      // Enhanced batch processing with quality-aware settings and improved error recovery
+      const processImagesBatch = async (imagePromises: Array<() => Promise<any>>, maxConcurrency: number) => {
         const results = [];
         let completedCount = 0;
+        let failedCount = 0;
+        
+        log("Starting batch processing", {
+          jobId,
+          totalBatches: Math.ceil(imagePromises.length / maxConcurrency),
+          maxConcurrency,
+          totalImages: imagePromises.length
+        });
         
         for (let i = 0; i < imagePromises.length; i += maxConcurrency) {
+          const batchIndex = Math.ceil((i + 1) / maxConcurrency);
           const batch = imagePromises.slice(i, i + maxConcurrency).map(fn => fn());
-          const batchResults = await Promise.allSettled(batch);
           
-          // Update progress after each batch
-          completedCount += batchResults.filter(r => r.status === 'fulfilled').length;
+          log(`Processing batch ${batchIndex}`, {
+            jobId,
+            batchSize: batch.length,
+            startIndex: i,
+            endIndex: Math.min(i + maxConcurrency - 1, imagePromises.length - 1)
+          });
+          
+          const batchStartTime = Date.now();
+          const batchResults = await Promise.allSettled(batch);
+          const batchDuration = Date.now() - batchStartTime;
+          
+          // Count results for this batch
+          const succeededInBatch = batchResults.filter(r => r.status === 'fulfilled').length;
           const failedInBatch = batchResults.filter(r => r.status === 'rejected').length;
           
+          // Update counters
+          completedCount += succeededInBatch;
+          failedCount += failedInBatch;
+          
+          // Log batch completion details
+          log(`Batch ${batchIndex} completed`, {
+            jobId,
+            batchDuration: `${batchDuration / 1000}s`,
+            succeededInBatch,
+            failedInBatch,
+            totalCompleted: completedCount,
+            totalFailed: failedCount,
+            progress: Math.round((completedCount / numImages) * 100)
+          });
+          
+          // Log any batch failures for debugging
+          batchResults.forEach((result, idx) => {
+            if (result.status === 'rejected') {
+              log(`Image ${i + idx + 1} failed in batch ${batchIndex}`, {
+                jobId,
+                imageIndex: i + idx,
+                error: result.reason?.message || String(result.reason)
+              });
+            }
+          });
+          
+          // Update job progress in database
           await supabase
             .from('image_jobs')
             .update({ 
               progress: Math.round((completedCount / numImages) * 100),
               completed: completedCount,
-              failed: failed + failedInBatch,
+              failed: failedCount,
               updated_at: new Date().toISOString()
             })
             .eq('id', jobId);
-            
-          // Update global failed count
-          failed += failedInBatch;
-          
-          log(`Batch ${Math.ceil((i + maxConcurrency) / maxConcurrency)} completed`, {
-            jobId,
-            completedCount,
-            totalImages: numImages,
-            failedInBatch
-          });
           
           results.push(...batchResults);
         }
+        
+        log("Batch processing completed", {
+          jobId,
+          totalCompleted: completedCount,
+          totalFailed: failedCount,
+          successRate: `${Math.round((completedCount / numImages) * 100)}%`
+        });
+        
         return results;
       };
 
-      // Create array of image generation functions with timeout wrapper
+      // Create array of image generation functions with quality-aware timeout wrapper
       const generateSingleImageWithTimeout = async (jobData, index) => {
-        const TIMEOUT_MS = 90000; // 90 seconds per image
+        const timeoutMs = qualitySettings.timeout;
+        
+        log(`Starting image ${index + 1} generation`, {
+          jobId,
+          imageIndex: index,
+          quality,
+          timeout: `${timeoutMs / 1000}s`
+        });
+        
+        const startTime = Date.now();
         
         return Promise.race([
           generateSingleImage(jobData, index, sourceImageUrl, supabase),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error(`Image ${index + 1} timed out after 90 seconds`)), TIMEOUT_MS)
+            setTimeout(() => {
+              const duration = Date.now() - startTime;
+              log(`Image ${index + 1} timed out`, {
+                jobId,
+                imageIndex: index,
+                quality,
+                timeoutAfter: `${duration / 1000}s`,
+                maxTimeout: `${timeoutMs / 1000}s`
+              });
+              reject(new Error(`Image ${index + 1} timed out after ${timeoutMs / 1000} seconds (${quality} quality)`));
+            }, timeoutMs)
           )
-        ]);
+        ]).then(result => {
+          const duration = Date.now() - startTime;
+          log(`Image ${index + 1} completed successfully`, {
+            jobId,
+            imageIndex: index,
+            quality,
+            duration: `${duration / 1000}s`
+          });
+          return result;
+        }).catch(error => {
+          const duration = Date.now() - startTime;
+          log(`Image ${index + 1} failed`, {
+            jobId,
+            imageIndex: index,
+            quality,
+            duration: `${duration / 1000}s`,
+            error: error.message
+          });
+          throw error;
+        });
       };
 
       const imageGenerationTasks = Array.from({ length: numImages }, (_, index) => 
         () => generateSingleImageWithTimeout(job, index)
       );
 
-      // Process all images with enhanced concurrency control
-      const imageResults = await processImagesBatch(imageGenerationTasks, 2);
+      // Process all images with quality-aware concurrency control
+      const imageResults = await processImagesBatch(imageGenerationTasks, qualitySettings.concurrency);
       // Enhanced result processing with better error reporting
       const successful = imageResults.filter(result => result.status === 'fulfilled').length;
       const failedResults = imageResults.filter(result => result.status === 'rejected');
@@ -462,7 +568,19 @@ async function generateImages(jobId, supabase) {
 // Generate 1 image (with retries/backoff). Supports generations and edits.
 async function generateSingleImage(job, index, sourceImageUrl, supabase) {
   const MAX_ATTEMPTS = 3;
-  const INDIVIDUAL_TIMEOUT = 90000; // 90 seconds per attempt (reduced from 120s)
+  const quality = job?.settings?.quality ?? "high";
+  
+  // Quality-aware timeout for individual API calls (per attempt)
+  const getIndividualTimeout = (quality: string) => {
+    switch (quality) {
+      case "low": return 70000;    // 70 seconds per attempt for low quality
+      case "medium": return 100000; // 100 seconds per attempt for medium quality
+      case "high":
+      default: return 140000;      // 140 seconds per attempt for high quality
+    }
+  };
+  
+  const INDIVIDUAL_TIMEOUT = getIndividualTimeout(quality);
   const size = job?.settings?.size ?? "1024x1024";
 
   const quality = (job?.settings?.quality ?? "high") as "low" | "medium" | "high";
@@ -473,7 +591,9 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
       jobId: job.id,
       imageIndex: index,
       attempt,
-      maxAttempts: MAX_ATTEMPTS
+      maxAttempts: MAX_ATTEMPTS,
+      quality,
+      individualTimeout: `${INDIVIDUAL_TIMEOUT / 1000}s`
     });
 
     try {
