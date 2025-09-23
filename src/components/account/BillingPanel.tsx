@@ -3,19 +3,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { X, CreditCard, Download, Calendar, Zap, Crown, ExternalLink } from "lucide-react";
+import { X, CreditCard, Download, Calendar, Zap, Crown, ExternalLink, RotateCcw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
+import { useState } from "react";
 
 interface BillingPanelProps {
   onClose: () => void;
 }
 
 export const BillingPanel = ({ onClose }: BillingPanelProps) => {
-  const { user, subscriptionData, subscriptionLoading } = useAuth();
+  const { user, subscriptionData, subscriptionLoading, refreshSubscription } = useAuth();
   const { 
     getUsagePercentage, 
     getRemainingCredits, 
@@ -26,6 +27,7 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
   } = useCredits();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleManageSubscription = async () => {
     if (!user) return;
@@ -45,6 +47,39 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleRefreshSubscription = async () => {
+    if (refreshing) return;
+    
+    setRefreshing(true);
+    try {
+      await refreshSubscription();
+      toast({
+        title: "Subscription Refreshed",
+        description: "Your subscription data has been updated.",
+      });
+    } catch (error) {
+      console.error('Error refreshing subscription:', error);
+      toast({
+        title: t("common.error"),
+        description: "Failed to refresh subscription data.",
+        variant: "destructive",
+      });
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  // Better logic for determining subscription status
+  const isSubscribed = () => {
+    if (!subscriptionData) return false;
+    
+    // If tier is not Free and user has subscription data, they're subscribed
+    const isNotFree = subscriptionData.subscription_tier !== 'Free';
+    const hasValidSubscription = subscriptionData.subscribed;
+    
+    return isNotFree || hasValidSubscription;
   };
 
   const formatSubscriptionEnd = (dateString: string | null) => {
@@ -98,6 +133,15 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
           <CardTitle className="flex items-center gap-2">
             <Crown className="h-5 w-5 text-primary" />
             {t("account.billing.currentPlan")}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleRefreshSubscription}
+              disabled={refreshing}
+              className="ml-auto"
+            >
+              <RotateCcw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            </Button>
           </CardTitle>
           <CardDescription>{t("account.billing.currentPlanDesc")}</CardDescription>
         </CardHeader>
@@ -109,8 +153,8 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
                 {getPlanPrice(tier)}
               </p>
             </div>
-            <Badge variant={subscriptionData?.subscribed ? "default" : "secondary"}>
-              {subscriptionData?.subscribed ? t("account.billing.active") : t("account.billing.free")}
+            <Badge variant={isSubscribed() ? "default" : "secondary"}>
+              {isSubscribed() ? t("account.billing.active") : t("account.billing.free")}
             </Badge>
           </div>
 
@@ -128,7 +172,7 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
           </div>
 
           <div className="flex gap-2">
-            {subscriptionData?.subscribed ? (
+            {isSubscribed() ? (
               <Button 
                 variant="outline" 
                 className="flex-1" 
@@ -178,7 +222,7 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
             </div>
           </div>
 
-          {!subscriptionData?.subscribed && (
+          {!isSubscribed() && (
             <Button 
               className="w-full"
               onClick={() => window.location.href = '/pricing'}
@@ -189,7 +233,7 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
         </CardContent>
       </Card>
 
-      {subscriptionData?.subscribed && (
+      {isSubscribed() && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

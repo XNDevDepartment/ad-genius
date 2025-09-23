@@ -41,28 +41,63 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
+  const [previousTier, setPreviousTier] = useState<string | null>(null);
 
-  const fetchSubscriptionData = async () => {
+  const fetchSubscriptionData = async (forceRefresh = false) => {
     if (!user) return;
     
     setSubscriptionLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('check-subscription');
-      if (error) throw error;
-      
-      // Get credits balance from subscribers table
-      const { data: subscriberData } = await supabase
+      // First call check-subscription to ensure Stripe data is synced
+      const { data: checkData, error: checkError } = await supabase.functions.invoke('check-subscription');
+      if (checkError) throw checkError;
+
+      // Then get the updated data from subscribers table
+      const { data: subscriberData, error: subscriberError } = await supabase
         .from('subscribers')
-        .select('credits_balance')
+        .select('*')
         .eq('user_id', user.id)
         .single();
-      
-      setSubscriptionData({
-        subscribed: data.subscribed || false,
-        subscription_tier: data.subscription_tier || 'Free',
-        subscription_end: data.subscription_end || null,
-        credits_balance: subscriberData?.credits_balance || 0
-      });
+
+      if (subscriberError) {
+        console.error('Error fetching subscriber data:', subscriberError);
+        throw subscriberError;
+      }
+
+      const newSubscriptionData = {
+        subscribed: subscriberData.subscribed || false,
+        subscription_tier: subscriberData.subscription_tier || 'Free',
+        subscription_end: subscriberData.subscription_end || null,
+        credits_balance: subscriberData.credits_balance || 0
+      };
+
+      // Check if tier has changed and automatically reset credits
+      const currentTier = newSubscriptionData.subscription_tier;
+      if (previousTier && previousTier !== currentTier && currentTier !== 'Free') {
+        console.log(`Tier changed from ${previousTier} to ${currentTier}, resetting credits...`);
+        
+        try {
+          const { data: resetData } = await supabase.rpc('reset_user_monthly_credits', {
+            p_user_id: user.id
+          });
+          
+          if (resetData && typeof resetData === 'object' && 'success' in resetData && resetData.success) {
+            // Fetch updated balance after reset
+            const { data: updatedSubscriber } = await supabase
+              .from('subscribers')
+              .select('credits_balance')
+              .eq('user_id', user.id)
+              .single();
+              
+            newSubscriptionData.credits_balance = updatedSubscriber?.credits_balance || newSubscriptionData.credits_balance;
+          }
+        } catch (resetError) {
+          console.error('Error resetting credits after tier change:', resetError);
+        }
+      }
+
+      setPreviousTier(currentTier);
+      setSubscriptionData(newSubscriptionData);
     } catch (error) {
       console.error('Error fetching subscription data:', error);
       setSubscriptionData({
