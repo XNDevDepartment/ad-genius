@@ -1,24 +1,5 @@
-interface ArcadeEmbedProps {
-  isFullscreen?: boolean;
-}
 
-export function ArcadeEmbed({ isFullscreen = false }: ArcadeEmbedProps) {
-  if (isFullscreen) {
-    return (
-      <div className="w-full h-full">
-        <iframe
-          src="https://demo.arcade.software/qCgFWUmJr4IIaSBq9Xfi?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
-          title="Generate and Manage AI Product Images for Marketing"
-          frameBorder="0"
-          loading="lazy"
-          allowFullScreen
-          allow="clipboard-write"
-          className="w-full h-full border-0"
-          style={{ colorScheme: 'light' }}
-        />
-      </div>
-    );
-  }
+export function ArcadeEmbed() {
 
   return (
     <div style={{ position: 'relative', paddingBottom: 'calc(54.10526315789473% + 41px)', height: 0, width: '100%' }}>
