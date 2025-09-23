@@ -89,6 +89,36 @@ export const Library = ({ onBack }: LibraryProps) => {
   };
 
 
+  const handleOpenInNewTab = (imageUrl: string) => {
+    try {
+      if (!imageUrl.startsWith("data:")) {
+        const a = document.createElement("a");
+        a.href = imageUrl;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.click();
+        return;
+      }
+      const [meta, base64] = imageUrl.split(",");
+      const mime = meta.split(":")[1]?.split(";")[0] || "image/png";
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const blob = new Blob([bytes], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    } catch (err) {
+      console.error("Failed to open image in new tab:", err);
+      toast({
+        title: "Falha ao Abrir",
+        description: "Não foi possível abrir a imagem em nova aba.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const confirmDelete = async (imageId: string) => {
     if (!user) return;
     try {
@@ -213,93 +243,103 @@ export const Library = ({ onBack }: LibraryProps) => {
                 
                 return (
                   <div key={image.id} className="space-y-3 animate-scale-in group">
-                    <div className=" overflow-hidden border border-border/50 relative aspect-square">
-                      <img 
-                        src={imageUrl}
-                        alt={imageAlt}
-                        className="w-full h-full object-cover shadow-card transition-transform group-hover:scale-105"
-                      />
+                     <div className=" overflow-hidden border border-border/50 relative aspect-square">
+                       <img 
+                         src={imageUrl}
+                         alt={imageAlt}
+                         className="w-full h-full object-cover shadow-card transition-transform group-hover:scale-105"
+                       />
 
-                      {/* Source image thumbnail in bottom-left (only in AI mode and when toggle is on) */}
-                      {viewMode === "ai" && showSourceThumbnails && (image as any).sourceSignedUrl && (
-                        <div className="absolute bottom-2 left-2 w-20 h-20 rounded-lg overflow-hidden border-2 border-white shadow-lg z-20">
-                          <img 
-                            src={(image as any).sourceSignedUrl}
-                            alt="Source image"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
+                       {/* Source image thumbnail in bottom-left (only in AI mode and when toggle is on) */}
+                       {viewMode === "ai" && showSourceThumbnails && (image as any).sourceSignedUrl && (
+                         <div className="absolute bottom-2 left-2 w-20 h-20 rounded-lg overflow-hidden border-2 border-white shadow-lg z-20">
+                           <img 
+                             src={(image as any).sourceSignedUrl}
+                             alt="Source image"
+                             className="w-full h-full object-cover"
+                           />
+                         </div>
+                       )}
 
-                      {/* Bottom right corner button - Modal Preview */}
-                      <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={() => setSelectedImage(image as any)}
-                              className="bg-background/90 hover:bg-background"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
-                            <div className="space-y-4">
-                              <img
-                                src={imageUrl}
-                                alt={imageAlt}
-                                className="w-full h-auto max-h-[70vh] object-contain rounded-lg"
-                              />
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 z-10 h-[98vh] overflow-hidden">
-                        <div className="flex gap-2">
-                          {viewMode === "ai" && (
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={() => handleDownload(image as any)}
-                              className="bg-background/90 hover:bg-background"
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          )}
-                          {/* Delete with confirmation - only show for AI images */}
-                          {viewMode === "ai" && (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  disabled={deletingId === image.id}
-                                  className="bg-destructive/90 hover:bg-destructive"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>{t('library.actions.deleteConfirm.title')}</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    {t('library.actions.deleteConfirm.description')}
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>{t('library.actions.deleteConfirm.cancel')}</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => confirmDelete(image.id)}
-                                  >
-                                    {deletingId === image.id ? t('library.actions.deleteConfirm.deleting') : t('library.actions.deleteConfirm.delete')}
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          )}
-                        </div>
-                      </div>
+                       {/* Top right corner - Open in new tab button */}
+                       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                         <Button
+                           size="sm"
+                           variant="secondary"
+                           onClick={() => handleOpenInNewTab(imageUrl)}
+                           className="bg-background/90 hover:bg-background"
+                         >
+                           <ExternalLink className="h-4 w-4" />
+                         </Button>
+                       </div>
+
+                       {/* Bottom right corner buttons - Preview and Download */}
+                       <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20 flex gap-1">
+                         <Dialog>
+                           <DialogTrigger asChild>
+                             <Button
+                               size="sm"
+                               variant="secondary"
+                               onClick={() => setSelectedImage(image as any)}
+                               className="bg-background/90 hover:bg-background"
+                             >
+                               <Eye className="h-4 w-4" />
+                             </Button>
+                           </DialogTrigger>
+                           <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+                             <div className="space-y-4">
+                               <img
+                                 src={imageUrl}
+                                 alt={imageAlt}
+                                 className="w-full h-auto max-h-[70vh] object-contain rounded-lg"
+                               />
+                             </div>
+                           </DialogContent>
+                         </Dialog>
+                         
+                         <Button
+                           size="sm"
+                           variant="secondary"
+                           onClick={() => handleDownload(image as any)}
+                           className="bg-background/90 hover:bg-background"
+                         >
+                           <Download className="h-4 w-4" />
+                         </Button>
+                       </div>
+
+                       {/* Center overlay - Delete button for AI images only */}
+                       {viewMode === "ai" && (
+                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 z-10">
+                           <AlertDialog>
+                             <AlertDialogTrigger asChild>
+                               <Button
+                                 size="sm"
+                                 variant="destructive"
+                                 disabled={deletingId === image.id}
+                                 className="bg-destructive/90 hover:bg-destructive"
+                               >
+                                 <Trash2 className="h-4 w-4" />
+                               </Button>
+                             </AlertDialogTrigger>
+                             <AlertDialogContent>
+                               <AlertDialogHeader>
+                                 <AlertDialogTitle>{t('library.actions.deleteConfirm.title')}</AlertDialogTitle>
+                                 <AlertDialogDescription>
+                                   {t('library.actions.deleteConfirm.description')}
+                                 </AlertDialogDescription>
+                               </AlertDialogHeader>
+                               <AlertDialogFooter>
+                                 <AlertDialogCancel>{t('library.actions.deleteConfirm.cancel')}</AlertDialogCancel>
+                                 <AlertDialogAction
+                                   onClick={() => confirmDelete(image.id)}
+                                 >
+                                   {deletingId === image.id ? t('library.actions.deleteConfirm.deleting') : t('library.actions.deleteConfirm.delete')}
+                                 </AlertDialogAction>
+                               </AlertDialogFooter>
+                             </AlertDialogContent>
+                           </AlertDialog>
+                         </div>
+                       )}
                     </div>
                   </div>
                 );
