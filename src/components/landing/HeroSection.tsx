@@ -16,15 +16,6 @@ import nike_afer from './../../assets/nike_finish.png';
 import { DemoModal } from "../DemoModal";
 
 
-interface PublicImage {
-  id: string;
-  public_url: string;
-  prompt: string;
-  created_at: string;
-  settings?: any;
-  source_url?: string;
-}
-
 const HeroSection = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
