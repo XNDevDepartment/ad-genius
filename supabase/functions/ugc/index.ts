@@ -463,75 +463,84 @@ async function generateImages(jobId, supabase) {
         const error = (result as PromiseRejectedResult).reason;
         return {
           imageIndex: index,
-          message: error?.message || String(error),
-          type: error?.name || 'Unknown'
+          errorType: error?.name || 'Unknown',
+          errorMessage: error?.message || String(error),
+          timestamp: new Date().toISOString()
         };
-      });
-      
-      const errorSummary = errorDetails.map(e => `Image ${e.imageIndex + 1}: ${e.message}`);
-      
-      log("Job processing completed", {
-        jobId,
-        successful,
-        failed: failedResults.length,
-        errorDetails: errorDetails.slice(0, 3) // Log first 3 errors in detail
       });
 
-      // Update job status with enhanced error handling
+      log("Image generation batch completed", {
+        jobId,
+        total: numImages,
+        successful,
+        failed: failedResults.length,
+        successRate: `${Math.round((successful / numImages) * 100)}%`,
+        errorDetails: errorDetails.length > 0 ? errorDetails : undefined
+      });
+
+      // Update final job status based on results
+      let finalStatus = 'completed';
+      let statusReason = null;
+      
+      if (successful === 0) {
+        finalStatus = 'failed';
+        statusReason = 'all_images_failed';
+      } else if (failedResults.length > 0) {
+        finalStatus = 'completed_with_errors';
+        statusReason = `${successful}_of_${numImages}_succeeded`;
+      }
+
+      // Update job with final status and detailed progress
+      await supabase.from("image_jobs").update({
+        status: finalStatus,
+        progress: 100,
+        completed: successful,
+        failed: failedResults.length,
+        total: numImages,
+        updated_at: new Date().toISOString(),
+        ...(statusReason && { status_reason: statusReason })
+      }).eq("id", jobId);
+
+      // If some images succeeded, return success with details
       if (successful > 0) {
-        const isPartialFailure = failedResults.length > 0;
-        const statusUpdate = {
-          status: isPartialFailure ? 'partially_completed' : 'completed',
-          progress: 100,
+        return json({
+          success: true,
           completed: successful,
           failed: failedResults.length,
-          finished_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          ...(isPartialFailure && { 
-            error: `${failedResults.length} of ${numImages} images failed. ${errorSummary.slice(0, 2).join('; ')}${errorSummary.length > 2 ? '...' : ''}` 
-          })
-        };
-        
-        await supabase
-          .from('image_jobs')
-          .update(statusUpdate)
-          .eq('id', jobId);
+          total: numImages,
+          message: failedResults.length > 0 
+            ? `${successful} of ${numImages} images generated successfully`
+            : `All ${successful} images generated successfully`
+        });
       } else {
-        // All images failed
-        await supabase
-          .from('image_jobs')
-          .update({ 
-            status: 'failed',
-            error: `All ${numImages} images failed. Common issues: ${errorSummary.slice(0, 3).join('; ')}${errorSummary.length > 3 ? '...' : ''}`,
-            failed: failedResults.length,
-            finished_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', jobId);
+        // All failed - return error with details  
+        const firstError = errorDetails[0];
+        return errorJson(
+          `All images failed to generate. First error: ${firstError?.errorMessage || 'Unknown error'}`,
+          500,
+          { errorDetails }
+        );
       }
-    // Handle partial refunds for failed images (skip admins)
-    if (failedResults.length > 0) {
-      const { data: isAdmin } = await supabase.rpc("is_user_admin", {
-        check_user_id: job.user_id
+    } catch (error: any) {
+      log("Error in generateImages", {
+        jobId,
+        error: error?.message || String(error),
+        errorName: error?.name || 'Unknown',
+        stack: error?.stack
       });
-      if (!isAdmin) {
-        const refundAmount = failedResults.length * calculateImageCost({
-          ...job.settings ?? {},
-          number: 1
-        });
-        log("Issuing partial refund for failed images", {
-          jobId,
-          refundAmount,
-          failedCount: failedResults.length,
-          successful
-        });
-        await supabase.rpc("refund_user_credits", {
-          p_user_id: job.user_id,
-          p_amount: refundAmount,
-          p_reason: "failed_image_generation"
-        });
-      }
-    }
+
+      // Update job status to failed with error details
+      await supabase.from("image_jobs").update({
+        status: "failed",
+        progress: 0,
+        failed: numImages,
+        completed: 0,
+        finished_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        error_message: error?.message || String(error)
+      }).eq("id", jobId);
+
+      return errorJson(`Image generation failed: ${error?.message || String(error)}`, 500);
   } catch (e) {
     const errorMsg = e?.message ?? String(e);
     log("Job processing catastrophic failure", {
@@ -568,10 +577,10 @@ async function generateImages(jobId, supabase) {
 // Generate 1 image (with retries/backoff). Supports generations and edits.
 async function generateSingleImage(job, index, sourceImageUrl, supabase) {
   const MAX_ATTEMPTS = 3;
-  const quality = job?.settings?.quality ?? "high";
+  const quality = (job?.settings?.quality ?? "high") as "low" | "medium" | "high";
   
   // Quality-aware timeout for individual API calls (per attempt)
-  const getIndividualTimeout = (quality: string) => {
+  const getIndividualTimeout = (quality: "low" | "medium" | "high") => {
     switch (quality) {
       case "low": return 70000;    // 70 seconds per attempt for low quality
       case "medium": return 100000; // 100 seconds per attempt for medium quality
@@ -582,8 +591,6 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
   
   const INDIVIDUAL_TIMEOUT = getIndividualTimeout(quality);
   const size = job?.settings?.size ?? "1024x1024";
-
-  const quality = (job?.settings?.quality ?? "high") as "low" | "medium" | "high";
   const prompt = String(job?.prompt ?? "");
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
@@ -732,17 +739,32 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
       }
     } catch (e: any) {
       clearTimeout(timeout);
-      const msg = e?.message ?? String(e);
-      const retryable = /AbortError/.test(e?.name) || /OpenAI error 5\d\d/.test(msg) || /429/.test(msg) || /Missing b64_json/.test(msg);
       
-      log("Image generation error", {
+      // Enhanced error reporting with full context
+      const errorInfo = {
+        name: e?.name || 'Unknown',
+        message: e?.message || String(e),
+        stack: e?.stack,
+        code: e?.code,
+        status: e?.status
+      };
+      
+      log("Image generation error (detailed)", {
         jobId: job.id,
         imageIndex: index,
         attempt,
-        error: msg,
-        retryable,
-        errorName: e?.name
+        errorInfo,
+        quality,
+        timeout: INDIVIDUAL_TIMEOUT,
+        timestamp: new Date().toISOString()
       });
+      
+      const msg = errorInfo.message;
+      const retryable = /AbortError/.test(errorInfo.name) || 
+                       /OpenAI error 5\d\d/.test(msg) || 
+                       /429/.test(msg) || 
+                       /Missing b64_json/.test(msg) ||
+                       /timeout/.test(msg.toLowerCase());
       
       if (retryable && attempt < MAX_ATTEMPTS) {
         const backoffDelay = backoffMs(attempt);
@@ -750,12 +772,15 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
           jobId: job.id,
           imageIndex: index,
           attempt,
-          delay: backoffDelay
+          delay: backoffDelay,
+          errorType: errorInfo.name
         });
         await sleep(backoffDelay);
         continue;
       }
-      throw new Error(`OpenAI API error (attempt ${attempt}/${MAX_ATTEMPTS}): ${msg}`);
+      
+      // Throw with enhanced error message including original error details
+      throw new Error(`Image generation failed (attempt ${attempt}/${MAX_ATTEMPTS}): ${errorInfo.name}: ${msg}`);
     }
   }
   
