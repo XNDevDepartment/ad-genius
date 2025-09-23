@@ -24,26 +24,6 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
     onClose();
   };
 
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isFullscreen) {
-        setIsFullscreen(false);
-      }
-    };
-
-    if (isFullscreen) {
-      document.addEventListener('keydown', handleKeyDown);
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isFullscreen]);
-
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
@@ -60,22 +40,13 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
               </p>
             )}
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={toggleFullscreen}
-            className="ml-auto"
-          >
-            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-            {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-          </Button>
         </DialogHeader>
         <div className={isFullscreen ? "flex-1 overflow-hidden" : ""}>
           <div className="h-full rounded-lg overflow-hidden">
             {isMobile ? (
-              <ArcadeEmbedMobile isFullscreen={isFullscreen} />
+              <ArcadeEmbedMobile />
             ) : (
-              <ArcadeEmbed isFullscreen={isFullscreen} />
+              <ArcadeEmbed />
             )}
           </div>
         </div>
