@@ -239,7 +239,7 @@ async function createImageJob(userId, payload, supabase) {
     status: "queued"
   }, 200);
 }
-// Worker: claim and generate
+
 // Worker: claim and generate
 async function generateImages(jobId, supabase) {
   log("Worker start", {
