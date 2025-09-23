@@ -30,6 +30,14 @@ export const useCredits = () => {
 
   const getTotalCredits = (): number => {
     if (!subscriptionData) return 0;
+    // Total credits is what the user actually has (including rollovers)
+    // This is the actual allocated credits, not tier-based assumption
+    return Math.max(0, subscriptionData.credits_balance || 0);
+  };
+
+  const getUsedCredits = (): number => {
+    if (!subscriptionData) return 0;
+    // For display purposes, show tier-based calculation against remaining
     const tierCredits = {
       'Free': 10,
       'Starter': 80,
@@ -37,20 +45,28 @@ export const useCredits = () => {
       'Pro': 400,
       'Founders': 80
     };
-    return tierCredits[subscriptionData.subscription_tier as keyof typeof tierCredits] || 10;
-  };
-
-  const getUsedCredits = (): number => {
-    const total = getTotalCredits();
+    const tierAllocation = tierCredits[subscriptionData.subscription_tier as keyof typeof tierCredits] || 10;
     const remaining = getRemainingCredits();
-    return Math.max(0, total - remaining);
+    
+    // If user has more than tier allocation (due to rollover), show 0 used from current period
+    if (remaining >= tierAllocation) return 0;
+    
+    // Otherwise show how many from current tier allocation have been used
+    return tierAllocation - remaining;
   };
 
   const getUsagePercentage = (): number => {
-    const total = getTotalCredits();
-    if (total === 0) return 0;
+    if (!subscriptionData) return 0;
+    const tierCredits = {
+      'Free': 10,
+      'Starter': 80,
+      'Plus': 200,
+      'Pro': 400,
+      'Founders': 80
+    };
+    const tierAllocation = tierCredits[subscriptionData.subscription_tier as keyof typeof tierCredits] || 10;
     const used = getUsedCredits();
-    return Math.min((used / total) * 100, 100);
+    return Math.min((used / tierAllocation) * 100, 100);
   };
 
   const deductCredits = async (amount: number): Promise<boolean> => {

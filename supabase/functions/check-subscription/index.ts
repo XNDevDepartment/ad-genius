@@ -92,6 +92,24 @@ serve(async (req) => {
       log("Determined subscription tier", { amount, subscriptionTier });
     }
 
+    // Check if tier changed to allocate credits
+    const { data: existingSubscriber } = await supabaseService
+      .from("subscribers")
+      .select("subscription_tier, credits_balance")
+      .eq("user_id", user.id)
+      .single();
+
+    let shouldAllocateCredits = false;
+    
+    // If no existing subscriber or tier changed from Free to paid, allocate credits
+    if (!existingSubscriber) {
+      shouldAllocateCredits = active; // New subscriber with active subscription
+    } else if (existingSubscriber.subscription_tier !== subscriptionTier && active) {
+      // Tier changed and subscription is active
+      shouldAllocateCredits = true;
+    }
+
+    // Update subscriber record
     await supabaseService.from("subscribers").upsert({
       email: user.email!,
       user_id: user.id,
@@ -101,6 +119,33 @@ serve(async (req) => {
       subscription_end: subscriptionEnd,
       updated_at: new Date().toISOString(),
     }, { onConflict: "email" });
+
+    // Allocate credits if needed (Option B: Add to existing balance)
+    if (shouldAllocateCredits) {
+      const tierCredits = {
+        'Free': 0, // Don't add credits for free tier
+        'Starter': 80,
+        'Plus': 200,
+        'Pro': 400,
+        'Founders': 80
+      };
+      
+      const creditsToAdd = tierCredits[subscriptionTier as keyof typeof tierCredits] || 0;
+      
+      if (creditsToAdd > 0) {
+        const { error: creditError } = await supabaseService.rpc('refund_user_credits', {
+          p_user_id: user.id,
+          p_amount: creditsToAdd,
+          p_reason: `subscription_upgrade_${subscriptionTier.toLowerCase()}`
+        });
+        
+        if (creditError) {
+          log("Credit allocation error", creditError);
+        } else {
+          log("Credits allocated", { userId: user.id, tier: subscriptionTier, credits: creditsToAdd });
+        }
+      }
+    }
 
     return new Response(JSON.stringify({ 
       subscribed: active, 
