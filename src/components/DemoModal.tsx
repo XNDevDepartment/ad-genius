@@ -25,10 +25,13 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
       <DialogContent 
         className={"max-w-full w-[95vw] h-[90vh] p-0 overflow-hidden"}
       >
-        <DialogHeader className={'p-6 pb-0 flex flex-row items-center justify-between'}>
+        <DialogHeader className={'p-6 pb-2 flex flex-col items-start justify-start'}>
           <DialogTitle className="text-2xl font-bold">
             Interactive Demo
           </DialogTitle>
+          <p className="text-muted-foreground mt-2">
+            Click on "Get Started" to initiate the guided demo.
+          </p>
         </DialogHeader>
         <div>
           <div className="h-full rounded-lg overflow-hidden">
