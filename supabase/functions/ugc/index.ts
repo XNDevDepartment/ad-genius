@@ -252,308 +252,292 @@ async function createImageJob(userId, payload, supabase) {
   }, 200);
 }
 // Worker: claim and generate
+// Worker: claim and generate
 async function generateImages(jobId, supabase) {
-  log("Worker start", {
-    jobId
-  });
-  // atomic claim
-  const { data: job, error: claimErr } = await supabase.from("image_jobs").update({
-    status: "processing",
-    started_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }).eq("id", jobId).eq("status", "queued").select().single();
+  log("Worker start", { jobId });
+
+  // --- Atomic claim: queued -> processing
+  const { data: job, error: claimErr } = await supabase
+    .from("image_jobs")
+    .update({
+      status: "processing",
+      started_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", jobId)
+    .eq("status", "queued")
+    .select()
+    .single();
+
   if (claimErr || !job) {
     // already processing or done?
-    const { data: existing } = await supabase.from("image_jobs").select("status").eq("id", jobId).maybeSingle(); // Use maybeSingle to handle missing jobs gracefully
+    const { data: existing } = await supabase
+      .from("image_jobs")
+      .select("status")
+      .eq("id", jobId)
+      .maybeSingle();
+
     if (existing?.status === "processing") {
-      log("Job already processing", {
-        jobId
-      });
-      return json({
-        message: "Already processing"
-      });
+      log("Job already processing", { jobId });
+      return json({ message: "Already processing" });
     }
-    log("Job not found or already processed", {
-      jobId,
-      existing
-    });
+
+    log("Job not found or already processed", { jobId, existing });
     return errorJson("Job not found or already processed", 404);
   }
-  let completed = 0;
-  let failed = 0;
-  const errors = [];
+
   try {
-    // prepare source image (optional)
+    // --- Optional source image
     const sourceImageUrl = await getSignedSourceUrl(job.source_image_id, supabase);
-    log("Source image prepared", {
-      jobId,
-      hasSourceImage: !!sourceImageUrl
-    });
-    
+    log("Source image prepared", { jobId, hasSourceImage: !!sourceImageUrl });
+
     const numImages = job.total;
     const quality = job?.settings?.quality ?? "high";
-    
-    // Quality-aware timeout and concurrency settings
-    const getQualitySettings = (quality: string) => {
+
+    // --- Quality-aware settings (keep your semantics)
+    const getQualitySettings = (quality /**: string */) => {
       switch (quality) {
         case "low":
-          return { timeout: 210000, concurrency: 3 }; // 3.5 minutes, 3 concurrent
+          return { timeout: 210000, concurrency: 3 }; // 3.5m, 3 concurrent
         case "medium":
-          return { timeout: 300000, concurrency: 2 }; // 5 minutes, 2 concurrent
+          return { timeout: 300000, concurrency: 2 }; // 5m, 2 concurrent
         case "high":
         default:
-          return { timeout: 420000, concurrency: 1 }; // 7 minutes, 1 concurrent (sequential)
+          return { timeout: 420000, concurrency: 1 }; // 7m, sequential
       }
     };
-    
+
     const qualitySettings = getQualitySettings(quality);
-    
+
     log("Quality-aware processing settings", {
       jobId,
       quality,
       timeout: `${qualitySettings.timeout / 1000}s`,
       concurrency: qualitySettings.concurrency,
-      totalImages: numImages
+      totalImages: numImages,
     });
-    
-      // Enhanced batch processing with quality-aware settings and improved error recovery
-      const processImagesBatch = async (imagePromises: Array<() => Promise<any>>, maxConcurrency: number) => {
-        const results = [];
-        let completedCount = 0;
-        let failedCount = 0;
-        
-        log("Starting batch processing", {
+
+    // --- Batch runner with progress updates (FLAT results)
+    const processImagesBatch = async (
+      imagePromises /**: Array<() => Promise<any>> */,
+      maxConcurrency /**: number */
+    ) /**: Promise<PromiseSettledResult<any>[]> */ => {
+      const results = [];
+      let completedCount = 0;
+      let failedCount = 0;
+
+      log("Starting batch processing", {
+        jobId,
+        totalBatches: Math.ceil(imagePromises.length / maxConcurrency),
+        maxConcurrency,
+        totalImages: imagePromises.length,
+      });
+
+      for (let i = 0; i < imagePromises.length; i += maxConcurrency) {
+        const batchIndex = Math.ceil((i + 1) / maxConcurrency);
+        const batch = imagePromises.slice(i, i + maxConcurrency).map((fn) => fn());
+
+        log(`Processing batch ${batchIndex}`, {
           jobId,
-          totalBatches: Math.ceil(imagePromises.length / maxConcurrency),
-          maxConcurrency,
-          totalImages: imagePromises.length
+          batchSize: batch.length,
+          startIndex: i,
+          endIndex: Math.min(i + maxConcurrency - 1, imagePromises.length - 1),
         });
-        
-        for (let i = 0; i < imagePromises.length; i += maxConcurrency) {
-          const batchIndex = Math.ceil((i + 1) / maxConcurrency);
-          const batch = imagePromises.slice(i, i + maxConcurrency).map(fn => fn());
-          
-          log(`Processing batch ${batchIndex}`, {
-            jobId,
-            batchSize: batch.length,
-            startIndex: i,
-            endIndex: Math.min(i + maxConcurrency - 1, imagePromises.length - 1)
-          });
-          
-          const batchStartTime = Date.now();
-          const batchResults = await Promise.allSettled(batch);
-          const batchDuration = Date.now() - batchStartTime;
-          
-          // Count results for this batch
-          const succeededInBatch = batchResults.filter(r => r.status === 'fulfilled').length;
-          const failedInBatch = batchResults.filter(r => r.status === 'rejected').length;
-          
-          // Update counters
-          completedCount += succeededInBatch;
-          failedCount += failedInBatch;
-          
-          // Log batch completion details
-          log(`Batch ${batchIndex} completed`, {
-            jobId,
-            batchDuration: `${batchDuration / 1000}s`,
-            succeededInBatch,
-            failedInBatch,
-            totalCompleted: completedCount,
-            totalFailed: failedCount,
-            progress: Math.round((completedCount / numImages) * 100)
-          });
-          
-          // Log any batch failures for debugging
-          batchResults.forEach((result, idx) => {
-            if (result.status === 'rejected') {
-              log(`Image ${i + idx + 1} failed in batch ${batchIndex}`, {
-                jobId,
-                imageIndex: i + idx,
-                error: result.reason?.message || String(result.reason)
-              });
-            }
-          });
-          
-          // Update job progress in database
-          await supabase
-            .from('image_jobs')
-            .update({ 
-              progress: Math.round((completedCount / numImages) * 100),
-              completed: completedCount,
-              failed: failedCount,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', jobId);
-          
-          results.push(...batchResults);
-        }
-        
-        log("Batch processing completed", {
+
+        const batchStartTime = Date.now();
+        const batchResults = await Promise.allSettled(batch);
+        const batchDuration = Date.now() - batchStartTime;
+
+        // Count & log
+        const succeededInBatch = batchResults.filter((r) => r.status === "fulfilled").length;
+        const failedInBatch = batchResults.filter((r) => r.status === "rejected").length;
+
+        completedCount += succeededInBatch;
+        failedCount += failedInBatch;
+
+        log(`Batch ${batchIndex} completed`, {
           jobId,
+          batchDuration: `${batchDuration / 1000}s`,
+          succeededInBatch,
+          failedInBatch,
           totalCompleted: completedCount,
           totalFailed: failedCount,
-          successRate: `${Math.round((completedCount / numImages) * 100)}%`
+          progress: Math.round((completedCount / numImages) * 100),
         });
-        
-        return results;
-      };
 
-      // Create array of image generation functions with quality-aware timeout wrapper
-      const generateSingleImageWithTimeout = async (jobData, index) => {
-        const timeoutMs = qualitySettings.timeout;
-        
-        log(`Starting image ${index + 1} generation`, {
-          jobId,
-          imageIndex: index,
-          quality,
-          timeout: `${timeoutMs / 1000}s`
+        // Log failures for debugging
+        batchResults.forEach((result, idx) => {
+          if (result.status === "rejected") {
+            log(`Image ${i + idx + 1} failed in batch ${batchIndex}`, {
+              jobId,
+              imageIndex: i + idx,
+              error: result.reason?.message || String(result.reason),
+            });
+          }
         });
-        
-        const startTime = Date.now();
-        
-        return Promise.race([
-          generateSingleImage(jobData, index, sourceImageUrl, supabase),
-          new Promise((_, reject) => 
-            setTimeout(() => {
-              const duration = Date.now() - startTime;
-              log(`Image ${index + 1} timed out`, {
-                jobId,
-                imageIndex: index,
-                quality,
-                timeoutAfter: `${duration / 1000}s`,
-                maxTimeout: `${timeoutMs / 1000}s`
-              });
-              reject(new Error(`Image ${index + 1} timed out after ${timeoutMs / 1000} seconds (${quality} quality)`));
-            }, timeoutMs)
-          )
-        ]).then(result => {
-          const duration = Date.now() - startTime;
-          log(`Image ${index + 1} completed successfully`, {
-            jobId,
-            imageIndex: index,
-            quality,
-            duration: `${duration / 1000}s`
-          });
-          return result;
-        }).catch(error => {
-          const duration = Date.now() - startTime;
-          log(`Image ${index + 1} failed`, {
-            jobId,
-            imageIndex: index,
-            quality,
-            duration: `${duration / 1000}s`,
-            error: error.message
-          });
-          throw error;
-        });
-      };
 
-      const imageGenerationTasks = Array.from({ length: numImages }, (_, index) => 
-        () => generateSingleImageWithTimeout(job, index)
-      );
+        // Update job progress
+        await supabase
+          .from("image_jobs")
+          .update({
+            progress: Math.round((completedCount / numImages) * 100),
+            completed: completedCount,
+            failed: failedCount,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", jobId);
 
-      // Process all images with quality-aware concurrency control
-      const imageResults = await processImagesBatch(imageGenerationTasks, qualitySettings.concurrency);
-      // Enhanced result processing with better error reporting
-      const successful = imageResults.filter(result => result.status === 'fulfilled').length;
-      const failedResults = imageResults.filter(result => result.status === 'rejected');
-      
-      // Collect detailed error information for better debugging
-      const errorDetails = failedResults.map((result, index) => {
-        const error = (result as PromiseRejectedResult).reason;
-        return {
-          imageIndex: index,
-          errorType: error?.name || 'Unknown',
-          errorMessage: error?.message || String(error),
-          timestamp: new Date().toISOString()
-        };
-      });
-
-      log("Image generation batch completed", {
-        jobId,
-        total: numImages,
-        successful,
-        failed: failedResults.length,
-        successRate: `${Math.round((successful / numImages) * 100)}%`,
-        errorDetails: errorDetails.length > 0 ? errorDetails : undefined
-      });
-
-      // Update final job status based on results
-      let finalStatus = 'completed';
-      let statusReason = null;
-      
-      if (successful === 0) {
-        finalStatus = 'failed';
-        statusReason = 'all_images_failed';
-      } else if (failedResults.length > 0) {
-        finalStatus = 'completed_with_errors';
-        statusReason = `${successful}_of_${numImages}_succeeded`;
+        // ✅ flatten: append individual results (no nested arrays)
+        results.push(...batchResults);
       }
 
-      // Update job with final status and detailed progress
-      await supabase.from("image_jobs").update({
-        status: finalStatus,
+      log("Batch processing completed", {
+        jobId,
+        totalCompleted: completedCount,
+        totalFailed: failedCount,
+        successRate: `${Math.round((completedCount / numImages) * 100)}%`,
+      });
+
+      return results;
+    };
+
+    // --- Build tasks: one function per image (keep your request shape)
+    // IMPORTANT: no outer Promise.race; rely on AbortController inside generateSingleImage
+    const tasks = Array.from({ length: numImages }, (_, i) => {
+      return () => generateSingleImage(job, i, sourceImageUrl, supabase);
+    });
+
+    // --- Run with quality-aware concurrency
+    const imageResults = await processImagesBatch(tasks, qualitySettings.concurrency);
+
+    // --- Final accounting from FLAT array
+    const successful = imageResults.filter((r) => r.status === "fulfilled").length;
+    const failedResults = imageResults.filter(
+      (r) => r.status === "rejected"
+    ) as PromiseRejectedResult[];
+
+    const errorDetails = failedResults.map((r, index) => {
+      const error = r.reason;
+      return {
+        imageIndex: index, // 0-based index over the failed set (kept as in your code)
+        message: error?.message || String(error),
+        type: error?.name || "Unknown",
+      };
+    });
+
+    const errorSummary = errorDetails.map(
+      (e) => `Image ${e.imageIndex + 1}: ${e.message}`
+    );
+
+    log("Job processing completed", {
+      jobId,
+      successful,
+      failed: failedResults.length,
+      errorDetails: errorDetails.slice(0, 3),
+    });
+
+    // --- Status update (keep your semantics + fields)
+    if (successful > 0) {
+      const isPartialFailure = failedResults.length > 0;
+      const statusUpdate = {
+        status: isPartialFailure ? "partially_completed" : "completed",
         progress: 100,
         completed: successful,
         failed: failedResults.length,
-        total: numImages,
+        finished_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        ...(statusReason && { status_reason: statusReason })
-      }).eq("id", jobId);
+        ...(isPartialFailure && {
+          error: `${failedResults.length} of ${numImages} images failed. ${errorSummary
+            .slice(0, 2)
+            .join("; ")}${errorSummary.length > 2 ? "..." : ""}`,
+        }),
+      };
 
-      // If some images succeeded, return success with details
-      if (successful > 0) {
-        return json({
-          success: true,
-          completed: successful,
+      await supabase.from("image_jobs").update(statusUpdate).eq("id", jobId);
+    } else {
+      // All failed
+      await supabase
+        .from("image_jobs")
+        .update({
+          status: "failed",
+          error: `All ${numImages} images failed. Common issues: ${errorSummary
+            .slice(0, 3)
+            .join("; ")}${errorSummary.length > 3 ? "..." : ""}`,
           failed: failedResults.length,
-          total: numImages,
-          message: failedResults.length > 0 
-            ? `${successful} of ${numImages} images generated successfully`
-            : `All ${successful} images generated successfully`
-        });
-      } else {
-        // All failed - return error with details  
-        const firstError = errorDetails[0];
-        return errorJson(
-          `All images failed to generate. First error: ${firstError?.errorMessage || 'Unknown error'}`,
-          500,
-          { errorDetails }
-        );
-      }
-    } catch (e) {
-      const errorMsg = e?.message ?? String(e);
-      log("Job processing catastrophic failure", {
-        jobId,
-        error: errorMsg
+          finished_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", jobId);
+    }
+
+    // --- Partial refund for failed images (skip admins)
+    if (failedResults.length > 0) {
+      const { data: isAdmin } = await supabase.rpc("is_user_admin", {
+        check_user_id: job.user_id,
       });
-      await supabase.from("image_jobs").update({
+
+      if (!isAdmin) {
+        const refundAmount =
+          failedResults.length *
+          calculateImageCost({
+            ...(job.settings ?? {}),
+            number: 1,
+          });
+
+        log("Issuing partial refund for failed images", {
+          jobId,
+          refundAmount,
+          failedCount: failedResults.length,
+          successful,
+        });
+
+        await supabase.rpc("refund_user_credits", {
+          p_user_id: job.user_id,
+          p_amount: refundAmount,
+          p_reason: "failed_image_generation",
+        });
+      }
+    }
+  } catch (e) {
+    // --- Catastrophic failure (function-level)
+    const errorMsg = e?.message ?? String(e);
+    log("Job processing catastrophic failure", { jobId, error: errorMsg });
+
+    await supabase
+      .from("image_jobs")
+      .update({
         status: "failed",
         error: errorMsg,
         finished_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }).eq("id", jobId);
-      // full refund on catastrophic failure (skip admins)
-      const { data: isAdmin } = await supabase.rpc("is_user_admin", {
-        check_user_id: job.user_id
-      });
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", jobId);
+
+    // full refund on catastrophic failure (skip admins)
+    const { data: isAdmin } = await supabase.rpc("is_user_admin", {
+      check_user_id: job.user_id,
+    });
+
     if (!isAdmin) {
-      const cost = calculateImageCost(job.settings ?? {}) * ((job.settings?.number ?? job.total) || 1);
-      log("Issuing full refund", {
-        jobId,
-        cost
-      });
+      const cost =
+        calculateImageCost(job.settings ?? {}) *
+        ((job.settings?.number ?? job.total) || 1);
+
+      log("Issuing full refund", { jobId, cost });
+
       await supabase.rpc("refund_user_credits", {
         p_user_id: job.user_id,
         p_amount: cost,
-        p_reason: "job_processing_failed"
+        p_reason: "job_processing_failed",
       });
     }
   }
-  return json({
-    success: true
-  });
+
+  return json({ success: true });
 }
+
+
+
 // Generate 1 image (with retries/backoff). Supports generations and edits.
 async function generateSingleImage(job, index, sourceImageUrl, supabase) {
   const MAX_ATTEMPTS = 3;
