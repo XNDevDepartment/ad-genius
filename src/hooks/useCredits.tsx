@@ -34,7 +34,8 @@ export const useCredits = () => {
       'Free': 10,
       'Starter': 80,
       'Plus': 200,
-      'Pro': 400
+      'Pro': 400,
+      'Founders': 80
     };
     return tierCredits[subscriptionData.subscription_tier as keyof typeof tierCredits] || 10;
   };

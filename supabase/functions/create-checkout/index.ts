@@ -35,12 +35,14 @@ serve(async (req) => {
 
     // Define plan pricing
     const planPricing = {
+      founders: { monthly: 1999, yearly: 1999 }, // €19.99/month, no yearly discount for limited offer
       starter: { monthly: 2900, yearly: 2417 }, // €29/month, €24.17/month when billed yearly
       plus: { monthly: 4900, yearly: 4083 },   // €49/month, €40.83/month when billed yearly
       pro: { monthly: 9900, yearly: 8250 }     // €99/month, €82.50/month when billed yearly
     };
 
     const planNames = {
+      founders: 'Founders Plan',
       starter: 'Starter Plan',
       plus: 'Plus Plan', 
       pro: 'Pro Plan'
@@ -70,7 +72,9 @@ serve(async (req) => {
             currency: "eur",
             product_data: { 
               name: planName,
-              description: interval === 'year' ? 'Annual subscription (2 months free!)' : 'Monthly subscription'
+              description: planId === 'founders' 
+                ? 'Limited-time Founders subscription with lifetime pricing guarantee!' 
+                : interval === 'year' ? 'Annual subscription (2 months free!)' : 'Monthly subscription'
             },
             unit_amount: unitAmount,
             recurring: { interval: interval as 'month' | 'year' },

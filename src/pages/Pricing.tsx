@@ -11,31 +11,30 @@ import HeaderSection from "@/components/landing/HeaderSection";
 import { useState } from "react";
 
 const plans = [
-  // {
-  //   id: "free",
-  //   name: "Free",
-  //   price: "Free",
-  //   period: "",
-  //   description: "Perfect for getting started with AI image generation",
-  //   credits: 10,
-  //   features: [
-  //     "10 credits per month",
-  //     "Generate 1 image at a time",
-  //     "4 UGC scenarios available",
-  //     "All quality levels (low: 1, medium: 1.5, high: 2 credits)",
-  //     "Up to 5 high-quality images",
-  //     "Ticket support only"
-  //   ],
-  //   limitations: [
-  //     "Limited to 1 image per generation",
-  //     "Only 4 scenarios available",
-  //     "Ticket support only"
-  //   ],
-  //   cta: "Get Started",
-  //   popular: false,
-  //   icon: <Zap className="h-6 w-6" />,
-  //   bgClass: "bg-gradient-to-br from-muted to-card"
-  // },
+  {
+    id: "founders",
+    name: "Founders",
+    monthlyPrice: 19.99,
+    yearlyPrice: null, // No yearly option for limited time offer
+    period: "/month",
+    description: "🚀 Limited launch offer - Lifetime Starter benefits!",
+    credits: 80,
+    features: [
+      "80 credits per month (forever!)",
+      "Generate up to 3 images at once",
+      "All quality levels available", 
+      "Up to 40 high-quality images",
+      "Access to email support",
+      "Commercial usage rights",
+      "Lifetime pricing guarantee"
+    ],
+    limitations: [],
+    cta: "Join Founders 🚀",
+    popular: true,
+    special: "founders",
+    icon: <Crown className="h-6 w-6" />,
+    bgClass: "bg-gradient-to-br from-amber-500/20 to-orange-500/20 border-2 border-amber-400/50"
+  },
   {
     id: "starter",
     name: "Starter",
@@ -106,17 +105,18 @@ const plans = [
 ];
 
 const comparisonFeatures = [
-  { feature: "Monthly Credits", starter: "80", plus: "200", pro: "400" },
-  { feature: "Max Images per Generation", starter: "3", plus: "3", pro: "3" },
-  { feature: "High Quality Images/Month", starter: "40", plus: "100", pro: "200" },
-  { feature: "Medium Quality Images/Month", starter: "53", plus: "133", pro: "266" },
-  { feature: "Low Quality Images/Month", starter: "80", plus: "200", pro: "400" },
-  { feature: "UGC Scenarios Available", starter: "unlimited", plus: "unlimited", pro: "unlimited" },
-  { feature: "All Quality Levels", starter: true, plus: true, pro: true },
-  { feature: "Commercial Usage", starter: true, plus: true, pro: true },
-  { feature: "Priority Support", starter: true, plus: true, pro: true },
-  { feature: "Live Chat Support", starter: false, plus: true, pro: true },
-  { feature: "Dedicated Manager", starter: false, plus: false, pro: true }
+  { feature: "Monthly Credits", founders: "80", starter: "80", plus: "200", pro: "400" },
+  { feature: "Max Images per Generation", founders: "3", starter: "3", plus: "3", pro: "3" },
+  { feature: "High Quality Images/Month", founders: "40", starter: "40", plus: "100", pro: "200" },
+  { feature: "Medium Quality Images/Month", founders: "53", starter: "53", plus: "133", pro: "266" },
+  { feature: "Low Quality Images/Month", founders: "80", starter: "80", plus: "200", pro: "400" },
+  { feature: "UGC Scenarios Available", founders: "unlimited", starter: "unlimited", plus: "unlimited", pro: "unlimited" },
+  { feature: "All Quality Levels", founders: true, starter: true, plus: true, pro: true },
+  { feature: "Commercial Usage", founders: true, starter: true, plus: true, pro: true },
+  { feature: "Priority Support", founders: true, starter: true, plus: true, pro: true },
+  { feature: "Live Chat Support", founders: false, starter: false, plus: true, pro: true },
+  { feature: "Dedicated Manager", founders: false, starter: false, plus: false, pro: true },
+  { feature: "Lifetime Pricing", founders: true, starter: false, plus: false, pro: false }
 ];
 
 const Pricing = () => {
@@ -159,6 +159,9 @@ const Pricing = () => {
 
   const getDisplayPrice = (plan: any) => {
     if (plan.price === "Free") return "Free";
+    
+    // Special handling for Founders plan (no yearly option)
+    if (plan.id === "founders") return `€${plan.monthlyPrice}`;
 
     const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
     return `€${price}`;
@@ -226,17 +229,26 @@ const Pricing = () => {
 
       {/* Pricing Cards */}
       <div className="container mx-auto px-6 py-16">
-        <div className="grid md:grid-cols-3 gap-6 max-w-7xl mx-auto mb-20">
+        <div className="grid md:grid-cols-4 gap-6 max-w-7xl mx-auto mb-20">
           {plans.map((plan) => (
             <Card
               key={plan.id}
               className={`relative border-2 transition-all duration-300 hover:shadow-lg ${
-                plan.popular
+                plan.special === "founders"
+                  ? "border-amber-400 shadow-xl scale-105 bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20"
+                  : plan.popular
                   ? "border-primary shadow-lg scale-105 bg-white dark:bg-card"
                   : "border-border hover:border-primary/50"
               }`}
             >
-              {plan.popular && (
+              {plan.special === "founders" && (
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-1 shadow-lg">
+                    🚀 Limited Time
+                  </Badge>
+                </div>
+              )}
+              {plan.popular && plan.special !== "founders" && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <Badge className="bg-primary text-primary-foreground px-4 py-1">
                     Most Popular
@@ -246,7 +258,11 @@ const Pricing = () => {
 
               <CardHeader className="text-center">
                 <div className="flex justify-center mb-4">
-                  <div className={`p-3 rounded-full ${plan.popular ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                  <div className={`p-3 rounded-full ${
+                    plan.special === "founders" 
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white' 
+                      : plan.popular ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                  }`}>
                     {plan.icon}
                   </div>
                 </div>
@@ -256,9 +272,14 @@ const Pricing = () => {
                   {plan.period && (
                     <span className="text-muted-foreground text-sm">{plan.period}</span>
                   )}
-                  {isYearly && plan.monthlyPrice && (
+                  {isYearly && plan.monthlyPrice && plan.yearlyPrice && (
                     <div className="text-xs text-muted-foreground">
                       Billed annually (€{(plan.yearlyPrice * 12).toFixed(0)}/year)
+                    </div>
+                  )}
+                  {plan.special === "founders" && (
+                    <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                      Lifetime pricing • Only 3 months left!
                     </div>
                   )}
                 </div>
@@ -298,7 +319,9 @@ const Pricing = () => {
                 <Button
                   onClick={() => handlePlanSelect(plan.id)}
                   className={`w-full ${
-                    plan.popular
+                    plan.special === "founders"
+                      ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg"
+                      : plan.popular
                       ? "bg-primary hover:bg-primary/90"
                       : "variant-outline"
                   }`}
@@ -325,7 +348,11 @@ const Pricing = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-1/4">Feature</TableHead>
+                    <TableHead className="w-1/5">Feature</TableHead>
+                    <TableHead className="text-center bg-amber-50 dark:bg-amber-950/20">
+                      Founders
+                      <Badge className="ml-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white">Limited</Badge>
+                    </TableHead>
                     <TableHead className="text-center">Starter</TableHead>
                     <TableHead className="text-center bg-primary/5">
                       Plus
@@ -338,6 +365,17 @@ const Pricing = () => {
                   {comparisonFeatures.map((item, index) => (
                     <TableRow key={index}>
                       <TableCell className="font-medium">{item.feature}</TableCell>
+                      <TableCell className="text-center bg-amber-50 dark:bg-amber-950/20">
+                        {typeof item.founders === 'boolean' ? (
+                          item.founders ? (
+                            <Check className="h-5 w-5 text-amber-600 mx-auto" />
+                          ) : (
+                            <X className="h-5 w-5 text-muted-foreground mx-auto" />
+                          )
+                        ) : (
+                          <span className="font-medium text-amber-600">{item.founders}</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-center">
                         {typeof item.starter === 'boolean' ? (
                           item.starter ? (
