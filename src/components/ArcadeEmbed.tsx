@@ -10,19 +10,19 @@ export function ArcadeEmbed({ isFullscreen = false }: ArcadeEmbedProps) {
   
   const iframeStyle = isFullscreen
     ? { width: '100%', height: '100%', colorScheme: 'light' as const }
-    : { position: 'absolute' as const, top: 0, left: 0, width: '100%', height: '100%', colorScheme: 'light' as const };
+    : { position: 'absolute' as const, top: 0, left: 0, width: '100%', height: '90%', colorScheme: 'light' as const };
 
   return (
     <div style={containerStyle}>
-      <iframe
-        src="https://demo.arcade.software/qCgFWUmJr4IIaSBq9Xfi?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
-        title="Generate and Manage AI Product Images for Marketing"
+      <iframe 
+        src="https://www.youtube.com/embed/vCG3VTmijxQ?si=0BC0NOeCthnRLUIz&amp;start=12"
+        title="YouTube video player" 
         frameBorder="0"
         loading="lazy"
         allowFullScreen
         allow="clipboard-write"
         style={iframeStyle}
-      />
+        />
     </div>
   );
 }

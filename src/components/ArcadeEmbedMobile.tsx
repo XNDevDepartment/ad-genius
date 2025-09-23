@@ -13,15 +13,15 @@ export function ArcadeEmbedMobile({ isFullscreen = false }: ArcadeEmbedMobilePro
 
   return (
     <div style={containerStyle}>
-      <iframe
-        src="https://demo.arcade.software/fFMkm7oqMrwPW0cwJl5w?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
-        title="Generate User-Generated Content Images with AI"
+    <iframe 
+        src="https://www.youtube.com/embed/JheUUpQnamk?si=fGaSzxPQqjOMKcbR&amp;start=13"
+        title="YouTube video player" 
         frameBorder="0"
         loading="lazy"
         allowFullScreen
         allow="clipboard-write"
         style={iframeStyle}
-      />
+        />
     </div>
   );
 }

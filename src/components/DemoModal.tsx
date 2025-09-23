@@ -27,12 +27,12 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
-        className={"max-w-full w-[95vw] h-[90vh] p-0 overflow-hidden"}
+        className={"max-w-full max-h-full w-[95vw] h-[90vh] p-5 overflow-scroll"}
       >
         <DialogHeader className={'p-6 pb-2 flex flex-col items-start justify-start'}>
           <div className={isFullscreen ? 'flex flex-col' : ''}>
             <DialogTitle className="text-2xl font-bold">
-              Interactive Demo
+              Guided Demo
             </DialogTitle>
               <p className="text-muted-foreground mt-2">
                 Click on "Get Started" to initiate the guided demo.
