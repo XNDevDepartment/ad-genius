@@ -27,21 +27,19 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
-        className={isFullscreen ? "fixed inset-0 z-50 w-screen h-screen p-0 overflow-hidden bg-background" : "max-w-full w-[95vw] h-[90vh] p-0 overflow-hidden"}
+        className={"max-w-full w-[95vw] h-[90vh] p-0 overflow-hidden"}
       >
-        <DialogHeader className={isFullscreen ? 'p-4 pb-2 flex flex-row items-center justify-between bg-background/95 backdrop-blur-sm border-b' : 'p-6 pb-2 flex flex-col items-start justify-start'}>
+        <DialogHeader className={'p-6 pb-2 flex flex-col items-start justify-start'}>
           <div className={isFullscreen ? 'flex flex-col' : ''}>
             <DialogTitle className="text-2xl font-bold">
               Interactive Demo
             </DialogTitle>
-            {!isFullscreen && (
               <p className="text-muted-foreground mt-2">
                 Click on "Get Started" to initiate the guided demo.
               </p>
-            )}
           </div>
         </DialogHeader>
-        <div className={isFullscreen ? "flex-1 overflow-hidden" : ""}>
+        <div>
           <div className="h-full rounded-lg overflow-hidden">
             {isMobile ? (
               <ArcadeEmbedMobile />
