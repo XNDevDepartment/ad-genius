@@ -74,7 +74,9 @@ serve(async (req) => {
       const amount = price.unit_amount || 0;
       
       // Map price amounts to tiers (in cents)
-      if (amount >= 8200 && amount <= 9900) { // €82-€99 range
+      if (amount === 1999) { // €19.99 - Founders tier
+        subscriptionTier = "Founders";
+      } else if (amount >= 8200 && amount <= 9900) { // €82-€99 range
         subscriptionTier = "Pro";
       } else if (amount >= 4000 && amount <= 4900) { // €40-€49 range
         subscriptionTier = "Plus";
