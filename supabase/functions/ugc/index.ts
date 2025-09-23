@@ -521,42 +521,22 @@ async function generateImages(jobId, supabase) {
           { errorDetails }
         );
       }
-    } catch (error: any) {
-      log("Error in generateImages", {
+    } catch (e) {
+      const errorMsg = e?.message ?? String(e);
+      log("Job processing catastrophic failure", {
         jobId,
-        error: error?.message || String(error),
-        errorName: error?.name || 'Unknown',
-        stack: error?.stack
+        error: errorMsg
       });
-
-      // Update job status to failed with error details
       await supabase.from("image_jobs").update({
         status: "failed",
-        progress: 0,
-        failed: numImages,
-        completed: 0,
+        error: errorMsg,
         finished_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        error_message: error?.message || String(error)
+        updated_at: new Date().toISOString()
       }).eq("id", jobId);
-
-      return errorJson(`Image generation failed: ${error?.message || String(error)}`, 500);
-  } catch (e) {
-    const errorMsg = e?.message ?? String(e);
-    log("Job processing catastrophic failure", {
-      jobId,
-      error: errorMsg
-    });
-    await supabase.from("image_jobs").update({
-      status: "failed",
-      error: errorMsg,
-      finished_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }).eq("id", jobId);
-    // full refund on catastrophic failure (skip admins)
-    const { data: isAdmin } = await supabase.rpc("is_user_admin", {
-      check_user_id: job.user_id
-    });
+      // full refund on catastrophic failure (skip admins)
+      const { data: isAdmin } = await supabase.rpc("is_user_admin", {
+        check_user_id: job.user_id
+      });
     if (!isAdmin) {
       const cost = calculateImageCost(job.settings ?? {}) * ((job.settings?.number ?? job.total) || 1);
       log("Issuing full refund", {
