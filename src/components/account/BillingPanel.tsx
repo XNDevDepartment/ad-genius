@@ -59,6 +59,7 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
   const getPlanPrice = (tier: string) => {
     const prices = {
       'Free': t("account.billing.free"),
+      'Founders': '€19.99/month',
       'Starter': '€29/month',
       'Plus': '€49/month', 
       'Pro': '€99/month'
