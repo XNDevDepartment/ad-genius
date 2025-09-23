@@ -1,7 +1,7 @@
 // functions/ugc/index.ts
 // Supabase Edge Function (Deno)
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 // ---------- CORS ----------
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,17 +35,6 @@ function sleep(ms) {
 function backoffMs(attempt) {
   return 900 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 250);
 }
-
-
-type Settings = {
-  size?: string; // "1024x1024"
-  quality?: "low" | "medium" | "high";
-  number?: number;
-  input_fidelity?: "low" | "medium" | "high"; // optional for edits
-  output_format?: "png" | "webp";
-  [k: string]: unknown;
-};
-
 // credit price table (fallback; you can move to DB as discussed)
 function calculateImageCost(settings) {
   const qualityCosts = {
@@ -174,12 +163,11 @@ async function createImageJob(userId, payload, supabase) {
       status: existing.status
     };
     if (existing.status === "completed") {
-
-      res.existingImages = (existing.ugc_images ?? []).map((img: any) => ({
-        url: img.public_url,
-        prompt: existing.prompt,
-        format: img.meta?.format ?? "webp",
-      }));
+      res.existingImages = (existing.ugc_images ?? []).map((img)=>({
+          url: img.public_url,
+          prompt: existing.prompt,
+          format: img.meta?.format ?? "webp"
+        }));
     }
     return json(res, 200);
   }
@@ -254,107 +242,98 @@ async function createImageJob(userId, payload, supabase) {
 // Worker: claim and generate
 // Worker: claim and generate
 async function generateImages(jobId, supabase) {
-  log("Worker start", { jobId });
-
+  log("Worker start", {
+    jobId
+  });
   // --- Atomic claim: queued -> processing
-  const { data: job, error: claimErr } = await supabase
-    .from("image_jobs")
-    .update({
-      status: "processing",
-      started_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", jobId)
-    .eq("status", "queued")
-    .select()
-    .single();
-
+  const { data: job, error: claimErr } = await supabase.from("image_jobs").update({
+    status: "processing",
+    started_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }).eq("id", jobId).eq("status", "queued").select().single();
   if (claimErr || !job) {
     // already processing or done?
-    const { data: existing } = await supabase
-      .from("image_jobs")
-      .select("status")
-      .eq("id", jobId)
-      .maybeSingle();
-
+    const { data: existing } = await supabase.from("image_jobs").select("status").eq("id", jobId).maybeSingle();
     if (existing?.status === "processing") {
-      log("Job already processing", { jobId });
-      return json({ message: "Already processing" });
+      log("Job already processing", {
+        jobId
+      });
+      return json({
+        message: "Already processing"
+      });
     }
-
-    log("Job not found or already processed", { jobId, existing });
+    log("Job not found or already processed", {
+      jobId,
+      existing
+    });
     return errorJson("Job not found or already processed", 404);
   }
-
   try {
     // --- Optional source image
     const sourceImageUrl = await getSignedSourceUrl(job.source_image_id, supabase);
-    log("Source image prepared", { jobId, hasSourceImage: !!sourceImageUrl });
-
+    log("Source image prepared", {
+      jobId,
+      hasSourceImage: !!sourceImageUrl
+    });
     const numImages = job.total;
     const quality = job?.settings?.quality ?? "high";
-
     // --- Quality-aware settings (keep your semantics)
-    const getQualitySettings = (quality /**: string */) => {
-      switch (quality) {
+    const getQualitySettings = (quality /**: string */ )=>{
+      switch(quality){
         case "low":
-          return { timeout: 210000, concurrency: 3 }; // 3.5m, 3 concurrent
+          return {
+            timeout: 210000,
+            concurrency: 3
+          }; // 3.5m, 3 concurrent
         case "medium":
-          return { timeout: 300000, concurrency: 2 }; // 5m, 2 concurrent
+          return {
+            timeout: 300000,
+            concurrency: 2
+          }; // 5m, 2 concurrent
         case "high":
         default:
-          return { timeout: 420000, concurrency: 1 }; // 7m, sequential
+          return {
+            timeout: 420000,
+            concurrency: 1
+          }; // 7m, sequential
       }
     };
-
     const qualitySettings = getQualitySettings(quality);
-
     log("Quality-aware processing settings", {
       jobId,
       quality,
       timeout: `${qualitySettings.timeout / 1000}s`,
       concurrency: qualitySettings.concurrency,
-      totalImages: numImages,
+      totalImages: numImages
     });
-
     // --- Batch runner with progress updates (FLAT results)
-    const processImagesBatch = async (
-      imagePromises /**: Array<() => Promise<any>> */,
-      maxConcurrency /**: number */
-    ) /**: Promise<PromiseSettledResult<any>[]> */ => {
+    const processImagesBatch = async (imagePromises /**: Array<() => Promise<any>> */ , maxConcurrency /**: number */ )=>{
       const results = [];
       let completedCount = 0;
       let failedCount = 0;
-
       log("Starting batch processing", {
         jobId,
         totalBatches: Math.ceil(imagePromises.length / maxConcurrency),
         maxConcurrency,
-        totalImages: imagePromises.length,
+        totalImages: imagePromises.length
       });
-
-      for (let i = 0; i < imagePromises.length; i += maxConcurrency) {
+      for(let i = 0; i < imagePromises.length; i += maxConcurrency){
         const batchIndex = Math.ceil((i + 1) / maxConcurrency);
-        const batch = imagePromises.slice(i, i + maxConcurrency).map((fn) => fn());
-
+        const batch = imagePromises.slice(i, i + maxConcurrency).map((fn)=>fn());
         log(`Processing batch ${batchIndex}`, {
           jobId,
           batchSize: batch.length,
           startIndex: i,
-          endIndex: Math.min(i + maxConcurrency - 1, imagePromises.length - 1),
+          endIndex: Math.min(i + maxConcurrency - 1, imagePromises.length - 1)
         });
-
         const batchStartTime = Date.now();
         const batchResults = await Promise.allSettled(batch);
         const batchDuration = Date.now() - batchStartTime;
-
         // Count & log
-        const succeededInBatch = batchResults.filter((r) => r.status === "fulfilled").length;
-        const failedInBatch = batchResults.filter((r) => r.status === "rejected").length;
-
+        const succeededInBatch = batchResults.filter((r)=>r.status === "fulfilled").length;
+        const failedInBatch = batchResults.filter((r)=>r.status === "rejected").length;
         completedCount += succeededInBatch;
         failedCount += failedInBatch;
-
         log(`Batch ${batchIndex} completed`, {
           jobId,
           batchDuration: `${batchDuration / 1000}s`,
@@ -362,80 +341,63 @@ async function generateImages(jobId, supabase) {
           failedInBatch,
           totalCompleted: completedCount,
           totalFailed: failedCount,
-          progress: Math.round((completedCount / numImages) * 100),
+          progress: Math.round(completedCount / numImages * 100)
         });
-
         // Log failures for debugging
-        batchResults.forEach((result, idx) => {
+        batchResults.forEach((result, idx)=>{
           if (result.status === "rejected") {
             log(`Image ${i + idx + 1} failed in batch ${batchIndex}`, {
               jobId,
               imageIndex: i + idx,
-              error: result.reason?.message || String(result.reason),
+              error: result.reason?.message || String(result.reason)
             });
           }
         });
-
         // Update job progress
-        await supabase
-          .from("image_jobs")
-          .update({
-            progress: Math.round((completedCount / numImages) * 100),
-            completed: completedCount,
-            failed: failedCount,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", jobId);
-
+        await supabase.from("image_jobs").update({
+          progress: Math.round(completedCount / numImages * 100),
+          completed: completedCount,
+          failed: failedCount,
+          updated_at: new Date().toISOString()
+        }).eq("id", jobId);
         // ✅ flatten: append individual results (no nested arrays)
         results.push(...batchResults);
       }
-
       log("Batch processing completed", {
         jobId,
         totalCompleted: completedCount,
         totalFailed: failedCount,
-        successRate: `${Math.round((completedCount / numImages) * 100)}%`,
+        successRate: `${Math.round(completedCount / numImages * 100)}%`
       });
-
       return results;
     };
-
     // --- Build tasks: one function per image (keep your request shape)
     // IMPORTANT: no outer Promise.race; rely on AbortController inside generateSingleImage
-    const tasks = Array.from({ length: numImages }, (_, i) => {
-      return () => generateSingleImage(job, i, sourceImageUrl, supabase);
+    const tasks = Array.from({
+      length: numImages
+    }, (_, i)=>{
+      return ()=>generateSingleImage(job, i, sourceImageUrl, supabase);
     });
-
     // --- Run with quality-aware concurrency
     const imageResults = await processImagesBatch(tasks, qualitySettings.concurrency);
-
     // --- Final accounting from FLAT array
-    const successful = imageResults.filter((r) => r.status === "fulfilled").length;
-    const failedResults = imageResults.filter(
-      (r) => r.status === "rejected"
-    ) as PromiseRejectedResult[];
-
-    const errorDetails = failedResults.map((r, index) => {
+    const successful = imageResults.filter((r)=>r.status === "fulfilled").length;
+    const failedResults = imageResults.filter((r)=>r.status === "rejected");
+    const errorDetails = failedResults.map((r, index)=>{
       const error = r.reason;
       return {
-        imageIndex: index, // 0-based index over the failed set (kept as in your code)
+        imageIndex: index,
         message: error?.message || String(error),
-        type: error?.name || "Unknown",
+        type: error?.name || "Unknown"
       };
     });
-
-    const errorSummary = errorDetails.map(
-      (e) => `Image ${e.imageIndex + 1}: ${e.message}`
-    );
-
+    const errorSummary = errorDetails.map((e)=>`Image ${e.imageIndex + 1}: ${e.message}`);
     log("Job processing completed", {
       jobId,
       successful,
       failed: failedResults.length,
-      errorDetails: errorDetails.slice(0, 3),
+      errorDetails: errorDetails.slice(0, 3)
     });
-
     // --- Status update (keep your semantics + fields)
     if (successful > 0) {
       const isPartialFailure = failedResults.length > 0;
@@ -446,118 +408,98 @@ async function generateImages(jobId, supabase) {
         failed: failedResults.length,
         finished_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        ...(isPartialFailure && {
-          error: `${failedResults.length} of ${numImages} images failed. ${errorSummary
-            .slice(0, 2)
-            .join("; ")}${errorSummary.length > 2 ? "..." : ""}`,
-        }),
+        ...isPartialFailure && {
+          error: `${failedResults.length} of ${numImages} images failed. ${errorSummary.slice(0, 2).join("; ")}${errorSummary.length > 2 ? "..." : ""}`
+        }
       };
-
       await supabase.from("image_jobs").update(statusUpdate).eq("id", jobId);
     } else {
       // All failed
-      await supabase
-        .from("image_jobs")
-        .update({
-          status: "failed",
-          error: `All ${numImages} images failed. Common issues: ${errorSummary
-            .slice(0, 3)
-            .join("; ")}${errorSummary.length > 3 ? "..." : ""}`,
-          failed: failedResults.length,
-          finished_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", jobId);
+      await supabase.from("image_jobs").update({
+        status: "failed",
+        error: `All ${numImages} images failed. Common issues: ${errorSummary.slice(0, 3).join("; ")}${errorSummary.length > 3 ? "..." : ""}`,
+        failed: failedResults.length,
+        finished_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }).eq("id", jobId);
     }
-
     // --- Partial refund for failed images (skip admins)
     if (failedResults.length > 0) {
       const { data: isAdmin } = await supabase.rpc("is_user_admin", {
-        check_user_id: job.user_id,
+        check_user_id: job.user_id
       });
-
       if (!isAdmin) {
-        const refundAmount =
-          failedResults.length *
-          calculateImageCost({
-            ...(job.settings ?? {}),
-            number: 1,
-          });
-
+        const refundAmount = failedResults.length * calculateImageCost({
+          ...job.settings ?? {},
+          number: 1
+        });
         log("Issuing partial refund for failed images", {
           jobId,
           refundAmount,
           failedCount: failedResults.length,
-          successful,
+          successful
         });
-
         await supabase.rpc("refund_user_credits", {
           p_user_id: job.user_id,
           p_amount: refundAmount,
-          p_reason: "failed_image_generation",
+          p_reason: "failed_image_generation"
         });
       }
     }
   } catch (e) {
     // --- Catastrophic failure (function-level)
     const errorMsg = e?.message ?? String(e);
-    log("Job processing catastrophic failure", { jobId, error: errorMsg });
-
-    await supabase
-      .from("image_jobs")
-      .update({
-        status: "failed",
-        error: errorMsg,
-        finished_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", jobId);
-
+    log("Job processing catastrophic failure", {
+      jobId,
+      error: errorMsg
+    });
+    await supabase.from("image_jobs").update({
+      status: "failed",
+      error: errorMsg,
+      finished_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }).eq("id", jobId);
     // full refund on catastrophic failure (skip admins)
     const { data: isAdmin } = await supabase.rpc("is_user_admin", {
-      check_user_id: job.user_id,
+      check_user_id: job.user_id
     });
-
     if (!isAdmin) {
-      const cost =
-        calculateImageCost(job.settings ?? {}) *
-        ((job.settings?.number ?? job.total) || 1);
-
-      log("Issuing full refund", { jobId, cost });
-
+      const cost = calculateImageCost(job.settings ?? {}) * ((job.settings?.number ?? job.total) || 1);
+      log("Issuing full refund", {
+        jobId,
+        cost
+      });
       await supabase.rpc("refund_user_credits", {
         p_user_id: job.user_id,
         p_amount: cost,
-        p_reason: "job_processing_failed",
+        p_reason: "job_processing_failed"
       });
     }
   }
-
-  return json({ success: true });
+  return json({
+    success: true
+  });
 }
-
-
-
 // Generate 1 image (with retries/backoff). Supports generations and edits.
 async function generateSingleImage(job, index, sourceImageUrl, supabase) {
   const MAX_ATTEMPTS = 3;
-  const quality = (job?.settings?.quality ?? "high") as "low" | "medium" | "high";
-  
+  const quality = job?.settings?.quality ?? "high";
   // Quality-aware timeout for individual API calls (per attempt)
-  const getIndividualTimeout = (quality: "low" | "medium" | "high") => {
-    switch (quality) {
-      case "low": return 70000;    // 70 seconds per attempt for low quality
-      case "medium": return 100000; // 100 seconds per attempt for medium quality
+  const getIndividualTimeout = (quality)=>{
+    switch(quality){
+      case "low":
+        return 70000; // 70 seconds per attempt for low quality
+      case "medium":
+        return 100000; // 100 seconds per attempt for medium quality
       case "high":
-      default: return 140000;      // 140 seconds per attempt for high quality
+      default:
+        return 140000; // 140 seconds per attempt for high quality
     }
   };
-  
   const INDIVIDUAL_TIMEOUT = getIndividualTimeout(quality);
   const size = job?.settings?.size ?? "1024x1024";
   const prompt = String(job?.prompt ?? "");
-
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+  for(let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++){
     log("Starting image generation attempt", {
       jobId: job.id,
       imageIndex: index,
@@ -566,10 +508,9 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
       quality,
       individualTimeout: `${INDIVIDUAL_TIMEOUT / 1000}s`
     });
-
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(()=>controller.abort(), INDIVIDUAL_TIMEOUT);
+      const timeout1 = setTimeout(()=>controller.abort(), INDIVIDUAL_TIMEOUT);
       let res;
       if (sourceImageUrl) {
         // ----- edits -----
@@ -609,15 +550,13 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
             model: "gpt-image-1",
             prompt,
             size,
-            quality,
+            quality
           }),
           signal: controller.signal
         });
       }
-
-
       try {
-        clearTimeout(timeout); // Clear timeout on successful response
+        clearTimeout(timeout1); // Clear timeout on successful response
         const reqId = res.headers.get("x-request-id") || undefined;
         if (!res.ok) {
           const text = await res.text();
@@ -644,9 +583,7 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
           }
           throw new Error(`OpenAI error ${res.status}${reqId ? ` req=${reqId}` : ""}: ${text}`);
         }
-
         const jsonResp = await res.json();
-        
         // upload to storage
         const b64 = jsonResp?.data?.[0]?.b64_json;
         if (!b64) {
@@ -656,23 +593,19 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
           }
           throw new Error(`Missing b64_json in response${reqId ? ` req=${reqId}` : ""}`);
         }
-
-        const decodedBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-
+        const decodedBytes = Uint8Array.from(atob(b64), (c)=>c.charCodeAt(0));
         // Store as PNG directly (no WEBP conversion since WASM is not supported in edge functions)
         let fileBytes = decodedBytes;
-        let storedFormat = "png";
-        let contentType = "image/png";
-        let extension = "png";
-
+        let storedFormat = "webp";
+        let contentType = "image/webp";
+        let extension = "webp";
         const storagePath = `${job.user_id}/${job.id}/${index}.${extension}`;
-        const { error: upErr } = await supabase.storage
-          .from("ugc")
-          .upload(storagePath, fileBytes, { contentType, upsert: false });
+        const { error: upErr } = await supabase.storage.from("ugc").upload(storagePath, fileBytes, {
+          contentType,
+          upsert: false
+        });
         if (upErr) throw new Error(`Storage upload failed: ${upErr.message}`);
-
         const { data: pub } = supabase.storage.from("ugc").getPublicUrl(storagePath);
-
         const { error: saveErr } = await supabase.from("ugc_images").insert({
           job_id: job.id,
           user_id: job.user_id,
@@ -684,13 +617,12 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
             quality,
             format: storedFormat,
             provider: "openai",
-            model: "gpt-image-1",
+            model: "gpt-image-1"
           },
           prompt: prompt,
-          source_image_id: job.source_image_id,
+          source_image_id: job.source_image_id
         });
         if (saveErr) throw new Error(`Failed to save image record: ${saveErr.message}`);
-
         log("Image generation successful", {
           jobId: job.id,
           imageIndex: index,
@@ -698,12 +630,11 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
           storagePath
         });
         return; // success
-      } finally {
-        clearTimeout(timeout);
+      } finally{
+        clearTimeout(timeout1);
       }
-    } catch (e: any) {
+    } catch (e) {
       clearTimeout(timeout);
-      
       // Enhanced error reporting with full context
       const errorInfo = {
         name: e?.name || 'Unknown',
@@ -712,7 +643,6 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
         code: e?.code,
         status: e?.status
       };
-      
       log("Image generation error (detailed)", {
         jobId: job.id,
         imageIndex: index,
@@ -722,14 +652,8 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
         timeout: INDIVIDUAL_TIMEOUT,
         timestamp: new Date().toISOString()
       });
-      
       const msg = errorInfo.message;
-      const retryable = /AbortError/.test(errorInfo.name) || 
-                       /OpenAI error 5\d\d/.test(msg) || 
-                       /429/.test(msg) || 
-                       /Missing b64_json/.test(msg) ||
-                       /timeout/.test(msg.toLowerCase());
-      
+      const retryable = /AbortError/.test(errorInfo.name) || /OpenAI error 5\d\d/.test(msg) || /429/.test(msg) || /Missing b64_json/.test(msg) || /timeout/.test(msg.toLowerCase());
       if (retryable && attempt < MAX_ATTEMPTS) {
         const backoffDelay = backoffMs(attempt);
         log("Retrying after error", {
@@ -742,12 +666,10 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
         await sleep(backoffDelay);
         continue;
       }
-      
       // Throw with enhanced error message including original error details
       throw new Error(`Image generation failed (attempt ${attempt}/${MAX_ATTEMPTS}): ${errorInfo.name}: ${msg}`);
     }
   }
-  
   throw new Error(`Failed to generate image after ${MAX_ATTEMPTS} attempts`);
 }
 // Signed URL for user-provided source image (optional)
