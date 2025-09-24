@@ -279,7 +279,7 @@ const Pricing = () => {
                   )}
                   {plan.special === "founders" && (
                     <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                      Lifetime pricing • Only 3 months left!
+                      Lifetime pricing!
                     </div>
                   )}
                 </div>
