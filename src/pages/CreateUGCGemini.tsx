@@ -53,7 +53,7 @@ const CreateUGC = () => {
   const isMobile = useIsMobile();
 
   const { user, subscriptionData } = useAuth();
-  const { credits, canAfford, deductCredits, getRemainingCredits, getTotalCredits } = useCredits();
+  const { credits, canAfford, deductCredits, getRemainingCredits, getTotalCredits, refreshCredits } = useCredits();
   const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
   const [showAuthModal, setShowAuthModal] = useState(!user);
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
@@ -247,6 +247,7 @@ const CreateUGC = () => {
       setStage('results');
       localStorage.removeItem('currentJobId');
       localStorage.removeItem('currentStage');
+      refreshCredits();
     }
   }, [jobImages, job?.status, job?.prompt, job?.settings?.output_format]);
 
@@ -326,6 +327,7 @@ const CreateUGC = () => {
       // Switch to results stage for completed jobs
       if (job?.status === 'completed') {
         setStage('results');
+        refreshCredits();
         setTimeout(() => {
           resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
