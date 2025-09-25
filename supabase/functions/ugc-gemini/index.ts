@@ -510,51 +510,48 @@ async function generateSingleImageWithGemini(job: any, index: number, sourceImag
         
         const base64Image = btoa(binary);
 
-        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0:generateImages`, {
+        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict`, {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${GOOGLE_AI_KEY}`,
+            "x-goog-api-key": GOOGLE_AI_KEY,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            prompt: { text: prompt },
-            imageGenerationConfig: {
-              imageCount: 1,
-              aspectRatio: mapSizeToGemini(size),
-              safetySettings: [
-                {
-                  category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-                  threshold: "BLOCK_MEDIUM_AND_ABOVE"
-                }
-              ]
-            },
-            // For image editing/conditioning
-            sourceImage: {
-              mimeType: src.headers.get("content-type") || "image/webp",
-              data: base64Image
+            instances: [
+              {
+                prompt: prompt,
+                image: {
+                  bytesBase64Encoded: base64Image
+                },
+                editInstruction: prompt
+              }
+            ],
+            parameters: {
+              sampleCount: 1,
+              aspectRatio: "1:1",
+              personGeneration: "dont_allow"
             }
           }),
           signal: controller.signal
         });
       } else {
         // ----- generations -----
-        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0:generateImages`, {
+        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict`, {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${GOOGLE_AI_KEY}`,
+            "x-goog-api-key": GOOGLE_AI_KEY,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            prompt: { text: prompt },
-            imageGenerationConfig: {
-              imageCount: 1,
-              aspectRatio: mapSizeToGemini(size),
-              safetySettings: [
-                {
-                  category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-                  threshold: "BLOCK_MEDIUM_AND_ABOVE"
-                }
-              ]
+            instances: [
+              {
+                prompt: prompt
+              }
+            ],
+            parameters: {
+              sampleCount: 1,
+              aspectRatio: "1:1",
+              personGeneration: "dont_allow"
             }
           }),
           signal: controller.signal
@@ -573,17 +570,17 @@ async function generateSingleImageWithGemini(job: any, index: number, sourceImag
         }
 
         const jsonResp = await res.json();
-        const generatedImages = jsonResp?.generatedImages;
-        if (!generatedImages || !generatedImages[0]?.bytesBase64Encoded) {
+        const predictions = jsonResp?.predictions;
+        if (!predictions || !predictions[0]?.image?.imageBytes) {
           if (attempt < MAX_ATTEMPTS) {
             await sleep(backoffMs(attempt));
             continue;
           }
-          throw new Error(`Missing image data in Gemini response`);
+          throw new Error(`Missing image data in Imagen response`);
         }
 
-        // upload to storage
-        const b64 = generatedImages[0].bytesBase64Encoded;
+        // extract image data
+        const b64 = predictions[0].image.imageBytes;
         const decodedBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
 
         // Store as PNG directly (no WEBP conversion since WASM is not supported in edge functions)
@@ -614,7 +611,7 @@ async function generateSingleImageWithGemini(job: any, index: number, sourceImag
               quality,
               format: storedFormat,
               provider: "gemini",
-              model: "imagen-3.0",
+              model: "imagen-4.0",
             },
             prompt: prompt,
             source_image_id: job.source_image_id,
