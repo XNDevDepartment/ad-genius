@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
-import { ArrowLeft, Upload, Sparkles, RefreshCw, Loader2, HelpCircle, Settings, Pencil, ArrowDown } from "lucide-react";
+import { ArrowLeft,  Sparkles, RefreshCw, HelpCircle, Pencil, ArrowDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import ImageUploader from "@/components/ImageUploader";
 import { useToast } from "@/hooks/use-toast";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
-import { startGeminiConversation, converseWithGemini, sendImageToGemini, generateGeminiScenarios } from '@/api/gemini-chat';
+import { startConversationAPI, converse, sendImageAndRun } from '@/api/OpenAiChatClient';
 import { useImageJob } from '@/hooks/useImageJob';
 import { useActiveJob } from '@/hooks/useActiveJob';
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,7 +30,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Link as LinkIcon, Images } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useGeminiConversationSync } from "@/hooks/useGeminiConversationSync";
 
 interface GeneratedImage {
   id: string;
@@ -47,13 +46,13 @@ interface AIScenario {
   'small-description': string;
 }
 
-const CreateUGC = () => {
-  console.log('CreateUGC component rendering...');
+const CreateUGCGemini = () => {
+  console.log('CreateUGCGemini component rendering...');
   const { t } = useTranslation();
   const isMobile = useIsMobile();
 
   const { user, subscriptionData } = useAuth();
-  const { credits, canAfford, deductCredits, getRemainingCredits, getTotalCredits, refreshCredits } = useCredits();
+  const { credits, canAfford, deductCredits, getRemainingCredits, getTotalCredits } = useCredits();
   const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
   const [showAuthModal, setShowAuthModal] = useState(!user);
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
@@ -92,7 +91,7 @@ const CreateUGC = () => {
   // Check if a scenario is actually selected (has content in the idea field)
   const hasSelectedScenario = selectedScenario && selectedScenario.idea && selectedScenario.idea.trim().length > 0;
   const [isLoadingScenarios, setIsLoadingScenarios] = useState(false);
-  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [threadId, setThreadId] = useState<string | null>(null);
   const [productIdentification, setProductIdentification] = useState("");
   const [moreScenarios, setMoreScenarios] = useState(false);
   const [numImages, setNumImages] = useState(1);
@@ -111,7 +110,10 @@ const CreateUGC = () => {
   const progress = job?.progress || 0;
 
 
-  const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
+  // Tower behavior: separate current batch from previous images
+  const [currentBatchImages, setCurrentBatchImages] = useState<GeneratedImage[]>([]);
+  const [previousImages, setPreviousImages] = useState<GeneratedImage[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [sourceImagePickerOpen, setSourceImagePickerOpen] = useState(false);
   const [urlImportOpen, setUrlImportOpen] = useState(false);
@@ -150,70 +152,40 @@ const CreateUGC = () => {
   }, [niche]);
  
 
-  // Initialize a new Gemini conversation when component mounts
-  const initializeConversation = async () => {
-    if (!user) {
-      console.log('Cannot initialize conversation: user not authenticated');
-      return;
-    }
+  const ASSISTANT_ID = "asst_zX2cHyZXHY1mj5CT4wzdJLU6";
 
+  // Initialize a new OpenAI thread when component mounts
+  const initializeThread = async () => {
     try {
-      const result = await startGeminiConversation(niche);
+      const result = await startConversationAPI(ASSISTANT_ID);
 
-      setConversationId(result.conversationId);
-      console.log('New Gemini conversation created:', result.conversationId);
+      setThreadId(result.threadId);
+      console.log('New thread created with new-openai-chat:', result.threadId);
+
+      // Save conversation to database
+      const conversation = await saveConversation({
+        threadId: result.threadId,
+        assistantId: ASSISTANT_ID
+      });
+
+      if (conversation) {
+        setConversationId(conversation.id);
+      }
 
     } catch (error) {
-      console.error('Failed to initialize Gemini conversation:', error);
+      console.error('Error initializing thread:', error);
       toast({
-        title: t('error'),
-        description: 'Failed to initialize conversation',
+        title: "Initialization Error",
+        description: "Failed to start conversation with AI assistant. Please try again.",
         variant: "destructive",
       });
     }
   };
 
-  // Initialize Gemini conversation when component mounts and user is authenticated
+  // Initialize thread on component mount
   useEffect(() => {
-    if (user) {
-      console.log('User authenticated, initializing Gemini conversation...');
-      initializeConversation();
-    } else {
-      console.log('User not authenticated');
-    }
-  }, [user]);
-
-  // Helper function to parse scenarios from Gemini response  
-  const parseScenarios = (responseText: string): AIScenario[] => {
-    try {
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        return parsed.scenarios || [];
-      }
-      
-      const lines = responseText.split('\n').filter(line => line.trim());
-      const scenarios: AIScenario[] = [];
-      
-      for (const line of lines) {
-        if (/^\d+\./.test(line.trim())) {
-          const content = line.replace(/^\d+\.\s*/, '').trim();
-          if (content) {
-            scenarios.push({
-              idea: content.split(':')[0] || content,
-              description: content,
-              'small-description': content.substring(0, 100) + '...'
-            });
-          }
-        }
-      }
-      
-      return scenarios.slice(0, 6);
-    } catch (error) {
-      console.error('Error parsing scenarios:', error);
-      return [];
-    }
-  };
+    initializeThread();
+  }, []);
 
   // Auto-scroll to scenarios when they appear
   useEffect(() => {
@@ -224,32 +196,76 @@ const CreateUGC = () => {
     }
   }, [aiScenarios.length]);
 
-  // Convert job images to display format when they change
+  // Replace current batch with job images when ready (Tower behavior)
   useEffect(() => {
+    console.log('[CreateUGCGemini] Job images changed:', { 
+      jobImagesLength: jobImages.length, 
+      jobStatus: job?.status,
+      jobImagesWithUrls: jobImages.filter(img => Boolean(img.public_url)).length 
+    });
+    
     if (jobImages.length === 0) return;
 
     const readyImages = jobImages.filter(img => Boolean(img.public_url));
+    console.log('[CreateUGCGemini] Ready images:', readyImages.length, 'out of', jobImages.length);
+    
     if (readyImages.length === 0) return;
 
-    setGeneratedImages(prev => {
+    // For tower effect: completely replace current batch with new images
+    setCurrentBatchImages(prev => {
       const previousSelections = new Map(prev.map(image => [image.id, image.selected]));
 
-      return readyImages.map((img) => ({
+      const newImages = readyImages.map((img) => ({
         id: img.id,
         url: img.public_url,
-        prompt: job?.prompt || img.prompt || '',
-        format: (img.meta as any)?.format || job?.settings?.output_format || 'png',
+        prompt: job?.prompt || img.prompt || "",
+        format: (img.meta as any)?.format || job?.settings?.output_format || "png",
         selected: previousSelections.get(img.id) ?? false,
+        orientation:
+          (img.meta as any)?.orientation ||
+          (img.meta as any)?.aspect_ratio ||
+          job?.settings?.orientation || // saved when creating the job
+          imageOrientation,              // final fallback to current UI
       }));
-    });
 
+      console.log('[CreateUGCGemini] Replacing current batch with', newImages.length, 'ready images');
+      return newImages; // Complete replacement, not append
+    });
+  }, [jobImages, job?.prompt, job?.settings?.output_format]);
+
+  // Handle job completion separately (Tower behavior)
+  useEffect(() => {
     if (job?.status === 'completed') {
+      console.log('[CreateUGCGemini] Job completed, transitioning to results stage');
+      
+      // Move current batch to previous images when job completes (newest at top)
+      setCurrentBatchImages(current => {
+        if (current.length > 0) {
+          console.log('[CreateUGCGemini] Moving', current.length, 'images from current to previous');
+          console.log('[CreateUGCGemini] Current batch IDs:', current.map(img => img.id));
+          
+          setPreviousImages(prev => {
+            console.log('[CreateUGCGemini] Previous images count before merge:', prev.length);
+            // Improved deduplication: only add images with valid URLs that aren't placeholders
+            const existingIds = new Set(prev.map(img => img.id));
+            const validNewImages = current.filter(img => 
+              img.url && // Only real images, not placeholders
+              !img.id.startsWith('recovery-placeholder-') && // Skip recovery placeholders
+              !existingIds.has(img.id) // Skip duplicates
+            );
+            console.log('[CreateUGCGemini] Adding', validNewImages.length, 'new images to previous');
+            return [...validNewImages, ...prev];
+          });
+        }
+        return []; // Clear current batch
+      });
+      
+      setPendingSlots(0);
       setStage('results');
       localStorage.removeItem('currentJobId');
       localStorage.removeItem('currentStage');
-      refreshCredits();
     }
-  }, [jobImages, job?.status, job?.prompt, job?.settings?.output_format]);
+  }, [job?.status]);
 
   // Restore job state from localStorage on mount
   useEffect(() => {
@@ -260,28 +276,40 @@ const CreateUGC = () => {
     // Enhanced mobile recovery with metadata fallback
     if (savedJobId && !job) {
       try {
-        // Parse saved job metadata for immediate UI restoration
-        if (jobMetadata) {
-          const metadata = JSON.parse(jobMetadata);
-          setNumImages(metadata.numImages || 1);
-          
-          // Set placeholders immediately for better mobile UX
-          if (metadata.numImages && (savedStage === 'generating' || savedStage === 'results')) {
-            setStage('generating');
-            // Create minimal placeholders to show loading state
-            const placeholders = Array.from({ length: metadata.numImages }, (_, i) => ({
-              id: `recovery-placeholder-${i}`,
-              url: '',
-              prompt: '',
-              selected: false,
-              format: 'webp'
-            }));
-            setGeneratedImages(placeholders);
-          }
-        }
+        console.log('[CreateUGCGemini] Attempting to recover job:', savedJobId);
         
-        // Load the actual job data
-        loadJob(savedJobId).catch((error) => {
+        // Load the actual job data first to check status
+        loadJob(savedJobId).then(() => {
+          // Parse saved job metadata for UI restoration
+          if (jobMetadata) {
+            const metadata = JSON.parse(jobMetadata);
+            setNumImages(metadata.numImages || 1);
+            
+            // Use the job from hook state after loading
+            setTimeout(() => {
+              console.log('[CreateUGCGemini] Job status on recovery:', job?.status);
+              
+              // Only create placeholders if job is actually still running
+              if (metadata.numImages && job && (job.status === 'queued' || job.status === 'processing')) {
+                console.log('[CreateUGCGemini] Creating placeholders for active job');
+                setStage('generating');
+                // Create minimal placeholders to show loading state
+                const placeholders = Array.from({ length: metadata.numImages }, (_, i) => ({
+                  id: `recovery-placeholder-${i}`,
+                  url: '',
+                  prompt: '',
+                  selected: false,
+                  format: 'webp',
+                  orientation: metadata.imageOrientation || imageOrientation,
+                }));
+                setCurrentBatchImages(placeholders);
+              } else if (job && job.status === 'completed') {
+                console.log('[CreateUGCGemini] Job already completed, setting to results stage');
+                setStage('results');
+              }
+            }, 100); // Small delay to ensure job state is updated
+          }
+        }).catch((error) => {
           console.error('Failed to recover job on mobile:', error);
           // Fallback to active job if recovery fails
           if (activeJob) {
@@ -327,7 +355,6 @@ const CreateUGC = () => {
       // Switch to results stage for completed jobs
       if (job?.status === 'completed') {
         setStage('results');
-        refreshCredits();
         setTimeout(() => {
           resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
@@ -366,11 +393,12 @@ const CreateUGC = () => {
       reader.onload = async () => {
         const base64 = reader.result as string;
 
-        const reply = await sendImageToGemini(
-          conversationId!,
+        const reply = await sendImageAndRun(
+          threadId!,
+          ASSISTANT_ID,
           base64,
           file.name,
-          'I have uploaded a product image. Please analyze it for UGC content creation.'
+          'I have uploaded a product image. Please analyze it. Dont answer this message.'
         );
 
         setProductIdentification(reply);
@@ -435,11 +463,12 @@ const CreateUGC = () => {
       reader.onload = async () => {
         const base64 = reader.result as string;
 
-        const reply = await sendImageToGemini(
-          conversationId!,
+        const reply = await sendImageAndRun(
+          threadId!,
+          ASSISTANT_ID,
           base64,
           file.name,
-          'I have uploaded a product image. Please analyze it for UGC content creation.'
+          'I have uploaded a product image. Please analyze it. Dont answer this message.'
         );
 
         setProductIdentification(reply);
@@ -529,11 +558,12 @@ const CreateUGC = () => {
         reader.onload = async () => {
           const base64 = reader.result as string;
 
-          const reply = await sendImageToGemini(
-            conversationId!,
+          const reply = await sendImageAndRun(
+            threadId!,
+            ASSISTANT_ID,
             base64,
             file.name,
-            'I have uploaded a product image from URL. Please analyze it for UGC content creation.'
+            'I have uploaded a product image from URL. Please analyze it. Dont answer this message.'
           );
 
           setProductIdentification(reply);
@@ -570,7 +600,7 @@ const CreateUGC = () => {
       console.error('Error importing from URL:', error);
       toast({
         title: "Import Failed",
-        description: error instanceof Error ? error.message : "Failed to import image from URL.",
+        description: error instanceof Error ? error.message + '. The image may have protection or copyrights license. Please use another ULR.' : "Failed to import image from URL.",
         variant: "destructive",
       });
     } finally {
@@ -582,38 +612,39 @@ const CreateUGC = () => {
     const targetNiche = nicheText || niche;
     setIsLoadingScenarios(true);
     try {
-      const responseText = await generateGeminiScenarios(
-        conversationId!,
-        targetNiche,
-        '',
-        6
+      const responseText = await converse(
+        threadId!,
+        `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas. Return ONLY a compact JSON object with "scenarios" array and in this language: ` + language,
+        ASSISTANT_ID
       );
-      
-      // Parse scenarios from Gemini response
-      const scenarios = parseScenarios(responseText);
-      setAiScenarios(scenarios);
+      // Extract JSON from response
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const scenarios = JSON.parse(jsonMatch[0]);
+        setAiScenarios(scenarios.scenarios || []);
 
-      // Save user message and assistant response  
-      if (conversationId) {
-        await saveMessage({
-          conversationId,
-          role: 'user',
-          content: `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 6 creative UGC scenario ideas.`,
-          metadata: { requestType: 'scenario_generation' }
-        });
+        // Save user message and assistant response
+        if (conversationId) {
+          await saveMessage({
+            conversationId,
+            role: 'user',
+            content: `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 6 creative UGC scenario ideas.`,
+            metadata: { requestType: 'scenario_generation' }
+          });
 
-        await saveMessage({
-          conversationId,
-          role: 'assistant',
-          content: responseText,
-          metadata: { scenarioCount: scenarios?.length || 0 }
+          await saveMessage({
+            conversationId,
+            role: 'assistant',
+            content: responseText,
+            metadata: { scenarioCount: scenarios.scenarios?.length || 0 }
+          });
+        }
+
+        toast({
+          title: "Scenarios Generated",
+          description: `Got ${scenarios.scenarios?.length || 0} UGC scenario ideas for your product.`,
         });
       }
-
-      toast({
-        title: "Scenarios Generated",
-        description: `Got ${scenarios?.length || 0} UGC scenario ideas for your product.`,
-      });
     } catch (error) {
       console.error('Error getting scenarios:', error);
       toast({
@@ -669,9 +700,25 @@ const CreateUGC = () => {
     }
 
     try {
+      console.log('[CreateUGCGemini] Starting new generation, clearing previous job state');
+
+      // Clear any existing job state first
+      clearJob();
+
+      // Freeze the current results into the tower (newest on top)
+      setPreviousImages(prev => {
+        if (currentBatchImages.length === 0) return prev;
+        const finished = currentBatchImages.filter(img => Boolean(img.url));
+        return finished.length ? [...finished, ...prev] : prev;
+      });
+
+      // Clear current batch - the job completion handler will move completed images to previous
+      setCurrentBatchImages([]);
+
       // Provide immediate feedback
       setStage('generating');
-      setGeneratedImages([]);
+
+      // Set pending slots for new generation (animated placeholders)
       setPendingSlots(numImages);
 
       // Save state to localStorage for persistence
@@ -690,7 +737,7 @@ const CreateUGC = () => {
       const commonNeg = `--negative "AI artifacts, text overlays, watermark, extreme bokeh, macro close-up, center-composed product, invented branding, extra limbs, low resolution"`;
 
 
-      const highlightYes = `Ultra-realistic, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. Shot with the organic, unpolished authenticity of real user-generated content at ${timeOfDay} with authentic light direction and quality.`;
+      const highlightYes = `Ultra-detailed, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. Shot with full‑frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125 s, ISO 200 at ${timeOfDay} with authentic light direction and quality.`;
 
     //   const highlightYes = `Ultra-realistic, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. Shot with the organic, unpolished authenticity of real user-generated content.
 
@@ -764,7 +811,7 @@ const CreateUGC = () => {
     //   FINAL QUALITY TARGETS: Image should pass for authentic user photography while maintaining professional technical quality. The viewer should believe this was captured by a real person using the product naturally.
     // `;
 
-      const highlightNo = `Photorealistic ${style} scene: ${selectedScenario.description}. Product naturally placed (20% of frame, off-center). Environment-first composition with sharp background detail. ${timeOfDay} lighting with authentic shadows and reflections. Natural imperfections, realistic textures, believable environmental interaction. Avoid: centered product, studio lighting, artificial blur, stock photo aesthetics, perfect cleanliness.`
+      const highlightNo = `Photorealistic ${style} scene: ${selectedScenario.description}. Product naturally placed (20% of frame, off-center). Environment-first composition with sharp background detail. ${timeOfDay} lighting with authentic shadows and reflections. Natural imperfections, realistic textures, believable environmental interaction. Avoid: centered product, studio lighting, artificial blur, stock photo aesthetics. Use full‑frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125 s, ISO 200.`
 
       // const highlightNo = `
       //   Ultra-realistic, high-fidelity ${style} lifestyle photograph captured in this environment: ${selectedScenario.description}. 
@@ -847,7 +894,7 @@ const CreateUGC = () => {
       // Save job ID, stage and metadata for mobile recovery
       localStorage.setItem('currentJobId', jobId);
       localStorage.setItem('currentStage', 'generating');
-      
+
       // Enhanced mobile persistence with job metadata
       const jobMetadata = {
         id: jobId,
@@ -908,7 +955,19 @@ const CreateUGC = () => {
   };
 
   const handleImageSelect = (imageId: string) => {
-    setGeneratedImages(prev => 
+    // Check current batch first
+    setCurrentBatchImages(prev => {
+      const found = prev.find(img => img.id === imageId);
+      if (found) {
+        return prev.map(img => 
+          img.id === imageId ? { ...img, selected: !img.selected } : img
+        );
+      }
+      return prev;
+    });
+    
+    // Then check previous images
+    setPreviousImages(prev => 
       prev.map(img => 
         img.id === imageId ? { ...img, selected: !img.selected } : img
       )
@@ -916,18 +975,16 @@ const CreateUGC = () => {
   };
 
   const toggleImageSelection = (imageId: string) => {
-    setGeneratedImages(prev => 
-      prev.map(img => 
-        img.id === imageId ? { ...img, selected: !img.selected } : img
-      )
-    );
+    handleImageSelect(imageId);
   };
 
-  const selectedImages = generatedImages.filter(img => img.selected);
+  // Combine both arrays for selection calculations
+  const allImages = [...currentBatchImages, ...previousImages];
+  const selectedImages = allImages.filter(img => img.selected);
 
 
   const handleDownloadAll = () => {
-    const imagesToDownload = selectedImages.length > 0 ? selectedImages : generatedImages;
+    const imagesToDownload = selectedImages.length > 0 ? selectedImages : allImages;
 
     imagesToDownload.forEach((img, index) => {
       if (!img.url) return;
@@ -947,11 +1004,15 @@ const CreateUGC = () => {
   };
 
   const handleGenerateMore = () => {
-    setGeneratedImages([]);
+    // Clear current batch and set pending slots for new generation
+    setCurrentBatchImages([]);
+    setPendingSlots(numImages);
   };
 
   const handleNewCreation = () => {
-    setGeneratedImages([]);
+    setCurrentBatchImages([]);
+    setPreviousImages([]);
+    setPendingSlots(0);
     setProductImage(null);
     setSourceImageId(null);
     setNiche("");
@@ -965,7 +1026,9 @@ const CreateUGC = () => {
     clearJob();
     
     // Reset all UI states
-    setGeneratedImages([]);
+    setCurrentBatchImages([]);
+    setPreviousImages([]);
+    setPendingSlots(0);
     setProductImage(null);
     setSourceImageId(null);
     setNiche("");
@@ -993,7 +1056,7 @@ const CreateUGC = () => {
   // Scroll detection for floating button
   useEffect(() => {
     const handleScroll = () => {
-      const hasContent = generatedImages.length > 0 || jobImages.length > 0 || isGenerating || stage === 'results';
+      const hasContent = allImages.length > 0 || jobImages.length > 0 || isGenerating || stage === 'results';
       const isScrolledUp = window.scrollY < window.innerHeight * 0.5;
       setShowScrollDown(hasContent && isScrolledUp);
     };
@@ -1002,7 +1065,7 @@ const CreateUGC = () => {
     handleScroll(); // Check initial state
     
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [generatedImages.length, jobImages.length, isGenerating, stage]);
+  }, [allImages.length, jobImages.length, isGenerating, stage]);
 
   const handleScrollToResults = () => {
     resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1015,7 +1078,7 @@ const CreateUGC = () => {
     <TooltipProvider delayDuration={120} skipDelayDuration={400}>
       <div ref={topRef} className="min-h-screen bg-background relative">
       {/* Loading Overlay */}
-      {!conversationId && (
+      {!threadId && (
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-[30] flex items-center justify-center">
           <div className="text-center space-y-4">
             <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
@@ -1038,7 +1101,7 @@ const CreateUGC = () => {
                   size="icon"
                   onClick={() => navigate("/create")}
                   className="lg:hidden"
-                  disabled={!conversationId}
+                  disabled={!threadId}
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
@@ -1052,7 +1115,7 @@ const CreateUGC = () => {
           {/* Main Form */}
           <div className={`${isMobile ? 'col-span-12' : 'lg:col-span-7'} space-y-6`}>
             {/* Product & Niche Card */}
-            <Card className={`${!conversationId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'}`}>
+            <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'}`}>
               <CardContent className="p-6 lg:p-8 space-y-6">
                 <div>
                   {/* <div className="flex items-center gap-2 mb-4">
@@ -1091,7 +1154,7 @@ const CreateUGC = () => {
                           size="sm"
                           onClick={() => setSourceImagePickerOpen(true)}
                           className="flex-1 flex-wrap p-2 overflow-hidden"
-                          disabled={!conversationId}
+                          disabled={!threadId}
                         >
                           <Images className="h-4 w-4 mr-2" />
                           Choose from Library
@@ -1103,7 +1166,7 @@ const CreateUGC = () => {
                           size="sm"
                           onClick={() => setUrlImportOpen(true)}
                           className="flex-1 flex-wrap p-2 overflow-hidden"
-                          disabled={!conversationId}
+                          disabled={!threadId}
                         >
                           <LinkIcon className="h-4 w-4 mr-2" />
                           Import from URL
@@ -1133,15 +1196,15 @@ const CreateUGC = () => {
                         id="niche"
                         // placeholder={t('ugc.productNiche.placeholder')}
                         value={niche}
-                        maxLength={1000}
+                        maxLength={250}
                         onChange={(e) => handleNicheChange(e.target.value)}
                         className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full text-base md:text-sm"
                         style={{ lineHeight: '1.25rem, font-size: 16px' }}
-                        disabled={!conversationId}
+                        disabled={!threadId}
                         rows={1}
                       />
                       <div className="flex justify-end text-sm text-muted-foreground">
-                        {niche.length} / 1000
+                        {niche.length} / 250
                       </div>
                     </div>
 
@@ -1149,7 +1212,7 @@ const CreateUGC = () => {
                       type="button"
                       variant="default"
                       onClick={() => getScenariosFromConversation()}
-                      disabled={isLoadingScenarios || !productImage || !niche.trim() || !conversationId || isAnalyzingImage}
+                      disabled={isLoadingScenarios || !productImage || !niche.trim() || !threadId || isAnalyzingImage}
                       className="w-full"
                     >
                       {isLoadingScenarios ? (
@@ -1177,7 +1240,7 @@ const CreateUGC = () => {
             </Card>
 
             {/* UGC Scenarios Card */}
-              <Card ref={scenariosRef} className={`${!conversationId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'} scroll-mt-6`}>
+              <Card ref={scenariosRef} className={`${!threadId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'} scroll-mt-6`}>
                 <CardContent className="p-6 lg:p-8">
                   <div>
                     <div className="flex items-center gap-2 mb-4">
@@ -1237,7 +1300,7 @@ const CreateUGC = () => {
                       onChange={(e) => setSelectedScenario((val) => { return {...val, 'description': e.target.value }})}
                       className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full text-base md:text-sm"
                       style={{ lineHeight: '1.25rem, font-size: 16px' }}
-                      disabled={!conversationId}
+                      disabled={!threadId}
                       rows={3}
                     />
                       <div className="flex justify-end text-sm text-muted-foreground">
@@ -1251,20 +1314,61 @@ const CreateUGC = () => {
               </Card>
 
               {/* Results Section */}
-              {(isGenerating || generatedImages.length > 0 || jobImages.length > 0 || stage === 'results') && (
+              {(isGenerating || allImages.length > 0 || jobImages.length > 0 || stage === 'results') && (
                 // <div className={`bg-card rounded-apple mt-10 mb-10 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
                   <div ref={resultsRef} id="generating-images" className="scroll-mt-6 space-y-8 mt-5">
+                    
+                    {/* Enhanced progress indicator with better error messaging */}
+                    {/* {isGenerating && job && (
+                      <div className="bg-card rounded-lg p-4 border">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">
+                            Generating {job.total || pendingSlots} image{(job.total || pendingSlots) !== 1 ? 's' : ''}...
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            {job.completed || 0}/{job.total || pendingSlots}
+                          </span>
+                        </div>
+                        <div className="w-full bg-secondary rounded-full h-2">
+                          <div 
+                            className="bg-primary h-2 rounded-full transition-all duration-300"
+                            style={{ 
+                              width: `${Math.min(100, ((job.completed || 0) / (job.total || pendingSlots || 1)) * 100)}%` 
+                            }}
+                          />
+                        </div>
+                        {job.status === 'processing' && (
+                          <div className="text-xs text-muted-foreground mt-2 space-y-1">
+                            <p>Processing images... This may take 1-2 minutes per image.</p>
+                            {job.completed > 0 && (
+                              <p className="text-green-600">
+                                ✓ {job.completed} completed {job.failed > 0 && `• ${job.failed} failed`}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        {job.status === 'queued' && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Queued... Starting generation shortly.
+                          </p>
+                        )}
+                      </div>
+                    )} */}
+
                     <GeneratedImagesRows
-                      currentBatchImages={generatedImages}
-                      previousImages={[]}
+                      // images={allImages}                 // Combined array with current batch + previous
+                      currentBatchImages={currentBatchImages}
+                      previousImages={previousImages}
                       totalSlots={job?.total ?? pendingSlots}
-                      isGenerating={job?.status !== 'completed'}
+                      isGenerating={isGenerating}
                       onCreateNewScenario={(imageId) => {
                         setSelectedScenario({"idea":"", "small-description": "", "description": ""});
                         generateMoreScenarios();
                       }}
                       onOpenInLibrary={() => navigate('/library')}
                       onStartFromScratch={handleStartFromScratch}
+                      jobId={job?.id}
+                      imageOrientation={imageOrientation}
                     />
 
                   {/* Resume button for stuck jobs */}
@@ -1293,7 +1397,7 @@ const CreateUGC = () => {
           {/* Desktop Sidebar - Settings & Preview */}
           {!isMobile && (
             <div className="lg:col-span-5 mt-6 lg:mt-0">
-              <div className={`bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6 lg:sticky lg:top-8 ${!conversationId ? 'opacity-50 pointer-events-none' : ''}`}>
+              <div className={`bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
                 <div>
                   <h3 className="text-lg font-semibold mb-4">{t('ugc.generationSettings.title')}</h3>
 
@@ -1688,4 +1792,4 @@ const CreateUGC = () => {
   );
 };
 
-export default CreateUGC;
+export default CreateUGCGemini;
