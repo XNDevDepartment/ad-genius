@@ -1375,6 +1375,7 @@ const CreateUGCGemini = () => {
                       onStartFromScratch={handleStartFromScratch}
                       jobId={job?.id}
                       imageOrientation={imageOrientation}
+                      aiScenarios={aiScenarios}
                     />
 
                   {/* Resume button for stuck jobs */}
