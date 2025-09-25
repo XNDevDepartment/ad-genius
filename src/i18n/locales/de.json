@@ -208,7 +208,15 @@
       "square": "Quadrat (1:1)",
       "squareDesc": "Quadratisches Format",
       "portrait": "Hochformat (2:3)",
-      "portraitDesc": "Vertikales Format"
+      "portraitDesc": "Vertikales Format",
+      "portrait3/4": "Hochformat (3:4)",
+      "portrait9/16": "Hochformat (9:16)",
+      "landscape4/3": "Querformat (4:3)",
+      "landscape16/9": "Querformat (16:9)",
+      "portraitDesc3/4": "Hochformat 3:4",
+      "portraitDesc9/16": "Hochformat 9:16",
+      "landscapeDesc4/3": "Querformat 4:3",
+      "landscapeDesc16/9": "Querformat 16:9"
     },
     "highlight": {
       "title": "Produkt hervorheben",
@@ -273,6 +281,9 @@
       "downloadSelected": "Auswahl herunterladen",
       "generateMore": "Mehr generieren",
       "newCreation": "Neue Erstellung"
+    },
+    "imageSize": {
+      "title": "Größe"
     }
   },
   "account": {

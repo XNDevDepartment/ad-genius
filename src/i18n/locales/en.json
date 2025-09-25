@@ -208,7 +208,15 @@
       "square": "Square (1:1)",
       "squareDesc": "Square format",
       "portrait": "Portrait (2:3)",
-      "portraitDesc": "Vertical format"
+      "portraitDesc": "Vertical format",
+      "portrait3/4": "Portrait (3:4)",
+      "portrait9/16": "Portrait (9:16)",
+      "landscape4/3": "Landscape (4:3)",
+      "landscape16/9": "Landscape (16:9)",
+      "portraitDesc3/4": "Vertical format 3:4",
+      "portraitDesc9/16": "Vertical format 9:16",
+      "landscapeDesc4/3": "Horizontal format 4:3",
+      "landscapeDesc16/9": "Horizontal format 16:9"
     },
     "highlight": {
       "title": "Highlight Product",
@@ -273,6 +281,9 @@
       "downloadSelected": "Download Selected",
       "generateMore": "Generate More",
       "newCreation": "New Creation"
+    },
+    "imageSize": {
+      "title": "Size"
     }
   },
   "account": {

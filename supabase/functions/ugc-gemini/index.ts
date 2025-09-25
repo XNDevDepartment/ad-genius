@@ -421,6 +421,7 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
         // ----- edits (using Gemini's image editing capabilities) -----
         const src = await fetch(sourceImageUrl);
         if (!src.ok) throw new Error(`Failed to fetch source image: ${src.status}`);
+        const mimeType = src.headers.get('content-type') ?? 'image/png';
         const imageBuffer = await src.arrayBuffer();
         // Fix: Convert large array buffer to base64 safely without stack overflow
         const uint8Array = new Uint8Array(imageBuffer);
@@ -446,7 +447,7 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
                   },
                   {
                     inlineData: {
-                      mimeType: "image/webp",
+                      mimeType: mimeType,
                       data: base64Image
                     }
                   }
