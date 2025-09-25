@@ -39,12 +39,13 @@ function backoffMs(attempt: number) {
 }
 // credit price table (fallback; you can move to DB as discussed)
 function calculateImageCost(settings: any) {
-  const qualityCosts = {
+  const qualityCosts: Record<string, number> = {
     low: 1,
     medium: 1.5,
     high: 2
   };
-  return qualityCosts[settings.quality ?? "high"] ?? 2;
+  const quality = settings?.quality ?? "high";
+  return qualityCosts[quality] ?? 2;
 }
 // ---------- AUTH / CLIENTS ----------
 function serviceClient() {
@@ -54,7 +55,7 @@ function serviceClient() {
     }
   });
 }
-function userClient(authorization) {
+function userClient(authorization: string) {
   return createClient(SUPABASE_URL, ANON_KEY, {
     global: {
       headers: {
@@ -66,7 +67,7 @@ function userClient(authorization) {
     }
   });
 }
-async function getUserIdFromAuth(authHeader) {
+async function getUserIdFromAuth(authHeader: string) {
   const supa = userClient(authHeader);
   const { data, error } = await supa.auth.getUser();
   if (error || !data.user) throw new Error("Invalid authentication token");
@@ -82,10 +83,10 @@ serve(async (req)=>{
     const authHeader = req.headers.get("Authorization") ?? "";
     const isServiceCall = authHeader === `Bearer ${SERVICE_KEY}`;
     // parse body once (may be empty)
-    let body = {};
+    let body: any = {};
     try {
       body = await req.json();
-    } catch  {
+    } catch {
       body = {};
     }
     const action = body?.action ?? new URL(req.url).searchParams.get("action");
@@ -127,13 +128,13 @@ serve(async (req)=>{
       default:
         return errorJson(`Unknown action: ${action ?? "none"}`, 400);
     }
-  } catch (e) {
+  } catch (e: any) {
     return errorJson(e?.message ?? String(e), 500);
   }
 });
 // ---------- ACTIONS ----------
 // Enqueue job, reserve credits, idempotent
-async function createImageJob(userId, payload, supabase) {
+async function createImageJob(userId: string, payload: any, supabase: any) {
   const { prompt, settings, source_image_id } = payload;
   const idempotency_window_minutes = payload.idempotency_window_minutes ?? 60;
   log("Create job", {
@@ -165,11 +166,11 @@ async function createImageJob(userId, payload, supabase) {
       status: existing.status
     };
     if (existing.status === "completed") {
-      res.existingImages = (existing.ugc_images ?? []).map((img)=>({
-          url: img.public_url,
-          prompt: existing.prompt,
-          format: img.meta?.format ?? "webp"
-        }));
+      (res as any).existingImages = (existing.ugc_images ?? []).map((img: any) => ({
+        url: img.public_url,
+        prompt: existing.prompt,
+        format: img.meta?.format ?? "webp"
+      }));
     }
     return json(res, 200);
   }
@@ -243,7 +244,7 @@ async function createImageJob(userId, payload, supabase) {
 }
 
 // Worker: claim and generate
-async function generateImages(jobId, supabase) {
+async function generateImages(jobId: string, supabase: any) {
   log("Worker start", {
     jobId
   });
@@ -280,7 +281,7 @@ async function generateImages(jobId, supabase) {
     const numImages = job.total;
     const quality = job?.settings?.quality ?? "high";
     // --- Quality-aware settings (keep your semantics)
-    const getQualitySettings = (quality /**: string */ )=>{
+    const getQualitySettings = (quality: string) => {
       switch(quality){
         case "low":
           return {
@@ -309,7 +310,7 @@ async function generateImages(jobId, supabase) {
       totalImages: numImages
     });
     // --- Batch runner with progress updates (FLAT results)
-    const processImagesBatch = async (imagePromises /**: Array<() => Promise<any>> */ , maxConcurrency /**: number */ )=>{
+    const processImagesBatch = async (imagePromises: Array<() => Promise<any>>, maxConcurrency: number) => {
       const results = [];
       let completedCount = 0;
       let failedCount = 0;
@@ -321,7 +322,7 @@ async function generateImages(jobId, supabase) {
       });
       for(let i = 0; i < imagePromises.length; i += maxConcurrency){
         const batchIndex = Math.ceil((i + 1) / maxConcurrency);
-        const batch = imagePromises.slice(i, i + maxConcurrency).map((fn)=>fn());
+        const batch = imagePromises.slice(i, i + maxConcurrency).map((fn: () => Promise<any>) => fn());
         log(`Processing batch ${batchIndex}`, {
           jobId,
           batchSize: batch.length,
@@ -450,7 +451,7 @@ async function generateImages(jobId, supabase) {
     }
   } catch (e) {
     // --- Catastrophic failure (function-level)
-    const errorMsg = e?.message ?? String(e);
+    const errorMsg = (e as any)?.message ?? String(e);
     log("Job processing catastrophic failure", {
       jobId,
       error: errorMsg
@@ -483,11 +484,11 @@ async function generateImages(jobId, supabase) {
   });
 }
 // Generate 1 image (with retries/backoff). Supports generations and edits.
-async function generateSingleImage(job, index, sourceImageUrl, supabase) {
+async function generateSingleImage(job: any, index: number, sourceImageUrl: string | null, supabase: any) {
   const MAX_ATTEMPTS = 3;
   const quality = job?.settings?.quality ?? "high";
   // Quality-aware timeout for individual API calls (per attempt)
-  const getIndividualTimeout = (quality)=>{
+  const getIndividualTimeout = (quality: string) => {
     switch(quality){
       case "low":
         return 70000; // 70 seconds per attempt for low quality
@@ -510,9 +511,11 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
       quality,
       individualTimeout: `${INDIVIDUAL_TIMEOUT / 1000}s`
     });
+    
+    let timeout1: number | undefined;
     try {
       const controller = new AbortController();
-      const timeout1 = setTimeout(()=>controller.abort(), INDIVIDUAL_TIMEOUT);
+      timeout1 = setTimeout(() => controller.abort(), INDIVIDUAL_TIMEOUT);
       let res;
       if (sourceImageUrl) {
         // ----- edits -----
@@ -558,7 +561,7 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
         });
       }
       try {
-        clearTimeout(timeout1); // Clear timeout on successful response
+        if (timeout1) clearTimeout(timeout1); // Clear timeout on successful response
         const reqId = res.headers.get("x-request-id") || undefined;
         if (!res.ok) {
           const text = await res.text();
@@ -633,10 +636,10 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
         });
         return; // success
       } finally{
-        clearTimeout(timeout1);
+        if (timeout1) clearTimeout(timeout1);
       }
-    } catch (e) {
-      clearTimeout(timeout);
+    } catch (e: any) {
+      if (timeout1) clearTimeout(timeout1);
       // Enhanced error reporting with full context
       const errorInfo = {
         name: e?.name || 'Unknown',
@@ -675,7 +678,7 @@ async function generateSingleImage(job, index, sourceImageUrl, supabase) {
   throw new Error(`Failed to generate image after ${MAX_ATTEMPTS} attempts`);
 }
 // Signed URL for user-provided source image (optional)
-async function getSignedSourceUrl(source_image_id, supabase) {
+async function getSignedSourceUrl(source_image_id: string | null, supabase: any) {
   if (!source_image_id) return null;
   const { data: src } = await supabase.from("source_images").select("storage_path").eq("id", source_image_id).single();
   if (!src?.storage_path) return null;
@@ -683,14 +686,14 @@ async function getSignedSourceUrl(source_image_id, supabase) {
   return signed?.signedUrl ?? null;
 }
 // RLS-safe reads
-async function getJob(userId, jobId, supaUser) {
+async function getJob(userId: string, jobId: string, supaUser: any) {
   const { data: job, error } = await supaUser.from("image_jobs").select("*").eq("id", jobId).eq("user_id", userId).single();
   if (error) return errorJson("Job not found", 404);
   return json({
     job
   });
 }
-async function getJobImages(userId, jobId, supaUser) {
+async function getJobImages(userId: string, jobId: string, supaUser: any) {
   const { data: images, error } = await supaUser.from("ugc_images").select("*").eq("job_id", jobId).eq("user_id", userId).order("created_at", {
     ascending: true
   });
@@ -700,7 +703,7 @@ async function getJobImages(userId, jobId, supaUser) {
   });
 }
 // Cancel job + refund unused credits
-async function cancelJob(userId, jobId, supabase) {
+async function cancelJob(userId: string, jobId: string, supabase: any) {
   const { data: job, error } = await supabase.from("image_jobs").update({
     status: "canceled"
   }).eq("id", jobId).eq("user_id", userId).in("status", [
@@ -728,7 +731,7 @@ async function cancelJob(userId, jobId, supabase) {
   });
 }
 // Resume a stuck job (re-triggers worker)
-async function resumeJob(userId, jobId, supabase) {
+async function resumeJob(userId: string, jobId: string, supabase: any) {
   // ensure ownership
   const { data: job, error } = await supabase.from("image_jobs").select("id,user_id,status,completed,total").eq("id", jobId).single();
   if (error || !job) return errorJson("Job not found", 404);
@@ -762,7 +765,7 @@ async function resumeJob(userId, jobId, supabase) {
   });
 }
 // Return the latest queued/processing job for the user
-async function getActiveJob(userId, supabase) {
+async function getActiveJob(userId: string, supabase: any) {
   const { data: job, error } = await supabase.from("image_jobs").select("*").eq("user_id", userId).in("status", [
     "queued",
     "processing"
@@ -775,7 +778,7 @@ async function getActiveJob(userId, supabase) {
   });
 }
 // Sweep queued jobs that never got picked up
-async function recoverQueued(supabase) {
+async function recoverQueued(supabase: any) {
   const cutoff = new Date(Date.now() - 3 * 60 * 1000).toISOString(); // older than 3m
   const { data: jobs, error } = await supabase.from("image_jobs").select("id,status").eq("status", "queued").lte("created_at", cutoff).limit(20);
   if (error) return errorJson("Failed to list queued jobs", 400);

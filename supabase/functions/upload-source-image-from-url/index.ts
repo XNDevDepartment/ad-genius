@@ -78,7 +78,7 @@ serve(async (req) => {
     console.log('Fetching image from URL:', imageUrl);
 
     // Fetch the image with proper headers and retry logic
-    let imageResponse;
+    let imageResponse: Response | undefined;
     let retryCount = 0;
     const maxRetries = 3;
 
@@ -103,7 +103,7 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({ 
               success: false, 
-              error: `Failed to fetch image after ${maxRetries} attempts: ${error.message}` 
+              error: `Failed to fetch image after ${maxRetries} attempts: ${(error as any)?.message || String(error)}` 
             }),
             { 
               status: 400, 
@@ -115,6 +115,20 @@ serve(async (req) => {
         // Wait before retry (exponential backoff)
         await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
       }
+    }
+    
+    // Check if we have a response after all retries
+    if (!imageResponse) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Failed to get response from image URL after all retries' 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
     
     console.log('Image fetch response:', {
