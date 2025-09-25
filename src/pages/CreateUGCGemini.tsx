@@ -12,7 +12,7 @@ import ImageUploader from "@/components/ImageUploader";
 import { useToast } from "@/hooks/use-toast";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
 import { startConversationAPI, converse, sendImageAndRun } from '@/api/OpenAiChatClient';
-import { useImageJob } from '@/hooks/useImageJob';
+import { useGeminiImageJob } from '@/hooks/useGeminiImageJob';
 import { useActiveJob } from '@/hooks/useActiveJob';
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
@@ -101,7 +101,7 @@ const CreateUGCGemini = () => {
   const [style, setStyle] = useState<'lifestyle' | 'studio' | 'cinematic' | 'natural' | 'minimal' | 'professional'>("lifestyle");
 
   // Job system integration
-  const { job, images: jobImages, createJob, clearJob, loadJob, resumeCurrentJob } = useImageJob();
+  const { job, images: jobImages, createJob, clearJob, loadJob, resumeCurrentJob } = useGeminiImageJob();
   const { language, setLanguage } = useLanguage();
   const { activeJob, activeImages } = useActiveJob();
 
@@ -262,16 +262,16 @@ const CreateUGCGemini = () => {
       
       setPendingSlots(0);
       setStage('results');
-      localStorage.removeItem('currentJobId');
-      localStorage.removeItem('currentStage');
+      localStorage.removeItem('currentGeminiJobId');
+      localStorage.removeItem('currentGeminiStage');
     }
   }, [job?.status]);
 
   // Restore job state from localStorage on mount
   useEffect(() => {
-    const savedJobId = localStorage.getItem('currentJobId');
-    const savedStage = localStorage.getItem('currentStage');
-    const jobMetadata = localStorage.getItem('jobMetadata');
+    const savedJobId = localStorage.getItem('currentGeminiJobId');
+    const savedStage = localStorage.getItem('currentGeminiStage');
+    const jobMetadata = localStorage.getItem('geminiJobMetadata');
     
     // Enhanced mobile recovery with metadata fallback
     if (savedJobId && !job) {
@@ -316,9 +316,9 @@ const CreateUGCGemini = () => {
             loadJob(activeJob.id).catch(console.error);
           } else {
             // Clear corrupted state
-            localStorage.removeItem('currentJobId');
-            localStorage.removeItem('currentStage');
-            localStorage.removeItem('jobMetadata');
+            localStorage.removeItem('currentGeminiJobId');
+            localStorage.removeItem('currentGeminiStage');
+            localStorage.removeItem('geminiJobMetadata');
           }
         });
         
@@ -329,7 +329,7 @@ const CreateUGCGemini = () => {
       } catch (error) {
         console.error('Error parsing job metadata:', error);
         // Clear corrupted localStorage data
-        localStorage.removeItem('jobMetadata');
+        localStorage.removeItem('geminiJobMetadata');
       }
     } else if (!savedJobId && activeJob && !job) {
       // Load active job from server if no local job
@@ -348,9 +348,9 @@ const CreateUGCGemini = () => {
   useEffect(() => {
     if (job?.status === 'completed' || job?.status === 'failed' || job?.status === 'canceled') {
       // Clear localStorage when job finishes
-      localStorage.removeItem('currentJobId');
-      localStorage.removeItem('currentStage');
-      localStorage.removeItem('jobMetadata');
+      localStorage.removeItem('currentGeminiJobId');
+      localStorage.removeItem('currentGeminiStage');
+      localStorage.removeItem('geminiJobMetadata');
       
       // Switch to results stage for completed jobs
       if (job?.status === 'completed') {
@@ -876,7 +876,7 @@ const CreateUGCGemini = () => {
 
 
       // Create job with new system
-      const jobId = await createJob({
+      const result = await createJob({
         prompt,
         settings: {
           number: numImages,
@@ -891,9 +891,15 @@ const CreateUGCGemini = () => {
         source_image_id: sourceImageId || undefined
       });
 
+      if (!result) {
+        throw new Error('Failed to create job');
+      }
+
+      const jobId = result.jobId;
+
       // Save job ID, stage and metadata for mobile recovery
-      localStorage.setItem('currentJobId', jobId);
-      localStorage.setItem('currentStage', 'generating');
+      localStorage.setItem('currentGeminiJobId', jobId);
+      localStorage.setItem('currentGeminiStage', 'generating');
 
       // Enhanced mobile persistence with job metadata
       const jobMetadata = {
@@ -911,7 +917,7 @@ const CreateUGCGemini = () => {
         prompt: prompt,
         createdAt: new Date().toISOString()
       };
-      localStorage.setItem('jobMetadata', JSON.stringify(jobMetadata));
+      localStorage.setItem('geminiJobMetadata', JSON.stringify(jobMetadata));
 
       // toast({
       //   title: 'Generation Started',
