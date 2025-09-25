@@ -35,6 +35,12 @@ jwt_expiry = 3600
 refresh_token_rotation_enabled = true
 security_update_enabled = true
 
+[functions.ugc-gemini]
+verify_jwt = true
+
+[functions.test-gemini-direct]
+verify_jwt = false
+
 [functions.gemini-chat]
 verify_jwt = true
 

@@ -497,7 +497,18 @@ async function generateSingleImageWithGemini(job: any, index: number, sourceImag
         if (!src.ok) throw new Error(`Failed to fetch source image: ${src.status}`);
         
         const imageBuffer = await src.arrayBuffer();
-        const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
+        
+        // Fix: Convert large array buffer to base64 safely without stack overflow
+        const uint8Array = new Uint8Array(imageBuffer);
+        let binary = '';
+        const chunkSize = 32768; // Process in chunks to avoid stack overflow
+        
+        for (let i = 0; i < uint8Array.length; i += chunkSize) {
+          const chunk = uint8Array.subarray(i, i + chunkSize);
+          binary += String.fromCharCode.apply(null, Array.from(chunk));
+        }
+        
+        const base64Image = btoa(binary);
 
         res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0:generateImages`, {
           method: "POST",
