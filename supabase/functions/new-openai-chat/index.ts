@@ -28,32 +28,30 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '
 const supabaseAuth = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const supabaseService = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
-const json = (data, status = 200)=>new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      ...corsHeaders,
-      'Content-Type': 'application/json'
-    }
-  });
-const fetchWithRetry = async (url, init, attempts = 3)=>{
+const json = (data: any, status = 200) => new Response(JSON.stringify(data), {
+  status,
+  headers: {
+    ...corsHeaders,
+    'Content-Type': 'application/json'
+  }
+});
+
+const fetchWithRetry = async (url: string, init: RequestInit, attempts = 3): Promise<Response> => {
   for(let i = 0; i < attempts; i++){
     const res = await fetch(url, init);
     if (res.ok) return res;
     if (i === attempts - 1 || res.status < 500) throw res;
     await new Promise((r)=>setTimeout(r, 250 * 2 ** i));
   }
+  throw new Error('All retry attempts failed');
 };
-const b64ToBlob = (b64, mime = 'image/jpeg')=>{
-  const bin = atob(b64.split(',').pop());
+const b64ToBlob = (b64: string, mime = 'image/jpeg') => {
+  const bin = atob(b64.split(',').pop() || '');
   const buf = new Uint8Array(bin.length);
   for(let i = 0; i < bin.length; i++)buf[i] = bin.charCodeAt(i);
-  return new Blob([
-    buf
-  ], {
-    type: mime
-  });
+  return new Blob([buf], { type: mime });
 };
-/*──────────────────────────  OpenAI helpers  ───────────────────────────*/ async function waitForRun(threadId, runId) {
+async function waitForRun(threadId: string, runId: string) {
   let delay = 200;
   while(true){
     const run = await fetchWithRetry(`${OPENAI_BASE}/threads/${threadId}/runs/${runId}`, {
@@ -72,7 +70,7 @@ const b64ToBlob = (b64, mime = 'image/jpeg')=>{
     delay = Math.min(delay * 2, 1000);
   }
 }
-async function getLatestAssistantReply(threadId) {
+async function getLatestAssistantReply(threadId: string) {
   const { data } = await fetchWithRetry(`${OPENAI_BASE}/threads/${threadId}/messages?role=assistant&limit=1&order=desc`, {
     headers: {
       ...ASSISTANTS_BETA,
@@ -93,7 +91,13 @@ async function getLatestAssistantReply(threadId) {
     threadId: res.id
   });
 }
-async function sendImageAndRun({ threadId, assistantId, fileData, fileName, prompt }) {
+async function sendImageAndRun({ threadId, assistantId, fileData, fileName, prompt }: {
+  threadId: string;
+  assistantId: string;
+  fileData: string;
+  fileName: string;
+  prompt?: string;
+}) {
   // 1 — upload image
   const form = new FormData();
   form.append('file', b64ToBlob(fileData), fileName);
@@ -148,7 +152,11 @@ async function sendImageAndRun({ threadId, assistantId, fileData, fileName, prom
     reply
   });
 }
-async function converse({ threadId, content, assistantId }) {
+async function converse({ threadId, content, assistantId }: {
+  threadId: string;
+  content: any;
+  assistantId: string;
+}) {
   if (!threadId || !assistantId) throw new Error('Missing parameters');
   await fetchWithRetry(`${OPENAI_BASE}/threads/${threadId}/messages`, {
     method: 'POST',

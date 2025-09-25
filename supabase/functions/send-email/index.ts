@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
 };
-const handler = async (req)=>{
+const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, {
@@ -31,7 +31,7 @@ const handler = async (req)=>{
         ...corsHeaders
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in send-email function:", error);
     return new Response(JSON.stringify({
       error: error.message

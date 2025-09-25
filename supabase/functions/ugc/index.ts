@@ -14,29 +14,31 @@ const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY") ?? "";
 // ---------- LOG ----------
-const log = (step, meta)=>console.log(`[UGC] ${step}${meta ? ` - ${JSON.stringify(meta)}` : ""}`);
-// ---------- HELPERS ----------
-const json = (data, status = 200)=>new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      ...corsHeaders,
-      "Content-Type": "application/json"
-    }
-  });
-const errorJson = (message, status = 400, meta)=>{
+const log = (step: string, meta?: any) => console.log(`[UGC] ${step}${meta ? ` - ${JSON.stringify(meta)}` : ""}`);
+
+const json = (data: any, status = 200) => new Response(JSON.stringify(data), {
+  status,
+  headers: {
+    ...corsHeaders,
+    "Content-Type": "application/json"
+  }
+});
+
+const errorJson = (message: string, status = 400, meta?: any) => {
   log(`ERROR: ${message}`, meta);
   return json({
     error: message
   }, status);
 };
-function sleep(ms) {
-  return new Promise((r)=>setTimeout(r, ms));
+function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
 }
-function backoffMs(attempt) {
+
+function backoffMs(attempt: number) {
   return 900 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 250);
 }
 // credit price table (fallback; you can move to DB as discussed)
-function calculateImageCost(settings) {
+function calculateImageCost(settings: any) {
   const qualityCosts = {
     low: 1,
     medium: 1.5,
