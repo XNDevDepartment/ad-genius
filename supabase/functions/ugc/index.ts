@@ -157,21 +157,33 @@ async function createImageJob(userId: string, payload: any, supabase: any) {
   const contentHash = keyResult;
   // existing job inside window
   const windowStart = new Date(Date.now() - idempotency_window_minutes * 60 * 1000).toISOString();
-  const { data: existing } = await supabase.from("image_jobs").select("*, ugc_images(*)").eq("content_hash", contentHash).gte("created_at", windowStart).order("created_at", {
-    ascending: false
-  }).limit(1).maybeSingle();
-  if (existing) {
+  const { data: existing } = await supabase
+    .from("image_jobs")
+    .select("*, ugc_images(*)")
+    .eq("content_hash", contentHash)
+    .gte("created_at", windowStart)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (existing && ["queued", "processing"].includes(existing.status)) {
     const res = {
       jobId: existing.id,
       status: existing.status
     };
-    if (existing.status === "completed") {
-      (res as any).existingImages = (existing.ugc_images ?? []).map((img: any) => ({
+    return json(res, 200);
+  }
+
+  if (existing && existing.status === "completed") {
+    const res: any = {
+      jobId: existing.id,
+      status: existing.status,
+      existingImages: (existing.ugc_images ?? []).map((img: any) => ({
         url: img.public_url,
         prompt: existing.prompt,
         format: img.meta?.format ?? "webp"
-      }));
-    }
+      }))
+    };
     return json(res, 200);
   }
   // credits
@@ -215,6 +227,24 @@ async function createImageJob(userId: string, payload: any, supabase: any) {
         p_amount: totalCost,
         p_reason: "job_creation_failed"
       });
+    }
+
+    if (jobErr?.message?.includes("idx_image_jobs_user_content_hash_active_unique")) {
+      const { data: conflicting } = await supabase
+        .from("image_jobs")
+        .select("*, ugc_images(*)")
+        .eq("user_id", userId)
+        .eq("content_hash", contentHash)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (conflicting) {
+        return json({
+          jobId: conflicting.id,
+          status: conflicting.status
+        }, 200);
+      }
     }
     return errorJson(`Job insert failed: ${jobErr.message}`, 400);
   }
