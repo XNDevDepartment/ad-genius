@@ -19,6 +19,12 @@ export type GeneratedImage = {
   orientation?: Orientation | string; // <-- per-image
 };
 
+type AIScenario = {
+  idea: string;
+  description: string;
+  'small-description': string;
+}
+
 type Props = {
   currentBatchImages: GeneratedImage[];
   previousImages: GeneratedImage[];
@@ -31,6 +37,7 @@ type Props = {
   jobId?: string | null;
   /** job-level default, used only for placeholders */
   imageOrientation?: Orientation | string;
+  aiScenarios?: AIScenario[]
 };
 
 /* UI helpers */
@@ -106,6 +113,7 @@ export default function GeneratedImagesRows({
   onStartFromScratch,
   jobId,
   imageOrientation,
+  aiScenarios
 }: Props) {
   // Lock placeholder shape for *this job only*
   const [jobAspectRatio, setJobAspectRatio] = useState<string | null>(null);
@@ -141,10 +149,12 @@ export default function GeneratedImagesRows({
                     <Download className="h-4 w-4 mr-2" />
                     Download
                   </Button>
-                  <Button variant="outline" size="sm" className="w-full justify-center" disabled aria-disabled>
-                    <PlusCircle className="h-4 w-4 mr-2" />
-                    New Scenario
-                  </Button>
+                  {aiScenarios.length > 0 && (
+                    <Button variant="outline" size="sm" className="w-full justify-center" disabled aria-disabled>
+                      <PlusCircle className="h-4 w-4 mr-2" />
+                      Generate New Scenarios
+                    </Button>
+                  )}
                   <Button variant="ghost" size="sm" className="w-full justify-center" onClick={() => onOpenInLibrary()}>
                     <ExternalLink className="h-4 w-4 mr-2" />
                     Library
@@ -193,16 +203,18 @@ export default function GeneratedImagesRows({
                   <Download className="h-4 w-4 mr-2" />
                   Download
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-center"
-                  disabled={!img?.id}
-                  onClick={() => img?.id && onCreateNewScenario(img.id)}
-                >
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  New Scenario
-                </Button>
+                {aiScenarios.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-center"
+                    disabled={!img?.id}
+                    onClick={() => img?.id && onCreateNewScenario(img.id)}
+                  >
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Geneerate New Scenarios
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -255,16 +267,18 @@ export default function GeneratedImagesRows({
                   <Download className="h-4 w-4 mr-2" />
                   Download
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-center"
-                  disabled={!img?.id}
-                  onClick={() => img?.id && onCreateNewScenario(img.id)}
-                >
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  New Scenario
-                </Button>
+                {aiScenarios.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-center"
+                    disabled={!img?.id}
+                    onClick={() => img?.id && onCreateNewScenario(img.id)}
+                  >
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Generate New Scenarios
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"

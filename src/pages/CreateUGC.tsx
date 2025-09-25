@@ -1317,7 +1317,7 @@ const CreateUGC = () => {
               {(isGenerating || allImages.length > 0 || jobImages.length > 0 || stage === 'results') && (
                 // <div className={`bg-card rounded-apple mt-10 mb-10 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
                   <div ref={resultsRef} id="generating-images" className="scroll-mt-6 space-y-8 mt-5">
-                    
+
                     {/* Enhanced progress indicator with better error messaging */}
                     {/* {isGenerating && job && (
                       <div className="bg-card rounded-lg p-4 border">
@@ -1369,6 +1369,7 @@ const CreateUGC = () => {
                       onStartFromScratch={handleStartFromScratch}
                       jobId={job?.id}
                       imageOrientation={imageOrientation}
+                      aiScenarios={aiScenarios}
                     />
 
                   {/* Resume button for stuck jobs */}
