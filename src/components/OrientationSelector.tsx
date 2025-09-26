@@ -34,6 +34,17 @@ const OrientationSelector = ({ value, onChange }: OrientationSelectorProps) => {
     }
   ];
 
+//   1:1: 1024x1024
+// 3:4: 896x1280
+// 4:3: 1280x896
+// 9:16: 768x1408
+// 16:9: 1408x768
+// 1:1: 2048x2048
+// 3:4: 1792x2560
+// 4:3: 2560x1792
+// 9:16: 1536x2816
+// 16:9: 2816x1536
+
   return (
     <div className="space-y-3">
       <ToggleGroup

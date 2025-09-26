@@ -165,22 +165,35 @@ async function createImageJob(userId, payload, supabase) {
   const contentHash = keyResult;
   // existing job inside window
   const windowStart = new Date(Date.now() - idempotency_window_minutes * 60 * 1000).toISOString();
-  const { data: existing } = await supabase.from("image_jobs").select("*, ugc_images(*)").eq("content_hash", contentHash).eq("model_type", "gemini") // Only check for Gemini jobs
-  .gte("created_at", windowStart).order("created_at", {
-    ascending: false
-  }).limit(1).maybeSingle();
-  if (existing) {
+  const { data: existing } = await supabase
+    .from("image_jobs")
+    .select("*, ugc_images(*)")
+    .eq("content_hash", contentHash)
+    .eq("model_type", "gemini") // Only check for Gemini jobs
+    .gte("created_at", windowStart)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (existing && ["queued", "processing"].includes(existing.status)) {
     const res = {
       jobId: existing.id,
       status: existing.status
     };
-    if (existing.status === "completed") {
-      res.existingImages = (existing.ugc_images ?? []).map((img)=>({
-          url: img.public_url,
-          prompt: existing.prompt,
-          format: img.meta?.format ?? "webp"
-        }));
-    }
+    return json(res, 200);
+  }
+
+  // If we have a completed job in the idempotency window, surface it as a fast reuse option
+  if (existing && existing.status === "completed") {
+    const res = {
+      jobId: existing.id,
+      status: existing.status,
+      existingImages: (existing.ugc_images ?? []).map((img) => ({
+        url: img.public_url,
+        prompt: existing.prompt,
+        format: img.meta?.format ?? "webp"
+      }))
+    };
     return json(res, 200);
   }
   // credits
@@ -225,6 +238,24 @@ async function createImageJob(userId, payload, supabase) {
         p_amount: totalCost,
         p_reason: "job_creation_failed"
       });
+    }
+    if (jobErr?.message?.includes("idx_image_jobs_user_content_hash_active_unique")) {
+      const { data: conflicting } = await supabase
+        .from("image_jobs")
+        .select("*, ugc_images(*)")
+        .eq("user_id", userId)
+        .eq("content_hash", contentHash)
+        .eq("model_type", "gemini")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (conflicting) {
+        return json({
+          jobId: conflicting.id,
+          status: conflicting.status
+        }, 200);
+      }
     }
     return errorJson(`Job insert failed: ${jobErr.message}`, 400);
   }
@@ -421,6 +452,7 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
         // ----- edits (using Gemini's image editing capabilities) -----
         const src = await fetch(sourceImageUrl);
         if (!src.ok) throw new Error(`Failed to fetch source image: ${src.status}`);
+        const mimeType = src.headers.get('content-type') ?? 'image/png';
         const imageBuffer = await src.arrayBuffer();
         // Fix: Convert large array buffer to base64 safely without stack overflow
         const uint8Array = new Uint8Array(imageBuffer);
@@ -446,7 +478,7 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
                   },
                   {
                     inlineData: {
-                      mimeType: "image/webp",
+                      mimeType: mimeType,
                       data: base64Image
                     }
                   }
