@@ -554,7 +554,7 @@ const CreateUGC = () => {
       }
 
       const sourceImage = response.data;
-      
+
       // Create a File object from the uploaded image
       const imageResponse = await fetch(sourceImage.publicUrl);
       const blob = await imageResponse.blob();
@@ -572,7 +572,7 @@ const CreateUGC = () => {
       });
 
       // Auto-analyze the imported image
-      handleImagesUpload([file]);
+      //handleImagesUpload([file]);
 
     } catch (error) {
       console.error('Error importing from URL:', error);
@@ -585,6 +585,7 @@ const CreateUGC = () => {
       setImportingFromUrl(false);
     }
   };
+
 
   const getScenariosFromConversation = async (nicheText?: string, moreScen?: boolean) => {
     const targetNiche = nicheText || niche;
@@ -642,17 +643,6 @@ const CreateUGC = () => {
     await getScenariosFromConversation("",true);
   };
 
-  // handleGenerate.ts – final version aligned with Supabase contract
-  // Generates UGC images by sending a **Data‑URL string** to the edge function.
-
-  // helper: File → Data‑URL (base64)
-  const fileToDataUrl = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
 
   const handleGenerate = async () => {
     //check if the necessary data is available
@@ -790,72 +780,6 @@ const CreateUGC = () => {
     }
   };
 
-  const handleImageSelect = (imageId: string) => {
-    // Check current batch first
-    setCurrentBatchImages(prev => {
-      const found = prev.find(img => img.id === imageId);
-      if (found) {
-        return prev.map(img => 
-          img.id === imageId ? { ...img, selected: !img.selected } : img
-        );
-      }
-      return prev;
-    });
-    
-    // Then check previous images
-    setPreviousImages(prev => 
-      prev.map(img => 
-        img.id === imageId ? { ...img, selected: !img.selected } : img
-      )
-    );
-  };
-
-  const toggleImageSelection = (imageId: string) => {
-    handleImageSelect(imageId);
-  };
-
-  // Combine both arrays for selection calculations
-  const allImages = [...currentBatchImages, ...previousImages];
-  const selectedImages = allImages.filter(img => img.selected);
-
-
-  const handleDownloadAll = () => {
-    const imagesToDownload = selectedImages.length > 0 ? selectedImages : allImages;
-
-    imagesToDownload.forEach((img, index) => {
-      if (!img.url) return;
-      const link = document.createElement('a');
-      link.href = img.url;
-      const extension = img.format || 'png';
-      link.download = `ugc-image-${index + 1}.${extension}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
-
-    toast({
-      title: "Download started",
-      description: `Downloading ${imagesToDownload.length} images.`,
-    });
-  };
-
-  const handleGenerateMore = () => {
-    // Clear current batch and set pending slots for new generation
-    setCurrentBatchImages([]);
-    setPendingSlots(numImages);
-  };
-
-  const handleNewCreation = () => {
-    setCurrentBatchImages([]);
-    setPreviousImages([]);
-    setPendingSlots(0);
-    setProductImages([]);
-    setSourceImageIds([]);
-    setNiche("");
-    setAiScenarios([]);
-    setSelectedScenario(null);
-    
-  };
 
   const handleStartFromScratch = () => {
     // Clear job state
