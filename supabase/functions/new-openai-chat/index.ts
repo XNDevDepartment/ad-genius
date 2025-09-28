@@ -152,6 +152,77 @@ async function sendImageAndRun({ threadId, assistantId, fileData, fileName, prom
     reply
   });
 }
+
+async function sendMultipleImagesAndRun({ threadId, assistantId, images, prompt }: {
+  threadId: string;
+  assistantId: string;
+  images: Array<{ fileData: string; fileName: string }>;
+  prompt?: string;
+}) {
+  // 1 — upload all images
+  const fileIds: string[] = [];
+  
+  for (const image of images) {
+    const form = new FormData();
+    form.append('file', b64ToBlob(image.fileData), image.fileName);
+    form.append('purpose', 'vision');
+    const { id: fileId } = await fetchWithRetry(`${OPENAI_BASE}/files`, {
+      method: 'POST',
+      headers: {
+        ...ASSISTANTS_BETA,
+        Authorization: `Bearer ${openAIApiKey}`
+      },
+      body: form
+    }).then((r)=>r.json());
+    fileIds.push(fileId);
+  }
+
+  // 2 — create content with all images and optional text
+  const content = [
+    ...fileIds.map(fileId => ({
+      type: 'image_file',
+      image_file: {
+        file_id: fileId
+      }
+    })),
+    prompt ? {
+      type: 'text',
+      text: prompt
+    } : null
+  ].filter(Boolean);
+
+  await fetchWithRetry(`${OPENAI_BASE}/threads/${threadId}/messages`, {
+    method: 'POST',
+    headers: {
+      ...ASSISTANTS_BETA,
+      Authorization: `Bearer ${openAIApiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      role: 'user',
+      content
+    })
+  });
+
+  // 3 — run
+  const { id: runId } = await fetchWithRetry(`${OPENAI_BASE}/threads/${threadId}/runs`, {
+    method: 'POST',
+    headers: {
+      ...ASSISTANTS_BETA,
+      Authorization: `Bearer ${openAIApiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      assistant_id: assistantId
+    })
+  }).then((r)=>r.json());
+  
+  await waitForRun(threadId, runId);
+  const reply = await getLatestAssistantReply(threadId);
+  return json({
+    reply
+  });
+}
 async function converse({ threadId, content, assistantId }: {
   threadId: string;
   content: any;
@@ -218,6 +289,8 @@ serve(async (req)=>{
         return await createThread();
       case 'sendImage':
         return await sendImageAndRun(params);
+      case 'sendMultipleImages':
+        return await sendMultipleImagesAndRun(params);
       case 'converse':
         return await converse(params);
       default:

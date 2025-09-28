@@ -81,6 +81,28 @@ export async function sendImageAndRun(
   return result.reply;
 }
 
+export async function sendMultipleImagesAndRun(
+  threadId: string,
+  assistantId: string,
+  images: Array<{ fileData: string; fileName: string }>,
+  prompt?: string
+) {
+  if (!threadId || !assistantId || !images || images.length === 0) {
+    throw new Error('Thread ID, Assistant ID, and images are required');
+  }
+
+  console.log('Using new-openai-chat sendMultipleImages...');
+  const result = await callEdgeFunction('new-openai-chat', {
+    action: 'sendMultipleImages',
+    threadId,
+    assistantId,
+    images,
+    prompt
+  });
+
+  return result.reply;
+}
+
 export async function createImageJob(
   prompt: string,
   settings: {

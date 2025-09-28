@@ -600,17 +600,16 @@ const CreateUGCGemini = () => {
         setUrlImportOpen(false);
 
         // Start AI analysis
-        setIsAnalyzingImage(true);
+        setIsAnalyzingImages([true]);
 
         const reader = new FileReader();
         reader.onload = async () => {
           const base64 = reader.result as string;
 
-          const reply = await sendImageAndRun(
+          const reply = await sendMultipleImagesAndRun(
             threadId!,
             ASSISTANT_ID,
-            base64,
-            file.name,
+            [{ fileData: base64, fileName: file.name }],
             'I have uploaded a product image from URL. Please analyze it. Dont answer this message.'
           );
 
@@ -632,7 +631,7 @@ const CreateUGCGemini = () => {
             });
           }
 
-          setIsAnalyzingImage(false);
+          setIsAnalyzingImages([false]);
           toast({
             title: "Image Imported",
             description: "Successfully imported and analyzed image from URL."
