@@ -23,22 +23,41 @@ const MultiImageUploader = ({
   const [isDragOver, setIsDragOver] = useState(false);
 
   useEffect(() => {
-    // Create preview URLs for all selected images
-    const previews: string[] = [];
-    selectedImages.forEach((file, index) => {
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          previews[index] = reader.result as string;
-          setImagePreviews([...previews]);
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
     if (selectedImages.length === 0) {
       setImagePreviews([]);
+      return;
     }
+
+    // Create preview URLs for all selected images using Promise.all to avoid race conditions
+    const createPreviews = async () => {
+      const previewPromises = selectedImages.map((file, index) => {
+        return new Promise<{ index: number; preview: string }>((resolve, reject) => {
+          if (!file) {
+            resolve({ index, preview: '' });
+            return;
+          }
+          
+          const reader = new FileReader();
+          reader.onload = () => resolve({ index, preview: reader.result as string });
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      });
+
+      try {
+        const results = await Promise.all(previewPromises);
+        const previews = new Array(selectedImages.length);
+        results.forEach(({ index, preview }) => {
+          previews[index] = preview;
+        });
+        setImagePreviews(previews);
+      } catch (error) {
+        console.error('Error creating image previews:', error);
+        setImagePreviews([]);
+      }
+    };
+
+    createPreviews();
   }, [selectedImages]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
