@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import ImageUploader from "@/components/ImageUploader";
+import MultiImageUploader from "@/components/MultiImageUploader";
 import { useToast } from "@/hooks/use-toast";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
 import { startConversationAPI, converse, sendImageAndRun } from '@/api/OpenAiChatClient';
@@ -39,7 +39,6 @@ interface GeneratedImage {
   format?: string;
 }
 
-
 interface AIScenario {
   idea: string;
   description: string;
@@ -57,7 +56,6 @@ const CreateUGC = () => {
   const [showAuthModal, setShowAuthModal] = useState(!user);
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
   const { remainingCredits, canGenerateImages, isAtLimit, refreshCount, calculateImageCost } = useImageLimit(imageQuality);
-  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   
   // Add error boundary for useNavigate
   let navigate;
@@ -74,16 +72,13 @@ const CreateUGC = () => {
     };
   }
 
-  // function capitalize(s: string) {
-  //   return s.charAt(0).toUpperCase() + s.slice(1);
-  // }
-
-
   const { toast } = useToast();
   const { saveConversation, saveMessage, getActiveConversation } = useConversationStorage();
   const [stage, setStage] = useState<'setup' | 'generating' | 'results'>('setup');
-  const [productImage, setProductImage] = useState<File | null>(null);
-  const [sourceImageId, setSourceImageId] = useState<string | null>(null);
+  const [productImages, setProductImages] = useState<File[]>([]);
+  const [sourceImageIds, setSourceImageIds] = useState<string[]>([]);
+  const [productAnalyses, setProductAnalyses] = useState<string[]>([]);
+  const [isAnalyzingImages, setIsAnalyzingImages] = useState<boolean[]>([]);
   const [niche, setNiche] = useState("");
   const [aiScenarios, setAiScenarios] = useState<AIScenario[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<AIScenario | null>({'idea': "", "small-description" : "", "description": ""});
@@ -109,7 +104,6 @@ const CreateUGC = () => {
   const isGenerating = (stage === 'generating' || job?.status === 'queued' || job?.status === 'processing') && job?.status !== 'completed';
   const progress = job?.progress || 0;
 
-
   // Tower behavior: separate current batch from previous images
   const [currentBatchImages, setCurrentBatchImages] = useState<GeneratedImage[]>([]);
   const [previousImages, setPreviousImages] = useState<GeneratedImage[]>([]);
@@ -124,7 +118,6 @@ const CreateUGC = () => {
 
   // Compute compact summary for mobile panel
   const summary = `${numImages} img • ${imageQuality.charAt(0).toUpperCase() + imageQuality.slice(1)} • ${highlight === 'yes' ? 'Focus On' : 'Blend In'} • ${imageOrientation} • ${style} • ${timeOfDay}`;
-
 
   // Move all refs and effects to the top, before any conditional returns
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -150,7 +143,6 @@ const CreateUGC = () => {
     // expand to fit current content
     el.style.height = el.scrollHeight + 'px'
   }, [niche]);
- 
 
   const ASSISTANT_ID = "asst_zX2cHyZXHY1mj5CT4wzdJLU6";
 
@@ -370,73 +362,98 @@ const CreateUGC = () => {
     }
   }, [job?.status, stage]);
 
-  const handleImageUpload = async (file: File) => {
-    setProductImage(file);
-    setIsAnalyzingImage(true);
+  const handleImagesUpload = async (files: File[]) => {
+    setProductImages(files);
+    setIsAnalyzingImages(new Array(files.length).fill(true));
 
-    // Upload source image to secure storage
-    try {
-      const sourceImage = await uploadSourceImage(file);
-      if (sourceImage) {
-        setSourceImageId(sourceImage.id);
-        document.getElementById("niche").focus();
-        console.log('Source image uploaded with ID:', sourceImage.id);
-      }
-    } catch (error) {
-      console.error('Failed to upload source image:', error);
-      // Continue with the product analysis even if source upload fails
-    }
+    const uploadedSourceIds: string[] = [];
+    const analyses: string[] = [];
 
-    // Start conversation with assistant to identify the product
-    try {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const base64 = reader.result as string;
-
-        const reply = await sendImageAndRun(
-          threadId!,
-          ASSISTANT_ID,
-          base64,
-          file.name,
-          'I have uploaded a product image. Please analyze it. Dont answer this message.'
-        );
-
-        setProductIdentification(reply);
-
-        // Save user message and assistant response (only if user is authenticated)
-        if (conversationId) {
-          await saveMessage({
-            conversationId,
-            role: 'user',
-            content: 'I have uploaded a product image. Please analyze it. Dont answer this message',
-            metadata: { hasImage: true }
-          });
-
-          await saveMessage({
-            conversationId,
-            role: 'assistant',
-            content: reply,
-            metadata: { analysisType: 'product_identification' }
-          });
+    // Process each image
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      try {
+        // Upload source image to secure storage
+        const sourceImage = await uploadSourceImage(file);
+        if (sourceImage) {
+          uploadedSourceIds.push(sourceImage.id);
+          console.log(`Source image ${i + 1} uploaded with ID:`, sourceImage.id);
         }
 
-        setIsAnalyzingImage(false);
-        toast({
-          title: "Product Analyzed",
-          description: "AI has identified your product. Now describe your niche to get scenario suggestions"
-        });
-      };
-      reader.readAsDataURL(file);
+        // Analyze image with OpenAI
+        const reader = new FileReader();
+        await new Promise<void>((resolve) => {
+          reader.onload = async () => {
+            try {
+              const base64 = reader.result as string;
 
-    } catch (error) {
-      console.error('Error analyzing product image:', error);
-      setIsAnalyzingImage(false);
-      toast({
-        title: "Analysis Error",
-        description: "Failed to analyze the product image. Please try again.",
-        variant: "destructive",
-      });
+              const reply = await sendImageAndRun(
+                threadId!,
+                ASSISTANT_ID,
+                base64,
+                file.name,
+                `I have uploaded product image ${i + 1} of ${files.length}. Please analyze this image. Don't answer this message.`
+              );
+
+              analyses.push(reply);
+
+              // Save user message and assistant response
+              if (conversationId) {
+                await saveMessage({
+                  conversationId,
+                  role: 'user',
+                  content: `I have uploaded product image ${i + 1} of ${files.length}. Please analyze this image.`,
+                  metadata: { hasImage: true, imageIndex: i }
+                });
+
+                await saveMessage({
+                  conversationId,
+                  role: 'assistant',
+                  content: reply,
+                  metadata: { analysisType: 'product_identification', imageIndex: i }
+                });
+              }
+            } catch (error) {
+              console.error(`Error analyzing image ${i + 1}:`, error);
+              analyses.push('');
+            }
+
+            resolve();
+          };
+          reader.readAsDataURL(file);
+        });
+
+        // Update progress
+        setIsAnalyzingImages(prev => {
+          const newState = [...prev];
+          newState[i] = false;
+          return newState;
+        });
+
+      } catch (error) {
+        console.error(`Failed to upload source image ${i + 1}:`, error);
+        setIsAnalyzingImages(prev => {
+          const newState = [...prev];
+          newState[i] = false;
+          return newState;
+        });
+      }
     }
+
+    setSourceImageIds(uploadedSourceIds);
+    setProductAnalyses(analyses);
+    
+    // Combine all analyses for product identification
+    const combinedAnalysis = analyses.filter(a => a).join('\n\n');
+    setProductIdentification(combinedAnalysis);
+
+    toast({
+      title: "Product Analysis Complete",
+      description: `Analyzed ${files.length} images. Now describe your niche to get scenario suggestions.`
+    });
+
+    document.getElementById("niche")?.focus();
   };
 
   const handleNicheChange = (nicheText: string) => {
@@ -452,12 +469,12 @@ const CreateUGC = () => {
       // Convert blob to File object
       const file = new File([blob], image.fileName, { type: blob.type });
 
-      // Set as product image and source ID
-      setProductImage(file);
-      setSourceImageId(image.id);
+      // Replace current images with this single image
+      setProductImages([file]);
+      setSourceImageIds([image.id]);
 
       // Start AI analysis
-      setIsAnalyzingImage(true);
+      setIsAnalyzingImages([true]);
 
       const reader = new FileReader();
       reader.onload = async () => {
@@ -468,18 +485,19 @@ const CreateUGC = () => {
           ASSISTANT_ID,
           base64,
           file.name,
-          'I have uploaded a product image. Please analyze it. Dont answer this message.'
+          'I have selected a product image from my library. Please analyze it. Dont answer this message.'
         );
 
         setProductIdentification(reply);
+        setProductAnalyses([reply]);
 
-        // Save message if authenticated
+        // Save user message and assistant response
         if (conversationId) {
           await saveMessage({
             conversationId,
             role: 'user',
-            content: 'I have uploaded a product image from my source library. Please analyze it. Dont answer this message',
-            metadata: { hasImage: true, source: 'library' }
+            content: 'I have selected a product image from my library. Please analyze it. Dont answer this message',
+            metadata: { hasImage: true, sourceImageId: image.id }
           });
 
           await saveMessage({
@@ -490,776 +508,484 @@ const CreateUGC = () => {
           });
         }
 
-        setIsAnalyzingImage(false);
+        setIsAnalyzingImages([false]);
         toast({
-          title: "Product Loaded",
-          description: "Selected image from your library and AI has analyzed it."
+          title: "Product Selected",
+          description: "AI has identified your selected product. Now describe your niche to get scenario suggestions"
         });
-
-        // Focus on niche input
-        document.getElementById("niche")?.focus();
       };
       reader.readAsDataURL(file);
 
     } catch (error) {
       console.error('Error selecting source image:', error);
+      setIsAnalyzingImages([false]);
       toast({
-        title: "Error",
-        description: "Failed to load the selected image. Please try again.",
+        title: "Selection Error",
+        description: "Failed to select the product image. Please try again.",
         variant: "destructive",
       });
     }
   };
 
-  const handleImportFromUrl = async () => {
-    if (!importUrl.trim()) {
-      toast({
-        title: "Missing URL",
-        description: "Please enter a valid image URL.",
-        variant: "destructive",
-      });
-      return;
-    }
+  const handleUrlImport = async () => {
+    if (!importUrl.trim()) return;
 
+    setImportingFromUrl(true);
     try {
-      setImportingFromUrl(true);
-
-      const { data, error } = await supabase.functions.invoke('upload-source-image-from-url', {
+      const response = await supabase.functions.invoke('upload-source-image-from-url', {
         body: { imageUrl: importUrl.trim() }
       });
 
-      if (error) {
-        throw new Error(error.message || 'Failed to import image from URL');
+      if (response.error) {
+        throw new Error(response.error.message);
       }
 
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to import image from URL');
-      }
+      const sourceImage = response.data;
+      
+      // Create a File object from the uploaded image
+      const imageResponse = await fetch(sourceImage.publicUrl);
+      const blob = await imageResponse.blob();
+      const file = new File([blob], sourceImage.fileName, { type: blob.type });
 
-      // Create a signed URL and fetch the imported image
-      const { data: signedUrlData } = await supabase.storage
-        .from('ugc-inputs')
-        .createSignedUrl(data.sourceImage.storage_path, 3600);
+      // Replace current images with this single image
+      setProductImages([file]);
+      setSourceImageIds([sourceImage.id]);
+      setUrlImportOpen(false);
+      setImportUrl("");
 
-      if (signedUrlData?.signedUrl) {
-        const response = await fetch(signedUrlData.signedUrl);
-        const blob = await response.blob();
-        const file = new File([blob], data.sourceImage.fileName, { type: blob.type });
+      toast({
+        title: "Image Imported",
+        description: "Successfully imported image from URL"
+      });
 
-        setProductImage(file);
-        setSourceImageId(data.sourceImage.id);
-        setImportUrl("");
-        setUrlImportOpen(false);
-
-        // Start AI analysis
-        setIsAnalyzingImage(true);
-
-        const reader = new FileReader();
-        reader.onload = async () => {
-          const base64 = reader.result as string;
-
-          const reply = await sendImageAndRun(
-            threadId!,
-            ASSISTANT_ID,
-            base64,
-            file.name,
-            'I have uploaded a product image from URL. Please analyze it. Dont answer this message.'
-          );
-
-          setProductIdentification(reply);
-
-          if (conversationId) {
-            await saveMessage({
-              conversationId,
-              role: 'user',
-              content: 'I have imported a product image from URL. Please analyze it. Dont answer this message',
-              metadata: { hasImage: true, source: 'url', originalUrl: importUrl.trim() }
-            });
-
-            await saveMessage({
-              conversationId,
-              role: 'assistant',
-              content: reply,
-              metadata: { analysisType: 'product_identification' }
-            });
-          }
-
-          setIsAnalyzingImage(false);
-          toast({
-            title: "Image Imported",
-            description: "Successfully imported and analyzed image from URL."
-          });
-
-          // Focus on niche input
-          document.getElementById("niche")?.focus();
-        };
-        reader.readAsDataURL(file);
-      }
+      // Auto-analyze the imported image
+      handleImagesUpload([file]);
 
     } catch (error) {
       console.error('Error importing from URL:', error);
       toast({
         title: "Import Failed",
-        description: error instanceof Error ? error.message + '. The image may have protection or copyrights license. Please use another ULR.' : "Failed to import image from URL.",
-        variant: "destructive",
+        description: "Failed to import image from URL. Please check the URL and try again.",
+        variant: "destructive"
       });
     } finally {
       setImportingFromUrl(false);
     }
   };
 
-  const getScenariosFromConversation = async (nicheText?: string, moreScen?: boolean) => {
-    const targetNiche = nicheText || niche;
+  const getScenariosFromConversation = async () => {
+    if (!niche.trim()) return;
+    
     setIsLoadingScenarios(true);
     try {
-      const responseText = await converse(
+      const reply = await converse(
         threadId!,
-        `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas. Return ONLY a compact JSON object with "scenarios" array and in this language: ` + language,
+        `Create 5 UGC marketing scenarios for this product based on the niche: "${niche}". Return only a JSON array with objects containing "idea", "description", and "small-description" fields. No explanations, just the JSON.`,
         ASSISTANT_ID
       );
-      // Extract JSON from response
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+
+      // Extract JSON from the response
+      const jsonMatch = reply.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
-        const scenarios = JSON.parse(jsonMatch[0]);
-        setAiScenarios(scenarios.scenarios || []);
+        try {
+          const scenarios = JSON.parse(jsonMatch[0]);
+          setAiScenarios(scenarios);
+          
+          // Save the conversation
+          if (conversationId) {
+            await saveMessage({
+              conversationId,
+              role: 'user',
+              content: `Create 5 UGC marketing scenarios for this product based on the niche: "${niche}".`,
+              metadata: { requestType: 'scenario_generation' }
+            });
 
-        // Save user message and assistant response
-        if (conversationId) {
-          await saveMessage({
-            conversationId,
-            role: 'user',
-            content: `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 6 creative UGC scenario ideas.`,
-            metadata: { requestType: 'scenario_generation' }
-          });
-
-          await saveMessage({
-            conversationId,
-            role: 'assistant',
-            content: responseText,
-            metadata: { scenarioCount: scenarios.scenarios?.length || 0 }
+            await saveMessage({
+              conversationId,
+              role: 'assistant',
+              content: reply,
+              metadata: { 
+                responseType: 'scenario_generation',
+                scenarioCount: scenarios.length 
+              }
+            });
+          }
+        } catch (parseError) {
+          console.error('Failed to parse scenarios JSON:', parseError);
+          toast({
+            title: "Parsing Error",
+            description: "Received response but couldn't parse scenarios. Please try again.",
+            variant: "destructive"
           });
         }
-
+      } else {
+        console.error('No JSON found in response:', reply);
         toast({
-          title: "Scenarios Generated",
-          description: `Got ${scenarios.scenarios?.length || 0} UGC scenario ideas for your product.`,
+          title: "Format Error",
+          description: "AI response was not in expected format. Please try again.",
+          variant: "destructive"
         });
       }
     } catch (error) {
       console.error('Error getting scenarios:', error);
       toast({
-        title: "Error",
-        description: "Failed to get scenario suggestions. Please try again.",
-        variant: "destructive",
+        title: "Scenarios Error",
+        description: "Failed to generate scenarios. Please try again.",
+        variant: "destructive"
       });
     } finally {
       setIsLoadingScenarios(false);
     }
   };
 
-
   const generateMoreScenarios = async () => {
-    setAiScenarios([]); // Clear existing scenarios
-    setMoreScenarios(true)
-    await getScenariosFromConversation("",true);
+    if (!niche.trim()) return;
+    
+    setIsLoadingScenarios(true);
+    try {
+      const reply = await converse(
+        threadId!,
+        `Create 5 different UGC marketing scenarios for this product and niche: "${niche}". Make them creative and different from previous ones. Return only a JSON array with "idea", "description", and "small-description" fields. No explanations, just the JSON.`,
+        ASSISTANT_ID
+      );
+
+      // Extract JSON from the response
+      const jsonMatch = reply.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        try {
+          const newScenarios = JSON.parse(jsonMatch[0]);
+          setAiScenarios(newScenarios);
+          setMoreScenarios(true);
+          
+          // Save the conversation
+          if (conversationId) {
+            await saveMessage({
+              conversationId,
+              role: 'user',
+              content: `Create 5 different UGC marketing scenarios for this product and niche: "${niche}". Make them creative and different from previous ones.`,
+              metadata: { requestType: 'scenario_regeneration' }
+            });
+
+            await saveMessage({
+              conversationId,
+              role: 'assistant',
+              content: reply,
+              metadata: { 
+                responseType: 'scenario_regeneration',
+                scenarioCount: newScenarios.length 
+              }
+            });
+          }
+        } catch (parseError) {
+          console.error('Failed to parse scenarios JSON:', parseError);
+          toast({
+            title: "Parsing Error",
+            description: "Received response but couldn't parse scenarios. Please try again.",
+            variant: "destructive"
+          });
+        }
+      } else {
+        console.error('No JSON found in response:', reply);
+        toast({
+          title: "Format Error",
+          description: "AI response was not in expected format. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error generating more scenarios:', error);
+      toast({
+        title: "Scenarios Error",
+        description: "Failed to generate more scenarios. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingScenarios(false);
+    }
   };
 
-  // handleGenerate.ts – final version aligned with Supabase contract
-  // Generates UGC images by sending a **Data‑URL string** to the edge function.
-
-  // helper: File → Data‑URL (base64)
-  const fileToDataUrl = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-
   const handleGenerate = async () => {
-    //check if the necessary data is available
-    if (!productImage || !hasSelectedScenario) {
+    const isReadyToGenerate = productImages.length > 0 && niche.trim() && hasSelectedScenario;
+
+    if (!isReadyToGenerate) {
       toast({
         title: 'Missing information',
-        description: 'Please upload a product image and select a scenario.',
+        description: 'Please upload product images, describe your niche, and select a scenario.',
         variant: 'destructive',
       });
       return;
     }
 
     // Pre-flight check for credit availability (admins bypass this)
-    if (!canGenerateImages(numImages)) {
-      const creditsNeeded = calculateImageCost(imageQuality, numImages);
+    const isAdmin = subscriptionData?.subscription_tier === 'admin';
+    if (!isAdmin && !canAfford(calculateImageCost(imageQuality, numImages))) {
       toast({
-        title: 'Insufficient credits',
-        description: `You need ${creditsNeeded} credits to generate ${numImages} ${imageQuality}-quality image(s). You have ${remainingCredits} credits remaining.`,
-        variant: 'destructive',
+        title: "Insufficient Credits",
+        description: `You need ${calculateImageCost(imageQuality, numImages)} credits but only have ${remainingCredits}. Please upgrade your plan.`,
+        variant: "destructive",
       });
-      setStage('setup');
       return;
     }
 
     try {
-      console.log('[CreateUGC] Starting new generation, clearing previous job state');
-
-      // Clear any existing job state first
-      clearJob();
-
-      // Freeze the current results into the tower (newest on top)
-      setPreviousImages(prev => {
-        if (currentBatchImages.length === 0) return prev;
-        const finished = currentBatchImages.filter(img => Boolean(img.url));
-        return finished.length ? [...finished, ...prev] : prev;
-      });
-
-      // Clear current batch - the job completion handler will move completed images to previous
-      setCurrentBatchImages([]);
-
-      // Provide immediate feedback
       setStage('generating');
-
-      // Set pending slots for new generation (animated placeholders)
+      
+      // Create placeholder slots for immediate UI feedback
+      const placeholders = Array.from({ length: numImages }, (_, i) => ({
+        id: `placeholder-${Date.now()}-${i}`,
+        url: '',
+        prompt: '',
+        selected: false,
+        format: 'webp',
+        orientation: imageOrientation,
+      }));
+      
+      setCurrentBatchImages(placeholders);
       setPendingSlots(numImages);
 
-      // Save state to localStorage for persistence
+      // Save job metadata for recovery
+      const jobMetadata = {
+        numImages,
+        imageOrientation,
+        imageQuality,
+      };
+      localStorage.setItem('jobMetadata', JSON.stringify(jobMetadata));
       localStorage.setItem('currentStage', 'generating');
 
-      // Immediate scroll to generation area
-      setTimeout(() => {
-        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 200);
-
-      /* ------------------------------------------------------------------
-        1️⃣  Prepare payloads once (Data‑URL + prompt)
-      ------------------------------------------------------------------*/
-      // const baseFileData = await fileToDataUrl(productImage); // Data URL with prefix
-
-      const commonNeg = `--negative "AI artifacts, text overlays, watermark, extreme bokeh, macro close-up, center-composed product, invented branding, extra limbs, low resolution"`;
-
-
-      const highlightYes = `Ultra-detailed, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. Shot with full‑frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125 s, ISO 200 at ${timeOfDay} with authentic light direction and quality.`;
-
-    //   const highlightYes = `Ultra-realistic, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. Shot with the organic, unpolished authenticity of real user-generated content.
-
-    //   CAMERA & TECHNICAL SPECS:
-    //   - Equipment: Full-frame DSLR with 85mm portrait lens (natural compression and perspective)
-    //   - Aperture: f/2.8 to f/4 for controlled shallow depth of field
-    //   - Focus: Tack-sharp product detail with natural focus fall-off
-    //   - Image quality: 16K native resolution with pixel-level detail clarity
-
-    //   COMPOSITION & PRODUCT EMPHASIS:
-    //   - Product prominence: 50-70% of frame coverage for clear product showcase
-    //   - Positioning: Center-weighted with slight rule-of-thirds offset for natural appeal
-    //   - Framing: Close enough to show product details, wide enough for context storytelling
-    //   - Perspective: Slight elevation or natural hand-held angle (avoiding tripod perfection)
-
-    //   LIGHTING & ATMOSPHERE:
-    //   - Primary lighting: ${timeOfDay} with authentic light direction and quality
-    //   - Light behavior: Natural shadow gradation with realistic contrast ratios
-    //   - Color temperature: Accurate to time/environment with natural color cast
-    //   - Highlight control: Preserved detail in bright areas, no blown-out surfaces
-    //   - Shadow detail: Visible information in darker areas with natural density
-
-    //   REALISM & AUTHENTICITY ENHANCERS:
-    //   - Surface textures: Microscopic fabric weave, material grain, natural surface variations
-    //   - Wear patterns: Subtle use marks, natural settling, authentic aging where appropriate
-    //   - Environmental interaction: Realistic contact shadows, surface impressions, natural draping
-    //   - Atmospheric elements: Appropriate environmental particles (dust, moisture, air quality)
-    //   - Human touch indicators: Slight asymmetries, natural positioning imperfections
-    //   - Color accuracy: True material colors with authentic light interaction
-
-    //   UGC-SPECIFIC CHARACTERISTICS:
-    //   - Shooting style: Handheld naturalness with micro-movements and slight imperfections
-    //   - Moment capture: Genuine use scenario, not staged perfection
-    //   - Background context: Real environment with lived-in authenticity
-    //   - Lighting inconsistencies: Natural lighting variations (not studio-controlled)
-    //   - Composition quirks: Slightly off-perfect framing that feels human-captured
-
-    //   BACKGROUND & DEPTH CONTROL:
-    //   - Depth of field: Gentle, natural bokeh with smooth transition zones
-    //   - Background blur: Creamy, optical blur (not digital/artificial)
-    //   - Environmental context: Identifiable but softly rendered background elements
-    //   - Separation: Clear subject-to-background distinction without harsh edges
-    //   - Bokeh quality: Circular, smooth out-of-focus highlights
-
-    //   MATERIAL & DETAIL RENDERING:
-    //   - Edge definition: Clean, sharp product boundaries with natural anti-aliasing
-    //   - Surface reflectance: Accurate material properties (matte, glossy, textured responses)
-    //   - Color fidelity: True-to-life color reproduction with natural saturation
-    //   - Micro-contrast: Enhanced local detail without over-sharpening
-    //   - Texture clarity: Visible material structure at pixel level
-
-    //   POST-PROCESSING AUTHENTICITY:
-    //   - Color grading: Natural, unfiltered appearance with real-world color balance
-    //   - Contrast: Realistic dynamic range without HDR over-processing
-    //   - Sharpness: Optical sharpness only, no artificial enhancement halos
-    //   - Noise handling: Clean image with natural grain structure where appropriate
-
-    //   CRITICAL AVOIDANCE ELEMENTS:
-    //   - Studio perfection or overly controlled lighting setups
-    //   - Digital artifacts, over-sharpening, or artificial enhancement
-    //   - Unrealistic color saturation or Instagram-filter appearances
-    //   - Perfect symmetry or tripod-locked composition
-    //   - Floating objects or gravity-defying product placement
-    //   - Background distractions or competing visual elements
-    //   - Motion blur, camera shake, or focus hunting
-    //   - Artificial bokeh effects or digital depth simulation
-    //   - Stock photography aesthetics or commercial polish
-    //   - Unrealistic cleanliness or showroom presentation
-    //   ${commonNeg}
-
-    //   FINAL QUALITY TARGETS: Image should pass for authentic user photography while maintaining professional technical quality. The viewer should believe this was captured by a real person using the product naturally.
-    // `;
-
-      const highlightNo = `Photorealistic ${style} scene: ${selectedScenario.description}. Product naturally placed (20% of frame, off-center). Environment-first composition with sharp background detail. ${timeOfDay} lighting with authentic shadows and reflections. Natural imperfections, realistic textures, believable environmental interaction. Avoid: centered product, studio lighting, artificial blur, stock photo aesthetics. Use full‑frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125 s, ISO 200.`
-
-      // const highlightNo = `
-      //   Ultra-realistic, high-fidelity ${style} lifestyle photograph captured in this environment: ${selectedScenario.description}. 
-
-      //   SCENE PRIORITY: The environment and atmosphere are the primary subjects, with the product naturally integrated into the scene as a believable element of the setting.
-
-      //   COMPOSITION & FRAMING:
-      //   - Product placement: 15-25% of total frame area, positioned using rule of thirds or golden ratio
-      //   - Camera angle: ${
-      //     style === 'cinematic' ? 'slightly elevated or dutch angle' :
-      //     style === 'lifestyle' ? 'natural, candid eye-level perspective' :
-      //     style === 'minimal' ? 'straight-on, clean symmetrical framing' :
-      //     style === 'professional' ? 'precise, controlled perspective with standard focal length' :
-      //     style === 'natural' ? 'organic, unobtrusive eye-level view' :
-      //     style === 'studio' ? 'dynamic, slightly lower angle for energy' :
-      //     'natural eye-level perspective'
-      //   }
-      //   - Framing: medium to wide shot showing full context and environmental storytelling
-
-      //   TECHNICAL CAMERA SETTINGS:
-      //   - Depth of field: f/5.6 to f/8 for natural focus transition
-      //   - Focus priority: Environment in tack-sharp focus, product in natural contextual focus (not artificially soft)
-      //   - Sensor simulation: Full-frame equivalent with natural perspective distortion
-      //   - ${timeOfDay} lighting with accurate shadow direction and color temperature
-
-      //   REALISM ENHANCERS:
-      //   - Authentic imperfections: subtle dust, natural wear, realistic surface textures
-      //   - Environmental interaction: product shows believable interaction with surroundings (shadows, reflections, surface contact)
-      //   - Atmospheric elements: appropriate environmental effects (steam, dust motes, natural haze, humidity)
-      //   - Color grading: natural color palette with authentic material reflectance
-      //   - Micro-details: fabric weave, surface scratches, natural aging, environmental deposits
-
-      //   LIGHTING & ATMOSPHERE:
-      //   - Light source: ${timeOfDay} with physically accurate illumination
-      //   - Shadow behavior: realistic shadow casting with proper edge softness and color
-      //   - Reflective surfaces: accurate environmental reflections and specular highlights
-      //   - Ambient occlusion: natural shadowing in crevices and contact points
-
-      //   AVOID (Critical exclusions):
-      //   - Studio-perfect lighting or artificial softbox effects
-      //   - Unrealistic color saturation or HDR over-processing
-      //   - Floating or gravity-defying product placement
-      //   - Perfect cleanliness or showroom condition
-      //   - Artificial background blur or bokeh effects
-      //   - Central product placement or hero-shot composition
-      //   - Stock photo aesthetics or overly posed arrangements
-      //   - Digital artifacts, noise, or compression issues
-
-      //   STYLE NOTES:
-      //   Emulate ${
-      //     style === 'lifestyle' ? 'photojournalistic authenticity with natural, candid moments' :
-      //     style === 'minimal' ? 'clean editorial aesthetics with negative space and simplicity' :
-      //     style === 'professional' ? 'refined corporate photography with balanced, consistent lighting' :
-      //     style === 'cinematic' ? 'film-grade cinematography with dramatic yet natural lighting' :
-      //     style === 'natural' ? 'organic documentary style with true-to-life colors and textures' :
-      //     style === 'studio' ? 'energetic editorial look with bold colors and dynamic compositions' :
-      //     'editorial photography with refined but believable aesthetics'
-      //   }
-      //   `;
-
-      const prompt = (highlight === 'yes' ? highlightYes : highlightNo).trim();
-
-
-      // Create job with new system
-      const jobId = await createJob({
-        prompt,
+      // Create the job
+      const result = await createJob({
+        prompt: `${selectedScenario!.description}. Product context: ${productIdentification}. Niche: ${niche}`,
         settings: {
           number: numImages,
-          size: orientationToSize(imageOrientation),
+          size: imageOrientation === '3:2' ? '1536x1024' :
+               imageOrientation === '2:3' ? '1024x1536' :
+               '1024x1024',
           quality: imageQuality,
           orientation: imageOrientation as '1:1' | '3:2' | '2:3',
-          style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'cinematic' | 'natural',
+          style: style as 'lifestyle' | 'cinematic' | 'natural' | 'minimal' | 'professional',
           timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',
           highlight: highlight as 'yes' | 'no',
           output_format: 'webp'
         },
-        source_image_id: sourceImageId || undefined
+        sourceImageId: sourceImageIds[0], // Use first image for now
       });
 
-      // Save job ID, stage and metadata for mobile recovery
-      localStorage.setItem('currentJobId', jobId);
-      localStorage.setItem('currentStage', 'generating');
-
-      // Enhanced mobile persistence with job metadata
-      const jobMetadata = {
-        id: jobId,
-        numImages: numImages,
-        settings: {
-          number: numImages,
-          quality: imageQuality,
-          orientation: imageOrientation,
-          style: style,
-          timeOfDay: timeOfDay,
-          highlight: highlight,
-          output_format: 'webp'
-        },
-        prompt: prompt,
-        createdAt: new Date().toISOString()
-      };
-      localStorage.setItem('jobMetadata', JSON.stringify(jobMetadata));
-
-      // toast({
-      //   title: 'Generation Started',
-      //   description: 'Your images are being generated. Progress will update automatically.',
-      // });
-
-      // Job is now processing in the background
-      // The UI will update automatically through the subscription
+      if (result) {
+        localStorage.setItem('currentJobId', result);
+        console.log('Job created with ID:', result);
+        
+        setTimeout(() => {
+          resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
 
     } catch (error) {
-      console.error('Generation error:', error);
-
-      let errorMessage = "Failed to generate images. Please try again.";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-        if (error.message.includes('authentication') || error.message.includes('session')) {
-          errorMessage = "Session expired. Please refresh the page and try again.";
-        } else if (error.message.includes('credit') || error.message.includes('limit')) {
-          errorMessage = "Insufficient credits or rate limit reached. Please check your account.";
-        }
-      }
-
+      console.error('Error generating images:', error);
+      setStage('setup');
+      setPendingSlots(0);
+      setCurrentBatchImages([]);
+      
+      // Clear saved state on error
+      localStorage.removeItem('currentJobId');
+      localStorage.removeItem('currentStage');
+      localStorage.removeItem('jobMetadata');
+      
       toast({
-        title: "Generation Failed",
-        description: errorMessage,
+        title: "Generation Error",
+        description: "Failed to start image generation. Please try again.",
         variant: "destructive",
       });
-
-      // Refresh credits after error
-      refreshCount();
     }
   };
 
-  // Helper function to convert orientation to OpenAI size format
-  const orientationToSize = (orientation: string): '1024x1024' | '1536x1024' | '1024x1536' => {
-    switch (orientation) {
-      case '3:2': return '1536x1024';
-      case '2:3': return '1024x1536';
-      default: return '1024x1024';
-    }
-  };
-
-  const handleImageSelect = (imageId: string) => {
-    // Check current batch first
-    setCurrentBatchImages(prev => {
-      const found = prev.find(img => img.id === imageId);
-      if (found) {
-        return prev.map(img => 
-          img.id === imageId ? { ...img, selected: !img.selected } : img
-        );
-      }
-      return prev;
-    });
-    
-    // Then check previous images
-    setPreviousImages(prev => 
-      prev.map(img => 
-        img.id === imageId ? { ...img, selected: !img.selected } : img
-      )
-    );
-  };
-
-  const toggleImageSelection = (imageId: string) => {
-    handleImageSelect(imageId);
-  };
-
-  // Combine both arrays for selection calculations
-  const allImages = [...currentBatchImages, ...previousImages];
-  const selectedImages = allImages.filter(img => img.selected);
-
-
-  const handleDownloadAll = () => {
-    const imagesToDownload = selectedImages.length > 0 ? selectedImages : allImages;
-
-    imagesToDownload.forEach((img, index) => {
-      if (!img.url) return;
-      const link = document.createElement('a');
-      link.href = img.url;
-      const extension = img.format || 'png';
-      link.download = `ugc-image-${index + 1}.${extension}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
-
-    toast({
-      title: "Download started",
-      description: `Downloading ${imagesToDownload.length} images.`,
-    });
-  };
-
-  const handleGenerateMore = () => {
-    // Clear current batch and set pending slots for new generation
-    setCurrentBatchImages([]);
-    setPendingSlots(numImages);
-  };
-
-  const handleNewCreation = () => {
-    setCurrentBatchImages([]);
-    setPreviousImages([]);
-    setPendingSlots(0);
-    setProductImage(null);
-    setSourceImageId(null);
-    setNiche("");
-    setAiScenarios([]);
-    setSelectedScenario(null);
-    
-  };
-
-  const handleStartFromScratch = () => {
-    // Clear job state
-    clearJob();
-    
-    // Reset all UI states
-    setCurrentBatchImages([]);
-    setPreviousImages([]);
-    setPendingSlots(0);
-    setProductImage(null);
-    setSourceImageId(null);
-    setNiche("");
-    setAiScenarios([]);
-    setSelectedScenario({'idea': "", "small-description" : "", "description": ""});
-    setStage('setup');
-    setPendingSlots(0);
-    
-    // Clear localStorage with mobile-specific cleanup
-    localStorage.removeItem('currentJobId');
-    localStorage.removeItem('currentStage');
-    localStorage.removeItem('jobMetadata');
-    
-    // Scroll to top
-    setTimeout(() => {
-      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
-    
-    toast({
-      title: "Starting fresh",
-      description: "All data cleared. Ready for a new generation.",
-    });
-  };
-
-  // Scroll detection for floating button
+  // Handle scroll down indicator
   useEffect(() => {
     const handleScroll = () => {
-      const hasContent = allImages.length > 0 || jobImages.length > 0 || isGenerating || stage === 'results';
-      const isScrolledUp = window.scrollY < window.innerHeight * 0.5;
-      setShowScrollDown(hasContent && isScrolledUp);
+      if (resultsRef.current && stage === 'results') {
+        const rect = resultsRef.current.getBoundingClientRect();
+        const isVisible = rect.top <= window.innerHeight && rect.bottom >= 0;
+        setShowScrollDown(!isVisible && window.scrollY < rect.top);
+      }
     };
 
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Check initial state
+    handleScroll(); // Check initially
     
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [allImages.length, jobImages.length, isGenerating, stage]);
+  }, [stage]);
 
-  const handleScrollToResults = () => {
-    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-
-
+  // Don't render if no user
+  if (!user) {
+    return null;
+  }
 
   return (
-    <TooltipProvider delayDuration={120} skipDelayDuration={400}>
-      <div ref={topRef} className="min-h-screen bg-background relative">
-      {/* Loading Overlay */}
-      {!threadId && (
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-[30] flex items-center justify-center">
-          <div className="text-center space-y-4">
-            <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
-              <Sparkles className="h-10 w-10 text-primary animate-pulse" />
+    <div ref={topRef} className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/')}
+                className="h-8 w-8"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <h1 className="text-lg font-semibold text-foreground">
+                {t('ugc.title')}
+              </h1>
             </div>
-            <h2 className="text-xl font-semibold">Preparing system...</h2>
-            <p className="text-muted-foreground">Just a moment</p>
           </div>
         </div>
-      )}
+      </div>
 
-      <div className="container-responsive px-4 py-8">
-        <div className="lg:grid lg:grid-cols-12 lg:gap-8">
-          {/* Header */}
-          <div className="lg:col-span-12 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => navigate("/create")}
-                  className="lg:hidden"
-                  disabled={!threadId}
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-                <h1 className="text-2xl lg:text-3xl font-bold">{t('ugc.title')}</h1>
-              </div>
-
-              {/* Mobile Settings Button - Removed since we now have fixed bottom bar */}
-            </div>
-          </div>
-
-          {/* Main Form */}
-          <div className={`${isMobile ? 'col-span-12' : 'lg:col-span-7'} space-y-6`}>
-            {/* Product & Niche Card */}
-            <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'}`}>
-              <CardContent className="p-6 lg:p-8 space-y-6">
+      <div className="container mx-auto px-4 py-6 lg:py-8 max-w-4xl">
+        {stage === 'setup' && (
+          <div className="space-y-6">
+            {/* Product Image Upload Card */}
+            <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : 'rounded-apple shadow-lg'} scroll-mt-6`}>
+              <CardContent className="p-6 lg:p-8">
                 <div>
-                  {/* <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-center gap-2 mb-4">
                     <h2 className="text-lg font-semibold">{t('ugc.productImage.title')}</h2>
-                  </div> */}
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Label>{t('ugc.productImage.title')}</Label>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
-                                <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p className="max-w-xs">{t('ugc.productImage.tooltip')}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                      {/* <p className="text-sm text-muted-foreground">{t('ugc.productImage.subtitle')}</p> */}
-                      <ImageUploader 
-                        onImageSelect={handleImageUpload}
-                        selectedImage={productImage}
-                        isAnalyzing={isAnalyzingImage}
-                        analyzingText={t('ugc.productImage.analyzing')}
-                      />
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                            <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs">{t('ugc.productImage.tooltip')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  
+                  <MultiImageUploader
+                    onImagesSelect={handleImagesUpload}
+                    selectedImages={productImages}
+                    isAnalyzing={isAnalyzingImages}
+                    analyzingText="Analyzing product..."
+                    maxImages={5}
+                  />
 
-                      {/* Additional Image Options */}
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSourceImagePickerOpen(true)}
-                          className="flex-1 flex-wrap p-2 overflow-hidden"
-                          disabled={!threadId}
-                        >
-                          <Images className="h-4 w-4 mr-2" />
-                          Choose from Library
-                        </Button>
-
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setUrlImportOpen(true)}
-                          className="flex-1 flex-wrap p-2 overflow-hidden"
-                          disabled={!threadId}
-                        >
-                          <LinkIcon className="h-4 w-4 mr-2" />
-                          Import from URL
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Label htmlFor="niche">{t('ugc.productNiche.title')}</Label>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
-                                <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p className="max-w-xs">{t('ugc.productNiche.tooltip')}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{t('ugc.productNiche.subtitle')}</p>
-                      <Textarea
-                        ref={taRef}
-                        id="niche"
-                        // placeholder={t('ugc.productNiche.placeholder')}
-                        value={niche}
-                        maxLength={250}
-                        onChange={(e) => handleNicheChange(e.target.value)}
-                        className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full text-base md:text-sm"
-                        style={{ lineHeight: '1.25rem, font-size: 16px' }}
-                        disabled={!threadId}
-                        rows={1}
-                      />
-                      <div className="flex justify-end text-sm text-muted-foreground">
-                        {niche.length} / 250
-                      </div>
-                    </div>
-
+                  {/* Additional Image Options */}
+                  <div className="flex gap-2 mt-4">
                     <Button
-                      type="button"
-                      variant="default"
-                      onClick={() => getScenariosFromConversation()}
-                      disabled={isLoadingScenarios || !productImage || !niche.trim() || !threadId || isAnalyzingImage}
-                      className="w-full"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSourceImagePickerOpen(true)}
+                      className="flex-1"
                     >
-                      {isLoadingScenarios ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                          {t('ugc.scenarios.loading')}
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="h-4 w-4 mr-2" />
-                          {t('ugc.scenarios.generateButton')}
-                        </>
-                      )}
+                      <Images className="h-4 w-4 mr-2" />
+                      {t('ugc.productImage.selectFromLibrary')}
                     </Button>
-
-                    {/* {isLoadingScenarios && (
-                      <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground py-4">
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                        {t('ugc.scenarios.loading')}
-                      </div>
-                    )} */}
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setUrlImportOpen(true)}
+                      className="flex-1"
+                    >
+                      <LinkIcon className="h-4 w-4 mr-2" />
+                      {t('ugc.productImage.importFromUrl')}
+                    </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* UGC Scenarios Card */}
-              <Card ref={scenariosRef} className={`${!threadId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'} scroll-mt-6`}>
-                <CardContent className="p-6 lg:p-8">
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <h2 className="text-lg font-semibold">{t('ugc.scenarios.title')}</h2>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
-                              <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">{t('ugc.scenarios.tooltip')}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+            {/* Niche Description Card */}
+            <Card className={`${!threadId || productImages.length === 0 ? 'opacity-50 pointer-events-none' : 'rounded-apple shadow-lg'} scroll-mt-6`}>
+              <CardContent className="p-6 lg:p-8">
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <h2 className="text-lg font-semibold">{t('ugc.niche.title')}</h2>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                            <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs">{t('ugc.niche.tooltip')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">{t('ugc.niche.subtitle')}</p>
+                  
+                  <div className="space-y-2">
+                    <Textarea
+                      id="niche"
+                      ref={taRef}
+                      value={niche}
+                      onChange={(e) => handleNicheChange(e.target.value)}
+                      placeholder={t('ugc.niche.placeholder')}
+                      className="min-h-[80px] resize-none overflow-hidden"
+                      maxLength={250}
+                      style={{ height: 'auto' }}
+                    />
+                    <div className="flex justify-between items-center">
+                      <div className="text-xs text-muted-foreground">
+                        {t('ugc.niche.hint')}
+                      </div>
+                      <div className="flex justify-end text-sm text-muted-foreground">
+                        {niche.length} / 250
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-4">{t('ugc.scenarios.subtitle')}</p>
-            {!isLoadingScenarios && aiScenarios.length > 0 && (
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="default"
+                    onClick={() => getScenariosFromConversation()}
+                    disabled={isLoadingScenarios || productImages.length === 0 || !niche.trim() || !threadId || isAnalyzingImages.some(Boolean)}
+                    className="w-full mt-4"
+                  >
+                    {isLoadingScenarios ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        {t('ugc.scenarios.loading')}
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        {t('ugc.scenarios.generateButton')}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* UGC Scenarios Card */}
+            <Card ref={scenariosRef} className={`${!threadId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'} scroll-mt-6`}>
+              <CardContent className="p-6 lg:p-8">
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <h2 className="text-lg font-semibold">{t('ugc.scenarios.title')}</h2>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                            <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs">{t('ugc.scenarios.tooltip')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">{t('ugc.scenarios.subtitle')}</p>
+                  
+                  {!isLoadingScenarios && aiScenarios.length > 0 && (
                     <div className="space-y-4">
                       <div className="grid gap-2">
                         {aiScenarios.map((scenario, index) => (
@@ -1291,505 +1017,226 @@ const CreateUGC = () => {
                         <RefreshCw className="h-4 w-4 mr-2" />
                         {t('ugc.scenarios.generateMoreButton')}
                       </Button>
-
-                    <Textarea
-                      ref={scnRef}
-                      id="scenario description"
-                      placeholder={'Here will fall the scenario description'}
-                      value={selectedScenario?.description || ''}
-                      onChange={(e) => setSelectedScenario((val) => { return {...val, 'description': e.target.value }})}
-                      className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full text-base md:text-sm"
-                      style={{ lineHeight: '1.25rem, font-size: 16px' }}
-                      disabled={!threadId}
-                      rows={3}
-                    />
-                      <div className="flex justify-end text-sm text-muted-foreground">
-                      {niche.length > 0 && niche.length}
-                      </div>
-                    </div>
-
-                )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Results Section */}
-              {(isGenerating || allImages.length > 0 || jobImages.length > 0 || stage === 'results') && (
-                // <div className={`bg-card rounded-apple mt-10 mb-10 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
-                  <div ref={resultsRef} id="generating-images" className="scroll-mt-6 space-y-8 mt-5">
-
-                    {/* Enhanced progress indicator with better error messaging */}
-                    {/* {isGenerating && job && (
-                      <div className="bg-card rounded-lg p-4 border">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium">
-                            Generating {job.total || pendingSlots} image{(job.total || pendingSlots) !== 1 ? 's' : ''}...
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            {job.completed || 0}/{job.total || pendingSlots}
-                          </span>
-                        </div>
-                        <div className="w-full bg-secondary rounded-full h-2">
-                          <div 
-                            className="bg-primary h-2 rounded-full transition-all duration-300"
-                            style={{ 
-                              width: `${Math.min(100, ((job.completed || 0) / (job.total || pendingSlots || 1)) * 100)}%` 
-                            }}
-                          />
-                        </div>
-                        {job.status === 'processing' && (
-                          <div className="text-xs text-muted-foreground mt-2 space-y-1">
-                            <p>Processing images... This may take 1-2 minutes per image.</p>
-                            {job.completed > 0 && (
-                              <p className="text-green-600">
-                                ✓ {job.completed} completed {job.failed > 0 && `• ${job.failed} failed`}
-                              </p>
-                            )}
-                          </div>
-                        )}
-                        {job.status === 'queued' && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Queued... Starting generation shortly.
-                          </p>
-                        )}
-                      </div>
-                    )} */}
-
-                    <GeneratedImagesRows
-                      // images={allImages}                 // Combined array with current batch + previous
-                      currentBatchImages={currentBatchImages}
-                      previousImages={previousImages}
-                      totalSlots={job?.total ?? pendingSlots}
-                      isGenerating={isGenerating}
-                      onCreateNewScenario={(imageId) => {
-                        setSelectedScenario({"idea":"", "small-description": "", "description": ""});
-                        generateMoreScenarios();
-                      }}
-                      onOpenInLibrary={() => navigate('/library')}
-                      onStartFromScratch={handleStartFromScratch}
-                      jobId={job?.id}
-                      imageOrientation={imageOrientation}
-                      aiScenarios={aiScenarios}
-                    />
-
-                  {/* Resume button for stuck jobs */}
-                  {isGenerating && job?.status === 'queued' && job?.progress === 0 && (
-                    <div className="flex justify-center">
-                      <div className="bg-card rounded-apple p-6 shadow-apple space-y-4 max-w-md w-full">
-                        <div className="text-center">
-                          <h3 className="font-semibold text-lg mb-2">Job seems stuck?</h3>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            If your job has been queued for more than a minute, you can try resuming it manually.
-                          </p>
-                          <Button onClick={resumeCurrentJob} variant="outline" className="w-full">
-                            <RefreshCw className="h-4 w-4 mr-2" />
-                            Resume Processing
-                          </Button>
-                        </div>
-                      </div>
                     </div>
                   )}
+
+                  {isLoadingScenarios && (
+                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground py-8">
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      {t('ugc.scenarios.loading')}
+                    </div>
+                  )}
+
+                  {!isLoadingScenarios && aiScenarios.length === 0 && productImages.length > 0 && niche.trim() && (
+                    <div className="text-center text-muted-foreground py-8">
+                      <p className="text-sm">{t('ugc.scenarios.emptyState')}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Generate Button */}
+            {hasSelectedScenario && (
+              <div className="sticky bottom-4 z-40">
+                <Card className="rounded-apple shadow-lg bg-background/95 backdrop-blur-sm border border-border">
+                  <CardContent className="p-4">
+                    <div className="space-y-4">
+                      {/* Settings Summary */}
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm">
+                          <span className="text-muted-foreground">Settings: </span>
+                          <span className="text-foreground">{summary}</span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSettingsOpen(true)}
+                        >
+                          <Settings className="h-4 w-4 mr-2" />
+                          Adjust
+                        </Button>
+                      </div>
+
+                      <Button
+                        variant="default"
+                        size="lg"
+                        className="w-full"
+                        onClick={handleGenerate}
+                        disabled={!productImages.length || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages)}
+                      >
+                        {isGenerating ? (
+                          <>
+                            <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-5 w-5 mr-2" />
+                            Generate Images ({calculateImageCost(imageQuality, numImages)} credits)
+                          </>
+                        )}
+                      </Button>
+
+                      <p className="text-xs text-muted-foreground text-center">
+                        {remainingCredits} credits remaining • {getTotalCredits()} total credits
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </div>
+        )}
+
+        {(stage === 'generating' || stage === 'results') && (
+          <div ref={resultsRef} className="scroll-mt-6">
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold">Generated Images</h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setStage('setup');
+                    topRef.current?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Generate More
+                </Button>
+              </div>
+
+              {stage === 'generating' && (
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm font-medium">
+                      Generating {numImages} image{numImages > 1 ? 's' : ''}...
+                    </span>
+                  </div>
+                  <Progress value={progress} className="w-full" />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Progress: {Math.round(progress)}%
+                  </p>
                 </div>
               )}
-
-
-          </div>
-
-          {/* Desktop Sidebar - Settings & Preview */}
-          {!isMobile && (
-            <div className="lg:col-span-5 mt-6 lg:mt-0">
-              <div className={`bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">{t('ugc.generationSettings.title')}</h3>
-
-                  {/* Credits Progress Bar */}
-                  <div className="space-y-2 mb-6">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Credits</span>
-                      <span className="font-medium">{remainingCredits} / {credits}</span>
-                    </div>
-                    <Progress value={(remainingCredits / credits) * 100} className="h-2" />
-                    <div className="text-xs text-muted-foreground">
-                      {subscriptionData?.subscription_tier || 'Free'} Plan
-                    </div>
-                  </div>
-
-                  {/* ... keep existing code (all desktop sidebar settings) */}
-
-                  {/* Number of Images */}
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="sidebar-numImages" className="text-sm font-medium">{t('ugc.numImages.title')}</Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
-                              <HelpCircle className="h-2 w-2 text-muted-foreground" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">{t('ugc.numImages.tooltip')}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                    <ToggleGroup
-                      type="single"
-                      value={numImages.toString()}
-                      onValueChange={(e) => setNumImages(parseInt(e))}
-                      className="justify-start"
-                    >
-                      <ToggleGroupItem value="1" size="sm" className="flex-1 bg-muted">1</ToggleGroupItem>
-                      <ToggleGroupItem value="2" size="sm" className="flex-1 bg-muted">2</ToggleGroupItem>
-                      <ToggleGroupItem value="3" size="sm" className="flex-1 bg-muted">3</ToggleGroupItem>
-                    </ToggleGroup>
-                  </div>
-
-                  {/* Highlight */}
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="sidebar-highlight" className="text-sm font-medium">{t('ugc.advancedSettings.highlight.title')}</Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
-                              <HelpCircle className="h-2 w-2 text-muted-foreground" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">{t('ugc.advancedSettings.highlight.tooltip')}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                    <ToggleGroup 
-                      type="single" 
-                      value={highlight}
-                      onValueChange={(e) => setHighlight(e)}
-                      className="justify-start"
-                    >
-                      <ToggleGroupItem value="yes" size="sm" className="flex-1 text-xs bg-muted">{t('ugc.advancedSettings.highlight.yes')}</ToggleGroupItem>
-                      <ToggleGroupItem value="no" size="sm" className="flex-1 text-xs bg-muted">{t('ugc.advancedSettings.highlight.no')}</ToggleGroupItem>
-                    </ToggleGroup>
-                  </div>
-
-                  {/* Time of Day */}
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="sidebar-timeOfDay" className="text-sm font-medium">{t('ugc.advancedSettings.timeOfDay.title')}</Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
-                              <HelpCircle className="h-2 w-2 text-muted-foreground" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">{t('ugc.advancedSettings.timeOfDay.tooltip')}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                    <ToggleGroup 
-                      type="single" 
-                      value={timeOfDay}
-                      onValueChange={(e) => setTimeOfDay(e as typeof timeOfDay)}
-                      className="justify-start grid grid-cols-4 gap-1"
-                    >
-                        <ToggleGroupItem key={"natural"} size="sm" className="text-xs px-2 py-1 bg-muted" value="natural">{t('ugc.advancedSettings.timeOfDay.natural')}</ToggleGroupItem>
-                        <ToggleGroupItem key={"night"} size="sm" className="text-xs px-2 py-1 bg-muted" value="night">{t('ugc.advancedSettings.timeOfDay.night')}</ToggleGroupItem>
-                        <ToggleGroupItem key={"golden"} size="sm" className="text-xs px-2 py-1 bg-muted" value="golden">{t('ugc.advancedSettings.timeOfDay.golden')}</ToggleGroupItem>
-                        <ToggleGroupItem key={"morning"} size="sm" className="text-xs px-2 py-1 bg-muted" value="morning">{t('ugc.advancedSettings.timeOfDay.soft')}</ToggleGroupItem>
-                    </ToggleGroup>
-                  </div>
-
-                  {/* Style */}
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="sidebar-style" className="text-sm font-medium">{t('ugc.advancedSettings.style.title')}</Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
-                              <HelpCircle className="h-2 w-2 text-muted-foreground" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">{t('ugc.advancedSettings.style.tooltip')}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                    <ToggleGroup 
-                      type="single" 
-                      value={style}
-                      onValueChange={(e) => setStyle(e as typeof style)}
-                      className="justify-start grid grid-cols-3 gap-1"
-                    >
-                        <ToggleGroupItem key={"lifestyle"} size="sm" className="text-xs px-2 py-1 bg-muted" value="lifestyle">{t('ugc.advancedSettings.style.lifestyle')}</ToggleGroupItem>
-                        <ToggleGroupItem key={"minimal"} size="sm" className="text-xs px-2 py-1 bg-muted" value="minimal">{t('ugc.advancedSettings.style.minimalist')}</ToggleGroupItem>
-                        <ToggleGroupItem key={"vibrant"} size="sm" className="text-xs px-2 py-1 bg-muted" value="vibrant">Vibrant</ToggleGroupItem>
-                        <ToggleGroupItem key={"professional"} size="sm" className="text-xs px-2 py-1 bg-muted" value="professional">{t('ugc.advancedSettings.style.professional')}</ToggleGroupItem>
-                        <ToggleGroupItem key={"cinematic"} size="sm" className="text-xs px-2 py-1 bg-muted" value="cinematic">Cinematic</ToggleGroupItem>
-                        <ToggleGroupItem key={"natural"} size="sm" className="text-xs px-2 py-1 bg-muted" value="natural">Natural</ToggleGroupItem>
-                    </ToggleGroup>
-                  </div>
-
-                  {/* Orientation */}
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center gap-2">
-                      <Label className="text-sm font-medium">{t('ugc.orientation.title')}</Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
-                              <HelpCircle className="h-2 w-2 text-muted-foreground" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">{t('ugc.orientation.tooltip')}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                    <OrientationSelector
-                      value={imageOrientation}
-                      onChange={setImageOrientation}
-                    />
-                  </div>
-
-                  {/* Image Quality */}
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="sidebar-imageQuality" className="text-sm font-medium">{t('ugc.imageQuality.title')}</Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
-                              <HelpCircle className="h-2 w-2 text-muted-foreground" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">{t('ugc.imageQuality.tooltip')}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                    <ToggleGroup 
-                      type="single" 
-                      value={imageQuality}
-                      onValueChange={(e) => setImageQuality(e as 'low' | 'medium' | 'high')}
-                      className="justify-start grid grid-cols-3 gap-1"
-                    >
-                      <ToggleGroupItem value="low" size="sm" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
-                        <span>Baixa</span>
-                        <span className="text-[10px] opacity-70">1 crédito</span>
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="medium" size="sm" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
-                        <span>Média</span>
-                        <span className="text-[10px] opacity-70">1.5 créditos</span>
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="high" size="sm" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
-                        <span>Alta</span>
-                        <span className="text-[10px] opacity-70">2 créditos</span>
-                      </ToggleGroupItem>
-                    </ToggleGroup>
-                  </div>
-                </div>
-
-                <div className="border-t pt-4">
-                  <Button 
-                    variant={!productImage || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
-                    size="lg" 
-                    className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
-                    onClick={handleGenerate}
-                    disabled={!productImage || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages)}
-                  >
-                    {isGenerating ? (
-                      <>
-                        <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-5 w-5 mr-2" />
-                        Generate Images ({calculateImageCost(imageQuality, numImages)} credits)
-                      </>
-                    )}
-                  </Button>
-
-                  <p className="text-xs text-muted-foreground mt-2 text-center">
-                    {isGenerating ? t('ugc.generating') : 
-                     !canGenerateImages(numImages) ? `Insufficient credits (${remainingCredits} remaining, need ${calculateImageCost(imageQuality, numImages)})` :
-                     'Generation typically takes 30-60 seconds'}
-                  </p>
-
-                  {!canGenerateImages(numImages) && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full mt-2"
-                      onClick={() => window.location.href = '/pricing'}
-                    >
-                      Upgrade for More Credits
-                    </Button>
-                  )}
-                </div>
-              </div>
             </div>
-          )}
-        </div>
 
-        {/* Mobile Floating Action Panel */}
-        {(isMobile && !settingsOpen) && (
-          <div className="fixed left-0 right-0 bottom-[10px] sm:bottom-[50px] z-[20] px-4 pb-safe backdrop-blur supports-backdrop-blur:bg-background/60">
-            <div className="max-w-lg mx-auto bg-card/95 border border-border/50 rounded-2xl shadow-lg p-3 space-y-3">
-              {/* Top row: Summary pill and Edit button */}
-              <div className="flex items-center gap-3">
-                <div className="flex-1 px-3 py-2 bg-muted/40 rounded-full text-xs text-muted-foreground truncate" onClick={() => setSettingsOpen(true)}>
-                  {/* {summary} */}
-                  <Button className="w-full" variant="ghost">
-                  Open image settings
-                  <Pencil className="h-3 w-3" />
-                  </Button>
-                </div>
+            <GeneratedImagesRows
+              currentImages={currentBatchImages}
+              previousImages={previousImages}
+              onImageSelect={(imageId) => {
+                setCurrentBatchImages(prev =>
+                  prev.map(img =>
+                    img.id === imageId ? { ...img, selected: !img.selected } : img
+                  )
+                );
+                setPreviousImages(prev =>
+                  prev.map(img =>
+                    img.id === imageId ? { ...img, selected: !img.selected } : img
+                  )
+                );
+              }}
+              isGenerating={isGenerating}
+              pendingSlots={pendingSlots}
+            />
+
+            {showScrollDown && (
+              <div className="fixed bottom-6 right-6 z-50">
+                <Button
+                  size="icon"
+                  className="rounded-full shadow-lg animate-bounce"
+                  onClick={() => {
+                    resultsRef.current?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </Button>
               </div>
-
-              {/* Bottom row: Generate button */}
-              <Button 
-                    variant={!productImage || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
-                    size="lg" 
-                    className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
-                    onClick={handleGenerate}
-                    disabled={!productImage || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages)}
-                  >
-                    {isGenerating ? (
-                      <>
-                        <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-5 w-5 mr-2" />
-                        Generate Images ({calculateImageCost(imageQuality, numImages)} credits)
-                      </>
-                    )}
-                  </Button>
-
-            </div>
+            )}
           </div>
         )}
-
-        {/* Mobile Settings Sheet */}
-        {isMobile && (
-          <SettingsSheet
-            settings={{
-              numImages,
-              style,
-              timeOfDay,
-              highlight,
-              imageOrientation,
-              imageQuality
-            }}
-            onSettingsChange={(newSettings) => {
-              if (newSettings.numImages !== undefined) setNumImages(newSettings.numImages);
-              if (newSettings.style !== undefined) setStyle(newSettings.style);
-              if (newSettings.timeOfDay !== undefined) setTimeOfDay(newSettings.timeOfDay);
-              if (newSettings.highlight !== undefined) setHighlight(newSettings.highlight);
-              if (newSettings.imageOrientation !== undefined) setImageOrientation(newSettings.imageOrientation);
-              if (newSettings.imageQuality !== undefined) setImageQuality(newSettings.imageQuality);
-            }}
-            remainingCredits={remainingCredits}
-            totalCredits={getTotalCredits()}
-            calculateImageCost={calculateImageCost}
-            canGenerate={!!productImage && hasSelectedScenario && !isGenerating && canGenerateImages(numImages)}
-            onGenerate={handleGenerate}
-            isGenerating={isGenerating}
-            open={settingsOpen}
-            onOpenChange={setSettingsOpen}
-            hideTrigger={true}
-          />
-        )}
-
-        {/* Floating Scroll Down Button */}
-        {showScrollDown && !isMobile && (
-          <div className="fixed bottom-8 right-8 z-[15]">
-            <Button
-              size="icon"
-              className="rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all duration-300 animate-bounce"
-              onClick={handleScrollToResults}
-              title="Scroll to results"
-            >
-              <ArrowDown className="h-5 w-5" />
-            </Button>
-          </div>
-        )}
-
-        {/* Mobile Floating Scroll Down Button */}
-        {showScrollDown && isMobile && (
-          <div className="fixed bottom-[155px] right-4 z-[15]">
-            <Button
-              size="sm"
-              className="rounded-full shadow-lg bg-primary-glow hover:bg-primary/90 transition-all duration-300 animate-bounce px-3"
-              onClick={handleScrollToResults}
-              title="Scroll to results"
-            >
-              <ArrowDown className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-
-        {/* Padding for mobile floating panel and navigation */}
-        {isMobile && <div className="h-[50px]" />}
       </div>
 
-      {/* Source Image Picker Modal */}
-      <SourceImagePicker
-        open={sourceImagePickerOpen}
-        onClose={() => setSourceImagePickerOpen(false)}
-        onSelect={handleSourceImageSelect}
+      {/* Settings Sheet */}
+      <SettingsSheet
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        numImages={numImages}
+        onNumImagesChange={setNumImages}
+        imageQuality={imageQuality}
+        onImageQualityChange={setImageQuality}
+        imageOrientation={imageOrientation}
+        onImageOrientationChange={setImageOrientation}
+        timeOfDay={timeOfDay}
+        onTimeOfDayChange={setTimeOfDay}
+        highlight={highlight}
+        onHighlightChange={setHighlight}
+        style={style}
+        onStyleChange={setStyle}
       />
 
-      {/* URL Import Modal */}
+      {/* Source Image Picker Dialog */}
+      <Dialog open={sourceImagePickerOpen} onOpenChange={setSourceImagePickerOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t('ugc.productImage.selectFromLibrary')}</DialogTitle>
+          </DialogHeader>
+          <SourceImagePicker
+            onImageSelect={handleSourceImageSelect}
+            onClose={() => setSourceImagePickerOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* URL Import Dialog */}
       <Dialog open={urlImportOpen} onOpenChange={setUrlImportOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Import Image from URL</DialogTitle>
+            <DialogTitle>{t('ugc.productImage.importFromUrl')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="imageUrl">Image URL</Label>
+            <div>
+              <Label htmlFor="import-url">Image URL</Label>
               <Input
-                id="imageUrl"
+                id="import-url"
+                type="url"
                 placeholder="https://example.com/image.jpg"
                 value={importUrl}
                 onChange={(e) => setImportUrl(e.target.value)}
-                disabled={importingFromUrl}
               />
-              <p className="text-xs text-muted-foreground">
-                Enter a direct link to an image (JPG, PNG, WEBP, GIF)
-              </p>
             </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setUrlImportOpen(false)} disabled={importingFromUrl}>
-                Cancel
-              </Button>
-              <Button onClick={handleImportFromUrl} disabled={!importUrl.trim() || importingFromUrl}>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleUrlImport}
+                disabled={!importUrl.trim() || importingFromUrl}
+                className="flex-1"
+              >
                 {importingFromUrl ? (
                   <>
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Importing...
                   </>
                 ) : (
                   'Import Image'
                 )}
               </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setUrlImportOpen(false);
+                  setImportUrl("");
+                }}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
-      </div>
-    </TooltipProvider>
+    </div>
   );
 };
 

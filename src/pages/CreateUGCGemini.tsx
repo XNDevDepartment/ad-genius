@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import ImageUploader from "@/components/ImageUploader";
+import MultiImageUploader from "@/components/MultiImageUploader";
 import { useToast } from "@/hooks/use-toast";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
 import { startConversationAPI, converse, sendImageAndRun } from '@/api/OpenAiChatClient';
@@ -101,8 +101,10 @@ const CreateUGCGemini = () => {
   const { toast } = useToast();
   const { saveConversation, saveMessage, getActiveConversation } = useConversationStorage();
   const [stage, setStage] = useState<'setup' | 'generating' | 'results'>('setup');
-  const [productImage, setProductImage] = useState<File | null>(null);
-  const [sourceImageId, setSourceImageId] = useState<string | null>(null);
+  const [productImages, setProductImages] = useState<File[]>([]);
+  const [sourceImageIds, setSourceImageIds] = useState<string[]>([]);
+  const [productAnalyses, setProductAnalyses] = useState<string[]>([]);
+  const [isAnalyzingImages, setIsAnalyzingImages] = useState<boolean[]>([]);
   const [niche, setNiche] = useState("");
   const [aiScenarios, setAiScenarios] = useState<AIScenario[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<AIScenario | null>({'idea': "", "small-description" : "", "description": ""});
@@ -391,73 +393,98 @@ const CreateUGCGemini = () => {
     }
   }, [job?.status, stage]);
 
-  const handleImageUpload = async (file: File) => {
-    setProductImage(file);
-    setIsAnalyzingImage(true);
+  const handleImagesUpload = async (files: File[]) => {
+    setProductImages(files);
+    setIsAnalyzingImages(new Array(files.length).fill(true));
 
-    // Upload source image to secure storage
-    try {
-      const sourceImage = await uploadSourceImage(file);
-      if (sourceImage) {
-        setSourceImageId(sourceImage.id);
-        document.getElementById("niche").focus();
-        console.log('Source image uploaded with ID:', sourceImage.id);
-      }
-    } catch (error) {
-      console.error('Failed to upload source image:', error);
-      // Continue with the product analysis even if source upload fails
-    }
+    const uploadedSourceIds: string[] = [];
+    const analyses: string[] = [];
 
-    // Start conversation with assistant to identify the product
-    try {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const base64 = reader.result as string;
-
-        const reply = await sendImageAndRun(
-          threadId!,
-          ASSISTANT_ID,
-          base64,
-          file.name,
-          'I have uploaded a product image. Please analyze it. Dont answer this message.'
-        );
-
-        setProductIdentification(reply);
-
-        // Save user message and assistant response (only if user is authenticated)
-        if (conversationId) {
-          await saveMessage({
-            conversationId,
-            role: 'user',
-            content: 'I have uploaded a product image. Please analyze it. Dont answer this message',
-            metadata: { hasImage: true }
-          });
-
-          await saveMessage({
-            conversationId,
-            role: 'assistant',
-            content: reply,
-            metadata: { analysisType: 'product_identification' }
-          });
+    // Process each image
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      try {
+        // Upload source image to secure storage
+        const sourceImage = await uploadSourceImage(file);
+        if (sourceImage) {
+          uploadedSourceIds.push(sourceImage.id);
+          console.log(`Source image ${i + 1} uploaded with ID:`, sourceImage.id);
         }
 
-        setIsAnalyzingImage(false);
-        toast({
-          title: "Product Analyzed",
-          description: "AI has identified your product. Now describe your niche to get scenario suggestions"
-        });
-      };
-      reader.readAsDataURL(file);
+        // Analyze image with OpenAI
+        const reader = new FileReader();
+        await new Promise<void>((resolve) => {
+          reader.onload = async () => {
+            try {
+              const base64 = reader.result as string;
 
-    } catch (error) {
-      console.error('Error analyzing product image:', error);
-      setIsAnalyzingImage(false);
-      toast({
-        title: "Analysis Error",
-        description: "Failed to analyze the product image. Please try again.",
-        variant: "destructive",
-      });
+              const reply = await sendImageAndRun(
+                threadId!,
+                ASSISTANT_ID,
+                base64,
+                file.name,
+                `I have uploaded product image ${i + 1} of ${files.length}. Please analyze this image. Don't answer this message.`
+              );
+
+              analyses.push(reply);
+
+              // Save user message and assistant response
+              if (conversationId) {
+                await saveMessage({
+                  conversationId,
+                  role: 'user',
+                  content: `I have uploaded product image ${i + 1} of ${files.length}. Please analyze this image.`,
+                  metadata: { hasImage: true, imageIndex: i }
+                });
+
+                await saveMessage({
+                  conversationId,
+                  role: 'assistant',
+                  content: reply,
+                  metadata: { analysisType: 'product_identification', imageIndex: i }
+                });
+              }
+            } catch (error) {
+              console.error(`Error analyzing image ${i + 1}:`, error);
+              analyses.push('');
+            }
+
+            resolve();
+          };
+          reader.readAsDataURL(file);
+        });
+
+        // Update progress
+        setIsAnalyzingImages(prev => {
+          const newState = [...prev];
+          newState[i] = false;
+          return newState;
+        });
+
+      } catch (error) {
+        console.error(`Failed to upload source image ${i + 1}:`, error);
+        setIsAnalyzingImages(prev => {
+          const newState = [...prev];
+          newState[i] = false;
+          return newState;
+        });
+      }
     }
+
+    setSourceImageIds(uploadedSourceIds);
+    setProductAnalyses(analyses);
+    
+    // Combine all analyses for product identification
+    const combinedAnalysis = analyses.filter(a => a).join('\n\n');
+    setProductIdentification(combinedAnalysis);
+
+    toast({
+      title: "Product Analysis Complete",
+      description: `Analyzed ${files.length} images. Now describe your niche to get scenario suggestions.`
+    });
+
+    document.getElementById("niche")?.focus();
   };
 
   const handleNicheChange = (nicheText: string) => {
@@ -473,9 +500,9 @@ const CreateUGCGemini = () => {
       // Convert blob to File object
       const file = new File([blob], image.fileName, { type: blob.type });
 
-      // Set as product image and source ID
-      setProductImage(file);
-      setSourceImageId(image.id);
+      // Set as product images and source IDs
+      setProductImages([file]);
+      setSourceImageIds([image.id]);
 
       // Start AI analysis
       setIsAnalyzingImage(true);
@@ -699,7 +726,7 @@ const CreateUGCGemini = () => {
 
   const handleGenerate = async () => {
     //check if the necessary data is available
-    if (!productImage || !hasSelectedScenario) {
+    if (productImages.length === 0 || !hasSelectedScenario) {
       toast({
         title: 'Missing information',
         description: 'Please upload a product image and select a scenario.',
@@ -782,7 +809,7 @@ const CreateUGCGemini = () => {
           highlight: highlight as 'yes' | 'no',
           output_format: 'png'
         },
-        source_image_id: sourceImageId || undefined
+        source_image_id: sourceImageIds[0] || undefined
       });
 
       if (!result) {
@@ -1040,12 +1067,13 @@ const CreateUGCGemini = () => {
                         </TooltipProvider>
                       </div>
                       {/* <p className="text-sm text-muted-foreground">{t('ugc.productImage.subtitle')}</p> */}
-                      <ImageUploader 
-                        onImageSelect={handleImageUpload}
-                        selectedImage={productImage}
-                        isAnalyzing={isAnalyzingImage}
-                        analyzingText={t('ugc.productImage.analyzing')}
-                      />
+                       <MultiImageUploader 
+                         onImagesSelect={handleImagesUpload}
+                         selectedImages={productImages}
+                         isAnalyzing={isAnalyzingImages}
+                         analyzingText={t('ugc.productImage.analyzing')}
+                         maxImages={5}
+                       />
 
                       {/* Additional Image Options */}
                       <div className="flex gap-2">
@@ -1113,7 +1141,7 @@ const CreateUGCGemini = () => {
                       type="button"
                       variant="default"
                       onClick={() => getScenariosFromConversation()}
-                      disabled={isLoadingScenarios || !productImage || !niche.trim() || !threadId || isAnalyzingImage}
+                      disabled={isLoadingScenarios || productImages.length === 0 || !niche.trim() || !threadId || isAnalyzingImages.some(Boolean)}
                       className="w-full"
                     >
                       {isLoadingScenarios ? (
@@ -1515,7 +1543,7 @@ const CreateUGCGemini = () => {
                     size="lg" 
                     className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
                     onClick={handleGenerate}
-                    disabled={!productImage || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages)}
+                    disabled={productImages.length === 0 || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages)}
                   >
                     {isGenerating ? (
                       <>
@@ -1569,11 +1597,11 @@ const CreateUGCGemini = () => {
 
               {/* Bottom row: Generate button */}
               <Button 
-                    variant={!productImage || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
+                     variant={productImages.length === 0 || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
                     size="lg" 
                     className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
                     onClick={handleGenerate}
-                    disabled={!productImage || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages)}
+                    disabled={productImages.length === 0 || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages)}
                   >
                     {isGenerating ? (
                       <>
