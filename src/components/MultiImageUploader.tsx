@@ -79,13 +79,13 @@ const MultiImageUploader = ({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    
+
     const files = Array.from(e.dataTransfer.files);
     const validFiles = files.filter(file => file.type.startsWith('image/'));
-    
+
     if (validFiles.length > 0) {
       const totalFiles = selectedImages.length + validFiles.length;
-      
+
       if (totalFiles > maxImages) {
         const remainingSlots = maxImages - selectedImages.length;
         const newFiles = [...selectedImages, ...validFiles.slice(0, remainingSlots)];
@@ -106,13 +106,13 @@ const MultiImageUploader = ({
           {selectedImages.map((file, index) => (
             <Card key={index} className="relative bg-transparent border-2 border-border rounded-apple overflow-hidden">
               {imagePreviews[index] && (
-                <img 
+                <img
                   src={imagePreviews[index]} 
                   alt={`Product preview ${index + 1}`} 
                   className="w-full h-48 object-cover"
                 />
               )}
-              
+
               {isAnalyzing[index] && (
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary-glow/30 to-primary/20 animate-grain flex items-center justify-center backdrop-blur-sm">
                   <div className="text-center text-white">
@@ -121,7 +121,7 @@ const MultiImageUploader = ({
                   </div>
                 </div>
               )}
-              
+
               <div className="absolute top-2 right-2">
                 <Button
                   variant="secondary"
@@ -132,7 +132,7 @@ const MultiImageUploader = ({
                   <X className="h-4 w-4" />
                 </Button>
               </div>
-              
+
               <div className="p-3 bg-background/95 backdrop-blur-sm">
                 <p className="text-sm font-medium text-foreground">
                   {file.name}
