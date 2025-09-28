@@ -594,8 +594,8 @@ const CreateUGCGemini = () => {
         const blob = await response.blob();
         const file = new File([blob], data.sourceImage.fileName, { type: blob.type });
 
-        setProductImage(file);
-        setSourceImageId(data.sourceImage.id);
+        setProductImages([file]);
+        setSourceImageIds([data.sourceImage.id]);
         setImportUrl("");
         setUrlImportOpen(false);
 
@@ -800,10 +800,9 @@ const CreateUGCGemini = () => {
         prompt,
         settings: {
           number: numImages,
-          size: SIZE_MAP[aspectRatio][sizeTier],
+          size: SIZE_MAP[aspectRatio][sizeTier] as "1024x1024" | "1024x1536" | "1536x1024",
           quality: imageQuality,
           // orientation: imageOrientation as '1:1' | '3:2' | '2:3',
-          aspect_ratio: aspectRatio,
           style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'cinematic' | 'natural',
           timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',
           highlight: highlight as 'yes' | 'no',
@@ -941,8 +940,8 @@ const CreateUGCGemini = () => {
     setCurrentBatchImages([]);
     setPreviousImages([]);
     setPendingSlots(0);
-    setProductImage(null);
-    setSourceImageId(null);
+    setProductImages([]);
+    setSourceImageIds([]);
     setNiche("");
     setAiScenarios([]);
     setSelectedScenario(null);
@@ -957,8 +956,8 @@ const CreateUGCGemini = () => {
     setCurrentBatchImages([]);
     setPreviousImages([]);
     setPendingSlots(0);
-    setProductImage(null);
-    setSourceImageId(null);
+    setProductImages([]);
+    setSourceImageIds([]);
     setNiche("");
     setAiScenarios([]);
     setSelectedScenario({'idea': "", "small-description" : "", "description": ""});
@@ -1539,7 +1538,7 @@ const CreateUGCGemini = () => {
 
                 <div className="border-t pt-4">
                   <Button 
-                    variant={!productImage || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
+                    variant={productImages.length === 0 || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
                     size="lg" 
                     className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
                     onClick={handleGenerate}
@@ -1642,7 +1641,7 @@ const CreateUGCGemini = () => {
             remainingCredits={remainingCredits}
             totalCredits={getTotalCredits()}
             calculateImageCost={calculateImageCost}
-            canGenerate={!!productImage && hasSelectedScenario && !isGenerating && canGenerateImages(numImages)}
+            canGenerate={productImages.length > 0 && hasSelectedScenario && !isGenerating && canGenerateImages(numImages)}
             onGenerate={handleGenerate}
             isGenerating={isGenerating}
             open={settingsOpen}

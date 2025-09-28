@@ -767,7 +767,7 @@ const CreateUGC = () => {
           highlight: highlight as 'yes' | 'no',
           output_format: 'webp'
         },
-        sourceImageId: sourceImageIds[0], // Use first image for now
+        source_image_id: sourceImageIds[0], // Use first image for now
       });
 
       if (result) {
@@ -1124,9 +1124,10 @@ const CreateUGC = () => {
             </div>
 
             <GeneratedImagesRows
-              currentImages={currentBatchImages}
+              currentBatchImages={currentBatchImages}
               previousImages={previousImages}
-              onImageSelect={(imageId) => {
+              totalSlots={numImages}
+              onCreateNewScenario={(imageId) => {
                 setCurrentBatchImages(prev =>
                   prev.map(img =>
                     img.id === imageId ? { ...img, selected: !img.selected } : img
@@ -1138,8 +1139,9 @@ const CreateUGC = () => {
                   )
                 );
               }}
+              onOpenInLibrary={() => {}}
+              onStartFromScratch={() => {}}
               isGenerating={isGenerating}
-              pendingSlots={pendingSlots}
             />
 
             {showScrollDown && (
@@ -1163,18 +1165,28 @@ const CreateUGC = () => {
       <SettingsSheet
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
-        numImages={numImages}
-        onNumImagesChange={setNumImages}
-        imageQuality={imageQuality}
-        onImageQualityChange={setImageQuality}
-        imageOrientation={imageOrientation}
-        onImageOrientationChange={setImageOrientation}
-        timeOfDay={timeOfDay}
-        onTimeOfDayChange={setTimeOfDay}
-        highlight={highlight}
-        onHighlightChange={setHighlight}
-        style={style}
-        onStyleChange={setStyle}
+        settings={{
+          numImages: numImages,
+          imageQuality: imageQuality,
+          imageOrientation: imageOrientation,
+          style: style,
+          timeOfDay: timeOfDay,
+          highlight: highlight
+        }}
+        onSettingsChange={(newSettings) => {
+          if (newSettings.numImages) setNumImages(newSettings.numImages);
+          if (newSettings.imageQuality) setImageQuality(newSettings.imageQuality);
+          if (newSettings.imageOrientation) setImageOrientation(newSettings.imageOrientation);
+          if (newSettings.style) setStyle(newSettings.style);
+          if (newSettings.timeOfDay) setTimeOfDay(newSettings.timeOfDay);
+          if (newSettings.highlight) setHighlight(newSettings.highlight);
+        }}
+        remainingCredits={0}
+        totalCredits={0}
+        calculateImageCost={() => 1}
+        canGenerate={true}
+        onGenerate={() => {}}
+        isGenerating={isGenerating}
       />
 
       {/* Source Image Picker Dialog */}
@@ -1184,7 +1196,8 @@ const CreateUGC = () => {
             <DialogTitle>{t('ugc.productImage.selectFromLibrary')}</DialogTitle>
           </DialogHeader>
           <SourceImagePicker
-            onImageSelect={handleSourceImageSelect}
+            onSelect={handleSourceImageSelect}
+            open={sourceImagePickerOpen}
             onClose={() => setSourceImagePickerOpen(false)}
           />
         </DialogContent>
