@@ -2,48 +2,95 @@
 // Supabase Edge Function (Deno) for Google Gemini image generation
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+// Type definitions
+interface RequestBody {
+  action?: string;
+  jobId?: string;
+  prompt?: string;
+  settings?: ImageSettings;
+  source_image_id?: string;
+  idempotency_window_minutes?: number;
+}
+
+interface ImageSettings {
+  quality?: 'low' | 'medium' | 'high';
+  size?: string;
+  number?: number;
+}
+
+interface LogMeta {
+  [key: string]: any;
+}
+
+interface GeminiResponse {
+  predictions?: Array<{
+    image?: { imageBytes?: string };
+    bytesBase64Encoded?: string;
+  }>;
+  candidates?: Array<{
+    content?: {
+      parts?: Array<{
+        inlineData?: {
+          mimeType?: string;
+          data?: string;
+        };
+      }>;
+    };
+  }>;
+}
+
 // ---------- CORS ----------
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "GET,POST,OPTIONS"
 };
+
 // ---------- ENV ----------
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_API_KEY") ?? "";
+
 // ---------- LOG ----------
-const log = (step, meta)=>console.log(`[UGC-GEMINI] ${step}${meta ? ` - ${JSON.stringify(meta)}` : ""}`);
+const log = (step: string, meta?: LogMeta): void => 
+  console.log(`[UGC-GEMINI] ${step}${meta ? ` - ${JSON.stringify(meta)}` : ""}`);
+
 // ---------- HELPERS ----------
-const json = (data, status = 200)=>new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      ...corsHeaders,
-      "Content-Type": "application/json"
-    }
-  });
-const errorJson = (message, status = 400, meta)=>{
+const json = (data: any, status = 200): Response => new Response(JSON.stringify(data), {
+  status,
+  headers: {
+    ...corsHeaders,
+    "Content-Type": "application/json"
+  }
+});
+
+const errorJson = (message: string, status = 400, meta?: LogMeta): Response => {
   log(`ERROR: ${message}`, meta);
   return json({
     error: message
   }, status);
 };
-function sleep(ms) {
-  return new Promise((r)=>setTimeout(r, ms));
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
 }
-function backoffMs(attempt) {
+
+function backoffMs(attempt: number): number {
   return 900 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 250);
 }
+
 // credit price table (same as OpenAI for consistency)
-function calculateImageCost(settings) {
-  const qualityCosts = {
+function calculateImageCost(settings: ImageSettings): number {
+  const qualityCosts: Record<string, number> = {
     low: 1,
     medium: 1.5,
     high: 2
   };
   return qualityCosts[settings.quality ?? "high"] ?? 2;
 }
+
 // ---------- AUTH / CLIENTS ----------
 function serviceClient() {
   return createClient(SUPABASE_URL, SERVICE_KEY, {
@@ -52,7 +99,8 @@ function serviceClient() {
     }
   });
 }
-function userClient(authorization) {
+
+function userClient(authorization: string) {
   return createClient(SUPABASE_URL, ANON_KEY, {
     global: {
       headers: {
@@ -64,69 +112,78 @@ function userClient(authorization) {
     }
   });
 }
+
 // ---------- EXTRACT DATA FROM IMAGE ---------- //
-function extractBase64Image(jsonResp) {
+function extractBase64Image(jsonResp: GeminiResponse): string | null {
   if (jsonResp?.predictions?.length) {
     const p0 = jsonResp.predictions[0];
     if (p0?.image?.imageBytes) return p0.image.imageBytes;
     if (p0?.bytesBase64Encoded) return p0.bytesBase64Encoded;
   }
   const parts = jsonResp?.candidates?.[0]?.content?.parts ?? [];
-  const imgPart = parts.find((p)=>p?.inlineData?.mimeType?.startsWith('image/'));
+  const imgPart = parts.find((p: any) => p?.inlineData?.mimeType?.startsWith('image/'));
   return imgPart?.inlineData?.data ?? null;
 }
-async function getUserIdFromAuth(authHeader) {
+
+async function getUserIdFromAuth(authHeader: string): Promise<string> {
   const supa = userClient(authHeader);
   const { data, error } = await supa.auth.getUser();
   if (error || !data.user) throw new Error("Invalid authentication token");
   return data.user.id;
 }
+
 // ---------- ROUTER ----------
-serve(async (req)=>{
+serve(async (req) => {
   // CORS preflight
   if (req.method === "OPTIONS") return new Response(null, {
     headers: corsHeaders
   });
+
   try {
     const authHeader = req.headers.get("Authorization") ?? "";
     const isServiceCall = authHeader === `Bearer ${SERVICE_KEY}`;
+    
     // parse body once (may be empty)
-    let body = {};
+    let body: RequestBody = {};
     try {
       body = await req.json();
-    } catch  {
+    } catch {
       body = {};
     }
+    
     const action = body?.action ?? new URL(req.url).searchParams.get("action");
+    
     // clients
     const svc = serviceClient();
     const isInternalAction = action === "generateImages" || action === "recoverQueued";
-    let userId = null;
+    let userId: string | null = null;
+    
     if (isInternalAction && isServiceCall) {
-    // ok, internal worker call
+      // ok, internal worker call
     } else {
       if (!authHeader) return errorJson("Missing authorization header", 401);
       userId = await getUserIdFromAuth(authHeader);
     }
-    switch(action){
+    
+    switch(action) {
       case "createImageJob":
         if (!userId) return errorJson("Auth required", 401);
         return await createImageJob(userId, body, svc);
       case "generateImages":
         if (!(isInternalAction && isServiceCall)) return errorJson("Forbidden", 403);
-        return await generateImages(body.jobId, svc);
+        return await generateImages(body.jobId!, svc);
       case "getJob":
         if (!userId) return errorJson("Auth required", 401);
-        return await getJob(userId, body.jobId, userClient(authHeader));
+        return await getJob(userId, body.jobId!, userClient(authHeader));
       case "getJobImages":
         if (!userId) return errorJson("Auth required", 401);
-        return await getJobImages(userId, body.jobId, userClient(authHeader));
+        return await getJobImages(userId, body.jobId!, userClient(authHeader));
       case "cancelJob":
         if (!userId) return errorJson("Auth required", 401);
-        return await cancelJob(userId, body.jobId, svc);
+        return await cancelJob(userId, body.jobId!, svc);
       case "resumeJob":
         if (!userId) return errorJson("Auth required", 401);
-        return await resumeJob(userId, body.jobId, svc);
+        return await resumeJob(userId, body.jobId!, svc);
       case "getActiveJob":
         if (!userId) return errorJson("Auth required", 401);
         return await getActiveJob(userId, svc);
@@ -136,24 +193,28 @@ serve(async (req)=>{
       default:
         return errorJson(`Unknown action: ${action ?? "none"}`, 400);
     }
-  } catch (e) {
+  } catch (e: any) {
     return errorJson(e?.message ?? String(e), 500);
   }
 });
+
 // ---------- ACTIONS ----------
 // Enqueue job, reserve credits, idempotent
-async function createImageJob(userId, payload, supabase) {
+async function createImageJob(userId: string, payload: RequestBody, supabase: any): Promise<Response> {
   const { prompt, settings, source_image_id } = payload;
   const idempotency_window_minutes = payload.idempotency_window_minutes ?? 60;
+  
   log("Create job", {
     userId,
     quality: settings?.quality,
     number: settings?.number
   });
+  
   // admin?
   const { data: isAdmin } = await supabase.rpc("is_user_admin", {
     check_user_id: userId
   });
+  
   // idempotency key
   const { data: keyResult, error: keyErr } = await supabase.rpc("generate_idempotency_key", {
     p_user_id: userId,
@@ -161,8 +222,10 @@ async function createImageJob(userId, payload, supabase) {
     p_prompt: prompt,
     p_settings: settings
   });
+  
   if (keyErr) return errorJson(`Idempotency error: ${keyErr.message}`, 400);
   const contentHash = keyResult;
+  
   // existing job inside window
   const windowStart = new Date(Date.now() - idempotency_window_minutes * 60 * 1000).toISOString();
   const { data: existing } = await supabase
@@ -188,7 +251,7 @@ async function createImageJob(userId, payload, supabase) {
     const res = {
       jobId: existing.id,
       status: existing.status,
-      existingImages: (existing.ugc_images ?? []).map((img) => ({
+      existingImages: (existing.ugc_images ?? []).map((img: any) => ({
         url: img.public_url,
         prompt: existing.prompt,
         format: img.meta?.format ?? "webp"
@@ -196,10 +259,12 @@ async function createImageJob(userId, payload, supabase) {
     };
     return json(res, 200);
   }
+  
   // credits
-  const costPerImage = calculateImageCost(settings);
+  const costPerImage = calculateImageCost(settings ?? {});
   const totalImages = settings?.number ?? 1;
   const totalCost = isAdmin ? 0 : costPerImage * totalImages;
+  
   if (!isAdmin) {
     const { data: subscriber } = await supabase.from("subscribers").select("credits_balance").eq("user_id", userId).single();
     if (!subscriber || (subscriber.credits_balance ?? 0) < totalCost) {
@@ -208,15 +273,18 @@ async function createImageJob(userId, payload, supabase) {
         have: subscriber?.credits_balance ?? 0
       });
     }
+    
     const { data: deduct, error: deductErr } = await supabase.rpc("deduct_user_credits", {
       p_user_id: userId,
       p_amount: totalCost,
       p_reason: "reserve:gemini_image_job"
     });
+    
     if (deductErr || !deduct?.success) {
       return errorJson(deduct?.error ?? deductErr?.message ?? "Failed to reserve credits", 400);
     }
   }
+  
   // create job (queued) with model_type = 'gemini'
   const { data: job, error: jobErr } = await supabase.from("image_jobs").insert({
     user_id: userId,
@@ -231,6 +299,7 @@ async function createImageJob(userId, payload, supabase) {
     source_image_id: source_image_id ?? null,
     model_type: "gemini" // Set model type to gemini
   }).select().single();
+  
   if (jobErr) {
     if (!isAdmin && totalCost > 0) {
       await supabase.rpc("refund_user_credits", {
@@ -239,6 +308,7 @@ async function createImageJob(userId, payload, supabase) {
         p_reason: "job_creation_failed"
       });
     }
+    
     if (jobErr?.message?.includes("idx_image_jobs_user_content_hash_active_unique")) {
       const { data: conflicting } = await supabase
         .from("image_jobs")
@@ -259,6 +329,7 @@ async function createImageJob(userId, payload, supabase) {
     }
     return errorJson(`Job insert failed: ${jobErr.message}`, 400);
   }
+  
   // trigger worker (self-invoke with service auth)
   try {
     await serviceClient().functions.invoke("ugc-gemini", {
@@ -270,23 +341,25 @@ async function createImageJob(userId, payload, supabase) {
         Authorization: `Bearer ${SERVICE_KEY}`,
         apikey: SERVICE_KEY
       }
-    }).catch(()=>{});
+    }).catch(() => {});
   } catch (_) {}
+  
   // EdgeRuntime fallback for platforms that support it
   try {
     // @ts-ignore
     EdgeRuntime?.waitUntil?.(generateImages(job.id, supabase));
   } catch (_) {}
+  
   return json({
     jobId: job.id,
     status: "queued"
   }, 200);
 }
+
 // Worker: claim and generate using Google Gemini
-async function generateImages(jobId, supabase) {
-  log("Worker start", {
-    jobId
-  });
+async function generateImages(jobId: string, supabase: any): Promise<Response> {
+  log("Worker start", { jobId });
+  
   // atomic claim
   const { data: job, error: claimErr } = await supabase.from("image_jobs").update({
     status: "processing",
@@ -294,25 +367,21 @@ async function generateImages(jobId, supabase) {
     updated_at: new Date().toISOString()
   }).eq("id", jobId).eq("status", "queued").eq("model_type", "gemini") // Ensure we're processing a Gemini job
   .select().single();
+  
   if (claimErr || !job) {
     const { data: existing } = await supabase.from("image_jobs").select("status").eq("id", jobId).maybeSingle();
     if (existing?.status === "processing") {
-      log("Job already processing", {
-        jobId
-      });
-      return json({
-        message: "Already processing"
-      });
+      log("Job already processing", { jobId });
+      return json({ message: "Already processing" });
     }
-    log("Job not found or already processed", {
-      jobId,
-      existing
-    });
+    log("Job not found or already processed", { jobId, existing });
     return errorJson("Job not found or already processed", 404);
   }
+  
   let completed = 0;
   let failed = 0;
-  const errors = [];
+  const errors: string[] = [];
+  
   try {
     // prepare source image (optional)
     const sourceImageUrl = await getSignedSourceUrl(job.source_image_id, supabase);
@@ -320,8 +389,9 @@ async function generateImages(jobId, supabase) {
       jobId,
       hasSourceImage: !!sourceImageUrl
     });
+    
     // loop images
-    for(let i = 0; i < (job.total ?? 1); i++){
+    for(let i = 0; i < (job.total ?? 1); i++) {
       try {
         log("Starting image generation", {
           jobId,
@@ -341,7 +411,7 @@ async function generateImages(jobId, supabase) {
           progress,
           updated_at: new Date().toISOString()
         }).eq("id", jobId);
-      } catch (e) {
+      } catch (e: any) {
         failed++;
         const errorMsg = e?.message ?? String(e);
         errors.push(errorMsg);
@@ -352,8 +422,9 @@ async function generateImages(jobId, supabase) {
         });
       }
     }
+    
     const finalStatus = completed > 0 ? "completed" : "failed";
-    const update = {
+    const update: any = {
       status: finalStatus,
       completed,
       failed,
@@ -361,14 +432,18 @@ async function generateImages(jobId, supabase) {
       finished_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
+    
     if (finalStatus === "failed") update.error = errors.join("; ");
+    
     log("Job processing completed", {
       jobId,
       finalStatus,
       completed,
       failed
     });
+    
     await supabase.from("image_jobs").update(update).eq("id", jobId);
+    
     // partial refunds (skip admins)
     if (failed > 0) {
       const { data: isAdmin } = await supabase.rpc("is_user_admin", {
@@ -391,7 +466,7 @@ async function generateImages(jobId, supabase) {
         });
       }
     }
-  } catch (e) {
+  } catch (e: any) {
     const errorMsg = e?.message ?? String(e);
     log("Job processing catastrophic failure", {
       jobId,
@@ -403,6 +478,7 @@ async function generateImages(jobId, supabase) {
       finished_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }).eq("id", jobId);
+    
     // full refund on catastrophic failure (skip admins)
     const { data: isAdmin } = await supabase.rpc("is_user_admin", {
       check_user_id: job.user_id
@@ -420,49 +496,50 @@ async function generateImages(jobId, supabase) {
       });
     }
   }
-  return json({
-    success: true
-  });
+  
+  return json({ success: true });
 }
+
 // Generate 1 image using Google Gemini (with retries/backoff)
-async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabase) {
+async function generateSingleImageWithGemini(job: any, index: number, sourceImageUrl: string | null, supabase: any): Promise<void> {
   const MAX_ATTEMPTS = 3;
   const size = job?.settings?.size ?? "1024x1024";
   const quality = job?.settings?.quality ?? "high";
   const prompt = String(job?.prompt ?? "");
+  
   // Map size to Gemini format
-  const mapSizeToGemini = (size)=>{
-    switch(size){
-      case "1024x1024":
-        return "SQUARE";
-      case "1536x1024":
-        return "LANDSCAPE";
-      case "1024x1536":
-        return "PORTRAIT";
-      default:
-        return "SQUARE";
+  const mapSizeToGemini = (size: string): string => {
+    switch(size) {
+      case "1024x1024": return "SQUARE";
+      case "1536x1024": return "LANDSCAPE";
+      case "1024x1536": return "PORTRAIT";
+      default: return "SQUARE";
     }
   };
-  for(let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++){
+  
+  for(let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(()=>controller.abort(), 120000);
-      let res;
+      const timeout = setTimeout(() => controller.abort(), 120000);
+      let res: Response;
+      
       if (sourceImageUrl) {
         // ----- edits (using Gemini's image editing capabilities) -----
         const src = await fetch(sourceImageUrl);
         if (!src.ok) throw new Error(`Failed to fetch source image: ${src.status}`);
         const mimeType = src.headers.get('content-type') ?? 'image/png';
         const imageBuffer = await src.arrayBuffer();
+        
         // Fix: Convert large array buffer to base64 safely without stack overflow
         const uint8Array = new Uint8Array(imageBuffer);
         let binary = '';
         const chunkSize = 32768; // Process in chunks to avoid stack overflow
-        for(let i = 0; i < uint8Array.length; i += chunkSize){
+        for(let i = 0; i < uint8Array.length; i += chunkSize) {
           const chunk = uint8Array.subarray(i, i + chunkSize);
           binary += String.fromCharCode.apply(null, Array.from(chunk));
         }
         const base64Image = btoa(binary);
+        
         res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent`, {
           method: "POST",
           headers: {
@@ -494,7 +571,35 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
           }),
           signal: controller.signal
         });
+      } else {
+        // Text-only generation (no source image)
+        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent`, {
+          method: "POST",
+          headers: {
+            "x-goog-api-key": GOOGLE_AI_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: prompt
+                  }
+                ]
+              }
+            ],
+            generationConfig: {
+              responseModalities: [
+                'TEXT',
+                'IMAGE'
+              ]
+            }
+          }),
+          signal: controller.signal
+        });
       }
+      
       try {
         if (!res.ok) {
           const text = await res.text();
@@ -505,11 +610,10 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
           }
           throw new Error(`Gemini API error ${res.status}: ${text}`);
         }
-        //const jsonResp = await res.json();
-        const jsonResp = await res.json();
-        //const predictions = jsonResp?.predictions;
+        
+        const jsonResp: GeminiResponse = await res.json();
         const b64 = extractBase64Image(jsonResp);
-        //if (!predictions || !predictions[0]?.image?.imageBytes) {
+        
         if (!b64) {
           log("Gemini raw response (truncated)", {
             jobId: job.id,
@@ -521,21 +625,27 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
           }
           throw new Error(`Missing image data in Imagen response`);
         }
+        
         // extract image data
-        //const b64 = predictions[0].image.imageBytes;
-        const decodedBytes = Uint8Array.from(atob(b64), (c)=>c.charCodeAt(0));
+        const decodedBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+        
         // Store as PNG directly (no WEBP conversion since WASM is not supported in edge functions)
         let fileBytes = decodedBytes;
         let storedFormat = "png";
         let contentType = "image/png";
         let extension = "png";
+        
         const storagePath = `${job.user_id}/${job.id}/${index}.${extension}`;
+        
         const { error: upErr } = await supabase.storage.from("ugc").upload(storagePath, fileBytes, {
           contentType,
           upsert: false
         });
+        
         if (upErr) throw new Error(`Storage upload failed: ${upErr.message}`);
+        
         const { data: pub } = supabase.storage.from("ugc").getPublicUrl(storagePath);
+        
         const { error: saveErr } = await supabase.from("ugc_images").insert({
           job_id: job.id,
           user_id: job.user_id,
@@ -552,12 +662,13 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
           prompt: prompt,
           source_image_id: job.source_image_id
         });
+        
         if (saveErr) throw new Error(`Failed to save image record: ${saveErr.message}`);
         return; // success
-      } finally{
+      } finally {
         clearTimeout(timeout);
       }
-    } catch (e) {
+    } catch (e: any) {
       const msg = e?.message ?? String(e);
       const retryable = /AbortError/.test(e?.name) || /Gemini API error 5\d\d/.test(msg) || /429/.test(msg) || /Missing image data/.test(msg);
       if (retryable && attempt < MAX_ATTEMPTS) {
@@ -568,34 +679,34 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
     }
   }
 }
+
 // Signed URL for user-provided source image (optional)
-async function getSignedSourceUrl(source_image_id, supabase) {
+async function getSignedSourceUrl(source_image_id: string | null, supabase: any): Promise<string | null> {
   if (!source_image_id) return null;
   const { data: src } = await supabase.from("source_images").select("storage_path").eq("id", source_image_id).single();
   if (!src?.storage_path) return null;
   const { data: signed } = await supabase.storage.from("ugc-inputs").createSignedUrl(src.storage_path, 3600);
   return signed?.signedUrl ?? null;
 }
+
 // RLS-safe reads
-async function getJob(userId, jobId, supaUser) {
+async function getJob(userId: string, jobId: string, supaUser: any): Promise<Response> {
   const { data: job, error } = await supaUser.from("image_jobs").select("*").eq("id", jobId).eq("user_id", userId).eq("model_type", "gemini") // Only return Gemini jobs
   .single();
   if (error) return errorJson("Job not found", 404);
-  return json({
-    job
-  });
+  return json({ job });
 }
-async function getJobImages(userId, jobId, supaUser) {
+
+async function getJobImages(userId: string, jobId: string, supaUser: any): Promise<Response> {
   const { data: images, error } = await supaUser.from("ugc_images").select("*").eq("job_id", jobId).eq("user_id", userId).order("created_at", {
     ascending: true
   });
   if (error) return errorJson("Failed to fetch images", 400);
-  return json({
-    images
-  });
+  return json({ images });
 }
+
 // Cancel job + refund unused credits
-async function cancelJob(userId, jobId, supabase) {
+async function cancelJob(userId: string, jobId: string, supabase: any): Promise<Response> {
   const { data: job, error } = await supabase.from("image_jobs").update({
     status: "canceled"
   }).eq("id", jobId).eq("user_id", userId).eq("model_type", "gemini") // Only cancel Gemini jobs
@@ -603,10 +714,13 @@ async function cancelJob(userId, jobId, supabase) {
     "queued",
     "processing"
   ]).select().single();
+  
   if (error || !job) return errorJson("Job not found or cannot be canceled", 400);
+  
   const { data: isAdmin } = await supabase.rpc("is_user_admin", {
     check_user_id: userId
   });
+  
   if (!isAdmin) {
     const totalCost = calculateImageCost(job.settings ?? {}) * ((job.settings?.number ?? job.total) || 1);
     const usedCost = calculateImageCost(job.settings ?? {}) * (job.completed ?? 0);
@@ -619,16 +733,17 @@ async function cancelJob(userId, jobId, supabase) {
       });
     }
   }
-  return json({
-    success: true
-  });
+  
+  return json({ success: true });
 }
+
 // Resume a stuck job (re-triggers worker)
-async function resumeJob(userId, jobId, supabase) {
+async function resumeJob(userId: string, jobId: string, supabase: any): Promise<Response> {
   // ensure ownership and that it's a Gemini job
   const { data: job, error } = await supabase.from("image_jobs").select("id,user_id,status,completed,total").eq("id", jobId).eq("model_type", "gemini").single();
   if (error || !job) return errorJson("Job not found", 404);
   if (job.user_id !== userId) return errorJson("Forbidden", 403);
+  
   const resumable = job.status === "queued" || job.status === "processing" || job.status === "failed" && (job.completed ?? 0) === 0;
   if (!resumable) {
     return json({
@@ -636,6 +751,7 @@ async function resumeJob(userId, jobId, supabase) {
       reason: "Not resumable"
     });
   }
+  
   // re-trigger
   try {
     await serviceClient().functions.invoke("ugc-gemini", {
@@ -655,12 +771,12 @@ async function resumeJob(userId, jobId, supabase) {
       EdgeRuntime?.waitUntil?.(generateImages(jobId, supabase));
     } catch (_) {}
   }
-  return json({
-    resumed: true
-  });
+  
+  return json({ resumed: true });
 }
+
 // Return the latest queued/processing Gemini job for the user
-async function getActiveJob(userId, supabase) {
+async function getActiveJob(userId: string, supabase: any): Promise<Response> {
   const { data: job, error } = await supabase.from("image_jobs").select("*").eq("user_id", userId).eq("model_type", "gemini") // Only get Gemini jobs
   .in("status", [
     "queued",
@@ -668,20 +784,23 @@ async function getActiveJob(userId, supabase) {
   ]).order("created_at", {
     ascending: false
   }).limit(1).maybeSingle();
+  
   if (error && error.code !== "PGRST116") {
     return errorJson("Failed to fetch active job", 400);
   }
-  return json({
-    job: job ?? null
-  });
+  
+  return json({ job: job ?? null });
 }
+
 // Sweep queued Gemini jobs that never got picked up
-async function recoverQueued(supabase) {
+async function recoverQueued(supabase: any): Promise<Response> {
   const cutoff = new Date(Date.now() - 3 * 60 * 1000).toISOString(); // older than 3m
   const { data: jobs, error } = await supabase.from("image_jobs").select("id,status").eq("status", "queued").eq("model_type", "gemini") // Only recover Gemini jobs
   .lte("created_at", cutoff).limit(20);
+  
   if (error) return errorJson("Failed to list queued jobs", 400);
-  for (const j of jobs ?? []){
+  
+  for (const j of jobs ?? []) {
     try {
       await serviceClient().functions.invoke("ugc-gemini", {
         body: {
@@ -695,6 +814,7 @@ async function recoverQueued(supabase) {
       });
     } catch (_) {}
   }
+  
   return json({
     recovered: jobs?.length ?? 0
   });

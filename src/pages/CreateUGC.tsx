@@ -780,6 +780,70 @@ const CreateUGC = () => {
     }
   };
 
+  const handleImageSelect = (imageId: string) => {
+    // Check current batch first
+    setCurrentBatchImages(prev => {
+      const found = prev.find(img => img.id === imageId);
+      if (found) {
+        return prev.map(img => 
+          img.id === imageId ? { ...img, selected: !img.selected } : img
+        );
+      }
+      return prev;
+    });
+    
+    // Then check previous images
+    setPreviousImages(prev => 
+      prev.map(img => 
+        img.id === imageId ? { ...img, selected: !img.selected } : img
+      )
+    );
+  };
+
+  const toggleImageSelection = (imageId: string) => {
+    handleImageSelect(imageId);
+  };
+
+  // Combine both arrays for selection calculations
+  const allImages = [...currentBatchImages, ...previousImages];
+  const selectedImages = allImages.filter(img => img.selected);
+
+  const handleDownloadAll = () => {
+    const imagesToDownload = selectedImages.length > 0 ? selectedImages : allImages;
+
+    imagesToDownload.forEach((img, index) => {
+      if (!img.url) return;
+      const link = document.createElement('a');
+      link.href = img.url;
+      const extension = img.format || 'png';
+      link.download = `ugc-image-${index + 1}.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    toast({
+      title: "Download started",
+      description: `Downloading ${imagesToDownload.length} images.`,
+    });
+  };
+
+  const handleGenerateMore = () => {
+    // Clear current batch and set pending slots for new generation
+    setCurrentBatchImages([]);
+    setPendingSlots(numImages);
+  };
+
+  const handleNewCreation = () => {
+    setCurrentBatchImages([]);
+    setPreviousImages([]);
+    setPendingSlots(0);
+    setProductImages([]);
+    setSourceImageIds([]);
+    setNiche("");
+    setAiScenarios([]);
+    setSelectedScenario(null);
+  };
 
   const handleStartFromScratch = () => {
     // Clear job state
