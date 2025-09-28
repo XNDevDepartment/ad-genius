@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import MultiImageUploader from "@/components/MultiImageUploader";
 import { useToast } from "@/hooks/use-toast";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
-import { startConversationAPI, converse, sendImageAndRun } from '@/api/OpenAiChatClient';
+import { startConversationAPI, converse, sendImageAndRun, sendMultipleImagesAndRun } from '@/api/OpenAiChatClient';
 import { useGeminiImageJob } from '@/hooks/useGeminiImageJob';
 import { useActiveJob } from '@/hooks/useActiveJob';
 import { useAuth } from "@/contexts/AuthContext";
