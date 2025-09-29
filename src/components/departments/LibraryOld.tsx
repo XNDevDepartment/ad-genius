@@ -127,11 +127,9 @@ export const Library = ({ onBack }: LibraryProps) => {
         <div className="flex items-center justify-between mr-7">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              {viewMode === "ai" ? t('library.aiGenerated') : t('library.sourceImages')} ({filteredAndSortedImages.length})
+              {viewMode === "ai" ? t('library.aiGenerated') : t('library.sourceImages')} ({displayImages.length})
             </CardTitle>
           </CardHeader>
-          
-          {/* Controls */}
         </div>
         <CardContent>
           <div className="flex items-start lg:items-center gap-4 mb-6 lg:justify-between flex-col lg:flex-row">

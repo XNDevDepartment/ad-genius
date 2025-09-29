@@ -643,6 +643,19 @@ export type Database = {
         Args: { p_tier: string }
         Returns: number
       }
+      get_user_library_images: {
+        Args: { p_limit?: number; p_offset?: number; p_user_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          image_type: string
+          meta: Json
+          prompt: string
+          public_url: string
+          settings: Json
+          source_image_id: string
+        }[]
+      }
       is_admin: {
         Args: { check_user_id?: string }
         Returns: boolean

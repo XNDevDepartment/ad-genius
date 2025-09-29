@@ -44,33 +44,62 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
 
       const offset = (pageNumber - 1) * limit;
 
-      // Optimized single query using UNION ALL for better performance
-      const { data: combinedData, error: queryError, count } = await supabase
-        .rpc('get_user_library_images', {
-          p_user_id: user.id,
-          p_limit: limit,
-          p_offset: offset
-        });
+      // Fetch from both tables separately with pagination for better performance
+      const [ugcResult, generatedResult] = await Promise.all([
+        supabase
+          .from('ugc_images')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .range(offset, offset + limit - 1),
 
-      if (queryError) throw queryError;
+        supabase
+          .from('generated_images')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .range(offset, offset + limit - 1)
+      ]);
 
-      // Process the combined data
-      const processedImages: LibraryImage[] = (combinedData || []).map((img: any) => ({
+      if (ugcResult.error) throw ugcResult.error;
+      if (generatedResult.error) throw generatedResult.error;
+
+      // Normalize both data sources to LibraryImage format
+      const ugcImages: LibraryImage[] = (ugcResult.data || []).map(img => ({
         id: img.id,
         url: img.public_url,
-        prompt: img.prompt || (img.meta as any)?.prompt || 'UGC Image',
+        prompt: (img.meta as any)?.prompt || 'UGC Image',
         created_at: img.created_at,
         settings: {
-          size: (img.settings as any)?.size || (img.meta as any)?.size || '1024x1024',
-          quality: (img.settings as any)?.quality || (img.meta as any)?.quality || 'high',
-          numberOfImages: (img.settings as any)?.number || 1,
-          format: (img.settings as any)?.output_format || (img.meta as any)?.format || 'webp'
+          size: (img.meta as any)?.size || '1024x1024',
+          quality: (img.meta as any)?.quality || 'high',
+          numberOfImages: 1,
+          format: (img.meta as any)?.format || 'png'
         },
         source_image_id: img.source_image_id
       }));
 
-      setTotal(count || 0);
-      setHasMore(processedImages.length === limit && (offset + limit) < (count || 0));
+      const generatedImages: LibraryImage[] = (generatedResult.data || []).map(img => ({
+        id: img.id,
+        url: img.public_url,
+        prompt: img.prompt,
+        created_at: img.created_at,
+        settings: {
+          size: (img.settings as any)?.size || '1024x1024',
+          quality: (img.settings as any)?.quality || 'high',
+          numberOfImages: (img.settings as any)?.number || 1,
+          format: (img.settings as any)?.output_format || 'webp'
+        },
+        source_image_id: img.source_image_id || undefined
+      }));
+
+      // Combine and sort by creation date
+      const processedImages = [...ugcImages, ...generatedImages]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      // Estimate total count and hasMore status
+      const currentCount = ugcImages.length + generatedImages.length;
+      setHasMore(currentCount === limit);
 
       // Get source image signed URLs for thumbnail overlays (batch optimized)
       const sourceImageIds = processedImages
@@ -139,9 +168,7 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       ]);
 
       // Refresh the images list
-      await fetchImages();
-      
-      return true;
+      await fetchImages(1, false);
     } catch (err) {
       console.error('Failed to delete image:', err);
       throw err;
