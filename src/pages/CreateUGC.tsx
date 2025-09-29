@@ -553,12 +553,15 @@ const CreateUGC = () => {
         throw new Error(response.error.message);
       }
 
-      const sourceImage = response.data;
+      // Fix: Extract sourceImage from nested response data
+      const sourceImage = response.data.sourceImage;
 
-      // Create a File object from the uploaded image
+      // Create a File object from the uploaded image with correct metadata
       const imageResponse = await fetch(sourceImage.publicUrl);
       const blob = await imageResponse.blob();
-      const file = new File([blob], sourceImage.fileName, { type: blob.type });
+      const file = new File([blob], sourceImage.fileName || 'imported-image.jpg', { 
+        type: sourceImage.mimeType || blob.type 
+      });
 
       // Replace current images with this single image
       setProductImages([file]);
@@ -572,7 +575,49 @@ const CreateUGC = () => {
       });
 
       // Auto-analyze the imported image
-      //handleImagesUpload([file]);
+      setIsAnalyzingImage(true);
+      
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const base64 = reader.result as string;
+
+          const reply = await sendImageAndRun(
+            threadId!,
+            ASSISTANT_ID,
+            base64,
+            file.name,
+            'I have uploaded a product image. Please analyze it. Dont answer this message.'
+          );
+
+          if (reply) {
+            setProductIdentification(reply);
+            setProductAnalyses([reply]);
+            
+            // Save the analysis message
+            if (threadId) {
+              await saveMessage({
+                conversationId: threadId,
+                role: 'assistant',
+                content: reply,
+                metadata: { analysisType: 'product_identification', imageIndex: 0 }
+              });
+            }
+            
+            toast({
+              title: "Product Analysis Complete",
+              description: "Image analyzed. Now describe your niche to get scenario suggestions."
+            });
+            
+            document.getElementById("niche")?.focus();
+          }
+        } catch (error) {
+          console.error('Error analyzing imported image:', error);
+        } finally {
+          setIsAnalyzingImage(false);
+        }
+      };
+      reader.readAsDataURL(file);
 
     } catch (error) {
       console.error('Error importing from URL:', error);
