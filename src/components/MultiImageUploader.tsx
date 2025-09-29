@@ -152,14 +152,6 @@ const MultiImageUploader = ({
                 </Button>
               </div>
 
-              <div className="p-3 bg-background/95 backdrop-blur-sm">
-                <p className="text-sm font-medium text-foreground">
-                  {file.name}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {(file.size / 1024 / 1024).toFixed(2)} MB
-                </p>
-              </div>
             </Card>
           ))}
         </div>

@@ -55,7 +55,7 @@ const ASPECT_INFO: Record<AspectRatio, { label: string; composition: string }> =
   '3:4':  { label: 'Portrait', composition: 'Vertical portrait framing with natural headroom; guide the eye along vertical lines.' },
   '4:3':  { label: 'Landscape',composition: 'Classic landscape framing; rule-of-thirds emphasis and stable horizon.' },
   '9:16': { label: 'Vertical', composition: 'Tall story/reel framing; lead lines from foreground to subject.' },
-  '16:9': { label: 'Wide',     composition: 'Cinematic wide framing; foreground–midground–background depth cues.' },
+  '16:9': { label: 'Wide',  composition: 'Cinematic wide framing; foreground–midground–background depth cues.' },
 };
 
 // 2) Build the aspect/size line once and append to both prompts
@@ -71,7 +71,7 @@ const CreateUGCGemini = () => {
   const isMobile = useIsMobile();
 
   const { user, subscriptionData } = useAuth();
-  const { credits, canAfford, deductCredits, getRemainingCredits, getTotalCredits } = useCredits();
+  const { credits, getTotalCredits } = useCredits();
   const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
   const [showAuthModal, setShowAuthModal] = useState(!user);
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
@@ -470,11 +470,11 @@ const CreateUGCGemini = () => {
 
   const handleImagesUpload = async (files: File[]) => {
     setProductImages(files);
-    setIsAnalyzingImages(new Array(files.length).fill(true));
+    // setIsAnalyzingImages(new Array(files.length).fill(true));
 
     const uploadedSourceIds: string[] = [];
 
-    // Step 1: Upload all images to database individually (unchanged behavior)
+    //Upload all images to database individually (unchanged behavior)
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
 
@@ -490,60 +490,60 @@ const CreateUGCGemini = () => {
       }
     }
 
-    // Step 2: Convert all images to base64 for API call
-    const imageDataArray: Array<{ fileData: string; fileName: string }> = [];
-    
-    for (const file of files) {
-      try {
-        const base64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-        
-        imageDataArray.push({
-          fileData: base64,
-          fileName: file.name
-        });
-      } catch (error) {
-        console.error(`Error converting image ${file.name} to base64:`, error);
-      }
-    }
+    // // Step 2: Convert all images to base64 for API call
+    // const imageDataArray: Array<{ fileData: string; fileName: string }> = [];
+
+    // for (const file of files) {
+    //   try {
+    //     const base64 = await new Promise<string>((resolve, reject) => {
+    //       const reader = new FileReader();
+    //       reader.onload = () => resolve(reader.result as string);
+    //       reader.onerror = reject;
+    //       reader.readAsDataURL(file);
+    //     });
+
+    //     imageDataArray.push({
+    //       fileData: base64,
+    //       fileName: file.name
+    //     });
+    //   } catch (error) {
+    //     console.error(`Error converting image ${file.name} to base64:`, error);
+    //   }
+    // }
 
     // Step 3: Single API call with all images
-    try {
-      const reply = await sendMultipleImagesAndRun(
-        threadId!,
-        ASSISTANT_ID,
-        imageDataArray,
-        `I have uploaded ${files.length} product images. Please analyze all of them together and provide comprehensive product analysis. Don't answer this message.`
-      );
+    // try {
+    //   const reply = await sendMultipleImagesAndRun(
+    //     threadId!,
+    //     ASSISTANT_ID,
+    //     imageDataArray,
+    //     `I have uploaded ${files.length} product images. Please analyze all of them together and provide comprehensive product analysis. Don't answer this message.`
+    //   );
 
-      // Step 4: Set analysis results (same final state)
-      setProductIdentification(reply);
-      setProductAnalyses(new Array(files.length).fill(reply)); // Same analysis for all images
-      
-      // Step 5: Save single conversation entry
-      if (conversationId) {
-        await saveMessage({
-          conversationId,
-          role: 'user',
-          content: `I have uploaded ${files.length} product images for analysis.`,
-          metadata: { hasImage: true, imageCount: files.length }
-        });
+    //   // Step 4: Set analysis results (same final state)
+    //   setProductIdentification(reply);
+    //   setProductAnalyses(new Array(files.length).fill(reply)); // Same analysis for all images
 
-        await saveMessage({
-          conversationId,
-          role: 'assistant',
-          content: reply,
-          metadata: { analysisType: 'product_identification', imageCount: files.length }
-        });
-      }
-    } catch (error) {
-      console.error('Error analyzing images:', error);
-      setProductAnalyses(new Array(files.length).fill(''));
-    }
+    //   // Step 5: Save single conversation entry
+    //   if (conversationId) {
+    //     await saveMessage({
+    //       conversationId,
+    //       role: 'user',
+    //       content: `I have uploaded ${files.length} product images for analysis.`,
+    //       metadata: { hasImage: true, imageCount: files.length }
+    //     });
+
+    //     await saveMessage({
+    //       conversationId,
+    //       role: 'assistant',
+    //       content: reply,
+    //       metadata: { analysisType: 'product_identification', imageCount: files.length }
+    //     });
+    //   }
+    // } catch (error) {
+    //   console.error('Error analyzing images:', error);
+    //   setProductAnalyses(new Array(files.length).fill(''));
+    // }
 
     // Update progress - set all images as analyzed
     setIsAnalyzingImages(new Array(files.length).fill(false));
@@ -575,51 +575,51 @@ const CreateUGCGemini = () => {
       setSourceImageIds([image.id]);
 
       // Start AI analysis
-      setIsAnalyzingImages(new Array([file].length).fill(true));
+      // setIsAnalyzingImages(new Array([file].length).fill(true));
 
       const reader = new FileReader();
-      reader.onload = async () => {
-        const base64 = reader.result as string;
+      // reader.onload = async () => {
+      //   const base64 = reader.result as string;
 
-        const reply = await sendImageAndRun(
-          threadId!,
-          ASSISTANT_ID,
-          base64,
-          file.name,
-          'I have uploaded a product image. Please analyze it. Dont answer this message.'
-        );
+      //   const reply = await sendImageAndRun(
+      //     threadId!,
+      //     ASSISTANT_ID,
+      //     base64,
+      //     file.name,
+      //     'I have uploaded a product image. Please analyze it. Dont answer this message.'
+      //   );
 
-        setProductIdentification(reply);
-        setProductAnalyses([reply]);
-        setProductAnalyses(new Array([file].length).fill(reply));
+      //   setProductIdentification(reply);
+      //   setProductAnalyses([reply]);
+      //   setProductAnalyses(new Array([file].length).fill(reply));
 
-        // Save message if authenticated
-        if (conversationId) {
-          await saveMessage({
-            conversationId,
-            role: 'user',
-            content: 'I have uploaded a product image from my source library. Please analyze it. Dont answer this message',
-            metadata: { hasImage: true, source: 'library' }
-          });
+      //   // Save message if authenticated
+      //   if (conversationId) {
+      //     await saveMessage({
+      //       conversationId,
+      //       role: 'user',
+      //       content: 'I have uploaded a product image from my source library. Please analyze it. Dont answer this message',
+      //       metadata: { hasImage: true, source: 'library' }
+      //     });
 
-          await saveMessage({
-            conversationId,
-            role: 'assistant',
-            content: reply,
-            metadata: { analysisType: 'product_identification' }
-          });
-        }
+      //     await saveMessage({
+      //       conversationId,
+      //       role: 'assistant',
+      //       content: reply,
+      //       metadata: { analysisType: 'product_identification' }
+      //     });
+      //   }
 
-        setIsAnalyzingImage(false);
-        setIsAnalyzingImages(new Array([file].length).fill(false));
-        toast({
-          title: "Product Loaded",
-          description: "Selected image from your library and AI has analyzed it."
-        });
-
-        // Focus on niche input
-        document.getElementById("niche")?.focus();
-      };
+      //   setIsAnalyzingImage(false);
+      //   setIsAnalyzingImages(new Array([file].length).fill(false));
+        
+      //   // Focus on niche input
+      // };
+      toast({
+        title: "Product Loaded",
+        description: "Selected image from your library and AI has analyzed it."
+      });
+      document.getElementById("niche")?.focus();
       reader.readAsDataURL(file);
 
     } catch (error) {
@@ -673,46 +673,46 @@ const CreateUGCGemini = () => {
         setUrlImportOpen(false);
 
         // Start AI analysis
-        setIsAnalyzingImages([true]);
+        // setIsAnalyzingImages([true]);
 
         const reader = new FileReader();
-        reader.onload = async () => {
-          const base64 = reader.result as string;
+        // reader.onload = async () => {
+        //   const base64 = reader.result as string;
 
-          const reply = await sendMultipleImagesAndRun(
-            threadId!,
-            ASSISTANT_ID,
-            [{ fileData: base64, fileName: file.name }],
-            'I have uploaded a product image from URL. Please analyze it. Dont answer this message.'
-          );
+        //   const reply = await sendMultipleImagesAndRun(
+        //     threadId!,
+        //     ASSISTANT_ID,
+        //     [{ fileData: base64, fileName: file.name }],
+        //     'I have uploaded a product image from URL. Please analyze it. Dont answer this message.'
+        //   );
 
-          setProductIdentification(reply);
+        //   setProductIdentification(reply);
 
-          if (conversationId) {
-            await saveMessage({
-              conversationId,
-              role: 'user',
-              content: 'I have imported a product image from URL. Please analyze it. Dont answer this message',
-              metadata: { hasImage: true, source: 'url', originalUrl: importUrl.trim() }
-            });
+        //   if (conversationId) {
+        //     await saveMessage({
+        //       conversationId,
+        //       role: 'user',
+        //       content: 'I have imported a product image from URL. Please analyze it. Dont answer this message',
+        //       metadata: { hasImage: true, source: 'url', originalUrl: importUrl.trim() }
+        //     });
 
-            await saveMessage({
-              conversationId,
-              role: 'assistant',
-              content: reply,
-              metadata: { analysisType: 'product_identification' }
-            });
-          }
+        //     await saveMessage({
+        //       conversationId,
+        //       role: 'assistant',
+        //       content: reply,
+        //       metadata: { analysisType: 'product_identification' }
+        //     });
+        //   }
 
-          setIsAnalyzingImages([false]);
-          toast({
-            title: "Image Imported",
-            description: "Successfully imported and analyzed image from URL."
-          });
 
-          // Focus on niche input
-          document.getElementById("niche")?.focus();
-        };
+        //   // Focus on niche input
+        // };
+        setIsAnalyzingImages([false]);
+        toast({
+          title: "Image Imported",
+          description: "Successfully imported and analyzed image from URL."
+        });
+        document.getElementById("niche")?.focus();
         reader.readAsDataURL(file);
       }
 
@@ -731,17 +731,63 @@ const CreateUGCGemini = () => {
   const getScenariosFromConversation = async (nicheText?: string, moreScen?: boolean) => {
     const targetNiche = nicheText || niche;
     setIsLoadingScenarios(true);
+    setIsAnalyzingImages(new Array(productImages.length).fill(true));
+
+    const uploadedSourceIds: string[] = [];
+
+    // Step 1: Upload all images to database individually (unchanged behavior)
+    for (let i = 0; i < productImages.length; i++) {
+      const file = productImages[i];
+
+      try {
+        // Upload source image to secure storage
+        const sourceImage = await uploadSourceImage(file);
+        if (sourceImage) {
+          uploadedSourceIds.push(sourceImage.id);
+          console.log(`Source image ${i + 1} uploaded with ID:`, sourceImage.id);
+        }
+      } catch (error) {
+        console.error(`Failed to upload source image ${i + 1}:`, error);
+      }
+    }
+
+
+    // Step 2: Convert all images to base64 for API call
+    const imageDataArray: Array<{ fileData: string; fileName: string }> = [];
+
+    for (const file of productImages) {
+      try {
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        imageDataArray.push({
+          fileData: base64,
+          fileName: file.name
+        });
+      } catch (error) {
+        console.error(`Error converting image ${file.name} to base64:`, error);
+      }
+    }
+
     try {
       const responseText = await converse(
         threadId!,
-        `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas. Return ONLY a compact JSON object with "scenarios" array and in this language: ` + language,
+        `I have uploaded ${productImages.length} product images. Please analyze all of them together and provide comprehensive product analysis. Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas. Return ONLY a compact JSON object with "scenarios" array and in this language: ` + language,
         ASSISTANT_ID
       );
+
       // Extract JSON from response
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const scenarios = JSON.parse(jsonMatch[0]);
         setAiScenarios(scenarios.scenarios || []);
+
+        // Update progress - set all images as analyzed
+        setIsAnalyzingImages(new Array(productImages.length).fill(false));
 
         // Save user message and assistant response
         if (conversationId) {
@@ -767,6 +813,8 @@ const CreateUGCGemini = () => {
       }
     } catch (error) {
       console.error('Error getting scenarios:', error);
+      // Update progress - set all images as analyzed
+      setIsAnalyzingImages(new Array(productImages.length).fill(false));
       toast({
         title: "Error",
         description: "Failed to get scenario suggestions. Please try again.",
@@ -1007,10 +1055,10 @@ const CreateUGCGemini = () => {
       }
 
       // 6) Upload the CROPPED file and use its ID for the Gemini job
-      const uploaded = await uploadSourceImage(preparedFile);
-      if (!uploaded?.id) {
-        throw new Error('Failed to upload cropped source image');
-      }
+      // const uploaded = await uploadSourceImage(preparedFile);
+      // if (!uploaded?.id) {
+      //   throw new Error('Failed to upload cropped source image');
+      // }
 
       // 7) Create job using the cropped source image id
       const result = await createJob({
@@ -1027,7 +1075,7 @@ const CreateUGCGemini = () => {
           orientation: aspectRatio,
         },
         // IMPORTANT: use the CROPPED image id
-        source_image_id: uploaded.id,
+        source_image_id: sourceImageIds[0] || undefined
       });
 
       if (!result) throw new Error('Failed to create job');
@@ -1623,15 +1671,15 @@ const CreateUGCGemini = () => {
                   </div>
 
                   {/* Resolution */}
-                  <div className="space-y-2 mb-6">
+                  {/* <div className="space-y-2 mb-6">
                     <div className="flex items-center gap-2">
-                      <Label className="text-sm font-medium">{t('ugc.imageSize.title') /* add this key */}</Label>
-                    </div>
+                      <Label className="text-sm font-medium">{t('ugc.imageSize.title') /* add this key </Label>*/}
+                    {/* </div>
                     <ResolutionSelector value={sizeTier} onChange={setSizeTier} />
                     <p className="text-xs text-muted-foreground mt-1">
                       {SIZE_MAP[aspectRatio][sizeTier]} ({aspectRatio})
                     </p>
-                  </div>
+                  </div> */} 
 
                   {/* Image Quality */}
                   <div className="space-y-2 mb-6">
