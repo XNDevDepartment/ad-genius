@@ -398,12 +398,11 @@ const CreateUGCGemini = () => {
     setIsAnalyzingImages(new Array(files.length).fill(true));
 
     const uploadedSourceIds: string[] = [];
-    const analyses: string[] = [];
 
-    // Process each image
+    // Step 1: Upload all images to database individually (unchanged behavior)
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      
+
       try {
         // Upload source image to secure storage
         const sourceImage = await uploadSourceImage(file);
@@ -411,73 +410,69 @@ const CreateUGCGemini = () => {
           uploadedSourceIds.push(sourceImage.id);
           console.log(`Source image ${i + 1} uploaded with ID:`, sourceImage.id);
         }
-
-        // Analyze image with OpenAI
-        const reader = new FileReader();
-        await new Promise<void>((resolve) => {
-          reader.onload = async () => {
-            try {
-              const base64 = reader.result as string;
-
-              const reply = await sendImageAndRun(
-                threadId!,
-                ASSISTANT_ID,
-                base64,
-                file.name,
-                `I have uploaded product image ${i + 1} of ${files.length}. Please analyze this image. Don't answer this message.`
-              );
-
-              analyses.push(reply);
-
-              // Save user message and assistant response
-              if (conversationId) {
-                await saveMessage({
-                  conversationId,
-                  role: 'user',
-                  content: `I have uploaded product image ${i + 1} of ${files.length}. Please analyze this image.`,
-                  metadata: { hasImage: true, imageIndex: i }
-                });
-
-                await saveMessage({
-                  conversationId,
-                  role: 'assistant',
-                  content: reply,
-                  metadata: { analysisType: 'product_identification', imageIndex: i }
-                });
-              }
-            } catch (error) {
-              console.error(`Error analyzing image ${i + 1}:`, error);
-              analyses.push('');
-            }
-
-            resolve();
-          };
-          reader.readAsDataURL(file);
-        });
-
-        // Update progress
-        setIsAnalyzingImages(prev => {
-          const newState = [...prev];
-          newState[i] = false;
-          return newState;
-        });
-
       } catch (error) {
         console.error(`Failed to upload source image ${i + 1}:`, error);
-        setIsAnalyzingImages(prev => {
-          const newState = [...prev];
-          newState[i] = false;
-          return newState;
-        });
       }
     }
 
-    setSourceImageIds(uploadedSourceIds);
-    setProductAnalyses(analyses);
+    // Step 2: Convert all images to base64 for API call
+    const imageDataArray: Array<{ fileData: string; fileName: string }> = [];
     
-    // Combine all analyses for product identification
-    const combinedAnalysis = analyses.filter(a => a).join('\n\n');
-    setProductIdentification(combinedAnalysis);
+    for (const file of files) {
+      try {
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        
+        imageDataArray.push({
+          fileData: base64,
+          fileName: file.name
+        });
+      } catch (error) {
+        console.error(`Error converting image ${file.name} to base64:`, error);
+      }
+    }
+
+    // Step 3: Single API call with all images
+    try {
+      const reply = await sendMultipleImagesAndRun(
+        threadId!,
+        ASSISTANT_ID,
+        imageDataArray,
+        `I have uploaded ${files.length} product images. Please analyze all of them together and provide comprehensive product analysis. Don't answer this message.`
+      );
+
+      // Step 4: Set analysis results (same final state)
+      setProductIdentification(reply);
+      setProductAnalyses(new Array(files.length).fill(reply)); // Same analysis for all images
+      
+      // Step 5: Save single conversation entry
+      if (conversationId) {
+        await saveMessage({
+          conversationId,
+          role: 'user',
+          content: `I have uploaded ${files.length} product images for analysis.`,
+          metadata: { hasImage: true, imageCount: files.length }
+        });
+
+        await saveMessage({
+          conversationId,
+          role: 'assistant',
+          content: reply,
+          metadata: { analysisType: 'product_identification', imageCount: files.length }
+        });
+      }
+    } catch (error) {
+      console.error('Error analyzing images:', error);
+      setProductAnalyses(new Array(files.length).fill(''));
+    }
+
+    // Update progress - set all images as analyzed
+    setIsAnalyzingImages(new Array(files.length).fill(false));
+    setSourceImageIds(uploadedSourceIds);
 
     toast({
       title: "Product Analysis Complete",
@@ -500,12 +495,12 @@ const CreateUGCGemini = () => {
       // Convert blob to File object
       const file = new File([blob], image.fileName, { type: blob.type });
 
-      // Set as product images and source IDs
+      // Set as product image and source ID
       setProductImages([file]);
       setSourceImageIds([image.id]);
 
       // Start AI analysis
-      setIsAnalyzingImage(true);
+      setIsAnalyzingImages(new Array([file].length).fill(true));
 
       const reader = new FileReader();
       reader.onload = async () => {
@@ -520,6 +515,8 @@ const CreateUGCGemini = () => {
         );
 
         setProductIdentification(reply);
+        setProductAnalyses([reply]);
+        setProductAnalyses(new Array([file].length).fill(reply));
 
         // Save message if authenticated
         if (conversationId) {
@@ -539,6 +536,7 @@ const CreateUGCGemini = () => {
         }
 
         setIsAnalyzingImage(false);
+        setIsAnalyzingImages(new Array([file].length).fill(false));
         toast({
           title: "Product Loaded",
           description: "Selected image from your library and AI has analyzed it."
@@ -711,17 +709,6 @@ const CreateUGCGemini = () => {
     await getScenariosFromConversation("",true);
   };
 
-  // handleGenerate.ts – final version aligned with Supabase contract
-  // Generates UGC images by sending a **Data‑URL string** to the edge function.
-
-  // helper: File → Data‑URL (base64)
-  const fileToDataUrl = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
 
   const handleGenerate = async () => {
     //check if the necessary data is available
@@ -871,81 +858,10 @@ const CreateUGCGemini = () => {
     }
   };
 
-  // Helper function to convert orientation to OpenAI size format
-  const orientationToSize = (orientation: string): '1024x1024' | '1536x1024' | '1024x1536' => {
-    switch (orientation) {
-      case '3:2': return '1536x1024';
-      case '2:3': return '1024x1536';
-      default: return '1024x1024';
-    }
-  };
-
-  const handleImageSelect = (imageId: string) => {
-    // Check current batch first
-    setCurrentBatchImages(prev => {
-      const found = prev.find(img => img.id === imageId);
-      if (found) {
-        return prev.map(img => 
-          img.id === imageId ? { ...img, selected: !img.selected } : img
-        );
-      }
-      return prev;
-    });
-    
-    // Then check previous images
-    setPreviousImages(prev => 
-      prev.map(img => 
-        img.id === imageId ? { ...img, selected: !img.selected } : img
-      )
-    );
-  };
-
-  const toggleImageSelection = (imageId: string) => {
-    handleImageSelect(imageId);
-  };
-
   // Combine both arrays for selection calculations
   const allImages = [...currentBatchImages, ...previousImages];
   const selectedImages = allImages.filter(img => img.selected);
 
-
-  const handleDownloadAll = () => {
-    const imagesToDownload = selectedImages.length > 0 ? selectedImages : allImages;
-
-    imagesToDownload.forEach((img, index) => {
-      if (!img.url) return;
-      const link = document.createElement('a');
-      link.href = img.url;
-      const extension = img.format || 'png';
-      link.download = `ugc-image-${index + 1}.${extension}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
-
-    toast({
-      title: "Download started",
-      description: `Downloading ${imagesToDownload.length} images.`,
-    });
-  };
-
-  const handleGenerateMore = () => {
-    // Clear current batch and set pending slots for new generation
-    setCurrentBatchImages([]);
-    setPendingSlots(numImages);
-  };
-
-  const handleNewCreation = () => {
-    setCurrentBatchImages([]);
-    setPreviousImages([]);
-    setPendingSlots(0);
-    setProductImages([]);
-    setSourceImageIds([]);
-    setNiche("");
-    setAiScenarios([]);
-    setSelectedScenario(null);
-    
-  };
 
   const handleStartFromScratch = () => {
     // Clear job state
@@ -991,7 +907,7 @@ const CreateUGCGemini = () => {
     handleScroll(); // Check initial state
     
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [allImages.length, jobImages.length, isGenerating, stage]);
+  }, [jobImages.length, isGenerating, stage]);
 
   const handleScrollToResults = () => {
     resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1065,13 +981,13 @@ const CreateUGCGemini = () => {
                         </TooltipProvider>
                       </div>
                       {/* <p className="text-sm text-muted-foreground">{t('ugc.productImage.subtitle')}</p> */}
-                       <MultiImageUploader 
-                         onImagesSelect={handleImagesUpload}
-                         selectedImages={productImages}
-                         isAnalyzing={isAnalyzingImages}
-                         analyzingText={t('ugc.productImage.analyzing')}
-                         maxImages={5}
-                       />
+                      <MultiImageUploader
+                        onImagesSelect={handleImagesUpload}
+                        selectedImages={productImages}
+                        isAnalyzing={isAnalyzingImages}
+                        analyzingText="Analyzing product..."
+                        maxImages={5}
+                      />
 
                       {/* Additional Image Options */}
                       <div className="flex gap-2">
