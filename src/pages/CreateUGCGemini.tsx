@@ -148,6 +148,9 @@ const CreateUGCGemini = () => {
   // Compute compact summary for mobile panel
   const summary = `${numImages} img • ${imageQuality.charAt(0).toUpperCase() + imageQuality.slice(1)} • ${highlight === 'yes' ? 'Focus On' : 'Blend In'} • ${imageOrientation} • ${style} • ${timeOfDay}`;
 
+  const cropCache = useRef(new Map<string, File>());
+  const cacheKey = (f: File, ar: AR, px: string) => `${f.name}|${f.size}|${ar}|${px}`;
+
 
   // Move all refs and effects to the top, before any conditional returns
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -392,6 +395,78 @@ const CreateUGCGemini = () => {
       }, 100);
     }
   }, [job?.status, stage]);
+
+  // --- helper kept local so you don't need to touch other files ---
+  type AR = AspectRatio;
+
+  function parsePx(px?: string) {
+    // e.g. "1536x1024" -> { w: 1536, h: 1024 }
+    if (!px) return null;
+    const [w, h] = px.split('x').map(n => parseInt(n, 10));
+    return (Number.isFinite(w) && Number.isFinite(h)) ? { w, h } : null;
+  }
+
+  function parseAR(ar: AR) {
+    const [w, h] = ar.split(':').map(Number);
+    return { ratio: w / h };
+  }
+
+  async function cropFileToAspect(file: File, ar: AR, targetPx?: string): Promise<File> {
+    const buf = await file.arrayBuffer();
+    const blob = new Blob([buf], { type: file.type || 'image/png' });
+
+    // Use createImageBitmap when available (handles EXIF in most modern browsers)
+    let imgLike: ImageBitmap | HTMLImageElement;
+    try {
+      imgLike = await (window as any).createImageBitmap(blob);
+    } catch {
+      imgLike = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = URL.createObjectURL(blob);
+      });
+    }
+
+    const srcW = (imgLike as any).width;
+    const srcH = (imgLike as any).height;
+    const { ratio } = parseAR(ar);
+    const srcRatio = srcW / srcH;
+
+    // center-crop to requested aspect
+    let cropW: number, cropH: number, sx: number, sy: number;
+    if (srcRatio > ratio) {
+      // too wide -> crop width
+      cropH = srcH;
+      cropW = Math.round(cropH * ratio);
+      sx = Math.round((srcW - cropW) / 2);
+      sy = 0;
+    } else {
+      // too tall -> crop height
+      cropW = srcW;
+      cropH = Math.round(cropW / ratio);
+      sx = 0;
+      sy = Math.round((srcH - cropH) / 2);
+    }
+
+    // optional resize to your selected SIZE_MAP pixels
+    const target = parsePx(targetPx);
+    const outW = target?.w ?? cropW;
+    const outH = target?.h ?? cropH;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = outW;
+    canvas.height = outH;
+    const ctx = canvas.getContext('2d')!;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(imgLike as any, sx, sy, cropW, cropH, 0, 0, outW, outH);
+
+    const outType = /image\/(png|jpeg|webp)/.test(file.type) ? file.type : 'image/png';
+    const outBlob: Blob = await new Promise(res => canvas.toBlob(b => res(b as Blob), outType, 0.95));
+    const ext = outType.split('/')[1];
+    return new File([outBlob], file.name.replace(/\.\w+$/, '') + `_cropped.${ext}`, { type: outType });
+  }
+
 
   const handleImagesUpload = async (files: File[]) => {
     setProductImages(files);
@@ -710,8 +785,159 @@ const CreateUGCGemini = () => {
   };
 
 
+  // const handleGenerate = async () => {
+  //   //check if the necessary data is available
+  //   if (productImages.length === 0 || !hasSelectedScenario) {
+  //     toast({
+  //       title: 'Missing information',
+  //       description: 'Please upload a product image and select a scenario.',
+  //       variant: 'destructive',
+  //     });
+  //     return;
+  //   }
+
+  //   // Pre-flight check for credit availability (admins bypass this)
+  //   if (!canGenerateImages(numImages)) {
+  //     const creditsNeeded = calculateImageCost(imageQuality, numImages);
+  //     toast({
+  //       title: 'Insufficient credits',
+  //       description: `You need ${creditsNeeded} credits to generate ${numImages} ${imageQuality}-quality image(s). You have ${remainingCredits} credits remaining.`,
+  //       variant: 'destructive',
+  //     });
+  //     setStage('setup');
+  //     return;
+  //   }
+
+  //   try {
+  //     console.log('[CreateUGCGemini] Starting new generation, clearing previous job state');
+
+  //     // Clear any existing job state first
+  //     clearJob();
+
+  //     // Freeze the current results into the tower (newest on top)
+  //     setPreviousImages(prev => {
+  //       if (currentBatchImages.length === 0) return prev;
+  //       const finished = currentBatchImages.filter(img => Boolean(img.url));
+  //       return finished.length ? [...finished, ...prev] : prev;
+  //     });
+
+  //     // Clear current batch - the job completion handler will move completed images to previous
+  //     setCurrentBatchImages([]);
+
+  //     // Provide immediate feedback
+  //     setStage('generating');
+
+  //     // Set pending slots for new generation (animated placeholders)
+  //     setPendingSlots(numImages);
+
+  //     // Save state to localStorage for persistence
+  //     localStorage.setItem('currentStage', 'generating');
+
+  //     // Immediate scroll to generation area
+  //     setTimeout(() => {
+  //       resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  //     }, 200);
+
+  //     /* ------------------------------------------------------------------
+  //       1️⃣  Prepare payloads once (Data‑URL + prompt)
+  //     ------------------------------------------------------------------*/
+  //     // const baseFileData = await fileToDataUrl(productImage); // Data URL with prefix
+  //     const framingLine = buildFramingLine(aspectRatio, sizeTier);
+
+  //     const commonNeg = `--negative "AI artifacts, text overlays, watermark, extreme bokeh, macro close-up, center-composed product, invented branding, extra limbs, low resolution"`;
+
+
+  //     const highlightYes = `Ultra-detailed, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. Shot with full‑frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125's, ISO 200 at ${timeOfDay} with authentic light direction and quality.` + framingLine;
+
+
+  //     const highlightNo = `Photorealistic ${style} scene: ${selectedScenario.description}. Product naturally placed (20% of frame, off-center). Environment-first composition with sharp background detail. ${timeOfDay} lighting with authentic shadows and reflections. Natural imperfections, realistic textures, believable environmental interaction. Avoid: centered product, studio lighting, artificial blur, stock photo aesthetics. Use full-frame DSLR, 50'mm prime lens, aperture f/4, shutter 1/125's, ISO 200.` + framingLine;
+
+
+  //     const prompt = (highlight === 'yes' ? highlightYes : highlightNo).trim();
+
+
+  //     // Create job with new system
+  //     const result = await createJob({
+  //       prompt,
+  //       settings: {
+  //         number: numImages,
+  //         size: SIZE_MAP[aspectRatio][sizeTier] as "1024x1024" | "1024x1536" | "1536x1024",
+  //         quality: imageQuality,
+  //         // orientation: imageOrientation as '1:1' | '3:2' | '2:3',
+  //         style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'cinematic' | 'natural',
+  //         timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',
+  //         highlight: highlight as 'yes' | 'no',
+  //         output_format: 'png'
+  //       },
+  //       source_image_id: sourceImageIds[0] || undefined
+  //     });
+
+  //     if (!result) {
+  //       throw new Error('Failed to create job');
+  //     }
+
+  //     const jobId = result.jobId;
+
+  //     // Save job ID, stage and metadata for mobile recovery
+  //     localStorage.setItem('currentGeminiJobId', jobId);
+  //     localStorage.setItem('currentGeminiStage', 'generating');
+
+  //     // Enhanced mobile persistence with job metadata
+  //     const jobMetadata = {
+  //       id: jobId,
+  //       numImages: numImages,
+  //       settings: {
+  //         number: numImages,
+  //         quality: imageQuality,
+  //         orientation: imageOrientation,
+  //         style: style,
+  //         timeOfDay: timeOfDay,
+  //         highlight: highlight,
+  //         output_format: 'png'
+  //       },
+  //       prompt: prompt,
+  //       createdAt: new Date().toISOString()
+  //     };
+  //     localStorage.setItem('geminiJobMetadata', JSON.stringify(jobMetadata));
+
+  //     // toast({
+  //     //   title: 'Generation Started',
+  //     //   description: 'Your images are being generated. Progress will update automatically.',
+  //     // });
+
+  //     // Job is now processing in the background
+  //     // The UI will update automatically through the subscription
+
+  //   } catch (error) {
+  //     localStorage.setItem('currentGeminiStage', 'setup');
+  //     console.error('Generation error:', error);
+
+  //     let errorMessage = "Failed to generate images. Please try again.";
+  //     if (error instanceof Error) {
+  //       errorMessage = error.message;
+  //       if (error.message.includes('authentication') || error.message.includes('session')) {
+  //         errorMessage = "Session expired. Please refresh the page and try again.";
+  //       } else if (error.message.includes('credit') || error.message.includes('limit')) {
+  //         errorMessage = "Insufficient credits or rate limit reached. Please check your account.";
+  //       }
+  //     }
+
+  //     toast({
+  //       title: "Generation Failed",
+  //       description: errorMessage,
+  //       variant: "destructive",
+  //     });
+
+  //     // Refresh credits after error
+  //     refreshCount();
+  //   }
+  // };
+
+  // Combine both arrays for selection calculations
+
+  // --- REPLACEMENT: handleGenerate (JIT crop + upload of cropped) ---
   const handleGenerate = async () => {
-    //check if the necessary data is available
+    // 0) require an image + a selected scenario
     if (productImages.length === 0 || !hasSelectedScenario) {
       toast({
         title: 'Missing information',
@@ -721,7 +947,7 @@ const CreateUGCGemini = () => {
       return;
     }
 
-    // Pre-flight check for credit availability (admins bypass this)
+    // 1) credits pre-flight (admins bypass inside your hook)
     if (!canGenerateImages(numImages)) {
       const creditsNeeded = calculateImageCost(imageQuality, numImages);
       toast({
@@ -734,105 +960,100 @@ const CreateUGCGemini = () => {
     }
 
     try {
-      console.log('[CreateUGCGemini] Starting new generation, clearing previous job state');
+      console.log('[CreateUGCGemini] Starting new generation with JIT-cropped conditioning image');
 
-      // Clear any existing job state first
+      // 2) clear prior job + push finished images to tower
       clearJob();
-
-      // Freeze the current results into the tower (newest on top)
       setPreviousImages(prev => {
         if (currentBatchImages.length === 0) return prev;
         const finished = currentBatchImages.filter(img => Boolean(img.url));
         return finished.length ? [...finished, ...prev] : prev;
       });
-
-      // Clear current batch - the job completion handler will move completed images to previous
       setCurrentBatchImages([]);
 
-      // Provide immediate feedback
+      // 3) UI immediate feedback
       setStage('generating');
-
-      // Set pending slots for new generation (animated placeholders)
       setPendingSlots(numImages);
-
-      // Save state to localStorage for persistence
       localStorage.setItem('currentStage', 'generating');
-
-      // Immediate scroll to generation area
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 200);
 
-      /* ------------------------------------------------------------------
-        1️⃣  Prepare payloads once (Data‑URL + prompt)
-      ------------------------------------------------------------------*/
-      // const baseFileData = await fileToDataUrl(productImage); // Data URL with prefix
+      // 4) Build prompt (unchanged)
       const framingLine = buildFramingLine(aspectRatio, sizeTier);
-
-      const commonNeg = `--negative "AI artifacts, text overlays, watermark, extreme bokeh, macro close-up, center-composed product, invented branding, extra limbs, low resolution"`;
-
-
-      const highlightYes = `Ultra-detailed, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. Shot with full‑frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125's, ISO 200 at ${timeOfDay} with authentic light direction and quality.` + framingLine;
-
-
-      const highlightNo = `Photorealistic ${style} scene: ${selectedScenario.description}. Product naturally placed (20% of frame, off-center). Environment-first composition with sharp background detail. ${timeOfDay} lighting with authentic shadows and reflections. Natural imperfections, realistic textures, believable environmental interaction. Avoid: centered product, studio lighting, artificial blur, stock photo aesthetics. Use full-frame DSLR, 50'mm prime lens, aperture f/4, shutter 1/125's, ISO 200.` + framingLine;
-
-
+      const highlightYes =
+        `Ultra-detailed, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. ` +
+        `Shot with full-frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125's, ISO 200 at ${timeOfDay} with authentic light direction and quality. ` +
+        framingLine;
+      const highlightNo =
+        `Photorealistic ${style} scene: ${selectedScenario.description}. Product naturally placed (20% of frame, off-center). ` +
+        `Environment-first composition with sharp background detail. ${timeOfDay} lighting with authentic shadows and reflections. ` +
+        `Natural imperfections, realistic textures, believable environmental interaction. Avoid: centered product, studio lighting, artificial blur, stock photo aesthetics. ` +
+        `Use full-frame DSLR, 50'mm prime lens, aperture f/4, shutter 1/125's, ISO 200. ` +
+        framingLine;
       const prompt = (highlight === 'yes' ? highlightYes : highlightNo).trim();
 
+      // 5) 🔧 JIT crop the FIRST original image to the CURRENT AR/size
+      const ar = aspectRatio as AR;
+      const targetPx = SIZE_MAP[aspectRatio][sizeTier]; // e.g. "1536x1024"
 
-      // Create job with new system
+      const original = productImages[0]; // your job API consumes a single source image id
+      const key = cacheKey(original, ar, targetPx || '');
+      let preparedFile = cropCache.current.get(key);
+
+      if (!preparedFile) {
+        preparedFile = await cropFileToAspect(original, ar, targetPx);
+        cropCache.current.set(key, preparedFile);
+      }
+
+      // 6) Upload the CROPPED file and use its ID for the Gemini job
+      const uploaded = await uploadSourceImage(preparedFile);
+      if (!uploaded?.id) {
+        throw new Error('Failed to upload cropped source image');
+      }
+
+      // 7) Create job using the cropped source image id
       const result = await createJob({
         prompt,
         settings: {
           number: numImages,
           size: SIZE_MAP[aspectRatio][sizeTier] as "1024x1024" | "1024x1536" | "1536x1024",
           quality: imageQuality,
-          // orientation: imageOrientation as '1:1' | '3:2' | '2:3',
           style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'cinematic' | 'natural',
           timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',
           highlight: highlight as 'yes' | 'no',
-          output_format: 'png'
+          output_format: 'png',
+          // optional: save AR in settings for later UI reads
+          orientation: aspectRatio,
         },
-        source_image_id: sourceImageIds[0] || undefined
+        // IMPORTANT: use the CROPPED image id
+        source_image_id: uploaded.id,
       });
 
-      if (!result) {
-        throw new Error('Failed to create job');
-      }
+      if (!result) throw new Error('Failed to create job');
 
+      // 8) Persist job info for mobile recovery
       const jobId = result.jobId;
-
-      // Save job ID, stage and metadata for mobile recovery
       localStorage.setItem('currentGeminiJobId', jobId);
       localStorage.setItem('currentGeminiStage', 'generating');
-
-      // Enhanced mobile persistence with job metadata
-      const jobMetadata = {
-        id: jobId,
-        numImages: numImages,
-        settings: {
-          number: numImages,
-          quality: imageQuality,
-          orientation: imageOrientation,
-          style: style,
-          timeOfDay: timeOfDay,
-          highlight: highlight,
-          output_format: 'png'
-        },
-        prompt: prompt,
-        createdAt: new Date().toISOString()
-      };
-      localStorage.setItem('geminiJobMetadata', JSON.stringify(jobMetadata));
-
-      // toast({
-      //   title: 'Generation Started',
-      //   description: 'Your images are being generated. Progress will update automatically.',
-      // });
-
-      // Job is now processing in the background
-      // The UI will update automatically through the subscription
-
+      localStorage.setItem(
+        'geminiJobMetadata',
+        JSON.stringify({
+          id: jobId,
+          numImages,
+          settings: {
+            number: numImages,
+            quality: imageQuality,
+            orientation: aspectRatio,
+            style,
+            timeOfDay,
+            highlight,
+            output_format: 'png',
+          },
+          prompt,
+          createdAt: new Date().toISOString(),
+        })
+      );
     } catch (error) {
       localStorage.setItem('currentGeminiStage', 'setup');
       console.error('Generation error:', error);
@@ -853,12 +1074,12 @@ const CreateUGCGemini = () => {
         variant: "destructive",
       });
 
-      // Refresh credits after error
       refreshCount();
+      setStage('setup');
+      setPendingSlots(0);
     }
   };
 
-  // Combine both arrays for selection calculations
   const allImages = [...currentBatchImages, ...previousImages];
   const selectedImages = allImages.filter(img => img.selected);
 
