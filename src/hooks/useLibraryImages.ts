@@ -17,13 +17,21 @@ interface LibraryImage {
   sourceSignedUrl?: string;
 }
 
-export const useLibraryImages = () => {
+interface PaginationOptions {
+  page?: number;
+  limit?: number;
+}
+
+export const useLibraryImages = (options: PaginationOptions = {}) => {
+  const { page = 1, limit = 20 } = options;
   const [images, setImages] = useState<LibraryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [total, setTotal] = useState(0);
   const { user } = useAuth();
 
-  const fetchImages = async () => {
+  const fetchImages = async (pageNumber = page, shouldAppend = false) => {
     if (!user) {
       setImages([]);
       setLoading(false);
@@ -34,96 +42,84 @@ export const useLibraryImages = () => {
       setLoading(true);
       setError(null);
 
-      // Fetch from both ugc_images and generated_images tables
-      const [ugcResult, generatedResult] = await Promise.all([
-        supabase
-          .from('ugc_images')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false }),
+      const offset = (pageNumber - 1) * limit;
 
-        supabase
-          .from('generated_images')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-      ]);
+      // Optimized single query using UNION ALL for better performance
+      const { data: combinedData, error: queryError, count } = await supabase
+        .rpc('get_user_library_images', {
+          p_user_id: user.id,
+          p_limit: limit,
+          p_offset: offset
+        });
 
-      if (ugcResult.error) throw ugcResult.error;
-      if (generatedResult.error) throw generatedResult.error;
+      if (queryError) throw queryError;
 
-      // Normalize both data sources to LibraryImage format
-      const ugcImages: LibraryImage[] = (ugcResult.data || []).map(img => ({
+      // Process the combined data
+      const processedImages: LibraryImage[] = (combinedData || []).map((img: any) => ({
         id: img.id,
         url: img.public_url,
-        prompt: (img.meta as any)?.prompt || 'UGC Image',
+        prompt: img.prompt || (img.meta as any)?.prompt || 'UGC Image',
         created_at: img.created_at,
         settings: {
-          size: (img.meta as any)?.size || '1024x1024',
-          quality: (img.meta as any)?.quality || 'high',
-          numberOfImages: 1,
-          format: (img.meta as any)?.format || 'png'
+          size: (img.settings as any)?.size || (img.meta as any)?.size || '1024x1024',
+          quality: (img.settings as any)?.quality || (img.meta as any)?.quality || 'high',
+          numberOfImages: (img.settings as any)?.number || 1,
+          format: (img.settings as any)?.output_format || (img.meta as any)?.format || 'webp'
         },
         source_image_id: img.source_image_id
       }));
 
-      const generatedImages: LibraryImage[] = (generatedResult.data || []).map(img => ({
-        id: img.id,
-        url: img.public_url,
-        prompt: img.prompt,
-        created_at: img.created_at,
-        settings: {
-          size: (img.settings as any)?.size || '1024x1024',
-          quality: (img.settings as any)?.quality || 'high',
-          numberOfImages: (img.settings as any)?.number || 1,
-          format: (img.settings as any)?.output_format || 'webp'
-        },
-        source_image_id: img.source_image_id || undefined
-      }));
+      setTotal(count || 0);
+      setHasMore(processedImages.length === limit && (offset + limit) < (count || 0));
 
-      // Combine and sort by creation date
-      const allImages = [...ugcImages, ...generatedImages]
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-      // Get source image signed URLs for thumbnail overlays
-      const sourceImageIds = allImages
+      // Get source image signed URLs for thumbnail overlays (batch optimized)
+      const sourceImageIds = processedImages
         .map(img => img.source_image_id)
         .filter(Boolean) as string[];
 
       if (sourceImageIds.length > 0) {
-        // Fetch source images data
+        // Batch fetch source images with signed URLs
         const { data: sourceImages } = await supabase
           .from('source_images')
           .select('id, storage_path')
           .in('id', sourceImageIds);
 
         if (sourceImages && sourceImages.length > 0) {
-          // Create signed URLs for source images
-          const sourceUrlPromises = sourceImages.map(async (sourceImg) => {
-            const { data } = await supabase.storage
-              .from('ugc-inputs')
-              .createSignedUrl(sourceImg.storage_path, 3600);
-            return {
-              id: sourceImg.id,
-              signedUrl: data?.signedUrl || null
-            };
-          });
-
-          const sourceUrls = await Promise.all(sourceUrlPromises);
-          const sourceUrlMap = Object.fromEntries(
-            sourceUrls.map(item => [item.id, item.signedUrl])
+          // Create signed URLs in parallel with better error handling
+          const sourceUrlResults = await Promise.allSettled(
+            sourceImages.map(async (sourceImg) => {
+              const { data } = await supabase.storage
+                .from('ugc-inputs')
+                .createSignedUrl(sourceImg.storage_path, 3600);
+              return {
+                id: sourceImg.id,
+                signedUrl: data?.signedUrl || null
+              };
+            })
           );
 
+          const sourceUrlMap = new Map<string, string>();
+          sourceUrlResults.forEach((result) => {
+            if (result.status === 'fulfilled' && result.value.signedUrl) {
+              sourceUrlMap.set(result.value.id, result.value.signedUrl);
+            }
+          });
+
           // Add source signed URLs to images
-          allImages.forEach(img => {
-            if (img.source_image_id && sourceUrlMap[img.source_image_id]) {
-              img.sourceSignedUrl = sourceUrlMap[img.source_image_id];
+          processedImages.forEach(img => {
+            if (img.source_image_id && sourceUrlMap.has(img.source_image_id)) {
+              img.sourceSignedUrl = sourceUrlMap.get(img.source_image_id);
             }
           });
         }
       }
 
-      setImages(allImages);
+      // Append or replace images based on pagination
+      if (shouldAppend) {
+        setImages(prev => [...prev, ...processedImages]);
+      } else {
+        setImages(processedImages);
+      }
     } catch (err) {
       console.error('Failed to fetch library images:', err);
       setError(err instanceof Error ? err.message : 'Failed to load images');
@@ -152,15 +148,23 @@ export const useLibraryImages = () => {
     }
   };
 
+  const loadMore = async () => {
+    if (!hasMore || loading) return;
+    await fetchImages(page + 1, true);
+  };
+
   useEffect(() => {
-    fetchImages();
-  }, [user]);
+    fetchImages(1, false);
+  }, [user, page, limit]);
 
   return {
     images,
     loading,
     error,
-    refetch: fetchImages,
+    hasMore,
+    total,
+    loadMore,
+    refetch: () => fetchImages(1, false),
     deleteImage
   };
 };
