@@ -62,7 +62,7 @@ const ASPECT_INFO: Record<AspectRatio, { label: string; composition: string }> =
 function buildFramingLine(aspectRatio: AspectRatio, tier: SizeTier) {
   const px = SIZE_MAP[aspectRatio][tier];                 // e.g., "2816x1536"
   const { label, composition } = ASPECT_INFO[aspectRatio];
-  return `Aspect: ${label} (${aspectRatio}); Output: ${px}`;
+  return `Aspect: ${label} (${aspectRatio}); Output: ${px} ${composition}`;
 }
 
 const CreateUGCGemini = () => {
