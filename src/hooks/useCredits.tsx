@@ -30,9 +30,16 @@ export const useCredits = () => {
 
   const getTotalCredits = (): number => {
     if (!subscriptionData) return 0;
+    const tierCredits = {
+      'Free': 10,
+      'Starter': 80,
+      'Plus': 200,
+      'Pro': 400,
+      'Founders': 80
+    };
     // Total credits is what the user actually has (including rollovers)
     // This is the actual allocated credits, not tier-based assumption
-    return Math.max(0, subscriptionData.credits_balance || 0);
+    return tierCredits[subscriptionData.subscription_tier as keyof typeof tierCredits];
   };
 
   const getUsedCredits = (): number => {

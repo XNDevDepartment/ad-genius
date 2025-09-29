@@ -480,7 +480,7 @@ const CreateUGC = () => {
       setSourceImageIds([image.id]);
 
       // Start AI analysis
-      setIsAnalyzingImage(true);
+      setIsAnalyzingImages(new Array([file].length).fill(true));
 
       const reader = new FileReader();
       reader.onload = async () => {
@@ -496,6 +496,7 @@ const CreateUGC = () => {
 
         setProductIdentification(reply);
         setProductAnalyses([reply]);
+        setProductAnalyses(new Array([file].length).fill(reply));
 
         // Save message if authenticated
         if (conversationId) {
@@ -515,6 +516,7 @@ const CreateUGC = () => {
         }
 
         setIsAnalyzingImage(false);
+        setIsAnalyzingImages(new Array([file].length).fill(false));
         toast({
           title: "Product Loaded",
           description: "Selected image from your library and AI has analyzed it."
@@ -1083,7 +1085,7 @@ const CreateUGC = () => {
                       type="button"
                       variant="default"
                       onClick={() => getScenariosFromConversation()}
-                      disabled={isLoadingScenarios || !productImages[0] || !niche.trim() || !threadId || isAnalyzingImage}
+                      disabled={isLoadingScenarios || !productImages[0] || !niche.trim() || !threadId || isAnalyzingImage || !productAnalyses[0]}
                       className="w-full"
                     >
                       {isLoadingScenarios ? (
