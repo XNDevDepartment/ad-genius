@@ -572,7 +572,7 @@ const CreateUGC = () => {
       });
 
       // Auto-analyze the imported image
-      handleImagesUpload([file]);
+      //handleImagesUpload([file]);
 
     } catch (error) {
       console.error('Error importing from URL:', error);
