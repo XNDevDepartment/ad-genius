@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import ImageUploader from "@/components/ImageUploader";
 import { useToast } from "@/hooks/use-toast";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
-import { startConversationAPI, converse, sendImageAndRun } from '@/api/OpenAiChatClient';
+import { startConversationAPI, converse, sendImageAndRun, sendMultipleImagesAndRun } from '@/api/OpenAiChatClient';
 import { useImageJob } from '@/hooks/useImageJob';
 import { useActiveJob } from '@/hooks/useActiveJob';
 import { useAuth } from "@/contexts/AuthContext";
@@ -378,9 +378,8 @@ const CreateUGC = () => {
     setIsAnalyzingImages(new Array(files.length).fill(true));
 
     const uploadedSourceIds: string[] = [];
-    const analyses: string[] = [];
 
-    // Process each image
+    // Step 1: Upload all images to database individually (unchanged behavior)
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
 
@@ -391,73 +390,69 @@ const CreateUGC = () => {
           uploadedSourceIds.push(sourceImage.id);
           console.log(`Source image ${i + 1} uploaded with ID:`, sourceImage.id);
         }
-
-        // Analyze image with OpenAI
-        const reader = new FileReader();
-        await new Promise<void>((resolve) => {
-          reader.onload = async () => {
-            try {
-              const base64 = reader.result as string;
-
-              const reply = await sendImageAndRun(
-                threadId!,
-                ASSISTANT_ID,
-                base64,
-                file.name,
-                `I have uploaded product image ${i + 1} of ${files.length}. Please analyze this image. Don't answer this message.`
-              );
-
-              analyses.push(reply);
-
-              // Save user message and assistant response
-              if (conversationId) {
-                await saveMessage({
-                  conversationId,
-                  role: 'user',
-                  content: `I have uploaded product image ${i + 1} of ${files.length}. Please analyze this image.`,
-                  metadata: { hasImage: true, imageIndex: i }
-                });
-
-                await saveMessage({
-                  conversationId,
-                  role: 'assistant',
-                  content: reply,
-                  metadata: { analysisType: 'product_identification', imageIndex: i }
-                });
-              }
-            } catch (error) {
-              console.error(`Error analyzing image ${i + 1}:`, error);
-              analyses.push('');
-            }
-
-            resolve();
-          };
-          reader.readAsDataURL(file);
-        });
-
-        // Update progress
-        setIsAnalyzingImages(prev => {
-          const newState = [...prev];
-          newState[i] = false;
-          return newState;
-        });
-
       } catch (error) {
         console.error(`Failed to upload source image ${i + 1}:`, error);
-        setIsAnalyzingImages(prev => {
-          const newState = [...prev];
-          newState[i] = false;
-          return newState;
-        });
       }
     }
 
-    setSourceImageIds(uploadedSourceIds);
-    setProductAnalyses(analyses);
+    // Step 2: Convert all images to base64 for API call
+    const imageDataArray: Array<{ fileData: string; fileName: string }> = [];
     
-    // Combine all analyses for product identification
-    const combinedAnalysis = analyses.filter(a => a).join('\n\n');
-    setProductIdentification(combinedAnalysis);
+    for (const file of files) {
+      try {
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        
+        imageDataArray.push({
+          fileData: base64,
+          fileName: file.name
+        });
+      } catch (error) {
+        console.error(`Error converting image ${file.name} to base64:`, error);
+      }
+    }
+
+    // Step 3: Single API call with all images
+    try {
+      const reply = await sendMultipleImagesAndRun(
+        threadId!,
+        ASSISTANT_ID,
+        imageDataArray,
+        `I have uploaded ${files.length} product images. Please analyze all of them together and provide comprehensive product analysis. Don't answer this message.`
+      );
+
+      // Step 4: Set analysis results (same final state)
+      setProductIdentification(reply);
+      setProductAnalyses(new Array(files.length).fill(reply)); // Same analysis for all images
+      
+      // Step 5: Save single conversation entry
+      if (conversationId) {
+        await saveMessage({
+          conversationId,
+          role: 'user',
+          content: `I have uploaded ${files.length} product images for analysis.`,
+          metadata: { hasImage: true, imageCount: files.length }
+        });
+
+        await saveMessage({
+          conversationId,
+          role: 'assistant',
+          content: reply,
+          metadata: { analysisType: 'product_identification', imageCount: files.length }
+        });
+      }
+    } catch (error) {
+      console.error('Error analyzing images:', error);
+      setProductAnalyses(new Array(files.length).fill(''));
+    }
+
+    // Update progress - set all images as analyzed
+    setIsAnalyzingImages(new Array(files.length).fill(false));
+    setSourceImageIds(uploadedSourceIds);
 
     toast({
       title: "Product Analysis Complete",
