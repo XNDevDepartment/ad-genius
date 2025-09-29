@@ -576,7 +576,7 @@ const CreateUGC = () => {
 
       // Auto-analyze the imported image
       setIsAnalyzingImage(true);
-      
+
       const reader = new FileReader();
       reader.onload = async () => {
         try {
@@ -593,7 +593,7 @@ const CreateUGC = () => {
           if (reply) {
             setProductIdentification(reply);
             setProductAnalyses([reply]);
-            
+
             // Save the analysis message
             if (threadId) {
               await saveMessage({
@@ -603,12 +603,12 @@ const CreateUGC = () => {
                 metadata: { analysisType: 'product_identification', imageIndex: 0 }
               });
             }
-            
+
             toast({
               title: "Product Analysis Complete",
               description: "Image analyzed. Now describe your niche to get scenario suggestions."
             });
-            
+
             document.getElementById("niche")?.focus();
           }
         } catch (error) {
