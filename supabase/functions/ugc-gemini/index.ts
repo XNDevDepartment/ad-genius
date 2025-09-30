@@ -92,6 +92,95 @@ function calculateImageCost(settings: ImageSettings): number {
   return qualityCosts[settings.quality ?? "high"] ?? 2;
 }
 
+// Crop base64 image to exact aspect ratio
+async function cropBase64ToAspect(base64Data: string, aspectRatio: string): Promise<Uint8Array> {
+  // Parse aspect ratio (e.g., "16:9" -> { w: 16, h: 9 })
+  const parts = aspectRatio.split(':');
+  if (parts.length !== 2) {
+    log("Invalid aspect ratio format, skipping crop", { aspectRatio });
+    // Return original data if invalid aspect ratio
+    const base64Content = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
+    return Uint8Array.from(atob(base64Content), c => c.charCodeAt(0));
+  }
+
+  const [w, h] = parts.map(Number);
+  if (!w || !h || w <= 0 || h <= 0) {
+    log("Invalid aspect ratio values, skipping crop", { aspectRatio, w, h });
+    const base64Content = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
+    return Uint8Array.from(atob(base64Content), c => c.charCodeAt(0));
+  }
+  
+  const targetRatio = w / h;
+
+  try {
+    // Decode base64 to buffer
+    const base64Content = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
+    const imageBuffer = Uint8Array.from(atob(base64Content), c => c.charCodeAt(0));
+
+    // Use imagescript for image processing (pure JS, works in Deno)
+    const { Image } = await import('https://deno.land/x/imagescript@1.3.0/mod.ts');
+    
+    const image = await Image.decode(imageBuffer);
+    const srcW = image.width;
+    const srcH = image.height;
+    const srcRatio = srcW / srcH;
+
+    log("Cropping image", { 
+      srcW, 
+      srcH, 
+      srcRatio: srcRatio.toFixed(3), 
+      targetRatio: targetRatio.toFixed(3),
+      aspectRatio 
+    });
+
+    let cropW: number, cropH: number, cropX: number, cropY: number;
+
+    if (Math.abs(srcRatio - targetRatio) < 0.01) {
+      // Already close enough to target ratio, no crop needed
+      log("Image already at target aspect ratio", { aspectRatio });
+      return await image.encodePNG();
+    }
+
+    if (srcRatio > targetRatio) {
+      // Image is wider than target - crop width (center crop)
+      cropH = srcH;
+      cropW = Math.round(cropH * targetRatio);
+      cropX = Math.round((srcW - cropW) / 2);
+      cropY = 0;
+    } else {
+      // Image is taller than target - crop height (center crop)
+      cropW = srcW;
+      cropH = Math.round(cropW / targetRatio);
+      cropX = 0;
+      cropY = Math.round((srcH - cropH) / 2);
+    }
+
+    log("Crop parameters", { cropX, cropY, cropW, cropH });
+
+    // Crop the image
+    const croppedImage = image.crop(cropX, cropY, cropW, cropH);
+    
+    // Encode back to PNG
+    const croppedBuffer = await croppedImage.encodePNG();
+    
+    log("Image cropped successfully", { 
+      originalSize: `${srcW}x${srcH}`,
+      croppedSize: `${cropW}x${cropH}`,
+      aspectRatio 
+    });
+    
+    return croppedBuffer;
+  } catch (error: any) {
+    log("Error cropping image, returning original", { 
+      error: error?.message ?? String(error),
+      aspectRatio 
+    });
+    // Return original data if cropping fails
+    const base64Content = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
+    return Uint8Array.from(atob(base64Content), c => c.charCodeAt(0));
+  }
+}
+
 // ---------- AUTH / CLIENTS ----------
 function serviceClient() {
   return createClient(SUPABASE_URL, SERVICE_KEY, {
@@ -610,11 +699,23 @@ async function generateSingleImageWithGemini(job: any, index: number, sourceImag
           throw new Error(`Missing image data in Imagen response`);
         }
 
-        // extract image data
-        const decodedBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+        // Crop image to selected aspect ratio if specified
+        const aspectRatio = job?.settings?.aspectRatio;
+        let fileBytes: Uint8Array;
+        
+        if (aspectRatio) {
+          log("Cropping generated image to aspect ratio", { 
+            jobId: job.id, 
+            index, 
+            aspectRatio 
+          });
+          fileBytes = await cropBase64ToAspect(b64, aspectRatio);
+        } else {
+          // No aspect ratio specified, use original
+          fileBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+        }
 
-        // Store as PNG directly (no WEBP conversion since WASM is not supported in edge functions)
-        let fileBytes = decodedBytes;
+        // Store as PNG
         let storedFormat = "png";
         let contentType = "image/png";
         let extension = "png";

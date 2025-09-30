@@ -980,7 +980,7 @@ const CreateUGCGemini = () => {
           timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',
           highlight: highlight as 'yes' | 'no',
           output_format: 'png',
-          orientation: aspectRatio,
+          aspectRatio: aspectRatio, // Use aspectRatio for cropping
         },
         source_image_ids: uploadedIds, // <-- ALL original images
       });
