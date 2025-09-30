@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { ArrowLeft,  Sparkles, RefreshCw, HelpCircle, Pencil, ArrowDown } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,6 +69,8 @@ const CreateUGCGemini = () => {
   console.log('CreateUGCGemini component rendering...');
   const { t } = useTranslation();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const { user, subscriptionData } = useAuth();
   const { credits, getTotalCredits } = useCredits();
@@ -77,21 +79,6 @@ const CreateUGCGemini = () => {
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
   const { remainingCredits, canGenerateImages, isAtLimit, refreshCount, calculateImageCost } = useImageLimit(imageQuality);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
-  
-  // Add error boundary for useNavigate
-  let navigate;
-  try {
-    navigate = useNavigate();
-    console.log('useNavigate hook successful');
-  } catch (error) {
-    console.error('useNavigate hook failed:', error);
-    console.log('Router context might be missing');
-    // Fallback navigation function
-    navigate = () => {
-      console.error('Navigation attempted but useNavigate failed');
-      window.location.href = '/create';
-    };
-  }
 
   // function capitalize(s: string) {
   //   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -213,6 +200,42 @@ const CreateUGCGemini = () => {
   useEffect(() => {
     initializeThread();
   }, []);
+
+  // Handle replicate mode - pre-fill from location state
+  useEffect(() => {
+    const replicateState = location.state as any;
+    if (replicateState?.replicateJobId) {
+      console.log('[CreateUGCGemini] Replicate mode detected:', replicateState);
+      
+      // Pre-fill niche
+      if (replicateState.niche) {
+        setNiche(replicateState.niche);
+      }
+      
+      // Pre-fill settings
+      if (replicateState.settings) {
+        const settings = replicateState.settings;
+        if (settings.quality) setImageQuality(settings.quality);
+        if (settings.numberOfImages) setNumImages(settings.numberOfImages);
+        if (settings.orientation) setImageOrientation(settings.orientation);
+        // Map other settings as needed
+      }
+      
+      // Pre-load source images
+      if (replicateState.sourceImageIds && replicateState.sourceImageIds.length > 0) {
+        setSourceImageIds(replicateState.sourceImageIds);
+        setUploadedSourceIds(replicateState.sourceImageIds);
+        
+        toast({
+          title: "Generation Replicated",
+          description: "Settings and images loaded from your previous generation.",
+        });
+      }
+      
+      // Clear location state to prevent re-triggering
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Auto-scroll to scenarios when they appear
   useEffect(() => {
@@ -983,6 +1006,7 @@ const CreateUGCGemini = () => {
           aspectRatio: aspectRatio, // Use aspectRatio for cropping
         },
         source_image_ids: uploadedIds, // <-- ALL original images
+        niche: niche || undefined, // Store the user's niche
       });
   
       if (!result) throw new Error('Failed to create job');

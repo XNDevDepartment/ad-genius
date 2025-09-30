@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useInView } from 'react-intersection-observer';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Download, Trash2, ExternalLink, Eye, FileImage, Loader2 } from 'lucide-react';
+import { Download, Trash2, ExternalLink, Eye, FileImage, Loader2, Copy } from 'lucide-react';
 import { LazyImage } from '@/components/ui/lazy-image';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +22,9 @@ interface LibraryImage {
   };
   source_image_id?: string;
   sourceSignedUrl?: string;
+  job_id?: string;
+  niche?: string;
+  source_image_ids?: string[];
 }
 
 interface ImageLibraryGridProps {
@@ -50,6 +54,7 @@ export const ImageLibraryGrid = ({
   const [selectedImage, setSelectedImage] = useState<LibraryImage | null>(null);
   const { toast } = useToast();
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const { ref: loadMoreRef, inView } = useInView({
     threshold: 0.1,
@@ -74,6 +79,32 @@ export const ImageLibraryGrid = ({
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const handleReplicate = (image: LibraryImage) => {
+    if (!image.job_id) {
+      toast({
+        title: "Cannot Replicate",
+        description: "Job information not available for this image.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Navigate to create page with job context
+    navigate('/create/ugc-gemini', {
+      state: {
+        replicateJobId: image.job_id,
+        niche: image.niche,
+        settings: image.settings,
+        sourceImageIds: image.source_image_ids || (image.source_image_id ? [image.source_image_id] : [])
+      }
+    });
+
+    toast({
+      title: "Replicating Generation",
+      description: "Loading previous generation settings...",
+    });
   };
 
   if (images.length === 0 && !loading) {
@@ -118,7 +149,7 @@ export const ImageLibraryGrid = ({
                 )}
 
                 {/* Action buttons */}
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20 flex gap-1">
                   <Button
                     size="sm"
                     variant="secondary"
@@ -127,6 +158,19 @@ export const ImageLibraryGrid = ({
                   >
                     <ExternalLink className="h-4 w-4" />
                   </Button>
+                  
+                  {/* Replicate button - only for AI images with job data */}
+                  {viewMode === "ai" && image.job_id && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => handleReplicate(image)}
+                      className="bg-background/90 hover:bg-background"
+                      title="Replicate this generation"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
 
                 <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20 flex gap-1">

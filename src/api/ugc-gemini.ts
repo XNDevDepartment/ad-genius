@@ -17,6 +17,7 @@ export type CreateJobPayload = {
   };
   source_image_id?: string; // Legacy: single source image (backward compatible)
   source_image_ids?: string[]; // New: multiple source images
+  niche?: string; // User's target niche/audience
 };
 
 export type JobRow = {

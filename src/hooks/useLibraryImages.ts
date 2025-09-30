@@ -15,6 +15,9 @@ interface LibraryImage {
   };
   source_image_id?: string;
   sourceSignedUrl?: string;
+  job_id?: string;
+  niche?: string;
+  source_image_ids?: string[];
 }
 
 interface PaginationOptions {
@@ -45,17 +48,18 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       const offset = (pageNumber - 1) * limit;
 
       // Fetch from both tables separately with pagination for better performance
+      // Also join with image_jobs to get niche and source_image_ids
       const [ugcResult, generatedResult] = await Promise.all([
         supabase
           .from('ugc_images')
-          .select('*')
+          .select('*, image_jobs(niche, source_image_ids, settings)')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .range(offset, offset + limit - 1),
 
         supabase
           .from('generated_images')
-          .select('*')
+          .select('*, image_jobs(niche, source_image_ids, settings)')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .range(offset, offset + limit - 1)
@@ -65,33 +69,45 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       if (generatedResult.error) throw generatedResult.error;
 
       // Normalize both data sources to LibraryImage format
-      const ugcImages: LibraryImage[] = (ugcResult.data || []).map(img => ({
-        id: img.id,
-        url: img.public_url,
-        prompt: (img.meta as any)?.prompt || 'UGC Image',
-        created_at: img.created_at,
-        settings: {
-          size: (img.meta as any)?.size || '1024x1024',
-          quality: (img.meta as any)?.quality || 'high',
-          numberOfImages: 1,
-          format: (img.meta as any)?.format || 'png'
-        },
-        source_image_id: img.source_image_id
-      }));
+      const ugcImages: LibraryImage[] = (ugcResult.data || []).map(img => {
+        const jobData = Array.isArray(img.image_jobs) ? img.image_jobs[0] : img.image_jobs;
+        return {
+          id: img.id,
+          url: img.public_url,
+          prompt: (img.meta as any)?.prompt || 'UGC Image',
+          created_at: img.created_at,
+          settings: jobData?.settings || {
+            size: (img.meta as any)?.size || '1024x1024',
+            quality: (img.meta as any)?.quality || 'high',
+            numberOfImages: 1,
+            format: (img.meta as any)?.format || 'png'
+          },
+          source_image_id: img.source_image_id,
+          job_id: img.job_id,
+          niche: jobData?.niche,
+          source_image_ids: jobData?.source_image_ids
+        };
+      });
 
-      const generatedImages: LibraryImage[] = (generatedResult.data || []).map(img => ({
-        id: img.id,
-        url: img.public_url,
-        prompt: img.prompt,
-        created_at: img.created_at,
-        settings: {
-          size: (img.settings as any)?.size || '1024x1024',
-          quality: (img.settings as any)?.quality || 'high',
-          numberOfImages: (img.settings as any)?.number || 1,
-          format: (img.settings as any)?.output_format || 'webp'
-        },
-        source_image_id: img.source_image_id || undefined
-      }));
+      const generatedImages: LibraryImage[] = (generatedResult.data || []).map(img => {
+        const jobData = Array.isArray(img.image_jobs) ? img.image_jobs[0] : img.image_jobs;
+        return {
+          id: img.id,
+          url: img.public_url,
+          prompt: img.prompt,
+          created_at: img.created_at,
+          settings: jobData?.settings || {
+            size: (img.settings as any)?.size || '1024x1024',
+            quality: (img.settings as any)?.quality || 'high',
+            numberOfImages: (img.settings as any)?.number || 1,
+            format: (img.settings as any)?.output_format || 'webp'
+          },
+          source_image_id: img.source_image_id || undefined,
+          job_id: img.job_id,
+          niche: jobData?.niche,
+          source_image_ids: jobData?.source_image_ids
+        };
+      });
 
       // Combine and sort by creation date
       const processedImages = [...ugcImages, ...generatedImages]
