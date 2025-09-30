@@ -1064,11 +1064,11 @@ const CreateUGCGemini = () => {
             uploadedIds.push(uploaded.id);
           }
         }
+        if (uploadedIds.length === 0) {
+          throw new Error('Failed to upload source images');
+        }
       }
 
-      if (uploadedIds.length === 0) {
-        throw new Error('Failed to upload source images');
-      }
 
       const sizePx = SIZE_MAP[aspectRatio][sizeTier];
 
