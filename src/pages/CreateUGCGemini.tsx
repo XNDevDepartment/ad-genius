@@ -1069,6 +1069,16 @@ const CreateUGCGemini = () => {
         }
       }
 
+      // NEW: decide which IDs to send
+      const idsToUse =
+      imagesAnalysed
+        ? (uploadedSourceIds.length ? uploadedSourceIds : sourceImageIds) // reuse previously-known IDs
+        : uploadedIds;
+
+      if (!idsToUse || idsToUse.length === 0) {
+        throw new Error('No source image IDs available to send to the job.');
+      }
+
 
       const sizePx = SIZE_MAP[aspectRatio][sizeTier];
 
@@ -1085,7 +1095,7 @@ const CreateUGCGemini = () => {
           output_format: 'png',
           aspectRatio: aspectRatio, // Use aspectRatio for cropping
         },
-        source_image_ids: uploadedIds, // <-- ALL original images
+        source_image_ids: idsToUse, // <-- ALL original images
         desiredAudience: desiredAudience || undefined, // Store the user's desired audience
         prodSpecs: prodSpecs || undefined, // Store the user's product specifications
       });
