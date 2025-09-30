@@ -1040,8 +1040,8 @@ const CreateUGCGemini = () => {
         `Ultra-detailed, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. ` +
         `Shot with full-frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125's, ISO 200 at ${timeOfDay} with authentic light direction and quality. ` +
         `For this product here are some details you should have in attention when editing the image: ${prodSpecs}` +
-        `For the models in the picture have my desired audience in consideration: ${desiredAudience}` +
-        `${commonNeg}`;
+        `For the models in the picture have my desired audience in consideration: ${desiredAudience}` ;
+        //`${commonNeg}`;
 
       const highlightNo =
         `Photorealistic ${style} scene: ${selectedScenario.description}. Product naturally placed (20% of frame, off-center). ` +
@@ -1049,8 +1049,8 @@ const CreateUGCGemini = () => {
         `Natural imperfections, realistic textures, believable environmental interaction. Avoid: centered product, studio lighting, artificial blur, stock photo aesthetics. ` +
         `Use full-frame DSLR, 50'mm prime lens, aperture f/4, shutter 1/125's, ISO 200. ` +
         `For this product here are some details you should have in attention when editing the image: ${prodSpecs}` +
-        `For the models in the picture have my desired audience in consideration: ${desiredAudience}` +
-        `${commonNeg}`;
+        `For the models in the picture have my desired audience in consideration: ${desiredAudience}` ;
+        //`${commonNeg}`;
 
       const prompt = (highlight === 'yes' ? highlightYes : highlightNo).trim();
 
