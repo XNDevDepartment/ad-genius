@@ -226,6 +226,54 @@ const CreateUGCGemini = () => {
         setSourceImageIds(replicateState.sourceImageIds);
         setUploadedSourceIds(replicateState.sourceImageIds);
         
+        // Fetch and load the actual image files
+        const loadSourceImages = async () => {
+          try {
+            // Fetch source images from database
+            const { data: sourceImages, error } = await supabase
+              .from('source_images')
+              .select('*')
+              .in('id', replicateState.sourceImageIds);
+            
+            if (error) throw error;
+            if (!sourceImages || sourceImages.length === 0) return;
+            
+            // Convert URLs to File objects
+            const imageFiles = await Promise.all(
+              sourceImages.map(async (img) => {
+                try {
+                  // Get signed URL if needed
+                  const { data: signedData } = await supabase.storage
+                    .from('ugc-inputs')
+                    .createSignedUrl(img.storage_path, 3600);
+                  
+                  const imageUrl = signedData?.signedUrl || img.public_url;
+                  
+                  // Fetch the image as blob
+                  const response = await fetch(imageUrl);
+                  const blob = await response.blob();
+                  
+                  // Convert to File object
+                  return new File([blob], img.file_name, { type: img.mime_type || 'image/jpeg' });
+                } catch (err) {
+                  console.error('Failed to load source image:', img.id, err);
+                  return null;
+                }
+              })
+            );
+            
+            // Filter out failed loads and set product images
+            const validFiles = imageFiles.filter((f): f is File => f !== null);
+            if (validFiles.length > 0) {
+              setProductImages(validFiles);
+            }
+          } catch (error) {
+            console.error('Error loading source images:', error);
+          }
+        };
+        
+        loadSourceImages();
+        
         toast({
           title: "Generation Replicated",
           description: "Settings and images loaded from your previous generation.",
