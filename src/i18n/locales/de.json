@@ -144,11 +144,17 @@
       "preview": "Produktvorschau",
       "remove": "Bild entfernen"
     },
-    "productNiche": {
-      "title": "Produktnische & Details",
-      "subtitle": "Beschreibe Produkt, Zielgruppe oder Anwendungsfall",
-      "placeholder": "Beispiel: Fitness-Fans, Outdoor-Abenteurer, vielbeschäftigte Profis...",
-      "tooltip": "Beschreibe, für wen dein Produkt ist oder wie es genutzt wird. So erzeugt die KI relevante Szenarien für deine Zielgruppe."
+    "productDetails": {
+      "title": "Produkteigenschaften",
+      "subtitle": "Nenne einige Details zu deinem Produkt bei der Nutzung.",
+      "placeholder": "Z. B.: Ärmel bis zu den Ellbogen, Kragen leicht unterhalb des Halses, Hut mit 3 cm breiter Krempe …",
+      "tooltip": "Beschreibe, wie dein Produkt verwendet wird oder wie es am Menschen sitzt. Das hilft Genius, das Produkt korrekt zu positionieren."
+    },
+    "desireAudience": {
+      "title": "Gewünschte Zielgruppe",
+      "subtitle": "Beschreibe die gewünschte Zielgruppe so detailliert wie möglich, der du dein Produkt vorstellen möchtest.",
+      "placeholder": "Z. B.: Hochleistungsathleten, Outdoor-Abenteurer, vielbeschäftigte Berufstätige, elegante Frauen …",
+      "tooltip": "Beschreibe, wer dein Produkt nutzen soll. Das hilft Genius, relevante Szenarien zu erstellen, die zu deiner Zielgruppe passen."
     },
     "scenarios": {
       "title": "UGC-Szenarien",

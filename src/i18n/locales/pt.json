@@ -144,11 +144,17 @@
       "preview": "Pré-visualização do produto",
       "remove": "Remover imagem"
     },
-    "productNiche": {
-      "title": "Nicho e Detalhes do Produto",
-      "subtitle": "Detalhe o produto e o público, ou caso de uso",
-      "placeholder": "Ex.: Entusiastas de fitness, aventureiros ao ar livre, profissionais ocupados...",
-      "tooltip": "Descreva para quem é o seu produto ou como é usado. Isto ajuda a IA a gerar cenários relevantes que correspondem ao seu público-alvo."
+    "productDetails": {
+      "title": "Caracteristicas do produto",
+      "subtitle": "Indique alguns detalhes do seu produto em uso ",
+      "placeholder": "Ex.: Mangas até aos cotovelos, colar ligeiramente abaixo do pesqueço, chapéu com 3cm de largura ...",
+      "tooltip": "Descreva como o seu produto é usado ou como assenta nas pessoas. Isto ajuda o Genius a posicionar o produto corretamente."
+    },
+    "desireAudience": {
+      "title": "Audiência Desejada",
+      "subtitle": "Detalhe ao máximo o público desejado a apresentar o seu produto",
+      "placeholder": "Ex.: Atletas de alta performance, aventureiros ao ar livre, profissionais ocupados, mulheres elegantes ...",
+      "tooltip": "Descreva quem é que deverá usar o seu produto. Isto ajuda o Genius a gerar cenários relevantes que correspondem ao seu público-alvo."
     },
     "scenarios": {
       "title": "Cenários UGC",

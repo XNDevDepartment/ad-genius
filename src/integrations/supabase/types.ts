@@ -202,7 +202,8 @@ export type Database = {
           finished_at: string | null
           id: string
           model_type: string | null
-          niche: string | null
+          desiredAudience: string | null
+          prodSpecs: string | null
           output_url: string | null
           progress: number | null
           prompt: string
@@ -224,7 +225,8 @@ export type Database = {
           finished_at?: string | null
           id?: string
           model_type?: string | null
-          niche?: string | null
+          desiredAudience?: string | null
+          prodSpecs?: string | null
           output_url?: string | null
           progress?: number | null
           prompt: string
@@ -246,7 +248,8 @@ export type Database = {
           finished_at?: string | null
           id?: string
           model_type?: string | null
-          niche?: string | null
+          desiredAudience?: string | null
+          prodSpecs?: string | null
           output_url?: string | null
           progress?: number | null
           prompt?: string
@@ -626,7 +629,8 @@ export type Database = {
           latest_message_content: string
           latest_message_created_at: string
           latest_message_role: string
-          niche: string
+          desiredAudience: string
+          prodSpecs: string
         }[]
       }
       get_image_credit_cost: {
@@ -694,7 +698,8 @@ export type Database = {
           conversation_id: string
           created_at: string
           image_analysis: string
-          niche: string
+          desiredAudience: string
+          prodSpecs: string
           relevance_score: number
           updated_at: string
         }[]

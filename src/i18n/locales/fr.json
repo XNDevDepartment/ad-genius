@@ -144,11 +144,17 @@
       "preview": "Aperçu du produit",
       "remove": "Retirer l'image"
     },
-    "productNiche": {
-      "title": "Niche & Détails du Produit",
-      "subtitle": "Détaillez le produit et l'audience, ou le cas d'usage",
-      "placeholder": "Ex. : Passionnés de fitness, aventuriers, professionnels pressés...",
-      "tooltip": "Décrivez pour qui est votre produit ou comment il est utilisé. L'IA génèrera des scénarios pertinents adaptés à votre audience cible."
+    "productDetails": {
+      "title": "Caractéristiques du produit",
+      "subtitle": "Indiquez quelques détails sur l’utilisation de votre produit.",
+      "placeholder": "Ex. : manches jusqu’aux coudes, col légèrement sous le cou, chapeau avec bord de 3 cm…",
+      "tooltip": "Décrivez comment votre produit est utilisé ou comment il se porte sur les personnes. Cela aide Genius à positionner correctement le produit."
+    },
+    "desireAudience": {
+      "title": "Public cible souhaité",
+      "subtitle": "Décrivez aussi précisément que possible le public cible auquel vous souhaitez présenter votre produit.",
+      "placeholder": "Ex. : athlètes de haut niveau, aventuriers de plein air, professionnels très occupés, femmes élégantes…",
+      "tooltip": "Décrivez qui devrait utiliser votre produit. Cela aide Genius à générer des scénarios pertinents correspondant à votre public cible."
     },
     "scenarios": {
       "title": "Scénarios UGC",

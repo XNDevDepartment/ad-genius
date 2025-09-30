@@ -12,7 +12,8 @@ interface RequestBody {
   source_image_id?: string; // Legacy: single source image (backward compatible)
   source_image_ids?: string[]; // New: multiple source images
   idempotency_window_minutes?: number;
-  niche?: string; // User's target niche/audience
+  desiredAudience?: string; // User's target audience
+  prodSpecs?: string; // User's product specs
 }
 
 interface ImageSettings {
@@ -292,7 +293,7 @@ serve(async (req) => {
 // ---------- ACTIONS ----------
 // Enqueue job, reserve credits, idempotent
 async function createImageJob(userId: string, payload: RequestBody, supabase: any): Promise<Response> {
-  const { prompt, settings, source_image_id, source_image_ids, niche } = payload;
+  const { prompt, settings, source_image_id, source_image_ids, desiredAudience, prodSpecs } = payload;
   const idempotency_window_minutes = payload.idempotency_window_minutes ?? 60;
   
   log("Create job", {
@@ -300,7 +301,8 @@ async function createImageJob(userId: string, payload: RequestBody, supabase: an
     quality: settings?.quality,
     number: settings?.number,
     source_images: source_image_ids?.length || (source_image_id ? 1 : 0),
-    niche: niche || 'not specified'
+    desiredAudience: desiredAudience || 'not specified',
+    prodSpecs: prodSpecs || 'not specified'
   });
   
   // admin?
@@ -397,7 +399,8 @@ async function createImageJob(userId: string, payload: RequestBody, supabase: an
     source_image_id: source_image_id ?? null, // Keep for backward compatibility
     source_image_ids: finalSourceIds, // Store array of source images
     model_type: "gemini", // Set model type to gemini
-    niche: niche ?? null // Store the user's niche/audience
+    desiredAudience: desiredAudience ?? null, // Store the user's audience
+    prodSpecs: prodSpecs ?? null // Store the user's product specs
   }).select().single();
 
   if (jobErr) {

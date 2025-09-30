@@ -273,7 +273,7 @@ export default function GeneratedImagesRows({
             <div>
               <h3 className="font-medium text-sm mb-1">Ready for a new creation?</h3>
               <p className="text-xs text-muted-foreground mb-3">
-                Clear everything and start fresh with a new product and niche
+                Clear everything and start fresh with a new product and audience
               </p>
               <Button variant="outline" size="sm" onClick={onStartFromScratch} className="text-xs">
                 <RotateCcw className="h-3 w-3 mr-2" aria-hidden="true" />

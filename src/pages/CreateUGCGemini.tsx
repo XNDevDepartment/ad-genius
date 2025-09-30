@@ -80,7 +80,7 @@ const CreateUGCGemini = () => {
   const { remainingCredits, canGenerateImages, isAtLimit, refreshCount, calculateImageCost } = useImageLimit(imageQuality);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const [imagesAnalysed, setImagesAnalysed] = useState(false);
-  
+
   // Add error boundary for useNavigate
   try {
     console.log('useNavigate hook successful');
@@ -106,7 +106,8 @@ const CreateUGCGemini = () => {
   const [sourceImageIds, setSourceImageIds] = useState<string[]>([]);
   const [productAnalyses, setProductAnalyses] = useState<string[]>([]);
   const [isAnalyzingImages, setIsAnalyzingImages] = useState<boolean[]>([]);
-  const [niche, setNiche] = useState("");
+  const [desiredAudience, setDesiredAudience] = useState("");
+  const [prodSpecs, setProdSpecs] = useState("");
   const [aiScenarios, setAiScenarios] = useState<AIScenario[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<AIScenario | null>({'idea': "", "small-description" : "", "description": ""});
   const [uploadedSourceIds, setUploadedSourceIds] = useState<string[]>([]);
@@ -147,12 +148,6 @@ const CreateUGCGemini = () => {
   const [pendingSlots, setPendingSlots] = useState(0);
   const [showScrollDown, setShowScrollDown] = useState(false);
 
-  // Compute compact summary for mobile panel
-  const summary = `${numImages} img • ${imageQuality.charAt(0).toUpperCase() + imageQuality.slice(1)} • ${highlight === 'yes' ? 'Focus On' : 'Blend In'} • ${imageOrientation} • ${style} • ${timeOfDay}`;
-
-  const cropCache = useRef(new Map<string, File>());
-  const cacheKey = (f: File, ar: AR, px: string) => `${f.name}|${f.size}|${ar}|${px}`;
-
 
   // Move all refs and effects to the top, before any conditional returns
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -168,7 +163,7 @@ const CreateUGCGemini = () => {
     }
   }, [user, navigate]);
 
-  // On every render where `niche` changed, shrink then grow to fit
+  // On every render where `desiredAudience` changed, shrink then grow to fit
   useLayoutEffect(() => {
     const el = taRef.current
     if (!el) return
@@ -177,7 +172,7 @@ const CreateUGCGemini = () => {
     el.style.height = 'auto'
     // expand to fit current content
     el.style.height = el.scrollHeight + 'px'
-  }, [niche]);
+  }, [desiredAudience]);
  
 
   const ASSISTANT_ID = "asst_zX2cHyZXHY1mj5CT4wzdJLU6";
@@ -221,9 +216,12 @@ const CreateUGCGemini = () => {
     if (replicateState?.replicateJobId) {
       console.log('[CreateUGCGemini] Replicate mode detected:', replicateState);
       
-      // Pre-fill niche
-      if (replicateState.niche) {
-        setNiche(replicateState.niche);
+      // Pre-fill audience
+      if (replicateState.desiredAudience) {
+        setDesiredAudience(replicateState.desiredAudience);
+      }
+      if (replicateState.prodSpecs) {
+        setDesiredAudience(replicateState.prodSpecs);
       }
       
       // Pre-fill settings
@@ -239,7 +237,7 @@ const CreateUGCGemini = () => {
       if (replicateState.sourceImageIds && replicateState.sourceImageIds.length > 0) {
         setSourceImageIds(replicateState.sourceImageIds);
         setUploadedSourceIds(replicateState.sourceImageIds);
-        
+
         // Fetch and load the actual image files
         const loadSourceImages = async () => {
           try {
@@ -248,10 +246,10 @@ const CreateUGCGemini = () => {
               .from('source_images')
               .select('*')
               .in('id', replicateState.sourceImageIds);
-            
+
             if (error) throw error;
             if (!sourceImages || sourceImages.length === 0) return;
-            
+
             // Convert URLs to File objects
             const imageFiles = await Promise.all(
               sourceImages.map(async (img) => {
@@ -260,13 +258,13 @@ const CreateUGCGemini = () => {
                   const { data: signedData } = await supabase.storage
                     .from('ugc-inputs')
                     .createSignedUrl(img.storage_path, 3600);
-                  
+
                   const imageUrl = signedData?.signedUrl || img.public_url;
-                  
+
                   // Fetch the image as blob
                   const response = await fetch(imageUrl);
                   const blob = await response.blob();
-                  
+
                   // Convert to File object
                   return new File([blob], img.file_name, { type: img.mime_type || 'image/jpeg' });
                 } catch (err) {
@@ -275,7 +273,7 @@ const CreateUGCGemini = () => {
                 }
               })
             );
-            
+
             // Filter out failed loads and set product images
             const validFiles = imageFiles.filter((f): f is File => f !== null);
             if (validFiles.length > 0) {
@@ -285,15 +283,15 @@ const CreateUGCGemini = () => {
             console.error('Error loading source images:', error);
           }
         };
-        
+
         loadSourceImages();
-        
+
         toast({
           title: "Generation Replicated",
           description: "Settings and images loaded from your previous generation.",
         });
       }
-      
+
       // Clear location state to prevent re-triggering
       window.history.replaceState({}, document.title);
     }
@@ -559,14 +557,18 @@ const CreateUGCGemini = () => {
 
     toast({
       title: "Product Images Uploaded",
-      description: `Uploaded ${files.length} images. Now describe your desired niche to get scenario suggestions.`
+      description: `Uploaded ${files.length} images. Now describe your desired Audience to get scenario suggestions.`
     });
 
-    document.getElementById("niche")?.focus();
+    document.getElementById("desiredAudience")?.focus();
   };
 
-  const handleNicheChange = (nicheText: string) => {
-    setNiche(nicheText);
+  const handleAudienceChange = (audienceText: string) => {
+    setDesiredAudience(audienceText);
+  };
+
+  const handleProdSpecsChange = (prodSpecsText: string) => {
+    setProdSpecs(prodSpecsText);
   };
 
   const handleSourceImageSelect = async (image: SourceImage) => {
@@ -627,7 +629,7 @@ const CreateUGCGemini = () => {
         title: "Product Loaded",
         description: "Selected image from your library and AI has analyzed it."
       });
-      document.getElementById("niche")?.focus();
+      document.getElementById("desiredAudience")?.focus();
       reader.readAsDataURL(file);
 
     } catch (error) {
@@ -720,7 +722,7 @@ const CreateUGCGemini = () => {
           title: "Image Imported",
           description: "Successfully imported and analyzed image from URL."
         });
-        document.getElementById("niche")?.focus();
+        document.getElementById("desiredAudience")?.focus();
         reader.readAsDataURL(file);
       }
 
@@ -736,8 +738,8 @@ const CreateUGCGemini = () => {
     }
   };
 
-  const getScenariosFromConversation = async (nicheText?: string, moreScen?: boolean) => {
-    const targetNiche = nicheText || niche;
+  const getScenariosFromConversation = async (desiredAudience?: string, moreScen?: boolean) => {
+    const targetAudience = desiredAudience || desiredAudience;
     setIsLoadingScenarios(true);
 
     if(!imagesAnalysed){
@@ -786,7 +788,7 @@ const CreateUGCGemini = () => {
     try {
       const responseText = await converse(
         threadId!,
-        `I have uploaded ${productImages.length} product images. Please analyze all of them together and provide comprehensive product analysis. Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas. Return ONLY a compact JSON object with "scenarios" array and in this language: ` + language,
+        `${!imagesAnalysed && `I have uploaded ${productImages.length} product images. Please analyze all of them together and provide comprehensive product analysis.`} Here is my desired audience to promote my product: ${targetAudience}. Based on the product images I'm sending and this desired audience description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas out of the box. Return ONLY a compact JSON object with "scenarios" array and in this language: ` + language,
         ASSISTANT_ID
       );
 
@@ -804,7 +806,7 @@ const CreateUGCGemini = () => {
           await saveMessage({
             conversationId,
             role: 'user',
-            content: `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 6 creative UGC scenario ideas.`,
+            content: `Here is my desired audience to promote my product: ${targetAudience}. Based on the product images I'm sending and this desired audience description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas out of the box`,
             metadata: { requestType: 'scenario_generation' }
           });
 
@@ -1029,20 +1031,26 @@ const CreateUGCGemini = () => {
       setPendingSlots(numImages);
       localStorage.setItem('currentStage', 'generating');
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+
+      const commonNeg = `--negative "AI artifacts, text overlays, watermark, extreme bokeh, macro close-up, center-composed product, invented branding, extra limbs, low resolution, duplicated faces, similar persons"`;
   
       // Build prompt with aspect ratio instruction for Gemini
       const highlightYes =
         `Ultra-detailed, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. ` +
         `Shot with full-frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125's, ISO 200 at ${timeOfDay} with authentic light direction and quality. ` +
-        `IMPORTANT: Generate in ${aspectRatio} aspect ratio.`;
+        `For this product here are some details you should have in attention when editing the image: ${prodSpecs}` +
+        `${commonNeg}`;
+
       const highlightNo =
         `Photorealistic ${style} scene: ${selectedScenario.description}. Product naturally placed (20% of frame, off-center). ` +
         `Environment-first composition with sharp background detail. ${timeOfDay} lighting with authentic shadows and reflections. ` +
         `Natural imperfections, realistic textures, believable environmental interaction. Avoid: centered product, studio lighting, artificial blur, stock photo aesthetics. ` +
         `Use full-frame DSLR, 50'mm prime lens, aperture f/4, shutter 1/125's, ISO 200. ` +
-        `IMPORTANT: Generate in ${aspectRatio} aspect ratio.`;
+        `For this product here are some details you should have in attention when editing the image: ${prodSpecs}` +
+        `${commonNeg}`;
+
       const prompt = (highlight === 'yes' ? highlightYes : highlightNo).trim();
-  
+
       // Upload ALL ORIGINAL images (no cropping)
       const uploadedIds: string[] = [];
       for (const img of productImages) {
@@ -1051,13 +1059,13 @@ const CreateUGCGemini = () => {
           uploadedIds.push(uploaded.id);
         }
       }
-  
+
       if (uploadedIds.length === 0) {
         throw new Error('Failed to upload source images');
       }
-  
+
       const sizePx = SIZE_MAP[aspectRatio][sizeTier];
-  
+
       // ✅ Pass ALL source image IDs to Gemini
       const result = await createJob({
         prompt,
@@ -1072,7 +1080,8 @@ const CreateUGCGemini = () => {
           aspectRatio: aspectRatio, // Use aspectRatio for cropping
         },
         source_image_ids: uploadedIds, // <-- ALL original images
-        niche: niche || undefined, // Store the user's niche
+        desiredAudience: desiredAudience || undefined, // Store the user's desired audience
+        prodSpecs: prodSpecs || undefined, // Store the user's product specifications
       });
   
       if (!result) throw new Error('Failed to create job');
@@ -1122,7 +1131,8 @@ const CreateUGCGemini = () => {
     setPendingSlots(0);
     setProductImages([]);
     setSourceImageIds([]);
-    setNiche("");
+    setDesiredAudience("");
+    setProdSpecs("");
     setAiScenarios([]);
     setSelectedScenario({'idea': "", "small-description" : "", "description": ""});
     setStage('setup');
@@ -1268,7 +1278,7 @@ const CreateUGCGemini = () => {
 
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <Label htmlFor="niche">{t('ugc.productNiche.title')}</Label>
+                        <Label htmlFor="desiredAudience">{t('ugc.desireAudience.title')}</Label>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -1277,34 +1287,67 @@ const CreateUGCGemini = () => {
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p className="max-w-xs">{t('ugc.productNiche.tooltip')}</p>
+                              <p className="max-w-xs">{t('ugc.desireAudience.tooltip')}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </div>
-                      <p className="text-sm text-muted-foreground">{t('ugc.productNiche.subtitle')}</p>
+                      <div className="flex justify-between text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground">{t('ugc.desireAudience.subtitle')}</p>
+                        {desiredAudience.length} / 500
+                      </div>
                       <Textarea
                         ref={taRef}
-                        id="niche"
-                        // placeholder={t('ugc.productNiche.placeholder')}
-                        value={niche}
-                        maxLength={250}
-                        onChange={(e) => handleNicheChange(e.target.value)}
+                        id="desiredAudience"
+                        value={desiredAudience}
+                        maxLength={500}
+                        placeholder={t('ugc.desireAudience.placeholder')}
+                        onChange={(e) => handleAudienceChange(e.target.value)}
                         className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full text-base md:text-sm"
                         style={{ lineHeight: '1.25rem, font-size: 16px' }}
                         disabled={!threadId}
                         rows={1}
                       />
-                      <div className="flex justify-end text-sm text-muted-foreground">
-                        {niche.length} / 250
+                    </div>
+                    <div className="space-y-2 pt-5">
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="prodSpecs">{t('ugc.productDetails.title')}</Label>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                                <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs">{t('ugc.productDetails.tooltip')}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
+                      <div className="flex justify-between text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground">{t('ugc.productDetails.subtitle')}</p>
+                        {prodSpecs.length} / 500
+                      </div>
+                      <Textarea
+                        ref={taRef}
+                        id="prodSpecs"
+                        value={prodSpecs}
+                        maxLength={500}
+                        placeholder={t('ugc.productDetails.placeholder')}
+                        onChange={(e) => handleProdSpecsChange(e.target.value)}
+                        className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full text-base md:text-sm"
+                        style={{ lineHeight: '1.25rem, font-size: 16px' }}
+                        disabled={!threadId}
+                        rows={1}
+                      />
                     </div>
 
                     <Button
                       type="button"
                       variant="default"
                       onClick={() => getScenariosFromConversation()}
-                      disabled={isLoadingScenarios || productImages.length === 0 || !niche.trim() || !threadId || isAnalyzingImages.some(Boolean)}
+                      disabled={isLoadingScenarios || productImages.length === 0 || !desiredAudience.trim()  || !threadId || isAnalyzingImages.some(Boolean)}
                       className="w-full"
                     >
                       {isLoadingScenarios ? (
@@ -1395,9 +1438,6 @@ const CreateUGCGemini = () => {
                       disabled={!threadId}
                       rows={3}
                     />
-                      <div className="flex justify-end text-sm text-muted-foreground">
-                      {niche.length > 0 && niche.length}
-                      </div>
                     </div>
 
                 )}
@@ -1409,7 +1449,7 @@ const CreateUGCGemini = () => {
               {(isGenerating || allImages.length > 0 || jobImages.length > 0 || stage === 'results') && (
                 // <div className={`bg-card rounded-apple mt-10 mb-10 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
                   <div ref={resultsRef} id="generating-images" className="scroll-mt-6 space-y-8 mt-5">
-                    
+
                     {/* Enhanced progress indicator with better error messaging */}
                     {/* {isGenerating && job && (
                       <div className="bg-card rounded-lg p-4 border">

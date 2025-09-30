@@ -23,7 +23,8 @@ interface LibraryImage {
   source_image_id?: string;
   sourceSignedUrl?: string;
   job_id?: string;
-  niche?: string;
+  desiredAudience?: string;
+  prodSpecs?: string;
   source_image_ids?: string[];
 }
 
@@ -95,7 +96,8 @@ export const ImageLibraryGrid = ({
     navigate('/create/ugc-gemini', {
       state: {
         replicateJobId: image.job_id,
-        niche: image.niche,
+        desiredAudience: image.desiredAudience,
+        prodSpecs: image.prodSpecs,
         settings: image.settings,
         sourceImageIds: image.source_image_ids || (image.source_image_id ? [image.source_image_id] : [])
       }
@@ -124,10 +126,10 @@ export const ImageLibraryGrid = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0.5">
         {images.map((image) => {
           const imageUrl = viewMode === "source" ? (image as any).signedUrl : image.url;
-          const imageAlt = viewMode === "source" 
-            ? `Source: ${(image as any).fileName}` 
+          const imageAlt = viewMode === "source"
+            ? `Source: ${(image as any).fileName}`
             : `Generated: ${image.prompt.substring(0, 50)}...`;
-          
+
           return (
             <div key={image.id} className="space-y-3 animate-scale-in group">
               <div className="overflow-hidden border border-border/50 relative aspect-square">

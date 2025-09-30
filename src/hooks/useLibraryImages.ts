@@ -16,7 +16,8 @@ interface LibraryImage {
   source_image_id?: string;
   sourceSignedUrl?: string;
   job_id?: string;
-  niche?: string;
+  desiredAudience?: string;
+  prodSpecs?: string;
   source_image_ids?: string[];
 }
 
@@ -48,18 +49,18 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       const offset = (pageNumber - 1) * limit;
 
       // Fetch from both tables separately with pagination for better performance
-      // Also join with image_jobs to get niche and source_image_ids
+      // Also join with image_jobs to get desiredAudience and ProdSpces and source_image_ids
       const [ugcResult, generatedResult] = await Promise.all([
         supabase
           .from('ugc_images')
-          .select('*, image_jobs(niche, source_image_ids, settings)')
+          .select('*, image_jobs(desiredAudience, prodSpecs, source_image_ids, settings)')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .range(offset, offset + limit - 1),
 
         supabase
           .from('generated_images')
-          .select('*, image_jobs(niche, source_image_ids, settings)')
+          .select('*, image_jobs(desiredAudience, prodSpecs, source_image_ids, settings)')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .range(offset, offset + limit - 1)
@@ -84,7 +85,8 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
           },
           source_image_id: img.source_image_id,
           job_id: img.job_id,
-          niche: jobData?.niche,
+          desiredAudience: jobData?.desiredAudience,
+          prodSpecs: jobData?.prodSpecs,
           source_image_ids: jobData?.source_image_ids
         };
       });
@@ -104,7 +106,8 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
           },
           source_image_id: img.source_image_id || undefined,
           job_id: img.job_id,
-          niche: jobData?.niche,
+          desiredAudience: jobData?.desiredAudience,
+          prodSpecs: jobData?.prodSpecs,
           source_image_ids: jobData?.source_image_ids
         };
       });

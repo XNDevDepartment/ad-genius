@@ -144,11 +144,17 @@
       "preview": "Product preview",
       "remove": "Remove image"
     },
-    "productNiche": {
-      "title": "Product Niche & Details",
-      "subtitle": "Detail the product and audience, or use case",
-      "placeholder": "Example: Fitness enthusiasts, outdoor adventurers, busy professionals...",
-      "tooltip": "Describe who your product is for or how it's used. This helps the AI generate relevant scenarios that match your target audience."
+    "productDetails": {
+      "title": "Product Features",
+      "subtitle": "Provide a few details about your product in use.",
+      "placeholder": "E.g.: sleeves to the elbows, collar slightly below the neck, hat with a 3 cm brim …",
+      "tooltip": "Describe how your product is used or how it fits on people. This helps Genius position the product correctly."
+    },
+    "desireAudience": {
+      "title": "Desired Audience",
+      "subtitle": "Describe, as thoroughly as possible, the desired audience you want to present your product to.",
+      "placeholder": "E.g.: high-performance athletes, outdoor adventurers, busy professionals, elegant women …",
+      "tooltip": "Describe who should use your product. This helps Genius generate relevant scenarios that match your target audience."
     },
     "scenarios": {
       "title": "UGC Scenarios",
