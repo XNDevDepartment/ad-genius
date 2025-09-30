@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 
 interface MultiImageUploaderProps {
   onImagesSelect: (files: File[]) => void;
+  setImagesAnalysed: (bolean: boolean) => void;
   selectedImages: File[];
   isAnalyzing?: boolean[];
   analyzingText?: string;

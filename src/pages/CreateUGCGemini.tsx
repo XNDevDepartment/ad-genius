@@ -556,6 +556,7 @@ const CreateUGCGemini = () => {
 
   const handleImagesUpload = async (files: File[]) => {
     setProductImages(files);
+    setImagesAnalysed(false)
 
     toast({
       title: "Product Images Uploaded",
@@ -1056,12 +1057,14 @@ const CreateUGCGemini = () => {
 
       // Upload ALL ORIGINAL images (no cropping)
       const uploadedIds: string[] = [];
-      // for (const img of productImages) {
-      //   const uploaded = await uploadSourceImage(img);
-      //   if (uploaded?.id) {
-      //     uploadedIds.push(uploaded.id);
-      //   }
-      // }
+      if(!imagesAnalysed){
+        for (const img of productImages) {
+          const uploaded = await uploadSourceImage(img);
+          if (uploaded?.id) {
+            uploadedIds.push(uploaded.id);
+          }
+        }
+      }
 
       if (uploadedIds.length === 0) {
         throw new Error('Failed to upload source images');
@@ -1246,7 +1249,7 @@ const CreateUGCGemini = () => {
                       <MultiImageUploader
                         onImagesSelect={handleImagesUpload}
                         selectedImages={productImages}
-                        isAnalyzing={isAnalyzingImages}
+                        setImagesAnalysed={setImagesAnalysed}
                         analyzingText="Analyzing product..."
                         maxImages={1}
                       />
