@@ -259,12 +259,12 @@ async function createImageJob(userId: string, payload: RequestBody, supabase: an
     };
     return json(res, 200);
   }
-  
+
   // credits
   const costPerImage = calculateImageCost(settings ?? {});
   const totalImages = settings?.number ?? 1;
   const totalCost = isAdmin ? 0 : costPerImage * totalImages;
-  
+
   if (!isAdmin) {
     const { data: subscriber } = await supabase.from("subscribers").select("credits_balance").eq("user_id", userId).single();
     if (!subscriber || (subscriber.credits_balance ?? 0) < totalCost) {
@@ -284,7 +284,7 @@ async function createImageJob(userId: string, payload: RequestBody, supabase: an
       return errorJson(deduct?.error ?? deductErr?.message ?? "Failed to reserve credits", 400);
     }
   }
-  
+
   // create job (queued) with model_type = 'gemini'
   const { data: job, error: jobErr } = await supabase.from("image_jobs").insert({
     user_id: userId,
@@ -299,7 +299,7 @@ async function createImageJob(userId: string, payload: RequestBody, supabase: an
     source_image_id: source_image_id ?? null,
     model_type: "gemini" // Set model type to gemini
   }).select().single();
-  
+
   if (jobErr) {
     if (!isAdmin && totalCost > 0) {
       await supabase.rpc("refund_user_credits", {
@@ -329,7 +329,7 @@ async function createImageJob(userId: string, payload: RequestBody, supabase: an
     }
     return errorJson(`Job insert failed: ${jobErr.message}`, 400);
   }
-  
+
   // trigger worker (self-invoke with service auth)
   try {
     await serviceClient().functions.invoke("ugc-gemini", {
@@ -343,7 +343,7 @@ async function createImageJob(userId: string, payload: RequestBody, supabase: an
       }
     }).catch(() => {});
   } catch (_) {}
-  
+
   // EdgeRuntime fallback for platforms that support it
   try {
     // @ts-ignore
@@ -359,7 +359,7 @@ async function createImageJob(userId: string, payload: RequestBody, supabase: an
 // Worker: claim and generate using Google Gemini
 async function generateImages(jobId: string, supabase: any): Promise<Response> {
   log("Worker start", { jobId });
-  
+
   // atomic claim
   const { data: job, error: claimErr } = await supabase.from("image_jobs").update({
     status: "processing",
@@ -367,7 +367,7 @@ async function generateImages(jobId: string, supabase: any): Promise<Response> {
     updated_at: new Date().toISOString()
   }).eq("id", jobId).eq("status", "queued").eq("model_type", "gemini") // Ensure we're processing a Gemini job
   .select().single();
-  
+
   if (claimErr || !job) {
     const { data: existing } = await supabase.from("image_jobs").select("status").eq("id", jobId).maybeSingle();
     if (existing?.status === "processing") {
@@ -377,11 +377,11 @@ async function generateImages(jobId: string, supabase: any): Promise<Response> {
     log("Job not found or already processed", { jobId, existing });
     return errorJson("Job not found or already processed", 404);
   }
-  
+
   let completed = 0;
   let failed = 0;
   const errors: string[] = [];
-  
+
   try {
     // prepare source image (optional)
     const sourceImageUrl = await getSignedSourceUrl(job.source_image_id, supabase);
@@ -389,7 +389,7 @@ async function generateImages(jobId: string, supabase: any): Promise<Response> {
       jobId,
       hasSourceImage: !!sourceImageUrl
     });
-    
+
     // loop images
     for(let i = 0; i < (job.total ?? 1); i++) {
       try {
@@ -506,30 +506,22 @@ async function generateSingleImageWithGemini(job: any, index: number, sourceImag
   const size = job?.settings?.size ?? "1024x1024";
   const quality = job?.settings?.quality ?? "high";
   const prompt = String(job?.prompt ?? "");
-  
-  // Map size to Gemini format
-  const mapSizeToGemini = (size: string): string => {
-    switch(size) {
-      case "1024x1024": return "SQUARE";
-      case "1536x1024": return "LANDSCAPE";
-      case "1024x1536": return "PORTRAIT";
-      default: return "SQUARE";
-    }
-  };
-  
+
+
+
   for(let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 120000);
       let res: Response;
-      
+
       if (sourceImageUrl) {
         // ----- edits (using Gemini's image editing capabilities) -----
         const src = await fetch(sourceImageUrl);
         if (!src.ok) throw new Error(`Failed to fetch source image: ${src.status}`);
         const mimeType = src.headers.get('content-type') ?? 'image/png';
         const imageBuffer = await src.arrayBuffer();
-        
+
         // Fix: Convert large array buffer to base64 safely without stack overflow
         const uint8Array = new Uint8Array(imageBuffer);
         let binary = '';
@@ -539,7 +531,7 @@ async function generateSingleImageWithGemini(job: any, index: number, sourceImag
           binary += String.fromCharCode.apply(null, Array.from(chunk));
         }
         const base64Image = btoa(binary);
-        
+
         res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent`, {
           method: "POST",
           headers: {
@@ -571,35 +563,8 @@ async function generateSingleImageWithGemini(job: any, index: number, sourceImag
           }),
           signal: controller.signal
         });
-      } else {
-        // Text-only generation (no source image)
-        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent`, {
-          method: "POST",
-          headers: {
-            "x-goog-api-key": GOOGLE_AI_KEY,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: prompt
-                  }
-                ]
-              }
-            ],
-            generationConfig: {
-              responseModalities: [
-                'TEXT',
-                'IMAGE'
-              ]
-            }
-          }),
-          signal: controller.signal
-        });
       }
-      
+
       try {
         if (!res.ok) {
           const text = await res.text();
@@ -610,10 +575,10 @@ async function generateSingleImageWithGemini(job: any, index: number, sourceImag
           }
           throw new Error(`Gemini API error ${res.status}: ${text}`);
         }
-        
+
         const jsonResp: GeminiResponse = await res.json();
         const b64 = extractBase64Image(jsonResp);
-        
+
         if (!b64) {
           log("Gemini raw response (truncated)", {
             jobId: job.id,
@@ -625,27 +590,27 @@ async function generateSingleImageWithGemini(job: any, index: number, sourceImag
           }
           throw new Error(`Missing image data in Imagen response`);
         }
-        
+
         // extract image data
         const decodedBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-        
+
         // Store as PNG directly (no WEBP conversion since WASM is not supported in edge functions)
         let fileBytes = decodedBytes;
         let storedFormat = "png";
         let contentType = "image/png";
         let extension = "png";
-        
+
         const storagePath = `${job.user_id}/${job.id}/${index}.${extension}`;
-        
+
         const { error: upErr } = await supabase.storage.from("ugc").upload(storagePath, fileBytes, {
           contentType,
           upsert: false
         });
-        
+
         if (upErr) throw new Error(`Storage upload failed: ${upErr.message}`);
-        
+
         const { data: pub } = supabase.storage.from("ugc").getPublicUrl(storagePath);
-        
+
         const { error: saveErr } = await supabase.from("ugc_images").insert({
           job_id: job.id,
           user_id: job.user_id,
@@ -662,7 +627,7 @@ async function generateSingleImageWithGemini(job: any, index: number, sourceImag
           prompt: prompt,
           source_image_id: job.source_image_id
         });
-        
+
         if (saveErr) throw new Error(`Failed to save image record: ${saveErr.message}`);
         return; // success
       } finally {
@@ -771,7 +736,7 @@ async function resumeJob(userId: string, jobId: string, supabase: any): Promise<
       EdgeRuntime?.waitUntil?.(generateImages(jobId, supabase));
     } catch (_) {}
   }
-  
+
   return json({ resumed: true });
 }
 

@@ -108,7 +108,8 @@ const CreateUGCGemini = () => {
   const [niche, setNiche] = useState("");
   const [aiScenarios, setAiScenarios] = useState<AIScenario[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<AIScenario | null>({'idea': "", "small-description" : "", "description": ""});
-  
+  const [uploadedSourceIds, setUploadedSourceIds] = useState<string[]>([]);
+
   // Check if a scenario is actually selected (has content in the idea field)
   const hasSelectedScenario = selectedScenario && selectedScenario.idea && selectedScenario.idea.trim().length > 0;
   const [isLoadingScenarios, setIsLoadingScenarios] = useState(false);
@@ -470,88 +471,10 @@ const CreateUGCGemini = () => {
 
   const handleImagesUpload = async (files: File[]) => {
     setProductImages(files);
-    // setIsAnalyzingImages(new Array(files.length).fill(true));
-
-    const uploadedSourceIds: string[] = [];
-
-    //Upload all images to database individually (unchanged behavior)
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-
-      try {
-        // Upload source image to secure storage
-        const sourceImage = await uploadSourceImage(file);
-        if (sourceImage) {
-          uploadedSourceIds.push(sourceImage.id);
-          console.log(`Source image ${i + 1} uploaded with ID:`, sourceImage.id);
-        }
-      } catch (error) {
-        console.error(`Failed to upload source image ${i + 1}:`, error);
-      }
-    }
-
-    // // Step 2: Convert all images to base64 for API call
-    // const imageDataArray: Array<{ fileData: string; fileName: string }> = [];
-
-    // for (const file of files) {
-    //   try {
-    //     const base64 = await new Promise<string>((resolve, reject) => {
-    //       const reader = new FileReader();
-    //       reader.onload = () => resolve(reader.result as string);
-    //       reader.onerror = reject;
-    //       reader.readAsDataURL(file);
-    //     });
-
-    //     imageDataArray.push({
-    //       fileData: base64,
-    //       fileName: file.name
-    //     });
-    //   } catch (error) {
-    //     console.error(`Error converting image ${file.name} to base64:`, error);
-    //   }
-    // }
-
-    // Step 3: Single API call with all images
-    // try {
-    //   const reply = await sendMultipleImagesAndRun(
-    //     threadId!,
-    //     ASSISTANT_ID,
-    //     imageDataArray,
-    //     `I have uploaded ${files.length} product images. Please analyze all of them together and provide comprehensive product analysis. Don't answer this message.`
-    //   );
-
-    //   // Step 4: Set analysis results (same final state)
-    //   setProductIdentification(reply);
-    //   setProductAnalyses(new Array(files.length).fill(reply)); // Same analysis for all images
-
-    //   // Step 5: Save single conversation entry
-    //   if (conversationId) {
-    //     await saveMessage({
-    //       conversationId,
-    //       role: 'user',
-    //       content: `I have uploaded ${files.length} product images for analysis.`,
-    //       metadata: { hasImage: true, imageCount: files.length }
-    //     });
-
-    //     await saveMessage({
-    //       conversationId,
-    //       role: 'assistant',
-    //       content: reply,
-    //       metadata: { analysisType: 'product_identification', imageCount: files.length }
-    //     });
-    //   }
-    // } catch (error) {
-    //   console.error('Error analyzing images:', error);
-    //   setProductAnalyses(new Array(files.length).fill(''));
-    // }
-
-    // Update progress - set all images as analyzed
-    setIsAnalyzingImages(new Array(files.length).fill(false));
-    setSourceImageIds(uploadedSourceIds);
 
     toast({
-      title: "Product Analysis Complete",
-      description: `Analyzed ${files.length} images. Now describe your niche to get scenario suggestions.`
+      title: "Product Images Uploaded",
+      description: `Uploaded ${files.length} images. Now describe your desired niche to get scenario suggestions.`
     });
 
     document.getElementById("niche")?.focus();
@@ -733,9 +656,7 @@ const CreateUGCGemini = () => {
     setIsLoadingScenarios(true);
     setIsAnalyzingImages(new Array(productImages.length).fill(true));
 
-    const uploadedSourceIds: string[] = [];
-
-    // Step 1: Upload all images to database individually (unchanged behavior)
+    //Upload all images to database individually (unchanged behavior)
     for (let i = 0; i < productImages.length; i++) {
       const file = productImages[i];
 
@@ -743,7 +664,7 @@ const CreateUGCGemini = () => {
         // Upload source image to secure storage
         const sourceImage = await uploadSourceImage(file);
         if (sourceImage) {
-          uploadedSourceIds.push(sourceImage.id);
+          setUploadedSourceIds((old) => [...old, sourceImage.id]);
           console.log(`Source image ${i + 1} uploaded with ID:`, sourceImage.id);
         }
       } catch (error) {
@@ -831,7 +752,6 @@ const CreateUGCGemini = () => {
     setMoreScenarios(true)
     await getScenariosFromConversation("",true);
   };
-
 
   // const handleGenerate = async () => {
   //   //check if the necessary data is available
@@ -985,7 +905,6 @@ const CreateUGCGemini = () => {
 
   // --- REPLACEMENT: handleGenerate (JIT crop + upload of cropped) ---
   const handleGenerate = async () => {
-    // 0) require an image + a selected scenario
     if (productImages.length === 0 || !hasSelectedScenario) {
       toast({
         title: 'Missing information',
@@ -994,8 +913,7 @@ const CreateUGCGemini = () => {
       });
       return;
     }
-
-    // 1) credits pre-flight (admins bypass inside your hook)
+  
     if (!canGenerateImages(numImages)) {
       const creditsNeeded = calculateImageCost(imageQuality, numImages);
       toast({
@@ -1006,11 +924,10 @@ const CreateUGCGemini = () => {
       setStage('setup');
       return;
     }
-
+  
     try {
-      console.log('[CreateUGCGemini] Starting new generation with JIT-cropped conditioning image');
-
-      // 2) clear prior job + push finished images to tower
+      console.log('[CreateUGCGemini] JIT-crop + upload path');
+  
       clearJob();
       setPreviousImages(prev => {
         if (currentBatchImages.length === 0) return prev;
@@ -1018,110 +935,83 @@ const CreateUGCGemini = () => {
         return finished.length ? [...finished, ...prev] : prev;
       });
       setCurrentBatchImages([]);
-
-      // 3) UI immediate feedback
+  
       setStage('generating');
       setPendingSlots(numImages);
       localStorage.setItem('currentStage', 'generating');
-      setTimeout(() => {
-        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 200);
-
-      // 4) Build prompt (unchanged)
-      const framingLine = buildFramingLine(aspectRatio, sizeTier);
+      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+  
+      // Build prompt (unchanged)
       const highlightYes =
         `Ultra-detailed, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. ` +
-        `Shot with full-frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125's, ISO 200 at ${timeOfDay} with authentic light direction and quality. ` +
-        framingLine;
+        `Shot with full-frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125's, ISO 200 at ${timeOfDay} with authentic light direction and quality. `;
       const highlightNo =
         `Photorealistic ${style} scene: ${selectedScenario.description}. Product naturally placed (20% of frame, off-center). ` +
         `Environment-first composition with sharp background detail. ${timeOfDay} lighting with authentic shadows and reflections. ` +
         `Natural imperfections, realistic textures, believable environmental interaction. Avoid: centered product, studio lighting, artificial blur, stock photo aesthetics. ` +
-        `Use full-frame DSLR, 50'mm prime lens, aperture f/4, shutter 1/125's, ISO 200. ` +
-        framingLine;
+        `Use full-frame DSLR, 50'mm prime lens, aperture f/4, shutter 1/125's, ISO 200. `;
       const prompt = (highlight === 'yes' ? highlightYes : highlightNo).trim();
-
-      // 5) 🔧 JIT crop the FIRST original image to the CURRENT AR/size
+  
+      // 🔧 JIT crop to current AR + size
       const ar = aspectRatio as AR;
-      const targetPx = SIZE_MAP[aspectRatio][sizeTier]; // e.g. "1536x1024"
-
-      const original = productImages[0]; // your job API consumes a single source image id
-      const key = cacheKey(original, ar, targetPx || '');
+      const sizePx = SIZE_MAP[aspectRatio][sizeTier]; // e.g. "1536x1024"
+      const original = productImages[0];
+  
+      const key = cacheKey(original, ar, sizePx || '');
       let preparedFile = cropCache.current.get(key);
-
       if (!preparedFile) {
-        preparedFile = await cropFileToAspect(original, ar, targetPx);
+        preparedFile = await cropFileToAspect(original, ar, sizePx);
         cropCache.current.set(key, preparedFile);
       }
-
-      // 6) Upload the CROPPED file and use its ID for the Gemini job
-      // const uploaded = await uploadSourceImage(preparedFile);
-      // if (!uploaded?.id) {
-      //   throw new Error('Failed to upload cropped source image');
-      // }
-
-      // 7) Create job using the cropped source image id
+  
+      // ⬆️ Upload CROPPED file (DON'T use the earlier original upload)
+      const uploaded = await uploadSourceImage(preparedFile);
+      if (!uploaded?.id) throw new Error('Failed to upload cropped source image');
+  
+      // ✅ Use the cropped id + correct size string
       const result = await createJob({
         prompt,
         settings: {
           number: numImages,
-          size: SIZE_MAP[aspectRatio][sizeTier] as "1024x1024" | "1024x1536" | "1536x1024",
+          size: sizePx as "1024x1024" | "1024x1536" | "1536x1024",
           quality: imageQuality,
           style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'cinematic' | 'natural',
           timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',
           highlight: highlight as 'yes' | 'no',
           output_format: 'png',
-          // optional: save AR in settings for later UI reads
           orientation: aspectRatio,
         },
-        // IMPORTANT: use the CROPPED image id
-        source_image_id: sourceImageIds[0] || undefined
+        source_image_id: uploaded.id, // <-- the cropped image
       });
-
+  
       if (!result) throw new Error('Failed to create job');
-
-      // 8) Persist job info for mobile recovery
+  
       const jobId = result.jobId;
       localStorage.setItem('currentGeminiJobId', jobId);
       localStorage.setItem('currentGeminiStage', 'generating');
-      localStorage.setItem(
-        'geminiJobMetadata',
-        JSON.stringify({
-          id: jobId,
-          numImages,
-          settings: {
-            number: numImages,
-            quality: imageQuality,
-            orientation: aspectRatio,
-            style,
-            timeOfDay,
-            highlight,
-            output_format: 'png',
-          },
-          prompt,
-          createdAt: new Date().toISOString(),
-        })
-      );
+      localStorage.setItem('geminiJobMetadata', JSON.stringify({
+        id: jobId,
+        numImages,
+        settings: {
+          number: numImages,
+          quality: imageQuality,
+          orientation: aspectRatio,
+          style,
+          timeOfDay,
+          highlight,
+          output_format: 'png',
+        },
+        prompt,
+        createdAt: new Date().toISOString(),
+      }));
     } catch (error) {
       localStorage.setItem('currentGeminiStage', 'setup');
       console.error('Generation error:', error);
-
-      let errorMessage = "Failed to generate images. Please try again.";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-        if (error.message.includes('authentication') || error.message.includes('session')) {
-          errorMessage = "Session expired. Please refresh the page and try again.";
-        } else if (error.message.includes('credit') || error.message.includes('limit')) {
-          errorMessage = "Insufficient credits or rate limit reached. Please check your account.";
-        }
-      }
-
       toast({
         title: "Generation Failed",
-        description: errorMessage,
+        description: error instanceof Error ? error.message : "Failed to generate images. Please try again.",
         variant: "destructive",
       });
-
       refreshCount();
       setStage('setup');
       setPendingSlots(0);
@@ -1129,7 +1019,6 @@ const CreateUGCGemini = () => {
   };
 
   const allImages = [...currentBatchImages, ...previousImages];
-  const selectedImages = allImages.filter(img => img.selected);
 
 
   const handleStartFromScratch = () => {
@@ -1671,15 +1560,15 @@ const CreateUGCGemini = () => {
                   </div>
 
                   {/* Resolution */}
-                  {/* <div className="space-y-2 mb-6">
+                  {/* <div className="space-y-2 mb-6 ">
                     <div className="flex items-center gap-2">
-                      <Label className="text-sm font-medium">{t('ugc.imageSize.title') /* add this key </Label>*/}
-                    {/* </div>
+                      <Label className="text-sm font-medium">{t('ugc.imageSize.title')}</Label>
+                    </div>
                     <ResolutionSelector value={sizeTier} onChange={setSizeTier} />
                     <p className="text-xs text-muted-foreground mt-1">
                       {SIZE_MAP[aspectRatio][sizeTier]} ({aspectRatio})
                     </p>
-                  </div> */} 
+                  </div>  */}
 
                   {/* Image Quality */}
                   <div className="space-y-2 mb-6">
