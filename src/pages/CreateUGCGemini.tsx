@@ -903,7 +903,7 @@ const CreateUGCGemini = () => {
 
   // Combine both arrays for selection calculations
 
-  // --- REPLACEMENT: handleGenerate (JIT crop + upload of cropped) ---
+  // --- UPDATED: handleGenerate (NO CROPPING - Upload ORIGINAL images) ---
   const handleGenerate = async () => {
     if (productImages.length === 0 || !hasSelectedScenario) {
       toast({
@@ -926,7 +926,7 @@ const CreateUGCGemini = () => {
     }
   
     try {
-      console.log('[CreateUGCGemini] JIT-crop + upload path');
+      console.log('[CreateUGCGemini] Multi-image path - NO CROPPING');
   
       clearJob();
       setPreviousImages(prev => {
@@ -941,34 +941,35 @@ const CreateUGCGemini = () => {
       localStorage.setItem('currentStage', 'generating');
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
   
-      // Build prompt (unchanged)
+      // Build prompt with aspect ratio instruction for Gemini
       const highlightYes =
         `Ultra-detailed, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. ` +
-        `Shot with full-frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125's, ISO 200 at ${timeOfDay} with authentic light direction and quality. `;
+        `Shot with full-frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125's, ISO 200 at ${timeOfDay} with authentic light direction and quality. ` +
+        `IMPORTANT: Generate in ${aspectRatio} aspect ratio.`;
       const highlightNo =
         `Photorealistic ${style} scene: ${selectedScenario.description}. Product naturally placed (20% of frame, off-center). ` +
         `Environment-first composition with sharp background detail. ${timeOfDay} lighting with authentic shadows and reflections. ` +
         `Natural imperfections, realistic textures, believable environmental interaction. Avoid: centered product, studio lighting, artificial blur, stock photo aesthetics. ` +
-        `Use full-frame DSLR, 50'mm prime lens, aperture f/4, shutter 1/125's, ISO 200. `;
+        `Use full-frame DSLR, 50'mm prime lens, aperture f/4, shutter 1/125's, ISO 200. ` +
+        `IMPORTANT: Generate in ${aspectRatio} aspect ratio.`;
       const prompt = (highlight === 'yes' ? highlightYes : highlightNo).trim();
   
-      // 🔧 JIT crop to current AR + size
-      const ar = aspectRatio as AR;
-      const sizePx = SIZE_MAP[aspectRatio][sizeTier]; // e.g. "1536x1024"
-      const original = productImages[0];
-  
-      const key = cacheKey(original, ar, sizePx || '');
-      let preparedFile = cropCache.current.get(key);
-      if (!preparedFile) {
-        preparedFile = await cropFileToAspect(original, ar, sizePx);
-        cropCache.current.set(key, preparedFile);
+      // Upload ALL ORIGINAL images (no cropping)
+      const uploadedIds: string[] = [];
+      for (const img of productImages) {
+        const uploaded = await uploadSourceImage(img);
+        if (uploaded?.id) {
+          uploadedIds.push(uploaded.id);
+        }
       }
   
-      // ⬆️ Upload CROPPED file (DON'T use the earlier original upload)
-      const uploaded = await uploadSourceImage(preparedFile);
-      if (!uploaded?.id) throw new Error('Failed to upload cropped source image');
+      if (uploadedIds.length === 0) {
+        throw new Error('Failed to upload source images');
+      }
   
-      // ✅ Use the cropped id + correct size string
+      const sizePx = SIZE_MAP[aspectRatio][sizeTier];
+  
+      // ✅ Pass ALL source image IDs to Gemini
       const result = await createJob({
         prompt,
         settings: {
@@ -981,7 +982,7 @@ const CreateUGCGemini = () => {
           output_format: 'png',
           orientation: aspectRatio,
         },
-        source_image_id: uploaded.id, // <-- the cropped image
+        source_image_ids: uploadedIds, // <-- ALL original images
       });
   
       if (!result) throw new Error('Failed to create job');

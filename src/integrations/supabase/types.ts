@@ -207,6 +207,7 @@ export type Database = {
           prompt: string
           settings: Json
           source_image_id: string | null
+          source_image_ids: Json | null
           started_at: string | null
           status: string
           total: number | null
@@ -227,6 +228,7 @@ export type Database = {
           prompt: string
           settings?: Json
           source_image_id?: string | null
+          source_image_ids?: Json | null
           started_at?: string | null
           status?: string
           total?: number | null
@@ -247,6 +249,7 @@ export type Database = {
           prompt?: string
           settings?: Json
           source_image_id?: string | null
+          source_image_ids?: Json | null
           started_at?: string | null
           status?: string
           total?: number | null

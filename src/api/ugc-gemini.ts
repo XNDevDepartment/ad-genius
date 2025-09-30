@@ -14,7 +14,8 @@ export type CreateJobPayload = {
     highlight?: 'yes' | 'no';
     output_format?: 'png' | 'webp';
   };
-  source_image_id?: string;
+  source_image_id?: string; // Legacy: single source image (backward compatible)
+  source_image_ids?: string[]; // New: multiple source images
 };
 
 export type JobRow = {

@@ -9,7 +9,8 @@ interface RequestBody {
   jobId?: string;
   prompt?: string;
   settings?: ImageSettings;
-  source_image_id?: string;
+  source_image_id?: string; // Legacy: single source image (backward compatible)
+  source_image_ids?: string[]; // New: multiple source images
   idempotency_window_minutes?: number;
 }
 
@@ -201,19 +202,25 @@ serve(async (req) => {
 // ---------- ACTIONS ----------
 // Enqueue job, reserve credits, idempotent
 async function createImageJob(userId: string, payload: RequestBody, supabase: any): Promise<Response> {
-  const { prompt, settings, source_image_id } = payload;
+  const { prompt, settings, source_image_id, source_image_ids } = payload;
   const idempotency_window_minutes = payload.idempotency_window_minutes ?? 60;
   
   log("Create job", {
     userId,
     quality: settings?.quality,
-    number: settings?.number
+    number: settings?.number,
+    source_images: source_image_ids?.length || (source_image_id ? 1 : 0)
   });
   
   // admin?
   const { data: isAdmin } = await supabase.rpc("is_user_admin", {
     check_user_id: userId
   });
+  
+  // Determine which source images to use (prefer array, fallback to single)
+  const finalSourceIds = source_image_ids && source_image_ids.length > 0 
+    ? source_image_ids 
+    : (source_image_id ? [source_image_id] : []);
   
   // idempotency key
   const { data: keyResult, error: keyErr } = await supabase.rpc("generate_idempotency_key", {
@@ -285,7 +292,7 @@ async function createImageJob(userId: string, payload: RequestBody, supabase: an
     }
   }
 
-  // create job (queued) with model_type = 'gemini'
+  // create job (queued) with model_type = 'gemini' and source_image_ids
   const { data: job, error: jobErr } = await supabase.from("image_jobs").insert({
     user_id: userId,
     prompt,
@@ -296,7 +303,8 @@ async function createImageJob(userId: string, payload: RequestBody, supabase: an
     completed: 0,
     failed: 0,
     status: "queued",
-    source_image_id: source_image_id ?? null,
+    source_image_id: source_image_id ?? null, // Keep for backward compatibility
+    source_image_ids: finalSourceIds, // Store array of source images
     model_type: "gemini" // Set model type to gemini
   }).select().single();
 
@@ -383,19 +391,30 @@ async function generateImages(jobId: string, supabase: any): Promise<Response> {
   const errors: string[] = [];
 
   try {
-    // prepare source image (optional)
-    const sourceImageUrl = await getSignedSourceUrl(job.source_image_id, supabase);
-    log("Source image prepared", {
+    // Prepare source images (support multiple)
+    const sourceImageIds = job.source_image_ids && Array.isArray(job.source_image_ids) && job.source_image_ids.length > 0
+      ? job.source_image_ids
+      : (job.source_image_id ? [job.source_image_id] : []);
+    
+    const sourceImageUrls = await getSignedSourceUrls(sourceImageIds, supabase);
+    
+    log("Source images prepared", {
       jobId,
-      hasSourceImage: !!sourceImageUrl
+      sourceImageCount: sourceImageUrls.length
     });
 
     // loop images
     for(let i = 0; i < (job.total ?? 1); i++) {
       try {
+        // Randomly select a source image from the available sources
+        const sourceImageUrl = sourceImageUrls.length > 0
+          ? sourceImageUrls[Math.floor(Math.random() * sourceImageUrls.length)]
+          : null;
+        
         log("Starting image generation", {
           jobId,
-          imageIndex: i
+          imageIndex: i,
+          usingSourceImage: !!sourceImageUrl
         });
         await generateSingleImageWithGemini(job, i, sourceImageUrl, supabase);
         completed++;
@@ -645,7 +664,24 @@ async function generateSingleImageWithGemini(job: any, index: number, sourceImag
   }
 }
 
-// Signed URL for user-provided source image (optional)
+// Signed URLs for user-provided source images (supports multiple)
+async function getSignedSourceUrls(source_image_ids: string[] | null, supabase: any): Promise<string[]> {
+  if (!source_image_ids || source_image_ids.length === 0) return [];
+  
+  const urls: string[] = [];
+  for (const id of source_image_ids) {
+    const { data: src } = await supabase.from("source_images").select("storage_path").eq("id", id).maybeSingle();
+    if (src?.storage_path) {
+      const { data: signed } = await supabase.storage.from("ugc-inputs").createSignedUrl(src.storage_path, 3600);
+      if (signed?.signedUrl) {
+        urls.push(signed.signedUrl);
+      }
+    }
+  }
+  return urls;
+}
+
+// Legacy: Single source image URL (for backward compatibility)
 async function getSignedSourceUrl(source_image_id: string | null, supabase: any): Promise<string | null> {
   if (!source_image_id) return null;
   const { data: src } = await supabase.from("source_images").select("storage_path").eq("id", source_image_id).single();
