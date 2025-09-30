@@ -126,6 +126,7 @@ const CreateUGCGemini = () => {
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('1:1');
   const [sizeTier, setSizeTier] = useState<SizeTier>('small');
 
+
   // Job system integration
   const { job, images: jobImages, createJob, clearJob, loadJob, resumeCurrentJob } = useGeminiImageJob();
   const { language, setLanguage } = useLanguage();
@@ -215,15 +216,16 @@ const CreateUGCGemini = () => {
     const replicateState = location.state as any;
     if (replicateState?.replicateJobId) {
       console.log('[CreateUGCGemini] Replicate mode detected:', replicateState);
-      
+      setImagesAnalysed(true);
+
       // Pre-fill audience
       if (replicateState.desiredAudience) {
         setDesiredAudience(replicateState.desiredAudience);
       }
       if (replicateState.prodSpecs) {
-        setDesiredAudience(replicateState.prodSpecs);
+        setProdSpecs(replicateState.prodSpecs);
       }
-      
+
       // Pre-fill settings
       if (replicateState.settings) {
         const settings = replicateState.settings;
@@ -232,7 +234,7 @@ const CreateUGCGemini = () => {
         if (settings.orientation) setImageOrientation(settings.orientation);
         // Map other settings as needed
       }
-      
+
       // Pre-load source images
       if (replicateState.sourceImageIds && replicateState.sourceImageIds.length > 0) {
         setSourceImageIds(replicateState.sourceImageIds);
@@ -738,17 +740,16 @@ const CreateUGCGemini = () => {
     }
   };
 
-  const getScenariosFromConversation = async (desiredAudience?: string, moreScen?: boolean) => {
-    const targetAudience = desiredAudience || desiredAudience;
+  const getScenariosFromConversation = async (desiredText?: string, moreScen?: boolean) => {
     setIsLoadingScenarios(true);
 
     if(!imagesAnalysed){
       setIsAnalyzingImages(new Array(productImages.length).fill(true));
-  
+
       //Upload all images to database individually (unchanged behavior)
       for (let i = 0; i < productImages.length; i++) {
         const file = productImages[i];
-  
+
         try {
           // Upload source image to secure storage
           const sourceImage = await uploadSourceImage(file);
@@ -788,7 +789,7 @@ const CreateUGCGemini = () => {
     try {
       const responseText = await converse(
         threadId!,
-        `${!imagesAnalysed && `I have uploaded ${productImages.length} product images. Please analyze all of them together and provide comprehensive product analysis.`} Here is my desired audience to promote my product: ${targetAudience}. Based on the product images I'm sending and this desired audience description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas out of the box. Return ONLY a compact JSON object with "scenarios" array and in this language: ` + language,
+        `${!imagesAnalysed && `I have uploaded ${productImages.length} product images. Please analyze all of them together and provide comprehensive product analysis.`} Here is my desired audience to promote my product: ${desiredAudience}. Based on the product images I'm sending and this desired audience description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas out of the box. Return ONLY a compact JSON object with "scenarios" array and in this language: ` + language,
         ASSISTANT_ID
       );
 
@@ -806,7 +807,7 @@ const CreateUGCGemini = () => {
           await saveMessage({
             conversationId,
             role: 'user',
-            content: `Here is my desired audience to promote my product: ${targetAudience}. Based on the product images I'm sending and this desired audience description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas out of the box`,
+            content: `Here is my desired audience to promote my product: ${desiredAudience}. Based on the product images I'm sending and this desired audience description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas out of the box`,
             metadata: { requestType: 'scenario_generation' }
           });
 
@@ -1039,6 +1040,7 @@ const CreateUGCGemini = () => {
         `Ultra-detailed, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. ` +
         `Shot with full-frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125's, ISO 200 at ${timeOfDay} with authentic light direction and quality. ` +
         `For this product here are some details you should have in attention when editing the image: ${prodSpecs}` +
+        `For the models in the picture have my desired audience in consideration: ${desiredAudience}` +
         `${commonNeg}`;
 
       const highlightNo =
@@ -1047,6 +1049,7 @@ const CreateUGCGemini = () => {
         `Natural imperfections, realistic textures, believable environmental interaction. Avoid: centered product, studio lighting, artificial blur, stock photo aesthetics. ` +
         `Use full-frame DSLR, 50'mm prime lens, aperture f/4, shutter 1/125's, ISO 200. ` +
         `For this product here are some details you should have in attention when editing the image: ${prodSpecs}` +
+        `For the models in the picture have my desired audience in consideration: ${desiredAudience}` +
         `${commonNeg}`;
 
       const prompt = (highlight === 'yes' ? highlightYes : highlightNo).trim();
