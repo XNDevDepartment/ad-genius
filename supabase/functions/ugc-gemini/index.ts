@@ -121,7 +121,7 @@ async function cropBase64ToAspect(base64Data: string, aspectRatio: string): Prom
 
     // Use imagescript for image processing (pure JS, works in Deno)
     const { Image } = await import('https://deno.land/x/imagescript@1.3.0/mod.ts');
-    
+
     const image = await Image.decode(imageBuffer);
     const srcW = image.width;
     const srcH = image.height;
@@ -748,7 +748,7 @@ async function generateSingleImageWithGemini(job: any, index: number, sourceImag
             quality,
             format: storedFormat,
             provider: "gemini",
-            model: "imagen-4.0"
+            model: "2.5-image-flash-preview"
           },
           prompt: prompt,
           source_image_id: job.source_image_id

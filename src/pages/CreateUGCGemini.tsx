@@ -1056,12 +1056,12 @@ const CreateUGCGemini = () => {
 
       // Upload ALL ORIGINAL images (no cropping)
       const uploadedIds: string[] = [];
-      for (const img of productImages) {
-        const uploaded = await uploadSourceImage(img);
-        if (uploaded?.id) {
-          uploadedIds.push(uploaded.id);
-        }
-      }
+      // for (const img of productImages) {
+      //   const uploaded = await uploadSourceImage(img);
+      //   if (uploaded?.id) {
+      //     uploadedIds.push(uploaded.id);
+      //   }
+      // }
 
       if (uploadedIds.length === 0) {
         throw new Error('Failed to upload source images');
