@@ -1248,7 +1248,7 @@ const CreateUGCGemini = () => {
                         selectedImages={productImages}
                         isAnalyzing={isAnalyzingImages}
                         analyzingText="Analyzing product..."
-                        maxImages={3}
+                        maxImages={1}
                       />
 
                       {/* Additional Image Options */}
