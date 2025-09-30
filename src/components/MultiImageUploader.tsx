@@ -16,7 +16,7 @@ const MultiImageUploader = ({
   selectedImages, 
   isAnalyzing = [], 
   analyzingText = "Analyzing images...",
-  maxImages = 5 
+  maxImages = 3
 }: MultiImageUploaderProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);

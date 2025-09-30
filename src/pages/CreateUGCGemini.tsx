@@ -69,7 +69,7 @@ const CreateUGCGemini = () => {
   console.log('CreateUGCGemini component rendering...');
   const { t } = useTranslation();
   const isMobile = useIsMobile();
-  const navigate = useNavigate();
+  let navigate = useNavigate();
   const location = useLocation();
 
   const { user, subscriptionData } = useAuth();
@@ -79,6 +79,20 @@ const CreateUGCGemini = () => {
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
   const { remainingCredits, canGenerateImages, isAtLimit, refreshCount, calculateImageCost } = useImageLimit(imageQuality);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+  const [imagesAnalysed, setImagesAnalysed] = useState(false);
+  
+  // Add error boundary for useNavigate
+  try {
+    console.log('useNavigate hook successful');
+  } catch (error) {
+    console.error('useNavigate hook failed:', error);
+    console.log('Router context might be missing');
+    // Fallback navigation function
+    navigate = () => {
+      console.error('Navigation attempted but useNavigate failed');
+      window.location.href = '/create';
+    };
+  }
 
   // function capitalize(s: string) {
   //   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -725,22 +739,26 @@ const CreateUGCGemini = () => {
   const getScenariosFromConversation = async (nicheText?: string, moreScen?: boolean) => {
     const targetNiche = nicheText || niche;
     setIsLoadingScenarios(true);
-    setIsAnalyzingImages(new Array(productImages.length).fill(true));
 
-    //Upload all images to database individually (unchanged behavior)
-    for (let i = 0; i < productImages.length; i++) {
-      const file = productImages[i];
-
-      try {
-        // Upload source image to secure storage
-        const sourceImage = await uploadSourceImage(file);
-        if (sourceImage) {
-          setUploadedSourceIds((old) => [...old, sourceImage.id]);
-          console.log(`Source image ${i + 1} uploaded with ID:`, sourceImage.id);
+    if(!imagesAnalysed){
+      setIsAnalyzingImages(new Array(productImages.length).fill(true));
+  
+      //Upload all images to database individually (unchanged behavior)
+      for (let i = 0; i < productImages.length; i++) {
+        const file = productImages[i];
+  
+        try {
+          // Upload source image to secure storage
+          const sourceImage = await uploadSourceImage(file);
+          if (sourceImage) {
+            setUploadedSourceIds((old) => [...old, sourceImage.id]);
+            console.log(`Source image ${i + 1} uploaded with ID:`, sourceImage.id);
+          }
+        } catch (error) {
+          console.error(`Failed to upload source image ${i + 1}:`, error);
         }
-      } catch (error) {
-        console.error(`Failed to upload source image ${i + 1}:`, error);
       }
+      setImagesAnalysed(true)
     }
 
 
@@ -1217,7 +1235,7 @@ const CreateUGCGemini = () => {
                         selectedImages={productImages}
                         isAnalyzing={isAnalyzingImages}
                         analyzingText="Analyzing product..."
-                        maxImages={5}
+                        maxImages={3}
                       />
 
                       {/* Additional Image Options */}
@@ -1644,7 +1662,7 @@ const CreateUGCGemini = () => {
                   </div>  */}
 
                   {/* Image Quality */}
-                  <div className="space-y-2 mb-6">
+                  {/* <div className="space-y-2 mb-6">
                     <div className="flex items-center gap-2">
                       <Label htmlFor="sidebar-imageQuality" className="text-sm font-medium">{t('ugc.imageQuality.title')}</Label>
                       <TooltipProvider>
@@ -1679,7 +1697,7 @@ const CreateUGCGemini = () => {
                         <span className="text-[10px] opacity-70">2 créditos</span>
                       </ToggleGroupItem>
                     </ToggleGroup>
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="border-t pt-4">
