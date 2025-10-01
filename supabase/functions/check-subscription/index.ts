@@ -95,7 +95,7 @@ serve(async (req) => {
     // Check if tier changed to allocate credits
     const { data: existingSubscriber } = await supabaseService
       .from("subscribers")
-      .select("subscription_tier, credits_balance")
+      .select("subscription_tier, credits_balance, last_reset_at, updated_at")
       .eq("user_id", user.id)
       .single();
 
@@ -106,7 +106,23 @@ serve(async (req) => {
       shouldAllocateCredits = active; // New subscriber with active subscription
     } else if (existingSubscriber.subscription_tier !== subscriptionTier && active) {
       // Tier changed and subscription is active
-      shouldAllocateCredits = true;
+      // Add safeguard: only allocate if last allocation was more than 1 hour ago
+      const lastAllocation = existingSubscriber.last_reset_at || existingSubscriber.updated_at;
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      
+      if (!lastAllocation || new Date(lastAllocation) < oneHourAgo) {
+        shouldAllocateCredits = true;
+        log("Tier change detected", { 
+          from: existingSubscriber.subscription_tier, 
+          to: subscriptionTier,
+          lastAllocation 
+        });
+      } else {
+        log("Tier change detected but skipping allocation (too recent)", { 
+          lastAllocation,
+          timeSinceLastAllocation: Date.now() - new Date(lastAllocation).getTime()
+        });
+      }
     }
 
     // Update subscriber record
