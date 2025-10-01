@@ -257,34 +257,54 @@ async function createImageJob(userId, payload, supabase) {
   });
   if (keyErr) return errorJson(`Idempotency error: ${keyErr.message}`, 400);
   const contentHash = keyResult;
-  // existing job inside window
-  const windowStart = new Date(Date.now() - idempotency_window_minutes * 60 * 1000).toISOString();
-  const { data: existing } = await supabase.from("image_jobs").select("*, ugc_images(*)").eq("content_hash", contentHash).eq("model_type", "gemini") // Only check for Gemini jobs
-  .gte("created_at", windowStart).order("created_at", {
+  // Check for existing job with same content hash (ANY status, ANY time)
+  // This prevents constraint violations and enables smart idempotency
+  const { data: existing } = await supabase.from("image_jobs").select("*, ugc_images(*)").eq("user_id", userId).eq("content_hash", contentHash).eq("model_type", "gemini").order("created_at", {
     ascending: false
   }).limit(1).maybeSingle();
-  if (existing && [
-    "queued",
-    "processing"
-  ].includes(existing.status)) {
-    const res = {
-      jobId: existing.id,
-      status: existing.status
-    };
-    return json(res, 200);
-  }
-  // If we have a completed job in the idempotency window, surface it as a fast reuse option
-  if (existing && existing.status === "completed") {
-    const res = {
-      jobId: existing.id,
-      status: existing.status,
-      existingImages: (existing.ugc_images ?? []).map((img)=>({
-          url: img.public_url,
-          prompt: existing.prompt,
-          format: img.meta?.format ?? "webp"
-        }))
-    };
-    return json(res, 200);
+  
+  if (existing) {
+    const status = existing.status;
+    const age = Date.now() - new Date(existing.created_at).getTime();
+    const ageMinutes = Math.floor(age / 60000);
+    
+    // Active jobs: return existing job immediately
+    if (["queued", "processing"].includes(status)) {
+      log("Returning existing active job", { jobId: existing.id, status, ageMinutes });
+      return json({
+        jobId: existing.id,
+        status: status
+      }, 200);
+    }
+    
+    // Completed jobs within idempotency window: return cached results
+    if (status === "completed" && age < idempotency_window_minutes * 60 * 1000) {
+      log("Returning cached completed job", { jobId: existing.id, ageMinutes });
+      return json({
+        jobId: existing.id,
+        status: status,
+        existingImages: (existing.ugc_images ?? []).map((img)=>({
+            url: img.public_url,
+            prompt: existing.prompt,
+            format: img.meta?.format ?? "webp"
+          }))
+      }, 200);
+    }
+    
+    // Failed/cancelled/old completed jobs: delete and allow retry
+    log("Deleting old/failed job to allow retry", { 
+      jobId: existing.id, 
+      status, 
+      ageMinutes 
+    });
+    
+    // Delete the old job (this will cascade delete related ugc_images if configured)
+    const { error: deleteErr } = await supabase.from("image_jobs").delete().eq("id", existing.id);
+    
+    if (deleteErr) {
+      log("Failed to delete old job", { error: deleteErr.message });
+      // Continue anyway - the insert will fail with proper error handling below
+    }
   }
   // credits
   const costPerImage = calculateImageCost(settings ?? {});
@@ -325,6 +345,7 @@ async function createImageJob(userId, payload, supabase) {
     prodSpecs: prodSpecs ?? null // Store the user's product specs
   }).select().single();
   if (jobErr) {
+    // Refund credits on failure
     if (!isAdmin && totalCost > 0) {
       await supabase.rpc("refund_user_credits", {
         p_user_id: userId,
@@ -332,17 +353,44 @@ async function createImageJob(userId, payload, supabase) {
         p_reason: "job_creation_failed"
       });
     }
-    if (jobErr?.message?.includes("idx_image_jobs_user_content_hash_active_unique")) {
+    
+    // Handle duplicate key constraint violations
+    const isDuplicateError = jobErr?.message?.includes("duplicate key") || 
+                            jobErr?.message?.includes("idx_image_jobs_user_content_hash");
+    
+    if (isDuplicateError) {
+      log("Duplicate key constraint hit, fetching conflicting job", { contentHash });
+      
+      // Try to fetch the conflicting job
       const { data: conflicting } = await supabase.from("image_jobs").select("*, ugc_images(*)").eq("user_id", userId).eq("content_hash", contentHash).eq("model_type", "gemini").order("created_at", {
         ascending: false
       }).limit(1).maybeSingle();
+      
       if (conflicting) {
-        return json({
+        log("Found conflicting job, returning it", { 
+          jobId: conflicting.id, 
+          status: conflicting.status 
+        });
+        
+        // Return the existing job based on its status
+        const response: any = {
           jobId: conflicting.id,
           status: conflicting.status
-        }, 200);
+        };
+        
+        // If completed, include images
+        if (conflicting.status === "completed") {
+          response.existingImages = (conflicting.ugc_images ?? []).map((img)=>({
+            url: img.public_url,
+            prompt: conflicting.prompt,
+            format: img.meta?.format ?? "webp"
+          }));
+        }
+        
+        return json(response, 200);
       }
     }
+    
     return errorJson(`Job insert failed: ${jobErr.message}`, 400);
   }
   // trigger worker (self-invoke with service auth)
