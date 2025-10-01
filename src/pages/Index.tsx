@@ -3,16 +3,12 @@ import SecurePublicGallery from "@/components/landing/SecurePublicGallery";
 import SocialProofSection from "@/components/landing/SocialProofSection";
 import Footer from "@/components/landing/Footer";
 import { useNavigate } from "react-router-dom";
-import { Camera, Wand2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import FeatureTile from "@/components/FeatureTile";
 import { useAuth } from "@/contexts/AuthContext";
 import PricingSection from "@/components/landing/PricingSection";
 import HeaderSection from "@/components/landing/HeaderSection";
 import { RecentImagesSection } from "@/components/RecentImagesSection";
 import { UserStatsPanel } from "@/components/UserStatsPanel";
-import FeatureShowcase from "@/components/landing/FeatureShowcase";
-import UGCTrustSection from "@/components/landing/UGCTrustSection";
 import { useTranslation } from "react-i18next";
 
 const Index = () => {
@@ -84,7 +80,7 @@ const Index = () => {
 
       {/* Plans & Pricing */}
       <PricingSection />
-      
+
       {/* Footer */}
       <Footer />
     </>

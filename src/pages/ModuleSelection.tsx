@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 
-const CreateSelection = () => {
+const ModuleSelection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation();
@@ -23,17 +23,18 @@ const CreateSelection = () => {
   const workflows = [
     {
       id: "ugc",
-      title: t('createSelection.ugcCreator.title'),
-      description: t('createSelection.ugcCreator.description'),
-      icon: Users,
-      path: "/create/ugc"
+      title: "UGC Creator",
+      description: "Create realistic UGC content using our Genius XN framework",
+      icon: Zap,
+      path: "/create/ugc",
+      isAdmin: false
     },
     ...(isAdmin ? [{
-      id: "ugc-gemini",
-      title: "Gemini UGC Creator (Admin Only)",
-      description: "Create UGC content using Google Gemini Nano Banana 2.5 model - Admin testing environment",
-      icon: Zap,
-      path: "/create/ugc-gemini",
+      id: "product-display",
+      title: t('createSelection.ugcCreator.title')+ '(Admin Only)',
+      description: t('createSelection.ugcCreator.description'),
+      icon: Users,
+      path: "/create/ugc",
       isAdmin: true
     }] : []),
     {
@@ -108,4 +109,4 @@ const CreateSelection = () => {
   );
 };
 
-export default CreateSelection;
+export default ModuleSelection;

@@ -14,7 +14,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
 // Lazy load non-critical routes for better code splitting
-const CreateSelection = lazy(() => import("./pages/CreateSelection"));
+const CreateSelection = lazy(() => import("./pages/ModuleSelection"));
 const CreateUGC = lazy(() => import("./pages/CreateUGC"));
 const CreateUGCGemini = lazy(() => import("./pages/CreateUGCGemini"));
 const Library = lazy(() => import("./pages/Library"));
@@ -55,12 +55,12 @@ const App = () => {
                     <CreateSelection />
                   </Suspense>
                 } />
-                <Route path="create/ugc" element={
+                <Route path="create/product-display" element={
                   <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
                     <CreateUGC />
                   </Suspense>
                 } />
-                <Route path="create/ugc-gemini" element={
+                <Route path="create/ugc" element={
                   <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
                     <CreateUGCGemini />
                   </Suspense>
