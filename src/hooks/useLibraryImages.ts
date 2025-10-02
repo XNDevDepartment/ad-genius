@@ -33,6 +33,7 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [total, setTotal] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const { user } = useAuth();
 
   const fetchImages = async (pageNumber = page, shouldAppend = false) => {
@@ -196,12 +197,15 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
 
   const loadMore = async () => {
     if (!hasMore || loading) return;
-    await fetchImages(page + 1, true);
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    await fetchImages(nextPage, true);
   };
 
   useEffect(() => {
+    setCurrentPage(1);
     fetchImages(1, false);
-  }, [user, page, limit]);
+  }, [user, limit]);
 
   return {
     images,
@@ -210,7 +214,10 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
     hasMore,
     total,
     loadMore,
-    refetch: () => fetchImages(1, false),
+    refetch: () => {
+      setCurrentPage(1);
+      fetchImages(1, false);
+    },
     deleteImage
   };
 };
