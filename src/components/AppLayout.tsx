@@ -21,7 +21,7 @@ const AppLayout = () => {
         <main className="pb-20">
           <Outlet />
         </main>
-        {(user && (location.pathname !== '/create/ugc' && location.pathname !== '/create/ugc-gemini')) &&
+        {(user && (location.pathname !== '/create/ugc' && location.pathname !== '/create/ugc')) &&
           <BottomTabBar />
         }
       </div>

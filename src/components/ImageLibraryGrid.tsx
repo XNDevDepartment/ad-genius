@@ -93,7 +93,7 @@ export const ImageLibraryGrid = ({
     }
 
     // Navigate to create page with job context
-    navigate('/create/ugc-gemini', {
+    navigate('/create/ugc', {
       state: {
         replicateJobId: image.job_id,
         desiredAudience: image.desiredAudience,
