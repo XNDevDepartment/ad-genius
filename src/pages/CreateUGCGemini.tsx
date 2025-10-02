@@ -317,6 +317,9 @@ const CreateUGCGemini = () => {
     });
     
     if (jobImages.length === 0) return;
+    
+    // Stop updating currentBatchImages once job is completed to prevent duplication
+    if (job?.status === 'completed') return;
 
     const readyImages = jobImages.filter(img => Boolean(img.public_url));
     console.log('[CreateUGCGemini] Ready images:', readyImages.length, 'out of', jobImages.length);
@@ -1025,6 +1028,9 @@ const CreateUGCGemini = () => {
   
     try {
       console.log('[CreateUGCGemini] Multi-image path - NO CROPPING');
+      
+      // Reset uploaded source IDs to ensure fresh source image selection
+      setUploadedSourceIds([]);
   
       clearJob();
       setPreviousImages(prev => {
