@@ -450,8 +450,9 @@ const CreateUGCGemini = () => {
       setNumImages(activeJob.total);
     }
 
-    // Set numImages when job is loaded and we have a saved stage
-    if (job && (savedStage === 'generating' || savedStage === 'results')) {
+    // Set numImages ONLY when initially loading/restoring a job that's still in progress
+    // Don't override user's choice when viewing completed results
+    if (job && savedStage === 'generating' && job.status !== 'completed') {
       setNumImages(job.total);
     }
   }, [job, activeJob, loadJob]);
