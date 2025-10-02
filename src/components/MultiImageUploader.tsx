@@ -66,7 +66,7 @@ const MultiImageUploader = ({
     if (files.length > 0) {
       const validFiles = files.filter(file => file.type.startsWith('image/'));
       const totalFiles = selectedImages.length + validFiles.length;
-      
+
       if (totalFiles > maxImages) {
         const remainingSlots = maxImages - selectedImages.length;
         const newFiles = [...selectedImages, ...validFiles.slice(0, remainingSlots)];
@@ -78,12 +78,13 @@ const MultiImageUploader = ({
   };
 
   const handleRemoveImage = (index: number) => {
-    const newImages = selectedImages.filter((_, i) => i !== index);
-    onImagesSelect(newImages);
-    
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+
+    const newImages = selectedImages.filter((_, i) => i !== index);
+    onImagesSelect(newImages);
+
   };
 
   const handleDragOver = (e: React.DragEvent) => {

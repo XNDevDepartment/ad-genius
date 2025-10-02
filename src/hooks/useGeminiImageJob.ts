@@ -103,13 +103,13 @@ export const useGeminiImageJob = () => {
       if (updatedJob.status === 'completed') {
         toast({
           title: "Generation Complete!",
-          description: `Successfully generated ${updatedJob.completed} images with Gemini.`,
+          description: `Successfully generated ${updatedJob.completed} images.`,
         });
       } else if (updatedJob.status === 'failed') {
         setError(updatedJob.error || 'Generation failed');
         toast({
           title: "Generation Failed",
-          description: updatedJob.error || "Failed to generate images with Gemini",
+          description: updatedJob.error || "Failed to generate images",
           variant: "destructive",
         });
       }
