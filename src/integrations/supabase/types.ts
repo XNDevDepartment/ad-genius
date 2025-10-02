@@ -197,14 +197,14 @@ export type Database = {
           completed: number | null
           content_hash: string
           created_at: string
+          desiredAudience: string | null
           error: string | null
           failed: number | null
           finished_at: string | null
           id: string
           model_type: string | null
-          desiredAudience: string | null
-          prodSpecs: string | null
           output_url: string | null
+          prodSpecs: string | null
           progress: number | null
           prompt: string
           settings: Json
@@ -220,14 +220,14 @@ export type Database = {
           completed?: number | null
           content_hash: string
           created_at?: string
+          desiredAudience?: string | null
           error?: string | null
           failed?: number | null
           finished_at?: string | null
           id?: string
           model_type?: string | null
-          desiredAudience?: string | null
-          prodSpecs?: string | null
           output_url?: string | null
+          prodSpecs?: string | null
           progress?: number | null
           prompt: string
           settings?: Json
@@ -243,14 +243,14 @@ export type Database = {
           completed?: number | null
           content_hash?: string
           created_at?: string
+          desiredAudience?: string | null
           error?: string | null
           failed?: number | null
           finished_at?: string | null
           id?: string
           model_type?: string | null
-          desiredAudience?: string | null
-          prodSpecs?: string | null
           output_url?: string | null
+          prodSpecs?: string | null
           progress?: number | null
           prompt?: string
           settings?: Json
@@ -596,6 +596,14 @@ export type Database = {
         Args: { p_settings: Json }
         Returns: number
       }
+      check_recent_credit_allocation: {
+        Args: {
+          p_hours_threshold?: number
+          p_reason: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       cleanup_old_gemini_conversations: {
         Args: { p_days_old?: number }
         Returns: number
@@ -629,8 +637,7 @@ export type Database = {
           latest_message_content: string
           latest_message_created_at: string
           latest_message_role: string
-          desiredAudience: string
-          prodSpecs: string
+          niche: string
         }[]
       }
       get_image_credit_cost: {
@@ -698,8 +705,7 @@ export type Database = {
           conversation_id: string
           created_at: string
           image_analysis: string
-          desiredAudience: string
-          prodSpecs: string
+          niche: string
           relevance_score: number
           updated_at: string
         }[]

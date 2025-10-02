@@ -10,6 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
+import { PaymentMethodCard } from "./PaymentMethodCard";
+import { InvoicesList } from "./InvoicesList";
+import { CreditTransactionsList } from "./CreditTransactionsList";
 
 interface BillingPanelProps {
   onClose: () => void;
@@ -232,6 +235,15 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
           )}
         </CardContent>
       </Card>
+
+      {isSubscribed() && (
+        <>
+          <PaymentMethodCard />
+          <InvoicesList />
+        </>
+      )}
+
+      <CreditTransactionsList />
 
       {isSubscribed() && (
         <Card>

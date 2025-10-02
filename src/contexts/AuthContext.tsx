@@ -41,7 +41,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
-  const [previousTier, setPreviousTier] = useState<string | null>(null);
 
   const fetchSubscriptionData = async (forceRefresh = false) => {
     if (!user) return;
@@ -71,32 +70,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         credits_balance: subscriberData.credits_balance || 0
       };
 
-      // Check if tier has changed and automatically reset credits
-      const currentTier = newSubscriptionData.subscription_tier;
-      if (previousTier && previousTier !== currentTier && currentTier !== 'Free') {
-        console.log(`Tier changed from ${previousTier} to ${currentTier}, resetting credits...`);
-        
-        try {
-          const { data: resetData } = await supabase.rpc('reset_user_monthly_credits', {
-            p_user_id: user.id
-          });
-          
-          if (resetData && typeof resetData === 'object' && 'success' in resetData && resetData.success) {
-            // Fetch updated balance after reset
-            const { data: updatedSubscriber } = await supabase
-              .from('subscribers')
-              .select('credits_balance')
-              .eq('user_id', user.id)
-              .single();
-              
-            newSubscriptionData.credits_balance = updatedSubscriber?.credits_balance || newSubscriptionData.credits_balance;
-          }
-        } catch (resetError) {
-          console.error('Error resetting credits after tier change:', resetError);
-        }
-      }
-
-      setPreviousTier(currentTier);
       setSubscriptionData(newSubscriptionData);
     } catch (error) {
       console.error('Error fetching subscription data:', error);

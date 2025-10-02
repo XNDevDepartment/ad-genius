@@ -56,6 +56,12 @@ verify_jwt = true
 [functions.customer-portal]
 verify_jwt = true
 
+[functions.get-payment-methods]
+verify_jwt = true
+
+[functions.get-billing-history]
+verify_jwt = true
+
 [functions.supabase-upload]
 verify_jwt = true
 
