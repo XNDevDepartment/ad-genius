@@ -50,7 +50,7 @@ export const useSourceImageUpload = () => {
       }
 
       console.log('Source image uploaded successfully:', data.sourceImage);
-      toast.success('Source image uploaded successfully');
+      // toast.success('Source image uploaded successfully');
 
       return data.sourceImage;
     } catch (error) {

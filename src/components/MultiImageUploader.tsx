@@ -15,6 +15,7 @@ interface MultiImageUploaderProps {
 const MultiImageUploader = ({ 
   onImagesSelect, 
   selectedImages, 
+  setImagesAnalysed,
   isAnalyzing = [], 
   analyzingText = "Analyzing images...",
   maxImages = 1
@@ -75,6 +76,7 @@ const MultiImageUploader = ({
         onImagesSelect([...selectedImages, ...validFiles]);
       }
     }
+    setImagesAnalysed?.(false);
   };
 
   const handleRemoveImage = (index: number) => {
@@ -84,6 +86,8 @@ const MultiImageUploader = ({
 
     const newImages = selectedImages.filter((_, i) => i !== index);
     onImagesSelect(newImages);
+
+    setImagesAnalysed?.(false);
 
   };
 

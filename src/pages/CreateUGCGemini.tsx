@@ -559,6 +559,8 @@ const CreateUGCGemini = () => {
   const handleImagesUpload = async (files: File[]) => {
     setProductImages(files);
     setImagesAnalysed(false)
+    setUploadedSourceIds([]);
+    setSourceImageIds([]);
 
     toast({
       title: "Product Images Uploaded",
@@ -1026,10 +1028,10 @@ const CreateUGCGemini = () => {
   
     try {
       console.log('[CreateUGCGemini] Multi-image path - NO CROPPING');
-      
+
       // // Reset uploaded source IDs to ensure fresh source image selection
-      // setUploadedSourceIds([]);
-  
+
+
       clearJob();
       setPreviousImages(prev => {
         if (currentBatchImages.length === 0) return prev;
@@ -1077,6 +1079,9 @@ const CreateUGCGemini = () => {
           throw new Error('Failed to upload source images');
         }
       }
+
+      setUploadedSourceIds([]);   // 🔒 belt-and-suspenders
+      setSourceImageIds([]);
 
       // NEW: decide which IDs to send
       const idsToUse =
@@ -1192,6 +1197,13 @@ const CreateUGCGemini = () => {
     
     return () => window.removeEventListener('scroll', handleScroll);
   }, [jobImages.length, isGenerating, stage]);
+
+  useEffect(() => {
+    // whenever productImages changes, consider the analysis invalid
+    setImagesAnalysed(false);
+    setUploadedSourceIds([]);
+    setSourceImageIds([]);
+  }, [productImages.map(f => `${f.name}:${f.size}:${f.lastModified}`).join('|')]);
 
   const handleScrollToResults = () => {
     resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
