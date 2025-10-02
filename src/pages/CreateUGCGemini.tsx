@@ -1197,12 +1197,6 @@ const CreateUGCGemini = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [jobImages.length, isGenerating, stage]);
 
-  useEffect(() => {
-    // whenever productImages changes, consider the analysis invalid
-    setImagesAnalysed(false);
-    setUploadedSourceIds([]);
-    setSourceImageIds([]);
-  }, [productImages.map(f => `${f.name}:${f.size}:${f.lastModified}`).join('|')]);
 
   const handleScrollToResults = () => {
     resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
