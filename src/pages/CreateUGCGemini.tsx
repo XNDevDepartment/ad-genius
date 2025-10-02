@@ -586,6 +586,8 @@ const CreateUGCGemini = () => {
       // Set as product image and source ID
       setProductImages([file]);
       setSourceImageIds([image.id]);
+      setUploadedSourceIds([image.id]);
+      setImagesAnalysed(true);
 
       // Start AI analysis
       // setIsAnalyzingImages(new Array([file].length).fill(true));
@@ -682,6 +684,8 @@ const CreateUGCGemini = () => {
 
         setProductImages([file]);
         setSourceImageIds([data.sourceImage.id]);
+        setUploadedSourceIds([data.sourceImage.id]);
+        setImagesAnalysed(true);
         setImportUrl("");
         setUrlImportOpen(false);
 
@@ -1260,6 +1264,7 @@ const CreateUGCGemini = () => {
                         onImagesSelect={handleImagesUpload}
                         selectedImages={productImages}
                         setImagesAnalysed={setImagesAnalysed}
+                        isAnalyzing={isAnalyzingImages}
                         analyzingText="Analyzing product..."
                         maxImages={1}
                       />
