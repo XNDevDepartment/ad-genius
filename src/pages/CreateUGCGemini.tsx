@@ -1083,11 +1083,10 @@ const CreateUGCGemini = () => {
       setUploadedSourceIds([]);   // 🔒 belt-and-suspenders
       setSourceImageIds([]);
 
-      // NEW: decide which IDs to send
       const idsToUse =
-      imagesAnalysed
-        ? (uploadedSourceIds.length ? uploadedSourceIds : sourceImageIds) // reuse previously-known IDs
-        : uploadedIds;
+        (uploadedSourceIds.length && uploadedSourceIds) ||
+        (sourceImageIds.length && sourceImageIds) ||
+        uploadedIds;
 
       if (!idsToUse || idsToUse.length === 0) {
         throw new Error('No source image IDs available to send to the job.');
