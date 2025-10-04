@@ -92,18 +92,72 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth changes FIRST
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('[AuthContext] Auth event:', event);
+      
+      if (event === 'TOKEN_REFRESHED') {
+        console.log('[AuthContext] Token refreshed successfully');
+      }
+      
+      if (event === 'SIGNED_OUT' || !session) {
+        console.log('[AuthContext] User signed out or no session');
+        localStorage.clear();
+        setSession(null);
+        setUser(null);
+        setSubscriptionData(null);
+      } else {
+        setSession(session);
+        setUser(session?.user ?? null);
+      }
       setLoading(false);
     });
 
-    // THEN get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // THEN get and validate initial session
+    const initSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('[AuthContext] Session error:', error);
+          localStorage.clear();
+          setSession(null);
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
+        if (session) {
+          // Validate session is not expired
+          const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
+          const now = Date.now();
+          
+          if (expiresAt < now) {
+            console.warn('[AuthContext] Session expired, clearing');
+            localStorage.clear();
+            await supabase.auth.signOut();
+            setSession(null);
+            setUser(null);
+          } else {
+            console.log('[AuthContext] Valid session found');
+            setSession(session);
+            setUser(session.user);
+          }
+        } else {
+          console.log('[AuthContext] No session found');
+          setSession(null);
+          setUser(null);
+        }
+      } catch (err) {
+        console.error('[AuthContext] Init session error:', err);
+        localStorage.clear();
+        setSession(null);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initSession();
 
     return () => subscription.unsubscribe();
   }, []);

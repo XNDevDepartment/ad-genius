@@ -55,16 +55,39 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       
       if (sessionError) {
         console.error('[useLibraryImages] Session error:', sessionError);
-        setError('Session error: ' + sessionError.message);
-        setLoading(false);
-        return;
+        
+        // Try to refresh the session once
+        console.log('[useLibraryImages] Attempting to refresh session...');
+        const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+        
+        if (refreshError || !refreshedSession) {
+          console.error('[useLibraryImages] Session refresh failed, forcing logout');
+          localStorage.clear();
+          await supabase.auth.signOut();
+          setError('Your session has expired. Please log in again.');
+          setLoading(false);
+          return;
+        }
+        
+        console.log('[useLibraryImages] Session refreshed successfully');
       }
       
       if (!session) {
         console.error('[useLibraryImages] No active session found');
-        setError('No active session. Please log in again.');
-        setLoading(false);
-        return;
+        
+        // Try to refresh the session
+        const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+        
+        if (refreshError || !refreshedSession) {
+          console.error('[useLibraryImages] No valid session, forcing logout');
+          localStorage.clear();
+          await supabase.auth.signOut();
+          setError('Your session has expired. Please log in again.');
+          setLoading(false);
+          return;
+        }
+        
+        console.log('[useLibraryImages] Session recovered after refresh');
       }
 
       console.log('[useLibraryImages] Session verified, fetching images for user:', user.id);
@@ -214,7 +237,31 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
         details: (err as any)?.details,
         hint: (err as any)?.hint
       });
-      setError(err instanceof Error ? err.message : 'Failed to load images');
+      
+      // Check if it's a session/auth error (403 or session-related)
+      const errorCode = (err as any)?.code;
+      const errorMessage = err instanceof Error ? err.message : '';
+      
+      if (errorCode === 'PGRST301' || errorMessage.includes('session') || errorMessage.includes('JWT')) {
+        console.error('[useLibraryImages] Auth error detected, attempting recovery...');
+        
+        // Try to refresh session once
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        
+        if (refreshError) {
+          console.error('[useLibraryImages] Session refresh failed during error recovery');
+          localStorage.clear();
+          await supabase.auth.signOut();
+          setError('Your session has expired. Please log in again.');
+        } else {
+          console.log('[useLibraryImages] Session refreshed during error recovery, retrying...');
+          // Retry the fetch after successful refresh
+          setTimeout(() => fetchImages(pageNumber, shouldAppend), 100);
+          return;
+        }
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to load images');
+      }
     } finally {
       setLoading(false);
     }
