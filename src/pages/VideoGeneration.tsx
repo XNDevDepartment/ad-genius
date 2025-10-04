@@ -12,7 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { AlertCircle, ArrowLeft, CheckCircle, Clock, Loader2, Video, X } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-export default function TestVideoGeneration() {
+export default function VideoGeneration() {
   const navigate = useNavigate();
   const { job, loading, error, createVideoJob, cancelVideoJob, clearJob } = useKlingVideo();
   const { sourceImages, loading: loadingImages } = useSourceImages();
@@ -84,8 +84,8 @@ export default function TestVideoGeneration() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Video Generation Test</h1>
-            <p className="text-muted-foreground">Test the Kling video generation API</p>
+            <h1 className="text-3xl font-bold">Video Generation</h1>
+            <p className="text-muted-foreground">Video generation module</p>
           </div>
         </div>
 
@@ -165,7 +165,6 @@ export default function TestVideoGeneration() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">1 seconds (1 credits)</SelectItem>
                     <SelectItem value="5">5 seconds (5 credits)</SelectItem>
                     <SelectItem value="10">10 seconds (10 credits)</SelectItem>
                   </SelectContent>
@@ -256,16 +255,16 @@ export default function TestVideoGeneration() {
               )}
 
               {/* Source Image */}
-              {job.image_url && (
+              {job.video_url && (
                 <div className="space-y-2">
-                  <Label>Source Image</Label>
-                  <img
-                    src={job.image_url}
-                    alt="Source"
-                    className="w-full max-w-md rounded-lg border"
-                  />
+                  <Label>Generated Video</Label>
+                  <video src={job.video_url} controls className="w-full rounded-lg border" />
+                  <Button variant="outline" className="w-full" onClick={() => window.open(job.video_url!, '_blank')}>
+                    Open in New Tab
+                  </Button>
                 </div>
               )}
+
 
               {/* Prompt */}
               <div className="space-y-2">
