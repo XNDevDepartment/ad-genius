@@ -386,7 +386,7 @@ export default function VideoGenerator() {
               {resolvedVideoUrl && (
                 <div className="space-y-2">
                   <Label>Generated Video</Label>
-                  <video 
+                  <video
                     key={`${job.id}-${job.updated_at}`} 
                     src={resolvedVideoUrl} 
                     controls 
