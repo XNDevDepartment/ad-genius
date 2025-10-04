@@ -40,22 +40,48 @@ export default function VideoGenerator() {
   // Subscribe to changes once we have a job
   useEffect(() => {
     if (!job?.id) return;
+    console.log("[VideoGenerator] Setting up realtime subscription for job:", job.id);
+    
     const sub = subscribeVideoJob(job.id, (updated) => {
+      console.log("[VideoGenerator] Realtime update received:", {
+        id: updated.id,
+        status: updated.status,
+        video_url: updated.video_url,
+        video_path: updated.video_path,
+        updated_at: updated.updated_at,
+      });
+      
       // Force new object reference to trigger React re-render
       setJob({ ...updated });
+      console.log("[VideoGenerator] setJob() called with new data");
     });
 
-    return () => sub.unsubscribe();
+    return () => {
+      console.log("[VideoGenerator] Cleaning up realtime subscription for job:", job.id);
+      sub.unsubscribe();
+    };
   }, [job?.id]);
 
   // Helper: resolve a playable URL even if row only has video_path
   const resolvedVideoUrl = useMemo(() => {
-    if (!job) return null;
-    if (job.video_url) return job.video_url;
+    if (!job) {
+      console.log("[VideoGenerator] resolvedVideoUrl: no job");
+      return null;
+    }
+    
+    if (job.video_url) {
+      console.log("[VideoGenerator] resolvedVideoUrl: using video_url:", job.video_url);
+      return job.video_url;
+    }
+    
     if (job.video_path) {
       const { data } = supabase.storage.from("videos").getPublicUrl(job.video_path);
-      return data?.publicUrl ?? null;
+      const url = data?.publicUrl ?? null;
+      console.log("[VideoGenerator] resolvedVideoUrl: generated from video_path:", url);
+      return url;
     }
+    
+    console.log("[VideoGenerator] resolvedVideoUrl: no URL or path available");
     return null;
   }, [job]);
 
@@ -115,6 +141,22 @@ export default function VideoGenerator() {
     setUiError(null);
     setPrompt("");
     setSelectedImageId("");
+  };
+
+  const refreshJob = async () => {
+    if (!job?.id) return;
+    try {
+      console.log("[VideoGenerator] Manual refresh triggered for job:", job.id);
+      const res = await getVideoJob(job.id);
+      if (res.success && res.job) {
+        console.log("[VideoGenerator] Manual refresh got job:", res.job);
+        setJob({ ...res.job });
+      } else {
+        setUiError("Failed to refresh job data.");
+      }
+    } catch (e: any) {
+      setUiError(e?.message || "Failed to refresh.");
+    }
   };
 
   const statusIcon = useMemo(() => {
@@ -287,6 +329,9 @@ export default function VideoGenerator() {
               </div>
 
               <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={refreshJob} title="Refresh job data">
+                  <Loader2 className="h-4 w-4" />
+                </Button>
                 <Button variant="outline" size="sm" onClick={copyDebug} title="Copy debug info">
                   <Copy className="h-4 w-4" />
                 </Button>
@@ -345,7 +390,13 @@ export default function VideoGenerator() {
                     key={`${job.id}-${job.updated_at}`} 
                     src={resolvedVideoUrl} 
                     controls 
-                    className="w-full rounded-lg border" 
+                    className="w-full rounded-lg border"
+                    onLoadStart={() => console.log("[VideoGenerator] Video loading started:", resolvedVideoUrl)}
+                    onError={(e) => {
+                      console.error("[VideoGenerator] Video loading error:", e);
+                      console.error("[VideoGenerator] Failed URL:", resolvedVideoUrl);
+                      setUiError("Failed to load video. Check console for details.");
+                    }}
                   />
                   <div className="flex gap-2">
                     <Button variant="outline" className="w-full" onClick={() => window.open(resolvedVideoUrl!, "_blank")}>
