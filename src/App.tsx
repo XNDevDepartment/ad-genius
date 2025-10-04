@@ -31,6 +31,7 @@ const APIDocsPage = lazy(() => import("./pages/help/APIDocsPage"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Success = lazy(() => import("./pages/Success"));
 const Cancel = lazy(() => import("./pages/Cancel"));
+const TestVideoGeneration = lazy(() => import("./pages/TestVideoGeneration"));
 
 
 const queryClient = new QueryClient();
@@ -108,6 +109,11 @@ const App = () => {
                 <Route path="help/api-docs" element={
                   <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
                     <APIDocsPage />
+                  </Suspense>
+                } />
+                <Route path="test/video" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <TestVideoGeneration />
                   </Suspense>
                 } />
               </Route>
