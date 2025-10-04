@@ -190,16 +190,16 @@ export const BeforeAfterSlider = ({
         width="502"
         height="502"
       />
-      
+
       {/* Before Image (clipped) */}
-      <div 
+      <div
         className="absolute inset-0 overflow-hidden"
         style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
       >
         <img
           src={beforeImage}
           alt={`${alt} (before)`}
-          className={`w-full h-full object-cover ${grayscaleBefore ? 'filter grayscale' : ''}`}
+          className={`w-full h-full object-cover ${grayscaleBefore ? '' : ''}`}
           draggable={false}
           loading={eager ? "eager" : "lazy"}
           width="502"

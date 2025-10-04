@@ -13,6 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 import nike_before from './../../assets/nike_origin.jpeg';
 import nike_afer from './../../assets/nike_finish.png';
+import  demo from './../../assets/demo.webp';
+import  demo_genius from './../../assets/demo_genius.png';
 import { DemoModal } from "../DemoModal";
 
 
@@ -169,8 +171,8 @@ const HeroSection = () => {
                 <div className="relative">
                   <div className="relative z-10 transform transition-smooth">
                       <BeforeAfterSlider
-                        beforeImage={nike_before}
-                        afterImage={nike_afer}
+                        beforeImage={demo}
+                        afterImage={demo_genius}
                         alt='Demo Images'
                         className="w-full h-full"
                         initialX={15}
