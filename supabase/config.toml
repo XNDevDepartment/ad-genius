@@ -71,6 +71,9 @@ verify_jwt = false
 [functions.send-email]
 verify_jwt = true
 
+[functions.kling-video]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 port = 54327
