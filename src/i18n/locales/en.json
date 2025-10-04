@@ -82,6 +82,10 @@
       "title": "UGC Creator",
       "description": "Create authentic user-generated content with AI assistance"
     },
+    "videoCreator": {
+      "title": "Video Creator",
+      "description": ""
+    },
     "studioPhotos": {
       "title": "Studio Photos",
       "description": "Generate professional product photography"

@@ -165,6 +165,7 @@ export default function TestVideoGeneration() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="1">1 seconds (1 credits)</SelectItem>
                     <SelectItem value="5">5 seconds (5 credits)</SelectItem>
                     <SelectItem value="10">10 seconds (10 credits)</SelectItem>
                   </SelectContent>

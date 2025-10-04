@@ -82,6 +82,10 @@
       "title": "UGC-Creator",
       "description": "Erzeuge authentische nutzergenerierte Inhalte mit KI-Unterstützung"
     },
+    "videoCreator": {
+      "title": "Video Creator",
+      "description": ""
+    },
     "studioPhotos": {
       "title": "Studiofotos",
       "description": "Erzeuge professionelle Produktfotografie"

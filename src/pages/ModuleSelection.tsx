@@ -30,11 +30,11 @@ const ModuleSelection = () => {
       isAdmin: false
     },
     ...(isAdmin ? [{
-      id: "product-display",
-      title: t('createSelection.ugcCreator.title')+ '(Admin Only)',
-      description: t('createSelection.ugcCreator.description'),
+      id: "video",
+      title: t('createSelection.videoCreator.title')+ '(Admin Only)',
+      description: t('createSelection.videoCreator.description'),
       icon: Users,
-      path: "/create/ugc",
+      path: "/create/video",
       isAdmin: true
     }] : []),
     {

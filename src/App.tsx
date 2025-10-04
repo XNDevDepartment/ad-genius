@@ -66,6 +66,11 @@ const App = () => {
                     <CreateUGCGemini />
                   </Suspense>
                 } />
+                <Route path="create/video" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <TestVideoGeneration />
+                  </Suspense>
+                } />
                 <Route path="library" element={
                   <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
                     <Library />
@@ -109,11 +114,6 @@ const App = () => {
                 <Route path="help/api-docs" element={
                   <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
                     <APIDocsPage />
-                  </Suspense>
-                } />
-                <Route path="test/video" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <TestVideoGeneration />
                   </Suspense>
                 } />
               </Route>
