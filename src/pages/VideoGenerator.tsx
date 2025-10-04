@@ -31,8 +31,6 @@ export default function VideoGenerator() {
   const [job, setJob] = useState<KlingJobRow | null>(null);
   const [uiError, setUiError] = useState<string | null>(null);
 
-  // For one-time retry when we see completed without URL (race between storage and row update)
-  const didRefetchOnCompleted = useRef(false);
 
   const selectedImage = useMemo(
     () => sourceImages.find((s) => s.id === selectedImageId),
@@ -42,28 +40,9 @@ export default function VideoGenerator() {
   // Subscribe to changes once we have a job
   useEffect(() => {
     if (!job?.id) return;
-    const sub = subscribeVideoJob(job.id, async (updated) => {
-      setJob(updated);
-
-      // If job is completed but URL is missing, try a one-time re-fetch.
-      if (updated.status === "completed" && !updated.video_url && !didRefetchOnCompleted.current) {
-        didRefetchOnCompleted.current = true;
-        try {
-          const refRes = await getVideoJob(updated.id);
-          if (refRes.success && refRes.job) {
-            // If still no URL but we have a video_path, compute public URL as fallback
-            if (!refRes.job.video_url && refRes.job.video_path) {
-              const { data: pub } = supabase.storage.from("videos").getPublicUrl(refRes.job.video_path);
-              if (pub?.publicUrl) {
-                refRes.job.video_url = pub.publicUrl;
-              }
-            }
-            setJob(refRes.job);
-          }
-        } catch (e) {
-          // no-op
-        }
-      }
+    const sub = subscribeVideoJob(job.id, (updated) => {
+      // Force new object reference to trigger React re-render
+      setJob({ ...updated });
     });
 
     return () => sub.unsubscribe();
@@ -91,7 +70,6 @@ export default function VideoGenerator() {
       const safeDuration: Duration = duration === 10 ? 10 : 5;
 
       setCreating(true);
-      didRefetchOnCompleted.current = false;
 
       const res = await createVideoJob({
         source_image_id: selectedImageId,
@@ -137,7 +115,6 @@ export default function VideoGenerator() {
     setUiError(null);
     setPrompt("");
     setSelectedImageId("");
-    didRefetchOnCompleted.current = false;
   };
 
   const statusIcon = useMemo(() => {
@@ -224,7 +201,7 @@ export default function VideoGenerator() {
                     </Select>
                     {selectedImage && (
                       <img
-                        src={selectedImage.signedUrl ?? selectedImage.public_url ?? ""}
+                        src={selectedImage.signedUrl}
                         alt="Selected"
                         className="w-full max-w-md rounded-lg border mt-3"
                       />
@@ -364,7 +341,12 @@ export default function VideoGenerator() {
               {resolvedVideoUrl && (
                 <div className="space-y-2">
                   <Label>Generated Video</Label>
-                  <video src={resolvedVideoUrl} controls className="w-full rounded-lg border" />
+                  <video 
+                    key={`${job.id}-${job.updated_at}`} 
+                    src={resolvedVideoUrl} 
+                    controls 
+                    className="w-full rounded-lg border" 
+                  />
                   <div className="flex gap-2">
                     <Button variant="outline" className="w-full" onClick={() => window.open(resolvedVideoUrl!, "_blank")}>
                       Open in New Tab
