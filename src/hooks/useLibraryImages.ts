@@ -37,7 +37,10 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
   const { user } = useAuth();
 
   const fetchImages = async (pageNumber = page, shouldAppend = false) => {
+    console.log('[useLibraryImages] Fetch started', { user: user?.id, pageNumber, shouldAppend });
+    
     if (!user) {
+      console.log('[useLibraryImages] No user found, clearing images');
       setImages([]);
       setLoading(false);
       return;
@@ -46,6 +49,25 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
     try {
       setLoading(true);
       setError(null);
+
+      // Verify session token before making queries
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('[useLibraryImages] Session error:', sessionError);
+        setError('Session error: ' + sessionError.message);
+        setLoading(false);
+        return;
+      }
+      
+      if (!session) {
+        console.error('[useLibraryImages] No active session found');
+        setError('No active session. Please log in again.');
+        setLoading(false);
+        return;
+      }
+
+      console.log('[useLibraryImages] Session verified, fetching images for user:', user.id);
 
       const offset = (pageNumber - 1) * limit;
 
@@ -67,8 +89,21 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
           .range(offset, offset + limit - 1)
       ]);
 
-      if (ugcResult.error) throw ugcResult.error;
-      if (generatedResult.error) throw generatedResult.error;
+      console.log('[useLibraryImages] Query results:', { 
+        ugcCount: ugcResult.data?.length || 0, 
+        generatedCount: generatedResult.data?.length || 0,
+        ugcError: ugcResult.error,
+        generatedError: generatedResult.error
+      });
+
+      if (ugcResult.error) {
+        console.error('[useLibraryImages] UGC images query error:', ugcResult.error);
+        throw ugcResult.error;
+      }
+      if (generatedResult.error) {
+        console.error('[useLibraryImages] Generated images query error:', generatedResult.error);
+        throw generatedResult.error;
+      }
 
       // Normalize both data sources to LibraryImage format
       const ugcImages: LibraryImage[] = (ugcResult.data || []).map(img => {
@@ -116,6 +151,8 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       // Combine and sort by creation date
       const processedImages = [...ugcImages, ...generatedImages]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      console.log('[useLibraryImages] Processed images:', processedImages.length);
 
       // Estimate total count and hasMore status
       const currentCount = ugcImages.length + generatedImages.length;
@@ -170,7 +207,13 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
         setImages(processedImages);
       }
     } catch (err) {
-      console.error('Failed to fetch library images:', err);
+      console.error('[useLibraryImages] Failed to fetch library images:', err);
+      console.error('[useLibraryImages] Error details:', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+        code: (err as any)?.code,
+        details: (err as any)?.details,
+        hint: (err as any)?.hint
+      });
       setError(err instanceof Error ? err.message : 'Failed to load images');
     } finally {
       setLoading(false);
