@@ -31,7 +31,7 @@ const APIDocsPage = lazy(() => import("./pages/help/APIDocsPage"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Success = lazy(() => import("./pages/Success"));
 const Cancel = lazy(() => import("./pages/Cancel"));
-const TestVideoGeneration = lazy(() => import("./pages/VideoGeneration"));
+const TestVideoGeneration = lazy(() => import("./pages/VideoGenerator"));
 
 
 const queryClient = new QueryClient();
