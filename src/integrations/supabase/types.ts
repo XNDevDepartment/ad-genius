@@ -264,6 +264,93 @@ export type Database = {
         }
         Relationships: []
       }
+      kling_jobs: {
+        Row: {
+          created_at: string
+          duration: number
+          error: Json | null
+          finished_at: string | null
+          id: string
+          image_path: string | null
+          image_url: string | null
+          metadata: Json | null
+          model: string
+          prompt: string
+          request_id: string | null
+          retry_count: number | null
+          source_image_id: string | null
+          status: string
+          ugc_image_id: string | null
+          updated_at: string
+          user_id: string
+          video_duration: number | null
+          video_path: string | null
+          video_size_bytes: number | null
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          duration?: number
+          error?: Json | null
+          finished_at?: string | null
+          id?: string
+          image_path?: string | null
+          image_url?: string | null
+          metadata?: Json | null
+          model?: string
+          prompt: string
+          request_id?: string | null
+          retry_count?: number | null
+          source_image_id?: string | null
+          status?: string
+          ugc_image_id?: string | null
+          updated_at?: string
+          user_id: string
+          video_duration?: number | null
+          video_path?: string | null
+          video_size_bytes?: number | null
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          duration?: number
+          error?: Json | null
+          finished_at?: string | null
+          id?: string
+          image_path?: string | null
+          image_url?: string | null
+          metadata?: Json | null
+          model?: string
+          prompt?: string
+          request_id?: string | null
+          retry_count?: number | null
+          source_image_id?: string | null
+          status?: string
+          ugc_image_id?: string | null
+          updated_at?: string
+          user_id?: string
+          video_duration?: number | null
+          video_path?: string | null
+          video_size_bytes?: number | null
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kling_jobs_source_image_id_fkey"
+            columns: ["source_image_id"]
+            isOneToOne: false
+            referencedRelation: "source_images"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kling_jobs_ugc_image_id_fkey"
+            columns: ["ugc_image_id"]
+            isOneToOne: false
+            referencedRelation: "ugc_images"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           created_at: string
@@ -596,6 +683,10 @@ export type Database = {
         Args: { p_settings: Json }
         Returns: number
       }
+      can_afford_video: {
+        Args: { p_duration?: number; p_user_id: string }
+        Returns: boolean
+      }
       check_recent_credit_allocation: {
         Args: {
           p_hours_threshold?: number
@@ -672,6 +763,10 @@ export type Database = {
           settings: Json
           source_image_id: string
         }[]
+      }
+      get_video_credit_cost: {
+        Args: { p_duration?: number; p_quality?: string }
+        Returns: number
       }
       is_admin: {
         Args: { check_user_id?: string }
