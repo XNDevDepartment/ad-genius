@@ -1,4 +1,4 @@
-import { Home, Plus, Image, User, Sparkles, LogOut, Settings } from "lucide-react";
+import { Home, Plus, Image, User, Sparkles, LogOut, Settings, Video } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,6 +30,7 @@ const navigationItems = [
   { id: "home", icon: Home, path: "/", userAuth: false },
   { id: "create", icon: Plus, path: "/create", primary: true, userAuth: true },
   { id: "library", icon: Image, path: "/library", userAuth: true },
+  { id: "videos", icon: Video, path: "/videos", userAuth: true },
   { id: "account", icon: User, path: "/account", userAuth: false },
 ];
 
