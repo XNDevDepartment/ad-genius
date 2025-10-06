@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Download, PlusCircle, ExternalLink, RotateCcw, ImageIcon, Video, Images } from "lucide-react";
 import { cn } from "@/lib/utils";
 import "./../costumn.css";
+import { toast } from "@/hooks/use-toast";
 
 /* Types */
 export type Orientation = "1:1" | "2:3" | "3:2";
@@ -95,6 +96,27 @@ function downloadBlob(url: string, filename?: string) {
     console.error("Download failed:", e);
   }
 }
+
+const handleDownload = async (image: GeneratedImage) => {
+
+  try {
+    const response = await fetch(image.url);
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const extension = image.format || 'png';
+    link.download = `ugc-${image.id}.${extension}`;
+    link.click();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    toast({
+      title: "Download Failed",
+      description: "Failed to download image. Please try again.",
+      variant: "destructive",
+    });
+  }
+};
 
 /** Return thumbnail classes for a given orientation. */
 function classesFor(orientation?: string) {
@@ -199,7 +221,7 @@ export default function GeneratedImagesRows({
                   Open in New Tab
                 </Button>
 
-                {onAnimateImage && (
+                {/* {onAnimateImage && (
                   <Button
                     variant="default"
                     size="sm"
@@ -214,7 +236,7 @@ export default function GeneratedImagesRows({
                     <Video className="h-4 w-4 mr-2" />
                     Animate Image
                   </Button>
-                )}
+                )} */}
 
                 <Button
                   variant="outline"
@@ -285,7 +307,7 @@ export default function GeneratedImagesRows({
                   Open in New Tab
                 </Button>
 
-                {onAnimateImage && (
+                {/* {onAnimateImage && (
                   <Button
                     variant="default"
                     size="sm"
@@ -300,7 +322,7 @@ export default function GeneratedImagesRows({
                     <Video className="h-4 w-4 mr-2" />
                     Animate Image
                   </Button>
-                )}
+                )} */}
 
                 <Button
                   variant="outline"
@@ -308,9 +330,7 @@ export default function GeneratedImagesRows({
                   className="w-full justify-center"
                   disabled={!img?.url}
                   onClick={() => {
-                    if (!img?.url) return;
-                    const ext = (img?.format || "png").replace(/^\./, "");
-                    downloadBlob(img.url!, `produktpix-${img.id || i + 1}.${ext}`);
+                    handleDownload(img);
                   }}
                 >
                   <Download className="h-4 w-4 mr-2" />
