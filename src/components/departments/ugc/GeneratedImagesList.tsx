@@ -1,18 +1,21 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Image, Check, ExternalLink, Loader2 } from "lucide-react";
+import { Download, Image, Check, ExternalLink, Video } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface GeneratedImagesListProps {
   images: string[];
   prompt?: string;
   settings?: any;
+  ugcImageIds?: string[];
 }
 
-export const GeneratedImagesList = ({ images, prompt = "Generated UGC image", settings = {} }: GeneratedImagesListProps) => {
+export const GeneratedImagesList = ({ images, prompt = "Generated UGC image", settings = {}, ugcImageIds = [] }: GeneratedImagesListProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [downloadedImages, setDownloadedImages] = useState<Set<number>>(new Set());
   const [savedImages, setSavedImages] = useState<Set<number>>(new Set());
 
@@ -76,6 +79,25 @@ export const GeneratedImagesList = ({ images, prompt = "Generated UGC image", se
     }
   };
 
+  const handleAnimateImage = (b64: string, index: number) => {
+    const ugcImageId = ugcImageIds[index];
+    if (!ugcImageId) {
+      toast({
+        title: "Cannot animate",
+        description: "This image hasn't been saved yet. Please wait.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    navigate('/create/video', {
+      state: {
+        ugc_image_id: ugcImageId,
+        preselectedImageUrl: `data:image/png;base64,${b64}`,
+      }
+    });
+  };
+
   return (
     <Card className="bg-gradient-card border-border/50 animate-fade-in">
       <CardHeader>
@@ -102,33 +124,46 @@ export const GeneratedImagesList = ({ images, prompt = "Generated UGC image", se
                     className="w-full h-auto shadow-card"
                   />
                 </div>
-                <div className="flex gap-2">
-                  <Button 
-                    variant={savedImages.has(i) ? "secondary" : "default"}
-                    size="sm"
-                    className="flex-1 gap-2"
-                    onClick={() => handleSaveToProject(b64, i)}
-                    disabled={savedImages.has(i)}
-                  >
-                    {savedImages.has(i) ? (
-                      <>
-                        <Check className="h-4 w-4" />
-                        Saved
-                      </>
-                    ) : (
-                      <>
-                        <Download className="h-4 w-4" />
-                        Save to Project
-                      </>
-                    )}
-                  </Button>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Button 
+                      variant={savedImages.has(i) ? "secondary" : "default"}
+                      size="sm"
+                      className="flex-1 gap-2"
+                      onClick={() => handleSaveToProject(b64, i)}
+                      disabled={savedImages.has(i)}
+                    >
+                      {savedImages.has(i) ? (
+                        <>
+                          <Check className="h-4 w-4" />
+                          Saved
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4" />
+                          Save to Project
+                        </>
+                      )}
+                    </Button>
+                    
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleOpenInNewTab(b64)}
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </div>
                   
-                  <Button 
-                    variant="outline"
+                  <Button
+                    variant="secondary"
                     size="sm"
-                    onClick={() => handleOpenInNewTab(b64)}
+                    className="w-full gap-2"
+                    onClick={() => handleAnimateImage(b64, i)}
+                    disabled={!ugcImageIds[i]}
                   >
-                    <ExternalLink className="h-4 w-4" />
+                    <Video className="h-4 w-4" />
+                    Animate Image
                   </Button>
                 </div>
               </div>

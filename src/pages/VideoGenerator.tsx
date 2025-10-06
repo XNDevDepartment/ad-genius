@@ -1,15 +1,22 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { createVideoJob, getVideoJob, cancelVideoJob, subscribeVideoJob, KlingJobRow } from "@/api/kling";
-import { useSourceImages } from "@/hooks/useSourceImages";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle, CheckCircle, Clock, Loader2, Video as VideoIcon, X, Copy } from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, Loader2, Video as VideoIcon, X, Copy, Upload, Link as LinkIcon, Images } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import MultiImageUploader from "@/components/MultiImageUploader";
+import { SourceImagePicker } from "@/components/SourceImagePicker";
+import { useSourceImageUpload } from "@/hooks/useSourceImageUpload";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import type { SourceImage } from "@/hooks/useSourceImages";
 
 /**
  * A robust, minimal front-end flow for Kling image-to-video:
@@ -23,8 +30,19 @@ import { AlertCircle, CheckCircle, Clock, Loader2, Video as VideoIcon, X, Copy }
 type Duration = 5 | 10;
 
 export default function VideoGenerator() {
-  const { sourceImages, loading: loadingImages, error: imagesError } = useSourceImages();
-  const [selectedImageId, setSelectedImageId] = useState<string>("");
+  const location = useLocation();
+  const { toast } = useToast();
+  const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
+  
+  const [selectedImage, setSelectedImage] = useState<SourceImage | null>(null);
+  const [preselectedImageUrl, setPreselectedImageUrl] = useState<string | null>(null);
+  const [ugcImageId, setUgcImageId] = useState<string | null>(null);
+  const [sourceImagePickerOpen, setSourceImagePickerOpen] = useState(false);
+  const [urlImportOpen, setUrlImportOpen] = useState(false);
+  const [importUrl, setImportUrl] = useState("");
+  const [importingFromUrl, setImportingFromUrl] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  
   const [prompt, setPrompt] = useState("");
   const [duration, setDuration] = useState<Duration>(5);
   const [creating, setCreating] = useState(false);
@@ -32,10 +50,116 @@ export default function VideoGenerator() {
   const [uiError, setUiError] = useState<string | null>(null);
 
 
-  const selectedImage = useMemo(
-    () => sourceImages.find((s) => s.id === selectedImageId),
-    [sourceImages, selectedImageId]
-  );
+  // Handle pre-selection from UGC
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.ugc_image_id && state?.preselectedImageUrl) {
+      setUgcImageId(state.ugc_image_id);
+      setPreselectedImageUrl(state.preselectedImageUrl);
+      
+      toast({
+        title: "Image Pre-selected",
+        description: "UGC image loaded and ready to animate.",
+      });
+      
+      // Clear location state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, toast]);
+
+  // Handle uploaded files
+  const handleImagesSelect = async (files: File[]) => {
+    if (files.length === 0) return;
+    setUploadedFiles(files);
+    
+    try {
+      const file = files[0]; // Only use first file
+      const result = await uploadSourceImage(file);
+      
+      if (result) {
+        // Fetch the full source image record from DB to get storage_path
+        const { data: sourceImageData } = await supabase
+          .from('source_images')
+          .select('id, file_name, created_at, storage_path, public_url')
+          .eq('id', result.id)
+          .single();
+
+        if (sourceImageData) {
+          // Get signed URL
+          const { data: signedUrlData } = await supabase.storage
+            .from('ugc-inputs')
+            .createSignedUrl(sourceImageData.storage_path, 3600);
+
+          const sourceImage: SourceImage = {
+            id: sourceImageData.id,
+            fileName: sourceImageData.file_name,
+            signedUrl: signedUrlData?.signedUrl || sourceImageData.public_url,
+            storage_path: sourceImageData.storage_path,
+            createdAt: sourceImageData.created_at,
+          };
+          
+          setSelectedImage(sourceImage);
+          setUgcImageId(null);
+          setPreselectedImageUrl(null);
+          toast({
+            title: "Image uploaded",
+            description: "Your image is ready to animate.",
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Upload failed:', error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle source image selection from picker
+  const handleSourceImageSelect = (image: SourceImage) => {
+    setSelectedImage(image);
+    setUgcImageId(null);
+    setPreselectedImageUrl(null);
+    setSourceImagePickerOpen(false);
+    toast({
+      title: "Image selected",
+      description: "Your image is ready to animate.",
+    });
+  };
+
+  // Handle URL import
+  const handleUrlImport = async () => {
+    if (!importUrl.trim()) return;
+    
+    setImportingFromUrl(true);
+    try {
+      const response = await supabase.functions.invoke('upload-source-image-from-url', {
+        body: { imageUrl: importUrl.trim() }
+      });
+
+      if (response.error) throw response.error;
+      if (!response.data?.sourceImage) throw new Error('No source image returned');
+
+      setSelectedImage(response.data.sourceImage);
+      setImportUrl("");
+      setUrlImportOpen(false);
+      toast({
+        title: "Image imported",
+        description: "URL image loaded and ready to animate.",
+      });
+    } catch (error: any) {
+      console.error('URL import failed:', error);
+      toast({
+        title: "Import failed",
+        description: error.message || "Failed to import image from URL.",
+        variant: "destructive",
+      });
+    } finally {
+      setImportingFromUrl(false);
+    }
+  };
 
   // Subscribe to changes once we have a job
   useEffect(() => {
@@ -88,7 +212,7 @@ export default function VideoGenerator() {
   const onCreate = async () => {
     try {
       setUiError(null);
-      if (!selectedImageId || !prompt.trim()) {
+      if (!selectedImage || !prompt.trim()) {
         setUiError("Please select an image and enter a prompt.");
         return;
       }
@@ -97,12 +221,20 @@ export default function VideoGenerator() {
 
       setCreating(true);
 
-      const res = await createVideoJob({
-        source_image_id: selectedImageId,
+      const payload: any = {
         prompt: prompt.trim(),
         duration: safeDuration,
         model: "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
-      });
+      };
+
+      // Use ugc_image_id if coming from UGC, otherwise use source_image_id
+      if (ugcImageId) {
+        payload.ugc_image_id = ugcImageId;
+      } else {
+        payload.source_image_id = selectedImage.id;
+      }
+
+      const res = await createVideoJob(payload);
 
       if (!res?.success || !res?.jobId) {
         throw new Error(res?.error || "Failed to create video job.");
@@ -140,7 +272,10 @@ export default function VideoGenerator() {
     setJob(null);
     setUiError(null);
     setPrompt("");
-    setSelectedImageId("");
+    setSelectedImage(null);
+    setUgcImageId(null);
+    setPreselectedImageUrl(null);
+    setUploadedFiles([]);
   };
 
   const refreshJob = async () => {
@@ -208,57 +343,138 @@ export default function VideoGenerator() {
               <CardTitle>Create Video</CardTitle>
               <CardDescription>Select an image and prompt, then generate a 5s or 10s video.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Source Image */}
-              <div className="space-y-2">
+            <CardContent className="space-y-6">
+              {/* Source Image Selection */}
+              <div className="space-y-3">
                 <Label>Source Image</Label>
-                {loadingImages ? (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Loading images…
-                  </div>
-                ) : imagesError ? (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>Failed to load images.</AlertDescription>
-                  </Alert>
-                ) : sourceImages.length === 0 ? (
-                  <Alert>
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>No images yet. Please upload one in your library.</AlertDescription>
-                  </Alert>
-                ) : (
-                  <>
-                    <Select value={selectedImageId} onValueChange={setSelectedImageId}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose an image" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {sourceImages.map((img) => (
-                          <SelectItem key={img.id} value={img.id}>
-                            {img.fileName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {selectedImage && (
-                      <img
-                        src={selectedImage.signedUrl}
-                        alt="Selected"
-                        className="w-full max-w-md rounded-lg border mt-3"
-                      />
+                
+                {!selectedImage && !preselectedImageUrl ? (
+                  <div className="space-y-3">
+                    {/* Upload Methods */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {/* Drag & Drop */}
+                      <div className="border-2 border-dashed border-border rounded-lg p-4">
+                        <MultiImageUploader
+                          onImagesSelect={handleImagesSelect}
+                          selectedImages={uploadedFiles}
+                          maxImages={1}
+                          isAnalyzing={[sourceImageUploading]}
+                        />
+                      </div>
+
+                      {/* From Library */}
+                      <Dialog open={sourceImagePickerOpen} onOpenChange={setSourceImagePickerOpen}>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="h-full min-h-[120px] flex-col gap-2"
+                          >
+                            <Images className="h-8 w-8" />
+                            <span className="text-sm">From Library</span>
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Select Source Image</DialogTitle>
+                          </DialogHeader>
+                          <SourceImagePicker
+                            open={sourceImagePickerOpen}
+                            onClose={() => setSourceImagePickerOpen(false)}
+                            onSelect={handleSourceImageSelect}
+                          />
+                        </DialogContent>
+                      </Dialog>
+
+                      {/* From URL */}
+                      <Dialog open={urlImportOpen} onOpenChange={setUrlImportOpen}>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="h-full min-h-[120px] flex-col gap-2"
+                          >
+                            <LinkIcon className="h-8 w-8" />
+                            <span className="text-sm">Import from URL</span>
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Import Image from URL</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <Input
+                              placeholder="https://example.com/image.jpg"
+                              value={importUrl}
+                              onChange={(e) => setImportUrl(e.target.value)}
+                            />
+                            <Button
+                              onClick={handleUrlImport}
+                              disabled={!importUrl.trim() || importingFromUrl}
+                              className="w-full"
+                            >
+                              {importingFromUrl ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Importing...
+                                </>
+                              ) : (
+                                'Import Image'
+                              )}
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+
+                    {ugcImageId && (
+                      <Alert>
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          UGC image pre-selected. You can change it using the options above.
+                        </AlertDescription>
+                      </Alert>
                     )}
-                  </>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="relative rounded-lg border overflow-hidden">
+                      <img
+                        src={selectedImage?.signedUrl || preselectedImageUrl || ''}
+                        alt="Selected source"
+                        className="w-full max-w-md mx-auto"
+                      />
+                    </div>
+                    {ugcImageId && (
+                      <Alert>
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          Pre-selected from UGC Generator
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        setSelectedImage(null);
+                        setUgcImageId(null);
+                        setPreselectedImageUrl(null);
+                        setUploadedFiles([]);
+                      }}
+                    >
+                      Change Image
+                    </Button>
+                  </div>
                 )}
               </div>
 
               {/* Prompt */}
               <div className="space-y-2">
                 <Label>Prompt</Label>
-                <Input
+                <Textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Describe the motion / behaviour you want"
+                  placeholder="Describe the motion / behavior you want (e.g., 'person walking forward and smiling', 'camera slowly zooming in')"
+                  rows={3}
                 />
               </div>
 
@@ -292,7 +508,7 @@ export default function VideoGenerator() {
                 onClick={onCreate}
                 className="w-full"
                 size="lg"
-                disabled={creating || !selectedImageId || !prompt.trim()}
+                disabled={creating || (!selectedImage && !ugcImageId) || !prompt.trim()}
               >
                 {creating ? (
                   <>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Download, Trash2, Eye, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -42,6 +42,20 @@ const getStatusColor = (status: string) => {
 export function VideoCard({ job, onDelete, onDownload, onView }: VideoCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handleMouseEnter = () => {
+    if (videoRef.current && isCompleted && videoUrl && !videoError) {
+      videoRef.current.play().catch(() => {});
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+  };
 
   const videoUrl = job.video_url || (job.video_path 
     ? supabase.storage.from("videos").getPublicUrl(job.video_path).data.publicUrl 
@@ -55,12 +69,19 @@ export function VideoCard({ job, onDelete, onDownload, onView }: VideoCardProps)
       <Card className="overflow-hidden hover:shadow-lg transition-shadow">
         <CardContent className="p-0">
           {/* Video Preview or Placeholder */}
-          <div className="relative aspect-video bg-muted">
+          <div 
+            className="relative aspect-video bg-muted"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
             {isCompleted && videoUrl && !videoError ? (
               <video
+                ref={videoRef}
                 src={videoUrl}
                 className="w-full h-full object-cover"
                 muted
+                loop
+                playsInline
                 onError={() => setVideoError(true)}
               />
             ) : isProcessing ? (

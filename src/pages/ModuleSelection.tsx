@@ -1,4 +1,4 @@
-import { ArrowLeft, Users, Camera, Sparkle, Zap } from "lucide-react";
+import { ArrowLeft, Users, Sparkles, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -31,17 +31,25 @@ const ModuleSelection = () => {
     },
     ...(isAdmin ? [{
       id: "video",
-      title: t('createSelection.videoCreator.title')+ '(Admin Only)',
+      title: t('createSelection.videoCreator.title') + ' (Admin Only)',
       description: t('createSelection.videoCreator.description'),
       icon: Users,
       path: "/create/video",
+      isAdmin: true
+    }] : []),
+    ...(isAdmin ? [{
+      id: "adgenius",
+      title: "AdGenius (Admin Only)",
+      description: "Advanced creative generation for advertising campaigns",
+      icon: Sparkles,
+      path: "/create/adgenius",
       isAdmin: true
     }] : []),
     {
       id: "soon",
       title: "In Progress",
       description: 'We are working daily on improving our platform. You will be the first to know the news!',
-      icon: Sparkle,
+      icon: Sparkles,
       path: "",
       disabled: true
     },

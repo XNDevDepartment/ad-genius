@@ -33,6 +33,7 @@ const Success = lazy(() => import("./pages/Success"));
 const Cancel = lazy(() => import("./pages/Cancel"));
 const TestVideoGeneration = lazy(() => import("./pages/VideoGenerator"));
 const VideoLibrary = lazy(() => import("./pages/VideoLibrary"));
+const AdGenius = lazy(() => import("./pages/AdGenius"));
 
 
 const queryClient = new QueryClient();
@@ -70,6 +71,11 @@ const App = () => {
                 <Route path="create/video" element={
                   <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
                     <TestVideoGeneration />
+                  </Suspense>
+                } />
+                <Route path="create/adgenius" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <AdGenius />
                   </Suspense>
                 } />
                 <Route path="library" element={
