@@ -277,9 +277,11 @@ export type Database = {
           model: string
           prompt: string
           request_id: string | null
+          response_url: string | null
           retry_count: number | null
           source_image_id: string | null
           status: string
+          status_url: string | null
           ugc_image_id: string | null
           updated_at: string
           user_id: string
@@ -300,9 +302,11 @@ export type Database = {
           model?: string
           prompt: string
           request_id?: string | null
+          response_url?: string | null
           retry_count?: number | null
           source_image_id?: string | null
           status?: string
+          status_url?: string | null
           ugc_image_id?: string | null
           updated_at?: string
           user_id: string
@@ -323,9 +327,11 @@ export type Database = {
           model?: string
           prompt?: string
           request_id?: string | null
+          response_url?: string | null
           retry_count?: number | null
           source_image_id?: string | null
           status?: string
+          status_url?: string | null
           ugc_image_id?: string | null
           updated_at?: string
           user_id?: string
