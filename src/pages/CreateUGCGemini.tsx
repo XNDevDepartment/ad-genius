@@ -58,12 +58,6 @@ const ASPECT_INFO: Record<AspectRatio, { label: string; composition: string }> =
   '16:9': { label: 'Wide',  composition: 'Cinematic wide framing; foreground–midground–background depth cues.' },
 };
 
-// 2) Build the aspect/size line once and append to both prompts
-function buildFramingLine(aspectRatio: AspectRatio, tier: SizeTier) {
-  const px = SIZE_MAP[aspectRatio][tier];                 // e.g., "2816x1536"
-  const { label, composition } = ASPECT_INFO[aspectRatio];
-  return `Aspect: ${label} (${aspectRatio}); Output: ${px} ${composition}`;
-}
 
 const CreateUGCGemini = () => {
   console.log('CreateUGCGemini component rendering...');
@@ -75,10 +69,8 @@ const CreateUGCGemini = () => {
   const { user, subscriptionData } = useAuth();
   const { credits, getTotalCredits } = useCredits();
   const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
-  const [showAuthModal, setShowAuthModal] = useState(!user);
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
   const { remainingCredits, canGenerateImages, isAtLimit, refreshCount, calculateImageCost } = useImageLimit(imageQuality);
-  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const [imagesAnalysed, setImagesAnalysed] = useState(false);
 
   // Add error boundary for useNavigate
@@ -104,7 +96,6 @@ const CreateUGCGemini = () => {
   const [stage, setStage] = useState<'setup' | 'generating' | 'results'>('setup');
   const [productImages, setProductImages] = useState<File[]>([]);
   const [sourceImageIds, setSourceImageIds] = useState<string[]>([]);
-  const [productAnalyses, setProductAnalyses] = useState<string[]>([]);
   const [isAnalyzingImages, setIsAnalyzingImages] = useState<boolean[]>([]);
   const [desiredAudience, setDesiredAudience] = useState("");
   const [prodSpecs, setProdSpecs] = useState("");
@@ -116,7 +107,6 @@ const CreateUGCGemini = () => {
   const hasSelectedScenario = selectedScenario && selectedScenario.idea && selectedScenario.idea.trim().length > 0;
   const [isLoadingScenarios, setIsLoadingScenarios] = useState(false);
   const [threadId, setThreadId] = useState<string | null>(null);
-  const [productIdentification, setProductIdentification] = useState("");
   const [moreScenarios, setMoreScenarios] = useState(false);
   const [numImages, setNumImages] = useState(1);
   const [imageOrientation, setImageOrientation] = useState("1:1");
@@ -134,7 +124,6 @@ const CreateUGCGemini = () => {
 
   // Sync job state with local state
   const isGenerating = (stage === 'generating' || job?.status === 'queued' || job?.status === 'processing') && job?.status !== 'completed';
-  const progress = job?.progress || 0;
 
 
   // Tower behavior: separate current batch from previous images
@@ -297,7 +286,7 @@ const CreateUGCGemini = () => {
       // Clear location state to prevent re-triggering
       window.history.replaceState({}, document.title);
     }
-  }, [location.state]);
+  }, []);
 
   // Auto-scroll to scenarios when they appear
   useEffect(() => {
