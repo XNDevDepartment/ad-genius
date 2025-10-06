@@ -10,11 +10,18 @@ import HeaderSection from "@/components/landing/HeaderSection";
 import { RecentImagesSection } from "@/components/RecentImagesSection";
 import { UserStatsPanel } from "@/components/UserStatsPanel";
 import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
 
 const Index = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  useEffect(() => {
+    if(localStorage.getItem("billing") === 'true'){
+      navigate('/pricing')
+    }
+  }, [localStorage])
 
 
   return (

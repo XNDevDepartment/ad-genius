@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Check, X, Star, Zap, Shield, Crown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import HeaderSection from "@/components/landing/HeaderSection";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const plans = [
   {
@@ -124,6 +124,10 @@ const Pricing = () => {
   const { user } = useAuth();
   const [isYearly, setIsYearly] = useState(false);
 
+  useEffect(() => {
+    localStorage.removeItem("billing")
+  }, [localStorage])
+
   const handlePlanSelect = async (planId: string) => {
     if (planId === "free") {
       // Free plan - redirect to account to sign up
@@ -136,7 +140,8 @@ const Pricing = () => {
       navigate('/account');
       return;
     }
-    
+
+
     try {
       // For paid plans, create checkout session
       const { data, error } = await supabase.functions.invoke('create-checkout', {
