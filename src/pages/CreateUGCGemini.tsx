@@ -591,49 +591,10 @@ const CreateUGCGemini = () => {
       setProductImages([file]);
       setSourceImageIds([image.id]);
       setUploadedSourceIds([image.id]);
-      setImagesAnalysed(true);
-
-      // Start AI analysis
-      // setIsAnalyzingImages(new Array([file].length).fill(true));
+      setImagesAnalysed(false);
 
       const reader = new FileReader();
-      // reader.onload = async () => {
-      //   const base64 = reader.result as string;
 
-      //   const reply = await sendImageAndRun(
-      //     threadId!,
-      //     ASSISTANT_ID,
-      //     base64,
-      //     file.name,
-      //     'I have uploaded a product image. Please analyze it. Dont answer this message.'
-      //   );
-
-      //   setProductIdentification(reply);
-      //   setProductAnalyses([reply]);
-      //   setProductAnalyses(new Array([file].length).fill(reply));
-
-      //   // Save message if authenticated
-      //   if (conversationId) {
-      //     await saveMessage({
-      //       conversationId,
-      //       role: 'user',
-      //       content: 'I have uploaded a product image from my source library. Please analyze it. Dont answer this message',
-      //       metadata: { hasImage: true, source: 'library' }
-      //     });
-
-      //     await saveMessage({
-      //       conversationId,
-      //       role: 'assistant',
-      //       content: reply,
-      //       metadata: { analysisType: 'product_identification' }
-      //     });
-      //   }
-
-      //   setIsAnalyzingImage(false);
-      //   setIsAnalyzingImages(new Array([file].length).fill(false));
-        
-      //   // Focus on niche input
-      // };
       toast({
         title: "Product Loaded",
         description: "Selected image from your library and AI has analyzed it."
@@ -663,6 +624,7 @@ const CreateUGCGemini = () => {
 
     try {
       setImportingFromUrl(true);
+      setImagesAnalysed(false);
 
       const { data, error } = await supabase.functions.invoke('upload-source-image-from-url', {
         body: { imageUrl: importUrl.trim() }
@@ -689,44 +651,11 @@ const CreateUGCGemini = () => {
         setProductImages([file]);
         setSourceImageIds([data.sourceImage.id]);
         setUploadedSourceIds([data.sourceImage.id]);
-        setImagesAnalysed(true);
         setImportUrl("");
         setUrlImportOpen(false);
 
-        // Start AI analysis
-        // setIsAnalyzingImages([true]);
-
         const reader = new FileReader();
-        // reader.onload = async () => {
-        //   const base64 = reader.result as string;
 
-        //   const reply = await sendMultipleImagesAndRun(
-        //     threadId!,
-        //     ASSISTANT_ID,
-        //     [{ fileData: base64, fileName: file.name }],
-        //     'I have uploaded a product image from URL. Please analyze it. Dont answer this message.'
-        //   );
-
-        //   setProductIdentification(reply);
-
-        //   if (conversationId) {
-        //     await saveMessage({
-        //       conversationId,
-        //       role: 'user',
-        //       content: 'I have imported a product image from URL. Please analyze it. Dont answer this message',
-        //       metadata: { hasImage: true, source: 'url', originalUrl: importUrl.trim() }
-        //     });
-
-        //     await saveMessage({
-        //       conversationId,
-        //       role: 'assistant',
-        //       content: reply,
-        //       metadata: { analysisType: 'product_identification' }
-        //     });
-        //   }
-
-
-        //   // Focus on niche input
         // };
         setIsAnalyzingImages([false]);
         toast({
@@ -854,7 +783,7 @@ const CreateUGCGemini = () => {
     await getScenariosFromConversation("",true);
   };
 
-  // const handleGenerate = async () => {
+
   //   //check if the necessary data is available
   //   if (productImages.length === 0 || !hasSelectedScenario) {
   //     toast({
@@ -1025,7 +954,7 @@ const CreateUGCGemini = () => {
       setStage('setup');
       return;
     }
-  
+
     try {
       console.log('[CreateUGCGemini] Multi-image path - NO CROPPING');
 
@@ -1039,21 +968,22 @@ const CreateUGCGemini = () => {
         return finished.length ? [...finished, ...prev] : prev;
       });
       setCurrentBatchImages([]);
-  
+
       setStage('generating');
       setPendingSlots(numImages);
       localStorage.setItem('currentStage', 'generating');
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
 
       const commonNeg = `--negative "AI artifacts, text overlays, watermark, extreme bokeh, macro close-up, center-composed product, invented branding, extra limbs, low resolution, duplicated faces, similar persons"`;
-  
+
       // Build prompt with aspect ratio instruction for Gemini
       const highlightYes =
         `Ultra-detailed, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. ` +
         `Shot with full-frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125's, ISO 200 at ${timeOfDay} with authentic light direction and quality. ` +
         `For this product here are some details you should have in attention when editing the image: ${prodSpecs}` +
         `For the models in the picture have my desired audience in consideration: ${desiredAudience}` +
-        `${commonNeg}`;
+        `${commonNeg}` + 
+        ' Focus on the product. Make it occupy 70% of the image';
 
       const highlightNo =
         `Photorealistic ${style} scene: ${selectedScenario.description}. Product naturally placed (20% of frame, off-center). ` +
@@ -1114,9 +1044,9 @@ const CreateUGCGemini = () => {
         desiredAudience: desiredAudience || undefined, // Store the user's desired audience
         prodSpecs: prodSpecs || undefined, // Store the user's product specifications
       });
-  
+
       if (!result) throw new Error('Failed to create job');
-  
+
       const jobId = result.jobId;
       localStorage.setItem('currentGeminiJobId', jobId);
       localStorage.setItem('currentGeminiStage', 'generating');
@@ -1155,7 +1085,7 @@ const CreateUGCGemini = () => {
   const handleStartFromScratch = () => {
     // Clear job state
     clearJob();
-    
+  
     // Reset all UI states
     setCurrentBatchImages([]);
     setPreviousImages([]);
@@ -1168,17 +1098,18 @@ const CreateUGCGemini = () => {
     setSelectedScenario({'idea': "", "small-description" : "", "description": ""});
     setStage('setup');
     setPendingSlots(0);
-    
+    setIsAnalyzingImages(new Array(productImages.length).fill(false));
+    setImagesAnalysed(false)
     // Clear localStorage with mobile-specific cleanup
     localStorage.removeItem('currentJobId');
     localStorage.removeItem('currentStage');
     localStorage.removeItem('jobMetadata');
-    
+
     // Scroll to top
     setTimeout(() => {
       topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
-    
+
     toast({
       title: "Starting fresh",
       description: "All data cleared. Ready for a new generation.",
@@ -1195,7 +1126,7 @@ const CreateUGCGemini = () => {
 
     window.addEventListener('scroll', handleScroll);
     handleScroll(); // Check initial state
-    
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, [jobImages.length, isGenerating, stage]);
 
@@ -1556,7 +1487,6 @@ const CreateUGCGemini = () => {
                   )}
                 </div>
               )}
-
 
           </div>
 
