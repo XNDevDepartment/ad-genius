@@ -1080,17 +1080,18 @@ const CreateUGCGemini = () => {
         }
       }
 
-      setUploadedSourceIds([]);   // 🔒 belt-and-suspenders
-      setSourceImageIds([]);
-
+      // keep any previously saved IDs first, then fall back to newly uploaded ones
       const idsToUse =
-        (uploadedSourceIds.length && uploadedSourceIds) ||
-        (sourceImageIds.length && sourceImageIds) ||
-        uploadedIds;
-
+        (uploadedSourceIds && uploadedSourceIds.length > 0 ? uploadedSourceIds :
+        (sourceImageIds && sourceImageIds.length > 0 ? sourceImageIds : uploadedIds));
 
       if (!idsToUse || idsToUse.length === 0) {
-        throw new Error('No source image IDs available to send to the job.');
+        toast({
+          title: "Missing source image",
+          description: "Please choose an image from Library or upload a product image before generating.",
+          variant: "destructive",
+        });
+        return;
       }
 
 
