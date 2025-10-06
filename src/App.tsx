@@ -15,7 +15,7 @@ import NotFound from "./pages/NotFound";
 
 // Lazy load non-critical routes for better code splitting
 const CreateSelection = lazy(() => import("./pages/ModuleSelection"));
-const CreateUGC = lazy(() => import("./pages/CreateUGC"));
+const CreateUGC = lazy(() => import("./pages/CreateGPT"));
 const CreateUGCGemini = lazy(() => import("./pages/CreateUGCGemini"));
 const Library = lazy(() => import("./pages/Library"));
 const Account = lazy(() => import("./pages/Account"));
