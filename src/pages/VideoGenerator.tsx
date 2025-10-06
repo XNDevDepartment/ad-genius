@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { createVideoJob, getVideoJob, cancelVideoJob, subscribeVideoJob, KlingJobRow } from "@/api/kling";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle, CheckCircle, Clock, Loader2, Video as VideoIcon, X, Copy, Upload, Link as LinkIcon, Images } from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, Loader2, Video as VideoIcon, X, Copy, Upload, Link as LinkIcon, Images, Sparkles } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import MultiImageUploader from "@/components/MultiImageUploader";
 import { SourceImagePicker } from "@/components/SourceImagePicker";
@@ -31,6 +31,7 @@ type Duration = 5 | 10;
 
 export default function VideoGenerator() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
   
@@ -49,6 +50,44 @@ export default function VideoGenerator() {
   const [job, setJob] = useState<KlingJobRow | null>(null);
   const [uiError, setUiError] = useState<string | null>(null);
 
+  // AI analysis state
+  const [analyzingImage, setAnalyzingImage] = useState(false);
+  const [suggestedPrompt, setSuggestedPrompt] = useState<string | null>(null);
+  const [showSuggestion, setShowSuggestion] = useState(false);
+
+
+  // AI image analysis function
+  const analyzeImageForMotion = async (imageUrl: string) => {
+    setAnalyzingImage(true);
+    setSuggestedPrompt(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-image-for-motion', {
+        body: { imageUrl }
+      });
+
+      if (error) throw error;
+      
+      if (data?.suggestedPrompt) {
+        setSuggestedPrompt(data.suggestedPrompt);
+        setShowSuggestion(true);
+        
+        toast({
+          title: "AI Suggestion Ready",
+          description: "A motion prompt has been suggested based on your image.",
+        });
+      }
+    } catch (error) {
+      console.error('Failed to analyze image:', error);
+      toast({
+        title: "Analysis Failed",
+        description: "Could not generate motion suggestion. You can still enter your own prompt.",
+        variant: "destructive",
+      });
+    } finally {
+      setAnalyzingImage(false);
+    }
+  };
 
   // Handle pre-selection from UGC
   useEffect(() => {
@@ -61,6 +100,9 @@ export default function VideoGenerator() {
         title: "Image Pre-selected",
         description: "UGC image loaded and ready to animate.",
       });
+      
+      // Analyze image for motion
+      analyzeImageForMotion(state.preselectedImageUrl);
       
       // Clear location state
       window.history.replaceState({}, document.title);
@@ -105,6 +147,9 @@ export default function VideoGenerator() {
             title: "Image uploaded",
             description: "Your image is ready to animate.",
           });
+          
+          // Analyze image for motion
+          await analyzeImageForMotion(sourceImage.signedUrl);
         }
       }
     } catch (error) {
@@ -127,6 +172,9 @@ export default function VideoGenerator() {
       title: "Image selected",
       description: "Your image is ready to animate.",
     });
+    
+    // Analyze image for motion
+    analyzeImageForMotion(image.signedUrl);
   };
 
   // Handle URL import
@@ -149,6 +197,9 @@ export default function VideoGenerator() {
         title: "Image imported",
         description: "URL image loaded and ready to animate.",
       });
+      
+      // Analyze image for motion
+      await analyzeImageForMotion(response.data.sourceImage.signedUrl);
     } catch (error: any) {
       console.error('URL import failed:', error);
       toast({
@@ -470,6 +521,54 @@ export default function VideoGenerator() {
               {/* Prompt */}
               <div className="space-y-2">
                 <Label>Prompt</Label>
+                
+                {/* AI Suggestion Section */}
+                {analyzingImage && (
+                  <Alert>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <AlertDescription>
+                      Analyzing image and generating motion suggestion...
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {suggestedPrompt && showSuggestion && (
+                  <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-blue-600" />
+                        AI-Suggested Motion Prompt
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <p className="text-sm text-muted-foreground">{suggestedPrompt}</p>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => {
+                            setPrompt(suggestedPrompt);
+                            setShowSuggestion(false);
+                            toast({
+                              title: "Prompt Applied",
+                              description: "You can edit it before generating.",
+                            });
+                          }}
+                        >
+                          Use This Prompt
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setShowSuggestion(false)}
+                        >
+                          Dismiss
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+                
                 <Textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}

@@ -1466,6 +1466,14 @@ const CreateUGCGemini = () => {
                       jobId={job?.id}
                       imageOrientation={imageOrientation}
                       aiScenarios={aiScenarios}
+                      onAnimateImage={(imageId, imageUrl) => {
+                        navigate('/create/video', {
+                          state: {
+                            ugc_image_id: imageId,
+                            preselectedImageUrl: imageUrl
+                          }
+                        });
+                      }}
                     />
 
                   {/* Resume button for stuck jobs */}

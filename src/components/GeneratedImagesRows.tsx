@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, PlusCircle, ExternalLink, RotateCcw, ImageIcon } from "lucide-react";
+import { Download, PlusCircle, ExternalLink, RotateCcw, ImageIcon, Video, Images } from "lucide-react";
 import { cn } from "@/lib/utils";
 import "./../costumn.css";
 
@@ -37,7 +37,8 @@ type Props = {
   jobId?: string | null;
   /** job-level default, used only for placeholders */
   imageOrientation?: Orientation | string;
-  aiScenarios?: AIScenario[]
+  aiScenarios?: AIScenario[];
+  onAnimateImage?: (imageId: string, imageUrl: string) => void;
 };
 
 /* UI helpers */
@@ -113,7 +114,8 @@ export default function GeneratedImagesRows({
   onStartFromScratch,
   jobId,
   imageOrientation,
-  aiScenarios
+  aiScenarios,
+  onAnimateImage
 }: Props) {
   // Lock placeholder shape for *this job only*
   const [jobAspectRatio, setJobAspectRatio] = useState<string | null>(null);
@@ -183,7 +185,39 @@ export default function GeneratedImagesRows({
 
               <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-1 gap-2">
                 <Button
-                  variant="default"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-center"
+                  disabled={!img?.url}
+                  onClick={() => {
+                    if (!img?.url) return;
+                    window.open(img.url, '_blank');
+                  }}
+                  title={!img?.url ? "Available when ready" : "Open in new tab"}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Open in New Tab
+                </Button>
+
+                {onAnimateImage && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="w-full justify-center"
+                    disabled={!img?.url}
+                    onClick={() => {
+                      if (!img?.url) return;
+                      onAnimateImage(img.id, img.url);
+                    }}
+                    title={!img?.url ? "Available when ready" : "Animate image"}
+                  >
+                    <Video className="h-4 w-4 mr-2" />
+                    Animate Image
+                  </Button>
+                )}
+
+                <Button
+                  variant="outline"
                   size="sm"
                   className="w-full justify-center"
                   disabled={!img?.url}
@@ -204,7 +238,7 @@ export default function GeneratedImagesRows({
                   className="w-full justify-center"
                   onClick={() => onOpenInLibrary(img?.id)}
                 >
-                  <ExternalLink className="h-4 w-4 mr-2" />
+                  <Images className="h-4 w-4 mr-2" />
                   Library
                 </Button>
               </div>
@@ -237,7 +271,39 @@ export default function GeneratedImagesRows({
 
               <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-1 gap-2">
                 <Button
-                  variant="default"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-center"
+                  disabled={!img?.url}
+                  onClick={() => {
+                    if (!img?.url) return;
+                    window.open(img.url, '_blank');
+                  }}
+                  title={!img?.url ? "Available when ready" : "Open in new tab"}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Open in New Tab
+                </Button>
+
+                {onAnimateImage && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="w-full justify-center"
+                    disabled={!img?.url}
+                    onClick={() => {
+                      if (!img?.url) return;
+                      onAnimateImage(img.id, img.url);
+                    }}
+                    title={!img?.url ? "Available when ready" : "Animate image"}
+                  >
+                    <Video className="h-4 w-4 mr-2" />
+                    Animate Image
+                  </Button>
+                )}
+
+                <Button
+                  variant="outline"
                   size="sm"
                   className="w-full justify-center"
                   disabled={!img?.url}
@@ -256,7 +322,7 @@ export default function GeneratedImagesRows({
                   className="w-full justify-center"
                   onClick={() => onOpenInLibrary(img?.id)}
                 >
-                  <ExternalLink className="h-4 w-4 mr-2" />
+                  <Images className="h-4 w-4 mr-2" />
                   Library
                 </Button>
               </div>
