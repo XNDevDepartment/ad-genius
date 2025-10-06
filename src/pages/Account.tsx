@@ -244,7 +244,7 @@ const Account = () => {
             </Button>
           )}
           <h1 className="text-2xl lg:text-3xl font-bold">
-            {section === "" ? t('account.title') : 
+            {section === "" ? t('account.title') :
              section === "edit-profile" ? t('account.editProfile.title') :
              section === "settings" ? t('account.settings.title') :
              section === "notifications" ? t('account.notifications.title') :
