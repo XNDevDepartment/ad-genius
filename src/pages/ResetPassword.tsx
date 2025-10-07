@@ -23,9 +23,18 @@ const ResetPassword = () => {
 
   useEffect(() => {
     const handlePasswordReset = async () => {
-      // Check if we have the required tokens in URL
-      const accessToken = searchParams.get('access_token');
-      const refreshToken = searchParams.get('refresh_token');
+      // Supabase sends tokens in URL hash fragment (#), not query params (?)
+      // Parse both for backward compatibility
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
+      const type = hashParams.get('type') || searchParams.get('type');
+      
+      // Verify this is a recovery flow
+      if (type && type !== 'recovery') {
+        setError('Invalid reset link type. Please request a new password reset.');
+        return;
+      }
       
       if (!accessToken || !refreshToken) {
         setError('Invalid or expired reset link. Please request a new password reset.');
