@@ -29,9 +29,12 @@ file_size_limit = "50MiB"
 [auth]
 enabled = true
 port = 54326
-site_url = "http://localhost:3000"
-additional_redirect_urls = ["https://localhost:3000"]
-jwt_expiry = 3600
+site_url = "http://localhost:5173"
+additional_redirect_urls = [  
+    "http://localhost:5173/**",
+    "https://produktpix.com/**"
+]
+jwt_expiry = 5600
 refresh_token_rotation_enabled = true
 security_update_enabled = true
 
