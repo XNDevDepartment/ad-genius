@@ -5,16 +5,11 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, ArrowRight, Users, Zap, Trophy, Image } from "lucide-react";
-import heroProduct from "@/assets/example_image.jpeg";
+import { Play, ArrowRight, Zap, Trophy, Image } from "lucide-react";
 import { BeforeAfterSlider } from "../ui/before-after";
 
-import { supabase } from "@/integrations/supabase/client";
-
-import nike_before from './../../assets/nike_origin.jpeg';
-import nike_afer from './../../assets/nike_finish.png';
-import  demo from './../../assets/demo.webp';
-import  demo_genius from './../../assets/demo_genius.png';
+import sanjo_before from '@/assets/sanjo_origin.webp';
+import sanjo_afer from '@/assets/sanjo_finish.jpeg';
 import { DemoModal } from "../DemoModal";
 
 
@@ -171,18 +166,13 @@ const HeroSection = () => {
                 <div className="relative">
                   <div className="relative z-10 transform transition-smooth">
                       <BeforeAfterSlider
-                        beforeImage={demo}
-                        afterImage={demo_genius}
+                        beforeImage={sanjo_before}
+                        afterImage={sanjo_afer}
                         alt='Demo Images'
                         className="w-full h-full"
                         initialX={15}
                         eager={true}
                       />
-                    {/* <img 
-                      src={heroProduct}
-                      alt="AI-generated product photography"
-                      className="w-full max-w-lg mx-auto rounded-2xl shadow-elegant"
-                    /> */}
                   </div>
                   <div className="absolute inset-0 bg-brand-gradient rounded-2xl blur-xl opacity-30 animate-pulse" />
                 </div>
