@@ -289,9 +289,11 @@ export default function VideoGenerator() {
         model: "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
       };
 
-      // Use ugc_image_id if coming from UGC, otherwise use source_image_id
-      if (ugcImageId) {
-        payload.ugc_image_id = ugcImageId;
+      // Detect if selectedImage is a UGC image (has prompt field) or source image
+      const isUgcImage = ugcImageId || 'prompt' in selectedImage;
+
+      if (isUgcImage) {
+        payload.ugc_image_id = ugcImageId || selectedImage.id;
       } else {
         payload.source_image_id = selectedImage.id;
       }
