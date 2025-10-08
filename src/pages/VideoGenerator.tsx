@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import type { SourceImage } from "@/hooks/useSourceImages";
+import type { UgcImage } from "@/hooks/useUgcImages";
 
 /**
  * A robust, minimal front-end flow for Kling image-to-video:
@@ -35,7 +36,7 @@ export default function VideoGenerator() {
   const { toast } = useToast();
   const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
   
-  const [selectedImage, setSelectedImage] = useState<SourceImage | null>(null);
+  const [selectedImage, setSelectedImage] = useState<UgcImage | SourceImage | null>(null);
   const [preselectedImageUrl, setPreselectedImageUrl] = useState<string | null>(null);
   const [ugcImageId, setUgcImageId] = useState<string | null>(null);
   const [sourceImagePickerOpen, setSourceImagePickerOpen] = useState(false);
@@ -58,17 +59,25 @@ export default function VideoGenerator() {
 
   // AI image analysis function
   const analyzeImageForMotion = async (imageUrl: string) => {
+    console.log('[VideoGenerator] Starting image analysis for URL:', imageUrl);
     setAnalyzingImage(true);
     setSuggestedPrompt(null);
     
     try {
+      console.log('[VideoGenerator] Invoking analyze-image-for-motion edge function...');
       const { data, error } = await supabase.functions.invoke('analyze-image-for-motion', {
         body: { imageUrl }
       });
 
-      if (error) throw error;
+      console.log('[VideoGenerator] Edge function response:', { data, error });
+
+      if (error) {
+        console.error('[VideoGenerator] Edge function error:', error);
+        throw error;
+      }
       
       if (data?.suggestedPrompt) {
+        console.log('[VideoGenerator] AI suggestion received:', data.suggestedPrompt);
         setSuggestedPrompt(data.suggestedPrompt);
         setShowSuggestion(true);
         
@@ -76,12 +85,14 @@ export default function VideoGenerator() {
           title: "AI Suggestion Ready",
           description: "A motion prompt has been suggested based on your image.",
         });
+      } else {
+        console.warn('[VideoGenerator] No suggestion in response:', data);
       }
     } catch (error) {
-      console.error('Failed to analyze image:', error);
+      console.error('[VideoGenerator] Failed to analyze image:', error);
       toast({
         title: "Analysis Failed",
-        description: "Could not generate motion suggestion. You can still enter your own prompt.",
+        description: error instanceof Error ? error.message : "Could not generate motion suggestion. You can still enter your own prompt.",
         variant: "destructive",
       });
     } finally {
@@ -163,7 +174,7 @@ export default function VideoGenerator() {
   };
 
   // Handle source image selection from picker
-  const handleSourceImageSelect = (image: SourceImage) => {
+  const handleSourceImageSelect = (image: UgcImage) => {
     setSelectedImage(image);
     setUgcImageId(null);
     setPreselectedImageUrl(null);

@@ -4,23 +4,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search, Image as ImageIcon } from 'lucide-react';
-import { useSourceImages, type SourceImage } from '@/hooks/useSourceImages';
+import { useUgcImages, type UgcImage } from '@/hooks/useUgcImages';
 
 interface SourceImagePickerProps {
   open: boolean;
   onClose: () => void;
-  onSelect: (image: SourceImage) => void;
+  onSelect: (image: UgcImage) => void;
 }
 
 export const SourceImagePicker = ({ open, onClose, onSelect }: SourceImagePickerProps) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { sourceImages, loading } = useSourceImages();
+  const { ugcImages, loading } = useUgcImages();
 
-  const filteredImages = sourceImages.filter(image =>
-    image.fileName.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredImages = ugcImages.filter(image =>
+    image.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    image.prompt.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSelect = (image: SourceImage) => {
+  const handleSelect = (image: UgcImage) => {
     onSelect(image);
     onClose();
   };
@@ -29,7 +30,7 @@ export const SourceImagePicker = ({ open, onClose, onSelect }: SourceImagePicker
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh]">
         <DialogHeader>
-          <DialogTitle>Choose from Your Source Images</DialogTitle>
+          <DialogTitle>Choose from Your Generated Images</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -72,10 +73,10 @@ export const SourceImagePicker = ({ open, onClose, onSelect }: SourceImagePicker
                   <ImageIcon className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <p className="text-muted-foreground mb-2">
-                  {searchTerm ? 'No images match your search' : 'No source images found'}
+                  {searchTerm ? 'No images match your search' : 'No generated images found'}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {searchTerm ? 'Try a different search term' : 'Upload some product images first'}
+                  {searchTerm ? 'Try a different search term' : 'Generate some UGC images first'}
                 </p>
               </div>
             )}
