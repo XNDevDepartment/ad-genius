@@ -398,7 +398,7 @@ export default function VideoGenerator() {
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center gap-3">
           <VideoIcon className="h-6 w-6" />
-          <h1 className="text-2xl font-bold">Image → Video (Kling 2.5 Turbo Pro)</h1>
+          <h1 className="text-2xl font-bold">Image → Video</h1>
         </div>
 
         {!job && (
@@ -413,9 +413,9 @@ export default function VideoGenerator() {
                 <Label>Source Image</Label>
                 
                 {!selectedImage && !preselectedImageUrl ? (
-                  <div className="space-y-3">
+                  <div className="space-y-3 w-full">
                     {/* Upload Methods */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-3"> */}
                       {/* Drag & Drop */}
                       <div className="border-2 border-dashed border-border rounded-lg p-4">
                         <MultiImageUploader
@@ -427,9 +427,10 @@ export default function VideoGenerator() {
                       </div>
 
                       {/* From Library */}
+                    <div className="flex gap-2">
                       <Button
                         variant="outline"
-                        className="h-full min-h-[120px] flex-col gap-2"
+                        className="h-full min-h-[60px] flex-col gap-2 w-full"
                         onClick={() => setSourceImagePickerOpen(true)}
                       >
                         <Images className="h-8 w-8" />
@@ -441,7 +442,7 @@ export default function VideoGenerator() {
                         <DialogTrigger asChild>
                           <Button
                             variant="outline"
-                            className="h-full min-h-[120px] flex-col gap-2"
+                            className="h-full min-h-[60px] flex-col gap-2 w-full"
                           >
                             <LinkIcon className="h-8 w-8" />
                             <span className="text-sm">Import from URL</span>
@@ -474,7 +475,8 @@ export default function VideoGenerator() {
                           </div>
                         </DialogContent>
                       </Dialog>
-                    </div>
+                      </div>
+                    {/* </div> */}
 
                     {ugcImageId && (
                       <Alert>
@@ -669,24 +671,24 @@ export default function VideoGenerator() {
 
               {/* Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                <div className="flex justify-between">
+                {/* <div className="flex justify-between">
                   <span className="text-muted-foreground">Job ID</span>
                   <span className="font-mono">{job.id}</span>
-                </div>
+                </div> */}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Duration</span>
                   <span>{job.duration}s</span>
                 </div>
-                <div className="flex justify-between">
+                {/* <div className="flex justify-between">
                   <span className="text-muted-foreground">Model</span>
                   <span className="font-mono text-xs">{job.model}</span>
-                </div>
-                <div className="flex justify-between">
+                </div> */}
+                {/* <div className="flex justify-between">
                   <span className="text-muted-foreground">Prompt</span>
                   <span className="text-right max-w-[280px] truncate" title={job.prompt}>
                     {job.prompt}
                   </span>
-                </div>
+                </div> */}
               </div>
 
               {/* Source image */}
