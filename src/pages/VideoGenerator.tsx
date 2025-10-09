@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { AlertCircle, CheckCircle, Clock, Loader2, Video as VideoIcon, X, Copy, Upload, Link as LinkIcon, Images, Sparkles } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import MultiImageUploader from "@/components/MultiImageUploader";
-import { SourceImagePicker } from "@/components/SourceImagePicker";
+import { UgcImagePicker } from "@/components/UgcImagePicker";
 import { useSourceImageUpload } from "@/hooks/useSourceImageUpload";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,7 @@ import type { UgcImage } from "@/hooks/useUgcImages";
 
 /**
  * A robust, minimal front-end flow for Kling image-to-video:
- * - pick a source image (from your source_images table via useSourceImages)
+ * - pick a UGC image (generated images from ugc_images table)
  * - enter prompt + duration (5 or 10 seconds)
  * - create the job
  * - subscribe to realtime updates
@@ -427,27 +427,14 @@ export default function VideoGenerator() {
                       </div>
 
                       {/* From Library */}
-                      <Dialog open={sourceImagePickerOpen} onOpenChange={setSourceImagePickerOpen}>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="h-full min-h-[120px] flex-col gap-2"
-                          >
-                            <Images className="h-8 w-8" />
-                            <span className="text-sm">From Library</span>
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle>Select Source Image</DialogTitle>
-                          </DialogHeader>
-                          <SourceImagePicker
-                            open={sourceImagePickerOpen}
-                            onClose={() => setSourceImagePickerOpen(false)}
-                            onSelect={handleSourceImageSelect}
-                          />
-                        </DialogContent>
-                      </Dialog>
+                      <Button
+                        variant="outline"
+                        className="h-full min-h-[120px] flex-col gap-2"
+                        onClick={() => setSourceImagePickerOpen(true)}
+                      >
+                        <Images className="h-8 w-8" />
+                        <span className="text-sm">From Library</span>
+                      </Button>
 
                       {/* From URL */}
                       <Dialog open={urlImportOpen} onOpenChange={setUrlImportOpen}>
@@ -755,6 +742,13 @@ export default function VideoGenerator() {
           </Card>
         )}
       </div>
+
+      {/* UGC Image Picker Modal */}
+      <UgcImagePicker
+        open={sourceImagePickerOpen}
+        onClose={() => setSourceImagePickerOpen(false)}
+        onSelect={handleSourceImageSelect}
+      />
     </div>
   );
 }

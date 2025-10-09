@@ -4,23 +4,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search, Image as ImageIcon } from 'lucide-react';
-import { useSourceImages, type SourceImage } from '@/hooks/useSourceImages';
+import { useUgcImages, type UgcImage } from '@/hooks/useUgcImages';
 
-interface SourceImagePickerProps {
+interface UgcImagePickerProps {
   open: boolean;
   onClose: () => void;
-  onSelect: (image: SourceImage) => void;
+  onSelect: (image: UgcImage) => void;
 }
 
-export const SourceImagePicker = ({ open, onClose, onSelect }: SourceImagePickerProps) => {
+export const UgcImagePicker = ({ open, onClose, onSelect }: UgcImagePickerProps) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { sourceImages, loading } = useSourceImages();
+  const { ugcImages, loading } = useUgcImages();
 
-  const filteredImages = sourceImages.filter(image =>
-    image.fileName.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredImages = ugcImages.filter(image =>
+    image.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    image.prompt.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSelect = (image: SourceImage) => {
+  const handleSelect = (image: UgcImage) => {
     onSelect(image);
     onClose();
   };
@@ -29,10 +30,20 @@ export const SourceImagePicker = ({ open, onClose, onSelect }: SourceImagePicker
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh]">
         <DialogHeader>
-          <DialogTitle>Select Source Image</DialogTitle>
+          <DialogTitle>Select Generated Image</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by filename or prompt..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
+          </div>
 
           {/* Images Grid */}
           <ScrollArea className="h-96">
@@ -47,7 +58,7 @@ export const SourceImagePicker = ({ open, onClose, onSelect }: SourceImagePicker
                     <div className="relative aspect-square rounded-lg overflow-hidden border-2 border-transparent group-hover:border-primary transition-colors">
                       <img
                         src={image.signedUrl}
-                        alt={image.fileName}
+                        alt={image.prompt || image.fileName}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
@@ -61,7 +72,7 @@ export const SourceImagePicker = ({ open, onClose, onSelect }: SourceImagePicker
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2 truncate">
-                      {image.fileName}
+                      {image.prompt || image.fileName}
                     </p>
                   </div>
                 ))}
@@ -72,10 +83,10 @@ export const SourceImagePicker = ({ open, onClose, onSelect }: SourceImagePicker
                   <ImageIcon className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <p className="text-muted-foreground mb-2">
-                  {searchTerm ? 'No images match your search' : 'No source images found'}
+                  {searchTerm ? 'No images match your search' : 'No generated images found'}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {searchTerm ? 'Try a different search term' : 'Upload some product images first'}
+                  {searchTerm ? 'Try a different search term' : 'Generate some UGC images first'}
                 </p>
               </div>
             )}
