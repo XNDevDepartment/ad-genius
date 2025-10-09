@@ -200,6 +200,19 @@ const CreateUGCGemini = () => {
     initializeThread();
   }, []);
 
+  // Sync source IDs when productImages changes (prevent stale references)
+  useEffect(() => {
+    if (productImages.length === 0) {
+      setSourceImageIds([]);
+      setUploadedSourceIds([]);
+      setImagesAnalysed(false);
+    } else if (productImages.length < sourceImageIds.length) {
+      // Images were removed, truncate sourceImageIds to match
+      setSourceImageIds(prev => prev.slice(0, productImages.length));
+      setUploadedSourceIds(prev => prev.slice(0, productImages.length));
+    }
+  }, [productImages.length]);
+
   // Handle replicate mode - pre-fill from location state
   useEffect(() => {
     const replicateState = location.state as any;
@@ -580,7 +593,7 @@ const CreateUGCGemini = () => {
       setProductImages([file]);
       setSourceImageIds([image.id]);
       setUploadedSourceIds([image.id]);
-      setImagesAnalysed(false);
+      setImagesAnalysed(true);
 
       const reader = new FileReader();
 
@@ -640,6 +653,7 @@ const CreateUGCGemini = () => {
         setProductImages([file]);
         setSourceImageIds([data.sourceImage.id]);
         setUploadedSourceIds([data.sourceImage.id]);
+        setImagesAnalysed(true);
         setImportUrl("");
         setUrlImportOpen(false);
 
@@ -670,7 +684,7 @@ const CreateUGCGemini = () => {
   const getScenariosFromConversation = async (desiredText?: string, moreScen?: boolean) => {
     setIsLoadingScenarios(true);
 
-    if(!imagesAnalysed){
+    if(!imagesAnalysed && uploadedSourceIds.length === 0){
       setIsAnalyzingImages(new Array(productImages.length).fill(true));
 
       //Upload all images to database individually (unchanged behavior)
@@ -688,6 +702,9 @@ const CreateUGCGemini = () => {
           console.error(`Failed to upload source image ${i + 1}:`, error);
         }
       }
+      setImagesAnalysed(true)
+    } else if (uploadedSourceIds.length > 0) {
+      // Images already uploaded from library or URL import
       setImagesAnalysed(true)
     }
 
