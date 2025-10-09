@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { createVideoJob, getVideoJob, cancelVideoJob, subscribeVideoJob, KlingJobRow } from "@/api/kling";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle, CheckCircle, Clock, Loader2, Video as VideoIcon, X, Copy, Upload, Link as LinkIcon, Images, Sparkles } from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, Loader2, Video as VideoIcon, X, Copy, Link as LinkIcon, Images, Sparkles } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import MultiImageUploader from "@/components/MultiImageUploader";
 import { UgcImagePicker } from "@/components/UgcImagePicker";
@@ -19,23 +19,15 @@ import { useToast } from "@/hooks/use-toast";
 import type { SourceImage } from "@/hooks/useSourceImages";
 import type { UgcImage } from "@/hooks/useUgcImages";
 
-/**
- * A robust, minimal front-end flow for Kling image-to-video:
- * - pick a UGC image (generated images from ugc_images table)
- * - enter prompt + duration (5 or 10 seconds)
- * - create the job
- * - subscribe to realtime updates
- * - display video once URL is present (with a fallback fetch)
- */
 
 type Duration = 5 | 10;
 
 export default function VideoGenerator() {
   const location = useLocation();
-  const navigate = useNavigate();
+
   const { toast } = useToast();
   const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
-  
+
   const [selectedImage, setSelectedImage] = useState<UgcImage | SourceImage | null>(null);
   const [preselectedImageUrl, setPreselectedImageUrl] = useState<string | null>(null);
   const [ugcImageId, setUgcImageId] = useState<string | null>(null);
@@ -44,7 +36,7 @@ export default function VideoGenerator() {
   const [importUrl, setImportUrl] = useState("");
   const [importingFromUrl, setImportingFromUrl] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  
+
   const [prompt, setPrompt] = useState("");
   const [duration, setDuration] = useState<Duration>(5);
   const [creating, setCreating] = useState(false);
@@ -62,7 +54,7 @@ export default function VideoGenerator() {
     console.log('[VideoGenerator] Starting image analysis for URL:', imageUrl);
     setAnalyzingImage(true);
     setSuggestedPrompt(null);
-    
+
     try {
       console.log('[VideoGenerator] Invoking analyze-image-for-motion edge function...');
       const { data, error } = await supabase.functions.invoke('analyze-image-for-motion', {
@@ -75,12 +67,12 @@ export default function VideoGenerator() {
         console.error('[VideoGenerator] Edge function error:', error);
         throw error;
       }
-      
+
       if (data?.suggestedPrompt) {
         console.log('[VideoGenerator] AI suggestion received:', data.suggestedPrompt);
         setSuggestedPrompt(data.suggestedPrompt);
         setShowSuggestion(true);
-        
+
         toast({
           title: "AI Suggestion Ready",
           description: "A motion prompt has been suggested based on your image.",
@@ -106,15 +98,15 @@ export default function VideoGenerator() {
     if (state?.ugc_image_id && state?.preselectedImageUrl) {
       setUgcImageId(state.ugc_image_id);
       setPreselectedImageUrl(state.preselectedImageUrl);
-      
+
       toast({
         title: "Image Pre-selected",
         description: "UGC image loaded and ready to animate.",
       });
-      
+
       // Analyze image for motion
       analyzeImageForMotion(state.preselectedImageUrl);
-      
+
       // Clear location state
       window.history.replaceState({}, document.title);
     }
@@ -124,11 +116,11 @@ export default function VideoGenerator() {
   const handleImagesSelect = async (files: File[]) => {
     if (files.length === 0) return;
     setUploadedFiles(files);
-    
+
     try {
       const file = files[0]; // Only use first file
       const result = await uploadSourceImage(file);
-      
+
       if (result) {
         // Fetch the full source image record from DB to get storage_path
         const { data: sourceImageData } = await supabase
@@ -150,7 +142,7 @@ export default function VideoGenerator() {
             storage_path: sourceImageData.storage_path,
             createdAt: sourceImageData.created_at,
           };
-          
+
           setSelectedImage(sourceImage);
           setUgcImageId(null);
           setPreselectedImageUrl(null);
@@ -158,7 +150,7 @@ export default function VideoGenerator() {
             title: "Image uploaded",
             description: "Your image is ready to animate.",
           });
-          
+
           // Analyze image for motion
           await analyzeImageForMotion(sourceImage.signedUrl);
         }
@@ -183,7 +175,7 @@ export default function VideoGenerator() {
       title: "Image selected",
       description: "Your image is ready to animate.",
     });
-    
+
     // Analyze image for motion
     analyzeImageForMotion(image.signedUrl);
   };
@@ -191,7 +183,7 @@ export default function VideoGenerator() {
   // Handle URL import
   const handleUrlImport = async () => {
     if (!importUrl.trim()) return;
-    
+
     setImportingFromUrl(true);
     try {
       const response = await supabase.functions.invoke('upload-source-image-from-url', {
@@ -208,7 +200,7 @@ export default function VideoGenerator() {
         title: "Image imported",
         description: "URL image loaded and ready to animate.",
       });
-      
+
       // Analyze image for motion
       await analyzeImageForMotion(response.data.sourceImage.signedUrl);
     } catch (error: any) {
@@ -227,7 +219,7 @@ export default function VideoGenerator() {
   useEffect(() => {
     if (!job?.id) return;
     console.log("[VideoGenerator] Setting up realtime subscription for job:", job.id);
-    
+
     const sub = subscribeVideoJob(job.id, (updated) => {
       console.log("[VideoGenerator] Realtime update received:", {
         id: updated.id,
@@ -236,7 +228,7 @@ export default function VideoGenerator() {
         video_path: updated.video_path,
         updated_at: updated.updated_at,
       });
-      
+
       // Force new object reference to trigger React re-render
       setJob({ ...updated });
       console.log("[VideoGenerator] setJob() called with new data");
@@ -254,19 +246,19 @@ export default function VideoGenerator() {
       console.log("[VideoGenerator] resolvedVideoUrl: no job");
       return null;
     }
-    
+
     if (job.video_url) {
       console.log("[VideoGenerator] resolvedVideoUrl: using video_url:", job.video_url);
       return job.video_url;
     }
-    
+
     if (job.video_path) {
       const { data } = supabase.storage.from("videos").getPublicUrl(job.video_path);
       const url = data?.publicUrl ?? null;
       console.log("[VideoGenerator] resolvedVideoUrl: generated from video_path:", url);
       return url;
     }
-    
+
     console.log("[VideoGenerator] resolvedVideoUrl: no URL or path available");
     return null;
   }, [job]);
@@ -411,7 +403,7 @@ export default function VideoGenerator() {
               {/* Source Image Selection */}
               <div className="space-y-3">
                 <Label>Source Image</Label>
-                
+
                 {!selectedImage && !preselectedImageUrl ? (
                   <div className="space-y-3 w-full">
                     {/* Upload Methods */}
@@ -523,7 +515,7 @@ export default function VideoGenerator() {
               {/* Prompt */}
               <div className="space-y-2">
                 <Label>Prompt</Label>
-                
+
                 {/* AI Suggestion Section */}
                 {analyzingImage && (
                   <Alert>
@@ -570,7 +562,7 @@ export default function VideoGenerator() {
                     </CardContent>
                   </Card>
                 )}
-                
+
                 <Textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
