@@ -716,7 +716,7 @@ const CreateUGCGemini = () => {
     try {
       const responseText = await converse(
         threadId!,
-        `${`I have uploaded ${productImages.length} product images. Please analyze all of them together and provide comprehensive product analysis.`} Here is my desired audience to promote my product: ${desiredAudience}. Based on the product images I'm sending and this desired audience description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas out of the box. Return ONLY a compact JSON object with "scenarios" array and in this language: ` + language,
+        `${`I have uploaded ${productImages.length} product images. Here are some details of the product: ${prodSpecs} Please analyze all of them together and provide comprehensive product analysis.`} Here is my desired audience to promote my product: ${desiredAudience}. Based on the product images I'm sending and this desired audience description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas out of the box. Return ONLY a compact JSON object with "scenarios" array and in this language: ` + language,
         ASSISTANT_ID
       );
 
@@ -734,7 +734,7 @@ const CreateUGCGemini = () => {
           await saveMessage({
             conversationId,
             role: 'user',
-            content: `Here is my desired audience to promote my product: ${desiredAudience}. Based on the product images I'm sending and this desired audience description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas out of the box`,
+            content: `Here is my desired audience to promote my product: ${desiredAudience}. Based on the product images and this caracteristics (${prodSpecs}) I'm sending and this desired audience description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas out of the box`,
             metadata: { requestType: 'scenario_generation' }
           });
 
@@ -773,154 +773,6 @@ const CreateUGCGemini = () => {
   };
 
 
-  //   //check if the necessary data is available
-  //   if (productImages.length === 0 || !hasSelectedScenario) {
-  //     toast({
-  //       title: 'Missing information',
-  //       description: 'Please upload a product image and select a scenario.',
-  //       variant: 'destructive',
-  //     });
-  //     return;
-  //   }
-
-  //   // Pre-flight check for credit availability (admins bypass this)
-  //   if (!canGenerateImages(numImages)) {
-  //     const creditsNeeded = calculateImageCost(imageQuality, numImages);
-  //     toast({
-  //       title: 'Insufficient credits',
-  //       description: `You need ${creditsNeeded} credits to generate ${numImages} ${imageQuality}-quality image(s). You have ${remainingCredits} credits remaining.`,
-  //       variant: 'destructive',
-  //     });
-  //     setStage('setup');
-  //     return;
-  //   }
-
-  //   try {
-  //     console.log('[CreateUGCGemini] Starting new generation, clearing previous job state');
-
-  //     // Clear any existing job state first
-  //     clearJob();
-
-  //     // Freeze the current results into the tower (newest on top)
-  //     setPreviousImages(prev => {
-  //       if (currentBatchImages.length === 0) return prev;
-  //       const finished = currentBatchImages.filter(img => Boolean(img.url));
-  //       return finished.length ? [...finished, ...prev] : prev;
-  //     });
-
-  //     // Clear current batch - the job completion handler will move completed images to previous
-  //     setCurrentBatchImages([]);
-
-  //     // Provide immediate feedback
-  //     setStage('generating');
-
-  //     // Set pending slots for new generation (animated placeholders)
-  //     setPendingSlots(numImages);
-
-  //     // Save state to localStorage for persistence
-  //     localStorage.setItem('currentStage', 'generating');
-
-  //     // Immediate scroll to generation area
-  //     setTimeout(() => {
-  //       resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  //     }, 200);
-
-  //     /* ------------------------------------------------------------------
-  //       1️⃣  Prepare payloads once (Data‑URL + prompt)
-  //     ------------------------------------------------------------------*/
-  //     // const baseFileData = await fileToDataUrl(productImage); // Data URL with prefix
-  //     const framingLine = buildFramingLine(aspectRatio, sizeTier);
-
-  //     const commonNeg = `--negative "AI artifacts, text overlays, watermark, extreme bokeh, macro close-up, center-composed product, invented branding, extra limbs, low resolution"`;
-
-
-  //     const highlightYes = `Ultra-detailed, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. Shot with full‑frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125's, ISO 200 at ${timeOfDay} with authentic light direction and quality.` + framingLine;
-
-
-  //     const highlightNo = `Photorealistic ${style} scene: ${selectedScenario.description}. Product naturally placed (20% of frame, off-center). Environment-first composition with sharp background detail. ${timeOfDay} lighting with authentic shadows and reflections. Natural imperfections, realistic textures, believable environmental interaction. Avoid: centered product, studio lighting, artificial blur, stock photo aesthetics. Use full-frame DSLR, 50'mm prime lens, aperture f/4, shutter 1/125's, ISO 200.` + framingLine;
-
-
-  //     const prompt = (highlight === 'yes' ? highlightYes : highlightNo).trim();
-
-
-  //     // Create job with new system
-  //     const result = await createJob({
-  //       prompt,
-  //       settings: {
-  //         number: numImages,
-  //         size: SIZE_MAP[aspectRatio][sizeTier] as "1024x1024" | "1024x1536" | "1536x1024",
-  //         quality: imageQuality,
-  //         // orientation: imageOrientation as '1:1' | '3:2' | '2:3',
-  //         style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'cinematic' | 'natural',
-  //         timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',
-  //         highlight: highlight as 'yes' | 'no',
-  //         output_format: 'png'
-  //       },
-  //       source_image_id: sourceImageIds[0] || undefined
-  //     });
-
-  //     if (!result) {
-  //       throw new Error('Failed to create job');
-  //     }
-
-  //     const jobId = result.jobId;
-
-  //     // Save job ID, stage and metadata for mobile recovery
-  //     localStorage.setItem('currentGeminiJobId', jobId);
-  //     localStorage.setItem('currentGeminiStage', 'generating');
-
-  //     // Enhanced mobile persistence with job metadata
-  //     const jobMetadata = {
-  //       id: jobId,
-  //       numImages: numImages,
-  //       settings: {
-  //         number: numImages,
-  //         quality: imageQuality,
-  //         orientation: imageOrientation,
-  //         style: style,
-  //         timeOfDay: timeOfDay,
-  //         highlight: highlight,
-  //         output_format: 'png'
-  //       },
-  //       prompt: prompt,
-  //       createdAt: new Date().toISOString()
-  //     };
-  //     localStorage.setItem('geminiJobMetadata', JSON.stringify(jobMetadata));
-
-  //     // toast({
-  //     //   title: 'Generation Started',
-  //     //   description: 'Your images are being generated. Progress will update automatically.',
-  //     // });
-
-  //     // Job is now processing in the background
-  //     // The UI will update automatically through the subscription
-
-  //   } catch (error) {
-  //     localStorage.setItem('currentGeminiStage', 'setup');
-  //     console.error('Generation error:', error);
-
-  //     let errorMessage = "Failed to generate images. Please try again.";
-  //     if (error instanceof Error) {
-  //       errorMessage = error.message;
-  //       if (error.message.includes('authentication') || error.message.includes('session')) {
-  //         errorMessage = "Session expired. Please refresh the page and try again.";
-  //       } else if (error.message.includes('credit') || error.message.includes('limit')) {
-  //         errorMessage = "Insufficient credits or rate limit reached. Please check your account.";
-  //       }
-  //     }
-
-  //     toast({
-  //       title: "Generation Failed",
-  //       description: errorMessage,
-  //       variant: "destructive",
-  //     });
-
-  //     // Refresh credits after error
-  //     refreshCount();
-  //   }
-  // };
-
-  // Combine both arrays for selection calculations
 
   // --- UPDATED: handleGenerate (NO CROPPING - Upload ORIGINAL images) ---
   const handleGenerate = async () => {
