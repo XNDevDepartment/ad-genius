@@ -112,6 +112,34 @@ export default function VideoGenerator() {
     }
   }, [location.state, toast]);
 
+  // Fetch complete UGC image record when navigating from UGC generator
+  useEffect(() => {
+    if (ugcImageId && preselectedImageUrl && !selectedImage) {
+      const fetchUgcImage = async () => {
+        const { data, error } = await supabase
+          .from('ugc_images')
+          .select('id, prompt, public_url, storage_path, created_at')
+          .eq('id', ugcImageId)
+          .single();
+        
+        if (data && !error) {
+          const ugcImage: UgcImage = {
+            id: data.id,
+            prompt: data.prompt || '',
+            signedUrl: data.public_url,
+            fileName: '',
+            createdAt: data.created_at,
+            storage_path: data.storage_path,
+          };
+          setSelectedImage(ugcImage);
+        } else if (error) {
+          console.error('[VideoGenerator] Failed to fetch UGC image:', error);
+        }
+      };
+      fetchUgcImage();
+    }
+  }, [ugcImageId, preselectedImageUrl, selectedImage]);
+
   // Handle uploaded files
   const handleImagesSelect = async (files: File[]) => {
     if (files.length === 0) return;
