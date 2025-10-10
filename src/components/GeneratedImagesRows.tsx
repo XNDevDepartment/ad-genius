@@ -307,7 +307,7 @@ export default function GeneratedImagesRows({
                   Open in New Tab
                 </Button>
 
-                {/* {onAnimateImage && (
+                {onAnimateImage && (
                   <Button
                     variant="default"
                     size="sm"
@@ -322,7 +322,7 @@ export default function GeneratedImagesRows({
                     <Video className="h-4 w-4 mr-2" />
                     Animate Image
                   </Button>
-                )} */}
+                )}
 
                 <Button
                   variant="outline"
