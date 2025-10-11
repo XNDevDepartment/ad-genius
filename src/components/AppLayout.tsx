@@ -33,12 +33,6 @@ const AppLayout = () => {
               <AppSidebar />
               }
               <div className="flex-1 flex flex-col">
-                {/* <header className="h-12 flex items-center border-b px-4 justify-between">
-                {user &&
-                  <SidebarTrigger />
-                }
-                  <AdminAccessButton />
-                </header> */}
                 <main className="flex-1">
                   <Outlet />
                 </main>
