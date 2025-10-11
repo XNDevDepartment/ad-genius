@@ -1,4 +1,4 @@
-import { Home, Plus, Image, User } from "lucide-react";
+import { Home, Plus, Image, User, Video } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,7 @@ const BottomTabBar = () => {
     { id: "home", label: t('navigation.home'), icon: Home, path: "/" },
     { id: "create", label: t('navigation.create'), icon: Plus, path: "/create", primary: true },
     { id: "library", label: t('navigation.library'), icon: Image, path: "/library" },
+    { id: "videos", label: t('navigation.videos'), icon: Video, path: "/videos" },
     { id: "account", label: t('navigation.account'), icon: User, path: "/account" },
   ];
 

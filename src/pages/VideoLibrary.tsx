@@ -174,8 +174,8 @@ export default function VideoLibrary() {
 
       {/* Video Viewer Modal */}
       <Dialog open={!!viewingVideo} onOpenChange={() => setViewingVideo(null)}>
-        <DialogContent className="max-w-5xl">
-          <DialogHeader>
+        <DialogContent className="max-w-[95vw] md:max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="sticky top-0 bg-background z-10 pb-4 border-b">
             <DialogTitle className="flex items-center justify-between">
               <span>Video Details</span>
               <Button
