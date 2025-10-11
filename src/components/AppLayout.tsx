@@ -3,7 +3,6 @@ import BottomTabBar from "./BottomTabBar";
 import NavigationHeader from "./NavigationHeader";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
-import { AdminAccessButton } from "./AdminAccessButton";
 import { useAuth } from "@/contexts/AuthContext";
 
 const AppLayout = () => {
