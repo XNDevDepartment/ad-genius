@@ -174,6 +174,19 @@ const ResetPassword = () => {
                   )}
                 </Button>
               </div>
+              
+              {/* Password requirements */}
+              <div className="text-xs space-y-1 p-2 rounded-md bg-muted/50">
+                <p className="font-medium text-muted-foreground">Password requirements:</p>
+                <div className="flex items-center gap-1">
+                  <span className={password.length >= 6 ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}>
+                    {password.length >= 6 ? "✓" : "✗"}
+                  </span>
+                  <span className={password.length >= 6 ? "text-green-600 dark:text-green-500" : "text-muted-foreground"}>
+                    At least 6 characters
+                  </span>
+                </div>
+              </div>
             </div>
 
             <div className="space-y-2">

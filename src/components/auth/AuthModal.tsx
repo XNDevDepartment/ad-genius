@@ -40,6 +40,13 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
 
     try {
       if (isSignUp) {
+        // Validate password before submission
+        if (formData.password.length < 6) {
+          toast.error('Password must be at least 6 characters long');
+          setLoading(false);
+          return;
+        }
+
         const { error } = await signUp(formData.email, formData.password, {
           name: formData.name,
           profession: formData.profession,
@@ -52,7 +59,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
             toast.error(error.message);
           }
         } else {
-          toast.success('Account created successfully! Please check your email.');
+          toast.success('Account created successfully! Please check your email to confirm your account.');
           onSuccess?.(formData.email);
           onClose?.();
         }
@@ -190,7 +197,22 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
                 </Button>
               </div>
 
-              {/* ⬇️ Reset password link (under the password field) */}
+              {/* Password requirements for signup */}
+              {isSignUp && (
+                <div className="text-xs space-y-1 mt-2 p-2 rounded-md bg-muted/50">
+                  <p className="font-medium text-muted-foreground">Password requirements:</p>
+                  <div className="flex items-center gap-1">
+                    <span className={formData.password.length >= 6 ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}>
+                      {formData.password.length >= 6 ? "✓" : "✗"}
+                    </span>
+                    <span className={formData.password.length >= 6 ? "text-green-600 dark:text-green-500" : "text-muted-foreground"}>
+                      At least 6 characters
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Reset password link (under the password field) */}
               {!isSignUp && (
                 <div className="mt-1">
                   <Button
