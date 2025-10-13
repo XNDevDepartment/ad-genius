@@ -47,12 +47,12 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
 
         if (error) {
           if (error.message.includes('already registered')) {
-            toast.error('Este email já está registrado. Tente fazer login.');
+            toast.error('This email is already registered. Please try signing in.');
           } else {
             toast.error(error.message);
           }
         } else {
-          toast.success('Conta criada com sucesso! Verifique seu email.');
+          toast.success('Account created successfully! Please check your email.');
           onSuccess?.(formData.email);
           onClose?.();
         }
@@ -61,18 +61,18 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
 
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
-            toast.error('Email ou senha incorretos.');
+            toast.error('Incorrect email or password.');
           } else {
             toast.error(error.message);
           }
         } else {
-          toast.success('Login realizado com sucesso!');
+          toast.success('Login successful!');
           onSuccess?.();
           onClose?.();
         }
       }
     } catch (error) {
-      toast.error('Ocorreu um erro inesperado.');
+      toast.error('An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
@@ -81,7 +81,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
   // ⬇️ New: reset password handler
   const handleResetPassword = async () => {
     if (!formData.email) {
-      toast.error('Informe o seu email acima para redefinir a senha.');
+      toast.error('Please enter your email above to reset your password.');
       return;
     }
     try {
@@ -89,14 +89,14 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
       if (typeof resetPassword === 'function') {
         const { error } = await resetPassword(formData.email);
         if (error) throw error;
-        toast.success('Se existir uma conta com este email, enviamos as instruções de redefinição.');
+        toast.success('If an account exists with this email, we have sent reset instructions.');
       } else {
         // If your AuthContext uses a different method name,
         // replace the call above and remove this toast.
-        throw new Error('Função de redefinição de senha não está configurada.');
+        throw new Error('Password reset function is not configured.');
       }
     } catch (err: any) {
-      toast.error(err?.message || 'Não foi possível enviar o email de redefinição.');
+      toast.error(err?.message || 'Unable to send reset email.');
     } finally {
       setResetLoading(false);
     }
@@ -124,12 +124,12 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
         <Card className="w-full max-w-md bg-card shadow-lg border-border">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">
-            {isSignUp ? 'Criar Conta' : 'Fazer Login'}
+            {isSignUp ? 'Create Account' : 'Sign In'}
           </CardTitle>
           <CardDescription>
             {isSignUp 
-              ? 'Crie sua conta para acessar o sistema' 
-              : 'Entre com suas credenciais para continuar'
+              ? 'Create your account to access the system' 
+              : 'Enter your credentials to continue'
             }
           </CardDescription>
         </CardHeader>
@@ -138,7 +138,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
             {isSignUp && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nome</Label>
+                  <Label htmlFor="name">Name</Label>
                   <Input
                     id="name"
                     type="text"
@@ -148,13 +148,13 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="profession">Profissão</Label>
+                  <Label htmlFor="profession">Profession</Label>
                   <Input
                     id="profession"
                     type="text"
                     value={formData.profession}
                     onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
-                    placeholder="ex: Designer, Desenvolvedor, Marqueteiro"
+                    placeholder="e.g., Designer, Developer, Marketer"
                   />
                 </div>
               </>
@@ -170,7 +170,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="password">Senha</Label>
+              <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -212,20 +212,20 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
 
             <Button type="submit" disabled={loading} className="w-full">
               {loading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-              {isSignUp ? 'Criar Conta' : 'Entrar'}
+              {isSignUp ? 'Create Account' : 'Sign In'}
             </Button>
           </form>
 
           <div className="mt-4 text-center">
             <p className="text-sm text-muted-foreground">
-              {isSignUp ? 'Já tem uma conta?' : 'Não tem uma conta?'}
+              {isSignUp ? 'Already have an account?' : "Don't have an account?"}
             </p>
             <Button
               variant="link"
               onClick={() => setIsSignUp(!isSignUp)}
               className="text-sm"
             >
-              {isSignUp ? 'Fazer Login' : 'Criar Conta'}
+              {isSignUp ? 'Sign In' : 'Create Account'}
             </Button>
           </div>
         </CardContent>
