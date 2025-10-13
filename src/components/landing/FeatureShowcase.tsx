@@ -289,21 +289,23 @@ const FeatureShowcase = () => {
                         </div>
                       )}
                       
-                      {!feature.available && feature.progress && (
+                      {!feature.available && 'progress' in feature && feature.progress && (
                         <div className="space-y-2">
                           <div className="flex justify-between text-xs">
                             <span className="text-muted-foreground">Development</span>
-                            <span className="text-primary font-medium">{feature.progress}%</span>
+                            <span className="text-primary font-medium">{(feature as any).progress}%</span>
                           </div>
                           <div className="w-full bg-muted rounded-full h-1.5">
                             <div 
                               className="bg-primary h-1.5 rounded-full transition-all duration-500"
-                              style={{ width: `${feature.progress}%` }}
+                              style={{ width: `${(feature as any).progress}%` }}
                             />
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {feature.estimatedUsers}
-                          </div>
+                          {'estimatedUsers' in feature && (
+                            <div className="text-xs text-muted-foreground">
+                              {(feature as any).estimatedUsers}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

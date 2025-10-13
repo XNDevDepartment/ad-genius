@@ -58,18 +58,28 @@ const VideoShowcaseSection = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-apple-lg overflow-hidden group">
-              <CardContent className="p-0 relative aspect-video bg-gradient-to-br from-purple-500/20 to-blue-500/20">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center space-y-4">
-                    <div className="w-20 h-20 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
-                      <Play className="h-10 w-10 text-primary ml-1" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">Watch Demo Video</p>
-                  </div>
+              <CardContent className="p-0 relative aspect-video">
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                  poster="https://dhqdamfisdbbcieqlpvt.supabase.co/storage/v1/object/public/ugc-inputs/579588c8-f63e-4ba8-84ec-4419303abf7c/1759429342226-eilko.webp"
+                >
+                  <source 
+                    src="https://dhqdamfisdbbcieqlpvt.supabase.co/storage/v1/object/public/videos/kling/579588c8-f63e-4ba8-84ec-4419303abf7c/333496a7-a445-4bbd-ac5f-30b4f2bf18bf.mp4" 
+                    type="video/mp4" 
+                  />
+                </video>
+                <div className="absolute top-4 left-4">
+                  <Badge variant="secondary" className="bg-background/90 backdrop-blur-sm">
+                    <Video className="w-3 h-3 mr-1" />
+                    AI Generated
+                  </Badge>
                 </div>
                 <div className="absolute top-4 right-4">
                   <Badge variant="secondary" className="bg-background/90 backdrop-blur-sm">
-                    <Video className="w-3 h-3 mr-1" />
                     HD Quality
                   </Badge>
                 </div>
