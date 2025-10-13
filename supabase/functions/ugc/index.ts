@@ -37,15 +37,9 @@ function sleep(ms: number) {
 function backoffMs(attempt: number) {
   return 900 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 250);
 }
-// credit price table (fallback; you can move to DB as discussed)
+// Fixed credit cost: 1 credit per image
 function calculateImageCost(settings: any) {
-  const qualityCosts: Record<string, number> = {
-    low: 1,
-    medium: 1.5,
-    high: 2
-  };
-  const quality = settings?.quality ?? "high";
-  return qualityCosts[quality] ?? 2;
+  return 1;
 }
 // ---------- AUTH / CLIENTS ----------
 function serviceClient() {

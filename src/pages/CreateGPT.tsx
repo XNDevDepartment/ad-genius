@@ -1392,43 +1392,7 @@ const CreateUGC = () => {
                     />
                   </div>
 
-                  {/* Image Quality */}
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="sidebar-imageQuality" className="text-sm font-medium">{t('ugc.imageQuality.title')}</Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
-                              <HelpCircle className="h-2 w-2 text-muted-foreground" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">{t('ugc.imageQuality.tooltip')}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                    <ToggleGroup 
-                      type="single" 
-                      value={imageQuality}
-                      onValueChange={(e) => setImageQuality(e as 'low' | 'medium' | 'high')}
-                      className="justify-start grid grid-cols-3 gap-1"
-                    >
-                      <ToggleGroupItem value="low" size="sm" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
-                        <span>Baixa</span>
-                        <span className="text-[10px] opacity-70">1 crédito</span>
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="medium" size="sm" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
-                        <span>Média</span>
-                        <span className="text-[10px] opacity-70">1.5 créditos</span>
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="high" size="sm" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
-                        <span>Alta</span>
-                        <span className="text-[10px] opacity-70">2 créditos</span>
-                      </ToggleGroupItem>
-                    </ToggleGroup>
-                  </div>
+                  {/* Quality selector removed - fixed at 1 credit per image */}
                 </div>
 
                 <div className="border-t pt-4">
@@ -1447,7 +1411,7 @@ const CreateUGC = () => {
                     ) : (
                       <>
                         <Sparkles className="h-5 w-5 mr-2" />
-                        Generate Images ({calculateImageCost(imageQuality, numImages)} credits)
+                        Generate Images ({numImages} {numImages === 1 ? 'credit' : 'credits'})
                       </>
                     )}
                   </Button>

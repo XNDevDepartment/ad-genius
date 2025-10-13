@@ -803,10 +803,9 @@ const CreateUGCGemini = () => {
     }
   
     if (!canGenerateImages(numImages)) {
-      const creditsNeeded = calculateImageCost(imageQuality, numImages);
       toast({
         title: 'Insufficient credits',
-        description: `You need ${creditsNeeded} credits to generate ${numImages} ${imageQuality}-quality image(s). You have ${remainingCredits} credits remaining.`,
+        description: `You need ${numImages} ${numImages === 1 ? 'credit' : 'credits'} to generate ${numImages} image(s). You have ${remainingCredits} credits remaining.`,
         variant: 'destructive',
       });
       setStage('setup');
@@ -1585,14 +1584,14 @@ const CreateUGCGemini = () => {
                     ) : (
                       <>
                         <Sparkles className="h-5 w-5 mr-2" />
-                        Generate Images ({calculateImageCost(imageQuality, numImages)} credits)
+                        Generate Images ({numImages} {numImages === 1 ? 'credit' : 'credits'})
                       </>
                     )}
                   </Button>
 
                   <p className="text-xs text-muted-foreground mt-2 text-center">
                     {isGenerating ? t('ugc.generating') : 
-                     !canGenerateImages(numImages) ? `Insufficient credits (${remainingCredits} remaining, need ${calculateImageCost(imageQuality, numImages)})` :
+                     !canGenerateImages(numImages) ? `Insufficient credits (${remainingCredits} remaining, need ${numImages})` :
                      'Generation typically takes 30-60 seconds'}
                   </p>
 
@@ -1643,7 +1642,7 @@ const CreateUGCGemini = () => {
                     ) : (
                       <>
                         <Sparkles className="h-5 w-5 mr-2" />
-                        Generate Images ({calculateImageCost(imageQuality, numImages)} credits)
+                        Generate Images ({numImages} {numImages === 1 ? 'credit' : 'credits'})
                       </>
                     )}
                   </Button>
