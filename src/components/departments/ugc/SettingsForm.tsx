@@ -232,41 +232,7 @@ export const SettingsForm = ({
         </ToggleGroup>
       </div>
 
-      {/* Image Quality */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Label className="text-sm font-medium">{t('ugc.qualitySettings.title')}</Label>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-3 w-3 p-0">
-                <HelpCircle className="h-2 w-2 text-muted-foreground" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="max-w-xs">{t('ugc.qualitySettings.tooltip')}</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-        <ToggleGroup 
-          type="single" 
-          value={settings.imageQuality} 
-          onValueChange={(value) => value && onSettingsChange({ imageQuality: value as 'low' | 'medium' | 'high' })}
-          className="justify-start grid grid-cols-3 gap-1"
-        >
-          <ToggleGroupItem value="low" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
-            <span>{t('ugc.qualitySettings.low')}</span>
-            <span className="text-[10px] opacity-70">{t('ugc.qualitySettings.lowCredits')}</span>
-          </ToggleGroupItem>
-          <ToggleGroupItem value="medium" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
-            <span>{t('ugc.qualitySettings.medium')}</span>
-            <span className="text-[10px] opacity-70">{t('ugc.qualitySettings.mediumCredits')}</span>
-          </ToggleGroupItem>
-          <ToggleGroupItem value="high" className="text-xs px-2 py-1 flex flex-col items-center bg-muted">
-            <span>{t('ugc.qualitySettings.high')}</span>
-            <span className="text-[10px] opacity-70">{t('ugc.qualitySettings.highCredits')}</span>
-          </ToggleGroupItem>
-        </ToggleGroup>
-      </div>
+      {/* Quality selector removed - fixed at 1 credit per image */}
     </div>
   );
 };

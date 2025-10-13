@@ -99,9 +99,24 @@ const FeatureShowcase = () => {
       gradient: "from-yellow-500/10 to-orange-500/10",
       onClick: () => {},
     },
+    {
+      id: "video-gen",
+      title: "AI Video Generator",
+      description: "Transform static images into engaging 5-10 second videos for social media",
+      icon: Play,
+      available: true,
+      category: "Video",
+      stats: "10K+ videos created",
+      rating: 4.9,
+      users: "5K+",
+      demoUrl: "/demo/video",
+      previewImages: ["/api/placeholder/300/200", "/api/placeholder/300/200"],
+      gradient: "from-purple-500/10 to-blue-500/10",
+      onClick: () => navigate("/video-generator"),
+    },
   ];
 
-  const categories = ["All", "E-commerce", "Editing", "Creative", "Enterprise", "Enhancement", "AI Generation"];
+  const categories = ["All", "E-commerce", "Editing", "Video", "Creative", "Enterprise", "Enhancement", "AI Generation"];
   
   const filteredFeatures = selectedCategory === "All" 
     ? features 

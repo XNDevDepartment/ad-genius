@@ -518,7 +518,7 @@ const Pricing = () => {
             <div>
               <h3 className="font-medium mb-2">How does the credit system work?</h3>
               <p className="text-muted-foreground text-sm">
-                Credits are consumed based on image quality: Low (1 credit), Medium (1.5 credits), High (2 credits). Credits roll over monthly.
+                Each image generation costs 1 credit, regardless of quality. Unused credits roll over monthly with your subscription.
               </p>
             </div>
           </div>

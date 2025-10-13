@@ -9,12 +9,8 @@ export const useCredits = () => {
   const [loading, setLoading] = useState(false);
 
   const calculateImageCost = (quality: 'low' | 'medium' | 'high', numberOfImages: number = 1): number => {
-    const qualityCosts = {
-      'low': 1,
-      'medium': 1.5,
-      'high': 2
-    };
-    return qualityCosts[quality] * numberOfImages;
+    // Fixed cost: 1 credit per image regardless of quality
+    return 1 * numberOfImages;
   };
 
   const canAfford = (amount: number): boolean => {

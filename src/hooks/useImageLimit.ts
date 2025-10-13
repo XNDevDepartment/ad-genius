@@ -12,11 +12,13 @@ export const useImageLimit = (imageQuality: 'low' | 'medium' | 'high' = 'high') 
     if (isAdminLoading) return true;
     if (isAdmin) return true;
 
-    const creditsNeeded = calculateImageCost(imageQuality, count);
+    // Fixed cost: 1 credit per image
+    const creditsNeeded = count;
     return canAfford(creditsNeeded);
   };
 
-  const remainingImages = isAdmin ? 999 : Math.floor(getRemainingCredits() / calculateImageCost(imageQuality));
+  // Fixed cost: 1 credit per image
+  const remainingImages = isAdmin ? 999 : Math.floor(getRemainingCredits());
   const isAtLimit = !canGenerateImages(1);
 
   return {

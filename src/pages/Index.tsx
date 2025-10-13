@@ -11,6 +11,10 @@ import { RecentImagesSection } from "@/components/RecentImagesSection";
 import { UserStatsPanel } from "@/components/UserStatsPanel";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
+import HowItWorksSection from "@/components/landing/HowItWorksSection";
+import UseCasesSection from "@/components/landing/UseCasesSection";
+import VideoShowcaseSection from "@/components/landing/VideoShowcaseSection";
+import FeatureShowcase from "@/components/landing/FeatureShowcase";
 
 const Index = () => {
   const { user } = useAuth();
@@ -76,11 +80,20 @@ const Index = () => {
       {/* Enhanced Hero Section */}
       <HeroSection />
 
+      {/* How It Works Section */}
+      <HowItWorksSection />
+
+      {/* Video Showcase Section */}
+      <VideoShowcaseSection />
+
       {/* Feature Section */}
-      {/* <FeatureShowcase /> */}
+      <FeatureShowcase />
 
       {/* Public Gallery */}
       <SecurePublicGallery />
+
+      {/* Use Cases Section */}
+      <UseCasesSection />
 
       {/* Social Proof and Testimonials */}
       <SocialProofSection />
