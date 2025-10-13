@@ -114,7 +114,7 @@ const VideoShowcaseSection = () => {
             {/* CTA Button */}
             <Button
               size="lg"
-              onClick={() => navigate("/video-generator")}
+              onClick={() => navigate("/signup")}
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 shadow-elegant"
             >
               Create Your First Video

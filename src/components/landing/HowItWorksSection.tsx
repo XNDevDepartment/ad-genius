@@ -107,7 +107,7 @@ const HowItWorksSection = () => {
           className="text-center mt-12"
         >
           <p className="text-sm text-muted-foreground">
-            ⏱️ Average generation time: <span className="font-semibold text-foreground">30-60 seconds</span>
+            ⏱️ Average generation time: <span className="font-semibold text-foreground">7-10 seconds</span>
           </p>
         </motion.div>
       </div>

@@ -87,7 +87,7 @@ const Index = () => {
       <VideoShowcaseSection />
 
       {/* Feature Section */}
-      <FeatureShowcase />
+      {/* <FeatureShowcase /> */}
 
       {/* Public Gallery */}
       <SecurePublicGallery />

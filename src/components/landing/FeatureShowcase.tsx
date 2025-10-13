@@ -32,73 +32,73 @@ const FeatureShowcase = () => {
       gradient: "from-blue-500/10 to-purple-500/10",
       onClick: () => navigate("/create/ugc"),
     },
-    {
-      id: "background-removal",
-      title: "Background Removal",
-      description: "Remove and replace backgrounds instantly with precision AI technology",
-      icon: Scissors,
-      available: true,
-      category: "Editing",
-      stats: "500K+ backgrounds removed",
-      rating: 4.8,
-      users: "30K+",
-      demoUrl: "/demo/bg-removal",
-      previewImages: ["/api/placeholder/300/200", "/api/placeholder/300/200"],
-      gradient: "from-green-500/10 to-teal-500/10",
-      onClick: () => navigate("/create"),
-    },
-    {
-      id: "style-transfer",
-      title: "Style Transfer",
-      description: "Apply artistic styles and filters to transform your product images",
-      icon: Palette,
-      available: false,
-      category: "Creative",
-      stats: "Coming Q1 2024",
-      progress: 75,
-      estimatedUsers: "Expected 15K+",
-      gradient: "from-pink-500/10 to-rose-500/10",
-      onClick: () => {},
-    },
-    {
-      id: "batch-processing",
-      title: "Batch Processing",
-      description: "Process hundreds of images simultaneously with our enterprise-grade AI",
-      icon: Layers,
-      available: false,
-      category: "Enterprise",
-      stats: "Coming Q2 2024",
-      progress: 45,
-      estimatedUsers: "Expected 25K+",
-      gradient: "from-orange-500/10 to-red-500/10",
-      onClick: () => {},
-    },
-    {
-      id: "ai-enhancer",
-      title: "AI Enhancer",
-      description: "Automatically enhance image quality, lighting, and composition",
-      icon: Wand2,
-      available: false,
-      category: "Enhancement",
-      stats: "Coming Q1 2024",
-      progress: 85,
-      estimatedUsers: "Expected 40K+",
-      gradient: "from-indigo-500/10 to-blue-500/10",
-      onClick: () => {},
-    },
-    {
-      id: "instant-gen",
-      title: "Instant Generation",
-      description: "Generate product images from text descriptions in seconds",
-      icon: Zap,
-      available: false,
-      category: "AI Generation",
-      stats: "Coming Q2 2024",
-      progress: 30,
-      estimatedUsers: "Expected 60K+",
-      gradient: "from-yellow-500/10 to-orange-500/10",
-      onClick: () => {},
-    },
+    // {
+    //   id: "background-removal",
+    //   title: "Background Removal",
+    //   description: "Remove and replace backgrounds instantly with precision AI technology",
+    //   icon: Scissors,
+    //   available: true,
+    //   category: "Editing",
+    //   stats: "500K+ backgrounds removed",
+    //   rating: 4.8,
+    //   users: "30K+",
+    //   demoUrl: "/demo/bg-removal",
+    //   previewImages: ["/api/placeholder/300/200", "/api/placeholder/300/200"],
+    //   gradient: "from-green-500/10 to-teal-500/10",
+    //   onClick: () => navigate("/create"),
+    // },
+    // {
+    //   id: "style-transfer",
+    //   title: "Style Transfer",
+    //   description: "Apply artistic styles and filters to transform your product images",
+    //   icon: Palette,
+    //   available: false,
+    //   category: "Creative",
+    //   stats: "Coming Q1 2024",
+    //   progress: 75,
+    //   estimatedUsers: "Expected 15K+",
+    //   gradient: "from-pink-500/10 to-rose-500/10",
+    //   onClick: () => {},
+    // },
+    // {
+    //   id: "batch-processing",
+    //   title: "Batch Processing",
+    //   description: "Process hundreds of images simultaneously with our enterprise-grade AI",
+    //   icon: Layers,
+    //   available: false,
+    //   category: "Enterprise",
+    //   stats: "Coming Q2 2024",
+    //   progress: 45,
+    //   estimatedUsers: "Expected 25K+",
+    //   gradient: "from-orange-500/10 to-red-500/10",
+    //   onClick: () => {},
+    // },
+    // {
+    //   id: "ai-enhancer",
+    //   title: "AI Enhancer",
+    //   description: "Automatically enhance image quality, lighting, and composition",
+    //   icon: Wand2,
+    //   available: false,
+    //   category: "Enhancement",
+    //   stats: "Coming Q1 2024",
+    //   progress: 85,
+    //   estimatedUsers: "Expected 40K+",
+    //   gradient: "from-indigo-500/10 to-blue-500/10",
+    //   onClick: () => {},
+    // },
+    // {
+    //   id: "instant-gen",
+    //   title: "Instant Generation",
+    //   description: "Generate product images from text descriptions in seconds",
+    //   icon: Zap,
+    //   available: false,
+    //   category: "AI Generation",
+    //   stats: "Coming Q2 2024",
+    //   progress: 30,
+    //   estimatedUsers: "Expected 60K+",
+    //   gradient: "from-yellow-500/10 to-orange-500/10",
+    //   onClick: () => {},
+    // },
     {
       id: "video-gen",
       title: "AI Video Generator",
@@ -117,9 +117,9 @@ const FeatureShowcase = () => {
   ];
 
   const categories = ["All", "E-commerce", "Editing", "Video", "Creative", "Enterprise", "Enhancement", "AI Generation"];
-  
-  const filteredFeatures = selectedCategory === "All" 
-    ? features 
+
+  const filteredFeatures = selectedCategory === "All"
+    ? features
     : features.filter(feature => feature.category === selectedCategory);
 
   return (
@@ -145,7 +145,7 @@ const FeatureShowcase = () => {
         </motion.div>
 
         {/* Interactive Category Filter */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.2 }}
@@ -171,7 +171,7 @@ const FeatureShowcase = () => {
               )}
             </Button>
           ))}
-        </motion.div>
+        </motion.div> */}
 
         {/* Enhanced Feature Grid */}
         <AnimatePresence mode="wait">
@@ -352,9 +352,6 @@ const FeatureShowcase = () => {
             >
               Start Creating Now
               <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button variant="outline" size="lg">
-              View All Features
             </Button>
           </div>
         </motion.div>

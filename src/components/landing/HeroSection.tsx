@@ -28,7 +28,7 @@ const HeroSection = () => {
   ];
 
   const socialProofStats = [
-    { icon: Zap, value: "60s", label: "Average Time for Everything" },
+    { icon: Zap, value: "80s", label: "Average Time for Everything" },
     { icon: Image, value: "50+", label: "Generated Images Per User Monthly" },
     { icon: Trophy, value: "98%", label: "Satisfaction Rate on our Users" }
   ];
