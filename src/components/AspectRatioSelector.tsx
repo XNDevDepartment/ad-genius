@@ -24,9 +24,9 @@ export default function AspectRatioSelector({ value, onChange }: AspectRatioSele
   }> = [
     { value: '1:1',  label: t('ugc.orientation.square'),    description: t('ugc.orientation.squareDesc'),    iconWidth: 'w-5', iconHeight: 'h-5' },
     { value: '3:4',  label: t('ugc.orientation.portrait3/4'),  description: t('ugc.orientation.portraitDesc3/4'),  iconWidth: 'w-5', iconHeight: 'h-7' },
-    { value: '9:16', label: t('ugc.orientation.portrait9/16'),  description: t('ugc.orientation.portraitDesc9/16'),  iconWidth: 'w-5', iconHeight: 'h-8' },
+    //{ value: '9:16', label: t('ugc.orientation.portrait9/16'),  description: t('ugc.orientation.portraitDesc9/16'),  iconWidth: 'w-5', iconHeight: 'h-8' },
     { value: '4:3',  label: t('ugc.orientation.landscape4/3'), description: t('ugc.orientation.landscapeDesc4/3'), iconWidth: 'w-7', iconHeight: 'h-5' },
-    { value: '16:9', label: t('ugc.orientation.landscape16/9'), description: t('ugc.orientation.landscapeDesc16/9'), iconWidth: 'w-8', iconHeight: 'h-5' },
+    //{ value: '16:9', label: t('ugc.orientation.landscape16/9'), description: t('ugc.orientation.landscapeDesc16/9'), iconWidth: 'w-8', iconHeight: 'h-5' },
   ];
 
   return (
