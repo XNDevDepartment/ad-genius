@@ -45,8 +45,8 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert at analyzing UGC images and suggesting motion for video generation that enhances the UGC effect of the product.
-                      Please analyze the provided image and suggest a concise motion prompt that would create compelling and appelative video content.
+            content: `You are an expert at analyzing UGC images and suggesting a prompt for video generation that enhances the UGC effect of the product.
+                      Please analyze the provided image and suggest a concise prompt that would create compelling and appelative video content.
 
                       Focus on:
                       - Natural movements (camera movement, object motion, environmental effects)
@@ -54,6 +54,8 @@ serve(async (req) => {
                       - Enhancing the existing composition
 
                       The goal of the video is enhancing the product highlighted. We work manly with UGC images so we want to give users a final video they can use on their ads and social media in order to increase the credibility of the brand and their sales above all.
+
+                      Don't create nothing to slow, neither nothing to fast. Please focused on the more realistic and natural prompt for the UGC effect of the video.
 
                       Return ONLY the motion prompt text, nothing else. No preamble, no explanation, just the prompt.`
           },
