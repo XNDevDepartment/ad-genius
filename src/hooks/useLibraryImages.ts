@@ -271,16 +271,36 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
     if (!user) return;
 
     try {
+      console.log('[useLibraryImages] Attempting to delete image:', imageId);
+      
       // Try deleting from both tables since we don't know which one it's from
       const [ugcResult, generatedResult] = await Promise.all([
         supabase.from('ugc_images').delete().eq('id', imageId).eq('user_id', user.id),
         supabase.from('generated_images').delete().eq('id', imageId).eq('user_id', user.id)
       ]);
 
+      console.log('[useLibraryImages] Delete results:', { 
+        ugcError: ugcResult.error, 
+        generatedError: generatedResult.error
+      });
+
+      // Check if either deletion succeeded
+      const ugcDeleted = !ugcResult.error;
+      const generatedDeleted = !generatedResult.error;
+
+      // If both failed, throw an error
+      if (!ugcDeleted && !generatedDeleted) {
+        const errorMsg = ugcResult.error?.message || generatedResult.error?.message || 'Unknown error';
+        console.error('[useLibraryImages] Both delete operations failed:', { ugcResult, generatedResult });
+        throw new Error(`Failed to delete image: ${errorMsg}`);
+      }
+
+      console.log('[useLibraryImages] Image deleted successfully, refreshing list');
+      
       // Refresh the images list
       await fetchImages(1, false);
     } catch (err) {
-      console.error('Failed to delete image:', err);
+      console.error('[useLibraryImages] Failed to delete image:', err);
       throw err;
     }
   };
