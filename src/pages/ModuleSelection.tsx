@@ -1,4 +1,4 @@
-import { ArrowLeft, Users, Sparkles, Zap } from "lucide-react";
+import { ArrowLeft, Users, Sparkles, Zap, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -29,14 +29,14 @@ const ModuleSelection = () => {
       path: "/create/ugc",
       isAdmin: false
     },
-    ...(isAdmin ? [{
+    {
       id: "video",
-      title: t('createSelection.videoCreator.title') + ' (Admin Only)',
+      title: t('createSelection.videoCreator.title'),
       description: t('createSelection.videoCreator.description'),
-      icon: Users,
+      icon: Video,
       path: "/create/video",
-      isAdmin: true
-    }] : []),
+      isAdmin: false
+    },
     ...(isAdmin ? [{
       id: "adgenius",
       title: "AdGenius (Admin Only)",
