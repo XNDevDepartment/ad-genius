@@ -1592,7 +1592,7 @@ const CreateUGCGemini = () => {
                   <p className="text-xs text-muted-foreground mt-2 text-center">
                     {isGenerating ? t('ugc.generating') : 
                      !canGenerateImages(numImages) ? `Insufficient credits (${remainingCredits} remaining, need ${numImages})` :
-                     'Generation typically takes 30-60 seconds'}
+                     'Generation typically takes 7-14 seconds'}
                   </p>
 
                   {!canGenerateImages(numImages) && (
