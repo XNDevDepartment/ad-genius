@@ -68,7 +68,7 @@ const VideoShowcaseSection = () => {
                   poster="https://dhqdamfisdbbcieqlpvt.supabase.co/storage/v1/object/public/ugc-inputs/579588c8-f63e-4ba8-84ec-4419303abf7c/1759429342226-eilko.webp"
                 >
                   <source 
-                    src="https://dhqdamfisdbbcieqlpvt.supabase.co/storage/v1/object/public/videos/kling/579588c8-f63e-4ba8-84ec-4419303abf7c/333496a7-a445-4bbd-ac5f-30b4f2bf18bf.mp4" 
+                    src="https://dhqdamfisdbbcieqlpvt.supabase.co/storage/v1/object/public/videos/kling/579588c8-f63e-4ba8-84ec-4419303abf7c/3e2a73c0-8ee2-439e-a7a4-7223cd5a62bd.mp4" 
                     type="video/mp4" 
                   />
                 </video>
