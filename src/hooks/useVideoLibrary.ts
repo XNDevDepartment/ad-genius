@@ -81,8 +81,13 @@ export function useVideoLibrary(options: UseVideoLibraryOptions = {}) {
   // Delete video
   const deleteVideo = async (jobId: string) => {
     try {
+      console.log('[useVideoLibrary] Attempting to delete video:', jobId);
+      
       const job = videos.find((v) => v.id === jobId);
-      if (!job) return;
+      if (!job) {
+        console.warn('[useVideoLibrary] Video not found in local state:', jobId);
+        return;
+      }
 
       // Delete from storage if exists
       if (job.video_path) {
@@ -91,23 +96,44 @@ export function useVideoLibrary(options: UseVideoLibraryOptions = {}) {
           .remove([job.video_path]);
         
         if (storageError) {
-          console.warn("Failed to delete video from storage:", storageError);
+          console.warn('[useVideoLibrary] Failed to delete video from storage:', storageError);
+        } else {
+          console.log('[useVideoLibrary] Video file deleted from storage');
         }
       }
 
       // Delete from database
-      const { error: dbError } = await supabase
+      const { error: dbError, count } = await supabase
         .from("kling_jobs")
         .delete()
-        .eq("id", jobId);
+        .eq("id", jobId)
+        .select();
 
-      if (dbError) throw dbError;
+      console.log('[useVideoLibrary] Database delete result:', { 
+        error: dbError, 
+        count,
+        jobId 
+      });
 
+      // Check if deletion actually succeeded
+      if (dbError) {
+        console.error('[useVideoLibrary] Database deletion failed:', dbError);
+        throw new Error(`Failed to delete video: ${dbError.message}`);
+      }
+
+      if (!count || count === 0) {
+        console.error('[useVideoLibrary] No rows deleted from database');
+        throw new Error('Video record not found or deletion denied');
+      }
+
+      console.log('[useVideoLibrary] Video deleted successfully from database');
+
+      // Only update UI state if database deletion succeeded
       setVideos((prev) => prev.filter((v) => v.id !== jobId));
       toast.success("Video deleted");
     } catch (err: any) {
-      console.error("Failed to delete video:", err);
-      toast.error("Failed to delete video");
+      console.error('[useVideoLibrary] Failed to delete video:', err);
+      toast.error(err.message || "Failed to delete video");
     }
   };
 
