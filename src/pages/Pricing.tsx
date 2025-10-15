@@ -9,6 +9,7 @@ import { Check, X, Star, Zap, Shield, Crown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import HeaderSection from "@/components/landing/HeaderSection";
 import { useEffect, useState } from "react";
+import { trackInitiateCheckout } from "@/lib/metaPixel";
 
 const plans = [
   {
@@ -141,6 +142,8 @@ const Pricing = () => {
       return;
     }
 
+    // Track checkout initiation in Meta Pixel
+    trackInitiateCheckout();
 
     try {
       // For paid plans, create checkout session
