@@ -89,8 +89,19 @@ export async function createVideoJob(payload: CreateVideoJobPayload): Promise<{
   error?: string;
   current_balance?: number;
   required?: number;
+  upgrade_required?: boolean;
 }> {
-  return callKlingFunction('createVideoJob', payload);
+  const result = await callKlingFunction('createVideoJob', payload);
+  
+  if (result.upgrade_required) {
+    return {
+      success: false,
+      error: result.error,
+      upgrade_required: true
+    };
+  }
+  
+  return result;
 }
 
 export async function getVideoJob(jobId: string): Promise<{

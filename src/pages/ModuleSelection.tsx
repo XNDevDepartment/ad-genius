@@ -1,4 +1,4 @@
-import { ArrowLeft, Users, Sparkles, Zap, Video } from "lucide-react";
+import { ArrowLeft, Users, Sparkles, Zap, Video, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -6,12 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useCredits } from "@/hooks/useCredits";
 
 const ModuleSelection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation();
   const { isAdmin } = useAdminAuth();
+  const { canAccessVideos } = useCredits();
 
   // Block access if not authenticated
   useEffect(() => {
@@ -35,7 +37,8 @@ const ModuleSelection = () => {
       description: t('createSelection.videoCreator.description'),
       icon: Video,
       path: "/create/video",
-      isAdmin: false
+      isAdmin: false,
+      locked: !canAccessVideos()
     },
     ...(isAdmin ? [{
       id: "adgenius",
@@ -82,23 +85,42 @@ const ModuleSelection = () => {
             <Card 
               key={workflow.id}
               className={`bg-transparent shadow-md cursor-pointer transition-all hover:shadow-lg ${
-                workflow.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'
+                workflow.disabled || workflow.locked ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'
               } ${workflow.isAdmin ? 'border-2 border-orange-500/30 bg-orange-500/5' : ''}`}
-              onClick={() => !workflow.disabled && navigate(workflow.path)}
+              onClick={() => {
+                if (workflow.locked) {
+                  navigate('/pricing');
+                } else if (!workflow.disabled) {
+                  navigate(workflow.path);
+                }
+              }}
             >
               <CardHeader className="text-center">
-                <div className={`w-16 h-16 mx-auto mb-4 rounded-apple flex items-center justify-center ${
+                <div className={`relative w-16 h-16 mx-auto mb-4 rounded-apple flex items-center justify-center ${
                   workflow.isAdmin ? 'bg-orange-500/20' : 'bg-primary/10'
                 }`}>
                   <workflow.icon className={`h-8 w-8 ${workflow.isAdmin ? 'text-orange-500' : 'text-primary'}`} />
+                  {workflow.locked && (
+                    <div className="absolute inset-0 bg-black/50 rounded-apple flex items-center justify-center">
+                      <Lock className="h-6 w-6 text-white" />
+                    </div>
+                  )}
                 </div>
                 <CardTitle className="text-xl flex items-center gap-2 justify-center">
                   {workflow.title}
                   {workflow.isAdmin && (
                     <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full">ADMIN</span>
                   )}
+                  {workflow.locked && (
+                    <span className="text-xs bg-amber-500 text-white px-2 py-1 rounded-full">PLUS+</span>
+                  )}
                 </CardTitle>
-                <CardDescription>{workflow.description}</CardDescription>
+                <CardDescription>
+                  {workflow.locked 
+                    ? "Upgrade to Plus or Pro to unlock video generation"
+                    : workflow.description
+                  }
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {workflow.disabled && (

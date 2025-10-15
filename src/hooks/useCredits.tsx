@@ -98,6 +98,31 @@ export const useCredits = () => {
     return isFreeTier() ? 1 : 3;
   };
 
+  const canAccessVideos = (): boolean => {
+    if (!subscriptionData) return false;
+    const tier = subscriptionData.subscription_tier;
+    // Only Plus and Pro can access videos
+    return ['Plus', 'Pro'].includes(tier);
+  };
+
+  const getVideoAccessMessage = (): string => {
+    if (!subscriptionData) return 'Please sign in to access video features.';
+    const tier = subscriptionData.subscription_tier;
+    
+    switch (tier) {
+      case 'Free':
+        return 'Video generation is available for Plus and Pro members. Upgrade to unlock!';
+      case 'Founders':
+      case 'Starter':
+        return 'Video generation is available for Plus and Pro members. Upgrade your plan to access this feature!';
+      case 'Plus':
+      case 'Pro':
+        return 'You have access to video generation!';
+      default:
+        return 'Video generation requires a Plus or Pro subscription.';
+    }
+  };
+
   return {
     credits: getTotalCredits(),
     remainingCredits: getRemainingCredits(),
@@ -115,5 +140,7 @@ export const useCredits = () => {
     calculateImageCost,
     isFreeTier,
     getMaxImagesPerGeneration,
+    canAccessVideos,
+    getVideoAccessMessage,
   };
 };

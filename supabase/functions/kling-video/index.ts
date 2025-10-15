@@ -63,6 +63,30 @@ async function createVideoJob(supabase, userId, payload) {
     prompt,
     duration
   });
+  
+  // Check subscription tier - Only Plus and Pro can access videos
+  const { data: subscriber, error: subError } = await supabase
+    .from('subscribers')
+    .select('subscription_tier')
+    .eq('user_id', userId)
+    .single();
+  
+  if (subError || !subscriber) {
+    return {
+      success: false,
+      error: 'Unable to verify subscription status.'
+    };
+  }
+  
+  const allowedTiers = ['Plus', 'Pro'];
+  if (!allowedTiers.includes(subscriber.subscription_tier)) {
+    return {
+      success: false,
+      error: 'Video generation is only available for Plus and Pro members. Please upgrade your plan.',
+      upgrade_required: true
+    };
+  }
+  
   // Validate basic inputs
   if (!prompt) return {
     success: false,
