@@ -64,7 +64,7 @@ async function createVideoJob(supabase, userId, payload) {
     duration
   });
   
-  // Check subscription tier - Only Plus and Pro can access videos
+  // Check subscription tier - All tiers except Starter can access videos
   const { data: subscriber, error: subError } = await supabase
     .from('subscribers')
     .select('subscription_tier')
@@ -78,11 +78,11 @@ async function createVideoJob(supabase, userId, payload) {
     };
   }
   
-  const allowedTiers = ['Plus', 'Pro'];
-  if (!allowedTiers.includes(subscriber.subscription_tier)) {
+  // Only Starter tier is excluded from video generation
+  if (subscriber.subscription_tier === 'Starter') {
     return {
       success: false,
-      error: 'Video generation is only available for Plus and Pro members. Please upgrade your plan.',
+      error: 'Video generation is not available on the Starter plan. Upgrade to Plus or try our Free tier!',
       upgrade_required: true
     };
   }

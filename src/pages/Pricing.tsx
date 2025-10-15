@@ -25,13 +25,13 @@ const plans = [
       "Generate up to 3 images at once",
       "All quality levels available", 
       "Up to 40 high-quality images",
+      "Image-to-Video generation ✨",
+      "5s & 10s video duration options",
       "Access to email support",
       "Commercial usage rights",
       "Lifetime pricing guarantee"
     ],
-    limitations: [
-      "No video generation access"
-    ],
+    limitations: [],
     cta: "Join Founders 🚀",
     popular: true,
     special: "founders",
@@ -119,10 +119,10 @@ const comparisonFeatures = [
   { feature: "High Quality Images/Month", founders: "40", starter: "40", plus: "100", pro: "200" },
   { feature: "Medium Quality Images/Month", founders: "53", starter: "53", plus: "133", pro: "266" },
   { feature: "Low Quality Images/Month", founders: "80", starter: "80", plus: "200", pro: "400" },
-  { feature: "Image-to-Video Generation", founders: false, starter: false, plus: true, pro: true },
-  { feature: "Video Duration Options", founders: "-", starter: "-", plus: "5s & 10s", pro: "5s & 10s" },
-  { feature: "Video Cost (5s)", founders: "-", starter: "-", plus: "5 credits", pro: "5 credits" },
-  { feature: "Video Cost (10s)", founders: "-", starter: "-", plus: "10 credits", pro: "10 credits" },
+  { feature: "Image-to-Video Generation", founders: true, starter: false, plus: true, pro: true },
+  { feature: "Video Duration Options", founders: "5s & 10s", starter: "-", plus: "5s & 10s", pro: "5s & 10s" },
+  { feature: "Video Cost (5s)", founders: "5 credits", starter: "-", plus: "5 credits", pro: "5 credits" },
+  { feature: "Video Cost (10s)", founders: "10 credits", starter: "-", plus: "10 credits", pro: "10 credits" },
   { feature: "UGC Scenarios Available", founders: "unlimited", starter: "unlimited", plus: "unlimited", pro: "unlimited" },
   { feature: "All Quality Levels", founders: true, starter: true, plus: true, pro: true },
   { feature: "Commercial Usage", founders: true, starter: true, plus: true, pro: true },
@@ -291,7 +291,7 @@ const Pricing = () => {
                     {plan.icon}
                   </div>
                 </div>
-                {(plan.id === 'plus' || plan.id === 'pro') && (
+                {(plan.id === 'founders' || plan.id === 'plus' || plan.id === 'pro') && (
                   <div className="mb-2">
                     <span className="inline-flex items-center gap-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full">
                       <VideoIcon className="h-3 w-3" />

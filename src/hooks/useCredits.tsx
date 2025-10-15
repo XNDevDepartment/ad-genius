@@ -101,8 +101,8 @@ export const useCredits = () => {
   const canAccessVideos = (): boolean => {
     if (!subscriptionData) return false;
     const tier = subscriptionData.subscription_tier;
-    // Only Plus and Pro can access videos
-    return ['Plus', 'Pro'].includes(tier);
+    // All tiers except Starter can access videos
+    return tier !== 'Starter';
   };
 
   const getVideoAccessMessage = (): string => {
@@ -110,16 +110,15 @@ export const useCredits = () => {
     const tier = subscriptionData.subscription_tier;
     
     switch (tier) {
-      case 'Free':
-        return 'Video generation is available for Plus and Pro members. Upgrade to unlock!';
-      case 'Founders':
       case 'Starter':
-        return 'Video generation is available for Plus and Pro members. Upgrade your plan to access this feature!';
+        return 'Video generation is not available on the Starter plan. Upgrade to Plus for video access, or try our Free tier to test the feature!';
+      case 'Free':
+      case 'Founders':
       case 'Plus':
       case 'Pro':
         return 'You have access to video generation!';
       default:
-        return 'Video generation requires a Plus or Pro subscription.';
+        return 'Video generation is available on Free, Founders, Plus, and Pro plans.';
     }
   };
 

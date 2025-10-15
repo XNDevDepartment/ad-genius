@@ -117,7 +117,7 @@ const ModuleSelection = () => {
                 </CardTitle>
                 <CardDescription>
                   {workflow.locked 
-                    ? "Upgrade to Plus or Pro to unlock video generation"
+                    ? "Upgrade to Plus or use Free tier to unlock video generation"
                     : workflow.description
                   }
                 </CardDescription>
