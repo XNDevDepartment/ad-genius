@@ -95,7 +95,7 @@ async function createVideoJob(supabase, userId, payload) {
   // Credit cost
   const creditCost = Number(duration) === 10 ? 10 : 5;
   // Deduct credits
-  /*const { data: creditResult, error: creditError } = await supabase.rpc("deduct_user_credits", {
+  const { data: creditResult, error: creditError } = await supabase.rpc("deduct_user_credits", {
     p_user_id: userId,
     p_amount: creditCost,
     p_reason: "video_generation"
@@ -109,7 +109,8 @@ async function createVideoJob(supabase, userId, payload) {
       required: creditCost
     };
   }
-  console.log("[CREATE-JOB] Credits deducted:", creditCost);*/ // Resolve image URL
+  console.log("[CREATE-JOB] Credits deducted:", creditCost);
+  // Resolve image URL
   let imageUrl = null;
   let imageId = null;
   if (source_image_id) {
