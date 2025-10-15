@@ -206,28 +206,33 @@ const Pricing = () => {
           </p>
           
           {/* Billing Toggle */}
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <span className={`text-sm ${!isYearly ? 'text-primary-foreground' : 'text-primary-foreground/70'}`}>
-              Monthly
-            </span>
-            <button
-              onClick={() => setIsYearly(!isYearly)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                isYearly ? 'bg-primary' : 'bg-primary-foreground/20'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  isYearly ? 'translate-x-6' : 'translate-x-1'
+          <div className="flex flex-col items-center justify-center gap-2 mb-8">
+            <div className="flex items-center gap-4">
+              <span className={`text-sm ${!isYearly ? 'text-primary-foreground' : 'text-primary-foreground/70'}`}>
+                Monthly
+              </span>
+              <button
+                onClick={() => setIsYearly(!isYearly)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                  isYearly ? 'bg-primary' : 'bg-primary-foreground/20'
                 }`}
-              />
-            </button>
-            <span className={`text-sm ${isYearly ? 'text-primary-foreground' : 'text-primary-foreground/70'}`}>
-              Yearly
-            </span>
-            <Badge variant="secondary" className="ml-2">
-              Save 2 months!
-            </Badge>
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    isYearly ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+              <span className={`text-sm ${isYearly ? 'text-primary-foreground' : 'text-primary-foreground/70'}`}>
+                Yearly
+              </span>
+              <Badge variant="secondary" className="ml-2">
+                Save 2 months!
+              </Badge>
+            </div>
+            <p className="text-xs text-primary-foreground/70">
+              Have a promotion code? You can enter it at checkout
+            </p>
           </div>
 
           <div className="flex flex-wrap justify-center gap-4 text-sm">
