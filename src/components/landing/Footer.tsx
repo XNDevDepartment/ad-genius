@@ -8,17 +8,8 @@ const Footer = () => {
       <div className="container-responsive px-4">
         <div className="flex flex-col items-center justify-center gap-6">
           {/* SaaS Fame Badge */}
-          <a 
-            href="https://saasfame.com/item/produktpix" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="transition-opacity hover:opacity-80"
-          >
-            <img 
-              src="https://saasfame.com/badge-light.svg" 
-              alt="Featured on saasfame.com" 
-              className="h-[54px] w-auto" 
-            />
+          <a href="https://saasfame.com/item/produktpix" target="_blank" rel="noopener noreferrer">
+            <img src="https://saasfame.com/badge-light.svg" alt="Featured on saasfame.com" className="h-[54px] w-auto" />
           </a>
 
           {/* Footer Links */}
