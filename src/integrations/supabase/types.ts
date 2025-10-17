@@ -402,6 +402,113 @@ export type Database = {
         }
         Relationships: []
       }
+      outfit_swap_jobs: {
+        Row: {
+          created_at: string | null
+          error: string | null
+          finished_at: string | null
+          id: string
+          metadata: Json | null
+          progress: number | null
+          settings: Json | null
+          source_garment_id: string | null
+          source_person_id: string | null
+          started_at: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          metadata?: Json | null
+          progress?: number | null
+          settings?: Json | null
+          source_garment_id?: string | null
+          source_person_id?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          metadata?: Json | null
+          progress?: number | null
+          settings?: Json | null
+          source_garment_id?: string | null
+          source_person_id?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outfit_swap_jobs_source_garment_id_fkey"
+            columns: ["source_garment_id"]
+            isOneToOne: false
+            referencedRelation: "source_images"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outfit_swap_jobs_source_person_id_fkey"
+            columns: ["source_person_id"]
+            isOneToOne: false
+            referencedRelation: "source_images"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outfit_swap_results: {
+        Row: {
+          created_at: string | null
+          id: string
+          job_id: string
+          jpg_url: string | null
+          metadata: Json | null
+          png_url: string | null
+          public_url: string
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          job_id: string
+          jpg_url?: string | null
+          metadata?: Json | null
+          png_url?: string | null
+          public_url: string
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          job_id?: string
+          jpg_url?: string | null
+          metadata?: Json | null
+          png_url?: string | null
+          public_url?: string
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outfit_swap_results_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "outfit_swap_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           account_id: string

@@ -1,4 +1,4 @@
-import { ArrowLeft, Users, Sparkles, Zap, Video, Lock } from "lucide-react";
+import { ArrowLeft, Users, Sparkles, Zap, Video, Lock, Shirt } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,14 @@ const ModuleSelection = () => {
       description: "Advanced creative generation for advertising campaigns",
       icon: Sparkles,
       path: "/create/adgenius",
+      isAdmin: true
+    }] : []),
+    ...(isAdmin ? [{
+      id: "outfit-swap",
+      title: "Outfit Swap (Admin Only)",
+      description: "AI-powered outfit replacement on person photos",
+      icon: Shirt,
+      path: "/create/outfit-swap",
       isAdmin: true
     }] : []),
     {

@@ -80,6 +80,9 @@ verify_jwt = true
 [functions.analyze-image-for-motion]
 verify_jwt = true
 
+[functions.outfit-swap]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 port = 54327
