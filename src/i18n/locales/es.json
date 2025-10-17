@@ -4,7 +4,13 @@
     "create": "Crear",
     "library": "Biblioteca",
     "videos": "Vídeos",
+    "pricing": "Precios",
     "account": "Cuenta"
+  },
+  "announcement": {
+    "foundersTitle": "🎉 ¡Pack Fundadores Disponible!",
+    "foundersDesc": "Acceso de por vida + créditos ilimitados - Plazas limitadas",
+    "foundersCTA": "Reclamar Ahora"
   },
   "auth": {
     "signIn": "Iniciar sesión / Registrarse",
@@ -97,6 +103,7 @@
     "getStarted": "Empezar",
     "comingSoon": "Próximamente",
     "startNow": "Empezar Ahora",
+    "limited": "LIMITADO",
     "cancel": "Cancelar",
     "save": "Guardar",
     "delete": "Eliminar",

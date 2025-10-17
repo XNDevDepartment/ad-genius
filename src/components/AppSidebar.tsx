@@ -1,4 +1,4 @@
-import { Home, Plus, Image, User, Sparkles, LogOut, Settings, Video } from "lucide-react";
+import { Home, Plus, Image, User, Sparkles, LogOut, Settings, Video, CreditCard } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,6 +30,7 @@ const navigationItems = [
   { id: "create", icon: Plus, path: "/create", primary: true, userAuth: true },
   { id: "library", icon: Image, path: "/library", userAuth: true },
   { id: "videos", icon: Video, path: "/videos", userAuth: true },
+  { id: "pricing", icon: CreditCard, path: "/pricing", userAuth: false, badge: true },
   { id: "account", icon: User, path: "/account", userAuth: false },
 ];
 
@@ -93,7 +94,7 @@ export function AppSidebar() {
                         <NavLink
                           to={item.path}
                           className={cn(
-                            "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
+                            "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative",
                             "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                             active
                               ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md" 
@@ -107,6 +108,14 @@ export function AppSidebar() {
                           )} />
                           {!isCollapsed && (
                             <span className="font-medium">{t(`navigation.${item.id}`)}</span>
+                          )}
+                          {item.badge && !isCollapsed && (
+                            <span className="ml-auto px-2 py-0.5 text-[10px] font-bold bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full animate-pulse">
+                              {t('common.limited')}
+                            </span>
+                          )}
+                          {item.badge && isCollapsed && (
+                            <span className="absolute -top-1 -right-1 w-2 h-2 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full animate-pulse" />
                           )}
                         </NavLink>
                       </SidebarMenuButton>

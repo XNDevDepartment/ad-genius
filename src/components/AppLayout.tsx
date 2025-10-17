@@ -4,6 +4,7 @@ import NavigationHeader from "./NavigationHeader";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { useAuth } from "@/contexts/AuthContext";
+import { AnnouncementBanner } from "./AnnouncementBanner";
 
 const AppLayout = () => {
   const location = useLocation();
@@ -14,6 +15,8 @@ const AppLayout = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <AnnouncementBanner />
+      
       {/* Mobile Layout */}
       <div className="lg:hidden">
         {showHeader && <NavigationHeader />}

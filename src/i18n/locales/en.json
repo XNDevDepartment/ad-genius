@@ -4,7 +4,13 @@
     "create": "Create",
     "library": "Library",
     "videos": "Videos",
+    "pricing": "Pricing",
     "account": "Account"
+  },
+  "announcement": {
+    "foundersTitle": "🎉 Founders Pack Available!",
+    "foundersDesc": "Lifetime access + unlimited credits - Limited spots remaining",
+    "foundersCTA": "Claim Now"
   },
   "auth": {
     "signIn": "Sign In / Register",
@@ -97,6 +103,7 @@
     "getStarted": "Get Started",
     "comingSoon": "Coming Soon",
     "startNow": "Start Now",
+    "limited": "LIMITED",
     "cancel": "Cancel",
     "save": "Save",
     "delete": "Delete",

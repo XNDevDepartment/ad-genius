@@ -4,7 +4,13 @@
     "create": "Erstellen",
     "library": "Mediathek",
     "videos": "Videos",
+    "pricing": "Preise",
     "account": "Konto"
+  },
+  "announcement": {
+    "foundersTitle": "🎉 Gründerpaket Verfügbar!",
+    "foundersDesc": "Lebenslanger Zugang + unbegrenzte Credits - Begrenzte Plätze",
+    "foundersCTA": "Jetzt Sichern"
   },
   "auth": {
     "signIn": "Anmelden / Registrieren",
@@ -97,6 +103,7 @@
     "getStarted": "Loslegen",
     "comingSoon": "Demnächst",
     "startNow": "Jetzt starten",
+    "limited": "BEGRENZT",
     "cancel": "Abbrechen",
     "save": "Speichern",
     "delete": "Löschen",
