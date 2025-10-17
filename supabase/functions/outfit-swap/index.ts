@@ -166,15 +166,15 @@ async function processOutfitSwap(jobId: string) {
     // Call Gemini Nano Banana for outfit swap
     const startTime = Date.now();
     const prompt = `You are an expert outfit swap AI. Given a photo of a person and a photo of a new garment, replace the person's current outfit with the new garment while:
-- Preserving the person's face, hair, hands, and pose EXACTLY as they are
-- Matching the lighting and shadows to the original photo
-- Fixing any seams or blending issues around the neckline and edges
-- Keeping the background completely unchanged
-- Ensuring the garment aligns naturally with the person's body position and pose
+          - Preserving the person's face, hair, hands, and pose EXACTLY as they are
+          - Matching the lighting and shadows to the original photo
+          - Fixing any seams or blending issues around the neckline and edges
+          - Keeping the background completely unchanged !important
+          - Ensuring the garment aligns naturally with the person's body position and pose
 
-CRITICAL: The person's identity must remain 100% identical. Do not alter any facial features whatsoever.
+          CRITICAL: The person's identity must remain 100% identical. Do not alter any facial features whatsoever. Do not add any new elements to the original image. Work only on the model.
 
-Generate a high-quality, seamless outfit swap image.`;
+          Generate a high-quality, seamless outfit swap image.`;
 
     await supabase
       .from("outfit_swap_jobs")
