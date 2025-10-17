@@ -88,10 +88,15 @@ async function createOutfitSwapJob(userId: string, params: any) {
     return jsonResponse({ error: "Failed to create job" }, 500);
   }
 
-  // Trigger processing asynchronously
-  fetch(req.url, {
+  // Trigger processing asynchronously with proper authentication
+  const functionUrl = `${SUPABASE_URL}/functions/v1/outfit-swap`;
+  fetch(functionUrl, {
     method: "POST",
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { 
+      ...corsHeaders, 
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+    },
     body: JSON.stringify({ action: "processJob", jobId: job.id }),
   }).catch(console.error);
 
