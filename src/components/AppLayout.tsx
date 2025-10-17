@@ -15,10 +15,9 @@ const AppLayout = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <AnnouncementBanner />
-      
       {/* Mobile Layout */}
       <div className="lg:hidden">
+        <AnnouncementBanner />
         {showHeader && <NavigationHeader />}
         <main className="pb-20">
           <Outlet />
@@ -36,6 +35,7 @@ const AppLayout = () => {
               <AppSidebar />
               }
               <div className="flex-1 flex flex-col">
+                <AnnouncementBanner />
                 <main className="flex-1">
                   <Outlet />
                 </main>
