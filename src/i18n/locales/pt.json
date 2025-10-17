@@ -228,7 +228,7 @@
       "portraitDesc9/16": "Formato vertical 9:16",
       "landscapeDesc4/3": "Formato horizontal 4:3",
       "landscapeDesc16/9": "Formato horizontal 16:9",
-      "source": "Original",
+      "source": "Fonte",
       "sourceDesc": "Manter proporção e dimensões originais da imagem (sem corte)"
     },
     "highlight": {

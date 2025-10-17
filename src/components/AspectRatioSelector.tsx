@@ -22,12 +22,12 @@ export default function AspectRatioSelector({ value, onChange }: AspectRatioSele
     iconWidth: string;
     iconHeight: string;
   }> = [
+    { value: 'source', label: t('ugc.orientation.source'), description: t('ugc.orientation.sourceDesc'), iconWidth: 'w-6', iconHeight: 'h-6' },
     { value: '1:1',  label: t('ugc.orientation.square'),    description: t('ugc.orientation.squareDesc'),    iconWidth: 'w-5', iconHeight: 'h-5' },
     { value: '3:4',  label: t('ugc.orientation.portrait3/4'),  description: t('ugc.orientation.portraitDesc3/4'),  iconWidth: 'w-5', iconHeight: 'h-7' },
     //{ value: '9:16', label: t('ugc.orientation.portrait9/16'),  description: t('ugc.orientation.portraitDesc9/16'),  iconWidth: 'w-5', iconHeight: 'h-8' },
     { value: '4:3',  label: t('ugc.orientation.landscape4/3'), description: t('ugc.orientation.landscapeDesc4/3'), iconWidth: 'w-7', iconHeight: 'h-5' },
     //{ value: '16:9', label: t('ugc.orientation.landscape16/9'), description: t('ugc.orientation.landscapeDesc16/9'), iconWidth: 'w-8', iconHeight: 'h-5' },
-    { value: 'source', label: t('ugc.orientation.source'), description: t('ugc.orientation.sourceDesc'), iconWidth: 'w-6', iconHeight: 'h-6' },
   ];
 
   return (
@@ -40,7 +40,7 @@ export default function AspectRatioSelector({ value, onChange }: AspectRatioSele
       >
         {options.map((o) => (
           <ToggleGroupItem key={o.value} value={o.value} size="sm" className="text-xs px-2 py-1 bg-muted">
-            <div className={box(o.iconWidth, o.iconHeight, o.value === value)} />
+            {o.value !== 'source' && (<div className={box(o.iconWidth, o.iconHeight, o.value === value)} />)}
             {o.label}
           </ToggleGroupItem>
         ))}
