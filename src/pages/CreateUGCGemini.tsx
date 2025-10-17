@@ -840,7 +840,7 @@ const CreateUGCGemini = () => {
         `For this product here are some details you should have in attention when editing the image: ${prodSpecs}` +
         `For the models in the picture have my desired audience in consideration: ${desiredAudience}` +
         `${commonNeg}` + 
-        ' Focus on the product. Make it occupy 70% of the image';
+        ' Focus on the product. Make it occupy 70% of the image; Place product centered square in the image';
 
       const highlightNo =
         `Photorealistic ${style} scene: ${selectedScenario.description}. Product naturally placed (20% of frame, off-center). ` +
@@ -849,6 +849,7 @@ const CreateUGCGemini = () => {
         `Use full-frame DSLR, 50'mm prime lens, aperture f/4, shutter 1/125's, ISO 200. ` +
         `For this product here are some details you should have in attention when editing the image: ${prodSpecs}` +
         `For the models in the picture have my desired audience in consideration: ${desiredAudience}` +
+        '. Place product centered square in the image' +
         `${commonNeg}`;
 
       const prompt = (highlight === 'yes' ? highlightYes : highlightNo).trim();
