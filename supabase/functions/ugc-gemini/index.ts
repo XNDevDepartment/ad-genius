@@ -643,7 +643,8 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
         // Crop image to selected aspect ratio if specified
         const aspectRatio = job?.settings?.aspectRatio;
         let fileBytes;
-        if (aspectRatio) {
+        if (aspectRatio && aspectRatio !== 'source') {
+          // Apply cropping for specific aspect ratios
           log("Cropping generated image to aspect ratio", {
             jobId: job.id,
             index,
@@ -651,7 +652,12 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
           });
           fileBytes = await cropBase64ToAspect(b64, aspectRatio);
         } else {
-          // No aspect ratio specified, use original
+          // No aspect ratio specified OR 'source' selected - preserve original dimensions
+          log("Using original image dimensions (no crop)", {
+            jobId: job.id,
+            index,
+            aspectRatio: aspectRatio || 'none'
+          });
           fileBytes = Uint8Array.from(atob(b64), (c)=>c.charCodeAt(0));
         }
         // Store as PNG
@@ -670,14 +676,15 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
           user_id: job.user_id,
           storage_path: storagePath,
           public_url: pub.publicUrl,
-          meta: {
-            index,
-            size,
-            quality,
-            format: storedFormat,
-            provider: "gemini",
-            model: "2.5-image-flash-preview"
-          },
+      meta: {
+        index,
+        size,
+        quality,
+        format: storedFormat,
+        provider: "gemini",
+        model: "2.5-image-flash-preview",
+        aspectRatio: aspectRatio || 'none'
+      },
           prompt: prompt,
           source_image_id: job.source_image_id
         });

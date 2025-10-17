@@ -227,7 +227,9 @@
       "portraitDesc3/4": "Format vertical 3:4",
       "portraitDesc9/16": "Format vertical 9:16",
       "landscapeDesc4/3": "Format horizontal 4:3",
-      "landscapeDesc16/9": "Format horizontal 16:9"
+      "landscapeDesc16/9": "Format horizontal 16:9",
+      "source": "Source",
+      "sourceDesc": "Conserver les proportions et dimensions d'origine de l'image (sans recadrage)"
     },
     "highlight": {
       "title": "Mettre le Produit en Avant",

@@ -2,7 +2,7 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useTranslation } from "react-i18next";
 
-export type AspectRatio = '1:1' | '3:4' | '4:3' | '9:16' | '16:9';
+export type AspectRatio = '1:1' | '3:4' | '4:3' | '9:16' | '16:9' | 'source';
 
 interface AspectRatioSelectorProps {
   value: AspectRatio;
@@ -27,6 +27,7 @@ export default function AspectRatioSelector({ value, onChange }: AspectRatioSele
     //{ value: '9:16', label: t('ugc.orientation.portrait9/16'),  description: t('ugc.orientation.portraitDesc9/16'),  iconWidth: 'w-5', iconHeight: 'h-8' },
     { value: '4:3',  label: t('ugc.orientation.landscape4/3'), description: t('ugc.orientation.landscapeDesc4/3'), iconWidth: 'w-7', iconHeight: 'h-5' },
     //{ value: '16:9', label: t('ugc.orientation.landscape16/9'), description: t('ugc.orientation.landscapeDesc16/9'), iconWidth: 'w-8', iconHeight: 'h-5' },
+    { value: 'source', label: t('ugc.orientation.source'), description: t('ugc.orientation.sourceDesc'), iconWidth: 'w-6', iconHeight: 'h-6' },
   ];
 
   return (
@@ -35,7 +36,7 @@ export default function AspectRatioSelector({ value, onChange }: AspectRatioSele
         type="single"
         value={value}
         onValueChange={(v) => v && onChange(v as AspectRatio)}
-        className="justify-start grid grid-cols-3 gap-1"
+        className="justify-start grid grid-cols-4 gap-1"
       >
         {options.map((o) => (
           <ToggleGroupItem key={o.value} value={o.value} size="sm" className="text-xs px-2 py-1 bg-muted">

@@ -227,7 +227,9 @@
       "portraitDesc3/4": "Hochformat 3:4",
       "portraitDesc9/16": "Hochformat 9:16",
       "landscapeDesc4/3": "Querformat 4:3",
-      "landscapeDesc16/9": "Querformat 16:9"
+      "landscapeDesc16/9": "Querformat 16:9",
+      "source": "Original",
+      "sourceDesc": "Original-Seitenverhältnis und Abmessungen beibehalten (kein Zuschnitt)"
     },
     "highlight": {
       "title": "Produkt hervorheben",

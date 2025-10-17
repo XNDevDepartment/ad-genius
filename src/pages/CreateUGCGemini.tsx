@@ -56,6 +56,7 @@ const ASPECT_INFO: Record<AspectRatio, { label: string; composition: string }> =
   '4:3':  { label: 'Landscape',composition: 'Classic landscape framing; rule-of-thirds emphasis and stable horizon.' },
   '9:16': { label: 'Vertical', composition: 'Tall story/reel framing; lead lines from foreground to subject.' },
   '16:9': { label: 'Wide',  composition: 'Cinematic wide framing; foreground–midground–background depth cues.' },
+  'source': { label: 'Source', composition: 'Original source image aspect ratio preserved; composition matches uploaded image dimensions.' },
 };
 
 
@@ -883,20 +884,23 @@ const CreateUGCGemini = () => {
       }
 
 
-      const sizePx = SIZE_MAP[aspectRatio][sizeTier];
+      // For 'source', don't specify size (preserve original dimensions)
+      const sizePx = aspectRatio === 'source' 
+        ? undefined 
+        : SIZE_MAP[aspectRatio][sizeTier];
 
       // ✅ Pass ALL source image IDs to Gemini
       const result = await createJob({
         prompt,
         settings: {
           number: numImages,
-          size: sizePx as "1024x1024" | "1024x1536" | "1536x1024",
+          size: sizePx as "1024x1024" | "1024x1536" | "1536x1024" | undefined,
           quality: imageQuality,
           style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'cinematic' | 'natural',
           timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',
           highlight: highlight as 'yes' | 'no',
           output_format: 'png',
-          aspectRatio: aspectRatio, // Use aspectRatio for cropping
+          aspectRatio: aspectRatio, // Use aspectRatio for cropping (or 'source' to skip crop)
         },
         source_image_ids: idsToUse, // <-- ALL original images
         desiredAudience: desiredAudience || undefined, // Store the user's desired audience

@@ -227,7 +227,9 @@
       "portraitDesc3/4": "Formato vertical 3:4",
       "portraitDesc9/16": "Formato vertical 9:16",
       "landscapeDesc4/3": "Formato horizontal 4:3",
-      "landscapeDesc16/9": "Formato horizontal 16:9"
+      "landscapeDesc16/9": "Formato horizontal 16:9",
+      "source": "Original",
+      "sourceDesc": "Mantener proporción y dimensiones originales de la imagen (sin recorte)"
     },
     "highlight": {
       "title": "Resaltar Producto",
