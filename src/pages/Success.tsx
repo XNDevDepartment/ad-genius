@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { trackPurchase } from '@/lib/metaPixel';
 
 export default function Success() {
   const navigate = useNavigate();
@@ -19,6 +20,11 @@ export default function Success() {
       
       try {
         await refreshSubscription();
+        
+        // Track the purchase/subscription in Meta Pixel
+        // You can pass the actual subscription value if available
+        trackPurchase(29.99); // Update this with actual subscription price if available
+        
         toast({
           title: "Subscription activated!",
           description: "Your Pro subscription is now active. You can start creating unlimited content.",

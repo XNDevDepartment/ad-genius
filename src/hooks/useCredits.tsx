@@ -98,6 +98,30 @@ export const useCredits = () => {
     return isFreeTier() ? 1 : 3;
   };
 
+  const canAccessVideos = (): boolean => {
+    if (!subscriptionData) return false;
+    const tier = subscriptionData.subscription_tier;
+    // All tiers except Starter can access videos
+    return tier !== 'Starter';
+  };
+
+  const getVideoAccessMessage = (): string => {
+    if (!subscriptionData) return 'Please sign in to access video features.';
+    const tier = subscriptionData.subscription_tier;
+    
+    switch (tier) {
+      case 'Starter':
+        return 'Video generation is not available on the Starter plan. Upgrade to Plus for video access, or try our Free tier to test the feature!';
+      case 'Free':
+      case 'Founders':
+      case 'Plus':
+      case 'Pro':
+        return 'You have access to video generation!';
+      default:
+        return 'Video generation is available on Free, Founders, Plus, and Pro plans.';
+    }
+  };
+
   return {
     credits: getTotalCredits(),
     remainingCredits: getRemainingCredits(),
@@ -115,5 +139,7 @@ export const useCredits = () => {
     calculateImageCost,
     isFreeTier,
     getMaxImagesPerGeneration,
+    canAccessVideos,
+    getVideoAccessMessage,
   };
 };

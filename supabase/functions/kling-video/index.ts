@@ -63,6 +63,30 @@ async function createVideoJob(supabase, userId, payload) {
     prompt,
     duration
   });
+  
+  // Check subscription tier - All tiers except Starter can access videos
+  const { data: subscriber, error: subError } = await supabase
+    .from('subscribers')
+    .select('subscription_tier')
+    .eq('user_id', userId)
+    .single();
+  
+  if (subError || !subscriber) {
+    return {
+      success: false,
+      error: 'Unable to verify subscription status.'
+    };
+  }
+  
+  // Only Starter tier is excluded from video generation
+  if (subscriber.subscription_tier === 'Starter') {
+    return {
+      success: false,
+      error: 'Video generation is not available on the Starter plan. Upgrade to Plus or try our Free tier!',
+      upgrade_required: true
+    };
+  }
+  
   // Validate basic inputs
   if (!prompt) return {
     success: false,
@@ -71,7 +95,7 @@ async function createVideoJob(supabase, userId, payload) {
   // Credit cost
   const creditCost = Number(duration) === 10 ? 10 : 5;
   // Deduct credits
-  /*const { data: creditResult, error: creditError } = await supabase.rpc("deduct_user_credits", {
+  const { data: creditResult, error: creditError } = await supabase.rpc("deduct_user_credits", {
     p_user_id: userId,
     p_amount: creditCost,
     p_reason: "video_generation"
@@ -85,7 +109,8 @@ async function createVideoJob(supabase, userId, payload) {
       required: creditCost
     };
   }
-  console.log("[CREATE-JOB] Credits deducted:", creditCost);*/ // Resolve image URL
+  console.log("[CREATE-JOB] Credits deducted:", creditCost);
+  // Resolve image URL
   let imageUrl = null;
   let imageId = null;
   if (source_image_id) {

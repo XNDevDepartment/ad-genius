@@ -18,12 +18,17 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import type { SourceImage } from "@/hooks/useSourceImages";
 import type { UgcImage } from "@/hooks/useUgcImages";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCredits } from "@/hooks/useCredits";
 
 
 type Duration = 5 | 10;
 
 export default function VideoGenerator() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { canAccessVideos, getVideoAccessMessage } = useCredits();
 
   const { toast } = useToast();
   const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
@@ -48,6 +53,29 @@ export default function VideoGenerator() {
   const [suggestedPrompt, setSuggestedPrompt] = useState<string | null>(null);
   const [showSuggestion, setShowSuggestion] = useState(false);
 
+  // Check access on mount
+  useEffect(() => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to access video generation.",
+        variant: "destructive",
+      });
+      navigate('/account');
+      return;
+    }
+    
+    if (!canAccessVideos()) {
+      toast({
+        title: "Upgrade Required",
+        description: getVideoAccessMessage(),
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        navigate('/pricing');
+      }, 2000);
+    }
+  }, [user, canAccessVideos, navigate, toast]);
 
   // AI image analysis function
   const analyzeImageForMotion = async (imageUrl: string) => {
@@ -412,6 +440,30 @@ export default function VideoGenerator() {
       await navigator.clipboard.writeText(JSON.stringify(minimal, null, 2));
     } catch {}
   };
+
+  // Show access denied UI if no access
+  if (!user || !canAccessVideos()) {
+    return (
+      <div className="min-h-screen p-4 md:p-8 bg-background">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="h-6 w-6 text-amber-500" />
+                Upgrade Required
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p>{getVideoAccessMessage()}</p>
+              <Button onClick={() => navigate('/pricing')} className="w-full">
+                View Pricing Plans
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-4 md:p-8 bg-background">

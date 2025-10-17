@@ -5,10 +5,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Check, X, Star, Zap, Shield, Crown } from "lucide-react";
+import { Check, X, Star, Zap, Shield, Crown, Video as VideoIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import HeaderSection from "@/components/landing/HeaderSection";
 import { useEffect, useState } from "react";
+import { trackInitiateCheckout } from "@/lib/metaPixel";
 
 const plans = [
   {
@@ -24,6 +25,8 @@ const plans = [
       "Generate up to 3 images at once",
       "All quality levels available", 
       "Up to 40 high-quality images",
+      "Image-to-Video generation ✨",
+      "5s & 10s video duration options",
       "Access to email support",
       "Commercial usage rights",
       "Lifetime pricing guarantee"
@@ -51,7 +54,9 @@ const plans = [
       "Access to email support",
       "Commercial usage rights"
     ],
-    limitations: [],
+    limitations: [
+      "No video generation access"
+    ],
     cta: "Start Creating",
     popular: false,
     icon: <Star className="h-6 w-6" />,
@@ -70,6 +75,8 @@ const plans = [
       "Generate up to 3 images at once",
       "All quality levels available",
       "Up to 100 high-quality images",
+      "Image-to-Video generation ✨",
+      "5s & 10s video duration options",
       "Priority support + Live chat",
       "Commercial usage rights",
     ],
@@ -92,6 +99,8 @@ const plans = [
       "Generate up to 3 images at once",
       "All quality levels available",
       "Up to 200 high-quality images",
+      "Image-to-Video generation ✨",
+      "5s & 10s video duration options",
       "Dedicated account manager",
       "Priority processing",
       "Custom integrations support"
@@ -110,6 +119,10 @@ const comparisonFeatures = [
   { feature: "High Quality Images/Month", founders: "40", starter: "40", plus: "100", pro: "200" },
   { feature: "Medium Quality Images/Month", founders: "53", starter: "53", plus: "133", pro: "266" },
   { feature: "Low Quality Images/Month", founders: "80", starter: "80", plus: "200", pro: "400" },
+  { feature: "Image-to-Video Generation", founders: true, starter: false, plus: true, pro: true },
+  { feature: "Video Duration Options", founders: "5s & 10s", starter: "-", plus: "5s & 10s", pro: "5s & 10s" },
+  { feature: "Video Cost (5s)", founders: "5 credits", starter: "-", plus: "5 credits", pro: "5 credits" },
+  { feature: "Video Cost (10s)", founders: "10 credits", starter: "-", plus: "10 credits", pro: "10 credits" },
   { feature: "UGC Scenarios Available", founders: "unlimited", starter: "unlimited", plus: "unlimited", pro: "unlimited" },
   { feature: "All Quality Levels", founders: true, starter: true, plus: true, pro: true },
   { feature: "Commercial Usage", founders: true, starter: true, plus: true, pro: true },
@@ -141,6 +154,8 @@ const Pricing = () => {
       return;
     }
 
+    // Track checkout initiation in Meta Pixel
+    trackInitiateCheckout();
 
     try {
       // For paid plans, create checkout session
@@ -191,28 +206,33 @@ const Pricing = () => {
           </p>
           
           {/* Billing Toggle */}
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <span className={`text-sm ${!isYearly ? 'text-primary-foreground' : 'text-primary-foreground/70'}`}>
-              Monthly
-            </span>
-            <button
-              onClick={() => setIsYearly(!isYearly)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                isYearly ? 'bg-primary' : 'bg-primary-foreground/20'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  isYearly ? 'translate-x-6' : 'translate-x-1'
+          <div className="flex flex-col items-center justify-center gap-2 mb-8">
+            <div className="flex items-center gap-4">
+              <span className={`text-sm ${!isYearly ? 'text-primary-foreground' : 'text-primary-foreground/70'}`}>
+                Monthly
+              </span>
+              <button
+                onClick={() => setIsYearly(!isYearly)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                  isYearly ? 'bg-primary' : 'bg-primary-foreground/20'
                 }`}
-              />
-            </button>
-            <span className={`text-sm ${isYearly ? 'text-primary-foreground' : 'text-primary-foreground/70'}`}>
-              Yearly
-            </span>
-            <Badge variant="secondary" className="ml-2">
-              Save 2 months!
-            </Badge>
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    isYearly ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+              <span className={`text-sm ${isYearly ? 'text-primary-foreground' : 'text-primary-foreground/70'}`}>
+                Yearly
+              </span>
+              <Badge variant="secondary" className="ml-2">
+                Save 2 months!
+              </Badge>
+            </div>
+            <p className="text-xs text-primary-foreground/70">
+              Have a promotion code? You can enter it at checkout
+            </p>
           </div>
 
           <div className="flex flex-wrap justify-center gap-4 text-sm">
@@ -271,6 +291,14 @@ const Pricing = () => {
                     {plan.icon}
                   </div>
                 </div>
+                {(plan.id === 'founders' || plan.id === 'plus' || plan.id === 'pro') && (
+                  <div className="mb-2">
+                    <span className="inline-flex items-center gap-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full">
+                      <VideoIcon className="h-3 w-3" />
+                      Includes Video Generation
+                    </span>
+                  </div>
+                )}
                 <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
                 <div className="mb-4">
                   <span className="text-3xl font-bold text-primary">{getDisplayPrice(plan)}</span>
