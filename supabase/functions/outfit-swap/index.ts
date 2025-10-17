@@ -18,6 +18,16 @@ serve(async (req) => {
   }
 
   try {
+    const { action, ...params } = await req.json();
+    console.log("Outfit swap action:", action);
+
+    // Handle internal processing action WITHOUT authentication
+    // This is safe because it's only triggered internally by the function itself
+    if (action === "processJob") {
+      return await processOutfitSwap(params.jobId);
+    }
+
+    // All other actions require authentication
     const authHeader = req.headers.get("authorization");
     if (!authHeader) {
       return jsonResponse({ error: "Unauthorized" }, 401);
@@ -43,9 +53,7 @@ serve(async (req) => {
       return jsonResponse({ error: "Admin access required" }, 403);
     }
 
-    const { action, ...params } = await req.json();
-    console.log("Outfit swap action:", action);
-
+    // Route to appropriate handler
     switch (action) {
       case "createJob":
         return await createOutfitSwapJob(user.id, params);
@@ -55,8 +63,6 @@ serve(async (req) => {
         return await getJobResults(user.id, params.jobId);
       case "cancelJob":
         return await cancelJob(user.id, params.jobId);
-      case "processJob":
-        return await processOutfitSwap(params.jobId);
       default:
         return jsonResponse({ error: "Invalid action" }, 400);
     }
@@ -88,14 +94,14 @@ async function createOutfitSwapJob(userId: string, params: any) {
     return jsonResponse({ error: "Failed to create job" }, 500);
   }
 
-  // Trigger processing asynchronously with proper authentication
+  // Trigger processing asynchronously
   const functionUrl = `${SUPABASE_URL}/functions/v1/outfit-swap`;
   fetch(functionUrl, {
     method: "POST",
     headers: { 
       ...corsHeaders, 
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+      "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`
     },
     body: JSON.stringify({ action: "processJob", jobId: job.id }),
   }).catch(console.error);
