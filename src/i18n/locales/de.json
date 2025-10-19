@@ -501,6 +501,86 @@
       }
     }
   },
+  "videoGenerator": {
+    "title": "Bild → Video",
+    "createVideo": "Video Erstellen",
+    "description": "Wählen Sie ein Bild aus und geben Sie Anweisungen ein, um ein animiertes 5s- oder 10s-Video zu generieren.",
+    "infoBox": {
+      "title": "Wie Es Funktioniert",
+      "description": "Dieses Modul animiert vorhandene Bilder mit Bewegungs- und Kameraeffekten. Es generiert keine Videos von Grund auf - Sie müssen zuerst ein Quellbild bereitstellen."
+    },
+    "sourceImage": {
+      "label": "Quellbild",
+      "fromLibrary": "Aus der Bibliothek",
+      "importFromUrl": "Von URL Importieren",
+      "dragDrop": "Ziehen & Ablegen",
+      "changeImage": "Bild Ändern",
+      "ugcPreselected": "UGC-Bild vorausgewählt. Sie können es mit den obigen Optionen ändern.",
+      "preselectedFromUGC": "Vorausgewählt vom UGC-Generator"
+    },
+    "instructions": {
+      "label": "Bewegungsanweisungen",
+      "placeholder": "Beschreiben Sie die gewünschte Bewegung / Verhalten (z.B. 'Person geht vorwärts und lächelt', 'Kamera zoomt langsam heran')",
+      "aiSuggestion": {
+        "title": "KI-Vorgeschlagene Bewegungsanweisungen",
+        "analyzing": "Bild wird analysiert und Bewegungsvorschlag generiert...",
+        "usePrompt": "Diesen Prompt Verwenden",
+        "dismiss": "Verwerfen",
+        "applied": "Anweisungen Angewendet",
+        "appliedDescription": "Sie können sie vor der Generierung bearbeiten."
+      }
+    },
+    "settings": {
+      "label": "Einstellungen",
+      "duration": "Dauer",
+      "cameraMovement": "Kamerabewegung",
+      "motionIntensity": "Bewegungsintensität",
+      "animationStyle": "Animationsstil"
+    },
+    "cameraMovements": {
+      "none": "Keine (Statisch)",
+      "zoomIn": "Heranzoomen",
+      "zoomOut": "Herauszoomen",
+      "panLeft": "Schwenk Links",
+      "panRight": "Schwenk Rechts",
+      "panUp": "Schwenk Nach Oben",
+      "panDown": "Schwenk Nach Unten"
+    },
+    "motionIntensities": {
+      "subtle": "Subtil",
+      "moderate": "Moderat",
+      "dynamic": "Dynamisch"
+    },
+    "animationStyles": {
+      "natural": "Natürlich",
+      "cinematic": "Filmisch",
+      "smooth": "Glatt"
+    },
+    "duration5": "5 Sekunden (5 Credits)",
+    "duration10": "10 Sekunden (10 Credits)",
+    "generateVideo": "Video Generieren",
+    "creatingJob": "Auftrag Wird Erstellt…",
+    "status": {
+      "label": "Status",
+      "queued": "Ihr Video ist in der Warteschlange…",
+      "processing": "Ihr Video wird generiert…",
+      "completed": "Video erfolgreich generiert.",
+      "failed": "Videogenerierung fehlgeschlagen.",
+      "canceled": "Videogenerierung wurde abgebrochen."
+    },
+    "actions": {
+      "newVideo": "Neues Video",
+      "cancel": "Abbrechen",
+      "openNewTab": "In Neuem Tab Öffnen",
+      "download": "Herunterladen",
+      "refresh": "Auftragsdaten Aktualisieren",
+      "copyDebug": "Debug-Informationen Kopieren"
+    },
+    "errors": {
+      "selectImageAndPrompt": "Bitte wählen Sie ein Bild aus und geben Sie Anweisungen ein.",
+      "videoLoadFailed": "Video konnte nicht geladen werden. Überprüfen Sie die Konsole für Details."
+    }
+  },
   "help": {
     "gettingStarted": {
       "title": "Erste Schritte",

@@ -501,6 +501,86 @@
       }
     }
   },
+  "videoGenerator": {
+    "title": "Imagem → Vídeo",
+    "createVideo": "Criar Vídeo",
+    "description": "Selecione uma imagem e forneça instruções para gerar um vídeo animado de 5s ou 10s.",
+    "infoBox": {
+      "title": "Como Funciona",
+      "description": "Este módulo anima imagens existentes com movimento e efeitos de câmera. Não gera vídeos do zero - você precisa fornecer uma imagem de origem primeiro."
+    },
+    "sourceImage": {
+      "label": "Imagem de Origem",
+      "fromLibrary": "Da Biblioteca",
+      "importFromUrl": "Importar de URL",
+      "dragDrop": "Arrastar e Soltar",
+      "changeImage": "Alterar Imagem",
+      "ugcPreselected": "Imagem UGC pré-selecionada. Você pode alterá-la usando as opções acima.",
+      "preselectedFromUGC": "Pré-selecionada do Gerador UGC"
+    },
+    "instructions": {
+      "label": "Instruções de Movimento",
+      "placeholder": "Descreva o movimento / comportamento desejado (ex: 'pessoa caminhando para frente e sorrindo', 'câmera aproximando lentamente')",
+      "aiSuggestion": {
+        "title": "Instruções de Movimento Sugeridas por IA",
+        "analyzing": "Analisando imagem e gerando sugestão de movimento...",
+        "usePrompt": "Usar Este Prompt",
+        "dismiss": "Dispensar",
+        "applied": "Instruções Aplicadas",
+        "appliedDescription": "Você pode editá-las antes de gerar."
+      }
+    },
+    "settings": {
+      "label": "Configurações",
+      "duration": "Duração",
+      "cameraMovement": "Movimento da Câmera",
+      "motionIntensity": "Intensidade do Movimento",
+      "animationStyle": "Estilo de Animação"
+    },
+    "cameraMovements": {
+      "none": "Nenhum (Estático)",
+      "zoomIn": "Aproximar",
+      "zoomOut": "Afastar",
+      "panLeft": "Panorâmica Esquerda",
+      "panRight": "Panorâmica Direita",
+      "panUp": "Panorâmica Cima",
+      "panDown": "Panorâmica Baixo"
+    },
+    "motionIntensities": {
+      "subtle": "Sutil",
+      "moderate": "Moderado",
+      "dynamic": "Dinâmico"
+    },
+    "animationStyles": {
+      "natural": "Natural",
+      "cinematic": "Cinematográfico",
+      "smooth": "Suave"
+    },
+    "duration5": "5 segundos (5 créditos)",
+    "duration10": "10 segundos (10 créditos)",
+    "generateVideo": "Gerar Vídeo",
+    "creatingJob": "Criando Trabalho…",
+    "status": {
+      "label": "Status",
+      "queued": "Seu vídeo está na fila…",
+      "processing": "Gerando seu vídeo…",
+      "completed": "Vídeo gerado com sucesso.",
+      "failed": "Falha na geração do vídeo.",
+      "canceled": "Geração do vídeo foi cancelada."
+    },
+    "actions": {
+      "newVideo": "Novo Vídeo",
+      "cancel": "Cancelar",
+      "openNewTab": "Abrir em Nova Aba",
+      "download": "Baixar",
+      "refresh": "Atualizar dados do trabalho",
+      "copyDebug": "Copiar informações de depuração"
+    },
+    "errors": {
+      "selectImageAndPrompt": "Por favor, selecione uma imagem e insira instruções.",
+      "videoLoadFailed": "Falha ao carregar o vídeo. Verifique o console para detalhes."
+    }
+  },
   "help": {
     "gettingStarted": {
       "title": "Guia de Introdução",

@@ -501,6 +501,86 @@
       }
     }
   },
+  "videoGenerator": {
+    "title": "Image → Video",
+    "createVideo": "Create Video",
+    "description": "Select an image and provide instructions to generate a 5s or 10s animated video.",
+    "infoBox": {
+      "title": "How It Works",
+      "description": "This module animates existing images with motion and camera effects. It does not generate videos from scratch - you need to provide a source image first."
+    },
+    "sourceImage": {
+      "label": "Source Image",
+      "fromLibrary": "From Library",
+      "importFromUrl": "Import from URL",
+      "dragDrop": "Drag & Drop",
+      "changeImage": "Change Image",
+      "ugcPreselected": "UGC image pre-selected. You can change it using the options above.",
+      "preselectedFromUGC": "Pre-selected from UGC Generator"
+    },
+    "instructions": {
+      "label": "Motion Instructions",
+      "placeholder": "Describe the motion / behavior you want (e.g., 'person walking forward and smiling', 'camera slowly zooming in')",
+      "aiSuggestion": {
+        "title": "AI-Suggested Motion Instructions",
+        "analyzing": "Analyzing image and generating motion suggestion...",
+        "usePrompt": "Use This Prompt",
+        "dismiss": "Dismiss",
+        "applied": "Instructions Applied",
+        "appliedDescription": "You can edit it before generating."
+      }
+    },
+    "settings": {
+      "label": "Settings",
+      "duration": "Duration",
+      "cameraMovement": "Camera Movement",
+      "motionIntensity": "Motion Intensity",
+      "animationStyle": "Animation Style"
+    },
+    "cameraMovements": {
+      "none": "None (Static)",
+      "zoomIn": "Zoom In",
+      "zoomOut": "Zoom Out",
+      "panLeft": "Pan Left",
+      "panRight": "Pan Right",
+      "panUp": "Pan Up",
+      "panDown": "Pan Down"
+    },
+    "motionIntensities": {
+      "subtle": "Subtle",
+      "moderate": "Moderate",
+      "dynamic": "Dynamic"
+    },
+    "animationStyles": {
+      "natural": "Natural",
+      "cinematic": "Cinematic",
+      "smooth": "Smooth"
+    },
+    "duration5": "5 seconds (5 credits)",
+    "duration10": "10 seconds (10 credits)",
+    "generateVideo": "Generate Video",
+    "creatingJob": "Creating Job…",
+    "status": {
+      "label": "Status",
+      "queued": "Your video is queued…",
+      "processing": "Generating your video…",
+      "completed": "Video generated successfully.",
+      "failed": "Video generation failed.",
+      "canceled": "Video generation was canceled."
+    },
+    "actions": {
+      "newVideo": "New Video",
+      "cancel": "Cancel",
+      "openNewTab": "Open in New Tab",
+      "download": "Download",
+      "refresh": "Refresh job data",
+      "copyDebug": "Copy debug info"
+    },
+    "errors": {
+      "selectImageAndPrompt": "Please select an image and enter instructions.",
+      "videoLoadFailed": "Failed to load video. Check console for details."
+    }
+  },
   "help": {
     "gettingStarted": {
       "title": "Getting Started Guide",

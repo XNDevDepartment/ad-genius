@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle, CheckCircle, Clock, Loader2, Video as VideoIcon, X, Copy, Link as LinkIcon, Images, Sparkles } from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, Loader2, Video as VideoIcon, X, Copy, Link as LinkIcon, Images, Sparkles, Info } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import MultiImageUploader from "@/components/MultiImageUploader";
 import { UgcImagePicker } from "@/components/UgcImagePicker";
@@ -20,6 +20,8 @@ import type { SourceImage } from "@/hooks/useSourceImages";
 import type { UgcImage } from "@/hooks/useUgcImages";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
+import { useTranslation } from "react-i18next";
+import { VideoSettingsPanel, VideoSettings } from "@/components/VideoSettings";
 
 
 type Duration = 5 | 10;
@@ -29,6 +31,7 @@ export default function VideoGenerator() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { canAccessVideos, getVideoAccessMessage } = useCredits();
+  const { t } = useTranslation();
 
   const { toast } = useToast();
   const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
@@ -52,6 +55,13 @@ export default function VideoGenerator() {
   const [analyzingImage, setAnalyzingImage] = useState(false);
   const [suggestedPrompt, setSuggestedPrompt] = useState<string | null>(null);
   const [showSuggestion, setShowSuggestion] = useState(false);
+
+  // Video settings state
+  const [videoSettings, setVideoSettings] = useState<VideoSettings>({
+    cameraMovement: 'none',
+    motionIntensity: 'moderate',
+    animationStyle: 'natural',
+  });
 
   // Check access on mount
   useEffect(() => {
@@ -319,11 +329,47 @@ export default function VideoGenerator() {
     return null;
   }, [job]);
 
+  // Build enhanced prompt with settings
+  const buildEnhancedPrompt = (basePrompt: string, settings: VideoSettings): string => {
+    let enhanced = basePrompt;
+    
+    // Add camera movement
+    if (settings.cameraMovement !== 'none') {
+      const cameraInstructions = {
+        'zoom-in': 'slowly zoom in on the subject',
+        'zoom-out': 'slowly zoom out to reveal more context',
+        'pan-left': 'pan the camera left',
+        'pan-right': 'pan the camera right',
+        'pan-up': 'tilt the camera up',
+        'pan-down': 'tilt the camera down',
+      };
+      enhanced += `. Camera: ${cameraInstructions[settings.cameraMovement]}`;
+    }
+    
+    // Add motion intensity
+    const intensityWords = {
+      'subtle': 'gentle and minimal',
+      'moderate': 'natural and balanced',
+      'dynamic': 'energetic and pronounced',
+    };
+    enhanced += `. Motion should be ${intensityWords[settings.motionIntensity]}`;
+    
+    // Add animation style
+    const styleWords = {
+      'natural': 'realistic and lifelike',
+      'cinematic': 'dramatic with film-like quality',
+      'smooth': 'fluid and seamless',
+    };
+    enhanced += `. Style: ${styleWords[settings.animationStyle]}`;
+    
+    return enhanced;
+  };
+
   const onCreate = async () => {
     try {
       setUiError(null);
       if (!selectedImage || !prompt.trim()) {
-        setUiError("Please select an image and enter a prompt.");
+        setUiError(t('videoGenerator.errors.selectImageAndPrompt'));
         return;
       }
       // Only allow 5 or 10 (no 1s leaks)
@@ -331,8 +377,11 @@ export default function VideoGenerator() {
 
       setCreating(true);
 
+      // Build enhanced prompt with settings
+      const enhancedPrompt = buildEnhancedPrompt(prompt.trim(), videoSettings);
+
       const payload: any = {
-        prompt: prompt.trim(),
+        prompt: enhancedPrompt,
         duration: safeDuration,
         model: "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
       };
@@ -470,19 +519,26 @@ export default function VideoGenerator() {
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center gap-3">
           <VideoIcon className="h-6 w-6" />
-          <h1 className="text-2xl font-bold">Image → Video</h1>
+          <h1 className="text-2xl font-bold">{t('videoGenerator.title')}</h1>
         </div>
 
         {!job && (
           <Card>
             <CardHeader>
-              <CardTitle>Create Video</CardTitle>
-              <CardDescription>Select an image and prompt, then generate a 5s or 10s video.</CardDescription>
+              <CardTitle>{t('videoGenerator.createVideo')}</CardTitle>
+              <CardDescription>{t('videoGenerator.description')}</CardDescription>
+              <Alert className="mt-4 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+                <Info className="h-4 w-4 text-blue-600" />
+                <AlertDescription>
+                  <strong>{t('videoGenerator.infoBox.title')}:</strong>{' '}
+                  {t('videoGenerator.infoBox.description')}
+                </AlertDescription>
+              </Alert>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Source Image Selection */}
               <div className="space-y-3">
-                <Label>Source Image</Label>
+                <Label>{t('videoGenerator.sourceImage.label')}</Label>
 
                 {!selectedImage && !preselectedImageUrl ? (
                   <div className="space-y-3 w-full">
@@ -506,7 +562,7 @@ export default function VideoGenerator() {
                         onClick={() => setSourceImagePickerOpen(true)}
                       >
                         <Images className="h-8 w-8" />
-                        <span className="text-sm">From Library</span>
+                        <span className="text-sm">{t('videoGenerator.sourceImage.fromLibrary')}</span>
                       </Button>
 
                       {/* From URL */}
@@ -517,7 +573,7 @@ export default function VideoGenerator() {
                             className="h-full min-h-[60px] flex-col gap-2 w-full"
                           >
                             <LinkIcon className="h-8 w-8" />
-                            <span className="text-sm">Import from URL</span>
+                            <span className="text-sm">{t('videoGenerator.sourceImage.importFromUrl')}</span>
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
@@ -554,7 +610,7 @@ export default function VideoGenerator() {
                       <Alert>
                         <AlertCircle className="h-4 w-4" />
                         <AlertDescription>
-                          UGC image pre-selected. You can change it using the options above.
+                          {t('videoGenerator.sourceImage.ugcPreselected')}
                         </AlertDescription>
                       </Alert>
                     )}
@@ -572,7 +628,7 @@ export default function VideoGenerator() {
                       <Alert>
                         <AlertCircle className="h-4 w-4" />
                         <AlertDescription>
-                          Pre-selected from UGC Generator
+                          {t('videoGenerator.sourceImage.preselectedFromUGC')}
                         </AlertDescription>
                       </Alert>
                     )}
@@ -586,22 +642,22 @@ export default function VideoGenerator() {
                         setUploadedFiles([]);
                       }}
                     >
-                      Change Image
+                      {t('videoGenerator.sourceImage.changeImage')}
                     </Button>
                   </div>
                 )}
               </div>
 
-              {/* Prompt */}
+              {/* Instructions */}
               <div className="space-y-2">
-                <Label>Prompt</Label>
+                <Label>{t('videoGenerator.instructions.label')}</Label>
 
                 {/* AI Suggestion Section */}
                 {analyzingImage && (
                   <Alert>
                     <Loader2 className="h-4 w-4 animate-spin" />
                     <AlertDescription>
-                      Analyzing image and generating motion suggestion...
+                      {t('videoGenerator.instructions.aiSuggestion.analyzing')}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -611,7 +667,7 @@ export default function VideoGenerator() {
                     <CardHeader className="pb-3">
                       <CardTitle className="text-sm flex items-center gap-2">
                         <Sparkles className="h-4 w-4 text-blue-600" />
-                        AI-Suggested Motion Prompt
+                        {t('videoGenerator.instructions.aiSuggestion.title')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -624,19 +680,19 @@ export default function VideoGenerator() {
                             setPrompt(suggestedPrompt);
                             setShowSuggestion(false);
                             toast({
-                              title: "Prompt Applied",
-                              description: "You can edit it before generating.",
+                              title: t('videoGenerator.instructions.aiSuggestion.applied'),
+                              description: t('videoGenerator.instructions.aiSuggestion.appliedDescription'),
                             });
                           }}
                         >
-                          Use This Prompt
+                          {t('videoGenerator.instructions.aiSuggestion.usePrompt')}
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => setShowSuggestion(false)}
                         >
-                          Dismiss
+                          {t('videoGenerator.instructions.aiSuggestion.dismiss')}
                         </Button>
                       </div>
                     </CardContent>
@@ -646,14 +702,14 @@ export default function VideoGenerator() {
                 <Textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Describe the motion / behavior you want (e.g., 'person walking forward and smiling', 'camera slowly zooming in')"
+                  placeholder={t('videoGenerator.instructions.placeholder')}
                   rows={3}
                 />
               </div>
 
               {/* Duration */}
               <div className="space-y-2">
-                <Label>Duration</Label>
+                <Label>{t('videoGenerator.settings.duration')}</Label>
                 <Select
                   value={String(duration)}
                   onValueChange={(val) => setDuration((Number(val) === 10 ? 10 : 5) as Duration)}
@@ -662,8 +718,8 @@ export default function VideoGenerator() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="5">5 seconds (5 credits)</SelectItem>
-                    <SelectItem value="10">10 seconds (10 credits)</SelectItem>
+                    <SelectItem value="5">{t('videoGenerator.duration5')}</SelectItem>
+                    <SelectItem value="10">{t('videoGenerator.duration10')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -676,25 +732,31 @@ export default function VideoGenerator() {
                 </Alert>
               )}
 
-              {/* Create button */}
-              <Button
-                onClick={onCreate}
-                className="w-full"
-                size="lg"
-                disabled={creating || (!selectedImage && !ugcImageId) || !prompt.trim()}
-              >
-                {creating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating Job…
-                  </>
-                ) : (
-                  <>
-                    <VideoIcon className="mr-2 h-4 w-4" />
-                    Generate Video
-                  </>
-                )}
-              </Button>
+              {/* Create button with Settings */}
+              <div className="flex gap-2">
+                <VideoSettingsPanel 
+                  settings={videoSettings}
+                  onSettingsChange={setVideoSettings}
+                />
+                <Button
+                  onClick={onCreate}
+                  className="flex-1"
+                  size="lg"
+                  disabled={creating || (!selectedImage && !ugcImageId) || !prompt.trim()}
+                >
+                  {creating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {t('videoGenerator.creatingJob')}
+                    </>
+                  ) : (
+                    <>
+                      <VideoIcon className="mr-2 h-4 w-4" />
+                      {t('videoGenerator.generateVideo')}
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -706,26 +768,26 @@ export default function VideoGenerator() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   {statusIcon}
-                  Status: <span className="capitalize">{job.status}</span>
+                  {t('videoGenerator.status.label')}: <span className="capitalize">{job.status}</span>
                 </CardTitle>
                 <CardDescription>
-                  {job.status === "queued" && "Your video is queued…"}
-                  {job.status === "processing" && "Generating your video…"}
-                  {job.status === "completed" && "Video generated successfully."}
-                  {job.status === "failed" && "Video generation failed."}
-                  {job.status === "canceled" && "Video generation was canceled."}
+                  {job.status === "queued" && t('videoGenerator.status.queued')}
+                  {job.status === "processing" && t('videoGenerator.status.processing')}
+                  {job.status === "completed" && t('videoGenerator.status.completed')}
+                  {job.status === "failed" && t('videoGenerator.status.failed')}
+                  {job.status === "canceled" && t('videoGenerator.status.canceled')}
                 </CardDescription>
               </div>
 
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={refreshJob} title="Refresh job data">
+                <Button variant="outline" size="sm" onClick={refreshJob} title={t('videoGenerator.actions.refresh')}>
                   <Loader2 className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="sm" onClick={copyDebug} title="Copy debug info">
+                <Button variant="outline" size="sm" onClick={copyDebug} title={t('videoGenerator.actions.copyDebug')}>
                   <Copy className="h-4 w-4" />
                 </Button>
                 <Button variant="outline" size="sm" onClick={clearAll}>
-                  New Video
+                  {t('videoGenerator.actions.newVideo')}
                 </Button>
               </div>
             </CardHeader>
@@ -789,10 +851,10 @@ export default function VideoGenerator() {
                   />
                   <div className="flex gap-2">
                     <Button variant="outline" className="w-full" onClick={() => window.open(resolvedVideoUrl!, "_blank")}>
-                      Open in New Tab
+                      {t('videoGenerator.actions.openNewTab')}
                     </Button>
                     <a href={resolvedVideoUrl} download className="w-full">
-                      <Button className="w-full" variant="secondary">Download</Button>
+                      <Button className="w-full" variant="secondary">{t('videoGenerator.actions.download')}</Button>
                     </a>
                   </div>
                 </div>
@@ -809,7 +871,7 @@ export default function VideoGenerator() {
               {/* Cancel */}
               {(job.status === "queued" || job.status === "processing") && (
                 <Button variant="destructive" className="w-full" onClick={onCancel}>
-                  Cancel
+                  {t('videoGenerator.actions.cancel')}
                 </Button>
               )}
             </CardContent>

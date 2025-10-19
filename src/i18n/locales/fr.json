@@ -501,6 +501,86 @@
       }
     }
   },
+  "videoGenerator": {
+    "title": "Image → Vidéo",
+    "createVideo": "Créer une Vidéo",
+    "description": "Sélectionnez une image et fournissez des instructions pour générer une vidéo animée de 5s ou 10s.",
+    "infoBox": {
+      "title": "Comment Ça Marche",
+      "description": "Ce module anime des images existantes avec des mouvements et des effets de caméra. Il ne génère pas de vidéos à partir de zéro - vous devez d'abord fournir une image source."
+    },
+    "sourceImage": {
+      "label": "Image Source",
+      "fromLibrary": "De la Bibliothèque",
+      "importFromUrl": "Importer depuis URL",
+      "dragDrop": "Glisser-Déposer",
+      "changeImage": "Changer l'Image",
+      "ugcPreselected": "Image UGC présélectionnée. Vous pouvez la changer avec les options ci-dessus.",
+      "preselectedFromUGC": "Présélectionnée du Générateur UGC"
+    },
+    "instructions": {
+      "label": "Instructions de Mouvement",
+      "placeholder": "Décrivez le mouvement / comportement souhaité (ex: 'personne marchant en avant et souriant', 'caméra zoomant lentement')",
+      "aiSuggestion": {
+        "title": "Instructions de Mouvement Suggérées par IA",
+        "analyzing": "Analyse de l'image et génération de suggestion de mouvement...",
+        "usePrompt": "Utiliser Ce Prompt",
+        "dismiss": "Ignorer",
+        "applied": "Instructions Appliquées",
+        "appliedDescription": "Vous pouvez les modifier avant de générer."
+      }
+    },
+    "settings": {
+      "label": "Paramètres",
+      "duration": "Durée",
+      "cameraMovement": "Mouvement de Caméra",
+      "motionIntensity": "Intensité du Mouvement",
+      "animationStyle": "Style d'Animation"
+    },
+    "cameraMovements": {
+      "none": "Aucun (Statique)",
+      "zoomIn": "Zoom Avant",
+      "zoomOut": "Zoom Arrière",
+      "panLeft": "Panoramique Gauche",
+      "panRight": "Panoramique Droite",
+      "panUp": "Panoramique Haut",
+      "panDown": "Panoramique Bas"
+    },
+    "motionIntensities": {
+      "subtle": "Subtil",
+      "moderate": "Modéré",
+      "dynamic": "Dynamique"
+    },
+    "animationStyles": {
+      "natural": "Naturel",
+      "cinematic": "Cinématique",
+      "smooth": "Fluide"
+    },
+    "duration5": "5 secondes (5 crédits)",
+    "duration10": "10 secondes (10 crédits)",
+    "generateVideo": "Générer la Vidéo",
+    "creatingJob": "Création du Travail…",
+    "status": {
+      "label": "Statut",
+      "queued": "Votre vidéo est en file d'attente…",
+      "processing": "Génération de votre vidéo…",
+      "completed": "Vidéo générée avec succès.",
+      "failed": "La génération de la vidéo a échoué.",
+      "canceled": "La génération de la vidéo a été annulée."
+    },
+    "actions": {
+      "newVideo": "Nouvelle Vidéo",
+      "cancel": "Annuler",
+      "openNewTab": "Ouvrir dans un Nouvel Onglet",
+      "download": "Télécharger",
+      "refresh": "Actualiser les données du travail",
+      "copyDebug": "Copier les informations de débogage"
+    },
+    "errors": {
+      "selectImageAndPrompt": "Veuillez sélectionner une image et saisir des instructions.",
+      "videoLoadFailed": "Échec du chargement de la vidéo. Vérifiez la console pour plus de détails."
+    }
+  },
   "help": {
     "gettingStarted": {
       "title": "Guide de Démarrage",
