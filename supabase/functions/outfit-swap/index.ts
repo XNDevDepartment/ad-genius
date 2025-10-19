@@ -176,6 +176,8 @@ async function processOutfitSwap(jobId: string) {
 
           HOW TO DO: First remove entirely the outfit of the origina image, so the new outfit does not gets pieces of the old one. If the new outfit is smaller than the older, reimage the body of the model.
 
+          INTELLIGENCE: You must use your intelligence to check as well if everything fits. For example: If the original is an elegant model with high heels and elegant clothes, and the new outfit involves training outfit, you must do the extra replacements in order to achieve total realism.
+
           Generate a high-quality, seamless outfit swap image.`;
 
     await supabase
