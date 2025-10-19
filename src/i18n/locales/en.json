@@ -507,7 +507,7 @@
     "description": "Select an image and provide instructions to generate a 5s or 10s animated video.",
     "infoBox": {
       "title": "How It Works",
-      "description": "This module animates existing images with motion and camera effects. It does not generate videos from scratch - you need to provide a source image first."
+      "description": "This module animates existing images with motion and camera effects, adding a real sense of context to the image."
     },
     "sourceImage": {
       "label": "Source Image",

@@ -507,7 +507,7 @@
     "description": "Sélectionnez une image et fournissez des instructions pour générer une vidéo animée de 5s ou 10s.",
     "infoBox": {
       "title": "Comment Ça Marche",
-      "description": "Ce module anime des images existantes avec des mouvements et des effets de caméra. Il ne génère pas de vidéos à partir de zéro - vous devez d'abord fournir une image source."
+      "description": "Ce module anime des images existantes avec des mouvements et des effets de caméra afin de donner un contexte réel à l’image."
     },
     "sourceImage": {
       "label": "Image Source",

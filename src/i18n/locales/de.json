@@ -507,7 +507,7 @@
     "description": "Wählen Sie ein Bild aus und geben Sie Anweisungen ein, um ein animiertes 5s- oder 10s-Video zu generieren.",
     "infoBox": {
       "title": "Wie Es Funktioniert",
-      "description": "Dieses Modul animiert vorhandene Bilder mit Bewegungs- und Kameraeffekten. Es generiert keine Videos von Grund auf - Sie müssen zuerst ein Quellbild bereitstellen."
+      "description": "Dieses Modul animiert vorhandene Bilder mit Bewegung und Kameraeffekten, um dem Bild einen realistischen Kontext zu verleihen."
     },
     "sourceImage": {
       "label": "Quellbild",

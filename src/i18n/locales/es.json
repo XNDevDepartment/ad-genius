@@ -507,7 +507,7 @@
     "description": "Seleccione una imagen y proporcione instrucciones para generar un video animado de 5s o 10s.",
     "infoBox": {
       "title": "Cómo Funciona",
-      "description": "Este módulo anima imágenes existentes con movimiento y efectos de cámara. No genera videos desde cero - necesitas proporcionar una imagen de origen primero."
+      "description": "Este módulo anima imágenes existentes con movimiento y efectos de cámara, para dar un contexto real a la imagen."
     },
     "sourceImage": {
       "label": "Imagen de Origen",
