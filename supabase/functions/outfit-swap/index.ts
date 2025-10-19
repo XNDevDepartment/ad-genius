@@ -174,6 +174,8 @@ async function processOutfitSwap(jobId: string) {
 
           CRITICAL: The person's identity must remain 100% identical. Do not alter any facial features whatsoever. Do not add any new elements to the original image. Work only on the model.
 
+          HOW TO DO: First remove entirely the outfit of the origina image, so the new outfit does not gets pieces of the old one. If the new outfit is smaller than the older, reimage the body of the model.
+
           Generate a high-quality, seamless outfit swap image.`;
 
     await supabase
