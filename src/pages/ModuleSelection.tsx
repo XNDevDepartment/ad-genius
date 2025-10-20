@@ -40,14 +40,14 @@ const ModuleSelection = () => {
       isAdmin: false,
       locked: !canAccessVideos()
     },
-    ...(isAdmin ? [{
-      id: "adgenius",
-      title: "AdGenius (Admin Only)",
-      description: "Advanced creative generation for advertising campaigns",
-      icon: Sparkles,
-      path: "/create/adgenius",
-      isAdmin: true
-    }] : []),
+    // ...(isAdmin ? [{
+    //   id: "adgenius",
+    //   title: "AdGenius (Admin Only)",
+    //   description: "Advanced creative generation for advertising campaigns",
+    //   icon: Sparkles,
+    //   path: "/create/adgenius",
+    //   isAdmin: true
+    // }] : []),
     ...(isAdmin ? [{
       id: "outfit-swap",
       title: "Outfit Swap (Admin Only)",

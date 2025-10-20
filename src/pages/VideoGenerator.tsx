@@ -75,7 +75,7 @@ export default function VideoGenerator() {
       return;
     }
     
-    if (!canAccessVideos()) {
+    if (!canAccessVideos() ) {
       toast({
         title: "Upgrade Required",
         description: getVideoAccessMessage(),
