@@ -56,6 +56,19 @@ function json(body, status = 200) {
     }
   });
 }
+
+async function isUserAdmin(supabase, userId) {
+  const { data, error } = await supabase.rpc('is_user_admin', {
+    check_user_id: userId
+  });
+  
+  if (error) {
+    console.error('[ADMIN-CHECK] Error checking admin status:', error);
+    return false;
+  }
+  
+  return data === true;
+}
 async function createVideoJob(supabase, userId, payload) {
   const { source_image_id, ugc_image_id, prompt, duration = 5, model, negative_prompt, cfg_scale, static_mask_url, dynamic_masks, tail_image_url } = payload;
   console.log("[CREATE-JOB] Starting job creation", {
@@ -64,27 +77,34 @@ async function createVideoJob(supabase, userId, payload) {
     duration
   });
   
-  // Check subscription tier - All tiers except Starter can access videos
-  const { data: subscriber, error: subError } = await supabase
-    .from('subscribers')
-    .select('subscription_tier')
-    .eq('user_id', userId)
-    .single();
+  // Check if user is admin
+  const isAdmin = await isUserAdmin(supabase, userId);
+  console.log(`[CREATE-JOB] User is admin: ${isAdmin}`);
   
-  if (subError || !subscriber) {
-    return {
-      success: false,
-      error: 'Unable to verify subscription status.'
-    };
-  }
-  
-  // Only Starter tier is excluded from video generation
-  if (subscriber.subscription_tier === 'Starter') {
-    return {
-      success: false,
-      error: 'Video generation is not available on the Starter plan. Upgrade to Plus or try our Free tier!',
-      upgrade_required: true
-    };
+  // Skip subscription check for admins
+  if (!isAdmin) {
+    // Check subscription tier - All tiers except Starter can access videos
+    const { data: subscriber, error: subError } = await supabase
+      .from('subscribers')
+      .select('subscription_tier')
+      .eq('user_id', userId)
+      .single();
+    
+    if (subError || !subscriber) {
+      return {
+        success: false,
+        error: 'Unable to verify subscription status.'
+      };
+    }
+    
+    // Only Starter tier is excluded from video generation
+    if (subscriber.subscription_tier === 'Starter') {
+      return {
+        success: false,
+        error: 'Video generation is not available on the Starter plan. Upgrade to Plus or try our Free tier!',
+        upgrade_required: true
+      };
+    }
   }
   
   // Validate basic inputs
@@ -92,24 +112,30 @@ async function createVideoJob(supabase, userId, payload) {
     success: false,
     error: "Missing prompt"
   };
-  // Credit cost
+  
+  // Credit cost calculation
   const creditCost = Number(duration) === 10 ? 10 : 5;
-  // Deduct credits
-  const { data: creditResult, error: creditError } = await supabase.rpc("deduct_user_credits", {
-    p_user_id: userId,
-    p_amount: creditCost,
-    p_reason: "video_generation"
-  });
-  if (creditError || !creditResult?.success) {
-    console.error("[CREATE-JOB] Credit deduction failed:", creditError || creditResult);
-    return {
-      success: false,
-      error: creditResult?.error || "Failed to deduct credits",
-      current_balance: creditResult?.current_balance,
-      required: creditCost
-    };
+  
+  // Deduct credits ONLY for non-admin users
+  if (!isAdmin) {
+    const { data: creditResult, error: creditError } = await supabase.rpc("deduct_user_credits", {
+      p_user_id: userId,
+      p_amount: creditCost,
+      p_reason: "video_generation"
+    });
+    if (creditError || !creditResult?.success) {
+      console.error("[CREATE-JOB] Credit deduction failed:", creditError || creditResult);
+      return {
+        success: false,
+        error: creditResult?.error || "Failed to deduct credits",
+        current_balance: creditResult?.current_balance,
+        required: creditCost
+      };
+    }
+    console.log("[CREATE-JOB] Credits deducted:", creditCost);
+  } else {
+    console.log("[CREATE-JOB] Admin user - skipping credit deduction");
   }
-  console.log("[CREATE-JOB] Credits deducted:", creditCost);
   // Resolve image URL
   let imageUrl = null;
   let imageId = null;
@@ -123,11 +149,13 @@ async function createVideoJob(supabase, userId, payload) {
     imageId = ugc_image_id;
   }
   if (!imageUrl) {
-    await supabase.rpc("refund_user_credits", {
-      p_user_id: userId,
-      p_amount: creditCost,
-      p_reason: "video_generation_failed_no_image"
-    });
+    if (!isAdmin) {
+      await supabase.rpc("refund_user_credits", {
+        p_user_id: userId,
+        p_amount: creditCost,
+        p_reason: "video_generation_failed_no_image"
+      });
+    }
     return {
       success: false,
       error: "Source image not found"
@@ -145,7 +173,8 @@ async function createVideoJob(supabase, userId, payload) {
     ugc_image_id: ugc_image_id || null,
     status: "queued",
     metadata: {
-      credit_cost: creditCost,
+      credit_cost: isAdmin ? 0 : creditCost,
+      is_admin_generation: isAdmin,
       negative_prompt: negative_prompt || undefined,
       cfg_scale: typeof cfg_scale === "number" ? cfg_scale : undefined,
       static_mask_url: static_mask_url || undefined,
@@ -155,11 +184,13 @@ async function createVideoJob(supabase, userId, payload) {
   }).select().single();
   if (jobError) {
     console.error("[CREATE-JOB] Failed to create job:", jobError);
-    await supabase.rpc("refund_user_credits", {
-      p_user_id: userId,
-      p_amount: creditCost,
-      p_reason: "video_generation_failed_job_creation"
-    });
+    if (!isAdmin) {
+      await supabase.rpc("refund_user_credits", {
+        p_user_id: userId,
+        p_amount: creditCost,
+        p_reason: "video_generation_failed_job_creation"
+      });
+    }
     return {
       success: false,
       error: "Failed to create job record"
@@ -303,6 +334,11 @@ async function getVideoJob(supabase, userId, jobId) {
   };
 }
 async function cancelVideoJob(supabase, userId, jobId) {
+  console.log(`[CANCEL-JOB] Canceling job ${jobId} for user ${userId}`);
+  
+  // Check if user is admin
+  const isAdmin = await isUserAdmin(supabase, userId);
+  
   const { data: job } = await supabase.from("kling_jobs").select("*").eq("id", jobId).eq("user_id", userId).single();
   if (!job) return {
     success: false,
@@ -338,13 +374,17 @@ async function cancelVideoJob(supabase, userId, jobId) {
     status: "canceled",
     finished_at: new Date().toISOString()
   }).eq("id", jobId);
-  if (job.status === "queued" && job.metadata?.credit_cost) {
+  
+  // Only refund for non-admin users
+  if (!isAdmin && job.status === "queued" && job.metadata?.credit_cost) {
     await supabase.rpc("refund_user_credits", {
       p_user_id: userId,
       p_amount: job.metadata.credit_cost,
       p_reason: "video_generation_canceled"
     });
+    console.log(`[CANCEL-JOB] Refunded ${job.metadata.credit_cost} credits`);
   }
+  
   return {
     success: true
   };

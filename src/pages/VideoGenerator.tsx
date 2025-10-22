@@ -20,6 +20,7 @@ import type { SourceImage } from "@/hooks/useSourceImages";
 import type { UgcImage } from "@/hooks/useUgcImages";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useTranslation } from "react-i18next";
 import { VideoSettingsPanel, VideoSettings } from "@/components/VideoSettings";
 
@@ -31,6 +32,7 @@ export default function VideoGenerator() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { canAccessVideos, getVideoAccessMessage } = useCredits();
+  const { isAdmin, loading: isAdminLoading } = useAdminAuth();
   const { t } = useTranslation();
 
   const { toast } = useToast();
@@ -75,7 +77,12 @@ export default function VideoGenerator() {
       return;
     }
     
-    if (!canAccessVideos() ) {
+    // Skip access checks for admins
+    if (isAdminLoading) return;
+    if (isAdmin) return;
+    
+    // Regular users still get checked
+    if (!canAccessVideos()) {
       toast({
         title: "Upgrade Required",
         description: getVideoAccessMessage(),
@@ -85,7 +92,7 @@ export default function VideoGenerator() {
         navigate('/pricing');
       }, 2000);
     }
-  }, [user, canAccessVideos, navigate, toast]);
+  }, [user, isAdmin, isAdminLoading, canAccessVideos, navigate, toast, getVideoAccessMessage]);
 
   // AI image analysis function
   const analyzeImageForMotion = async (imageUrl: string) => {
@@ -490,8 +497,8 @@ export default function VideoGenerator() {
     } catch {}
   };
 
-  // Show access denied UI if no access
-  if (!user || !canAccessVideos()) {
+  // Show access denied UI if no access (but not for admins)
+  if (!user || (!isAdminLoading && !isAdmin && !canAccessVideos())) {
     return (
       <div className="min-h-screen p-4 md:p-8 bg-background">
         <div className="max-w-4xl mx-auto space-y-6">
