@@ -73,8 +73,8 @@ serve(async (req) => {
       const price = await stripe.prices.retrieve(priceId);
       const amount = price.unit_amount || 0;
       
-      // Map price amounts to tiers (in cents)
-      if (amount === 1999) { // €19.99 - Founders tier
+      // Map price amounts to tiers (in cents) - using ranges to handle variations
+      if (amount >= 1900 && amount <= 2099) { // €19-€20.99 range - Founders tier
         subscriptionTier = "Founders";
       } else if (amount >= 8200 && amount <= 9900) { // €82-€99 range
         subscriptionTier = "Pro";
@@ -101,12 +101,21 @@ serve(async (req) => {
 
     let shouldAllocateCredits = false;
     
-    // If no existing subscriber or tier changed from Free to paid, allocate credits
+    // Priority 1: New subscriber with active subscription
     if (!existingSubscriber) {
-      shouldAllocateCredits = active; // New subscriber with active subscription
-    } else if (existingSubscriber.subscription_tier !== subscriptionTier && active) {
-      // Tier changed and subscription is active
-      // Add safeguard: only allocate if last allocation was more than 1 hour ago
+      shouldAllocateCredits = active;
+      log("New subscriber detected", { active, subscriptionTier });
+    } 
+    // Priority 2: Free → Paid transition (ALWAYS allocate, ignore time check)
+    else if (existingSubscriber.subscription_tier === 'Free' && subscriptionTier !== 'Free' && active) {
+      shouldAllocateCredits = true;
+      log("Free to paid upgrade detected - allocating credits immediately", {
+        from: existingSubscriber.subscription_tier,
+        to: subscriptionTier
+      });
+    }
+    // Priority 3: Paid tier change (use time safeguard)
+    else if (existingSubscriber.subscription_tier !== subscriptionTier && active) {
       const lastAllocation = existingSubscriber.last_reset_at || existingSubscriber.updated_at;
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
       
@@ -124,6 +133,13 @@ serve(async (req) => {
         });
       }
     }
+    
+    log("Credit allocation decision", {
+      shouldAllocate: shouldAllocateCredits,
+      existingTier: existingSubscriber?.subscription_tier,
+      newTier: subscriptionTier,
+      isActive: active
+    });
 
     // Update subscriber record
     await supabaseService.from("subscribers").upsert({
@@ -134,6 +150,8 @@ serve(async (req) => {
       subscription_tier: subscriptionTier,
       subscription_end: subscriptionEnd,
       updated_at: new Date().toISOString(),
+      // Update last_reset_at when allocating credits
+      ...(shouldAllocateCredits ? { last_reset_at: new Date().toISOString() } : {})
     }, { onConflict: "email" });
 
     // Allocate credits if needed (Option B: Add to existing balance)
