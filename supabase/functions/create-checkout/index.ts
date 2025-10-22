@@ -35,11 +35,22 @@ serve(async (req) => {
 
     // Define plan pricing
     const planPricing = {
-      founders: { monthly: 1999, yearly: 1999 }, // €19.99/month, no yearly discount for limited offer
+      founders: { monthly: 1999, yearly: 23988 }, // €19.99/month, €239.88/year (12 months)
       starter: { monthly: 2900, yearly: 2417 }, // €29/month, €24.17/month when billed yearly
       plus: { monthly: 4900, yearly: 4083 },   // €49/month, €40.83/month when billed yearly
       pro: { monthly: 9900, yearly: 8250 }     // €99/month, €82.50/month when billed yearly
     };
+
+    // Validate pricing to prevent future bugs
+    const validatePricing = () => {
+      if (planPricing.founders.yearly !== planPricing.founders.monthly * 12) {
+        console.error('PRICING ERROR: Founders yearly should be 12x monthly!', {
+          expected: planPricing.founders.monthly * 12,
+          actual: planPricing.founders.yearly
+        });
+      }
+    };
+    validatePricing();
 
     const planNames = {
       founders: 'Founders Plan',
@@ -61,6 +72,15 @@ serve(async (req) => {
     let customerId: string | undefined;
     if (customers.data.length > 0) customerId = customers.data[0].id;
 
+    // Log checkout session creation for tracking
+    console.log('Creating checkout session:', {
+      planId,
+      interval,
+      unitAmount,
+      customerId: customerId || 'new',
+      userEmail: user.email
+    });
+
     // Create checkout session
     const origin = req.headers.get("origin") || "http://localhost:3000";
     const session = await stripe.checkout.sessions.create({
@@ -74,8 +94,10 @@ serve(async (req) => {
             product_data: { 
               name: planName,
               description: planId === 'founders' 
-                ? 'Limited-time Founders subscription with lifetime pricing guarantee!' 
-                : interval === 'year' ? 'Annual subscription (2 months free!)' : 'Monthly subscription'
+                ? `Limited-time Founders subscription with lifetime pricing guarantee! (Billed ${interval === 'year' ? 'annually' : 'monthly'})` 
+                : interval === 'year' 
+                  ? 'Annual subscription (2 months free! Billed annually)' 
+                  : 'Monthly subscription (Billed monthly)'
             },
             unit_amount: unitAmount,
             recurring: { interval: interval as 'month' | 'year' },
