@@ -822,10 +822,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      calculate_image_cost: {
-        Args: { p_settings: Json }
-        Returns: number
-      }
+      calculate_image_cost: { Args: { p_settings: Json }; Returns: number }
       can_afford_video: {
         Args: { p_duration?: number; p_user_id: string }
         Returns: boolean
@@ -879,7 +876,7 @@ export type Database = {
         Returns: number
       }
       get_public_showcase_images: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           id: string
@@ -890,10 +887,7 @@ export type Database = {
           updated_at: string
         }[]
       }
-      get_tier_monthly_credits: {
-        Args: { p_tier: string }
-        Returns: number
-      }
+      get_tier_monthly_credits: { Args: { p_tier: string }; Returns: number }
       get_user_library_images: {
         Args: { p_limit?: number; p_offset?: number; p_user_id: string }
         Returns: {
@@ -911,20 +905,14 @@ export type Database = {
         Args: { p_duration?: number; p_quality?: string }
         Returns: number
       }
-      is_admin: {
-        Args: { check_user_id?: string }
-        Returns: boolean
-      }
-      is_user_admin: {
-        Args: { check_user_id?: string }
-        Returns: boolean
-      }
+      is_admin: { Args: { check_user_id?: string }; Returns: boolean }
+      is_user_admin: { Args: { check_user_id?: string }; Returns: boolean }
       refund_user_credits: {
         Args: { p_amount: number; p_reason?: string; p_user_id: string }
         Returns: Json
       }
       reset_monthly_credits: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           credits_added: number
           new_balance: number
@@ -932,10 +920,7 @@ export type Database = {
           user_id: string
         }[]
       }
-      reset_user_monthly_credits: {
-        Args: { p_user_id: string }
-        Returns: Json
-      }
+      reset_user_monthly_credits: { Args: { p_user_id: string }; Returns: Json }
       search_gemini_conversations: {
         Args: { p_limit?: number; p_search_term: string; p_user_id: string }
         Returns: {
