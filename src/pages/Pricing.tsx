@@ -16,7 +16,7 @@ const plans = [
     id: "founders",
     name: "Founders",
     monthlyPrice: 19.99,
-    yearlyPrice: null, // No yearly option for limited time offer
+    yearlyPrice: 19.99,
     period: "/month",
     description: "🚀 Limited launch offer - Lifetime Starter benefits!",
     credits: 80,
