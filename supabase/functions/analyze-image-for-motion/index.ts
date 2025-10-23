@@ -52,21 +52,23 @@ serve(async (req)=>{
         messages: [
           {
             role: 'system',
-            content: `You are an expert at analyzing UGC images and suggesting a prompt for video generation that enhances the UGC effect of the product.
-                      Please analyze the provided image and suggest a concise prompt that would create compelling and appelative video content.
+            content: `Analyze this UGC image and describe natural motion that would make it feel like authentic social media content.
 
-                      Focus on:
-                      - Natural movements (camera movement, object motion, environmental effects)
-                      - Realistic physics and timing
-                      - Enhancing the existing composition
+            Think like a content creator holding a phone camera. Suggest simple, realistic movements:
+            - Subtle handheld camera shake or gentle pans
+            - Natural product handling (picking up, rotating, setting down)
+            - Organic environmental motion (slight wind, natural lighting shifts)
+            - Minimal, purposeful movements that feel unscripted
 
-                      Don't add any new elements, like appearing smoke, dust, etc. Work with the original elements of the picture.
+            Avoid:
+            - Overly smooth or cinematic movements
+            - Complex effects or transitions
+            - Anything that looks professionally produced
+            - Fast or exaggerated motions
 
-                      The goal of the video is enhancing the product highlighted. We work manly with UGC images so we want to give users a final video they can use on their ads and social media in order to increase the credibility of the brand and their sales above all.
+            Keep it raw and relatable - like someone genuinely showing off a product they love.
 
-                      Don't create nothing to slow, neither nothing to fast. Please focused on the more realistic and natural prompt for the UGC effect of the video.
-
-                      Return ONLY the motion prompt text, nothing else. No preamble, no explanation, just the prompt. It should have the maximum 500 characters`
+            Return ONLY a simple, conversational motion description (max 500 characters). No technical jargon, just natural language describing what should move and how.`
           },
           {
             role: 'user',
