@@ -49,16 +49,33 @@ export const Library = ({ onBack }: LibraryProps) => {
     });
 
     try {
-      const response = await fetch(image.url);
+      // Check if this is a source image or AI-generated image
+      const isSourceImage = !!(image as any).signedUrl;
+      const downloadUrl = isSourceImage ? (image as any).signedUrl : image.url;
+      
+      if (!downloadUrl) {
+        throw new Error('No download URL available');
+      }
+
+      const response = await fetch(downloadUrl);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      const extension = image.settings?.format || 'png';
-      link.download = `ugc-${image.id}.${extension}`;
+      
+      // Use appropriate filename based on image type
+      if (isSourceImage) {
+        const fileName = (image as any).fileName || `source-${image.id}`;
+        link.download = fileName;
+      } else {
+        const extension = image.settings?.format || 'png';
+        link.download = `ugc-${image.id}.${extension}`;
+      }
+      
       link.click();
       URL.revokeObjectURL(url);
     } catch (error) {
+      console.error('Download error:', error);
       toast({
         title: "Download Failed",
         description: "Failed to download image. Please try again.",
