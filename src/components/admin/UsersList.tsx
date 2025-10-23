@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Eye, Calendar, Mail, User } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Eye, User, Calendar } from 'lucide-react';
 import { UserProfileModal } from './UserProfileModal';
+import { AdminDataTable } from './AdminDataTable';
+import { format } from 'date-fns';
 
 interface UserProfile {
   id: string;
@@ -46,6 +49,67 @@ export const UsersList = () => {
     fetchUsers();
   }, []);
 
+  const columns = [
+    {
+      key: 'email',
+      label: 'Email',
+      sortable: true,
+      render: (user: UserProfile) => (
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <User className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <div className="font-medium">{user.email}</div>
+            {user.name && <div className="text-xs text-muted-foreground">{user.name}</div>}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'profession',
+      label: 'Profession',
+      sortable: true,
+      render: (user: UserProfile) => (
+        <Badge variant="secondary">{user.profession || 'Not specified'}</Badge>
+      ),
+    },
+    {
+      key: 'account_id',
+      label: 'Account ID',
+      sortable: true,
+      render: (user: UserProfile) => (
+        <span className="font-mono text-xs">{user.account_id}</span>
+      ),
+    },
+    {
+      key: 'created_at',
+      label: 'Joined',
+      sortable: true,
+      render: (user: UserProfile) => (
+        <div className="flex items-center gap-2 text-sm">
+          <Calendar className="w-3 h-3 text-muted-foreground" />
+          {format(new Date(user.created_at), 'MMM dd, yyyy')}
+        </div>
+      ),
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (user: UserProfile) => (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setSelectedUser(user)}
+          className="gap-2"
+        >
+          <Eye className="w-4 h-4" />
+          View
+        </Button>
+      ),
+    },
+  ];
+
   if (loading) {
     return <div>Loading users...</div>;
   }
@@ -60,41 +124,12 @@ export const UsersList = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {users.map((user) => (
-              <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Mail className="w-4 h-4 text-muted-foreground" />
-                    <span className="font-medium">{user.email}</span>
-                  </div>
-                  {user.name && (
-                    <div className="text-sm text-muted-foreground mb-1">
-                      Name: {user.name}
-                    </div>
-                  )}
-                  {user.profession && (
-                    <div className="text-sm text-muted-foreground mb-1">
-                      Profession: {user.profession}
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Calendar className="w-3 h-3" />
-                    Joined: {new Date(user.created_at).toLocaleDateString()}
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedUser(user)}
-                  className="gap-2"
-                >
-                  <Eye className="w-4 h-4" />
-                  View Profile
-                </Button>
-              </div>
-            ))}
-          </div>
+          <AdminDataTable
+            data={users}
+            columns={columns}
+            searchPlaceholder="Search users by email, name, or account ID..."
+            loading={loading}
+          />
         </CardContent>
       </Card>
 

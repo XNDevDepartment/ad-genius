@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AdminOverview } from '@/components/admin/AdminOverview';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { Loader2 } from 'lucide-react';
+import { SidebarProvider } from '@/components/ui/sidebar';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -30,12 +31,14 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <AdminHeader />
-      <main className="container mx-auto px-4 py-6">
-        <AdminOverview />
-      </main>
-    </div>
+    <SidebarProvider>
+      <div className="min-h-screen w-full flex flex-col">
+        <AdminHeader />
+        <main className="flex-1 container mx-auto px-4 py-6">
+          <AdminOverview />
+        </main>
+      </div>
+    </SidebarProvider>
   );
 };
 

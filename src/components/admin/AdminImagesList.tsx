@@ -3,9 +3,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, ExternalLink, User } from 'lucide-react';
+import { Download, ExternalLink, User, Image as ImageIcon } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { AdminDataTable } from './AdminDataTable';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface GeneratedImage {
   id: string;
@@ -26,6 +34,7 @@ interface GeneratedImage {
 export const AdminImagesList = () => {
   const [images, setImages] = useState<GeneratedImage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'all' | 'generated_images' | 'ugc_images'>('all');
 
   useEffect(() => {
     fetchImages();
@@ -118,110 +127,128 @@ export const AdminImagesList = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <div className="aspect-square bg-muted animate-pulse rounded-md mb-4" />
-                <div className="h-4 bg-muted animate-pulse rounded mb-2" />
-                <div className="h-3 bg-muted animate-pulse rounded w-2/3" />
-              </CardContent>
-            </Card>
-          ))}
+  const filteredImages = filter === 'all' ? images : images.filter(img => img.source === filter);
+
+  const columns = [
+    {
+      key: 'preview',
+      label: 'Preview',
+      render: (image: GeneratedImage) => (
+        <img
+          src={image.public_url}
+          alt={image.prompt}
+          className="w-16 h-16 object-cover rounded"
+        />
+      ),
+    },
+    {
+      key: 'prompt',
+      label: 'Prompt',
+      sortable: true,
+      render: (image: GeneratedImage) => (
+        <div className="max-w-xs">
+          <p className="text-sm line-clamp-2">{image.prompt || 'No prompt'}</p>
         </div>
-      </div>
-    );
+      ),
+    },
+    {
+      key: 'user',
+      label: 'User',
+      render: (image: GeneratedImage) => (
+        <div className="flex items-center gap-2">
+          <User className="w-4 h-4 text-muted-foreground" />
+          <div className="text-sm">
+            <div className="font-medium">{image.profiles?.email || 'Unknown'}</div>
+            {image.profiles?.name && (
+              <div className="text-xs text-muted-foreground">{image.profiles.name}</div>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'source',
+      label: 'Type',
+      sortable: true,
+      render: (image: GeneratedImage) => (
+        <Badge variant={image.source === 'generated_images' ? 'default' : 'secondary'}>
+          {image.source === 'generated_images' ? 'Generated' : 'UGC'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'created_at',
+      label: 'Created',
+      sortable: true,
+      render: (image: GeneratedImage) => (
+        <span className="text-sm">{format(new Date(image.created_at), 'MMM dd, yyyy')}</span>
+      ),
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (image: GeneratedImage) => (
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => window.open(image.public_url, '_blank')}
+          >
+            <ExternalLink className="w-4 h-4" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleDownload(image.public_url, image.prompt)}
+          >
+            <Download className="w-4 h-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  if (loading) {
+    return <div>Loading images...</div>;
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">All Generated Images</h2>
-          <p className="text-muted-foreground">
-            Total images: {images.length} ({images.filter(img => img.source === 'generated_images').length} generated, {images.filter(img => img.source === 'ugc_images').length} UGC)
-          </p>
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <ImageIcon className="w-5 h-5" />
+            All Generated Images ({images.length})
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Select value={filter} onValueChange={(value: any) => setFilter(value)}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Images</SelectItem>
+                <SelectItem value="generated_images">Generated</SelectItem>
+                <SelectItem value="ugc_images">UGC</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button onClick={fetchImages} variant="outline" size="sm">
+              Refresh
+            </Button>
+          </div>
         </div>
-        <Button onClick={fetchImages} variant="outline">
-          Refresh
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {images.map((image) => (
-          <Card key={image.id} className="overflow-hidden">
-            <CardContent className="p-0">
-              <div className="aspect-square relative">
-                <img
-                  src={image.public_url}
-                  alt={image.prompt}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-2 right-2 flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => window.open(image.public_url, '_blank')}
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => handleDownload(image.public_url, image.prompt)}
-                  >
-                    <Download className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {image.profiles?.name || 'Unknown User'} ({image.profiles?.email})
-                  </span>
-                  <Badge variant={image.source === 'generated_images' ? 'default' : 'secondary'}>
-                    {image.source === 'generated_images' ? 'Generated' : 'UGC'}
-                  </Badge>
-                  {image.public_showcase && (
-                    <Badge variant="outline">Public</Badge>
-                  )}
-                </div>
-                
-                <p className="text-sm font-medium mb-2 line-clamp-3">
-                  {image.prompt || 'No prompt available'}
-                </p>
-                
-                <div className="flex justify-between items-center text-xs text-muted-foreground">
-                  <span>
-                    {format(new Date(image.created_at), 'MMM dd, yyyy HH:mm')}
-                  </span>
-                  <span className="px-2 py-1 bg-muted rounded">
-                    ID: {image.id.slice(0, 8)}
-                  </span>
-                </div>
-                {image.job_id && (
-                  <div className="mt-2 text-xs text-muted-foreground">
-                    Job ID: {image.job_id.slice(0, 8)}
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {images.length === 0 && (
-        <Card>
-          <CardContent className="text-center py-8">
-            <p className="text-muted-foreground">No images generated yet</p>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+        <p className="text-sm text-muted-foreground mt-2">
+          {images.filter(img => img.source === 'generated_images').length} generated,{' '}
+          {images.filter(img => img.source === 'ugc_images').length} UGC
+        </p>
+      </CardHeader>
+      <CardContent>
+        <AdminDataTable
+          data={filteredImages}
+          columns={columns}
+          searchPlaceholder="Search images by prompt or user..."
+          loading={loading}
+        />
+      </CardContent>
+    </Card>
   );
 };
