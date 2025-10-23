@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UsersList } from './UsersList';
-import { ConversationsList } from './ConversationsList';
-import { ConversationViewer } from './ConversationViewer';
 import { AdminManagement } from './AdminManagement';
 import { AdminImagesList } from './AdminImagesList';
 import { EnhancedMetrics } from './EnhancedMetrics';
@@ -19,10 +17,9 @@ export const AdminOverview = () => {
           <TabsTrigger value="financial">Financial</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="images">Images</TabsTrigger>
-          <TabsTrigger value="conversations">Conversations</TabsTrigger>
           <TabsTrigger value="admins">Admins</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="overview" className="space-y-6">
           <EnhancedMetrics />
         </TabsContent>
@@ -30,26 +27,15 @@ export const AdminOverview = () => {
         <TabsContent value="financial" className="space-y-6">
           <FinancialDashboard />
         </TabsContent>
-        
+
         <TabsContent value="users" className="space-y-6">
           <UsersList />
-        </TabsContent>
-        
-        <TabsContent value="conversations" className="space-y-6">
-          {selectedConversationId ? (
-            <ConversationViewer 
-              conversationId={selectedConversationId}
-              onBack={() => setSelectedConversationId(null)}
-            />
-          ) : (
-            <ConversationsList onSelectConversation={setSelectedConversationId} />
-          )}
         </TabsContent>
 
         <TabsContent value="images" className="space-y-6">
           <AdminImagesList />
         </TabsContent>
-        
+
         <TabsContent value="admins" className="space-y-6">
           <AdminManagement />
         </TabsContent>
