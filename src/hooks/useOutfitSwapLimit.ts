@@ -1,4 +1,5 @@
 import { useCredits } from "@/hooks/useCredits";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 export const OUTFIT_SWAP_COSTS = {
   SINGLE_SWAP: 1,
@@ -8,6 +9,7 @@ export const OUTFIT_SWAP_COSTS = {
 };
 
 export const useOutfitSwapLimit = () => {
+  const { isAdmin } = useAdminAuth();
   const { canAfford, getRemainingCredits } = useCredits();
 
   const calculateBatchCost = (garmentCount: number): number => {
@@ -22,11 +24,14 @@ export const useOutfitSwapLimit = () => {
   };
 
   const canAffordBatch = (garmentCount: number): boolean => {
+    if (isAdmin) return true; // Admin bypass
     const cost = calculateBatchCost(garmentCount);
     return canAfford(cost);
   };
 
   const getMaxAffordableGarments = (): number => {
+    if (isAdmin) return OUTFIT_SWAP_COSTS.MAX_BATCH_SIZE; // Admin bypass
+    
     const credits = getRemainingCredits();
     
     // With discount (5+ garments): cost = count * 1 * 0.9
@@ -55,5 +60,6 @@ export const useOutfitSwapLimit = () => {
     getMaxAffordableGarments,
     getSavings,
     OUTFIT_SWAP_COSTS,
+    isAdmin,
   };
 };

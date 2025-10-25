@@ -7,6 +7,7 @@ import { OutfitSwapBatch, OutfitSwapJob, OutfitSwapResult } from "@/api/outfit-s
 import { Download, X, CheckCircle2, XCircle, Loader2, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 interface BatchSwapPreviewProps {
   batch: OutfitSwapBatch;
@@ -21,6 +22,7 @@ export const BatchSwapPreview = ({
   onCancel,
   onReset,
 }: BatchSwapPreviewProps) => {
+  const { isAdmin } = useAdminAuth();
   const [results, setResults] = useState<Record<string, OutfitSwapResult>>({});
 
   const progress = batch.total_jobs > 0
@@ -30,6 +32,8 @@ export const BatchSwapPreview = ({
   const isProcessing = batch.status === "processing" || batch.status === "queued";
   const isCompleted = batch.status === "completed";
   const isFailed = batch.status === "failed";
+  
+  const creditsUsed = batch.metadata?.credits_deducted || 0;
 
   // Load results for completed jobs
   useEffect(() => {
@@ -103,6 +107,7 @@ export const BatchSwapPreview = ({
           <p className="text-muted-foreground">
             {batch.completed_jobs} of {batch.total_jobs} completed
             {batch.failed_jobs > 0 && ` • ${batch.failed_jobs} failed`}
+            {isAdmin ? " • Admin: Unlimited Credits" : creditsUsed > 0 && ` • ${creditsUsed} credits used`}
           </p>
         </div>
         <div className="flex gap-2">

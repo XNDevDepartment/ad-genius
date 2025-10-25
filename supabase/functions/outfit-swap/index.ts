@@ -43,16 +43,6 @@ serve(async (req) => {
       return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
-    // Check admin status
-    const { data: isAdmin, error: adminError } = await serviceClient().rpc("is_user_admin", {
-      check_user_id: user.id,
-    });
-
-    if (adminError || !isAdmin) {
-      console.log("Admin check failed:", { adminError, isAdmin });
-      return jsonResponse({ error: "Admin access required" }, 403);
-    }
-
     // Route to appropriate handler
     switch (action) {
       case "createJob":
@@ -451,19 +441,28 @@ async function createBatchJob(userId: string, params: any) {
 
   console.log(`[createBatchJob] Credits needed: ${creditsNeeded}`);
 
-  // Check credits
-  const { data: subscriber } = await supabase
-    .from("subscribers")
-    .select("credits_balance")
-    .eq("user_id", userId)
-    .single();
+  // Check admin status for credit bypass
+  const { data: isAdmin } = await supabase.rpc("is_user_admin", {
+    check_user_id: userId,
+  });
 
-  if (!subscriber || subscriber.credits_balance < creditsNeeded) {
-    return jsonResponse({ 
-      error: "Insufficient credits",
-      required: creditsNeeded,
-      available: subscriber?.credits_balance || 0
-    }, 402);
+  // Check and deduct credits only for non-admins
+  if (!isAdmin) {
+    const { data: subscriber } = await supabase
+      .from("subscribers")
+      .select("credits_balance")
+      .eq("user_id", userId)
+      .single();
+
+    if (!subscriber || subscriber.credits_balance < creditsNeeded) {
+      return jsonResponse({ 
+        error: "Insufficient credits",
+        required: creditsNeeded,
+        available: subscriber?.credits_balance || 0
+      }, 402);
+    }
+  } else {
+    console.log(`[createBatchJob] Admin bypass: Skipping credit check for user ${userId}`);
   }
 
   // Create batch record
@@ -487,20 +486,24 @@ async function createBatchJob(userId: string, params: any) {
     return jsonResponse({ error: "Failed to create batch" }, 500);
   }
 
-  // Deduct credits upfront
-  const { data: deductResult, error: deductError } = await supabase.rpc(
-    "deduct_user_credits",
-    {
-      p_user_id: userId,
-      p_amount: creditsNeeded,
-      p_reason: "outfit_swap_batch",
-    }
-  );
+  // Deduct credits upfront (only for non-admins)
+  if (!isAdmin) {
+    const { data: deductResult, error: deductError } = await supabase.rpc(
+      "deduct_user_credits",
+      {
+        p_user_id: userId,
+        p_amount: creditsNeeded,
+        p_reason: "outfit_swap_batch",
+      }
+    );
 
-  if (deductError || !deductResult?.success) {
-    console.error("[createBatchJob] Credit deduction error:", deductError || deductResult);
-    await supabase.from("outfit_swap_batches").delete().eq("id", batch.id);
-    return jsonResponse({ error: "Failed to deduct credits" }, 500);
+    if (deductError || !deductResult?.success) {
+      console.error("[createBatchJob] Credit deduction error:", deductError || deductResult);
+      await supabase.from("outfit_swap_batches").delete().eq("id", batch.id);
+      return jsonResponse({ error: "Failed to deduct credits" }, 500);
+    }
+  } else {
+    console.log(`[createBatchJob] Admin bypass: Skipping credit deduction`);
   }
 
   // Create individual jobs for each garment
