@@ -24,6 +24,7 @@ const SignUp = lazy(() => import("./pages/SignUp"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const EmailConfirmation = lazy(() => import("./pages/EmailConfirmation"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const BaseModelManager = lazy(() => import("./pages/admin/BaseModelManager"));
 const GettingStartedGuide = lazy(() => import("./pages/help/GettingStartedGuide"));
 const FAQPage = lazy(() => import("./pages/help/FAQPage"));
 const VideoTutorialsPage = lazy(() => import("./pages/help/VideoTutorialsPage"));
@@ -158,6 +159,11 @@ const App = () => {
               <Route path="/admin" element={
                 <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
                   <AdminDashboard />
+                </Suspense>
+              } />
+              <Route path="/admin/base-models" element={
+                <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                  <BaseModelManager />
                 </Suspense>
               } />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

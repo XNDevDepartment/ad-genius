@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useBaseModels, BaseModel, BaseModelFilters } from "@/hooks/useBaseModels";
-import { Upload, Check, User, Sparkles } from "lucide-react";
+import { Upload, Check, User, Sparkles, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCredits } from "@/hooks/useCredits";
+import { toast } from "sonner";
 
 interface BaseModelSelectorProps {
   selectedModel: BaseModel | null;
@@ -20,7 +22,9 @@ export const BaseModelSelector = ({
   onSelectModel,
   showUpload = false,
 }: BaseModelSelectorProps) => {
-  const { systemModels, userModels, loading, fetchSystemModels } = useBaseModels();
+  const { systemModels, userModels, loading, fetchSystemModels, uploadUserModel, uploading, fetchUserModels } = useBaseModels();
+  const { isFreeTier } = useCredits();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [filters, setFilters] = useState<BaseModelFilters>({});
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -35,6 +39,43 @@ export const BaseModelSelector = ({
     const newFilters = { ...filters, [key]: value || undefined };
     setFilters(newFilters);
     fetchSystemModels(newFilters);
+  };
+
+  const handleUploadClick = () => {
+    if (isFreeTier()) {
+      toast.error('Premium subscription required to upload custom base models');
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    try {
+      await uploadUserModel(file, {
+        name: file.name.replace(/\.[^/.]+$/, ''),
+        gender: 'unisex',
+        bodyType: 'average',
+        poseType: 'standing'
+      });
+      toast.success('Base model uploaded successfully');
+      await fetchUserModels();
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast.error(error.message || 'Failed to upload base model');
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -202,22 +243,45 @@ export const BaseModelSelector = ({
 
           {/* Upload Card (Premium) */}
           {showUpload && (
-            <Card className="cursor-pointer transition-all hover:shadow-lg border-dashed">
-              <div className="aspect-[3/4] flex items-center justify-center flex-col gap-3 p-6 text-center">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Upload className="w-8 h-8 text-primary" />
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+                disabled={uploading}
+              />
+              <Card 
+                className={cn(
+                  "cursor-pointer transition-all hover:shadow-lg border-dashed",
+                  uploading && "opacity-50 pointer-events-none"
+                )}
+                onClick={handleUploadClick}
+              >
+                <div className="aspect-[3/4] flex items-center justify-center flex-col gap-3 p-6 text-center">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                    <Upload className="w-8 h-8 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm">
+                      {uploading ? 'Uploading...' : 'Upload Your Model'}
+                    </h3>
+                    <div className="flex items-center justify-center gap-1 mt-1">
+                      <Crown className="w-3 h-3 text-primary" />
+                      <p className="text-xs text-muted-foreground">
+                        Premium feature
+                      </p>
+                    </div>
+                  </div>
+                  {!uploading && (
+                    <Button size="sm" variant="outline">
+                      Upload
+                    </Button>
+                  )}
                 </div>
-                <div>
-                  <h3 className="font-semibold text-sm">Upload Your Model</h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Premium feature
-                  </p>
-                </div>
-                <Button size="sm" variant="outline">
-                  Upload
-                </Button>
-              </div>
-            </Card>
+              </Card>
+            </>
           )}
         </div>
 
