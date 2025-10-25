@@ -4,26 +4,31 @@ import { ArrowLeft, Shirt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { useOutfitSwap } from "@/hooks/useOutfitSwap";
+import { useOutfitSwapBatch } from "@/hooks/useOutfitSwapBatch";
+import { useOutfitSwapLimit } from "@/hooks/useOutfitSwapLimit";
 import { useToast } from "@/hooks/use-toast";
-import ImageUploader from "@/components/ImageUploader";
+import { BaseModelSelector } from "@/components/BaseModelSelector";
+import { MultiGarmentUploader } from "@/components/MultiGarmentUploader";
+import { BatchSwapPreview } from "@/components/BatchSwapPreview";
 import { OutfitSwapSettings } from "@/components/OutfitSwapSettings";
-import { OutfitSwapPreview } from "@/components/OutfitSwapPreview";
 import { useSourceImageUpload } from "@/hooks/useSourceImageUpload";
+import { BaseModel } from "@/hooks/useBaseModels";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 const OutfitSwap = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdminAuth();
   const { toast } = useToast();
-  const { job, results, loading, stage, createJob, cancelJob, reset } = useOutfitSwap();
-
-  const [personImageFile, setPersonImageFile] = useState<File | null>(null);
-  const [garmentImageFile, setGarmentImageFile] = useState<File | null>(null);
-  const [personImage, setPersonImage] = useState<{ id: string; url: string } | null>(null);
-  const [garmentImage, setGarmentImage] = useState<{ id: string; url: string } | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const { batch, jobs, loading, createBatch, cancelBatch, reset } = useOutfitSwapBatch();
+  const { calculateBatchCost, canAffordBatch, getSavings } = useOutfitSwapLimit();
   const { uploadSourceImage } = useSourceImageUpload();
+
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [selectedModel, setSelectedModel] = useState<BaseModel | null>(null);
+  const [garmentFiles, setGarmentFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [settings, setSettings] = useState({
     outputFormat: "both" as "jpg" | "png" | "both",
   });
@@ -39,12 +44,12 @@ const OutfitSwap = () => {
     }
   }, [user, isAdmin, adminLoading, navigate, toast]);
 
-  const handleStartSwap = async () => {
-    if (!personImageFile || !garmentImageFile) {
+  const handleStartBatch = async () => {
+    if (!selectedModel || garmentFiles.length === 0) {
       toast({
         variant: "destructive",
-        title: "Missing images",
-        description: "Please upload both a person photo and a garment photo",
+        title: "Missing data",
+        description: "Please select a model and upload garments",
       });
       return;
     }
@@ -52,31 +57,20 @@ const OutfitSwap = () => {
     try {
       setUploading(true);
 
-      // Upload person image if not already uploaded
-      let personImgId = personImage?.id;
-      let personImgUrl = personImage?.url;
-      if (!personImgId) {
-        const uploadedPerson = await uploadSourceImage(personImageFile);
-        personImgId = uploadedPerson.id;
-        personImgUrl = uploadedPerson.publicUrl;
-        setPersonImage({ id: personImgId, url: personImgUrl });
+      // Upload all garments
+      const garmentIds: string[] = [];
+      for (const file of garmentFiles) {
+        const uploaded = await uploadSourceImage(file);
+        garmentIds.push(uploaded.id);
       }
 
-      // Upload garment image if not already uploaded
-      let garmentImgId = garmentImage?.id;
-      if (!garmentImgId) {
-        const uploadedGarment = await uploadSourceImage(garmentImageFile);
-        garmentImgId = uploadedGarment.id;
-        setGarmentImage({ id: garmentImgId, url: uploadedGarment.publicUrl });
-      }
-
-      // Start the swap job
-      await createJob(personImgId, garmentImgId, settings);
+      // Create batch
+      await createBatch(selectedModel.id, garmentIds, settings);
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Upload failed",
-        description: error.message || "Failed to upload images",
+        title: "Failed to start batch",
+        description: error.message,
       });
     } finally {
       setUploading(false);
@@ -85,10 +79,9 @@ const OutfitSwap = () => {
 
   const handleReset = () => {
     reset();
-    setPersonImageFile(null);
-    setGarmentImageFile(null);
-    setPersonImage(null);
-    setGarmentImage(null);
+    setCurrentStep(1);
+    setSelectedModel(null);
+    setGarmentFiles([]);
   };
 
   if (adminLoading) {
@@ -103,9 +96,13 @@ const OutfitSwap = () => {
     return null;
   }
 
+  const cost = calculateBatchCost(garmentFiles.length);
+  const savings = getSavings(garmentFiles.length);
+  const canAfford = canAffordBatch(garmentFiles.length);
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="container max-w-6xl mx-auto px-4 py-8">
+      <div className="container max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
@@ -116,71 +113,143 @@ const OutfitSwap = () => {
               <Shirt className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Outfit Swap</h1>
+              <h1 className="text-2xl font-bold">Outfit Swap - Batch Mode</h1>
               <p className="text-sm text-muted-foreground">
-                AI-powered outfit replacement (Admin Only)
+                Process up to 10 garments at once (Admin Only)
               </p>
             </div>
           </div>
         </div>
 
-        {/* Setup Stage */}
-        {stage === "setup" && (
-          <div className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Person Image Upload */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold">1. Upload Person Photo</h3>
-                <ImageUploader
-                  onImageSelect={(file) => {
-                    setPersonImageFile(file);
-                    if (!file) setPersonImage(null);
-                  }}
-                  selectedImage={personImageFile}
-                />
-              </div>
-
-              {/* Garment Image Upload */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold">2. Upload Garment Photo</h3>
-                <p className="text-sm text-muted-foreground">
-                  Flat lay or model on white background works best
-                </p>
-                <ImageUploader
-                  onImageSelect={(file) => {
-                    setGarmentImageFile(file);
-                    if (!file) setGarmentImage(null);
-                  }}
-                  selectedImage={garmentImageFile}
-                />
-              </div>
-            </div>
-
-            {/* Settings */}
-            <OutfitSwapSettings settings={settings} onChange={setSettings} />
-
-            <div className="flex justify-center">
-              <Button
-                size="lg"
-                onClick={handleStartSwap}
-                disabled={!personImageFile || !garmentImageFile || loading || uploading}
-                className="min-w-[200px]"
-              >
-                {uploading ? "Uploading..." : loading ? "Starting..." : "Swap Outfit"}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Processing/Results Stage */}
-        {(stage === "processing" || stage === "results") && job && (
-          <OutfitSwapPreview
-            job={job}
-            results={results}
-            onCancel={cancelJob}
+        {/* Show batch preview if processing/complete */}
+        {batch ? (
+          <BatchSwapPreview
+            batch={batch}
+            jobs={jobs}
+            onCancel={cancelBatch}
             onReset={handleReset}
-            personImageUrl={personImage?.url || ""}
           />
+        ) : (
+          <>
+            {/* Step Indicator */}
+            <div className="flex items-center justify-center gap-4 mb-8">
+              {[1, 2, 3].map((step) => (
+                <div key={step} className="flex items-center">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+                      currentStep >= step
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {step}
+                  </div>
+                  {step < 3 && <div className="w-16 h-1 bg-muted mx-2" />}
+                </div>
+              ))}
+            </div>
+
+            {/* Step 1: Select Model */}
+            {currentStep === 1 && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-semibold">Step 1: Select Base Model</h2>
+                <BaseModelSelector
+                  selectedModel={selectedModel}
+                  onSelectModel={setSelectedModel}
+                  showUpload={true}
+                />
+                <div className="flex justify-center">
+                  <Button
+                    size="lg"
+                    onClick={() => setCurrentStep(2)}
+                    disabled={!selectedModel}
+                  >
+                    Continue to Upload Garments
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Upload Garments */}
+            {currentStep === 2 && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold">Step 2: Upload Garments</h2>
+                  <Button variant="outline" onClick={() => setCurrentStep(1)}>
+                    Change Model
+                  </Button>
+                </div>
+                <MultiGarmentUploader
+                  garments={garmentFiles}
+                  onGarmentsChange={setGarmentFiles}
+                  maxGarments={10}
+                />
+                <div className="flex justify-center gap-4">
+                  <Button variant="outline" onClick={() => setCurrentStep(1)}>
+                    Back
+                  </Button>
+                  <Button
+                    size="lg"
+                    onClick={() => setCurrentStep(3)}
+                    disabled={garmentFiles.length === 0}
+                  >
+                    Review & Start
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Review & Start */}
+            {currentStep === 3 && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-semibold">Step 3: Review & Start Batch</h2>
+                
+                <Card className="p-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold">Selected Model:</span>
+                      <span>{selectedModel?.name}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold">Garments:</span>
+                      <span>{garmentFiles.length} garments</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold">Cost:</span>
+                      <div className="text-right">
+                        <span className="text-lg font-bold">{cost} credits</span>
+                        {savings > 0 && (
+                          <Badge variant="default" className="ml-2">
+                            Save {savings} credits!
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
+                <OutfitSwapSettings settings={settings} onChange={setSettings} />
+
+                <div className="flex justify-center gap-4">
+                  <Button variant="outline" onClick={() => setCurrentStep(2)}>
+                    Back
+                  </Button>
+                  <Button
+                    size="lg"
+                    onClick={handleStartBatch}
+                    disabled={!canAfford || loading || uploading}
+                    className="min-w-[200px]"
+                  >
+                    {uploading
+                      ? "Uploading..."
+                      : loading
+                      ? "Starting..."
+                      : `Start Batch (${cost} credits)`}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

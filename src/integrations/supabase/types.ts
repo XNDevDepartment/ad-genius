@@ -402,11 +402,125 @@ export type Database = {
         }
         Relationships: []
       }
+      outfit_swap_base_models: {
+        Row: {
+          body_type: string | null
+          created_at: string | null
+          display_order: number | null
+          gender: string | null
+          id: string
+          is_active: boolean | null
+          is_system: boolean | null
+          metadata: Json | null
+          name: string
+          pose_type: string | null
+          public_url: string
+          skin_tone: string | null
+          storage_path: string
+          thumbnail_url: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          body_type?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          gender?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system?: boolean | null
+          metadata?: Json | null
+          name: string
+          pose_type?: string | null
+          public_url: string
+          skin_tone?: string | null
+          storage_path: string
+          thumbnail_url?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          body_type?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          gender?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system?: boolean | null
+          metadata?: Json | null
+          name?: string
+          pose_type?: string | null
+          public_url?: string
+          skin_tone?: string | null
+          storage_path?: string
+          thumbnail_url?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      outfit_swap_batches: {
+        Row: {
+          base_model_id: string
+          completed_jobs: number | null
+          created_at: string | null
+          failed_jobs: number | null
+          finished_at: string | null
+          id: string
+          metadata: Json | null
+          started_at: string | null
+          status: string | null
+          total_jobs: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          base_model_id: string
+          completed_jobs?: number | null
+          created_at?: string | null
+          failed_jobs?: number | null
+          finished_at?: string | null
+          id?: string
+          metadata?: Json | null
+          started_at?: string | null
+          status?: string | null
+          total_jobs?: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          base_model_id?: string
+          completed_jobs?: number | null
+          created_at?: string | null
+          failed_jobs?: number | null
+          finished_at?: string | null
+          id?: string
+          metadata?: Json | null
+          started_at?: string | null
+          status?: string | null
+          total_jobs?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outfit_swap_batches_base_model_id_fkey"
+            columns: ["base_model_id"]
+            isOneToOne: false
+            referencedRelation: "outfit_swap_base_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outfit_swap_jobs: {
         Row: {
+          base_model_id: string | null
+          batch_id: string | null
+          completed_garments: number | null
           created_at: string | null
           error: string | null
           finished_at: string | null
+          garment_ids: Json | null
           id: string
           metadata: Json | null
           progress: number | null
@@ -415,13 +529,18 @@ export type Database = {
           source_person_id: string | null
           started_at: string | null
           status: string
+          total_garments: number | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          base_model_id?: string | null
+          batch_id?: string | null
+          completed_garments?: number | null
           created_at?: string | null
           error?: string | null
           finished_at?: string | null
+          garment_ids?: Json | null
           id?: string
           metadata?: Json | null
           progress?: number | null
@@ -430,13 +549,18 @@ export type Database = {
           source_person_id?: string | null
           started_at?: string | null
           status?: string
+          total_garments?: number | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          base_model_id?: string | null
+          batch_id?: string | null
+          completed_garments?: number | null
           created_at?: string | null
           error?: string | null
           finished_at?: string | null
+          garment_ids?: Json | null
           id?: string
           metadata?: Json | null
           progress?: number | null
@@ -445,10 +569,18 @@ export type Database = {
           source_person_id?: string | null
           started_at?: string | null
           status?: string
+          total_garments?: number | null
           updated_at?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "outfit_swap_jobs_base_model_id_fkey"
+            columns: ["base_model_id"]
+            isOneToOne: false
+            referencedRelation: "outfit_swap_base_models"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "outfit_swap_jobs_source_garment_id_fkey"
             columns: ["source_garment_id"]

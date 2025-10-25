@@ -63,6 +63,12 @@ serve(async (req) => {
         return await getJobResults(user.id, params.jobId);
       case "cancelJob":
         return await cancelJob(user.id, params.jobId);
+      case "createBatchJob":
+        return await createBatchJob(user.id, params);
+      case "getBatch":
+        return await getBatch(user.id, params.batchId);
+      case "cancelBatch":
+        return await cancelBatch(user.id, params.batchId);
       default:
         return jsonResponse({ error: "Invalid action" }, 400);
     }
@@ -300,6 +306,17 @@ async function processOutfitSwap(jobId: string) {
       })
       .eq("id", jobId);
 
+    // If this job is part of a batch, update batch progress
+    const { data: jobData } = await supabase
+      .from("outfit_swap_jobs")
+      .select("batch_id")
+      .eq("id", jobId)
+      .single();
+
+    if (jobData?.batch_id) {
+      await updateBatchProgress(jobData.batch_id);
+    }
+
     return jsonResponse({ success: true }, 200);
   } catch (error) {
     console.error("Processing error:", error);
@@ -312,8 +329,54 @@ async function processOutfitSwap(jobId: string) {
       })
       .eq("id", jobId);
 
+    // If this job is part of a batch, update batch progress
+    const { data: failedJobData } = await supabase
+      .from("outfit_swap_jobs")
+      .select("batch_id")
+      .eq("id", jobId)
+      .single();
+
+    if (failedJobData?.batch_id) {
+      await updateBatchProgress(failedJobData.batch_id);
+    }
+
     return jsonResponse({ error: error.message }, 500);
   }
+}
+
+async function updateBatchProgress(batchId: string) {
+  const supabase = serviceClient();
+  
+  // Get all jobs in batch
+  const { data: jobs } = await supabase
+    .from("outfit_swap_jobs")
+    .select("status")
+    .eq("batch_id", batchId);
+
+  if (!jobs) return;
+
+  const completed = jobs.filter((j) => j.status === "completed").length;
+  const failed = jobs.filter((j) => j.status === "failed").length;
+  const total = jobs.length;
+
+  let batchStatus = "processing";
+  if (completed + failed === total) {
+    batchStatus = failed === total ? "failed" : "completed";
+  }
+
+  await supabase
+    .from("outfit_swap_batches")
+    .update({
+      completed_jobs: completed,
+      failed_jobs: failed,
+      status: batchStatus,
+      finished_at: batchStatus === "completed" || batchStatus === "failed" 
+        ? new Date().toISOString() 
+        : null,
+    })
+    .eq("id", batchId);
+
+  console.log(`[updateBatchProgress] Batch ${batchId}: ${completed}/${total} completed, ${failed} failed`);
 }
 
 async function getJob(userId: string, jobId: string) {
@@ -363,6 +426,170 @@ async function cancelJob(userId: string, jobId: string) {
   if (error) {
     return jsonResponse({ error: "Failed to cancel job" }, 500);
   }
+
+  return jsonResponse({ success: true }, 200);
+}
+
+async function createBatchJob(userId: string, params: any) {
+  const { baseModelId, garmentIds, settings } = params;
+  const supabase = serviceClient();
+
+  // Validate max 10 garments
+  if (!garmentIds || garmentIds.length === 0) {
+    return jsonResponse({ error: "No garments provided" }, 400);
+  }
+  if (garmentIds.length > 10) {
+    return jsonResponse({ error: "Maximum 10 garments per batch" }, 400);
+  }
+
+  console.log(`[createBatchJob] Creating batch for ${garmentIds.length} garments`);
+
+  // Calculate credits: 1 per garment, with 10% batch discount for 5+
+  const baseCreditsNeeded = garmentIds.length * 1;
+  const discount = garmentIds.length >= 5 ? 0.1 : 0;
+  const creditsNeeded = Math.ceil(baseCreditsNeeded * (1 - discount));
+
+  console.log(`[createBatchJob] Credits needed: ${creditsNeeded}`);
+
+  // Check credits
+  const { data: subscriber } = await supabase
+    .from("subscribers")
+    .select("credits_balance")
+    .eq("user_id", userId)
+    .single();
+
+  if (!subscriber || subscriber.credits_balance < creditsNeeded) {
+    return jsonResponse({ 
+      error: "Insufficient credits",
+      required: creditsNeeded,
+      available: subscriber?.credits_balance || 0
+    }, 402);
+  }
+
+  // Create batch record
+  const { data: batch, error: batchError } = await supabase
+    .from("outfit_swap_batches")
+    .insert({
+      user_id: userId,
+      base_model_id: baseModelId,
+      total_jobs: garmentIds.length,
+      metadata: {
+        settings,
+        credits_deducted: creditsNeeded,
+        discount_applied: discount,
+      },
+    })
+    .select()
+    .single();
+
+  if (batchError) {
+    console.error("[createBatchJob] Batch creation error:", batchError);
+    return jsonResponse({ error: "Failed to create batch" }, 500);
+  }
+
+  // Deduct credits upfront
+  const { data: deductResult, error: deductError } = await supabase.rpc(
+    "deduct_user_credits",
+    {
+      p_user_id: userId,
+      p_amount: creditsNeeded,
+      p_reason: "outfit_swap_batch",
+    }
+  );
+
+  if (deductError || !deductResult?.success) {
+    console.error("[createBatchJob] Credit deduction error:", deductError || deductResult);
+    await supabase.from("outfit_swap_batches").delete().eq("id", batch.id);
+    return jsonResponse({ error: "Failed to deduct credits" }, 500);
+  }
+
+  // Create individual jobs for each garment
+  const jobs = [];
+  for (let i = 0; i < garmentIds.length; i++) {
+    const garmentId = garmentIds[i];
+    const { data: job, error: jobError } = await supabase
+      .from("outfit_swap_jobs")
+      .insert({
+        user_id: userId,
+        batch_id: batch.id,
+        base_model_id: baseModelId,
+        source_person_id: baseModelId,
+        source_garment_id: garmentId,
+        settings,
+        garment_ids: [garmentId],
+        total_garments: 1,
+      })
+      .select()
+      .single();
+
+    if (jobError) {
+      console.error(`[createBatchJob] Job ${i + 1} creation error:`, jobError);
+      continue;
+    }
+
+    jobs.push(job);
+  }
+
+  // Update batch status to processing
+  await supabase
+    .from("outfit_swap_batches")
+    .update({ status: "processing", started_at: new Date().toISOString() })
+    .eq("id", batch.id);
+
+  // Process jobs asynchronously
+  const functionUrl = `${SUPABASE_URL}/functions/v1/outfit-swap`;
+  for (const job of jobs) {
+    fetch(functionUrl, {
+      method: "POST",
+      headers: { 
+        ...corsHeaders, 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`
+      },
+      body: JSON.stringify({ action: "processJob", jobId: job.id }),
+    }).catch((err) => console.error(`Failed to trigger job ${job.id}:`, err));
+  }
+
+  return jsonResponse({ batch, jobs }, 200);
+}
+
+async function getBatch(userId: string, batchId: string) {
+  const supabase = serviceClient();
+
+  const { data: batch, error } = await supabase
+    .from("outfit_swap_batches")
+    .select("*")
+    .eq("id", batchId)
+    .eq("user_id", userId)
+    .single();
+
+  if (error) {
+    return jsonResponse({ error: "Batch not found" }, 404);
+  }
+
+  return jsonResponse({ batch }, 200);
+}
+
+async function cancelBatch(userId: string, batchId: string) {
+  const supabase = serviceClient();
+
+  // Update batch status
+  const { error: batchError } = await supabase
+    .from("outfit_swap_batches")
+    .update({ status: "canceled", finished_at: new Date().toISOString() })
+    .eq("id", batchId)
+    .eq("user_id", userId);
+
+  if (batchError) {
+    return jsonResponse({ error: "Failed to cancel batch" }, 500);
+  }
+
+  // Cancel all pending jobs in this batch
+  await supabase
+    .from("outfit_swap_jobs")
+    .update({ status: "canceled" })
+    .eq("batch_id", batchId)
+    .in("status", ["queued", "processing"]);
 
   return jsonResponse({ success: true }, 200);
 }
