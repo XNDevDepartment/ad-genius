@@ -8,7 +8,7 @@ export interface BaseModel {
   name: string;
   gender: "male" | "female" | "unisex" | null;
   body_type: "slim" | "athletic" | "average" | "plus" | null;
-  pose_type: "front" | "side" | "back" | "angled" | null;
+  pose_type: "standing" | "sitting" | "walking" | "casual" | "formal" | null;
   skin_tone: "light" | "medium" | "tan" | "dark" | null;
   storage_path: string;
   public_url: string;
