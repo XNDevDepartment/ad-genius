@@ -4,7 +4,8 @@ export interface OutfitSwapJob {
   id: string;
   user_id: string;
   status: "queued" | "processing" | "completed" | "failed" | "canceled";
-  source_person_id: string;
+  source_person_id: string | null;
+  base_model_id: string | null;
   source_garment_id: string;
   settings: any;
   metadata: any;

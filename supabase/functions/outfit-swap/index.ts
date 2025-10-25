@@ -133,25 +133,67 @@ async function processOutfitSwap(jobId: string) {
       .update({ progress: 20 })
       .eq("id", jobId);
 
+    // Determine person image source and fetch storage path
+    let personStoragePath: string;
+    let personBucket: string;
+
+    if (job.base_model_id) {
+      console.log(`[processOutfitSwap] Job ${jobId}: Using base model ${job.base_model_id}`);
+      const { data: baseModel } = await supabase
+        .from("outfit_swap_base_models")
+        .select("storage_path")
+        .eq("id", job.base_model_id)
+        .single();
+      
+      if (!baseModel?.storage_path) {
+        throw new Error("Base model storage path not found");
+      }
+      
+      personStoragePath = baseModel.storage_path;
+      personBucket = "outfit-base-models";
+    } else if (job.source_person_id) {
+      console.log(`[processOutfitSwap] Job ${jobId}: Using source image ${job.source_person_id}`);
+      const { data: sourceImage } = await supabase
+        .from("source_images")
+        .select("storage_path")
+        .eq("id", job.source_person_id)
+        .single();
+      
+      if (!sourceImage?.storage_path) {
+        throw new Error("Source image storage path not found");
+      }
+      
+      personStoragePath = sourceImage.storage_path;
+      personBucket = "ugc-inputs";
+    } else {
+      throw new Error("No person image source specified (neither base_model_id nor source_person_id)");
+    }
+
+    // Get garment storage path
+    const { data: garmentImage } = await supabase
+      .from("source_images")
+      .select("storage_path")
+      .eq("id", job.source_garment_id)
+      .single();
+    
+    if (!garmentImage?.storage_path) {
+      throw new Error("Garment image storage path not found");
+    }
+
+    // Create signed URLs
     const { data: personUrl } = await supabase.storage
-      .from("ugc-inputs")
-      .createSignedUrl(
-        (await supabase.from("source_images").select("storage_path").eq("id", job.source_person_id).single()).data
-          ?.storage_path,
-        3600
-      );
+      .from(personBucket)
+      .createSignedUrl(personStoragePath, 3600);
 
     const { data: garmentUrl } = await supabase.storage
       .from("ugc-inputs")
-      .createSignedUrl(
-        (await supabase.from("source_images").select("storage_path").eq("id", job.source_garment_id).single()).data
-          ?.storage_path,
-        3600
-      );
+      .createSignedUrl(garmentImage.storage_path, 3600);
 
     if (!personUrl?.signedUrl || !garmentUrl?.signedUrl) {
       throw new Error("Failed to get source image URLs");
     }
+
+    console.log(`[processOutfitSwap] Job ${jobId}: URLs ready for AI processing`);
 
     // Update progress
     await supabase
@@ -343,7 +385,10 @@ async function updateBatchProgress(batchId: string) {
     .select("status")
     .eq("batch_id", batchId);
 
-  if (!jobs) return;
+  if (!jobs) {
+    console.error(`[updateBatchProgress] No jobs found for batch ${batchId}`);
+    return;
+  }
 
   const completed = jobs.filter((j) => j.status === "completed").length;
   const failed = jobs.filter((j) => j.status === "failed").length;
@@ -353,6 +398,8 @@ async function updateBatchProgress(batchId: string) {
   if (completed + failed === total) {
     batchStatus = failed === total ? "failed" : "completed";
   }
+
+  console.log(`[updateBatchProgress] Batch ${batchId}: Status=${batchStatus}, ${completed}/${total} completed, ${failed} failed`);
 
   await supabase
     .from("outfit_swap_batches")
@@ -365,8 +412,6 @@ async function updateBatchProgress(batchId: string) {
         : null,
     })
     .eq("id", batchId);
-
-  console.log(`[updateBatchProgress] Batch ${batchId}: ${completed}/${total} completed, ${failed} failed`);
 }
 
 async function getJob(userId: string, jobId: string) {
@@ -510,13 +555,15 @@ async function createBatchJob(userId: string, params: any) {
   const jobs = [];
   for (let i = 0; i < garmentIds.length; i++) {
     const garmentId = garmentIds[i];
+    console.log(`[createBatchJob] Creating job ${i + 1}/${garmentIds.length} for garment ${garmentId}`);
+    
     const { data: job, error: jobError } = await supabase
       .from("outfit_swap_jobs")
       .insert({
         user_id: userId,
         batch_id: batch.id,
         base_model_id: baseModelId,
-        source_person_id: baseModelId,
+        source_person_id: null,  // Batch jobs use base_model_id, not source_person_id
         source_garment_id: garmentId,
         settings,
         garment_ids: [garmentId],
@@ -527,11 +574,39 @@ async function createBatchJob(userId: string, params: any) {
 
     if (jobError) {
       console.error(`[createBatchJob] Job ${i + 1} creation error:`, jobError);
+      
+      // Track failed job creation
+      await supabase
+        .from("outfit_swap_batches")
+        .update({ failed_jobs: i + 1 })
+        .eq("id", batch.id);
+      
       continue;
     }
 
     jobs.push(job);
   }
+
+  // If ALL jobs failed to create, mark batch as failed immediately
+  if (jobs.length === 0) {
+    console.error(`[createBatchJob] All ${garmentIds.length} jobs failed to create`);
+    await supabase
+      .from("outfit_swap_batches")
+      .update({ 
+        status: "failed",
+        failed_jobs: garmentIds.length,
+        finished_at: new Date().toISOString()
+      })
+      .eq("id", batch.id);
+    
+    return jsonResponse({ 
+      error: "All jobs failed to create", 
+      batch, 
+      jobs: [] 
+    }, 500);
+  }
+
+  console.log(`[createBatchJob] Successfully created ${jobs.length}/${garmentIds.length} jobs`);
 
   // Update batch status to processing
   await supabase
