@@ -105,6 +105,56 @@ async function createOutfitSwapJob(userId: string, params: any) {
   return jsonResponse({ job }, 200);
 }
 
+async function analyzeGarment(garmentUrl: string): Promise<string> {
+  console.log("[analyzeGarment] Analyzing garment image...");
+  
+  try {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { 
+                type: "text", 
+                text: `Analyze this garment image in detail. Describe:
+1. Type of clothing (e.g., t-shirt, dress, pants, jacket, full outfit)
+2. Style and fit (e.g., casual, formal, athletic, oversized, fitted)
+3. Color and patterns
+4. Material appearance (e.g., cotton, denim, leather, knit)
+5. Key distinctive features (e.g., collar type, sleeve length, buttons, zippers)
+6. What body parts it covers (e.g., torso only, full legs, arms, etc.)
+
+Be specific and concise. This description will be used for AI outfit swapping.` 
+              },
+              { type: "image_url", image_url: { url: garmentUrl } },
+            ],
+          },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("[analyzeGarment] API error:", response.status);
+      return "clothing garment"; // Fallback
+    }
+
+    const data = await response.json();
+    const analysis = data.choices?.[0]?.message?.content || "clothing garment";
+    console.log("[analyzeGarment] Analysis result:", analysis);
+    return analysis;
+  } catch (error) {
+    console.error("[analyzeGarment] Error:", error);
+    return "clothing garment"; // Fallback
+  }
+}
+
 async function processOutfitSwap(jobId: string) {
   const supabase = serviceClient();
   console.log("Processing outfit swap job:", jobId);
@@ -198,31 +248,67 @@ async function processOutfitSwap(jobId: string) {
     // Update progress
     await supabase
       .from("outfit_swap_jobs")
-      .update({ progress: 40 })
+      .update({ progress: 30 })
       .eq("id", jobId);
 
-    // Call Gemini Nano Banana for outfit swap
+    // STEP 1: Analyze the garment first
+    console.log(`[processOutfitSwap] Job ${jobId}: Analyzing garment...`);
+    const garmentDescription = await analyzeGarment(garmentUrl.signedUrl);
+    
+    await supabase
+      .from("outfit_swap_jobs")
+      .update({ progress: 50 })
+      .eq("id", jobId);
+
+    // STEP 2: Generate improved prompt with garment analysis
     const startTime = Date.now();
-    const prompt = `You are an expert outfit swap AI. Given a photo of a person and a photo of a new garment, replace the person's current outfit with the new garment while:
-          - Preserving the person's face, hair, hands, and pose EXACTLY as they are
-          - Matching the lighting and shadows to the original photo
-          - Fixing any seams or blending issues around the neckline and edges
-          - Keeping the background completely unchanged !important
-          - Ensuring the garment aligns naturally with the person's body position and pose
+    const prompt = `You are an expert e-commerce outfit swap AI. Your task is to replace the person's current outfit with a NEW garment while maintaining photographic realism.
 
-          CRITICAL: The person's identity must remain 100% identical. Do not alter any facial features whatsoever. Do not add any new elements to the original image. Work only on the model.
+GARMENT TO SWAP IN:
+${garmentDescription}
 
-          HOW TO DO: First remove entirely the outfit of the origina image, so the new outfit does not gets pieces of the old one. If the new outfit is smaller than the older, reimage the body of the model.
+CRITICAL REQUIREMENTS:
+1. COMPLETE REPLACEMENT: Remove the person's ENTIRE current outfit and replace it with the new garment described above
+2. IDENTITY PRESERVATION: Keep the person's face, hair, skin tone, hands, and body pose 100% IDENTICAL
+3. VISIBLE CHANGE: The final image MUST show CLEARLY DIFFERENT clothing than the original - this is CRITICAL
+4. BODY COVERAGE: Replace all clothing that covers the same body parts as the new garment:
+   - If the new garment is a top: Replace the current top completely
+   - If it's pants/bottoms: Replace the current bottoms completely  
+   - If it's a dress/full outfit: Replace ALL current clothing
+   - If it's a jacket/outerwear: Layer it appropriately over a compatible base
 
-          INTELLIGENCE: You must use your intelligence to check as well if everything fits. For example: If the original is an elegant model with high heels and elegant clothes, and the new outfit involves training outfit, you must do the extra replacements in order to achieve total realism.
+COMPOSITION & QUALITY:
+- Center the model in the frame for professional product photography
+- Clean, minimal background - remove/blur distracting elements (plants, furniture, clutter)
+- Professional e-commerce lighting and presentation
+- Natural shadows and highlights matching the garment
+- Seamless blending at all garment edges (neckline, sleeves, hem, waist)
 
-          Generate a high-quality, seamless outfit swap image.`;
+SMART STYLING:
+- Match footwear to outfit style (heels for formal, sneakers for casual/athletic, boots for edgy/outdoor)
+- Adjust accessories if they clash with the new outfit
+- If the new garment requires different proportions, adjust body naturally (e.g., fitted dress vs oversized hoodie)
+- Ensure overall look is cohesive and realistic
+
+QUALITY STANDARDS:
+- High-resolution, professional e-commerce product photo quality
+- No visible AI artifacts, seams, or blending errors
+- The result should look like a real fashion shoot
+
+VALIDATION: Before generating, confirm that:
+✓ The new garment is VISIBLY DIFFERENT from the original outfit
+✓ All relevant clothing items are being replaced
+✓ The person's identity remains identical
+✓ The composition is professional and centered
+
+Generate a high-quality outfit swap that clearly shows the NEW garment on the person.`;
 
     await supabase
       .from("outfit_swap_jobs")
-      .update({ progress: 60 })
+      .update({ progress: 70 })
       .eq("id", jobId);
 
+    // STEP 3: Call AI for outfit swap with improved prompt
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
