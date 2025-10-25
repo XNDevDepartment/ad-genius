@@ -276,6 +276,7 @@ async function processOutfitSwap(jobId: string) {
           - If it's pants/bottoms: Replace the current bottoms completely  
           - If it's a dress/full outfit: Replace ALL current clothing
           - If it's a jacket/outerwear: Layer it appropriately over a compatible base
+          — If the new garment is not full body piece, create the rest of the outfit
 
         COMPOSITION & QUALITY:
         - Center the model in the frame for professional product photography

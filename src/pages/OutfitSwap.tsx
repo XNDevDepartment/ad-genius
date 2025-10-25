@@ -203,7 +203,7 @@ const OutfitSwap = () => {
             {currentStep === 3 && (
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold">Step 3: Review & Start Batch</h2>
-                
+
                 <Card className="p-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
