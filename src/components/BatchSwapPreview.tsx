@@ -4,10 +4,11 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { OutfitSwapBatch, OutfitSwapJob, OutfitSwapResult } from "@/api/outfit-swap-api";
-import { Download, X, CheckCircle2, XCircle, Loader2, AlertCircle } from "lucide-react";
+import { Download, X, CheckCircle2, XCircle, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useToast } from "@/hooks/use-toast";
 
 interface BatchSwapPreviewProps {
   batch: OutfitSwapBatch;
@@ -23,7 +24,9 @@ export const BatchSwapPreview = ({
   onReset,
 }: BatchSwapPreviewProps) => {
   const { isAdmin } = useAdminAuth();
+  const { toast } = useToast();
   const [results, setResults] = useState<Record<string, OutfitSwapResult>>({});
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const progress = batch.total_jobs > 0
     ? Math.round(((batch.completed_jobs + batch.failed_jobs) / batch.total_jobs) * 100)
@@ -59,7 +62,74 @@ export const BatchSwapPreview = ({
     };
 
     loadResults();
-  }, [jobs]);
+  }, [jobs.map(j => j.status).join(',')]); // Re-run when any job status changes
+
+  // Subscribe to realtime result insertions
+  useEffect(() => {
+    if (jobs.length === 0) return;
+
+    const jobIds = jobs.map((j) => j.id);
+    
+    const channel = supabase
+      .channel(`batch-results-${batch.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "outfit_swap_results",
+        },
+        (payload) => {
+          const newResult = payload.new as OutfitSwapResult;
+          // Only add if it's for one of our jobs
+          if (jobIds.includes(newResult.job_id)) {
+            setResults((prev) => ({
+              ...prev,
+              [newResult.job_id]: newResult,
+            }));
+            toast({
+              title: "Result ready",
+              description: "A new outfit swap result is available",
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [batch.id, jobs.length]);
+
+  const refreshResults = async () => {
+    setIsRefreshing(true);
+    const completedJobIds = jobs
+      .filter((job) => job.status === "completed")
+      .map((job) => job.id);
+
+    if (completedJobIds.length === 0) {
+      setIsRefreshing(false);
+      return;
+    }
+
+    const { data } = await supabase
+      .from("outfit_swap_results")
+      .select("*")
+      .in("job_id", completedJobIds);
+
+    if (data) {
+      const resultsMap: Record<string, OutfitSwapResult> = {};
+      data.forEach((result) => {
+        resultsMap[result.job_id] = result;
+      });
+      setResults(resultsMap);
+      toast({
+        title: "Results refreshed",
+        description: `Loaded ${data.length} results`,
+      });
+    }
+    setIsRefreshing(false);
+  };
 
   const getJobIcon = (status: string) => {
     switch (status) {
@@ -119,6 +189,15 @@ export const BatchSwapPreview = ({
           )}
           {(isCompleted || isFailed) && (
             <>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={refreshResults}
+                disabled={isRefreshing}
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
               {batch.completed_jobs > 0 && (
                 <Button onClick={downloadAll}>
                   <Download className="w-4 h-4 mr-2" />
