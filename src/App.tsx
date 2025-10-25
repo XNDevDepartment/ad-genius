@@ -36,6 +36,11 @@ const TestVideoGeneration = lazy(() => import("./pages/VideoGenerator"));
 const VideoLibrary = lazy(() => import("./pages/VideoLibrary"));
 const AdGenius = lazy(() => import("./pages/AdGenius"));
 const OutfitSwap = lazy(() => import("./pages/OutfitSwap"));
+const ProductStudioBackground = lazy(() => import("./pages/ProductStudioBackground"));
+const ProductStudioBackgroundBulk = lazy(() => import("./pages/ProductStudioBackgroundBulk"));
+const MagazinePhotoshoot = lazy(() => import("./pages/MagazinePhotoshoot"));
+const CreateCustomModel = lazy(() => import("./pages/CreateCustomModel"));
+const VideoAds = lazy(() => import("./pages/VideoAds"));
 
 
 const queryClient = new QueryClient();
@@ -83,6 +88,31 @@ const App = () => {
                 <Route path="create/outfit-swap" element={
                   <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
                     <OutfitSwap />
+                  </Suspense>
+                } />
+                <Route path="create/product-studio" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <ProductStudioBackground />
+                  </Suspense>
+                } />
+                <Route path="create/product-studio-bulk" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <ProductStudioBackgroundBulk />
+                  </Suspense>
+                } />
+                <Route path="create/magazine-photoshoot" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <MagazinePhotoshoot />
+                  </Suspense>
+                } />
+                <Route path="create/custom-model" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <CreateCustomModel />
+                  </Suspense>
+                } />
+                <Route path="create/video-ads" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
+                    <VideoAds />
                   </Suspense>
                 } />
                 <Route path="library" element={

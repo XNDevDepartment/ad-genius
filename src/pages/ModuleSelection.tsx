@@ -1,4 +1,4 @@
-import { ArrowLeft, Users, Sparkles, Zap, Video, Lock, Shirt } from "lucide-react";
+import { ArrowLeft, Users, Sparkles, Zap, Video, Lock, Shirt, Image as ImageIcon, Images, Camera, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -50,10 +50,50 @@ const ModuleSelection = () => {
     // }] : []),
     ...(isAdmin ? [{
       id: "outfit-swap",
-      title: "Outfit Swap (Admin Only)",
+      title: "Outfit Swap",
       description: "AI-powered outfit replacement on person photos",
       icon: Shirt,
       path: "/create/outfit-swap",
+      isAdmin: true
+    }] : []),
+    ...(isAdmin ? [{
+      id: "product-studio",
+      title: "Product Studio Background",
+      description: "Replace product backgrounds with professional studio quality",
+      icon: ImageIcon,
+      path: "/create/product-studio",
+      isAdmin: true
+    }] : []),
+    ...(isAdmin ? [{
+      id: "product-studio-bulk",
+      title: "Product Studio Bulk",
+      description: "Process multiple products at once with batch background replacement",
+      icon: Images,
+      path: "/create/product-studio-bulk",
+      isAdmin: true
+    }] : []),
+    ...(isAdmin ? [{
+      id: "magazine-photoshoot",
+      title: "Magazine Photoshoot",
+      description: "Transform photos into high-fashion editorial magazine spreads",
+      icon: Camera,
+      path: "/create/magazine-photoshoot",
+      isAdmin: true
+    }] : []),
+    ...(isAdmin ? [{
+      id: "custom-model",
+      title: "Create Your Own Model",
+      description: "Train custom base models from your photo sets",
+      icon: UserPlus,
+      path: "/create/custom-model",
+      isAdmin: true
+    }] : []),
+    ...(isAdmin ? [{
+      id: "video-ads",
+      title: "Video Ads",
+      description: "Generate short video advertisements from product images",
+      icon: Video,
+      path: "/create/video-ads",
       isAdmin: true
     }] : []),
     {
