@@ -113,9 +113,9 @@ const OutfitSwap = () => {
               <Shirt className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Outfit Swap - Batch Mode</h1>
+              <h1 className="text-2xl font-bold">Outfit Swap</h1>
               <p className="text-sm text-muted-foreground">
-                Process up to 10 garments at once (Admin Only)
+                Process up to 10 garments at once
               </p>
             </div>
           </div>
