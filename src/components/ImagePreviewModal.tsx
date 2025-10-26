@@ -57,7 +57,7 @@ export const ImagePreviewModal = ({
             </div>
           </div>
         </DialogHeader>
-        <div className="relative overflow-auto p-4">
+        <div className="relative overflow-auto p-4 object-contain">
           <img
             src={imageUrl}
             alt={imageName}
