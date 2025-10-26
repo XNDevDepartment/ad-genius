@@ -404,6 +404,7 @@ export type Database = {
       }
       outfit_swap_base_models: {
         Row: {
+          age_range: string | null
           body_type: string | null
           created_at: string | null
           display_order: number | null
@@ -422,6 +423,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          age_range?: string | null
           body_type?: string | null
           created_at?: string | null
           display_order?: number | null
@@ -440,6 +442,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          age_range?: string | null
           body_type?: string | null
           created_at?: string | null
           display_order?: number | null
@@ -600,6 +603,7 @@ export type Database = {
       outfit_swap_results: {
         Row: {
           created_at: string | null
+          generated_image_id: string | null
           id: string
           job_id: string
           jpg_url: string | null
@@ -611,6 +615,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          generated_image_id?: string | null
           id?: string
           job_id: string
           jpg_url?: string | null
@@ -622,6 +627,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          generated_image_id?: string | null
           id?: string
           job_id?: string
           jpg_url?: string | null
@@ -632,6 +638,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "outfit_swap_results_generated_image_id_fkey"
+            columns: ["generated_image_id"]
+            isOneToOne: false
+            referencedRelation: "generated_images"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "outfit_swap_results_job_id_fkey"
             columns: ["job_id"]

@@ -10,6 +10,7 @@ export interface BaseModel {
   body_type: "slim" | "athletic" | "average" | "plus" | null;
   pose_type: "standing" | "sitting" | "walking" | "casual" | "formal" | null;
   skin_tone: "light" | "medium" | "tan" | "dark" | null;
+  age_range: string | null;
   storage_path: string;
   public_url: string;
   thumbnail_url: string | null;
@@ -27,6 +28,7 @@ export interface BaseModelFilters {
   bodyType?: string;
   poseType?: string;
   skinTone?: string;
+  ageRange?: string;
 }
 
 export const useBaseModels = () => {
@@ -58,6 +60,9 @@ export const useBaseModels = () => {
       }
       if (filters?.skinTone) {
         query = query.eq("skin_tone", filters.skinTone);
+      }
+      if (filters?.ageRange) {
+        query = query.eq("age_range", filters.ageRange);
       }
 
       const { data, error } = await query;
@@ -109,6 +114,7 @@ export const useBaseModels = () => {
       bodyType?: string;
       poseType?: string;
       skinTone?: string;
+      ageRange?: string;
     }
   ) => {
     if (!user) {
@@ -145,6 +151,7 @@ export const useBaseModels = () => {
           body_type: metadata.bodyType || null,
           pose_type: metadata.poseType || null,
           skin_tone: metadata.skinTone || null,
+          age_range: metadata.ageRange || null,
           storage_path: fileName,
           public_url: urlData.publicUrl,
           is_system: false,

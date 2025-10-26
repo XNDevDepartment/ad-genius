@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { Upload, Check, User, Sparkles, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCredits } from "@/hooks/useCredits";
 import { toast } from "sonner";
+import { UploadModelDialog } from "./UploadModelDialog";
 
 interface BaseModelSelectorProps {
   selectedModel: BaseModel | null;
@@ -24,7 +25,7 @@ export const BaseModelSelector = ({
 }: BaseModelSelectorProps) => {
   const { systemModels, userModels, loading, fetchSystemModels, uploadUserModel, uploading, fetchUserModels } = useBaseModels();
   const { isFreeTier } = useCredits();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [filters, setFilters] = useState<BaseModelFilters>({});
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -46,42 +47,22 @@ export const BaseModelSelector = ({
       toast.error('Premium subscription required to upload custom base models');
       return;
     }
-    fileInputRef.current?.click();
+    setUploadDialogOpen(true);
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
-      return;
+  const handleUpload = async (file: File, metadata: any) => {
+    const result = await uploadUserModel(file, metadata);
+    if (result) {
+      // Auto-select the newly uploaded model
+      onSelectModel(result);
     }
-
-    try {
-      await uploadUserModel(file, {
-        name: file.name.replace(/\.[^/.]+$/, ''),
-        gender: 'unisex',
-        bodyType: 'average',
-        poseType: 'standing'
-      });
-      toast.success('Base model uploaded successfully');
-      await fetchUserModels();
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      toast.error(error.message || 'Failed to upload base model');
-    }
-
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    return result;
   };
 
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div className="space-y-2">
           <Label className="text-sm">Gender</Label>
           <select
@@ -93,6 +74,27 @@ export const BaseModelSelector = ({
             <option value="male">Male</option>
             <option value="female">Female</option>
             <option value="unisex">Unisex</option>
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-sm">Age Range</Label>
+          <select
+            className="w-full px-3 py-2 text-sm border rounded-lg bg-background"
+            value={filters.ageRange || ""}
+            onChange={(e) => handleFilterChange("ageRange", e.target.value)}
+          >
+            <option value="">All</option>
+            <option value="0-12 months">0-12 months</option>
+            <option value="1-3 years">1-3 years</option>
+            <option value="4-7 years">4-7 years</option>
+            <option value="8-12 years">8-12 years</option>
+            <option value="13-17 years">13-17 years</option>
+            <option value="18-22 years">18-22 years</option>
+            <option value="23-35 years">23-35 years</option>
+            <option value="36-50 years">36-50 years</option>
+            <option value="51-65 years">51-65 years</option>
+            <option value="65+ years">65+ years</option>
           </select>
         </div>
 
@@ -187,6 +189,11 @@ export const BaseModelSelector = ({
                       {model.gender}
                     </Badge>
                   )}
+                  {model.age_range && (
+                    <Badge variant="outline" className="text-xs">
+                      {model.age_range}
+                    </Badge>
+                  )}
                   {model.body_type && (
                     <Badge variant="outline" className="text-xs">
                       {model.body_type}
@@ -231,6 +238,11 @@ export const BaseModelSelector = ({
                       {model.gender}
                     </Badge>
                   )}
+                  {model.age_range && (
+                    <Badge variant="outline" className="text-xs">
+                      {model.age_range}
+                    </Badge>
+                  )}
                   {model.body_type && (
                     <Badge variant="outline" className="text-xs">
                       {model.body_type}
@@ -243,45 +255,35 @@ export const BaseModelSelector = ({
 
           {/* Upload Card (Premium) */}
           {showUpload && (
-            <>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-                disabled={uploading}
-              />
-              <Card 
-                className={cn(
-                  "cursor-pointer transition-all hover:shadow-lg border-dashed",
-                  uploading && "opacity-50 pointer-events-none"
-                )}
-                onClick={handleUploadClick}
-              >
-                <div className="aspect-[3/4] flex items-center justify-center flex-col gap-3 p-6 text-center">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Upload className="w-8 h-8 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-sm">
-                      {uploading ? 'Uploading...' : 'Upload Your Model'}
-                    </h3>
-                    <div className="flex items-center justify-center gap-1 mt-1">
-                      <Crown className="w-3 h-3 text-primary" />
-                      <p className="text-xs text-muted-foreground">
-                        Premium feature
-                      </p>
-                    </div>
-                  </div>
-                  {!uploading && (
-                    <Button size="sm" variant="outline">
-                      Upload
-                    </Button>
-                  )}
+            <Card 
+              className={cn(
+                "cursor-pointer transition-all hover:shadow-lg border-dashed",
+                uploading && "opacity-50 pointer-events-none"
+              )}
+              onClick={handleUploadClick}
+            >
+              <div className="aspect-[3/4] flex items-center justify-center flex-col gap-3 p-6 text-center">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Upload className="w-8 h-8 text-primary" />
                 </div>
-              </Card>
-            </>
+                <div>
+                  <h3 className="font-semibold text-sm">
+                    {uploading ? 'Uploading...' : 'Upload Your Model'}
+                  </h3>
+                  <div className="flex items-center justify-center gap-1 mt-1">
+                    <Crown className="w-3 h-3 text-primary" />
+                    <p className="text-xs text-muted-foreground">
+                      Premium feature
+                    </p>
+                  </div>
+                </div>
+                {!uploading && (
+                  <Button size="sm" variant="outline">
+                    Upload
+                  </Button>
+                )}
+              </div>
+            </Card>
           )}
         </div>
 
@@ -297,6 +299,14 @@ export const BaseModelSelector = ({
           </div>
         )}
       </ScrollArea>
+
+      {/* Upload Dialog */}
+      <UploadModelDialog
+        isOpen={uploadDialogOpen}
+        onClose={() => setUploadDialogOpen(false)}
+        onUpload={handleUpload}
+        uploading={uploading}
+      />
     </div>
   );
 };

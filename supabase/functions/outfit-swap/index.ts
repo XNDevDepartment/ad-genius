@@ -392,7 +392,25 @@ async function processOutfitSwap(jobId: string) {
     const { data: jpgPublicUrl } = supabase.storage.from("ugc").getPublicUrl(jpgPath);
     const { data: pngPublicUrl } = supabase.storage.from("ugc").getPublicUrl(pngPath);
 
-    // Save results
+    // Save results to gallery (generated_images table)
+    const { data: generatedImage, error: galleryError } = await supabase
+      .from("generated_images")
+      .insert({
+        user_id: job.user_id,
+        storage_path: jpgPath,
+        public_url: jpgPublicUrl.publicUrl,
+        prompt: `Outfit swap: ${job.settings?.description || 'Custom outfit'}`,
+        settings: job.settings || {},
+        job_id: jobId,
+      })
+      .select()
+      .single();
+
+    if (galleryError) {
+      console.error("Gallery insert error:", galleryError);
+    }
+
+    // Save results to outfit_swap_results
     const { error: resultError } = await supabase.from("outfit_swap_results").insert({
       job_id: jobId,
       user_id: job.user_id,
@@ -400,6 +418,7 @@ async function processOutfitSwap(jobId: string) {
       public_url: jpgPublicUrl.publicUrl,
       jpg_url: jpgPublicUrl.publicUrl,
       png_url: pngPublicUrl.publicUrl,
+      generated_image_id: generatedImage?.id || null,
       metadata: {
         model_used: "google/gemini-2.5-flash-image-preview",
         processing_time_ms: processingTime,

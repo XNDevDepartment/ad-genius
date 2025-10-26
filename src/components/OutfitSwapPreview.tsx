@@ -1,8 +1,11 @@
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, ExternalLink, Eye, Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BeforeAfterSlider } from "@/components/ui/before-after";
 import { OutfitSwapJob, OutfitSwapResult } from "@/api/outfit-swap-api";
 import { Progress } from "@/components/ui/progress";
+import { useState } from "react";
+import { ImagePreviewModal } from "./ImagePreviewModal";
+import { useNavigate } from "react-router-dom";
 
 interface OutfitSwapPreviewProps {
   job: OutfitSwapJob;
@@ -19,6 +22,8 @@ export const OutfitSwapPreview = ({
   onReset,
   personImageUrl,
 }: OutfitSwapPreviewProps) => {
+  const navigate = useNavigate();
+  const [previewOpen, setPreviewOpen] = useState(false);
   const isProcessing = job.status === "queued" || job.status === "processing";
   const isCompleted = job.status === "completed" && results;
   const isFailed = job.status === "failed";
@@ -39,6 +44,19 @@ export const OutfitSwapPreview = ({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const openInNewTab = (url: string) => {
+    window.open(url, "_blank");
+  };
+
+  const handleAnimate = () => {
+    if (!results) return;
+    navigate("/create/video", {
+      state: {
+        preselectedImageUrl: results.public_url,
+      },
+    });
   };
 
   return (
@@ -106,14 +124,38 @@ export const OutfitSwapPreview = ({
             />
           </div>
 
-          <div className="flex gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <Button
+              onClick={() => setPreviewOpen(true)}
+              variant="outline"
+              className="flex-1"
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              Preview
+            </Button>
+            <Button
+              onClick={() => openInNewTab(results.public_url)}
+              variant="outline"
+              className="flex-1"
+            >
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Open in Tab
+            </Button>
+            <Button
+              onClick={handleAnimate}
+              variant="outline"
+              className="flex-1"
+            >
+              <Film className="w-4 h-4 mr-2" />
+              Animate
+            </Button>
             {results.jpg_url && (
               <Button
                 onClick={() => downloadImage(results.jpg_url!, `outfit-swap-${job.id}.jpg`)}
                 className="flex-1"
               >
                 <Download className="w-4 h-4 mr-2" />
-                Download JPG
+                JPG
               </Button>
             )}
             {results.png_url && (
@@ -123,7 +165,7 @@ export const OutfitSwapPreview = ({
                 variant="outline"
               >
                 <Download className="w-4 h-4 mr-2" />
-                Download PNG
+                PNG
               </Button>
             )}
           </div>
@@ -149,6 +191,15 @@ export const OutfitSwapPreview = ({
               </div>
             </div>
           </div>
+
+          <ImagePreviewModal
+            isOpen={previewOpen}
+            onClose={() => setPreviewOpen(false)}
+            imageUrl={results.public_url}
+            imageName={`Outfit Swap - ${job.id}`}
+            onDownload={() => downloadImage(results.public_url, `outfit-swap-${job.id}.jpg`)}
+            onOpenInNewTab={() => openInNewTab(results.public_url)}
+          />
         </div>
       )}
     </div>

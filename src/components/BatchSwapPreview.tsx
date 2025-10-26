@@ -4,11 +4,13 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { OutfitSwapBatch, OutfitSwapJob, OutfitSwapResult } from "@/api/outfit-swap-api";
-import { Download, X, CheckCircle2, XCircle, Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { Download, X, CheckCircle2, XCircle, Loader2, AlertCircle, RefreshCw, Eye, Film, ExternalLink } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useToast } from "@/hooks/use-toast";
+import { ImagePreviewModal } from "./ImagePreviewModal";
+import { useNavigate } from "react-router-dom";
 
 interface BatchSwapPreviewProps {
   batch: OutfitSwapBatch;
@@ -23,10 +25,12 @@ export const BatchSwapPreview = ({
   onCancel,
   onReset,
 }: BatchSwapPreviewProps) => {
+  const navigate = useNavigate();
   const { isAdmin } = useAdminAuth();
   const { toast } = useToast();
   const [results, setResults] = useState<Record<string, OutfitSwapResult>>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
 
   const progress = batch.total_jobs > 0
     ? Math.round(((batch.completed_jobs + batch.failed_jobs) / batch.total_jobs) * 100)
@@ -168,6 +172,18 @@ export const BatchSwapPreview = ({
     }
   };
 
+  const openInNewTab = (url: string) => {
+    window.open(url, "_blank");
+  };
+
+  const handleAnimate = (imageUrl: string) => {
+    navigate("/create/video", {
+      state: {
+        preselectedImageUrl: imageUrl,
+      },
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -269,15 +285,40 @@ export const BatchSwapPreview = ({
                       <p className="text-xs text-destructive mt-2">{job.error}</p>
                     )}
                     {result && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full mt-2"
-                        onClick={() => downloadImage(result.public_url, job.id)}
-                      >
-                        <Download className="w-3 h-3 mr-2" />
-                        Download
-                      </Button>
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setPreviewImage({ url: result.public_url, name: `Swap ${index + 1}` })}
+                        >
+                          <Eye className="w-3 h-3 mr-1" />
+                          Preview
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openInNewTab(result.public_url)}
+                        >
+                          <ExternalLink className="w-3 h-3 mr-1" />
+                          Open
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleAnimate(result.public_url)}
+                        >
+                          <Film className="w-3 h-3 mr-1" />
+                          Animate
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => downloadImage(result.public_url, job.id)}
+                        >
+                          <Download className="w-3 h-3 mr-1" />
+                          Download
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </Card>
@@ -286,6 +327,15 @@ export const BatchSwapPreview = ({
           </div>
         </ScrollArea>
       </div>
+
+      <ImagePreviewModal
+        isOpen={previewImage !== null}
+        onClose={() => setPreviewImage(null)}
+        imageUrl={previewImage?.url || ""}
+        imageName={previewImage?.name || ""}
+        onDownload={() => previewImage && downloadImage(previewImage.url, `outfit-swap-${batch.id}.jpg`)}
+        onOpenInNewTab={() => previewImage && openInNewTab(previewImage.url)}
+      />
     </div>
   );
 };
