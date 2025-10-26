@@ -21,7 +21,8 @@ export const BaseModelsManagement = () => {
     gender: '',
     body_type: '',
     pose_type: '',
-    skin_tone: ''
+    skin_tone: '',
+    age_range: ''
   });
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,6 +83,7 @@ export const BaseModelsManagement = () => {
           body_type: formData.body_type,
           pose_type: formData.pose_type,
           skin_tone: formData.skin_tone || null,
+          age_range: formData.age_range || null,
           storage_path: filePath,
           public_url: publicUrl,
           thumbnail_url: publicUrl,
@@ -108,7 +110,8 @@ export const BaseModelsManagement = () => {
         gender: '',
         body_type: '',
         pose_type: '',
-        skin_tone: ''
+        skin_tone: '',
+        age_range: ''
       });
 
       // Refresh models list
@@ -295,7 +298,32 @@ export const BaseModelsManagement = () => {
                 </Select>
               </div>
 
-              <Button 
+              <div className="space-y-2">
+                <Label htmlFor="model-age-range">Age Range</Label>
+                <Select 
+                  value={formData.age_range} 
+                  onValueChange={(value) => setFormData({ ...formData, age_range: value })}
+                  disabled={uploading}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select age range (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0-12 months">0-12 months</SelectItem>
+                    <SelectItem value="1-3 years">1-3 years</SelectItem>
+                    <SelectItem value="4-7 years">4-7 years</SelectItem>
+                    <SelectItem value="8-12 years">8-12 years</SelectItem>
+                    <SelectItem value="13-17 years">13-17 years</SelectItem>
+                    <SelectItem value="18-22 years">18-22 years</SelectItem>
+                    <SelectItem value="23-35 years">23-35 years</SelectItem>
+                    <SelectItem value="36-50 years">36-50 years</SelectItem>
+                    <SelectItem value="51-65 years">51-65 years</SelectItem>
+                    <SelectItem value="65+ years">65+ years</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button
                 onClick={handleUpload} 
                 disabled={uploading || !selectedFile}
                 className="w-full"
@@ -359,6 +387,9 @@ export const BaseModelsManagement = () => {
                         )}
                         {model.body_type && (
                           <Badge variant="outline" className="text-xs">{model.body_type}</Badge>
+                        )}
+                        {model.age_range && (
+                          <Badge variant="outline" className="text-xs">{model.age_range}</Badge>
                         )}
                       </div>
                       <div className="flex gap-2 pt-2">
