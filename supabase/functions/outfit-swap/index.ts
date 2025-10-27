@@ -336,7 +336,35 @@ async function processOutfitSwap(jobId: string) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Gemini API error:", response.status, errorText);
-      throw new Error(`AI generation failed: ${response.status}`);
+      
+      // Parse error to provide better user feedback
+      let errorMessage = `AI generation failed: ${response.status}`;
+      let errorType = "generation_error";
+      
+      try {
+        const errorJson = JSON.parse(errorText);
+        if (response.status === 402) {
+          errorType = "api_credits_exhausted";
+          errorMessage = "Lovable API credits exhausted. Please contact support or try again later.";
+        } else if (errorJson.message) {
+          errorMessage = errorJson.message;
+        }
+      } catch (e) {
+        // Keep default error message
+      }
+      
+      // Update job with specific error type
+      await supabase
+        .from("outfit_swap_jobs")
+        .update({
+          status: "failed",
+          error: errorMessage,
+          metadata: { error_type: errorType, error_code: response.status },
+          finished_at: new Date().toISOString(),
+        })
+        .eq("id", jobId);
+      
+      throw new Error(errorMessage);
     }
 
     await supabase

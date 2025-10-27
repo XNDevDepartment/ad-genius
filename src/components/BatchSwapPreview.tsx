@@ -17,6 +17,8 @@ interface BatchSwapPreviewProps {
   jobs: OutfitSwapJob[];
   onCancel: () => void;
   onReset: () => void;
+  onRefresh?: () => Promise<void>;
+  loading?: boolean;
 }
 
 export const BatchSwapPreview = ({
@@ -24,6 +26,8 @@ export const BatchSwapPreview = ({
   jobs,
   onCancel,
   onReset,
+  onRefresh,
+  loading = false,
 }: BatchSwapPreviewProps) => {
   const navigate = useNavigate();
   const { isAdmin } = useAdminAuth();
@@ -208,8 +212,13 @@ export const BatchSwapPreview = ({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={refreshResults}
-                disabled={isRefreshing}
+                onClick={async () => {
+                  if (onRefresh) {
+                    await onRefresh();
+                  }
+                  await refreshResults();
+                }}
+                disabled={isRefreshing || loading}
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
                 Refresh
@@ -257,6 +266,9 @@ export const BatchSwapPreview = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {jobs.map((job, index) => {
               const result = results[job.id];
+              const isStuck = job.status === "processing" && 
+                new Date().getTime() - new Date(job.created_at || Date.now()).getTime() > 120000; // 2 minutes
+              
               return (
                 <Card key={job.id} className="overflow-hidden">
                   <div className="aspect-square relative bg-muted">
@@ -282,7 +294,23 @@ export const BatchSwapPreview = ({
                       <Progress value={job.progress} className="h-1 mb-2" />
                     )}
                     {job.error && (
-                      <p className="text-xs text-destructive mt-2">{job.error}</p>
+                      <div className="mt-2">
+                        <p className="text-xs text-destructive font-medium">
+                          {job.error}
+                        </p>
+                        {job.metadata?.error_type === "api_credits_exhausted" && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            This is a system-level issue. Please contact support.
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    {isStuck && (
+                      <div className="p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-md mt-2">
+                        <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                          ⚠️ This job may be stuck. Try clicking Refresh.
+                        </p>
+                      </div>
                     )}
                     {result && (
                       <div className="grid grid-cols-2 gap-2 mt-2">

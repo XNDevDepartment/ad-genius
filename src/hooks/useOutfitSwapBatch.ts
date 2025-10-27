@@ -53,6 +53,41 @@ export const useOutfitSwapBatch = () => {
     return unsubscribeJobs;
   }, [batch?.id]);
 
+  // Polling fallback when batch is processing
+  useEffect(() => {
+    if (!batch?.id) return;
+    if (batch.status !== "processing" && batch.status !== "queued") return;
+    
+    // Poll every 5 seconds as fallback
+    const pollInterval = setInterval(async () => {
+      try {
+        const updatedBatch = await outfitSwapApi.getBatch(batch.id);
+        
+        // Only update if status changed (avoid unnecessary re-renders)
+        if (updatedBatch.status !== batch.status || 
+            updatedBatch.completed_jobs !== batch.completed_jobs ||
+            updatedBatch.failed_jobs !== batch.failed_jobs) {
+          setBatch(updatedBatch);
+          
+          // Also refresh jobs
+          const { data: batchJobs } = await supabase
+            .from("outfit_swap_jobs")
+            .select("*")
+            .eq("batch_id", batch.id)
+            .order("created_at", { ascending: true });
+          
+          if (batchJobs) {
+            setJobs(batchJobs as OutfitSwapJob[]);
+          }
+        }
+      } catch (err) {
+        console.error("Polling error:", err);
+      }
+    }, 5000); // Poll every 5 seconds
+    
+    return () => clearInterval(pollInterval);
+  }, [batch?.id, batch?.status, batch?.completed_jobs, batch?.failed_jobs]);
+
   const createBatch = async (
     baseModelId: string,
     garmentIds: string[],
@@ -138,6 +173,42 @@ export const useOutfitSwapBatch = () => {
     }
   };
 
+  const refreshBatch = async () => {
+    if (!batch?.id) return;
+    
+    try {
+      setLoading(true);
+      
+      // Fetch fresh batch data
+      const updatedBatch = await outfitSwapApi.getBatch(batch.id);
+      setBatch(updatedBatch);
+      
+      // Fetch fresh jobs data
+      const { data: batchJobs } = await supabase
+        .from("outfit_swap_jobs")
+        .select("*")
+        .eq("batch_id", batch.id)
+        .order("created_at", { ascending: true });
+      
+      if (batchJobs) {
+        setJobs(batchJobs as OutfitSwapJob[]);
+      }
+      
+      toast({
+        title: "Status refreshed",
+        description: `${updatedBatch.completed_jobs}/${updatedBatch.total_jobs} completed`,
+      });
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to refresh",
+        description: err.message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const reset = () => {
     setBatch(null);
     setJobs([]);
@@ -162,5 +233,6 @@ export const useOutfitSwapBatch = () => {
     cancelBatch,
     reset,
     getProgress,
+    refreshBatch,
   };
 };

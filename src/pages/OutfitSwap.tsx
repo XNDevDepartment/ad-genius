@@ -21,7 +21,7 @@ const OutfitSwap = () => {
   const { user } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdminAuth();
   const { toast } = useToast();
-  const { batch, jobs, loading, createBatch, cancelBatch, reset } = useOutfitSwapBatch();
+  const { batch, jobs, loading, createBatch, cancelBatch, reset, refreshBatch } = useOutfitSwapBatch();
   const { calculateBatchCost, canAffordBatch, getSavings } = useOutfitSwapLimit();
   const { uploadSourceImage } = useSourceImageUpload();
 
@@ -128,6 +128,8 @@ const OutfitSwap = () => {
             jobs={jobs}
             onCancel={cancelBatch}
             onReset={handleReset}
+            onRefresh={refreshBatch}
+            loading={loading}
           />
         ) : (
           <>
