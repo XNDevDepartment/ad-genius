@@ -182,9 +182,21 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       setHasMore(currentCount === limit);
 
       // Get source image signed URLs for thumbnail overlays (batch optimized)
-      const sourceImageIds = processedImages
-        .map(img => img.source_image_id)
-        .filter(Boolean) as string[];
+      // Support both singular source_image_id and array source_image_ids
+      const sourceImageIds = Array.from(new Set(
+        processedImages.flatMap(img => {
+          const ids: string[] = [];
+          // Add singular source_image_id if exists
+          if (img.source_image_id) {
+            ids.push(img.source_image_id);
+          }
+          // Add first item from source_image_ids array if exists
+          if (img.source_image_ids && Array.isArray(img.source_image_ids) && img.source_image_ids.length > 0) {
+            ids.push(img.source_image_ids[0]);
+          }
+          return ids;
+        })
+      )).filter(Boolean) as string[];
 
       if (sourceImageIds.length > 0) {
         // Batch fetch source images with signed URLs
@@ -216,8 +228,16 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
 
           // Add source signed URLs to images
           processedImages.forEach(img => {
+            // Try singular source_image_id first
             if (img.source_image_id && sourceUrlMap.has(img.source_image_id)) {
               img.sourceSignedUrl = sourceUrlMap.get(img.source_image_id);
+            }
+            // Fall back to first item in source_image_ids array
+            else if (img.source_image_ids && Array.isArray(img.source_image_ids) && img.source_image_ids.length > 0) {
+              const firstSourceId = img.source_image_ids[0];
+              if (sourceUrlMap.has(firstSourceId)) {
+                img.sourceSignedUrl = sourceUrlMap.get(firstSourceId);
+              }
             }
           });
         }
