@@ -232,9 +232,6 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
   const FAL_KEY = Deno.env.get("FAL_KEY");
   if (!FAL_KEY) throw new Error("FAL_KEY not configured");
   
-  // Use base model path for queue API
-  const baseModel = 'fal-ai/kling-video';
-  
   // Extract just the variant from the stored model (normalize format)
   let modelVariant = job.model || 'v2.5/turbo/pro/image-to-video';
   
@@ -246,12 +243,14 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
   // Normalize the path format (v2.5-turbo -> v2.5/turbo)
   modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5/turbo');
   
-  // Build payload per FAL.ai docs - must include model_name
+  // Build FULL model path for FAL.ai queue API
+  const fullModelPath = `fal-ai/kling-video/${modelVariant}`;
+  
+  // Build payload - NO model_name in body since it's in the URL
   const inputPayload = {
     prompt: job.prompt,
     image_url: job.image_url,
-    duration: Number(job.duration) === 10 ? 10 : 5,
-    model_name: modelVariant  // Specify the model variant in the body
+    duration: Number(job.duration) === 10 ? 10 : 5
   };
   
   // carry optional knobs from metadata if present
@@ -262,8 +261,8 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
   if (md.dynamic_masks) inputPayload.dynamic_masks = md.dynamic_masks;
   if (md.tail_image_url) inputPayload.tail_image_url = md.tail_image_url;
   
-  console.log("[PROCESS-JOB] Calling FAL queue with base model:", baseModel, "variant:", modelVariant);
-  const enqueueUrl = `https://queue.fal.run/${baseModel}` + (webhookUrl ? `?fal_webhook=${encodeURIComponent(webhookUrl)}` : "");
+  console.log("[PROCESS-JOB] Calling FAL queue with full model path:", fullModelPath);
+  const enqueueUrl = `https://queue.fal.run/${fullModelPath}` + (webhookUrl ? `?fal_webhook=${encodeURIComponent(webhookUrl)}` : "");
   
   const submitRes = await fetch(enqueueUrl, {
     method: "POST",
@@ -280,9 +279,9 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
   const submitJson = await submitRes.json();
   const requestId = submitJson.request_id;
   
-  // Use base model path for status and response URLs (using baseModel from line 227)
-  const statusUrl = submitJson.status_url || `https://queue.fal.run/${baseModel}/requests/${requestId}/status`;
-  const responseUrl = submitJson.response_url || `https://queue.fal.run/${baseModel}/requests/${requestId}`;
+  // Use full model path for status and response URLs
+  const statusUrl = submitJson.status_url || `https://queue.fal.run/${fullModelPath}/requests/${requestId}/status`;
+  const responseUrl = submitJson.response_url || `https://queue.fal.run/${fullModelPath}/requests/${requestId}`;
   
   await supabase.from("kling_jobs").update({
     request_id: requestId,
@@ -450,8 +449,15 @@ async function cancelVideoJob(supabase, userId, jobId) {
     if (job.request_id) {
       const FAL_KEY = Deno.env.get("FAL_KEY");
       if (FAL_KEY) {
-        const baseModel = 'fal-ai/kling-video';
-        const cancelUrl = `https://queue.fal.run/${baseModel}/requests/${job.request_id}/cancel`;
+        // Extract and normalize model variant
+        let modelVariant = job.model || 'v2.5/turbo/pro/image-to-video';
+        if (modelVariant.includes('fal-ai/kling-video/')) {
+          modelVariant = modelVariant.replace('fal-ai/kling-video/', '');
+        }
+        modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5/turbo');
+        
+        const fullModelPath = `fal-ai/kling-video/${modelVariant}`;
+        const cancelUrl = `https://queue.fal.run/${fullModelPath}/requests/${job.request_id}/cancel`;
         const res = await fetch(cancelUrl, {
           method: "PUT",
           headers: {
@@ -510,10 +516,17 @@ async function retryVideoJob(supabase, userId, jobId) {
   try {
     console.log(`[RETRY-JOB] Checking FAL status for request ${job.request_id}`);
     
-    const baseModel = 'fal-ai/kling-video';
+    // Extract and normalize model variant
+    let modelVariant = job.model || 'v2.5/turbo/pro/image-to-video';
+    if (modelVariant.includes('fal-ai/kling-video/')) {
+      modelVariant = modelVariant.replace('fal-ai/kling-video/', '');
+    }
+    modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5/turbo');
+    
+    const fullModelPath = `fal-ai/kling-video/${modelVariant}`;
     
     // Check current status
-    const statusRes = await fetch(job.status_url || `https://queue.fal.run/${baseModel}/requests/${job.request_id}/status`, {
+    const statusRes = await fetch(job.status_url || `https://queue.fal.run/${fullModelPath}/requests/${job.request_id}/status`, {
       headers: { Authorization: `Key ${FAL_KEY}` }
     });
     
