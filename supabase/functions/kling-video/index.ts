@@ -261,8 +261,7 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
   const submitJson = await submitRes.json();
   const requestId = submitJson.request_id;
   
-  // Use base model path for status and response URLs
-  const baseModel = 'fal-ai/kling-video';
+  // Use base model path for status and response URLs (using baseModel from line 227)
   const statusUrl = submitJson.status_url || `https://queue.fal.run/${baseModel}/requests/${requestId}/status`;
   const responseUrl = submitJson.response_url || `https://queue.fal.run/${baseModel}/requests/${requestId}`;
   
