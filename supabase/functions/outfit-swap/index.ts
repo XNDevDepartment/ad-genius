@@ -8,9 +8,27 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_API_KEY")!;
 
 const serviceClient = () => createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+// Helper: Convert ArrayBuffer to base64 in chunks to avoid stack overflow
+function bufferToBase64(uint8Array: Uint8Array): string {
+  let binary = '';
+  const chunkSize = 32768;
+  for (let i = 0; i < uint8Array.length; i += chunkSize) {
+    const chunk = uint8Array.subarray(i, i + chunkSize);
+    binary += String.fromCharCode.apply(null, Array.from(chunk));
+  }
+  return btoa(binary);
+}
+
+// Helper: Extract base64 image from Gemini response
+function extractBase64Image(jsonResp: any): string | null {
+  const parts = jsonResp?.candidates?.[0]?.content?.parts ?? [];
+  const imgPart = parts.find((p: any) => p?.inlineData?.mimeType?.startsWith('image/'));
+  return imgPart?.inlineData?.data ?? null;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -109,20 +127,29 @@ async function analyzeGarment(garmentUrl: string): Promise<string> {
   console.log("[analyzeGarment] Analyzing garment image...");
   
   try {
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "user",
-            content: [
+    // Fetch the garment image
+    const garmentResponse = await fetch(garmentUrl);
+    if (!garmentResponse.ok) {
+      throw new Error(`Failed to fetch garment image: ${garmentResponse.status}`);
+    }
+
+    const mimeType = garmentResponse.headers.get('content-type') ?? 'image/jpeg';
+    const imageBuffer = await garmentResponse.arrayBuffer();
+    const base64Image = bufferToBase64(new Uint8Array(imageBuffer));
+
+    // Call Gemini API for analysis
+    const response = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+      {
+        method: "POST",
+        headers: {
+          "x-goog-api-key": GOOGLE_AI_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
               { 
-                type: "text", 
                 text: `Analyze this garment image in detail. Describe:
 1. Type of clothing (e.g., t-shirt, dress, pants, jacket, full outfit)
 2. Style and fit (e.g., casual, formal, athletic, oversized, fitted)
@@ -131,22 +158,28 @@ async function analyzeGarment(garmentUrl: string): Promise<string> {
 5. Key distinctive features (e.g., collar type, sleeve length, buttons, zippers)
 6. What body parts it covers (e.g., torso only, full legs, arms, etc.)
 
-Be specific and concise. This description will be used for AI outfit swapping.` 
+Be specific and concise. This description will be used for AI outfit swapping.`
               },
-              { type: "image_url", image_url: { url: garmentUrl } },
-            ],
-          },
-        ],
-      }),
-    });
+              { 
+                inlineData: { 
+                  mimeType: mimeType, 
+                  data: base64Image 
+                } 
+              }
+            ]
+          }]
+        }),
+      }
+    );
 
     if (!response.ok) {
-      console.error("[analyzeGarment] API error:", response.status);
+      const errorText = await response.text();
+      console.error("[analyzeGarment] API error:", response.status, errorText);
       return "clothing garment"; // Fallback
     }
 
     const data = await response.json();
-    const analysis = data.choices?.[0]?.message?.content || "clothing garment";
+    const analysis = data.candidates?.[0]?.content?.parts?.[0]?.text || "clothing garment";
     console.log("[analyzeGarment] Analysis result:", analysis);
     return analysis;
   } catch (error) {
@@ -310,47 +343,65 @@ async function processOutfitSwap(jobId: string) {
       .update({ progress: 70 })
       .eq("id", jobId);
 
-    // STEP 3: Call AI for outfit swap with improved prompt
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image-preview",
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: prompt },
-              { type: "image_url", image_url: { url: personUrl.signedUrl } },
-              { type: "image_url", image_url: { url: garmentUrl.signedUrl } },
-            ],
-          },
-        ],
-        modalities: ["image", "text"],
-      }),
-    });
+    // STEP 3: Fetch source images and prepare for Gemini API
+    const personResponse = await fetch(personUrl.signedUrl);
+    const garmentResponse = await fetch(garmentUrl.signedUrl);
+
+    if (!personResponse.ok || !garmentResponse.ok) {
+      throw new Error("Failed to fetch source images for AI processing");
+    }
+
+    // Convert to base64 for Gemini API
+    const personBuffer = await personResponse.arrayBuffer();
+    const garmentBuffer = await garmentResponse.arrayBuffer();
+
+    const personBase64 = bufferToBase64(new Uint8Array(personBuffer));
+    const garmentBase64 = bufferToBase64(new Uint8Array(garmentBuffer));
+
+    const personMimeType = personResponse.headers.get('content-type') ?? 'image/jpeg';
+    const garmentMimeType = garmentResponse.headers.get('content-type') ?? 'image/jpeg';
+
+    // Call Gemini API with multimodal input
+    const response = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent',
+      {
+        method: 'POST',
+        headers: {
+          'x-goog-api-key': GOOGLE_AI_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: prompt },
+              { inlineData: { mimeType: personMimeType, data: personBase64 } },
+              { inlineData: { mimeType: garmentMimeType, data: garmentBase64 } }
+            ]
+          }],
+          generationConfig: {
+            responseModalities: ['TEXT', 'IMAGE']
+          }
+        })
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Gemini API error:", response.status, errorText);
       
       // Parse error to provide better user feedback
-      let errorMessage = `AI generation failed: ${response.status}`;
+      let errorMessage = `Gemini API error: ${response.status}`;
       let errorType = "generation_error";
       
-      try {
-        const errorJson = JSON.parse(errorText);
-        if (response.status === 402) {
-          errorType = "api_credits_exhausted";
-          errorMessage = "Lovable API credits exhausted. Please contact support or try again later.";
-        } else if (errorJson.message) {
-          errorMessage = errorJson.message;
-        }
-      } catch (e) {
-        // Keep default error message
+      if (response.status === 429) {
+        errorType = "rate_limit";
+        errorMessage = "Gemini API rate limit exceeded. Please try again in a few minutes.";
+      } else if (response.status === 401 || response.status === 403) {
+        errorType = "auth_error";
+        errorMessage = "Gemini API authentication failed. Please check system configuration.";
+      } else if (response.status >= 500) {
+        errorType = "server_error";
+        errorMessage = "Gemini API server error. Please try again later.";
       }
       
       // Update job with specific error type
@@ -373,17 +424,17 @@ async function processOutfitSwap(jobId: string) {
       .eq("id", jobId);
 
     const data = await response.json();
-    const swappedImageBase64 = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    const base64Image = extractBase64Image(data);
 
-    if (!swappedImageBase64) {
-      throw new Error("No image generated");
+    if (!base64Image) {
+      console.error("No image data in Gemini response:", JSON.stringify(data).slice(0, 500));
+      throw new Error("No image generated by Gemini API");
     }
 
     const processingTime = Date.now() - startTime;
 
-    // Extract base64 data
-    const base64Data = swappedImageBase64.split(",")[1] || swappedImageBase64;
-    const imageBuffer = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+    // Convert base64 to buffer
+    const imageBuffer = Uint8Array.from(atob(base64Image), (c) => c.charCodeAt(0));
 
     // Upload to storage (JPG and PNG)
     const timestamp = Date.now();
@@ -448,7 +499,7 @@ async function processOutfitSwap(jobId: string) {
       png_url: pngPublicUrl.publicUrl,
       generated_image_id: generatedImage?.id || null,
       metadata: {
-        model_used: "google/gemini-2.5-flash-image-preview",
+        model_used: "gemini-2.5-flash-image-preview",
         processing_time_ms: processingTime,
         dimensions: "1024x1024",
         exif_stripped: true,
@@ -467,7 +518,7 @@ async function processOutfitSwap(jobId: string) {
         progress: 100,
         finished_at: new Date().toISOString(),
         metadata: {
-          model_used: "google/gemini-2.5-flash-image-preview",
+          model_used: "gemini-2.5-flash-image-preview",
           processing_time_ms: processingTime,
         },
       })

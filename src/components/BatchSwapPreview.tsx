@@ -294,13 +294,23 @@ export const BatchSwapPreview = ({
                       <Progress value={job.progress} className="h-1 mb-2" />
                     )}
                     {job.error && (
-                      <div className="mt-2">
+                      <div className="mt-2 space-y-1">
                         <p className="text-xs text-destructive font-medium">
                           {job.error}
                         </p>
-                        {job.metadata?.error_type === "api_credits_exhausted" && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            This is a system-level issue. Please contact support.
+                        {job.metadata?.error_type === "rate_limit" && (
+                          <p className="text-xs text-muted-foreground">
+                            Google Gemini API rate limit reached. Please wait a few minutes and try again.
+                          </p>
+                        )}
+                        {job.metadata?.error_type === "auth_error" && (
+                          <p className="text-xs text-muted-foreground">
+                            System configuration issue with Google Gemini API. Please contact support.
+                          </p>
+                        )}
+                        {job.metadata?.error_type === "server_error" && (
+                          <p className="text-xs text-muted-foreground">
+                            Google Gemini API is temporarily unavailable. Please try again later.
                           </p>
                         )}
                       </div>
