@@ -225,16 +225,37 @@ async function processOutfitSwap(jobId: string) {
       console.log(`[processOutfitSwap] Job ${jobId}: Using base model ${job.base_model_id}`);
       const { data: baseModel } = await supabase
         .from("outfit_swap_base_models")
-        .select("storage_path")
+        .select("storage_path, name")
         .eq("id", job.base_model_id)
         .single();
       
       if (!baseModel?.storage_path) {
-        throw new Error("Base model storage path not found");
+        throw new Error("Base model storage path not found in database");
       }
       
       personStoragePath = baseModel.storage_path;
       personBucket = "outfit-base-models";
+
+      // Verify file exists in storage before proceeding
+      console.log(`[processOutfitSwap] Job ${jobId}: Verifying base model file exists in storage...`);
+      const { data: fileList, error: listError } = await supabase.storage
+        .from(personBucket)
+        .list(personStoragePath.includes('/') ? personStoragePath.split('/').slice(0, -1).join('/') : '', {
+          search: personStoragePath.includes('/') ? personStoragePath.split('/').pop() : personStoragePath
+        });
+
+      if (listError || !fileList || fileList.length === 0) {
+        console.error(`[processOutfitSwap] Job ${jobId}: Base model file not found in storage:`, {
+          bucket: personBucket,
+          path: personStoragePath,
+          listError
+        });
+        throw new Error(
+          `Base model image file does not exist in storage. The model "${baseModel.name || 'Unknown'}" may need to be re-uploaded. Please contact support or re-upload the model.`
+        );
+      }
+      
+      console.log(`[processOutfitSwap] Job ${jobId}: Base model file verified in storage`);
     } else if (job.source_person_id) {
       console.log(`[processOutfitSwap] Job ${jobId}: Using source image ${job.source_person_id}`);
       const { data: sourceImage } = await supabase
@@ -256,21 +277,44 @@ async function processOutfitSwap(jobId: string) {
     // Get garment storage path
     const { data: garmentImage } = await supabase
       .from("source_images")
-      .select("storage_path")
+      .select("storage_path, file_name")
       .eq("id", job.source_garment_id)
       .single();
     
     if (!garmentImage?.storage_path) {
-      throw new Error("Garment image storage path not found");
+      throw new Error("Garment image storage path not found in database");
     }
 
+    // Verify garment file exists in storage
+    console.log(`[processOutfitSwap] Job ${jobId}: Verifying garment file exists in storage...`);
+    const garmentBucket = "ugc-inputs";
+    const { data: garmentFileList, error: garmentListError } = await supabase.storage
+      .from(garmentBucket)
+      .list(garmentImage.storage_path.includes('/') ? garmentImage.storage_path.split('/').slice(0, -1).join('/') : '', {
+        search: garmentImage.storage_path.includes('/') ? garmentImage.storage_path.split('/').pop() : garmentImage.storage_path
+      });
+
+    if (garmentListError || !garmentFileList || garmentFileList.length === 0) {
+      console.error(`[processOutfitSwap] Job ${jobId}: Garment file not found in storage:`, {
+        bucket: garmentBucket,
+        path: garmentImage.storage_path,
+        garmentListError
+      });
+      throw new Error(
+        `Garment image file "${garmentImage.file_name || 'Unknown'}" does not exist in storage. Please re-upload the garment image.`
+      );
+    }
+
+    console.log(`[processOutfitSwap] Job ${jobId}: Garment file verified in storage`);
+
     // Create signed URLs with proper error handling
+    console.log(`[processOutfitSwap] Job ${jobId}: Creating signed URLs...`);
     const { data: personUrl, error: personError } = await supabase.storage
       .from(personBucket)
       .createSignedUrl(personStoragePath, 3600);
 
     const { data: garmentUrl, error: garmentError } = await supabase.storage
-      .from("ugc-inputs")
+      .from(garmentBucket)
       .createSignedUrl(garmentImage.storage_path, 3600);
 
     if (personError) {
@@ -279,16 +323,20 @@ async function processOutfitSwap(jobId: string) {
         bucket: personBucket,
         path: personStoragePath
       });
-      throw new Error(`Failed to get person image URL: ${personError.message}`);
+      throw new Error(
+        `Failed to access base model image. The file may be missing or corrupted. Error: ${personError.message}`
+      );
     }
 
     if (garmentError) {
       console.error(`[processOutfitSwap] Job ${jobId}: Failed to get garment image signed URL:`, {
         error: garmentError,
-        bucket: "ugc-inputs",
+        bucket: garmentBucket,
         path: garmentImage.storage_path
       });
-      throw new Error(`Failed to get garment image URL: ${garmentError.message}`);
+      throw new Error(
+        `Failed to access garment image. The file may be missing or corrupted. Error: ${garmentError.message}`
+      );
     }
 
     if (!personUrl?.signedUrl || !garmentUrl?.signedUrl) {
