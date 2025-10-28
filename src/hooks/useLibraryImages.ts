@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface LibraryImage {
+export interface LibraryImage {
   id: string;
   url: string;
   prompt: string;
@@ -19,15 +19,17 @@ interface LibraryImage {
   desiredAudience?: string;
   prodSpecs?: string;
   source_image_ids?: string[];
+  source_type?: 'ugc' | 'outfit_swap';
 }
 
 interface PaginationOptions {
   page?: number;
   limit?: number;
+  filter?: 'all' | 'ugc' | 'outfit_swap';
 }
 
 export const useLibraryImages = (options: PaginationOptions = {}) => {
-  const { page = 1, limit = 20 } = options;
+  const { page = 1, limit = 20, filter = 'all' } = options;
   const [images, setImages] = useState<LibraryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,39 +95,44 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       console.log('[useLibraryImages] Session verified, fetching images for user:', user.id);
 
       const offset = (pageNumber - 1) * limit;
+      console.log('[useLibraryImages] Fetching images:', { pageNumber, offset, limit, filter });
 
-      // Fetch from both tables separately with pagination for better performance
-      // Also join with image_jobs to get desiredAudience and ProdSpces and source_image_ids
-      const [ugcResult, generatedResult] = await Promise.all([
-        supabase
+      // Conditionally fetch based on filter
+      let ugcResult = { data: null, error: null };
+      let outfitSwapResult = { data: null, error: null };
+
+      if (filter === 'all' || filter === 'ugc') {
+        ugcResult = await supabase
           .from('ugc_images')
           .select('*, image_jobs(desiredAudience, prodSpecs, source_image_ids, settings)')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .range(offset, offset + limit - 1),
+          .range(offset, offset + limit - 1);
+      }
 
-        supabase
-          .from('generated_images')
-          .select('*, image_jobs(desiredAudience, prodSpecs, source_image_ids, settings)')
+      if (filter === 'all' || filter === 'outfit_swap') {
+        outfitSwapResult = await supabase
+          .from('outfit_swap_results')
+          .select('*, outfit_swap_jobs(settings, metadata)')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .range(offset, offset + limit - 1)
-      ]);
+          .range(offset, offset + limit - 1);
+      }
 
       console.log('[useLibraryImages] Query results:', { 
         ugcCount: ugcResult.data?.length || 0, 
-        generatedCount: generatedResult.data?.length || 0,
+        outfitSwapCount: outfitSwapResult.data?.length || 0,
         ugcError: ugcResult.error,
-        generatedError: generatedResult.error
+        outfitSwapError: outfitSwapResult.error
       });
 
       if (ugcResult.error) {
         console.error('[useLibraryImages] UGC images query error:', ugcResult.error);
         throw ugcResult.error;
       }
-      if (generatedResult.error) {
-        console.error('[useLibraryImages] Generated images query error:', generatedResult.error);
-        throw generatedResult.error;
+      if (outfitSwapResult.error) {
+        console.error('[useLibraryImages] Outfit swap results query error:', outfitSwapResult.error);
+        throw outfitSwapResult.error;
       }
 
       // Normalize both data sources to LibraryImage format
@@ -146,39 +153,42 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
           job_id: img.job_id,
           desiredAudience: jobData?.desiredAudience,
           prodSpecs: jobData?.prodSpecs,
-          source_image_ids: jobData?.source_image_ids
+          source_image_ids: jobData?.source_image_ids,
+          source_type: 'ugc'
         };
       });
 
-      const generatedImages: LibraryImage[] = (generatedResult.data || []).map(img => {
-        const jobData = Array.isArray(img.image_jobs) ? img.image_jobs[0] : img.image_jobs;
+      const outfitSwapImages: LibraryImage[] = (outfitSwapResult.data || []).map((result: any) => {
+        const jobData = result.outfit_swap_jobs;
         return {
-          id: img.id,
-          url: img.public_url,
-          prompt: img.prompt,
-          created_at: img.created_at,
-          settings: jobData?.settings || {
-            size: (img.settings as any)?.size || '1024x1024',
-            quality: (img.settings as any)?.quality || 'high',
-            numberOfImages: (img.settings as any)?.number || 1,
-            format: (img.settings as any)?.output_format || 'webp'
+          id: result.id,
+          url: result.public_url || result.jpg_url,
+          prompt: 'Outfit Swap Result',
+          created_at: result.created_at,
+          settings: {
+            size: '1024x1024',
+            quality: 'high',
+            numberOfImages: 1,
+            format: 'jpg',
+            ...jobData?.settings
           },
-          source_image_id: img.source_image_id || undefined,
-          job_id: img.job_id,
-          desiredAudience: jobData?.desiredAudience,
-          prodSpecs: jobData?.prodSpecs,
-          source_image_ids: jobData?.source_image_ids
+          job_id: result.job_id,
+          source_type: 'outfit_swap'
         };
       });
 
       // Combine and sort by creation date
-      const processedImages = [...ugcImages, ...generatedImages]
+      const processedImages = [...ugcImages, ...outfitSwapImages]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-      console.log('[useLibraryImages] Processed images:', processedImages.length);
+      console.log('[useLibraryImages] Processed images:', { 
+        ugc: ugcImages.length, 
+        outfitSwap: outfitSwapImages.length,
+        total: processedImages.length 
+      });
 
       // Estimate total count and hasMore status
-      const currentCount = ugcImages.length + generatedImages.length;
+      const currentCount = ugcImages.length + outfitSwapImages.length;
       setHasMore(currentCount === limit);
 
       // Get source image signed URLs for thumbnail overlays (batch optimized)
@@ -293,25 +303,25 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
     try {
       console.log('[useLibraryImages] Attempting to delete image:', imageId);
       
-      // Try deleting from both tables since we don't know which one it's from
-      const [ugcResult, generatedResult] = await Promise.all([
+      // Try deleting from all possible tables
+      const [ugcResult, outfitSwapResult] = await Promise.all([
         supabase.from('ugc_images').delete().eq('id', imageId).eq('user_id', user.id),
-        supabase.from('generated_images').delete().eq('id', imageId).eq('user_id', user.id)
+        supabase.from('outfit_swap_results').delete().eq('id', imageId).eq('user_id', user.id)
       ]);
 
       console.log('[useLibraryImages] Delete results:', { 
         ugcError: ugcResult.error, 
-        generatedError: generatedResult.error
+        outfitSwapError: outfitSwapResult.error
       });
 
       // Check if either deletion succeeded
       const ugcDeleted = !ugcResult.error;
-      const generatedDeleted = !generatedResult.error;
+      const outfitSwapDeleted = !outfitSwapResult.error;
 
       // If both failed, throw an error
-      if (!ugcDeleted && !generatedDeleted) {
-        const errorMsg = ugcResult.error?.message || generatedResult.error?.message || 'Unknown error';
-        console.error('[useLibraryImages] Both delete operations failed:', { ugcResult, generatedResult });
+      if (!ugcDeleted && !outfitSwapDeleted) {
+        const errorMsg = ugcResult.error?.message || outfitSwapResult.error?.message || 'Unknown error';
+        console.error('[useLibraryImages] All delete operations failed:', { ugcResult, outfitSwapResult });
         throw new Error(`Failed to delete image: ${errorMsg}`);
       }
 
@@ -335,7 +345,7 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
   useEffect(() => {
     setCurrentPage(1);
     fetchImages(1, false);
-  }, [user, limit]);
+  }, [user, limit, filter]);
 
   return {
     images,

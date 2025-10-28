@@ -34,11 +34,15 @@ interface LibraryProps {
 export const Library = ({ onBack }: LibraryProps) => {
   const [showSourceThumbnails, setShowSourceThumbnails] = useState(false);
   const [viewMode, setViewMode] = useState<"ai" | "source">("ai");
+  const [filter, setFilter] = useState<"all" | "ugc" | "outfit_swap">("all");
 
   const { toast } = useToast();
   const { user } = useAuth();
   const { t } = useTranslation();
-  const { images, loading, hasMore, loadMore, deleteImage: deleteImageFromDB } = useLibraryImages({ limit: 20 });
+  const { images, loading, hasMore, loadMore, deleteImage: deleteImageFromDB } = useLibraryImages({ 
+    limit: 20, 
+    filter: viewMode === "ai" ? filter : undefined 
+  });
   const { sourceImages, loading: sourceLoading } = useSourceImages();
   const { activeJob, activeImages } = useActiveJob();
 

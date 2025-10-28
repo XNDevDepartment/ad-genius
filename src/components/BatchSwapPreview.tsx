@@ -180,10 +180,12 @@ export const BatchSwapPreview = ({
     window.open(url, "_blank");
   };
 
-  const handleAnimate = (imageUrl: string) => {
+  const handleAnimate = (imageUrl: string, result: any) => {
     navigate("/create/video", {
       state: {
         preselectedImageUrl: imageUrl,
+        source: 'outfit_swap',
+        result_id: result.id,
       },
     });
   };
@@ -343,7 +345,7 @@ export const BatchSwapPreview = ({
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleAnimate(result.public_url)}
+                          onClick={() => handleAnimate(result.public_url, result)}
                         >
                           <Film className="w-3 h-3 mr-1" />
                           Animate

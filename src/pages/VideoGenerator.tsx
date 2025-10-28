@@ -137,10 +137,26 @@ export default function VideoGenerator() {
     }
   };
 
-  // Handle pre-selection from UGC
+  // Handle pre-selection from UGC or Outfit Swap
   useEffect(() => {
     const state = location.state as any;
-    if (state?.ugc_image_id && state?.preselectedImageUrl) {
+    
+    if (state?.source === 'outfit_swap' && state?.preselectedImageUrl) {
+      // Handle outfit swap source
+      setPreselectedImageUrl(state.preselectedImageUrl);
+      
+      toast({
+        title: "Outfit Swap Loaded",
+        description: "Outfit swap result ready to animate.",
+      });
+
+      // Analyze image for motion
+      analyzeImageForMotion(state.preselectedImageUrl);
+
+      // Clear location state
+      window.history.replaceState({}, document.title);
+    } else if (state?.ugc_image_id && state?.preselectedImageUrl) {
+      // Handle UGC source
       setUgcImageId(state.ugc_image_id);
       setPreselectedImageUrl(state.preselectedImageUrl);
 

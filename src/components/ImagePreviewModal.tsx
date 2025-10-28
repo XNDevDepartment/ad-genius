@@ -57,11 +57,11 @@ export const ImagePreviewModal = ({
             </div>
           </div>
         </DialogHeader>
-        <div className="relative overflow-auto p-4 object-contain">
+        <div className="relative flex items-center justify-center p-4 max-h-[calc(90vh-120px)]">
           <img
             src={imageUrl}
             alt={imageName}
-            className="w-full h-auto object-contain rounded-lg"
+            className="max-w-full max-h-full object-contain rounded-lg"
           />
         </div>
       </DialogContent>

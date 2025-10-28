@@ -448,7 +448,7 @@ async function processOutfitSwap(jobId: string) {
 
     // Upload JPG
     const jpgPath = `${basePath}/result_${timestamp}.jpg`;
-    const { error: jpgUploadError } = await supabase.storage.from("ugc").upload(jpgPath, imageBuffer, {
+    const { error: jpgUploadError } = await supabase.storage.from("outfit-user-models").upload(jpgPath, imageBuffer, {
       contentType: "image/jpeg",
       upsert: false,
     });
@@ -459,7 +459,7 @@ async function processOutfitSwap(jobId: string) {
 
     // Upload PNG
     const pngPath = `${basePath}/result_${timestamp}.png`;
-    const { error: pngUploadError } = await supabase.storage.from("ugc").upload(pngPath, imageBuffer, {
+    const { error: pngUploadError } = await supabase.storage.from("outfit-user-models").upload(pngPath, imageBuffer, {
       contentType: "image/png",
       upsert: false,
     });
@@ -469,27 +469,11 @@ async function processOutfitSwap(jobId: string) {
     }
 
     // Get public URLs
-    const { data: jpgPublicUrl } = supabase.storage.from("ugc").getPublicUrl(jpgPath);
-    const { data: pngPublicUrl } = supabase.storage.from("ugc").getPublicUrl(pngPath);
+    const { data: jpgPublicUrl } = supabase.storage.from("outfit-user-models").getPublicUrl(jpgPath);
+    const { data: pngPublicUrl } = supabase.storage.from("outfit-user-models").getPublicUrl(pngPath);
 
-    // Save results to gallery (generated_images table)
-    const { data: generatedImage, error: galleryError } = await supabase
-      .from("generated_images")
-      .insert({
-        user_id: job.user_id,
-        storage_path: jpgPath,
-        public_url: jpgPublicUrl.publicUrl,
-        prompt: `Outfit swap: ${job.settings?.description || 'Custom outfit'}`,
-        settings: job.settings || {},
-        job_id: jobId,
-      })
-      .select()
-      .single();
-
-    if (galleryError) {
-      console.error("Gallery insert error:", galleryError);
-    }
-
+    // Note: generated_images table has been removed - only storing in outfit_swap_results
+    
     // Save results to outfit_swap_results
     const { error: resultError } = await supabase.from("outfit_swap_results").insert({
       job_id: jobId,
@@ -498,7 +482,6 @@ async function processOutfitSwap(jobId: string) {
       public_url: jpgPublicUrl.publicUrl,
       jpg_url: jpgPublicUrl.publicUrl,
       png_url: pngPublicUrl.publicUrl,
-      generated_image_id: generatedImage?.id || null,
       metadata: {
         model_used: "gemini-2.5-flash-image-preview",
         processing_time_ms: processingTime,
