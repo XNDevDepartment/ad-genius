@@ -34,9 +34,6 @@ serve(async (req)=>{
       case "cancelVideoJob":
         result = await cancelVideoJob(supabaseClient, user.id, payload.jobId);
         break;
-      case "retryVideoJob":
-        result = await retryVideoJob(supabaseClient, user.id, payload.jobId);
-        break;
       default:
         return json({
           error: "Invalid action"
@@ -59,17 +56,14 @@ function json(body, status = 200) {
     }
   });
 }
-
 async function isUserAdmin(supabase, userId) {
   const { data, error } = await supabase.rpc('is_user_admin', {
     check_user_id: userId
   });
-  
   if (error) {
     console.error('[ADMIN-CHECK] Error checking admin status:', error);
     return false;
   }
-  
   return data === true;
 }
 async function createVideoJob(supabase, userId, payload) {
@@ -79,27 +73,19 @@ async function createVideoJob(supabase, userId, payload) {
     prompt,
     duration
   });
-  
   // Check if user is admin
   const isAdmin = await isUserAdmin(supabase, userId);
   console.log(`[CREATE-JOB] User is admin: ${isAdmin}`);
-  
   // Skip subscription check for admins
   if (!isAdmin) {
     // Check subscription tier - All tiers except Starter can access videos
-    const { data: subscriber, error: subError } = await supabase
-      .from('subscribers')
-      .select('subscription_tier')
-      .eq('user_id', userId)
-      .single();
-    
+    const { data: subscriber, error: subError } = await supabase.from('subscribers').select('subscription_tier').eq('user_id', userId).single();
     if (subError || !subscriber) {
       return {
         success: false,
         error: 'Unable to verify subscription status.'
       };
     }
-    
     // Only Starter tier is excluded from video generation
     if (subscriber.subscription_tier === 'Starter') {
       return {
@@ -109,16 +95,13 @@ async function createVideoJob(supabase, userId, payload) {
       };
     }
   }
-  
   // Validate basic inputs
   if (!prompt) return {
     success: false,
     error: "Missing prompt"
   };
-  
   // Credit cost calculation
   const creditCost = Number(duration) === 10 ? 10 : 5;
-  
   // Deduct credits ONLY for non-admin users
   if (!isAdmin) {
     const { data: creditResult, error: creditError } = await supabase.rpc("deduct_user_credits", {
@@ -164,22 +147,13 @@ async function createVideoJob(supabase, userId, payload) {
       error: "Source image not found"
     };
   }
-  // Create job record - normalize and store just the variant
-  let modelVariant = model || 'v2.5-turbo/pro/image-to-video';
-  
-  // Extract just the variant if full path was provided
-  if (modelVariant.includes('fal-ai/kling-video/')) {
-    modelVariant = modelVariant.replace('fal-ai/kling-video/', '');
-  }
-  
-  // Normalize the path format (v2.5-turbo -> v2.5-turbo)
-  modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5-turbo');
-  
+  // Create job record
+  const modelId = model || 'fal-ai/kling-video/v2.5-turbo/pro/image-to-video';
   const { data: job, error: jobError } = await supabase.from("kling_jobs").insert({
     user_id: userId,
     prompt,
     duration: Number(duration) === 10 ? 10 : 5,
-    model: modelVariant,  // Store just the variant
+    model: modelId,
     image_url: imageUrl,
     source_image_id: source_image_id || null,
     ugc_image_id: ugc_image_id || null,
@@ -211,7 +185,7 @@ async function createVideoJob(supabase, userId, payload) {
   console.log("[CREATE-JOB] Job created:", job.id);
   // Kick off processing — prefer webhook if provided
   const webhook = Deno.env.get("FAL_WEBHOOK_URL") || null;
-  processVideoJobAsync(supabase, job.id, webhook).catch((e)=>console.error("[PROCESS-JOB] Launch error:", e));
+  EdgeRuntime.waitUntil(processVideoJobAsync(supabase, job.id, null).catch((e)=>console.error("[PROCESS-JOB] Launch error:", e)));
   return {
     success: true,
     jobId: job.id,
@@ -231,28 +205,12 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
   }).eq("id", jobId);
   const FAL_KEY = Deno.env.get("FAL_KEY");
   if (!FAL_KEY) throw new Error("FAL_KEY not configured");
-  
-  // Extract just the variant from the stored model (normalize format)
-  let modelVariant = job.model || 'v2.5-turbo/pro/image-to-video';
-  
-  // If the model contains the full path, extract just the variant
-  if (modelVariant.includes('fal-ai/kling-video/')) {
-    modelVariant = modelVariant.replace('fal-ai/kling-video/', '');
-  }
-  
-  // Normalize the path format (v2.5-turbo -> v2.5-turbo)
-  modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5-turbo');
-  
-  // Build FULL model path for FAL.ai queue API
-  const fullModelPath = `fal-ai/kling-video/${modelVariant}`;
-  
-  // Build payload - NO model_name in body since it's in the URL
+  // Build payload per v1 i2v schema (no aspect_ratio here)
   const inputPayload = {
     prompt: job.prompt,
     image_url: job.image_url,
     duration: Number(job.duration) === 10 ? 10 : 5
   };
-  
   // carry optional knobs from metadata if present
   const md = job.metadata || {};
   if (md.negative_prompt) inputPayload.negative_prompt = md.negative_prompt;
@@ -260,10 +218,8 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
   if (md.static_mask_url) inputPayload.static_mask_url = md.static_mask_url;
   if (md.dynamic_masks) inputPayload.dynamic_masks = md.dynamic_masks;
   if (md.tail_image_url) inputPayload.tail_image_url = md.tail_image_url;
-  
-  console.log("[PROCESS-JOB] Calling FAL queue with full model path:", fullModelPath);
-  const enqueueUrl = `https://queue.fal.run/${fullModelPath}` + (webhookUrl ? `?fal_webhook=${encodeURIComponent(webhookUrl)}` : "");
-  
+  console.log("[PROCESS-JOB] Calling FAL queue:", job.model);
+  const enqueueUrl = `https://queue.fal.run/${job.model}` + (webhookUrl ? `?fal_webhook=${encodeURIComponent(webhookUrl)}` : "");
   const submitRes = await fetch(enqueueUrl, {
     method: "POST",
     headers: {
@@ -278,11 +234,8 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
   }
   const submitJson = await submitRes.json();
   const requestId = submitJson.request_id;
-  
-  // Always construct full URLs with model path (FAL's URLs are incomplete)
-  const statusUrl = `https://queue.fal.run/${fullModelPath}/requests/${requestId}/status`;
-  const responseUrl = `https://queue.fal.run/${fullModelPath}/requests/${requestId}`;
-  
+  const statusUrl = submitJson.status_url || `https://queue.fal.run/${job.model}/requests/${requestId}/status`;
+  const responseUrl = submitJson.response_url || `https://queue.fal.run/${job.model}/requests/${requestId}`;
   await supabase.from("kling_jobs").update({
     request_id: requestId,
     status_url: statusUrl,
@@ -303,34 +256,16 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
       }
     });
     if (!stRes.ok) {
-      const errorText = await stRes.text();
-      console.error(`[PROCESS-JOB] Status check failed (${attempt}/${pollMax}):`, {
-        status: stRes.status,
-        statusUrl,
-        error: errorText
-      });
+      console.warn(`[PROCESS-JOB] Status check failed (${attempt}/${pollMax})`, stRes.status);
       continue;
     }
     const st = await stRes.json();
-    console.log(`[PROCESS-JOB] Full FAL status response:`, JSON.stringify(st));
-    const status = st.status?.toUpperCase() || st.status;
-    console.log(`[PROCESS-JOB] Poll ${attempt}/${pollMax}: Status="${status}"`);
-    
-    // Check for failure states
-    if (status === "FAILED" || status === "ERROR" || status === "CANCELLED") {
-      const errorMsg = st.error?.message || st.error || JSON.stringify(st);
-      console.error(`[PROCESS-JOB] Job failed with status "${status}":`, errorMsg);
-      await supabase.from("kling_jobs").update({
-        status: "failed",
-        error: { message: errorMsg, raw_status: st },
-        finished_at: new Date().toISOString()
-      }).eq("id", jobId);
-      throw new Error("Video generation failed: " + errorMsg);
+    const status = st.status;
+    console.log(`[PROCESS-JOB] Poll ${attempt}/${pollMax}: ${status}`);
+    if (status === "FAILED" || status === "ERROR") {
+      throw new Error("Video generation failed: " + JSON.stringify(st.error ?? st));
     }
-    
-    // Check for completion states - FAL.ai might return different values
-    if (status === "COMPLETED" || status === "SUCCEEDED" || status === "SUCCESS" || status === "DONE") {
-      console.log(`[PROCESS-JOB] Job completed with status "${status}", fetching result...`);
+    if (status === "COMPLETED") {
       const resRes = await fetch(responseUrl, {
         headers: {
           Authorization: `Key ${FAL_KEY}`
@@ -348,55 +283,7 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
       await persistVideoToStorage(supabase, job, jobId, videoUrl);
       return;
     }
-    
-    // If still in progress or queued, continue polling
-    if (status === "IN_PROGRESS" || status === "IN_QUEUE" || status === "QUEUED" || status === "PROCESSING") {
-      continue;
-    }
-    
-    // Unknown status - log and continue
-    console.warn(`[PROCESS-JOB] Unknown status "${status}", continuing to poll...`);
   }
-  
-  // Timeout reached - make one final check before failing
-  console.error(`[PROCESS-JOB] Polling timeout reached after ${pollMax} attempts`);
-  console.error(`[PROCESS-JOB] Job details for manual recovery:`, {
-    jobId,
-    request_id: job.request_id,
-    response_url: responseUrl,
-    status_url: statusUrl
-  });
-  
-  // Try one final time to get the result
-  try {
-    const finalCheck = await fetch(responseUrl, {
-      headers: { Authorization: `Key ${FAL_KEY}` }
-    });
-    if (finalCheck.ok) {
-      const finalResult = await finalCheck.json();
-      const payload = finalResult?.response ?? finalResult?.output ?? finalResult?.data ?? finalResult;
-      const videoUrl = payload?.video?.url;
-      if (videoUrl) {
-        console.log("[PROCESS-JOB] Final check found completed video!");
-        await persistVideoToStorage(supabase, job, jobId, videoUrl);
-        return;
-      }
-    }
-  } catch (e) {
-    console.error("[PROCESS-JOB] Final check failed:", e);
-  }
-  
-  // Mark as failed with timeout error
-  await supabase.from("kling_jobs").update({
-    status: "failed",
-    error: { 
-      message: "Video generation timed out after 10 minutes",
-      request_id: job.request_id,
-      response_url: responseUrl
-    },
-    finished_at: new Date().toISOString()
-  }).eq("id", jobId);
-  
   throw new Error("Video generation timed out");
 }
 async function persistVideoToStorage(supabase, job, jobId, videoUrl) {
@@ -434,10 +321,8 @@ async function getVideoJob(supabase, userId, jobId) {
 }
 async function cancelVideoJob(supabase, userId, jobId) {
   console.log(`[CANCEL-JOB] Canceling job ${jobId} for user ${userId}`);
-  
   // Check if user is admin
   const isAdmin = await isUserAdmin(supabase, userId);
-  
   const { data: job } = await supabase.from("kling_jobs").select("*").eq("id", jobId).eq("user_id", userId).single();
   if (!job) return {
     success: false,
@@ -454,15 +339,7 @@ async function cancelVideoJob(supabase, userId, jobId) {
     if (job.request_id) {
       const FAL_KEY = Deno.env.get("FAL_KEY");
       if (FAL_KEY) {
-        // Extract and normalize model variant
-        let modelVariant = job.model || 'v2.5-turbo/pro/image-to-video';
-        if (modelVariant.includes('fal-ai/kling-video/')) {
-          modelVariant = modelVariant.replace('fal-ai/kling-video/', '');
-        }
-        modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5-turbo');
-        
-        const fullModelPath = `fal-ai/kling-video/${modelVariant}`;
-        const cancelUrl = `https://queue.fal.run/${fullModelPath}/requests/${job.request_id}/cancel`;
+        const cancelUrl = `https://queue.fal.run/${job.model}/requests/${job.request_id}/cancel`;
         const res = await fetch(cancelUrl, {
           method: "PUT",
           headers: {
@@ -481,7 +358,6 @@ async function cancelVideoJob(supabase, userId, jobId) {
     status: "canceled",
     finished_at: new Date().toISOString()
   }).eq("id", jobId);
-  
   // Only refund for non-admin users
   if (!isAdmin && job.status === "queued" && job.metadata?.credit_cost) {
     await supabase.rpc("refund_user_credits", {
@@ -491,102 +367,10 @@ async function cancelVideoJob(supabase, userId, jobId) {
     });
     console.log(`[CANCEL-JOB] Refunded ${job.metadata.credit_cost} credits`);
   }
-  
   return {
     success: true
   };
 }
-
-async function retryVideoJob(supabase, userId, jobId) {
-  console.log(`[RETRY-JOB] Retrying job ${jobId} for user ${userId}`);
-  
-  const { data: job } = await supabase.from("kling_jobs").select("*").eq("id", jobId).eq("user_id", userId).single();
-  if (!job) {
-    return { success: false, error: "Job not found" };
-  }
-  
-  if (job.status === "completed") {
-    return { success: false, error: "Job already completed" };
-  }
-  
-  if (!job.request_id || !job.response_url) {
-    return { success: false, error: "Job missing FAL request information" };
-  }
-  
-  const FAL_KEY = Deno.env.get("FAL_KEY");
-  if (!FAL_KEY) {
-    return { success: false, error: "FAL_KEY not configured" };
-  }
-  
-  try {
-    console.log(`[RETRY-JOB] Checking FAL status for request ${job.request_id}`);
-    
-    // Extract and normalize model variant
-    let modelVariant = job.model || 'v2.5-turbo/pro/image-to-video';
-    if (modelVariant.includes('fal-ai/kling-video/')) {
-      modelVariant = modelVariant.replace('fal-ai/kling-video/', '');
-    }
-    modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5-turbo');
-    
-    const fullModelPath = `fal-ai/kling-video/${modelVariant}`;
-    
-    // Check current status
-    const statusRes = await fetch(job.status_url || `https://queue.fal.run/${fullModelPath}/requests/${job.request_id}/status`, {
-      headers: { Authorization: `Key ${FAL_KEY}` }
-    });
-    
-    if (!statusRes.ok) {
-      return { success: false, error: `FAL status check failed: ${statusRes.status}` };
-    }
-    
-    const statusData = await statusRes.json();
-    console.log(`[RETRY-JOB] Current FAL status:`, JSON.stringify(statusData));
-    const status = statusData.status?.toUpperCase() || statusData.status;
-    
-    // If completed, fetch and persist the video
-    if (status === "COMPLETED" || status === "SUCCEEDED" || status === "SUCCESS" || status === "DONE") {
-      const resultRes = await fetch(job.response_url, {
-        headers: { Authorization: `Key ${FAL_KEY}` }
-      });
-      
-      if (!resultRes.ok) {
-        return { success: false, error: `Failed to fetch result: ${resultRes.status}` };
-      }
-      
-      const resultJson = await resultRes.json();
-      const payload = resultJson?.response ?? resultJson?.output ?? resultJson?.data ?? resultJson;
-      const videoUrl = payload?.video?.url;
-      
-      if (!videoUrl) {
-        return { success: false, error: "Video URL not found in FAL response" };
-      }
-      
-      await persistVideoToStorage(supabase, job, jobId, videoUrl);
-      return { success: true, message: "Video recovered and saved" };
-    }
-    
-    // If still processing, return current status
-    if (status === "IN_PROGRESS" || status === "IN_QUEUE" || status === "QUEUED" || status === "PROCESSING") {
-      return { success: true, message: `Video is still ${status.toLowerCase()}`, status };
-    }
-    
-    // If failed
-    if (status === "FAILED" || status === "ERROR") {
-      await supabase.from("kling_jobs").update({
-        status: "failed",
-        error: statusData.error || { message: "FAL processing failed" },
-        finished_at: new Date().toISOString()
-      }).eq("id", jobId);
-      return { success: false, error: "Video generation failed on FAL side" };
-    }
-    
-    return { success: false, error: `Unknown status: ${status}` };
-  } catch (error) {
-    console.error("[RETRY-JOB] Error:", error);
-    return { success: false, error: error.message };
-  }
-}
-
 function delay(ms) {
   return new Promise((r)=>setTimeout(r, ms));
 } /**
