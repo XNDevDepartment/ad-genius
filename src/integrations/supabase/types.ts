@@ -956,6 +956,15 @@ export type Database = {
         Args: { p_days_old?: number }
         Returns: number
       }
+      cleanup_orphaned_base_models: {
+        Args: never
+        Returns: {
+          action: string
+          model_id: string
+          model_name: string
+          storage_path: string
+        }[]
+      }
       deduct_user_credits: {
         Args: { p_amount: number; p_reason?: string; p_user_id: string }
         Returns: Json
