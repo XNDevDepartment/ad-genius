@@ -167,6 +167,27 @@ export function useVideoLibrary(options: UseVideoLibraryOptions = {}) {
     }
   };
 
+  // Retry stuck video
+  const retryVideo = async (jobId: string) => {
+    try {
+      console.log('[useVideoLibrary] Retrying video:', jobId);
+      
+      const { retryVideoJob } = await import('@/api/kling');
+      const result = await retryVideoJob(jobId);
+      
+      if (result.success) {
+        toast.success(result.message || "Video recovery initiated");
+        // Refetch to get updated status
+        await fetchVideos(false);
+      } else {
+        toast.error(result.error || "Failed to retry video");
+      }
+    } catch (err: any) {
+      console.error('[useVideoLibrary] Failed to retry video:', err);
+      toast.error("Failed to retry video");
+    }
+  };
+
   // Load more (pagination)
   const loadMore = () => {
     if (!loading && hasMore) {
@@ -242,5 +263,6 @@ export function useVideoLibrary(options: UseVideoLibraryOptions = {}) {
     refetch,
     deleteVideo,
     downloadVideo,
+    retryVideo,
   };
 }

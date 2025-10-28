@@ -34,6 +34,9 @@ serve(async (req)=>{
       case "cancelVideoJob":
         result = await cancelVideoJob(supabaseClient, user.id, payload.jobId);
         break;
+      case "retryVideoJob":
+        result = await retryVideoJob(supabaseClient, user.id, payload.jobId);
+        break;
       default:
         return json({
           error: "Invalid action"
@@ -274,12 +277,25 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
       continue;
     }
     const st = await stRes.json();
-    const status = st.status;
-    console.log(`[PROCESS-JOB] Poll ${attempt}/${pollMax}: ${status}`);
-    if (status === "FAILED" || status === "ERROR") {
-      throw new Error("Video generation failed: " + JSON.stringify(st.error ?? st));
+    console.log(`[PROCESS-JOB] Full FAL status response:`, JSON.stringify(st));
+    const status = st.status?.toUpperCase() || st.status;
+    console.log(`[PROCESS-JOB] Poll ${attempt}/${pollMax}: Status="${status}"`);
+    
+    // Check for failure states
+    if (status === "FAILED" || status === "ERROR" || status === "CANCELLED") {
+      const errorMsg = st.error?.message || st.error || JSON.stringify(st);
+      console.error(`[PROCESS-JOB] Job failed with status "${status}":`, errorMsg);
+      await supabase.from("kling_jobs").update({
+        status: "failed",
+        error: { message: errorMsg, raw_status: st },
+        finished_at: new Date().toISOString()
+      }).eq("id", jobId);
+      throw new Error("Video generation failed: " + errorMsg);
     }
-    if (status === "COMPLETED") {
+    
+    // Check for completion states - FAL.ai might return different values
+    if (status === "COMPLETED" || status === "SUCCEEDED" || status === "SUCCESS" || status === "DONE") {
+      console.log(`[PROCESS-JOB] Job completed with status "${status}", fetching result...`);
       const resRes = await fetch(responseUrl, {
         headers: {
           Authorization: `Key ${FAL_KEY}`
@@ -297,7 +313,55 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
       await persistVideoToStorage(supabase, job, jobId, videoUrl);
       return;
     }
+    
+    // If still in progress or queued, continue polling
+    if (status === "IN_PROGRESS" || status === "IN_QUEUE" || status === "QUEUED" || status === "PROCESSING") {
+      continue;
+    }
+    
+    // Unknown status - log and continue
+    console.warn(`[PROCESS-JOB] Unknown status "${status}", continuing to poll...`);
   }
+  
+  // Timeout reached - make one final check before failing
+  console.error(`[PROCESS-JOB] Polling timeout reached after ${pollMax} attempts`);
+  console.error(`[PROCESS-JOB] Job details for manual recovery:`, {
+    jobId,
+    request_id: job.request_id,
+    response_url: responseUrl,
+    status_url: statusUrl
+  });
+  
+  // Try one final time to get the result
+  try {
+    const finalCheck = await fetch(responseUrl, {
+      headers: { Authorization: `Key ${FAL_KEY}` }
+    });
+    if (finalCheck.ok) {
+      const finalResult = await finalCheck.json();
+      const payload = finalResult?.response ?? finalResult?.output ?? finalResult?.data ?? finalResult;
+      const videoUrl = payload?.video?.url;
+      if (videoUrl) {
+        console.log("[PROCESS-JOB] Final check found completed video!");
+        await persistVideoToStorage(supabase, job, jobId, videoUrl);
+        return;
+      }
+    }
+  } catch (e) {
+    console.error("[PROCESS-JOB] Final check failed:", e);
+  }
+  
+  // Mark as failed with timeout error
+  await supabase.from("kling_jobs").update({
+    status: "failed",
+    error: { 
+      message: "Video generation timed out after 10 minutes",
+      request_id: job.request_id,
+      response_url: responseUrl
+    },
+    finished_at: new Date().toISOString()
+  }).eq("id", jobId);
+  
   throw new Error("Video generation timed out");
 }
 async function persistVideoToStorage(supabase, job, jobId, videoUrl) {
@@ -389,6 +453,88 @@ async function cancelVideoJob(supabase, userId, jobId) {
     success: true
   };
 }
+
+async function retryVideoJob(supabase, userId, jobId) {
+  console.log(`[RETRY-JOB] Retrying job ${jobId} for user ${userId}`);
+  
+  const { data: job } = await supabase.from("kling_jobs").select("*").eq("id", jobId).eq("user_id", userId).single();
+  if (!job) {
+    return { success: false, error: "Job not found" };
+  }
+  
+  if (job.status === "completed") {
+    return { success: false, error: "Job already completed" };
+  }
+  
+  if (!job.request_id || !job.response_url) {
+    return { success: false, error: "Job missing FAL request information" };
+  }
+  
+  const FAL_KEY = Deno.env.get("FAL_KEY");
+  if (!FAL_KEY) {
+    return { success: false, error: "FAL_KEY not configured" };
+  }
+  
+  try {
+    console.log(`[RETRY-JOB] Checking FAL status for request ${job.request_id}`);
+    
+    // Check current status
+    const statusRes = await fetch(job.status_url || `https://queue.fal.run/${job.model}/requests/${job.request_id}/status`, {
+      headers: { Authorization: `Key ${FAL_KEY}` }
+    });
+    
+    if (!statusRes.ok) {
+      return { success: false, error: `FAL status check failed: ${statusRes.status}` };
+    }
+    
+    const statusData = await statusRes.json();
+    console.log(`[RETRY-JOB] Current FAL status:`, JSON.stringify(statusData));
+    const status = statusData.status?.toUpperCase() || statusData.status;
+    
+    // If completed, fetch and persist the video
+    if (status === "COMPLETED" || status === "SUCCEEDED" || status === "SUCCESS" || status === "DONE") {
+      const resultRes = await fetch(job.response_url, {
+        headers: { Authorization: `Key ${FAL_KEY}` }
+      });
+      
+      if (!resultRes.ok) {
+        return { success: false, error: `Failed to fetch result: ${resultRes.status}` };
+      }
+      
+      const resultJson = await resultRes.json();
+      const payload = resultJson?.response ?? resultJson?.output ?? resultJson?.data ?? resultJson;
+      const videoUrl = payload?.video?.url;
+      
+      if (!videoUrl) {
+        return { success: false, error: "Video URL not found in FAL response" };
+      }
+      
+      await persistVideoToStorage(supabase, job, jobId, videoUrl);
+      return { success: true, message: "Video recovered and saved" };
+    }
+    
+    // If still processing, return current status
+    if (status === "IN_PROGRESS" || status === "IN_QUEUE" || status === "QUEUED" || status === "PROCESSING") {
+      return { success: true, message: `Video is still ${status.toLowerCase()}`, status };
+    }
+    
+    // If failed
+    if (status === "FAILED" || status === "ERROR") {
+      await supabase.from("kling_jobs").update({
+        status: "failed",
+        error: statusData.error || { message: "FAL processing failed" },
+        finished_at: new Date().toISOString()
+      }).eq("id", jobId);
+      return { success: false, error: "Video generation failed on FAL side" };
+    }
+    
+    return { success: false, error: `Unknown status: ${status}` };
+  } catch (error) {
+    console.error("[RETRY-JOB] Error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
 function delay(ms) {
   return new Promise((r)=>setTimeout(r, ms));
 } /**

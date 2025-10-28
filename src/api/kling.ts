@@ -119,6 +119,15 @@ export async function cancelVideoJob(jobId: string): Promise<{
   return callKlingFunction('cancelVideoJob', { jobId });
 }
 
+export async function retryVideoJob(jobId: string): Promise<{
+  success: boolean;
+  message?: string;
+  status?: string;
+  error?: string;
+}> {
+  return callKlingFunction('retryVideoJob', { jobId });
+}
+
 export function subscribeVideoJob(
   jobId: string,
   onUpdate: (job: KlingJobRow) => void

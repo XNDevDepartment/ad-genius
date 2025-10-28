@@ -36,6 +36,7 @@ export default function VideoLibrary() {
     refetch,
     deleteVideo,
     downloadVideo,
+    retryVideo,
   } = useVideoLibrary();
 
   const [viewingVideo, setViewingVideo] = useState<KlingJobRow | null>(null);
@@ -207,13 +208,25 @@ export default function VideoLibrary() {
                 )}
                 
                 <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => downloadVideo(viewingVideo)}
-                  >
-                    Download Video
-                  </Button>
+                  {viewingVideo.status === "processing" && (
+                    <Button
+                      variant="default"
+                      className="flex-1"
+                      onClick={() => retryVideo(viewingVideo.id)}
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Check Status
+                    </Button>
+                  )}
+                  {viewingVideo.status === "completed" && (
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => downloadVideo(viewingVideo)}
+                    >
+                      Download Video
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     onClick={() => {
