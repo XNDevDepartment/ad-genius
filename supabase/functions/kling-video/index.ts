@@ -34,6 +34,9 @@ serve(async (req)=>{
       case "cancelVideoJob":
         result = await cancelVideoJob(supabaseClient, user.id, payload.jobId);
         break;
+      case "retryVideoJob":
+        result = await retryVideoJob(supabaseClient, user.id, payload.jobId);
+        break;
       default:
         return json({
           error: "Invalid action"
@@ -183,9 +186,18 @@ async function createVideoJob(supabase, userId, payload) {
     };
   }
   console.log("[CREATE-JOB] Job created:", job.id);
-  // Kick off processing — prefer webhook if provided
-  const webhook = Deno.env.get("FAL_WEBHOOK_URL") || null;
-  EdgeRuntime.waitUntil(processVideoJobAsync(supabase, job.id, null).catch((e)=>console.error("[PROCESS-JOB] Launch error:", e)));
+  // Kick off processing in background with error handling
+  EdgeRuntime.waitUntil(
+    processVideoJobAsync(supabase, job.id, null).catch(async (e) => {
+      console.error("[PROCESS-JOB] Background task error:", e);
+      // Mark job as failed so it can be retried
+      await supabase.from("kling_jobs").update({
+        status: "failed",
+        error: { message: e.message, type: "background_task_error" },
+        finished_at: new Date().toISOString()
+      }).eq("id", job.id);
+    })
+  );
   return {
     success: true,
     jobId: job.id,
@@ -371,13 +383,101 @@ async function cancelVideoJob(supabase, userId, jobId) {
     success: true
   };
 }
+async function retryVideoJob(supabase, userId, jobId) {
+  console.log(`[RETRY-JOB] Retrying job ${jobId}`);
+  
+  const { data: job } = await supabase
+    .from("kling_jobs")
+    .select("*")
+    .eq("id", jobId)
+    .eq("user_id", userId)
+    .single();
+    
+  if (!job) {
+    return { success: false, error: "Job not found" };
+  }
+  
+  if (job.status !== "processing" && job.status !== "failed") {
+    return { success: false, error: "Job is not in processing or failed state" };
+  }
+  
+  if (!job.status_url || !job.response_url) {
+    return { success: false, error: "Job missing status URLs - cannot retry" };
+  }
+  
+  const FAL_KEY = Deno.env.get("FAL_KEY");
+  
+  // Check current status at FAL.ai
+  const statusRes = await fetch(job.status_url, {
+    headers: { Authorization: `Key ${FAL_KEY}` }
+  });
+  
+  if (!statusRes.ok) {
+    return { success: false, error: "Failed to check job status at FAL.ai" };
+  }
+  
+  const status = await statusRes.json();
+  console.log(`[RETRY-JOB] FAL status:`, status.status);
+  
+  if (status.status === "COMPLETED") {
+    // Fetch video and update database
+    const videoRes = await fetch(job.response_url, {
+      headers: { Authorization: `Key ${FAL_KEY}` }
+    });
+    
+    if (!videoRes.ok) {
+      return { success: false, error: "Failed to fetch completed video" };
+    }
+    
+    const result = await videoRes.json();
+    const payload = result?.response ?? result?.output ?? result?.data ?? result;
+    const videoUrl = payload?.video?.url;
+    
+    if (videoUrl) {
+      await persistVideoToStorage(supabase, job, jobId, videoUrl);
+      return { 
+        success: true, 
+        message: "Video recovered successfully",
+        status: "completed" 
+      };
+    } else {
+      return { success: false, error: "Video URL not found in completed result" };
+    }
+  } else if (status.status === "FAILED" || status.status === "ERROR") {
+    await supabase.from("kling_jobs").update({
+      status: "failed",
+      error: status.error || { message: "Generation failed at FAL.ai" },
+      finished_at: new Date().toISOString()
+    }).eq("id", jobId);
+    
+    return { 
+      success: true, 
+      message: "Job marked as failed",
+      status: "failed" 
+    };
+  } else if (status.status === "IN_PROGRESS" || status.status === "IN_QUEUE") {
+    // Still processing - restart background polling
+    EdgeRuntime.waitUntil(
+      processVideoJobAsync(supabase, jobId, null).catch(async (e) => {
+        console.error("[RETRY-JOB] Polling error:", e);
+        await supabase.from("kling_jobs").update({
+          status: "failed",
+          error: { message: e.message, type: "retry_polling_error" },
+          finished_at: new Date().toISOString()
+        }).eq("id", jobId);
+      })
+    );
+    
+    return { 
+      success: true, 
+      message: "Polling restarted for in-progress job",
+      status: "processing" 
+    };
+  }
+  
+  return { success: false, error: `Unexpected FAL status: ${status.status}` };
+}
+
 function delay(ms) {
   return new Promise((r)=>setTimeout(r, ms));
-} /**
- * OPTIONAL: implement a webhook handler endpoint at the same function
- * path with action "falWebhook" if you decide to use FAL_WEBHOOK_URL.
- * FAL will POST { request_id, status, payload } to your URL.
- * You can then fetch the full result via response_url if needed and call persistVideoToStorage.
- *
- * See: https://docs.fal.ai/model-apis/model-endpoints/webhooks
- */ 
+}
