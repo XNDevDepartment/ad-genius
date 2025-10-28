@@ -165,15 +165,15 @@ async function createVideoJob(supabase, userId, payload) {
     };
   }
   // Create job record - normalize and store just the variant
-  let modelVariant = model || 'v2.5/turbo/pro/image-to-video';
+  let modelVariant = model || 'v2.5-turbo/pro/image-to-video';
   
   // Extract just the variant if full path was provided
   if (modelVariant.includes('fal-ai/kling-video/')) {
     modelVariant = modelVariant.replace('fal-ai/kling-video/', '');
   }
   
-  // Normalize the path format (v2.5-turbo -> v2.5/turbo)
-  modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5/turbo');
+  // Normalize the path format (v2.5-turbo -> v2.5-turbo)
+  modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5-turbo');
   
   const { data: job, error: jobError } = await supabase.from("kling_jobs").insert({
     user_id: userId,
@@ -233,14 +233,14 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
   if (!FAL_KEY) throw new Error("FAL_KEY not configured");
   
   // Extract just the variant from the stored model (normalize format)
-  let modelVariant = job.model || 'v2.5/turbo/pro/image-to-video';
+  let modelVariant = job.model || 'v2.5-turbo/pro/image-to-video';
   
   // If the model contains the full path, extract just the variant
   if (modelVariant.includes('fal-ai/kling-video/')) {
     modelVariant = modelVariant.replace('fal-ai/kling-video/', '');
   }
   
-  // Normalize the path format (v2.5-turbo -> v2.5/turbo)
+  // Normalize the path format (v2.5-turbo -> v2.5-turbo)
   modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5-turbo');
   
   // Build FULL model path for FAL.ai queue API
@@ -450,11 +450,11 @@ async function cancelVideoJob(supabase, userId, jobId) {
       const FAL_KEY = Deno.env.get("FAL_KEY");
       if (FAL_KEY) {
         // Extract and normalize model variant
-        let modelVariant = job.model || 'v2.5/turbo/pro/image-to-video';
+        let modelVariant = job.model || 'v2.5-turbo/pro/image-to-video';
         if (modelVariant.includes('fal-ai/kling-video/')) {
           modelVariant = modelVariant.replace('fal-ai/kling-video/', '');
         }
-        modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5/turbo');
+        modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5-turbo');
         
         const fullModelPath = `fal-ai/kling-video/${modelVariant}`;
         const cancelUrl = `https://queue.fal.run/${fullModelPath}/requests/${job.request_id}/cancel`;
@@ -517,11 +517,11 @@ async function retryVideoJob(supabase, userId, jobId) {
     console.log(`[RETRY-JOB] Checking FAL status for request ${job.request_id}`);
     
     // Extract and normalize model variant
-    let modelVariant = job.model || 'v2.5/turbo/pro/image-to-video';
+    let modelVariant = job.model || 'v2.5-turbo/pro/image-to-video';
     if (modelVariant.includes('fal-ai/kling-video/')) {
       modelVariant = modelVariant.replace('fal-ai/kling-video/', '');
     }
-    modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5/turbo');
+    modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5-turbo');
     
     const fullModelPath = `fal-ai/kling-video/${modelVariant}`;
     
