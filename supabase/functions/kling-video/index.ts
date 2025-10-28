@@ -164,8 +164,17 @@ async function createVideoJob(supabase, userId, payload) {
       error: "Source image not found"
     };
   }
-  // Create job record - store the variant separately
-  const modelVariant = model || 'v2.5/turbo/pro/image-to-video';
+  // Create job record - normalize and store just the variant
+  let modelVariant = model || 'v2.5/turbo/pro/image-to-video';
+  
+  // Extract just the variant if full path was provided
+  if (modelVariant.includes('fal-ai/kling-video/')) {
+    modelVariant = modelVariant.replace('fal-ai/kling-video/', '');
+  }
+  
+  // Normalize the path format (v2.5-turbo -> v2.5/turbo)
+  modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5/turbo');
+  
   const { data: job, error: jobError } = await supabase.from("kling_jobs").insert({
     user_id: userId,
     prompt,
@@ -225,7 +234,17 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
   
   // Use base model path for queue API
   const baseModel = 'fal-ai/kling-video';
-  const modelVariant = job.model || 'v2.5/turbo/pro/image-to-video';
+  
+  // Extract just the variant from the stored model (normalize format)
+  let modelVariant = job.model || 'v2.5/turbo/pro/image-to-video';
+  
+  // If the model contains the full path, extract just the variant
+  if (modelVariant.includes('fal-ai/kling-video/')) {
+    modelVariant = modelVariant.replace('fal-ai/kling-video/', '');
+  }
+  
+  // Normalize the path format (v2.5-turbo -> v2.5/turbo)
+  modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5/turbo');
   
   // Build payload per FAL.ai docs - must include model_name
   const inputPayload = {
