@@ -264,17 +264,39 @@ async function processOutfitSwap(jobId: string) {
       throw new Error("Garment image storage path not found");
     }
 
-    // Create signed URLs
-    const { data: personUrl } = await supabase.storage
+    // Create signed URLs with proper error handling
+    const { data: personUrl, error: personError } = await supabase.storage
       .from(personBucket)
       .createSignedUrl(personStoragePath, 3600);
 
-    const { data: garmentUrl } = await supabase.storage
+    const { data: garmentUrl, error: garmentError } = await supabase.storage
       .from("ugc-inputs")
       .createSignedUrl(garmentImage.storage_path, 3600);
 
+    if (personError) {
+      console.error(`[processOutfitSwap] Job ${jobId}: Failed to get person image signed URL:`, {
+        error: personError,
+        bucket: personBucket,
+        path: personStoragePath
+      });
+      throw new Error(`Failed to get person image URL: ${personError.message}`);
+    }
+
+    if (garmentError) {
+      console.error(`[processOutfitSwap] Job ${jobId}: Failed to get garment image signed URL:`, {
+        error: garmentError,
+        bucket: "ugc-inputs",
+        path: garmentImage.storage_path
+      });
+      throw new Error(`Failed to get garment image URL: ${garmentError.message}`);
+    }
+
     if (!personUrl?.signedUrl || !garmentUrl?.signedUrl) {
-      throw new Error("Failed to get source image URLs");
+      console.error(`[processOutfitSwap] Job ${jobId}: Signed URLs are null/undefined:`, {
+        personUrl,
+        garmentUrl
+      });
+      throw new Error("Failed to get source image URLs: URLs are null");
     }
 
     console.log(`[processOutfitSwap] Job ${jobId}: URLs ready for AI processing`);
