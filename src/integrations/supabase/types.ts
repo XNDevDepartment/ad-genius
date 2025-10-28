@@ -106,92 +106,6 @@ export type Database = {
         }
         Relationships: []
       }
-      generated_images: {
-        Row: {
-          created_at: string
-          id: string
-          job_id: string | null
-          prompt: string
-          public_showcase: boolean | null
-          public_url: string
-          settings: Json | null
-          source_image_id: string | null
-          storage_path: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          job_id?: string | null
-          prompt: string
-          public_showcase?: boolean | null
-          public_url: string
-          settings?: Json | null
-          source_image_id?: string | null
-          storage_path: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          job_id?: string | null
-          prompt?: string
-          public_showcase?: boolean | null
-          public_url?: string
-          settings?: Json | null
-          source_image_id?: string | null
-          storage_path?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "generated_images_job_id_fkey"
-            columns: ["job_id"]
-            isOneToOne: false
-            referencedRelation: "image_jobs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "generated_images_source_image_id_fkey"
-            columns: ["source_image_id"]
-            isOneToOne: false
-            referencedRelation: "source_images"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      image_favorites: {
-        Row: {
-          created_at: string | null
-          id: string
-          image_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          image_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          image_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "image_favorites_image_id_fkey"
-            columns: ["image_id"]
-            isOneToOne: false
-            referencedRelation: "generated_images"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       image_jobs: {
         Row: {
           completed: number | null
@@ -639,13 +553,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "outfit_swap_results_generated_image_id_fkey"
-            columns: ["generated_image_id"]
-            isOneToOne: false
-            referencedRelation: "generated_images"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "outfit_swap_results_job_id_fkey"
             columns: ["job_id"]
             isOneToOne: false
@@ -880,27 +787,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      user_favorites: {
-        Row: {
-          assistant_id: string
-          created_at: string
-          id: string
-          user_id: string
-        }
-        Insert: {
-          assistant_id: string
-          created_at?: string
-          id?: string
-          user_id: string
-        }
-        Update: {
-          assistant_id?: string
-          created_at?: string
-          id?: string
-          user_id?: string
-        }
-        Relationships: []
       }
       user_preferences: {
         Row: {
