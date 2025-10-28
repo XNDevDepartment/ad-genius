@@ -241,7 +241,7 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
   }
   
   // Normalize the path format (v2.5-turbo -> v2.5/turbo)
-  modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5/turbo');
+  modelVariant = modelVariant.replace('v2.5-turbo', 'v2.5-turbo');
   
   // Build FULL model path for FAL.ai queue API
   const fullModelPath = `fal-ai/kling-video/${modelVariant}`;
