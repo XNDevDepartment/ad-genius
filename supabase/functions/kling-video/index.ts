@@ -164,13 +164,13 @@ async function createVideoJob(supabase, userId, payload) {
       error: "Source image not found"
     };
   }
-  // Create job record
-  const modelId = model || 'fal-ai/kling-video/v2.5-turbo/pro/image-to-video';
+  // Create job record - store the variant separately
+  const modelVariant = model || 'v2.5/turbo/pro/image-to-video';
   const { data: job, error: jobError } = await supabase.from("kling_jobs").insert({
     user_id: userId,
     prompt,
     duration: Number(duration) === 10 ? 10 : 5,
-    model: modelId,
+    model: modelVariant,  // Store just the variant
     image_url: imageUrl,
     source_image_id: source_image_id || null,
     ugc_image_id: ugc_image_id || null,
@@ -222,12 +222,19 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
   }).eq("id", jobId);
   const FAL_KEY = Deno.env.get("FAL_KEY");
   if (!FAL_KEY) throw new Error("FAL_KEY not configured");
-  // Build payload per v1 i2v schema (no aspect_ratio here)
+  
+  // Use base model path for queue API
+  const baseModel = 'fal-ai/kling-video';
+  const modelVariant = job.model || 'v2.5/turbo/pro/image-to-video';
+  
+  // Build payload per FAL.ai docs - must include model_name
   const inputPayload = {
     prompt: job.prompt,
     image_url: job.image_url,
-    duration: Number(job.duration) === 10 ? 10 : 5
+    duration: Number(job.duration) === 10 ? 10 : 5,
+    model_name: modelVariant  // Specify the model variant in the body
   };
+  
   // carry optional knobs from metadata if present
   const md = job.metadata || {};
   if (md.negative_prompt) inputPayload.negative_prompt = md.negative_prompt;
@@ -235,8 +242,10 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
   if (md.static_mask_url) inputPayload.static_mask_url = md.static_mask_url;
   if (md.dynamic_masks) inputPayload.dynamic_masks = md.dynamic_masks;
   if (md.tail_image_url) inputPayload.tail_image_url = md.tail_image_url;
-  console.log("[PROCESS-JOB] Calling FAL queue:", job.model);
-  const enqueueUrl = `https://queue.fal.run/${job.model}` + (webhookUrl ? `?fal_webhook=${encodeURIComponent(webhookUrl)}` : "");
+  
+  console.log("[PROCESS-JOB] Calling FAL queue with base model:", baseModel, "variant:", modelVariant);
+  const enqueueUrl = `https://queue.fal.run/${baseModel}` + (webhookUrl ? `?fal_webhook=${encodeURIComponent(webhookUrl)}` : "");
+  
   const submitRes = await fetch(enqueueUrl, {
     method: "POST",
     headers: {
@@ -251,8 +260,12 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
   }
   const submitJson = await submitRes.json();
   const requestId = submitJson.request_id;
-  const statusUrl = submitJson.status_url || `https://queue.fal.run/${job.model}/requests/${requestId}/status`;
-  const responseUrl = submitJson.response_url || `https://queue.fal.run/${job.model}/requests/${requestId}`;
+  
+  // Use base model path for status and response URLs
+  const baseModel = 'fal-ai/kling-video';
+  const statusUrl = submitJson.status_url || `https://queue.fal.run/${baseModel}/requests/${requestId}/status`;
+  const responseUrl = submitJson.response_url || `https://queue.fal.run/${baseModel}/requests/${requestId}`;
+  
   await supabase.from("kling_jobs").update({
     request_id: requestId,
     status_url: statusUrl,
@@ -419,7 +432,8 @@ async function cancelVideoJob(supabase, userId, jobId) {
     if (job.request_id) {
       const FAL_KEY = Deno.env.get("FAL_KEY");
       if (FAL_KEY) {
-        const cancelUrl = `https://queue.fal.run/${job.model}/requests/${job.request_id}/cancel`;
+        const baseModel = 'fal-ai/kling-video';
+        const cancelUrl = `https://queue.fal.run/${baseModel}/requests/${job.request_id}/cancel`;
         const res = await fetch(cancelUrl, {
           method: "PUT",
           headers: {
@@ -478,8 +492,10 @@ async function retryVideoJob(supabase, userId, jobId) {
   try {
     console.log(`[RETRY-JOB] Checking FAL status for request ${job.request_id}`);
     
+    const baseModel = 'fal-ai/kling-video';
+    
     // Check current status
-    const statusRes = await fetch(job.status_url || `https://queue.fal.run/${job.model}/requests/${job.request_id}/status`, {
+    const statusRes = await fetch(job.status_url || `https://queue.fal.run/${baseModel}/requests/${job.request_id}/status`, {
       headers: { Authorization: `Key ${FAL_KEY}` }
     });
     
