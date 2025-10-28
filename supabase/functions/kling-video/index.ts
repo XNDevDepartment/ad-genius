@@ -279,9 +279,9 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
   const submitJson = await submitRes.json();
   const requestId = submitJson.request_id;
   
-  // Use full model path for status and response URLs
-  const statusUrl = submitJson.status_url || `https://queue.fal.run/${fullModelPath}/requests/${requestId}/status`;
-  const responseUrl = submitJson.response_url || `https://queue.fal.run/${fullModelPath}/requests/${requestId}`;
+  // Always construct full URLs with model path (FAL's URLs are incomplete)
+  const statusUrl = `https://queue.fal.run/${fullModelPath}/requests/${requestId}/status`;
+  const responseUrl = `https://queue.fal.run/${fullModelPath}/requests/${requestId}`;
   
   await supabase.from("kling_jobs").update({
     request_id: requestId,
@@ -303,7 +303,12 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
       }
     });
     if (!stRes.ok) {
-      console.warn(`[PROCESS-JOB] Status check failed (${attempt}/${pollMax})`, stRes.status);
+      const errorText = await stRes.text();
+      console.error(`[PROCESS-JOB] Status check failed (${attempt}/${pollMax}):`, {
+        status: stRes.status,
+        statusUrl,
+        error: errorText
+      });
       continue;
     }
     const st = await stRes.json();
