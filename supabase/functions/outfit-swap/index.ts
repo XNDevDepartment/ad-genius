@@ -225,7 +225,7 @@ async function processOutfitSwap(jobId: string) {
       console.log(`[processOutfitSwap] Job ${jobId}: Using base model ${job.base_model_id}`);
       const { data: baseModel } = await supabase
         .from("outfit_swap_base_models")
-        .select("storage_path, name")
+        .select("storage_path, name, is_system")
         .eq("id", job.base_model_id)
         .single();
       
@@ -234,7 +234,10 @@ async function processOutfitSwap(jobId: string) {
       }
       
       personStoragePath = baseModel.storage_path;
-      personBucket = "outfit-base-models";
+      // Select correct bucket based on whether it's a system or user model
+      personBucket = baseModel.is_system ? "outfit-base-models" : "outfit-user-models";
+      
+      console.log(`[processOutfitSwap] Job ${jobId}: Using bucket "${personBucket}" for ${baseModel.is_system ? 'system' : 'user'} model`);
 
       // Verify file exists in storage before proceeding
       console.log(`[processOutfitSwap] Job ${jobId}: Verifying base model file exists in storage...`);
@@ -248,14 +251,15 @@ async function processOutfitSwap(jobId: string) {
         console.error(`[processOutfitSwap] Job ${jobId}: Base model file not found in storage:`, {
           bucket: personBucket,
           path: personStoragePath,
+          is_system: baseModel.is_system,
           listError
         });
         throw new Error(
-          `Base model image file does not exist in storage. The model "${baseModel.name || 'Unknown'}" may need to be re-uploaded. Please contact support or re-upload the model.`
+          `Base model image file does not exist in storage. The model "${baseModel.name || 'Unknown'}" may need to be re-uploaded. Please contact support or re-upload the model. (Bucket: ${personBucket}, Path: ${personStoragePath})`
         );
       }
       
-      console.log(`[processOutfitSwap] Job ${jobId}: Base model file verified in storage`);
+      console.log(`[processOutfitSwap] Job ${jobId}: Base model file verified in storage (${personBucket}/${personStoragePath})`);
     } else if (job.source_person_id) {
       console.log(`[processOutfitSwap] Job ${jobId}: Using source image ${job.source_person_id}`);
       const { data: sourceImage } = await supabase
