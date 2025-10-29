@@ -176,7 +176,7 @@ export default function VideoLibrary() {
       {/* Video Viewer Modal */}
       <Dialog open={!!viewingVideo} onOpenChange={() => setViewingVideo(null)}>
         <DialogContent className="max-w-[95vw] md:max-w-5xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="sticky top-0 bg-background z-10 pb-4 border-b">
+
             <DialogTitle className="flex items-center justify-between">
               <span>Video Details</span>
               <Button
@@ -187,8 +187,7 @@ export default function VideoLibrary() {
                 <X className="h-4 w-4" />
               </Button>
             </DialogTitle>
-          </DialogHeader>
-          
+
           {viewingVideo && (
             <div className="grid md:grid-cols-3 gap-6">
               {/* Video Player */}
