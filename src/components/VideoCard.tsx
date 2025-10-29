@@ -69,7 +69,7 @@ export function VideoCard({ job, onDelete, onDownload, onView }: VideoCardProps)
       <Card className="overflow-hidden hover:shadow-lg transition-shadow">
         <CardContent className="p-0">
           {/* Video Preview or Placeholder */}
-          <div 
+          <div
             className="relative aspect-video bg-muted"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
@@ -96,7 +96,7 @@ export function VideoCard({ job, onDelete, onDownload, onView }: VideoCardProps)
                 </div>
               </div>
             )}
-            
+
             {/* Status Badge */}
             <div className="absolute top-2 right-2">
               <Badge variant="secondary" className={getStatusColor(job.status)}>

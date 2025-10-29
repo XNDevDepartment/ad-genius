@@ -175,7 +175,7 @@ export default function VideoLibrary() {
 
       {/* Video Viewer Modal */}
       <Dialog open={!!viewingVideo} onOpenChange={() => setViewingVideo(null)}>
-        <DialogContent className="max-w-[95vw] md:max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] md:max-w-5xl max-h-[92vh] overflow-y-auto">
 
             <DialogTitle className="flex items-center justify-between">
               <span>Video Details</span>
@@ -205,7 +205,15 @@ export default function VideoLibrary() {
                     <p className="text-muted-foreground">Video not available</p>
                   </div>
                 )}
-                
+              </div>
+
+              {/* Details Sidebar */}
+              <div className="space-y-4 text-sm">
+                <div>
+                  <h4 className="font-medium mb-2">Motion Description</h4>
+                  <p className="text-muted-foreground">{viewingVideo.prompt}</p>
+                </div>
+
                 <div className="flex gap-2">
                   {viewingVideo.status === "processing" && (
                     <Button
@@ -235,50 +243,6 @@ export default function VideoLibrary() {
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
-                </div>
-              </div>
-
-              {/* Details Sidebar */}
-              <div className="space-y-4 text-sm">
-                <div>
-                  <h4 className="font-medium mb-2">Prompt</h4>
-                  <p className="text-muted-foreground">{viewingVideo.prompt}</p>
-                </div>
-
-                <div>
-                  <h4 className="font-medium mb-2">Settings</h4>
-                  <dl className="space-y-1">
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Duration:</dt>
-                      <dd>{viewingVideo.duration}s</dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Model:</dt>
-                      <dd className="text-xs">{viewingVideo.model?.split("/").pop()}</dd>
-                    </div>
-                    {viewingVideo.video_size_bytes && (
-                      <div className="flex justify-between">
-                        <dt className="text-muted-foreground">File Size:</dt>
-                        <dd>{(viewingVideo.video_size_bytes / 1024 / 1024).toFixed(2)} MB</dd>
-                      </div>
-                    )}
-                  </dl>
-                </div>
-
-                <div>
-                  <h4 className="font-medium mb-2">Timestamps</h4>
-                  <dl className="space-y-1">
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Created:</dt>
-                      <dd>{format(new Date(viewingVideo.created_at), "PPp")}</dd>
-                    </div>
-                    {viewingVideo.finished_at && (
-                      <div className="flex justify-between">
-                        <dt className="text-muted-foreground">Finished:</dt>
-                        <dd>{format(new Date(viewingVideo.finished_at), "PPp")}</dd>
-                      </div>
-                    )}
-                  </dl>
                 </div>
               </div>
             </div>
