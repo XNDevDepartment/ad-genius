@@ -83,6 +83,9 @@ verify_jwt = true
 [functions.outfit-swap]
 verify_jwt = true
 
+[functions.create-base-model]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 port = 54327
