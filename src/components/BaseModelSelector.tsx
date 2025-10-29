@@ -6,11 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useBaseModels, BaseModel, BaseModelFilters } from "@/hooks/useBaseModels";
-import { Upload, Check, User, Sparkles, Crown } from "lucide-react";
+import { Upload, Check, User, Sparkles, Crown, AirVentIcon, WandSparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCredits } from "@/hooks/useCredits";
 import { toast } from "sonner";
 import { UploadModelDialog } from "./UploadModelDialog";
+import { AIModelGenerationForm } from "./AIModelGenerationForm";
+import { useToast } from "@/hooks/use-toast";
 
 interface BaseModelSelectorProps {
   selectedModel: BaseModel | null;
@@ -23,11 +25,14 @@ export const BaseModelSelector = ({
   onSelectModel,
   showUpload = false,
 }: BaseModelSelectorProps) => {
+  const { toast } = useToast();
   const { systemModels, userModels, loading, fetchSystemModels, uploadUserModel, uploading, fetchUserModels } = useBaseModels();
   const { isFreeTier } = useCredits();
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [uploadDialogAIOpen, setUploadDialogAIOpen] = useState(false);
   const [filters, setFilters] = useState<BaseModelFilters>({});
   const [searchTerm, setSearchTerm] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const filteredModels = systemModels.filter((model) => {
     if (searchTerm && !model.name.toLowerCase().includes(searchTerm.toLowerCase())) {
@@ -44,10 +49,18 @@ export const BaseModelSelector = ({
 
   const handleUploadClick = () => {
     if (isFreeTier()) {
-      toast.error('Premium subscription required to upload custom base models');
+      // toast.error('Premium subscription required to upload custom base models');
       return;
     }
     setUploadDialogOpen(true);
+  };
+
+  const handleUploadAIClick = () => {
+    if (isFreeTier()) {
+      // toast.error('Premium subscription required to upload custom base models');
+      return;
+    }
+    setUploadDialogAIOpen(true);
   };
 
   const handleUpload = async (file: File, metadata: any) => {
@@ -57,6 +70,23 @@ export const BaseModelSelector = ({
       onSelectModel(result);
     }
     return result;
+  };
+
+  const handleGenerateAIModel = async (params: any) => {
+    setIsProcessing(true);
+    try {
+      const { baseModelApi } = await import("@/api/base-model-api");
+      const baseModel = await baseModelApi.generateModelWithAI(params);
+      // setSelectedModel(baseModel);
+      // setCurrentStep(2);
+      toast({ title: "Model generated", description: "Your AI model has been generated (6 credits deducted)" });
+      return baseModel;
+    } catch (error) {
+      toast({ variant: "destructive", title: "Error", description: error instanceof Error ? error.message : "Failed to generate AI model" });
+      throw error;
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -255,15 +285,14 @@ export const BaseModelSelector = ({
 
           {/* Upload Card (Premium) */}
           {showUpload && (
-            <Card 
+            <Card
               className={cn(
                 "cursor-pointer transition-all hover:shadow-lg border-dashed",
                 uploading && "opacity-50 pointer-events-none"
               )}
-              onClick={handleUploadClick}
             >
               <div className="aspect-[3/4] flex items-center justify-center flex-col gap-3 p-6 text-center">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
                   <Upload className="w-8 h-8 text-primary" />
                 </div>
                 <div>
@@ -278,8 +307,28 @@ export const BaseModelSelector = ({
                   </div>
                 </div>
                 {!uploading && (
-                  <Button size="sm" variant="outline">
-                    Upload
+                  <Button size="sm" variant="outline" onClick={handleUploadClick}>
+                    Upload Your Own
+                  </Button>
+                )}
+                or
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                  <WandSparkles className="w-8 h-8 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm">
+                    {uploading ? 'Uploading...' : 'Upload Your Model'}
+                  </h3>
+                  <div className="flex items-center justify-center gap-1 mt-1">
+                    <Crown className="w-3 h-3 text-primary" />
+                    <p className="text-xs text-muted-foreground">
+                      Premium feature
+                    </p>
+                  </div>
+                </div>
+                {!uploading && (
+                  <Button size="sm" variant="outline" onClick={handleUploadAIClick}>
+                    Create with AI
                   </Button>
                 )}
               </div>
@@ -307,6 +356,14 @@ export const BaseModelSelector = ({
         onUpload={handleUpload}
         uploading={uploading}
       />
+
+      <AIModelGenerationForm 
+        isOpen={uploadDialogAIOpen} 
+        onClose={() => setUploadDialogAIOpen(false)} 
+        onGenerate={handleGenerateAIModel} 
+        isGenerating={isProcessing} 
+      />
+
     </div>
   );
 };
