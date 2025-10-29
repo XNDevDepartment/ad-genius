@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle, CheckCircle, Clock, Loader2, Video as VideoIcon, X, Copy, Link as LinkIcon, Images, Sparkles, Info } from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, Loader2, Video as VideoIcon, X, Copy, Link as LinkIcon, Images, Sparkles, Info, RefreshCcwIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import MultiImageUploader from "@/components/MultiImageUploader";
 import { UgcImagePicker } from "@/components/UgcImagePicker";
@@ -804,14 +804,17 @@ export default function VideoGenerator() {
 
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={refreshJob} title={t('videoGenerator.actions.refresh')}>
-                  <Loader2 className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="sm" onClick={copyDebug} title={t('videoGenerator.actions.copyDebug')}>
-                  <Copy className="h-4 w-4" />
+                  <RefreshCcwIcon className="h-4 w-4" />
+                  Refresh
                 </Button>
                 <Button variant="outline" size="sm" onClick={clearAll}>
                   {t('videoGenerator.actions.newVideo')}
+                </Button>              {/* Cancel */}
+              {(job.status === "queued" || job.status === "processing") && (
+                <Button variant="destructive" size="sm" onClick={onCancel}>
+                  {t('videoGenerator.actions.cancel')}
                 </Button>
+              )}
               </div>
             </CardHeader>
 
@@ -828,28 +831,14 @@ export default function VideoGenerator() {
 
               {/* Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                {/* <div className="flex justify-between">
-                  <span className="text-muted-foreground">Job ID</span>
-                  <span className="font-mono">{job.id}</span>
-                </div> */}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Duration</span>
                   <span>{job.duration}s</span>
                 </div>
-                {/* <div className="flex justify-between">
-                  <span className="text-muted-foreground">Model</span>
-                  <span className="font-mono text-xs">{job.model}</span>
-                </div> */}
-                {/* <div className="flex justify-between">
-                  <span className="text-muted-foreground">Prompt</span>
-                  <span className="text-right max-w-[280px] truncate" title={job.prompt}>
-                    {job.prompt}
-                  </span>
-                </div> */}
               </div>
 
               {/* Source image */}
-              {job.image_url && (
+              {job.image_url && !resolvedVideoUrl && (
                 <div className="space-y-2">
                   <Label>Source Image</Label>
                   <img src={job.image_url} alt="Source" className="w-full max-w-md rounded-lg border" />
