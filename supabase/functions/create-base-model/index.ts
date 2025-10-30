@@ -1,87 +1,67 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.4";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
 };
-
-serve(async (req) => {
+serve(async (req)=>{
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, {
+      headers: corsHeaders
+    });
   }
-
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       throw new Error("Missing authorization header");
     }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const googleApiKey = Deno.env.get("GOOGLE_AI_API_KEY");
-
     if (!googleApiKey) {
       throw new Error("GOOGLE_AI_API_KEY not configured");
     }
-
     const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
-    
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(
-      authHeader.replace("Bearer ", "")
-    );
-
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(authHeader.replace("Bearer ", ""));
     if (authError || !user) {
       throw new Error("Unauthorized");
     }
-
     const { action, ...params } = await req.json();
-
     if (action === "uploadAndProcessModel") {
       return await uploadAndProcessModel(supabaseClient, user.id, params, googleApiKey);
     } else if (action === "generateModelWithAI") {
       return await generateModelWithAI(supabaseClient, user.id, params, googleApiKey);
-    } else if (action === "saveModel") {
-      return await saveModel(supabaseClient, user.id, params);
     } else {
       throw new Error(`Unknown action: ${action}`);
     }
   } catch (error) {
     console.error("Error in create-base-model:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({
+      error: error.message
+    }), {
+      status: 400,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json"
+      }
+    });
   }
 });
-
-async function uploadAndProcessModel(
-  supabaseClient: any,
-  userId: string,
-  params: any,
-  googleApiKey: string
-) {
-  const { imageDataUrl, metadata, previewMode = false } = params;
-  const creditCost = 3;
-
+async function uploadAndProcessModel(supabaseClient, userId, params, googleApiKey) {
+  const { imageDataUrl, metadata } = params;
+  const creditCost = 5;
   // Check credits
-  const { data: creditCheck, error: creditError } = await supabaseClient.rpc(
-    "deduct_user_credits",
-    {
-      p_user_id: userId,
-      p_amount: creditCost,
-      p_reason: "upload_base_model",
-    }
-  );
-
+  const { data: creditCheck, error: creditError } = await supabaseClient.rpc("deduct_user_credits", {
+    p_user_id: userId,
+    p_amount: creditCost,
+    p_reason: "upload_base_model"
+  });
   if (creditError || !creditCheck?.success) {
     throw new Error(creditCheck?.error || "Insufficient credits");
   }
-
   try {
     // Process image with Gemini - remove background and replace with studio
     const prompt = `Remove the background from this image and replace it with: seamless light gray studio. Camera 50mm f/4 ISO200 1/125. Lighting: softbox 45° key + reflector fill, even exposure. Neutral expression, hands relaxed, fingers natural, head to toe visible, clean silhouette. Keep the person exactly as they are, only change the background.`;
-
     // Extract base64 data from data URL
     const base64Match = imageDataUrl.match(/^data:image\/(.*?);base64,(.*)$/);
     if (!base64Match) {
@@ -89,18 +69,20 @@ async function uploadAndProcessModel(
     }
     const mimeType = `image/${base64Match[1]}`;
     const base64Image = base64Match[2];
-
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${googleApiKey}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: [{
+    const controller = new AbortController();
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent`, {
+      method: "POST",
+      headers: {
+        "x-goog-api-key": googleApiKey,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        contents: [
+          {
             parts: [
-              { text: prompt },
+              {
+                text: prompt
+              },
               {
                 inline_data: {
                   mime_type: mimeType,
@@ -108,330 +90,184 @@ async function uploadAndProcessModel(
                 }
               }
             ]
-          }],
-          generationConfig: {
-            temperature: 0.4,
           }
-        })
-      }
-    );
-
+        ],
+        generationConfig: {
+          responseModalities: [
+            'IMAGE'
+          ]
+        }
+      }),
+      signal: controller.signal
+    });
     if (!geminiResponse.ok) {
       const errorText = await geminiResponse.text();
       console.error("Gemini API error:", geminiResponse.status, errorText);
       throw new Error(`Gemini API error: ${geminiResponse.statusText}`);
     }
-
     const geminiData = await geminiResponse.json();
-    const processedImageData = geminiData.candidates?.[0]?.content?.parts?.find((part: any) => part.inlineData)?.inlineData?.data;
-
+    const processedImageData = geminiData.candidates?.[0]?.content?.parts?.find((part)=>part.inlineData)?.inlineData?.data;
     if (!processedImageData) {
       console.error("No image in Gemini response:", JSON.stringify(geminiData));
       throw new Error("No image generated by Gemini");
     }
-
-    // If preview mode, return the base64 image data
-    if (previewMode) {
-      return new Response(
-        JSON.stringify({
-          success: true,
-          imageDataUrl: `data:image/png;base64,${processedImageData}`,
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     // Convert base64 to blob
-    const imageBlob = Uint8Array.from(atob(processedImageData), c => c.charCodeAt(0));
-
+    const imageBlob = Uint8Array.from(atob(processedImageData), (c)=>c.charCodeAt(0));
     // Upload to storage
     const timestamp = Date.now();
     const storagePath = `${userId}/${timestamp}-${metadata.name.replace(/[^a-zA-Z0-9]/g, "_")}.png`;
-    
-    const { error: uploadError } = await supabaseClient.storage
-      .from("outfit-base-models")
-      .upload(storagePath, imageBlob, {
-        contentType: "image/png",
-        upsert: false,
-      });
-
+    const { error: uploadError } = await supabaseClient.storage.from("outfit-user-models").upload(storagePath, imageBlob, {
+      contentType: "image/png",
+      upsert: false
+    });
     if (uploadError) throw uploadError;
-
     // Get public URL
-    const { data: urlData } = supabaseClient.storage
-      .from("outfit-base-models")
-      .getPublicUrl(storagePath);
-
+    const { data: urlData } = supabaseClient.storage.from("outfit-user-models").getPublicUrl(storagePath);
     // Create base model entry
-    const { data: baseModel, error: dbError } = await supabaseClient
-      .from("outfit_swap_base_models")
-      .insert({
-        user_id: userId,
-        name: metadata.name,
-        gender: metadata.gender,
-        age_range: metadata.ageRange,
-        body_type: metadata.bodyType,
-        pose_type: metadata.poseType,
-        skin_tone: metadata.skinTone,
-        storage_path: storagePath,
-        public_url: urlData.publicUrl,
-        is_system: false,
-        is_active: true,
-      })
-      .select()
-      .single();
-
+    const { data: baseModel, error: dbError } = await supabaseClient.from("outfit_swap_base_models").insert({
+      user_id: userId,
+      name: metadata.name,
+      gender: metadata.gender,
+      age_range: metadata.ageRange,
+      body_type: metadata.bodyType,
+      pose_type: metadata.poseType,
+      skin_tone: metadata.skinTone,
+      storage_path: storagePath,
+      public_url: urlData.publicUrl,
+      is_system: false,
+      is_active: true
+    }).select().single();
     if (dbError) throw dbError;
-
-    return new Response(
-      JSON.stringify({ success: true, baseModel }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({
+      success: true,
+      baseModel
+    }), {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json"
+      }
+    });
   } catch (error) {
     // Refund credits on failure
     await supabaseClient.rpc("refund_user_credits", {
       p_user_id: userId,
       p_amount: creditCost,
-      p_reason: "upload_base_model_failed",
+      p_reason: "upload_base_model_failed"
     });
     throw error;
   }
 }
-
-async function generateModelWithAI(
-  supabaseClient: any,
-  userId: string,
-  params: any,
-  googleApiKey: string
-) {
-  const { previewMode = false, ...modelParams } = params;
+async function generateModelWithAI(supabaseClient, userId, params, googleApiKey) {
   const creditCost = 6;
-
   // Check credits
-  const { data: creditCheck, error: creditError } = await supabaseClient.rpc(
-    "deduct_user_credits",
-    {
-      p_user_id: userId,
-      p_amount: creditCost,
-      p_reason: "generate_ai_base_model",
-    }
-  );
-
+  const { data: creditCheck, error: creditError } = await supabaseClient.rpc("deduct_user_credits", {
+    p_user_id: userId,
+    p_amount: creditCost,
+    p_reason: "generate_ai_base_model"
+  });
   if (creditError || !creditCheck?.success) {
     throw new Error(creditCheck?.error || "Insufficient credits");
   }
-
   try {
-    const { name, gender, ageRange, bodyType, height, skinTone, hair, eyes, pose, gentleSmile } = modelParams;
-
+    const { name, gender, ageRange, bodyType, height, skinTone, hair, eyes, pose, gentleSmile } = params;
     // Build the generation prompt
     const smileText = gentleSmile ? ", gentle smile" : "";
-    const prompt = `Create an image of Photorealistic full-body studio ${gender} model, age bracket ${ageRange}, height ${height} cm, body type ${bodyType}, skin tone ${skinTone}, hair ${hair.length} ${hair.texture} ${hair.color}, eyes ${eyes}. Pose: ${pose}${smileText}. Wardrobe baseline: seamless neutral-tone fitted bodysuit (no logos/patterns), barefoot. Background: seamless light gray studio. Camera 50mm f/4 ISO200 1/125. Lighting: softbox 45° key + reflector fill, even exposure. Neutral expression, hands relaxed, fingers natural, head to toe visible, clean silhouette. One subject only. Output 2048x3072, sRGB, 300dpi. Negative: lowres, blurry, jpeg artifacts, extra limbs, extra fingers, fused fingers, disfigured, distorted proportions, wet/oily skin, cleavage emphasis, lingerie, underwear straps, see-through fabric, strong face shadows, color cast, watermark, logo, text, border.`;
-
+    const prompt = `Create an image of Photorealistic full-body studio ${gender} model, age bracket ${ageRange}, height ${height} cm, body type ${bodyType}, skin tone ${skinTone}, hair ${hair.length} ${hair.texture} ${hair.color}, eyes ${eyes}. Pose: ${pose}${smileText}. Wardrobe baseline: seamless neutral-tone fitted bodysuit (no logos/patterns), barefoot. Background: seamless light gray studio. Camera 50mm f/4 ISO200 1/125. Lighting: softbox 45° key + reflector fill, even exposure. Neutral expression, hands relaxed, fingers natural, head to toe visible, clean silhouette. One subject only. Output 2048x3072, sRGB, 300dpi. Negative: only produce model and no more elements in the picture, lowres, blurry, jpeg artifacts, extra limbs, extra fingers, fused fingers, disfigured, distorted proportions, wet/oily skin, cleavage emphasis, lingerie, underwear straps, see-through fabric, strong face shadows, color cast, watermark, logo, text, border.`;
     console.log("Generating AI model with prompt:", prompt);
-
     const controller = new AbortController();
-
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent`,
-      {
-        method: "POST",
-        headers: {
-          "x-goog-api-key": googleApiKey,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: prompt
-                }
-              ]
-            }
-          ],
-          generationConfig: {
-            responseModalities: [
-              'TEXT',
-              'IMAGE'
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent`, {
+      method: "POST",
+      headers: {
+        "x-goog-api-key": googleApiKey,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
             ]
           }
-        }),
-        signal: controller.signal
-      });
-
+        ],
+        generationConfig: {
+          responseModalities: [
+            'IMAGE'
+          ]
+        }
+      }),
+      signal: controller.signal
+    });
     if (!geminiResponse.ok) {
       const errorText = await geminiResponse.text();
       console.error("Gemini API error:", geminiResponse.status, errorText);
       throw new Error(`Gemini API error: ${geminiResponse.statusText}`);
     }
-
     const geminiData = await geminiResponse.json();
-    const generatedImageData = geminiData.candidates?.[0]?.content?.parts?.find((part: any) => part.inlineData)?.inlineData?.data;
-
+    const generatedImageData = geminiData.candidates?.[0]?.content?.parts?.find((part)=>part.inlineData)?.inlineData?.data;
     if (!generatedImageData) {
       console.error("No image in Gemini response:", JSON.stringify(geminiData));
       throw new Error("No image generated by Gemini");
     }
-
-    // If preview mode, return the base64 image data
-    if (previewMode) {
-      return new Response(
-        JSON.stringify({
-          success: true,
-          imageDataUrl: `data:image/png;base64,${generatedImageData}`,
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     // Convert base64 to blob
-    const imageBlob = Uint8Array.from(atob(generatedImageData), c => c.charCodeAt(0));
-
+    const imageBlob = Uint8Array.from(atob(generatedImageData), (c)=>c.charCodeAt(0));
     // Upload to storage
     const timestamp = Date.now();
     const storagePath = `${userId}/${timestamp}-${name.replace(/[^a-zA-Z0-9]/g, "_")}.png`;
-    
-    const { error: uploadError } = await supabaseClient.storage
-      .from("outfit-base-models")
-      .upload(storagePath, imageBlob, {
-        contentType: "image/png",
-        upsert: false,
-      });
-
+    const { error: uploadError } = await supabaseClient.storage.from("outfit-user-models").upload(storagePath, imageBlob, {
+      contentType: "image/png",
+      upsert: false
+    });
     if (uploadError) {
       console.error("Storage upload error:", uploadError);
       throw uploadError;
     }
-
     // Get public URL
-    const { data: urlData } = supabaseClient.storage
-      .from("outfit-base-models")
-      .getPublicUrl(storagePath);
-
+    const { data: urlData } = supabaseClient.storage.from("outfit-user-models").getPublicUrl(storagePath);
     // Create base model entry
-    const { data: baseModel, error: dbError } = await supabaseClient
-      .from("outfit_swap_base_models")
-      .insert({
-        user_id: userId,
-        name,
-        gender: gender === "non-binary" ? "unisex" : gender,
-        age_range: ageRange,
-        body_type: bodyType,
-        pose_type: pose,
-        skin_tone: skinTone,
-        storage_path: storagePath,
-        public_url: urlData.publicUrl,
-        is_system: false,
-        is_active: true,
-        metadata: {
-          height,
-          hair,
-          eyes,
-          gentleSmile,
-          generatedWithAI: true,
-        },
-      })
-      .select()
-      .single();
-
+    const { data: baseModel, error: dbError } = await supabaseClient.from("outfit_swap_base_models").insert({
+      user_id: userId,
+      name,
+      gender: gender === "non-binary" ? "unisex" : gender,
+      age_range: ageRange,
+      body_type: bodyType,
+      pose_type: pose,
+      skin_tone: skinTone,
+      storage_path: storagePath,
+      public_url: urlData.publicUrl,
+      is_system: false,
+      is_active: true,
+      metadata: {
+        height,
+        hair,
+        eyes,
+        gentleSmile,
+        generatedWithAI: true
+      }
+    }).select().single();
     if (dbError) {
       console.error("Database insert error:", dbError);
       throw dbError;
     }
-
     console.log("AI model generated successfully:", baseModel.id);
-
-    return new Response(
-      JSON.stringify({ success: true, baseModel }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({
+      success: true,
+      baseModel
+    }), {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json"
+      }
+    });
   } catch (error) {
     console.error("Error in generateModelWithAI:", error);
     // Refund credits on failure
     await supabaseClient.rpc("refund_user_credits", {
       p_user_id: userId,
       p_amount: creditCost,
-      p_reason: "generate_ai_base_model_failed",
+      p_reason: "generate_ai_base_model_failed"
     });
-    throw error;
-  }
-}
-
-async function saveModel(
-  supabaseClient: any,
-  userId: string,
-  params: any
-) {
-  const { imageDataUrl, metadata, isAIGenerated } = params;
-
-  try {
-    // Extract base64 data from data URL
-    const base64Match = imageDataUrl.match(/^data:image\/(.*?);base64,(.*)$/);
-    if (!base64Match) {
-      throw new Error("Invalid image data URL format");
-    }
-    const base64Image = base64Match[2];
-
-    // Convert base64 to blob
-    const imageBlob = Uint8Array.from(atob(base64Image), c => c.charCodeAt(0));
-
-    // Upload to storage
-    const timestamp = Date.now();
-    const storagePath = `${userId}/${timestamp}-${metadata.name.replace(/[^a-zA-Z0-9]/g, "_")}.png`;
-    
-    const { error: uploadError } = await supabaseClient.storage
-      .from("outfit-base-models")
-      .upload(storagePath, imageBlob, {
-        contentType: "image/png",
-        upsert: false,
-      });
-
-    if (uploadError) {
-      console.error("Storage upload error:", uploadError);
-      throw uploadError;
-    }
-
-    // Get public URL
-    const { data: urlData } = supabaseClient.storage
-      .from("outfit-base-models")
-      .getPublicUrl(storagePath);
-
-    // Create base model entry
-    const { data: baseModel, error: dbError } = await supabaseClient
-      .from("outfit_swap_base_models")
-      .insert({
-        user_id: userId,
-        name: metadata.name,
-        gender: metadata.gender,
-        age_range: metadata.age_range,
-        body_type: metadata.body_type,
-        pose_type: metadata.pose_type,
-        skin_tone: metadata.skin_tone,
-        storage_path: storagePath,
-        public_url: urlData.publicUrl,
-        is_system: false,
-        is_active: true,
-        metadata: {
-          generatedWithAI: isAIGenerated,
-        },
-      })
-      .select()
-      .single();
-
-    if (dbError) {
-      console.error("Database insert error:", dbError);
-      throw dbError;
-    }
-
-    console.log("Model saved successfully:", baseModel.id);
-
-    return new Response(
-      JSON.stringify({ success: true, baseModel }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  } catch (error) {
-    console.error("Error in saveModel:", error);
     throw error;
   }
 }

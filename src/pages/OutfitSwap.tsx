@@ -181,7 +181,7 @@ const OutfitSwap = () => {
                     Change Model
                   </Button>
                 </div>
-                
+
                 <MultiGarmentUploader
                   garments={garmentFiles}
                   onGarmentsChange={setGarmentFiles}

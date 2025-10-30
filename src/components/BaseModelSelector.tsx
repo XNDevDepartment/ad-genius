@@ -351,7 +351,7 @@ export const BaseModelSelector = ({
                 <img
                   src={model.thumbnail_url || model.public_url}
                   alt={model.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-top"
                 />
                 {selectedModel?.id === model.id && (
                   <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
@@ -455,7 +455,7 @@ export const BaseModelSelector = ({
         isOpen={uploadDialogOpen}
         onClose={() => setUploadDialogOpen(false)}
         onUpload={handleUpload}
-        uploading={uploading}
+        uploading={isProcessing}
       />
 
       <AIModelGenerationForm 
