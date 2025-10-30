@@ -25,7 +25,7 @@ export const BaseModelSelector = ({
   onSelectModel,
   showUpload = false,
 }: BaseModelSelectorProps) => {
-  const { toast } = useToast();
+  const { toast2 } = useToast();
   const { systemModels, userModels, loading, fetchSystemModels, uploadUserModel, uploading, fetchUserModels } = useBaseModels();
   const { isFreeTier } = useCredits();
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -49,7 +49,7 @@ export const BaseModelSelector = ({
 
   const handleUploadClick = () => {
     if (isFreeTier()) {
-      // toast.error('Premium subscription required to upload custom base models');
+      toast.error('Premium subscription required to upload custom base models');
       return;
     }
     setUploadDialogOpen(true);
@@ -79,10 +79,10 @@ export const BaseModelSelector = ({
       const baseModel = await baseModelApi.generateModelWithAI(params);
       // setSelectedModel(baseModel);
       // setCurrentStep(2);
-      toast({ title: "Model generated", description: "Your AI model has been generated (6 credits deducted)" });
+      toast2({ title: "Model generated", description: "Your AI model has been generated (6 credits deducted)" });
       return baseModel;
     } catch (error) {
-      toast({ variant: "destructive", title: "Error", description: error instanceof Error ? error.message : "Failed to generate AI model" });
+      toast2({ variant: "destructive", title: "Error", description: error instanceof Error ? error.message : "Failed to generate AI model" });
       throw error;
     } finally {
       setIsProcessing(false);
@@ -185,103 +185,6 @@ export const BaseModelSelector = ({
       {/* Model Grid */}
       <ScrollArea className="h-[500px] w-full">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-1">
-          {/* System Models */}
-          {filteredModels.map((model) => (
-            <Card
-              key={model.id}
-              className={cn(
-                "cursor-pointer transition-all hover:shadow-lg",
-                selectedModel?.id === model.id && "ring-2 ring-primary"
-              )}
-              onClick={() => onSelectModel(model)}
-            >
-              <div className="aspect-[3/4] relative overflow-hidden rounded-t-lg">
-                <img
-                  src={model.thumbnail_url || model.public_url}
-                  alt={model.name}
-                  className="w-full h-full object-cover"
-                />
-                {selectedModel?.id === model.id && (
-                  <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
-                    <Check className="w-4 h-4 text-primary-foreground" />
-                  </div>
-                )}
-                <Badge className="absolute top-2 left-2" variant="secondary">
-                  <Sparkles className="w-3 h-3 mr-1" />
-                  System
-                </Badge>
-              </div>
-              <div className="p-3">
-                <h3 className="font-semibold text-sm truncate">{model.name}</h3>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {model.gender && (
-                    <Badge variant="outline" className="text-xs">
-                      {model.gender}
-                    </Badge>
-                  )}
-                  {model.age_range && (
-                    <Badge variant="outline" className="text-xs">
-                      {model.age_range}
-                    </Badge>
-                  )}
-                  {model.body_type && (
-                    <Badge variant="outline" className="text-xs">
-                      {model.body_type}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            </Card>
-          ))}
-
-          {/* User Models */}
-          {userModels.map((model) => (
-            <Card
-              key={model.id}
-              className={cn(
-                "cursor-pointer transition-all hover:shadow-lg",
-                selectedModel?.id === model.id && "ring-2 ring-primary"
-              )}
-              onClick={() => onSelectModel(model)}
-            >
-              <div className="aspect-[3/4] relative overflow-hidden rounded-t-lg">
-                <img
-                  src={model.thumbnail_url || model.public_url}
-                  alt={model.name}
-                  className="w-full h-full object-cover"
-                />
-                {selectedModel?.id === model.id && (
-                  <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
-                    <Check className="w-4 h-4 text-primary-foreground" />
-                  </div>
-                )}
-                <Badge className="absolute top-2 left-2" variant="default">
-                  <User className="w-3 h-3 mr-1" />
-                  Your Model
-                </Badge>
-              </div>
-              <div className="p-3">
-                <h3 className="font-semibold text-sm truncate">{model.name}</h3>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {model.gender && (
-                    <Badge variant="outline" className="text-xs">
-                      {model.gender}
-                    </Badge>
-                  )}
-                  {model.age_range && (
-                    <Badge variant="outline" className="text-xs">
-                      {model.age_range}
-                    </Badge>
-                  )}
-                  {model.body_type && (
-                    <Badge variant="outline" className="text-xs">
-                      {model.body_type}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            </Card>
-          ))}
 
           {/* Upload Card (Premium) */}
           {showUpload && (
@@ -334,6 +237,105 @@ export const BaseModelSelector = ({
               </div>
             </Card>
           )}
+
+          {/* User Models */}
+          {userModels.map((model) => (
+            <Card
+              key={model.id}
+              className={cn(
+                "cursor-pointer transition-all hover:shadow-lg",
+                selectedModel?.id === model.id && "ring-2 ring-primary"
+              )}
+              onClick={() => onSelectModel(model)}
+            >
+              <div className="aspect-[3/4] relative overflow-hidden rounded-t-lg">
+                <img
+                  src={model.thumbnail_url || model.public_url}
+                  alt={model.name}
+                  className="w-full h-full object-cover"
+                />
+                {selectedModel?.id === model.id && (
+                  <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
+                    <Check className="w-4 h-4 text-primary-foreground" />
+                  </div>
+                )}
+                <Badge className="absolute top-2 left-2" variant="default">
+                  <User className="w-3 h-3 mr-1" />
+                  Your Model
+                </Badge>
+              </div>
+              <div className="p-3">
+                <h3 className="font-semibold text-sm truncate">{model.name}</h3>
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {model.gender && (
+                    <Badge variant="outline" className="text-xs">
+                      {model.gender}
+                    </Badge>
+                  )}
+                  {model.age_range && (
+                    <Badge variant="outline" className="text-xs">
+                      {model.age_range}
+                    </Badge>
+                  )}
+                  {model.body_type && (
+                    <Badge variant="outline" className="text-xs">
+                      {model.body_type}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </Card>
+          ))}
+
+
+          {/* System Models */}
+          {filteredModels.map((model) => (
+            <Card
+              key={model.id}
+              className={cn(
+                "cursor-pointer transition-all hover:shadow-lg",
+                selectedModel?.id === model.id && "ring-2 ring-primary"
+              )}
+              onClick={() => onSelectModel(model)}
+            >
+              <div className="aspect-[3/4] relative overflow-hidden rounded-t-lg">
+                <img
+                  src={model.thumbnail_url || model.public_url}
+                  alt={model.name}
+                  className="w-full h-full object-cover"
+                />
+                {selectedModel?.id === model.id && (
+                  <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
+                    <Check className="w-4 h-4 text-primary-foreground" />
+                  </div>
+                )}
+                <Badge className="absolute top-2 left-2" variant="secondary">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  System
+                </Badge>
+              </div>
+              <div className="p-3">
+                <h3 className="font-semibold text-sm truncate">{model.name}</h3>
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {model.gender && (
+                    <Badge variant="outline" className="text-xs">
+                      {model.gender}
+                    </Badge>
+                  )}
+                  {model.age_range && (
+                    <Badge variant="outline" className="text-xs">
+                      {model.age_range}
+                    </Badge>
+                  )}
+                  {model.body_type && (
+                    <Badge variant="outline" className="text-xs">
+                      {model.body_type}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </Card>
+          ))}
         </div>
 
         {loading && (
