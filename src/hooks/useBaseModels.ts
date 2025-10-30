@@ -132,14 +132,14 @@ export const useBaseModels = () => {
       // Upload to storage
       const fileName = `${user.id}/${Date.now()}-${file.name}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("outfit-user-models")
+        .from("outfit-base-models")
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
       // Get public URL
       const { data: urlData } = supabase.storage
-        .from("outfit-user-models")
+        .from("outfit-base-models")
         .getPublicUrl(fileName);
 
       // Create database record
@@ -191,7 +191,7 @@ export const useBaseModels = () => {
 
       // Delete from storage
       const { error: storageError } = await supabase.storage
-        .from("outfit-user-models")
+        .from("outfit-base-models")
         .remove([model.storage_path]);
 
       if (storageError) {

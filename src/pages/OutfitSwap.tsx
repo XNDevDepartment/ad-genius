@@ -25,7 +25,7 @@ const OutfitSwap = () => {
   const { calculateBatchCost, canAffordBatch, getSavings } = useOutfitSwapLimit();
   const { uploadSourceImage } = useSourceImageUpload();
 
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [selectedModel, setSelectedModel] = useState<BaseModel | null>(null);
   const [garmentFiles, setGarmentFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -135,7 +135,7 @@ const OutfitSwap = () => {
           <>
             {/* Step Indicator */}
             <div className="flex items-center justify-center gap-4 mb-8">
-              {[1, 2, 3].map((step) => (
+              {[1, 2].map((step) => (
                 <div key={step} className="flex items-center">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
@@ -146,7 +146,7 @@ const OutfitSwap = () => {
                   >
                     {step}
                   </div>
-                  {step < 3 && <div className="w-16 h-1 bg-muted mx-2" />}
+                  {step < 2 && <div className="w-16 h-1 bg-muted mx-2" />}
                 </div>
               ))}
             </div>
@@ -172,7 +172,7 @@ const OutfitSwap = () => {
               </div>
             )}
 
-            {/* Step 2: Upload Garments */}
+            {/* Step 2: Upload Garments & Review */}
             {currentStep === 2 && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -181,65 +181,53 @@ const OutfitSwap = () => {
                     Change Model
                   </Button>
                 </div>
+                
                 <MultiGarmentUploader
                   garments={garmentFiles}
                   onGarmentsChange={setGarmentFiles}
                   maxGarments={10}
                 />
+
+                {/* Review & Settings - Shown inline when garments are uploaded */}
+                {garmentFiles.length > 0 && (
+                  <>
+                    <Card className="p-6">
+                      <h3 className="text-lg font-semibold mb-4">Review & Settings</h3>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold">Selected Model:</span>
+                          <span>{selectedModel?.name}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold">Garments:</span>
+                          <span>{garmentFiles.length} garments</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold">Cost:</span>
+                          <div className="text-right">
+                            <span className="text-lg font-bold">{cost} credits</span>
+                            {savings > 0 && (
+                              <Badge variant="default" className="ml-2">
+                                Save {savings} credits!
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+
+                    <OutfitSwapSettings settings={settings} onChange={setSettings} />
+                  </>
+                )}
+
                 <div className="flex justify-center gap-4">
                   <Button variant="outline" onClick={() => setCurrentStep(1)}>
                     Back
                   </Button>
                   <Button
                     size="lg"
-                    onClick={() => setCurrentStep(3)}
-                    disabled={garmentFiles.length === 0}
-                  >
-                    Review & Start
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Review & Start */}
-            {currentStep === 3 && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold">Step 3: Review & Start Batch</h2>
-
-                <Card className="p-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">Selected Model:</span>
-                      <span>{selectedModel?.name}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">Garments:</span>
-                      <span>{garmentFiles.length} garments</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">Cost:</span>
-                      <div className="text-right">
-                        <span className="text-lg font-bold">{cost} credits</span>
-                        {savings > 0 && (
-                          <Badge variant="default" className="ml-2">
-                            Save {savings} credits!
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-
-                <OutfitSwapSettings settings={settings} onChange={setSettings} />
-
-                <div className="flex justify-center gap-4">
-                  <Button variant="outline" onClick={() => setCurrentStep(2)}>
-                    Back
-                  </Button>
-                  <Button
-                    size="lg"
                     onClick={handleStartBatch}
-                    disabled={!canAfford || loading || uploading}
+                    disabled={garmentFiles.length === 0 || !canAfford || loading || uploading}
                     className="min-w-[200px]"
                   >
                     {uploading

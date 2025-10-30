@@ -12,7 +12,9 @@ import { useCredits } from "@/hooks/useCredits";
 import { toast } from "sonner";
 import { UploadModelDialog } from "./UploadModelDialog";
 import { AIModelGenerationForm } from "./AIModelGenerationForm";
+import { ModelPreviewDialog } from "./ModelPreviewDialog";
 import { useToast } from "@/hooks/use-toast";
+import { baseModelApi } from "@/api/base-model-api";
 
 interface BaseModelSelectorProps {
   selectedModel: BaseModel | null;
@@ -33,6 +35,9 @@ export const BaseModelSelector = ({
   const [filters, setFilters] = useState<BaseModelFilters>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [previewData, setPreviewData] = useState<any>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const filteredModels = systemModels.filter((model) => {
     if (searchTerm && !model.name.toLowerCase().includes(searchTerm.toLowerCase())) {
@@ -64,29 +69,123 @@ export const BaseModelSelector = ({
   };
 
   const handleUpload = async (file: File, metadata: any) => {
-    const result = await uploadUserModel(file, metadata);
-    if (result) {
-      // Auto-select the newly uploaded model
-      onSelectModel(result);
+    setIsProcessing(true);
+    try {
+      // Convert file to base64
+      const reader = new FileReader();
+      const imageDataUrl = await new Promise<string>((resolve) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      });
+
+      // Process and get preview
+      const previewResult = await baseModelApi.uploadAndProcessModel(
+        imageDataUrl,
+        metadata,
+        true
+      );
+
+      // Show preview dialog
+      setPreviewData({
+        imageUrl: previewResult.imageDataUrl,
+        metadata: {
+          name: metadata.name,
+          gender: metadata.gender,
+          age_range: metadata.ageRange,
+          body_type: metadata.bodyType,
+          skin_tone: metadata.skinTone,
+          pose_type: metadata.poseType,
+        },
+        creditsDeducted: 3,
+        isAIGenerated: false,
+      });
+      setPreviewDialogOpen(true);
+      setUploadDialogOpen(false);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to process image",
+      });
+    } finally {
+      setIsProcessing(false);
     }
-    return result;
   };
 
   const handleGenerateAIModel = async (params: any) => {
     setIsProcessing(true);
     try {
-      const { baseModelApi } = await import("@/api/base-model-api");
-      const baseModel = await baseModelApi.generateModelWithAI(params);
-      // setSelectedModel(baseModel);
-      // setCurrentStep(2);
-      toast2({ title: "Model generated", description: "Your AI model has been generated (6 credits deducted)" });
-      return baseModel;
+      // Generate and get preview
+      const previewResult = await baseModelApi.generateModelWithAI(params, true);
+
+      // Show preview dialog
+      setPreviewData({
+        imageUrl: previewResult.imageDataUrl,
+        metadata: {
+          name: params.name,
+          gender: params.gender,
+          age_range: params.ageRange,
+          body_type: params.bodyType,
+          skin_tone: params.skinTone,
+          pose_type: params.pose,
+        },
+        creditsDeducted: 6,
+        isAIGenerated: true,
+      });
+      setPreviewDialogOpen(true);
+      setUploadDialogAIOpen(false);
     } catch (error) {
-      toast2({ variant: "destructive", title: "Error", description: error instanceof Error ? error.message : "Failed to generate AI model" });
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to generate AI model",
+      });
       throw error;
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleConfirmPreview = async () => {
+    if (!previewData) return;
+
+    setIsSaving(true);
+    try {
+      // Save the model
+      const savedModel = await baseModelApi.saveModelFromPreview(
+        previewData.imageUrl,
+        previewData.metadata,
+        previewData.isAIGenerated
+      );
+
+      toast({
+        title: "Model saved",
+        description: `Your model "${previewData.metadata.name}" has been saved successfully`,
+      });
+
+      // Refresh user models
+      await fetchUserModels();
+
+      // Auto-select the newly created model
+      onSelectModel(savedModel);
+
+      // Close preview dialog
+      setPreviewDialogOpen(false);
+      setPreviewData(null);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save model",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleClosePreview = () => {
+    setPreviewDialogOpen(false);
+    setPreviewData(null);
   };
 
   return (
@@ -366,6 +465,19 @@ export const BaseModelSelector = ({
         isGenerating={isProcessing} 
       />
 
+      {/* Preview Dialog */}
+      {previewData && (
+        <ModelPreviewDialog
+          isOpen={previewDialogOpen}
+          onClose={handleClosePreview}
+          onConfirm={handleConfirmPreview}
+          imageUrl={previewData.imageUrl}
+          metadata={previewData.metadata}
+          creditsDeducted={previewData.creditsDeducted}
+          isGeneratedWithAI={previewData.isAIGenerated}
+          isSaving={isSaving}
+        />
+      )}
     </div>
   );
 };
