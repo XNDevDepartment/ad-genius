@@ -123,7 +123,7 @@ export const AIModelGenerationForm = ({
               <SelectContent>
                 <SelectItem value="female">Female</SelectItem>
                 <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="non-binary">Non-binary</SelectItem>
+                <SelectItem value="unisex">Unisex</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -190,12 +190,10 @@ export const AIModelGenerationForm = ({
                   <SelectValue placeholder="Select skin tone" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">1 – Very fair (pale)</SelectItem>
-                  <SelectItem value="2">2 – Fair</SelectItem>
-                  <SelectItem value="3">3 – Medium light</SelectItem>
-                  <SelectItem value="4">4 – Medium</SelectItem>
-                  <SelectItem value="5">5 – Tan / Brown</SelectItem>
-                  <SelectItem value="6">6 – Deep / Dark</SelectItem>
+                  <SelectItem value="light">Light (pale to fair)</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="tan">Tan / Brown</SelectItem>
+                  <SelectItem value="dark">Dark / Deep</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -286,12 +284,11 @@ export const AIModelGenerationForm = ({
                   <SelectValue placeholder="Select pose" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="standing (front)">Standing (front)</SelectItem>
-                  <SelectItem value="standing (3/4)">Standing (3/4)</SelectItem>
+                  <SelectItem value="standing">Standing</SelectItem>
+                  <SelectItem value="sitting">Sitting</SelectItem>
                   <SelectItem value="walking">Walking</SelectItem>
-                  <SelectItem value="sitting upright">Sitting upright</SelectItem>
-                  <SelectItem value="hands on hips">Hands on hips</SelectItem>
-                  <SelectItem value="hands clasped front">Hands clasped front</SelectItem>
+                  <SelectItem value="casual">Casual</SelectItem>
+                  <SelectItem value="formal">Formal</SelectItem>
                 </SelectContent>
               </Select>
             </div>
