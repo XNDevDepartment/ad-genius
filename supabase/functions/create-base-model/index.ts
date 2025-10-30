@@ -212,30 +212,39 @@ async function generateModelWithAI(
 
     // Build the generation prompt
     const smileText = gentleSmile ? ", gentle smile" : "";
-    const prompt = `Photorealistic full-body studio ${gender} model, age bracket ${ageRange}, height ${height} cm, body type ${bodyType}, skin tone ${skinTone}, hair ${hair.length} ${hair.texture} ${hair.color}, eyes ${eyes}. Pose: ${pose}${smileText}. Wardrobe baseline: seamless neutral-tone fitted bodysuit (no logos/patterns), barefoot. Background: seamless light gray studio. Camera 50mm f/4 ISO200 1/125. Lighting: softbox 45° key + reflector fill, even exposure. Neutral expression, hands relaxed, fingers natural, head to toe visible, clean silhouette. One subject only. Output 2048x3072, sRGB, 300dpi. Negative: lowres, blurry, jpeg artifacts, extra limbs, extra fingers, fused fingers, disfigured, distorted proportions, wet/oily skin, cleavage emphasis, lingerie, underwear straps, see-through fabric, strong face shadows, color cast, watermark, logo, text, border.`;
+    const prompt = `Create an image of Photorealistic full-body studio ${gender} model, age bracket ${ageRange}, height ${height} cm, body type ${bodyType}, skin tone ${skinTone}, hair ${hair.length} ${hair.texture} ${hair.color}, eyes ${eyes}. Pose: ${pose}${smileText}. Wardrobe baseline: seamless neutral-tone fitted bodysuit (no logos/patterns), barefoot. Background: seamless light gray studio. Camera 50mm f/4 ISO200 1/125. Lighting: softbox 45° key + reflector fill, even exposure. Neutral expression, hands relaxed, fingers natural, head to toe visible, clean silhouette. One subject only. Output 2048x3072, sRGB, 300dpi. Negative: lowres, blurry, jpeg artifacts, extra limbs, extra fingers, fused fingers, disfigured, distorted proportions, wet/oily skin, cleavage emphasis, lingerie, underwear straps, see-through fabric, strong face shadows, color cast, watermark, logo, text, border.`;
 
     console.log("Generating AI model with prompt:", prompt);
 
+    const controller = new AbortController();
+
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${googleApiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent`,
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "x-goog-api-key": googleApiKey,
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          contents: [{
-            parts: [{ text: prompt }]
-          }],
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt
+                }
+              ]
+            }
+          ],
           generationConfig: {
-            temperature: 0.4,
-            topK: 32,
-            topP: 1,
-            maxOutputTokens: 4096,
+            responseModalities: [
+              'TEXT',
+              'IMAGE'
+            ]
           }
-        })
-      }
-    );
+        }),
+        signal: controller.signal
+      });
 
     if (!geminiResponse.ok) {
       const errorText = await geminiResponse.text();
