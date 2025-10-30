@@ -4,12 +4,14 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { OutfitSwapBatch, OutfitSwapJob, OutfitSwapResult } from "@/api/outfit-swap-api";
-import { Download, X, CheckCircle2, XCircle, Loader2, AlertCircle, RefreshCw, Eye, Film, ExternalLink } from "lucide-react";
+import { Download, X, CheckCircle2, XCircle, Loader2, AlertCircle, RefreshCw, Eye, Film, ExternalLink, Camera } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useToast } from "@/hooks/use-toast";
 import { ImagePreviewModal } from "./ImagePreviewModal";
+import { PhotoshootModal } from "./PhotoshootModal";
+import { photoshootApi } from "@/api/photoshoot-api";
 import { useNavigate } from "react-router-dom";
 
 interface BatchSwapPreviewProps {
@@ -35,6 +37,13 @@ export const BatchSwapPreview = ({
   const [results, setResults] = useState<Record<string, OutfitSwapResult>>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
+  const [photoshootLoading, setPhotoshootLoading] = useState<Record<string, boolean>>({});
+  const [photoshootModal, setPhotoshootModal] = useState<{
+    isOpen: boolean;
+    photoshootId: string | null;
+    resultId: string | null;
+    originalImageUrl: string | null;
+  }>({ isOpen: false, photoshootId: null, resultId: null, originalImageUrl: null });
 
   const progress = batch.total_jobs > 0
     ? Math.round(((batch.completed_jobs + batch.failed_jobs) / batch.total_jobs) * 100)
@@ -188,6 +197,43 @@ export const BatchSwapPreview = ({
         result_id: result.id,
       },
     });
+  };
+
+  const handleCreatePhotoshoot = async (result: OutfitSwapResult) => {
+    if (!isAdmin) {
+      toast({
+        variant: "destructive",
+        title: "Admin access required",
+        description: "Only admins can create photoshoots",
+      });
+      return;
+    }
+
+    try {
+      setPhotoshootLoading((prev) => ({ ...prev, [result.id]: true }));
+      
+      const photoshoot = await photoshootApi.createPhotoshoot(result.id);
+      
+      setPhotoshootModal({
+        isOpen: true,
+        photoshootId: photoshoot.id,
+        resultId: result.id,
+        originalImageUrl: result.public_url,
+      });
+      
+      toast({
+        title: "Photoshoot started",
+        description: "Generating 4 product angles...",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to start photoshoot",
+        description: error.message,
+      });
+    } finally {
+      setPhotoshootLoading((prev) => ({ ...prev, [result.id]: false }));
+    }
   };
 
   return (
@@ -353,6 +399,15 @@ export const BatchSwapPreview = ({
                         <Button
                           size="sm"
                           variant="outline"
+                          onClick={() => handleCreatePhotoshoot(result)}
+                          disabled={photoshootLoading[result.id]}
+                        >
+                          <Camera className="w-3 h-3 mr-1" />
+                          {photoshootLoading[result.id] ? "..." : "Photoshoot"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => downloadImage(result.public_url, job.id)}
                         >
                           <Download className="w-3 h-3 mr-1" />
@@ -375,6 +430,13 @@ export const BatchSwapPreview = ({
         imageName={previewImage?.name || ""}
         onDownload={() => previewImage && downloadImage(previewImage.url, `outfit-swap-${batch.id}.jpg`)}
         onOpenInNewTab={() => previewImage && openInNewTab(previewImage.url)}
+      />
+
+      <PhotoshootModal
+        isOpen={photoshootModal.isOpen}
+        onClose={() => setPhotoshootModal({ isOpen: false, photoshootId: null, resultId: null, originalImageUrl: null })}
+        photoshootId={photoshootModal.photoshootId}
+        originalImageUrl={photoshootModal.originalImageUrl || undefined}
       />
     </div>
   );

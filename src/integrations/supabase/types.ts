@@ -600,6 +600,80 @@ export type Database = {
           },
         ]
       }
+      outfit_swap_photoshoots: {
+        Row: {
+          created_at: string | null
+          error: string | null
+          finished_at: string | null
+          id: string
+          image_1_path: string | null
+          image_1_url: string | null
+          image_2_path: string | null
+          image_2_url: string | null
+          image_3_path: string | null
+          image_3_url: string | null
+          image_4_path: string | null
+          image_4_url: string | null
+          metadata: Json | null
+          progress: number | null
+          result_id: string
+          started_at: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          image_1_path?: string | null
+          image_1_url?: string | null
+          image_2_path?: string | null
+          image_2_url?: string | null
+          image_3_path?: string | null
+          image_3_url?: string | null
+          image_4_path?: string | null
+          image_4_url?: string | null
+          metadata?: Json | null
+          progress?: number | null
+          result_id: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          image_1_path?: string | null
+          image_1_url?: string | null
+          image_2_path?: string | null
+          image_2_url?: string | null
+          image_3_path?: string | null
+          image_3_url?: string | null
+          image_4_path?: string | null
+          image_4_url?: string | null
+          metadata?: Json | null
+          progress?: number | null
+          result_id?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outfit_swap_photoshoots_result_id_fkey"
+            columns: ["result_id"]
+            isOneToOne: false
+            referencedRelation: "outfit_swap_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outfit_swap_results: {
         Row: {
           created_at: string | null

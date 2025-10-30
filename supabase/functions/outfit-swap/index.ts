@@ -40,10 +40,13 @@ serve(async (req) => {
     const { action, ...params } = await req.json();
     console.log("Outfit swap action:", action);
 
-    // Handle internal processing action WITHOUT authentication
+    // Handle internal processing actions WITHOUT authentication
     // This is safe because it's only triggered internally by the function itself
     if (action === "processJob") {
       return await processOutfitSwap(params.jobId);
+    }
+    if (action === "processPhotoshoot") {
+      return await processPhotoshoot(params.photoshootId);
     }
 
     // All other actions require authentication
@@ -78,6 +81,12 @@ serve(async (req) => {
         return await getBatch(user.id, params.batchId);
       case "cancelBatch":
         return await cancelBatch(user.id, params.batchId);
+      case "createPhotoshoot":
+        return await createPhotoshootJob(user.id, params);
+      case "getPhotoshoot":
+        return await getPhotoshoot(user.id, params.photoshootId);
+      case "cancelPhotoshoot":
+        return await cancelPhotoshoot(user.id, params.photoshootId);
       default:
         return jsonResponse({ error: "Invalid action" }, 400);
     }
@@ -912,6 +921,368 @@ async function cancelBatch(userId: string, batchId: string) {
     .update({ status: "canceled" })
     .eq("batch_id", batchId)
     .in("status", ["queued", "processing"]);
+
+  return jsonResponse({ success: true }, 200);
+}
+
+// Photoshoot prompts for 4 professional angles
+const PHOTOSHOOT_PROMPTS = [
+  `Create a high-quality e-commerce product photo: On-body three-quarter view (45° turn), head to mid-thigh framing, one foot slightly forward to show torso depth and shoulder line. Seamless light-grey background, soft key, subtle rim light to separate from background, controlled specularity on knit. 50mm lens look, f/8, ISO 100. Emphasize side seam, sleeve length, and hem fall. Clean, editorial retail lighting.`,
+  
+  `Create a high-quality e-commerce product photo: On-body back view, shoulders level, arms relaxed, straight posture. Seamless light-grey background, balanced key/fill to avoid hotspots, faint floor shadow. 50–70mm lens look, f/8, ISO 100. Capture yoke/neck ribbing, back drape, and hem alignment. Centered, color-accurate, luxury e-commerce finish.`,
+  
+  `Create a high-quality e-commerce product photo: On-body true side profile, chin parallel to floor, arms relaxed (small air gap at elbow), head to mid-thigh framing. Seamless light-grey background, soft key from camera front, gentle fill to preserve knit detail, micro-shadow under hem. 70mm equivalent look, f/8, ISO 100. Prioritize silhouette, shoulder slope, sleeve taper, and ribbed cuff definition. Premium catalog style.`,
+  
+  `Create a high-quality e-commerce product photo: Upper-torso close-up crop from shoulders to mid-torso, camera perpendicular to garment. Soft, even light to reveal rib-knit texture and stitching. 85–100mm look, f/8. High sharpness, no moiré, color-accurate wool tone. Background remains seamless light grey.`
+];
+
+async function createPhotoshootJob(userId: string, params: any) {
+  const { resultId } = params;
+  const supabase = serviceClient();
+  const creditsNeeded = 4;
+
+  console.log(`[createPhotoshoot] Creating photoshoot for result ${resultId}`);
+
+  // Check admin status
+  const { data: isAdmin } = await supabase.rpc("is_user_admin", {
+    check_user_id: userId,
+  });
+
+  // Check and deduct credits only for non-admins
+  if (!isAdmin) {
+    const { data: deductResult, error: deductError } = await supabase.rpc(
+      "deduct_user_credits",
+      {
+        p_user_id: userId,
+        p_amount: creditsNeeded,
+        p_reason: "photoshoot_generation",
+      }
+    );
+
+    if (deductError || !deductResult?.success) {
+      console.error("[createPhotoshoot] Credit deduction error:", deductError || deductResult);
+      return jsonResponse({ 
+        error: "Insufficient credits",
+        required: creditsNeeded,
+      }, 402);
+    }
+  } else {
+    console.log(`[createPhotoshoot] Admin bypass: Skipping credit check`);
+  }
+
+  // Verify result exists and belongs to user
+  const { data: result, error: resultError } = await supabase
+    .from("outfit_swap_results")
+    .select("*")
+    .eq("id", resultId)
+    .eq("user_id", userId)
+    .single();
+
+  if (resultError || !result) {
+    if (!isAdmin) {
+      await supabase.rpc("refund_user_credits", {
+        p_user_id: userId,
+        p_amount: creditsNeeded,
+        p_reason: "photoshoot_result_not_found",
+      });
+    }
+    return jsonResponse({ error: "Result not found" }, 404);
+  }
+
+  // Create photoshoot record
+  const { data: photoshoot, error: photoshootError } = await supabase
+    .from("outfit_swap_photoshoots")
+    .insert({
+      user_id: userId,
+      result_id: resultId,
+      status: "queued",
+      metadata: {
+        original_result_url: result.public_url,
+        credits_deducted: creditsNeeded,
+      },
+    })
+    .select()
+    .single();
+
+  if (photoshootError) {
+    console.error("[createPhotoshoot] Creation error:", photoshootError);
+    if (!isAdmin) {
+      await supabase.rpc("refund_user_credits", {
+        p_user_id: userId,
+        p_amount: creditsNeeded,
+        p_reason: "photoshoot_creation_failed",
+      });
+    }
+    return jsonResponse({ error: "Failed to create photoshoot" }, 500);
+  }
+
+  // Trigger async processing
+  const functionUrl = `${SUPABASE_URL}/functions/v1/outfit-swap`;
+  fetch(functionUrl, {
+    method: "POST",
+    headers: { 
+      ...corsHeaders, 
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`
+    },
+    body: JSON.stringify({ action: "processPhotoshoot", photoshootId: photoshoot.id }),
+  }).catch(console.error);
+
+  return jsonResponse({ photoshoot }, 200);
+}
+
+async function processPhotoshoot(photoshootId: string) {
+  const supabase = serviceClient();
+  console.log(`[processPhotoshoot] Starting photoshoot ${photoshootId}`);
+
+  try {
+    // Update status to processing
+    await supabase
+      .from("outfit_swap_photoshoots")
+      .update({ 
+        status: "processing", 
+        started_at: new Date().toISOString(),
+        progress: 0
+      })
+      .eq("id", photoshootId);
+
+    // Fetch photoshoot and original result
+    const { data: photoshoot, error: photoshootError } = await supabase
+      .from("outfit_swap_photoshoots")
+      .select("*, outfit_swap_results(*)")
+      .eq("id", photoshootId)
+      .single();
+
+    if (photoshootError || !photoshoot) {
+      throw new Error("Photoshoot not found");
+    }
+
+    const originalImageUrl = photoshoot.outfit_swap_results?.public_url;
+    if (!originalImageUrl) {
+      throw new Error("Original image URL not found");
+    }
+
+    // Fetch original image
+    const imageResponse = await fetch(originalImageUrl);
+    if (!imageResponse.ok) {
+      throw new Error(`Failed to fetch original image: ${imageResponse.status}`);
+    }
+
+    const imageBuffer = await imageResponse.arrayBuffer();
+    const base64Image = bufferToBase64(new Uint8Array(imageBuffer));
+    const mimeType = imageResponse.headers.get('content-type') || 'image/jpeg';
+
+    let successfulImages = 0;
+    let failedImages = 0;
+
+    // Generate 4 angles
+    for (let i = 0; i < 4; i++) {
+      const imageNum = i + 1;
+      console.log(`[processPhotoshoot] Generating image ${imageNum}/4`);
+
+      try {
+        // Update progress
+        await supabase
+          .from("outfit_swap_photoshoots")
+          .update({ progress: (i * 25) })
+          .eq("id", photoshootId);
+
+        // Call Gemini API
+        const response = await fetch(
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent',
+          {
+            method: 'POST',
+            headers: {
+              'x-goog-api-key': GOOGLE_AI_KEY,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { text: PHOTOSHOOT_PROMPTS[i] },
+                  { inlineData: { mimeType: mimeType, data: base64Image } }
+                ]
+              }],
+              generationConfig: {
+                responseModalities: ['IMAGE']
+              }
+            })
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`[processPhotoshoot] Image ${imageNum} API error:`, response.status, errorText);
+          failedImages++;
+          
+          // Wait before next request to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          continue;
+        }
+
+        const data = await response.json();
+        const generatedBase64 = extractBase64Image(data);
+
+        if (!generatedBase64) {
+          console.error(`[processPhotoshoot] Image ${imageNum}: No image in response`);
+          failedImages++;
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          continue;
+        }
+
+        // Upload to storage
+        const imageBlob = Uint8Array.from(atob(generatedBase64), (c) => c.charCodeAt(0));
+        const storagePath = `${photoshoot.user_id}/${photoshootId}/image_${imageNum}.png`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("outfit-swap-photoshoots")
+          .upload(storagePath, imageBlob, { 
+            contentType: "image/png",
+            upsert: false 
+          });
+
+        if (uploadError) {
+          console.error(`[processPhotoshoot] Image ${imageNum} upload error:`, uploadError);
+          failedImages++;
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          continue;
+        }
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from("outfit-swap-photoshoots")
+          .getPublicUrl(storagePath);
+
+        // Update photoshoot record
+        await supabase
+          .from("outfit_swap_photoshoots")
+          .update({
+            [`image_${imageNum}_url`]: urlData.publicUrl,
+            [`image_${imageNum}_path`]: storagePath,
+          })
+          .eq("id", photoshootId);
+
+        successfulImages++;
+        console.log(`[processPhotoshoot] Image ${imageNum} completed`);
+
+        // Wait before next request to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+      } catch (error) {
+        console.error(`[processPhotoshoot] Image ${imageNum} error:`, error);
+        failedImages++;
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+
+    // Determine final status
+    const finalStatus = successfulImages === 0 ? "failed" : "completed";
+    const errorMessage = failedImages > 0 
+      ? `${failedImages} out of 4 images failed to generate`
+      : null;
+
+    await supabase
+      .from("outfit_swap_photoshoots")
+      .update({
+        status: finalStatus,
+        progress: 100,
+        finished_at: new Date().toISOString(),
+        error: errorMessage,
+        metadata: {
+          ...photoshoot.metadata,
+          successful_images: successfulImages,
+          failed_images: failedImages,
+        },
+      })
+      .eq("id", photoshootId);
+
+    // Refund credits if all images failed (only for non-admins)
+    if (successfulImages === 0) {
+      const { data: isAdmin } = await supabase.rpc("is_user_admin", {
+        check_user_id: photoshoot.user_id,
+      });
+      
+      if (!isAdmin) {
+        await supabase.rpc("refund_user_credits", {
+          p_user_id: photoshoot.user_id,
+          p_amount: 4,
+          p_reason: "photoshoot_all_failed",
+        });
+      }
+    }
+
+    return jsonResponse({ success: true, successfulImages, failedImages }, 200);
+
+  } catch (error) {
+    console.error("[processPhotoshoot] Error:", error);
+    
+    await supabase
+      .from("outfit_swap_photoshoots")
+      .update({
+        status: "failed",
+        error: error.message,
+        finished_at: new Date().toISOString(),
+      })
+      .eq("id", photoshootId);
+
+    // Fetch user_id for refund
+    const { data: photoshoot } = await supabase
+      .from("outfit_swap_photoshoots")
+      .select("user_id")
+      .eq("id", photoshootId)
+      .single();
+
+    if (photoshoot?.user_id) {
+      const { data: isAdmin } = await supabase.rpc("is_user_admin", {
+        check_user_id: photoshoot.user_id,
+      });
+      
+      if (!isAdmin) {
+        await supabase.rpc("refund_user_credits", {
+          p_user_id: photoshoot.user_id,
+          p_amount: 4,
+          p_reason: "photoshoot_processing_failed",
+        });
+      }
+    }
+
+    return jsonResponse({ error: error.message }, 500);
+  }
+}
+
+async function getPhotoshoot(userId: string, photoshootId: string) {
+  const supabase = serviceClient();
+
+  const { data: photoshoot, error } = await supabase
+    .from("outfit_swap_photoshoots")
+    .select("*")
+    .eq("id", photoshootId)
+    .eq("user_id", userId)
+    .single();
+
+  if (error) {
+    return jsonResponse({ error: "Photoshoot not found" }, 404);
+  }
+
+  return jsonResponse({ photoshoot }, 200);
+}
+
+async function cancelPhotoshoot(userId: string, photoshootId: string) {
+  const supabase = serviceClient();
+
+  const { error } = await supabase
+    .from("outfit_swap_photoshoots")
+    .update({ 
+      status: "canceled", 
+      finished_at: new Date().toISOString() 
+    })
+    .eq("id", photoshootId)
+    .eq("user_id", userId)
+    .in("status", ["queued", "processing"]);
+
+  if (error) {
+    return jsonResponse({ error: "Failed to cancel photoshoot" }, 500);
+  }
 
   return jsonResponse({ success: true }, 200);
 }
