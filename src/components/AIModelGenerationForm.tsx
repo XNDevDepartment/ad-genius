@@ -161,11 +161,9 @@ export const AIModelGenerationForm = ({
                   <SelectValue placeholder="Select body type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="petite">Petite</SelectItem>
                   <SelectItem value="slim">Slim</SelectItem>
-                  <SelectItem value="regular">Regular</SelectItem>
                   <SelectItem value="athletic">Athletic</SelectItem>
-                  <SelectItem value="tall">Tall</SelectItem>
+                  <SelectItem value="average">Average</SelectItem>
                   <SelectItem value="plus">Plus</SelectItem>
                 </SelectContent>
               </Select>
