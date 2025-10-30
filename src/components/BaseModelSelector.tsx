@@ -27,7 +27,6 @@ export const BaseModelSelector = ({
   onSelectModel,
   showUpload = false,
 }: BaseModelSelectorProps) => {
-  const { toast2 } = useToast();
   const { systemModels, userModels, loading, fetchSystemModels, uploadUserModel, uploading, fetchUserModels } = useBaseModels();
   const { isFreeTier } = useCredits();
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -102,11 +101,7 @@ export const BaseModelSelector = ({
       setPreviewDialogOpen(true);
       setUploadDialogOpen(false);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to process image",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to process image");
     } finally {
       setIsProcessing(false);
     }
@@ -135,11 +130,7 @@ export const BaseModelSelector = ({
       setPreviewDialogOpen(true);
       setUploadDialogAIOpen(false);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate AI model",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to generate AI model");
       throw error;
     } finally {
       setIsProcessing(false);
@@ -158,10 +149,7 @@ export const BaseModelSelector = ({
         previewData.isAIGenerated
       );
 
-      toast({
-        title: "Model saved",
-        description: `Your model "${previewData.metadata.name}" has been saved successfully`,
-      });
+      toast.success(`Your model "${previewData.metadata.name}" has been saved successfully`);
 
       // Refresh user models
       await fetchUserModels();
@@ -173,11 +161,7 @@ export const BaseModelSelector = ({
       setPreviewDialogOpen(false);
       setPreviewData(null);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save model",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to save model");
     } finally {
       setIsSaving(false);
     }

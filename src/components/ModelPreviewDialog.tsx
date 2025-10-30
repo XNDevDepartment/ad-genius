@@ -40,7 +40,7 @@ export const ModelPreviewDialog = ({
             Preview Your Model
           </DialogTitle>
           <DialogDescription>
-            Review your model before saving. {creditsDeducted} credits have been deducted for this {isGeneratedWithAI ? 'generation' : 'processing'}.
+            Review your model before saving. Credits will be deducted when you save.
           </DialogDescription>
         </DialogHeader>
 
