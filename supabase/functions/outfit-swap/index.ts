@@ -1072,21 +1072,14 @@ async function processPhotoshoot(photoshootId: string) {
     const base64Image = bufferToBase64(new Uint8Array(imageBuffer));
     const mimeType = imageResponse.headers.get('content-type') || 'image/jpeg';
 
-    let successfulImages = 0;
-    let failedImages = 0;
-
-    // Generate 4 angles
-    for (let i = 0; i < 4; i++) {
-      const imageNum = i + 1;
-      console.log(`[processPhotoshoot] Generating image ${imageNum}/4`);
+    // Generate all 4 images concurrently
+    console.log(`[processPhotoshoot] Starting concurrent generation of 4 images`);
+    
+    const imageGenerationPromises = PHOTOSHOOT_PROMPTS.map(async (prompt, index) => {
+      const imageNum = index + 1;
+      console.log(`[processPhotoshoot] Starting image ${imageNum}/4`);
 
       try {
-        // Update progress
-        await supabase
-          .from("outfit_swap_photoshoots")
-          .update({ progress: (i * 25) })
-          .eq("id", photoshootId);
-
         // Call Gemini API
         const response = await fetch(
           'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent',
@@ -1099,7 +1092,7 @@ async function processPhotoshoot(photoshootId: string) {
             body: JSON.stringify({
               contents: [{
                 parts: [
-                  { text: PHOTOSHOOT_PROMPTS[i] },
+                  { text: prompt },
                   { inlineData: { mimeType: mimeType, data: base64Image } }
                 ]
               }],
@@ -1113,11 +1106,7 @@ async function processPhotoshoot(photoshootId: string) {
         if (!response.ok) {
           const errorText = await response.text();
           console.error(`[processPhotoshoot] Image ${imageNum} API error:`, response.status, errorText);
-          failedImages++;
-          
-          // Wait before next request to avoid rate limiting
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          continue;
+          return { success: false, imageNum };
         }
 
         const data = await response.json();
@@ -1125,9 +1114,7 @@ async function processPhotoshoot(photoshootId: string) {
 
         if (!generatedBase64) {
           console.error(`[processPhotoshoot] Image ${imageNum}: No image in response`);
-          failedImages++;
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          continue;
+          return { success: false, imageNum };
         }
 
         // Upload to storage
@@ -1143,9 +1130,7 @@ async function processPhotoshoot(photoshootId: string) {
 
         if (uploadError) {
           console.error(`[processPhotoshoot] Image ${imageNum} upload error:`, uploadError);
-          failedImages++;
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          continue;
+          return { success: false, imageNum };
         }
 
         // Get public URL
@@ -1153,7 +1138,7 @@ async function processPhotoshoot(photoshootId: string) {
           .from("outfit-swap-photoshoots")
           .getPublicUrl(storagePath);
 
-        // Update photoshoot record
+        // Update photoshoot record for this specific image
         await supabase
           .from("outfit_swap_photoshoots")
           .update({
@@ -1162,18 +1147,38 @@ async function processPhotoshoot(photoshootId: string) {
           })
           .eq("id", photoshootId);
 
-        successfulImages++;
-        console.log(`[processPhotoshoot] Image ${imageNum} completed`);
-
-        // Wait before next request to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        console.log(`[processPhotoshoot] Image ${imageNum} completed successfully`);
+        return { success: true, imageNum };
 
       } catch (error) {
         console.error(`[processPhotoshoot] Image ${imageNum} error:`, error);
-        failedImages++;
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        return { success: false, imageNum };
       }
-    }
+    });
+
+    // Wait for all 4 images to complete
+    const results = await Promise.allSettled(imageGenerationPromises);
+
+    // Count successes and failures
+    let successfulImages = 0;
+    let failedImages = 0;
+
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled' && result.value.success) {
+        successfulImages++;
+      } else {
+        failedImages++;
+      }
+      
+      // Update progress as each completes
+      const progressPercent = Math.round(((index + 1) / 4) * 100);
+      supabase
+        .from("outfit_swap_photoshoots")
+        .update({ progress: progressPercent })
+        .eq("id", photoshootId);
+    });
+
+    console.log(`[processPhotoshoot] Generation complete - ${successfulImages} succeeded, ${failedImages} failed`);
 
     // Determine final status
     const finalStatus = successfulImages === 0 ? "failed" : "completed";
