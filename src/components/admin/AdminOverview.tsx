@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { UsersList } from './UsersList';
 import { AdminManagement } from './AdminManagement';
 import { AdminImagesList } from './AdminImagesList';
+import { AdminVideosList } from './AdminVideosList';
+import { AdminOutfitSwapsList } from './AdminOutfitSwapsList';
 import { EnhancedMetrics } from './EnhancedMetrics';
 import { FinancialDashboard } from './FinancialDashboard';
 import { Image } from 'lucide-react';
@@ -22,11 +24,13 @@ export const AdminOverview = () => {
         </Button>
       </div>
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-6 lg:grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7 lg:grid-cols-7">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="financial">Financial</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="images">Images</TabsTrigger>
+          <TabsTrigger value="videos">Videos</TabsTrigger>
+          <TabsTrigger value="outfit-swaps">Outfit Swaps</TabsTrigger>
           <TabsTrigger value="admins">Admins</TabsTrigger>
         </TabsList>
 
@@ -44,6 +48,14 @@ export const AdminOverview = () => {
 
         <TabsContent value="images" className="space-y-6">
           <AdminImagesList />
+        </TabsContent>
+
+        <TabsContent value="videos" className="space-y-6">
+          <AdminVideosList />
+        </TabsContent>
+
+        <TabsContent value="outfit-swaps" className="space-y-6">
+          <AdminOutfitSwapsList />
         </TabsContent>
 
         <TabsContent value="admins" className="space-y-6">
