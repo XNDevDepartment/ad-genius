@@ -47,6 +47,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     setSubscriptionLoading(true);
     try {
+      // Store old tier for comparison
+      const oldTier = subscriptionData?.subscription_tier;
+
       // First call check-subscription to ensure Stripe data is synced
       const { data: checkData, error: checkError } = await supabase.functions.invoke('check-subscription');
       if (checkError) throw checkError;
@@ -71,6 +74,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
 
       setSubscriptionData(newSubscriptionData);
+
+      // Sync to MailerLite if subscription tier changed
+      const newTier = newSubscriptionData.subscription_tier;
+      if (oldTier && oldTier !== newTier) {
+        setTimeout(async () => {
+          try {
+            await supabase.functions.invoke('sync-mailerlite', {
+              body: {
+                action: 'update',
+                email: user.email,
+                userId: user.id,
+                oldTier,
+                newTier
+              }
+            });
+          } catch (syncError) {
+            console.error('[AuthContext] MailerLite tier sync error:', syncError);
+          }
+        }, 0);
+      }
     } catch (error) {
       console.error('Error fetching subscription data:', error);
       setSubscriptionData({
@@ -184,7 +207,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, userData?: any) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -192,6 +215,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         emailRedirectTo: redirectUrl,
       },
     });
+
+    // Sync to MailerLite after successful signup
+    if (!error && data.user) {
+      setTimeout(async () => {
+        try {
+          await supabase.functions.invoke('sync-mailerlite', {
+            body: {
+              action: 'subscribe',
+              email: data.user!.email,
+              userId: data.user!.id,
+              name: userData?.name || userData?.first_name || '',
+              subscriptionTier: 'Free'
+            }
+          });
+        } catch (syncError) {
+          console.error('[AuthContext] MailerLite sync error:', syncError);
+        }
+      }, 0);
+    }
+
     return { error };
   };
 
