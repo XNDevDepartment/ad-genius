@@ -357,6 +357,36 @@ export type Database = {
           },
         ]
       }
+      mailerlite_sync_log: {
+        Row: {
+          action: string
+          error_message: string | null
+          id: string
+          mailerlite_subscriber_id: string | null
+          success: boolean
+          synced_at: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          error_message?: string | null
+          id?: string
+          mailerlite_subscriber_id?: string | null
+          success: boolean
+          synced_at?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          error_message?: string | null
+          id?: string
+          mailerlite_subscriber_id?: string | null
+          success?: boolean
+          synced_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           created_at: string
@@ -728,7 +758,9 @@ export type Database = {
           description: string | null
           email: string
           id: string
+          mailerlite_subscriber_id: string | null
           name: string | null
+          newsletter_subscribed: boolean | null
           profession: string | null
           profile_picture: string | null
           updated_at: string | null
@@ -739,7 +771,9 @@ export type Database = {
           description?: string | null
           email: string
           id: string
+          mailerlite_subscriber_id?: string | null
           name?: string | null
+          newsletter_subscribed?: boolean | null
           profession?: string | null
           profile_picture?: string | null
           updated_at?: string | null
@@ -750,7 +784,9 @@ export type Database = {
           description?: string | null
           email?: string
           id?: string
+          mailerlite_subscriber_id?: string | null
           name?: string | null
+          newsletter_subscribed?: boolean | null
           profession?: string | null
           profile_picture?: string | null
           updated_at?: string | null

@@ -86,6 +86,9 @@ verify_jwt = true
 [functions.create-base-model]
 verify_jwt = true
 
+[functions.sync-mailerlite]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 port = 54327
