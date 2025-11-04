@@ -9,6 +9,7 @@ import { AdminVideosList } from './AdminVideosList';
 import { AdminOutfitSwapsList } from './AdminOutfitSwapsList';
 import { EnhancedMetrics } from './EnhancedMetrics';
 import { FinancialDashboard } from './FinancialDashboard';
+import { PromptManagement } from './PromptManagement';
 import { Image } from 'lucide-react';
 
 export const AdminOverview = () => {
@@ -24,13 +25,14 @@ export const AdminOverview = () => {
         </Button>
       </div>
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-7 lg:grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8 lg:grid-cols-8">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="financial">Financial</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="images">Images</TabsTrigger>
           <TabsTrigger value="videos">Videos</TabsTrigger>
           <TabsTrigger value="outfit-swaps">Outfit Swaps</TabsTrigger>
+          <TabsTrigger value="prompts">AI Prompts</TabsTrigger>
           <TabsTrigger value="admins">Admins</TabsTrigger>
         </TabsList>
 
@@ -56,6 +58,10 @@ export const AdminOverview = () => {
 
         <TabsContent value="outfit-swaps" className="space-y-6">
           <AdminOutfitSwapsList />
+        </TabsContent>
+
+        <TabsContent value="prompts" className="space-y-6">
+          <PromptManagement />
         </TabsContent>
 
         <TabsContent value="admins" className="space-y-6">

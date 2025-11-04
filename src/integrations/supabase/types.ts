@@ -14,6 +14,95 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_prompt_history: {
+        Row: {
+          change_notes: string | null
+          changed_by: string | null
+          created_at: string | null
+          id: string
+          prompt_id: string | null
+          prompt_template: string
+          version: number
+        }
+        Insert: {
+          change_notes?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          prompt_id?: string | null
+          prompt_template: string
+          version: number
+        }
+        Update: {
+          change_notes?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          prompt_id?: string | null
+          prompt_template?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_prompt_history_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "ai_prompts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_prompts: {
+        Row: {
+          category: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          prompt_key: string
+          prompt_name: string
+          prompt_template: string
+          prompt_type: string
+          updated_at: string | null
+          updated_by: string | null
+          variables: Json | null
+          version: number | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          prompt_key: string
+          prompt_name: string
+          prompt_template: string
+          prompt_type: string
+          updated_at?: string | null
+          updated_by?: string | null
+          variables?: Json | null
+          version?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          prompt_key?: string
+          prompt_name?: string
+          prompt_template?: string
+          prompt_type?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          variables?: Json | null
+          version?: number | null
+        }
+        Relationships: []
+      }
       conversation_messages: {
         Row: {
           content: string

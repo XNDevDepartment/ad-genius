@@ -13,6 +13,99 @@ const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_API_KEY")!;
 
 const serviceClient = () => createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+// Fallback prompts (used if database is unavailable)
+const FALLBACK_GARMENT_ANALYSIS_PROMPT = `Analyze this garment image in detail. Describe:
+1. Type of clothing (e.g., t-shirt, dress, pants, jacket, full outfit)
+2. Style and fit (e.g., casual, formal, athletic, oversized, fitted)
+3. Color and patterns
+4. Material appearance (e.g., cotton, denim, leather, knit)
+5. Key distinctive features (e.g., collar type, sleeve length, buttons, zippers)
+6. What body parts it covers (e.g., torso only, full legs, arms, etc.)
+
+Be specific and concise. This description will be used for AI outfit swapping.`;
+
+const FALLBACK_OUTFIT_SWAP_PROMPT = `You are an expert e-commerce outfit swap AI. Your task is to replace the person's current outfit with a NEW garment while maintaining photographic realism.
+
+GARMENT TO SWAP IN:
+{garment_description}
+
+CRITICAL REQUIREMENTS:
+1. COMPLETE REPLACEMENT: Remove the person's ENTIRE current outfit and replace it with the new garment described above
+2. IDENTITY PRESERVATION: Keep the person's face, hair, skin tone, hands, and body pose 100% IDENTICAL
+3. VISIBLE CHANGE: The final image MUST show CLEARLY DIFFERENT clothing than the original - this is CRITICAL
+4. BODY COVERAGE: Replace all clothing that covers the same body parts as the new garment:
+  - If the new garment is a top: Replace the current top completely
+  - If it's pants/bottoms: Replace the current bottoms completely  
+  - If it's a dress/full outfit: Replace ALL current clothing
+  - If it's a jacket/outerwear: Layer it appropriately over a compatible base
+  — If the new garment is not full body piece, create the rest of the outfit
+
+COMPOSITION & QUALITY:
+- Center the model in the frame for professional product photography
+- Clean, minimal background - remove/blur distracting elements (plants, furniture, clutter)
+- Professional e-commerce lighting and presentation
+- Natural shadows and highlights matching the garment
+- Seamless blending at all garment edges (neckline, sleeves, hem, waist)
+
+SMART STYLING:
+- Match footwear to outfit style (heels for formal, sneakers for casual/athletic, boots for edgy/outdoor)
+- Adjust accessories if they clash with the new outfit
+- If the new garment requires different proportions, adjust body naturally (e.g., fitted dress vs oversized hoodie)
+- Ensure overall look is cohesive and realistic.
+- Don't leave on underwear. Imagine a complement piece of cloth in case of being only a partial garment.
+
+QUALITY STANDARDS:
+- High-resolution, professional e-commerce product photo quality
+- No visible AI artifacts, seams, or blending errors
+- The result should look like a real fashion shoot
+
+VALIDATION: Before generating, confirm that:
+✓ The new garment is VISIBLY DIFFERENT from the original outfit
+✓ All relevant clothing items are being replaced
+✓ The person's identity remains identical
+✓ The composition is professional and centered
+
+Generate a high-quality outfit swap that clearly shows the NEW garment on the person.`;
+
+// Helper: Get prompt from database with fallback
+async function getPrompt(
+  promptKey: string,
+  variables: Record<string, string> = {},
+  fallback: string
+): Promise<string> {
+  try {
+    const supabase = serviceClient();
+    const { data, error } = await supabase
+      .from('ai_prompts')
+      .select('prompt_template')
+      .eq('prompt_key', promptKey)
+      .eq('is_active', true)
+      .single();
+    
+    if (error) throw error;
+    
+    let prompt = data.prompt_template;
+    
+    // Replace variables
+    for (const [key, value] of Object.entries(variables)) {
+      prompt = prompt.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
+    }
+    
+    console.log(`[getPrompt] Successfully loaded prompt: ${promptKey}`);
+    return prompt;
+  } catch (error) {
+    console.warn(`[getPrompt] Failed to load prompt ${promptKey}, using fallback:`, error);
+    
+    // Apply variables to fallback
+    let prompt = fallback;
+    for (const [key, value] of Object.entries(variables)) {
+      prompt = prompt.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
+    }
+    
+    return prompt;
+  }
+}
+
 // Helper: Convert ArrayBuffer to base64 in chunks to avoid stack overflow
 function bufferToBase64(uint8Array: Uint8Array): string {
   let binary = '';
@@ -147,6 +240,13 @@ async function analyzeGarment(garmentUrl: string): Promise<string> {
     const imageBuffer = await garmentResponse.arrayBuffer();
     const base64Image = bufferToBase64(new Uint8Array(imageBuffer));
 
+    // Get analysis prompt from database
+    const analysisPrompt = await getPrompt(
+      'outfit_swap_garment_analysis',
+      {},
+      FALLBACK_GARMENT_ANALYSIS_PROMPT
+    );
+
     // Call Gemini API for analysis
     const response = await fetch(
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
@@ -159,17 +259,7 @@ async function analyzeGarment(garmentUrl: string): Promise<string> {
         body: JSON.stringify({
           contents: [{
             parts: [
-              { 
-                text: `Analyze this garment image in detail. Describe:
-1. Type of clothing (e.g., t-shirt, dress, pants, jacket, full outfit)
-2. Style and fit (e.g., casual, formal, athletic, oversized, fitted)
-3. Color and patterns
-4. Material appearance (e.g., cotton, denim, leather, knit)
-5. Key distinctive features (e.g., collar type, sleeve length, buttons, zippers)
-6. What body parts it covers (e.g., torso only, full legs, arms, etc.)
-
-Be specific and concise. This description will be used for AI outfit swapping.`
-              },
+              { text: analysisPrompt },
               { 
                 inlineData: { 
                   mimeType: mimeType, 
@@ -379,48 +469,11 @@ async function processOutfitSwap(jobId: string) {
 
     // STEP 2: Generate improved prompt with garment analysis
     const startTime = Date.now();
-    const prompt = `You are an expert e-commerce outfit swap AI. Your task is to replace the person's current outfit with a NEW garment while maintaining photographic realism.
-
-        GARMENT TO SWAP IN:
-        ${garmentDescription}
-
-        CRITICAL REQUIREMENTS:
-        1. COMPLETE REPLACEMENT: Remove the person's ENTIRE current outfit and replace it with the new garment described above
-        2. IDENTITY PRESERVATION: Keep the person's face, hair, skin tone, hands, and body pose 100% IDENTICAL
-        3. VISIBLE CHANGE: The final image MUST show CLEARLY DIFFERENT clothing than the original - this is CRITICAL
-        4. BODY COVERAGE: Replace all clothing that covers the same body parts as the new garment:
-          - If the new garment is a top: Replace the current top completely
-          - If it's pants/bottoms: Replace the current bottoms completely  
-          - If it's a dress/full outfit: Replace ALL current clothing
-          - If it's a jacket/outerwear: Layer it appropriately over a compatible base
-          — If the new garment is not full body piece, create the rest of the outfit
-
-        COMPOSITION & QUALITY:
-        - Center the model in the frame for professional product photography
-        - Clean, minimal background - remove/blur distracting elements (plants, furniture, clutter)
-        - Professional e-commerce lighting and presentation
-        - Natural shadows and highlights matching the garment
-        - Seamless blending at all garment edges (neckline, sleeves, hem, waist)
-
-        SMART STYLING:
-        - Match footwear to outfit style (heels for formal, sneakers for casual/athletic, boots for edgy/outdoor)
-        - Adjust accessories if they clash with the new outfit
-        - If the new garment requires different proportions, adjust body naturally (e.g., fitted dress vs oversized hoodie)
-        - Ensure overall look is cohesive and realistic.
-        - Don't leave on underwear. Imagine a complement piece of cloth in case of being only a partial garment.
-
-        QUALITY STANDARDS:
-        - High-resolution, professional e-commerce product photo quality
-        - No visible AI artifacts, seams, or blending errors
-        - The result should look like a real fashion shoot
-
-        VALIDATION: Before generating, confirm that:
-        ✓ The new garment is VISIBLY DIFFERENT from the original outfit
-        ✓ All relevant clothing items are being replaced
-        ✓ The person's identity remains identical
-        ✓ The composition is professional and centered
-
-        Generate a high-quality outfit swap that clearly shows the NEW garment on the person.`;
+    const prompt = await getPrompt(
+      'outfit_swap_main',
+      { garment_description: garmentDescription },
+      FALLBACK_OUTFIT_SWAP_PROMPT
+    );
 
     await supabase
       .from("outfit_swap_jobs")
