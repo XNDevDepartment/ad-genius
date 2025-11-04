@@ -1000,7 +1000,6 @@ const PHOTOSHOOT_PROMPTS = [
 
 async function createPhotoshootJob(userId: string, params: any) {
   const { resultId, backImageUrl } = params;
-  const { resultId } = params;
   const supabase = serviceClient();
   const creditsNeeded = 4;
 
@@ -1359,7 +1358,7 @@ async function cancelPhotoshoot(userId: string, photoshootId: string) {
 
 // E-commerce Photo Generation
 async function createEcommercePhotoJob(userId: string, params: any) {
-  const { resultId, backImageUrl } = params;
+  const { resultId } = params;
   const supabase = serviceClient();
   const creditsNeeded = 1;
 
