@@ -1,9 +1,23 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.4";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
 };
+
+// Helper function to check if user is admin
+async function isUserAdmin(supabaseClient, userId) {
+  const { data, error } = await supabaseClient.rpc('is_user_admin', {
+    check_user_id: userId
+  });
+  if (error) {
+    console.error('[ADMIN-CHECK] Error checking admin status:', error);
+    return false;
+  }
+  return data === true;
+}
+
 serve(async (req)=>{
   if (req.method === "OPTIONS") {
     return new Response(null, {
@@ -53,8 +67,11 @@ async function uploadAndProcessModel(supabaseClient, userId, params, googleApiKe
   const { imageDataUrl, metadata, previewMode = false } = params;
   const creditCost = 5;
   
-  // ONLY deduct credits if NOT in preview mode
-  if (!previewMode) {
+  // Check admin status
+  const isAdmin = await isUserAdmin(supabaseClient, userId);
+  
+  // ONLY deduct credits if NOT in preview mode AND NOT admin
+  if (!previewMode && !isAdmin) {
     const { data: creditCheck, error: creditError } = await supabaseClient.rpc("deduct_user_credits", {
       p_user_id: userId,
       p_amount: creditCost,
@@ -172,8 +189,8 @@ async function uploadAndProcessModel(supabaseClient, userId, params, googleApiKe
       }
     });
   } catch (error) {
-    // ONLY refund if credits were deducted (not in preview mode)
-    if (!previewMode) {
+    // ONLY refund if credits were deducted (not in preview mode AND not admin)
+    if (!previewMode && !isAdmin) {
       await supabaseClient.rpc("refund_user_credits", {
         p_user_id: userId,
         p_amount: creditCost,
@@ -187,8 +204,11 @@ async function generateModelWithAI(supabaseClient, userId, params, googleApiKey)
   const { name, gender, ageRange, bodyType, height, skinTone, hair, eyes, pose, gentleSmile, previewMode = false } = params;
   const creditCost = 6;
   
-  // ONLY deduct credits if NOT in preview mode
-  if (!previewMode) {
+  // Check admin status
+  const isAdmin = await isUserAdmin(supabaseClient, userId);
+  
+  // ONLY deduct credits if NOT in preview mode AND NOT admin
+  if (!previewMode && !isAdmin) {
     const { data: creditCheck, error: creditError } = await supabaseClient.rpc("deduct_user_credits", {
       p_user_id: userId,
       p_amount: creditCost,
@@ -317,8 +337,8 @@ async function generateModelWithAI(supabaseClient, userId, params, googleApiKey)
     });
   } catch (error) {
     console.error("Error in generateModelWithAI:", error);
-    // ONLY refund if credits were deducted (not in preview mode)
-    if (!previewMode) {
+    // ONLY refund if credits were deducted (not in preview mode AND not admin)
+    if (!previewMode && !isAdmin) {
       await supabaseClient.rpc("refund_user_credits", {
         p_user_id: userId,
         p_amount: creditCost,
@@ -333,15 +353,20 @@ async function saveModel(supabaseClient, userId, params) {
   const { imageDataUrl, metadata, isAIGenerated = false } = params;
   const creditCost = isAIGenerated ? 6 : 5;
 
-  // Deduct credits NOW (when user confirms save)
-  const { data: creditCheck, error: creditError } = await supabaseClient.rpc("deduct_user_credits", {
-    p_user_id: userId,
-    p_amount: creditCost,
-    p_reason: isAIGenerated ? "save_ai_base_model" : "save_uploaded_base_model"
-  });
+  // Check admin status
+  const isAdmin = await isUserAdmin(supabaseClient, userId);
 
-  if (creditError || !creditCheck?.success) {
-    throw new Error(creditCheck?.error || "Insufficient credits");
+  // ONLY deduct credits if NOT admin
+  if (!isAdmin) {
+    const { data: creditCheck, error: creditError } = await supabaseClient.rpc("deduct_user_credits", {
+      p_user_id: userId,
+      p_amount: creditCost,
+      p_reason: isAIGenerated ? "save_ai_base_model" : "save_uploaded_base_model"
+    });
+
+    if (creditError || !creditCheck?.success) {
+      throw new Error(creditCheck?.error || "Insufficient credits");
+    }
   }
 
   try {
@@ -395,12 +420,14 @@ async function saveModel(supabaseClient, userId, params) {
     });
 
   } catch (error) {
-    // Refund credits on failure
-    await supabaseClient.rpc("refund_user_credits", {
-      p_user_id: userId,
-      p_amount: creditCost,
-      p_reason: isAIGenerated ? "save_ai_base_model_failed" : "save_uploaded_base_model_failed"
-    });
+    // ONLY refund credits if they were deducted (not admin)
+    if (!isAdmin) {
+      await supabaseClient.rpc("refund_user_credits", {
+        p_user_id: userId,
+        p_amount: creditCost,
+        p_reason: isAIGenerated ? "save_ai_base_model_failed" : "save_uploaded_base_model_failed"
+      });
+    }
     throw error;
   }
 }
