@@ -634,6 +634,65 @@ export type Database = {
           },
         ]
       }
+      outfit_swap_ecommerce_photos: {
+        Row: {
+          created_at: string | null
+          error: string | null
+          finished_at: string | null
+          id: string
+          metadata: Json | null
+          progress: number | null
+          prompt_used: string | null
+          public_url: string | null
+          result_id: string
+          started_at: string | null
+          status: string
+          storage_path: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          metadata?: Json | null
+          progress?: number | null
+          prompt_used?: string | null
+          public_url?: string | null
+          result_id: string
+          started_at?: string | null
+          status?: string
+          storage_path?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          metadata?: Json | null
+          progress?: number | null
+          prompt_used?: string | null
+          public_url?: string | null
+          result_id?: string
+          started_at?: string | null
+          status?: string
+          storage_path?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outfit_swap_ecommerce_photos_result_id_fkey"
+            columns: ["result_id"]
+            isOneToOne: false
+            referencedRelation: "outfit_swap_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outfit_swap_jobs: {
         Row: {
           base_model_id: string | null
@@ -721,6 +780,8 @@ export type Database = {
       }
       outfit_swap_photoshoots: {
         Row: {
+          back_image_path: string | null
+          back_image_url: string | null
           created_at: string | null
           error: string | null
           finished_at: string | null
@@ -742,6 +803,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          back_image_path?: string | null
+          back_image_url?: string | null
           created_at?: string | null
           error?: string | null
           finished_at?: string | null
@@ -763,6 +826,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          back_image_path?: string | null
+          back_image_url?: string | null
           created_at?: string | null
           error?: string | null
           finished_at?: string | null

@@ -141,6 +141,9 @@ serve(async (req) => {
     if (action === "processPhotoshoot") {
       return await processPhotoshoot(params.photoshootId);
     }
+    if (action === "processEcommercePhoto") {
+      return await processEcommercePhoto(params.photoId);
+    }
 
     // All other actions require authentication
     const authHeader = req.headers.get("authorization");
@@ -180,6 +183,12 @@ serve(async (req) => {
         return await getPhotoshoot(user.id, params.photoshootId);
       case "cancelPhotoshoot":
         return await cancelPhotoshoot(user.id, params.photoshootId);
+      case "createEcommercePhoto":
+        return await createEcommercePhotoJob(user.id, params);
+      case "getEcommercePhoto":
+        return await getEcommercePhoto(user.id, params.photoId);
+      case "cancelEcommercePhoto":
+        return await cancelEcommercePhoto(user.id, params.photoId);
       default:
         return jsonResponse({ error: "Invalid action" }, 400);
     }
@@ -990,6 +999,7 @@ const PHOTOSHOOT_PROMPTS = [
 ];
 
 async function createPhotoshootJob(userId: string, params: any) {
+  const { resultId, backImageUrl } = params;
   const { resultId } = params;
   const supabase = serviceClient();
   const creditsNeeded = 4;
@@ -1048,10 +1058,12 @@ async function createPhotoshootJob(userId: string, params: any) {
     .insert({
       user_id: userId,
       result_id: resultId,
+      back_image_url: backImageUrl || null,
       status: "queued",
       metadata: {
         original_result_url: result.public_url,
         credits_deducted: creditsNeeded,
+        has_custom_back_image: !!backImageUrl
       },
     })
     .select()
@@ -1343,6 +1355,185 @@ async function cancelPhotoshoot(userId: string, photoshootId: string) {
   }
 
   return jsonResponse({ success: true }, 200);
+}
+
+// E-commerce Photo Generation
+async function createEcommercePhotoJob(userId: string, params: any) {
+  const { resultId, backImageUrl } = params;
+  const supabase = serviceClient();
+  const creditsNeeded = 1;
+
+  const isAdmin = await checkIsAdmin(userId);
+  if (!isAdmin) {
+    const deductResult = await deductCredits(userId, creditsNeeded);
+    if (!deductResult.success) {
+      return jsonResponse({ error: deductResult.error }, 400);
+    }
+  }
+
+  const { data: result } = await supabase
+    .from("outfit_swap_results")
+    .select("*")
+    .eq("id", resultId)
+    .eq("user_id", userId)
+    .single();
+
+  if (!result) {
+    if (!isAdmin) await refundCredits(userId, creditsNeeded);
+    return jsonResponse({ error: "Result not found" }, 404);
+  }
+
+  const { data: ecommercePhoto, error } = await supabase
+    .from("outfit_swap_ecommerce_photos")
+    .insert({
+      user_id: userId,
+      result_id: resultId,
+      status: "queued",
+      metadata: { original_result_url: result.public_url, credits_deducted: creditsNeeded }
+    })
+    .select()
+    .single();
+
+  if (error) {
+    if (!isAdmin) await refundCredits(userId, creditsNeeded);
+    return jsonResponse({ error: "Failed to create e-commerce photo job" }, 500);
+  }
+
+  await supabase.functions.invoke("outfit-swap", {
+    body: { action: "processEcommercePhoto", photoId: ecommercePhoto.id }
+  });
+
+  return jsonResponse({ ecommercePhoto }, 200);
+}
+
+async function processEcommercePhoto(photoId: string) {
+  const supabase = serviceClient();
+
+  const { data: photo } = await supabase
+    .from("outfit_swap_ecommerce_photos")
+    .select("*, outfit_swap_results(*)")
+    .eq("id", photoId)
+    .single();
+
+  if (!photo) return jsonResponse({ error: "Photo not found" }, 404);
+
+  await supabase.from("outfit_swap_ecommerce_photos")
+    .update({ status: "processing", started_at: new Date().toISOString(), progress: 10 })
+    .eq("id", photoId);
+
+  try {
+    const originalUrl = photo.outfit_swap_results.public_url;
+    const imageResp = await fetch(originalUrl);
+    const imageBuffer = new Uint8Array(await imageResp.arrayBuffer());
+    const base64Image = bufferToBase64(imageBuffer);
+
+    const prompt = `Create a professional e-commerce fashion photo by placing this model with their current outfit into a perfectly matching, photorealistic environment.
+
+ANALYZE THE GARMENT STYLE and match to appropriate environment:
+- Casual: Urban street, coffee shop, park
+- Formal: Modern office, elegant venue, city backdrop
+- Athletic: Gym, outdoor track, yoga studio
+- Evening: Upscale restaurant, gala venue
+- Outerwear: City street, outdoor scene
+
+REQUIREMENTS:
+1. Keep the model and garment EXACTLY as they appear
+2. Change ONLY the background and lighting
+3. Ensure lighting matches the new environment
+4. Professional photography quality with proper depth of field
+5. Environment complements but doesn't distract from the product
+
+OUTPUT: Magazine-quality fashion photograph.`;
+
+    await supabase.from("outfit_swap_ecommerce_photos").update({ progress: 40 }).eq("id", photoId);
+
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GOOGLE_AI_KEY}`;
+    const geminiResp = await fetch(geminiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: prompt },
+            { inline_data: { mime_type: "image/jpeg", data: base64Image } }
+          ]
+        }],
+        generationConfig: { response_modalities: ["image"] }
+      })
+    });
+
+    const geminiData = await geminiResp.json();
+    const resultBase64 = extractBase64Image(geminiData);
+    if (!resultBase64) throw new Error("No image in Gemini response");
+
+    await supabase.from("outfit_swap_ecommerce_photos").update({ progress: 80 }).eq("id", photoId);
+
+    const resultBuffer = Uint8Array.from(atob(resultBase64), c => c.charCodeAt(0));
+    const storagePath = `ecommerce/${photoId}.jpg`;
+    
+    await supabase.storage.from("outfit-swap-photoshoots").upload(storagePath, resultBuffer, {
+      contentType: "image/jpeg",
+      upsert: true
+    });
+
+    const { data: { publicUrl } } = supabase.storage
+      .from("outfit-swap-photoshoots")
+      .getPublicUrl(storagePath);
+
+    await supabase.from("outfit_swap_ecommerce_photos").update({
+      status: "completed",
+      progress: 100,
+      public_url: publicUrl,
+      storage_path: storagePath,
+      finished_at: new Date().toISOString()
+    }).eq("id", photoId);
+
+    return jsonResponse({ success: true }, 200);
+  } catch (error) {
+    await supabase.from("outfit_swap_ecommerce_photos").update({
+      status: "failed",
+      error: error.message,
+      finished_at: new Date().toISOString()
+    }).eq("id", photoId);
+
+    const isAdmin = await checkIsAdmin(photo.user_id);
+    if (!isAdmin) await refundCredits(photo.user_id, 1);
+
+    return jsonResponse({ error: error.message }, 500);
+  }
+}
+
+async function getEcommercePhoto(userId: string, photoId: string) {
+  const supabase = serviceClient();
+  const { data, error } = await supabase
+    .from("outfit_swap_ecommerce_photos")
+    .select("*")
+    .eq("id", photoId)
+    .eq("user_id", userId)
+    .single();
+
+  if (error) return jsonResponse({ error: "Photo not found" }, 404);
+  return jsonResponse({ ecommercePhoto: data }, 200);
+}
+
+async function cancelEcommercePhoto(userId: string, photoId: string) {
+  const supabase = serviceClient();
+  const { error } = await supabase
+    .from("outfit_swap_ecommerce_photos")
+    .update({ status: "canceled", finished_at: new Date().toISOString() })
+    .eq("id", photoId)
+    .eq("user_id", userId)
+    .in("status", ["queued", "processing"]);
+
+  if (error) return jsonResponse({ error: "Failed to cancel" }, 500);
+  return jsonResponse({ success: true }, 200);
+}
+
+function jsonResponse(data: any, status: number) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" }
+  });
 }
 
 function jsonResponse(data: any, status: number) {

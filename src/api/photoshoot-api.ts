@@ -23,14 +23,11 @@ export interface PhotoshootJob {
 }
 
 export const photoshootApi = {
-  async createPhotoshoot(resultId: string) {
-    const { data, error } = await supabase.functions.invoke("outfit-swap", {
-      body: {
-        action: "createPhotoshoot",
-        resultId,
-      },
-    });
+  async createPhotoshoot(resultId: string, backImageUrl?: string | null) {
+    const body: any = { action: "createPhotoshoot", resultId };
+    if (backImageUrl) body.backImageUrl = backImageUrl;
 
+    const { data, error } = await supabase.functions.invoke("outfit-swap", { body });
     if (error) throw error;
     return data.photoshoot as PhotoshootJob;
   },
