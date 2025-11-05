@@ -15,9 +15,11 @@ import { useSourceImageUpload } from "@/hooks/useSourceImageUpload";
 import { BaseModel } from "@/hooks/useBaseModels";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
 
 const OutfitSwap = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdminAuth();
   const { toast } = useToast();
@@ -38,18 +40,18 @@ const OutfitSwap = () => {
       navigate("/");
       toast({
         variant: "destructive",
-        title: "Access Denied",
-        description: "Admin access required for Outfit Swap module",
+        title: t('outfitSwap.errors.accessDenied'),
+        description: t('outfitSwap.errors.adminRequired'),
       });
     }
-  }, [user, isAdmin, adminLoading, navigate, toast]);
+  }, [user, isAdmin, adminLoading, navigate, toast, t]);
 
   const handleStartBatch = async () => {
     if (!selectedModel || garmentFiles.length === 0) {
       toast({
         variant: "destructive",
-        title: "Missing data",
-        description: "Please select a model and upload garments",
+        title: t('outfitSwap.errors.missingData'),
+        description: t('outfitSwap.errors.selectModelAndGarments'),
       });
       return;
     }
@@ -69,7 +71,7 @@ const OutfitSwap = () => {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Failed to start batch",
+        title: t('outfitSwap.errors.failedToStart'),
         description: error.message,
       });
     } finally {
@@ -113,9 +115,9 @@ const OutfitSwap = () => {
               <Shirt className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Outfit Swap</h1>
+              <h1 className="text-2xl font-bold">{t('outfitSwap.title')}</h1>
               <p className="text-sm text-muted-foreground">
-                Process up to 10 garments at once
+                {t('outfitSwap.subtitle')}
               </p>
             </div>
           </div>
@@ -154,7 +156,7 @@ const OutfitSwap = () => {
             {/* Step 1: Select Model */}
             {currentStep === 1 && (
               <div className="space-y-6">
-                <h2 className="text-xl font-semibold">Step 1: Select Base Model</h2>
+                <h2 className="text-xl font-semibold">{t('outfitSwap.steps.step1Title')}</h2>
                 <BaseModelSelector
                   selectedModel={selectedModel}
                   onSelectModel={setSelectedModel}
@@ -166,7 +168,7 @@ const OutfitSwap = () => {
                     onClick={() => setCurrentStep(2)}
                     disabled={!selectedModel}
                   >
-                    Continue to Upload Garments
+                    {t('outfitSwap.steps.continueToUpload')}
                   </Button>
                 </div>
               </div>
@@ -176,9 +178,9 @@ const OutfitSwap = () => {
             {currentStep === 2 && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold">Step 2: Upload Garments</h2>
+                  <h2 className="text-xl font-semibold">{t('outfitSwap.steps.step2Title')}</h2>
                   <Button variant="outline" onClick={() => setCurrentStep(1)}>
-                    Change Model
+                    {t('outfitSwap.steps.changeModel')}
                   </Button>
                 </div>
 
@@ -192,23 +194,23 @@ const OutfitSwap = () => {
                 {garmentFiles.length > 0 && (
                   <>
                     <Card className="p-6">
-                      <h3 className="text-lg font-semibold mb-4">Review & Settings</h3>
+                      <h3 className="text-lg font-semibold mb-4">{t('outfitSwap.review.title')}</h3>
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold">Selected Model:</span>
+                          <span className="font-semibold">{t('outfitSwap.review.selectedModel')}</span>
                           <span>{selectedModel?.name}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold">Garments:</span>
-                          <span>{garmentFiles.length} garments</span>
+                          <span className="font-semibold">{t('outfitSwap.review.garments')}</span>
+                          <span>{t('outfitSwap.review.garmentsCount', { count: garmentFiles.length })}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold">Cost:</span>
+                          <span className="font-semibold">{t('outfitSwap.review.cost')}</span>
                           <div className="text-right">
-                            <span className="text-lg font-bold">{cost} credits</span>
+                            <span className="text-lg font-bold">{cost} {t('outfitSwap.review.credits')}</span>
                             {savings > 0 && (
                               <Badge variant="default" className="ml-2">
-                                Save {savings} credits!
+                                {t('outfitSwap.review.saveCredits', { savings })}
                               </Badge>
                             )}
                           </div>
@@ -222,7 +224,7 @@ const OutfitSwap = () => {
 
                 <div className="flex justify-center gap-4">
                   <Button variant="outline" onClick={() => setCurrentStep(1)}>
-                    Back
+                    {t('outfitSwap.steps.back')}
                   </Button>
                   <Button
                     size="lg"
@@ -231,10 +233,10 @@ const OutfitSwap = () => {
                     className="min-w-[200px]"
                   >
                     {uploading
-                      ? "Uploading..."
+                      ? t('outfitSwap.actions.uploading')
                       : loading
-                      ? "Starting..."
-                      : `Start Batch (${cost} credits)`}
+                      ? t('outfitSwap.actions.starting')
+                      : t('outfitSwap.actions.startBatch', { cost })}
                   </Button>
                 </div>
               </div>

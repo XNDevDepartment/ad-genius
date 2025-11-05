@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X, Upload, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface MultiGarmentUploaderProps {
   garments: File[];
@@ -15,6 +16,7 @@ export const MultiGarmentUploader = ({
   onGarmentsChange,
   maxGarments = 10,
 }: MultiGarmentUploaderProps) => {
+  const { t } = useTranslation();
   const [previews, setPreviews] = useState<string[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -106,12 +108,12 @@ export const MultiGarmentUploader = ({
               <Upload className="w-8 h-8 text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold mb-1">Upload Garment Images</h3>
+              <h3 className="font-semibold mb-1">{t('outfitSwap.garmentUploader.title')}</h3>
               <p className="text-sm text-muted-foreground">
-                Drag and drop or click to select
+                {t('outfitSwap.garmentUploader.dragDrop')}
               </p>
               <p className="text-xs text-muted-foreground mt-2">
-                {garments.length} of {maxGarments} garments selected
+                {t('outfitSwap.garmentUploader.selected', { count: garments.length, max: maxGarments })}
               </p>
             </div>
           </div>
@@ -123,7 +125,7 @@ export const MultiGarmentUploader = ({
         <div className="flex items-center gap-2 text-sm bg-primary/10 text-primary p-3 rounded-lg">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           <p>
-            10% discount applied! You're processing {garments.length} garments at once.
+            {t('outfitSwap.garmentUploader.discount', { count: garments.length })}
           </p>
         </div>
       )}

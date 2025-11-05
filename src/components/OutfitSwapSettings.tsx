@@ -1,5 +1,6 @@
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useTranslation } from "react-i18next";
 
 interface OutfitSwapSettingsProps {
   settings: {
@@ -9,12 +10,14 @@ interface OutfitSwapSettingsProps {
 }
 
 export const OutfitSwapSettings = ({ settings, onChange }: OutfitSwapSettingsProps) => {
+  const { t } = useTranslation();
+  
   return (
     <div className="space-y-4 p-4 border rounded-lg bg-card">
-      <h3 className="text-lg font-semibold">Settings</h3>
+      <h3 className="text-lg font-semibold">{t('outfitSwap.settings.title')}</h3>
 
       <div className="space-y-2">
-        <Label>Output Format</Label>
+        <Label>{t('outfitSwap.settings.outputFormat')}</Label>
         <RadioGroup
           value={settings.outputFormat}
           onValueChange={(value) => onChange({ ...settings, outputFormat: value })}
@@ -22,19 +25,19 @@ export const OutfitSwapSettings = ({ settings, onChange }: OutfitSwapSettingsPro
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="jpg" id="jpg" />
             <Label htmlFor="jpg" className="font-normal cursor-pointer">
-              JPG (Smaller file size)
+              {t('outfitSwap.settings.formats.jpg')}
             </Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="png" id="png" />
             <Label htmlFor="png" className="font-normal cursor-pointer">
-              PNG (Higher quality)
+              {t('outfitSwap.settings.formats.png')}
             </Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="both" id="both" />
             <Label htmlFor="both" className="font-normal cursor-pointer">
-              Both formats
+              {t('outfitSwap.settings.formats.both')}
             </Label>
           </div>
         </RadioGroup>

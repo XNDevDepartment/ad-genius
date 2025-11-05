@@ -736,6 +736,100 @@
       "viewLibrary": "View Library",
       "createContent": "Create Content",
       "accountSettings": "Account Settings"
+    },
+    "outfitSwap": {
+      "title": "Outfit Swap",
+      "subtitle": "Process up to 10 garments at once",
+      "steps": {
+        "step1Title": "Step 1: Select Base Model",
+        "step2Title": "Step 2: Upload Garments",
+        "continueToUpload": "Continue to Upload Garments",
+        "changeModel": "Change Model",
+        "back": "Back"
+      },
+      "errors": {
+        "accessDenied": "Access Denied",
+        "adminRequired": "Admin access required for Outfit Swap module",
+        "missingData": "Missing data",
+        "selectModelAndGarments": "Please select a model and upload garments",
+        "failedToStart": "Failed to start batch"
+      },
+      "review": {
+        "title": "Review & Settings",
+        "selectedModel": "Selected Model:",
+        "garments": "Garments:",
+        "garmentsCount": "{{count}} garments",
+        "cost": "Cost:",
+        "credits": "credits",
+        "saveCredits": "Save {{savings}} credits!"
+      },
+      "actions": {
+        "startBatch": "Start Batch ({{cost}} credits)",
+        "uploading": "Uploading...",
+        "starting": "Starting...",
+        "cancelBatch": "Cancel Batch",
+        "refresh": "Refresh",
+        "downloadAll": "Download All",
+        "startNewBatch": "Start New Batch"
+      },
+      "batch": {
+        "title": "Batch Processing",
+        "completedOf": "{{completed}} of {{total}} completed",
+        "failed": "{{count}} failed",
+        "adminUnlimited": "Admin: Unlimited Credits",
+        "creditsUsed": "{{count}} credits used",
+        "overallProgress": "Overall Progress",
+        "individualSwaps": "Individual Swaps",
+        "swap": "Swap {{index}}"
+      },
+      "status": {
+        "processing": "processing",
+        "completed": "completed",
+        "failed": "failed",
+        "queued": "queued"
+      },
+      "buttons": {
+        "preview": "Preview",
+        "open": "Open",
+        "animate": "Animate",
+        "ecommerce": "E-commerce",
+        "photoshoot": "Photoshoot",
+        "download": "Download"
+      },
+      "warnings": {
+        "stuckJob": "⚠️ This job may be stuck. Try clicking Refresh."
+      },
+      "errorMessages": {
+        "rateLimit": "Google Gemini API rate limit reached. Please wait a few minutes and try again.",
+        "authError": "System configuration issue with Google Gemini API. Please contact support.",
+        "serverError": "Google Gemini API is temporarily unavailable. Please try again later."
+      },
+      "toasts": {
+        "resultReady": "Result ready",
+        "resultReadyDesc": "A new outfit swap result is available",
+        "resultsRefreshed": "Results refreshed",
+        "resultsRefreshedDesc": "Loaded {{count}} results",
+        "adminAccessRequired": "Admin access required",
+        "onlyAdminsPhotoshoots": "Only admins can create photoshoots",
+        "ecommerceStarted": "E-commerce photo started",
+        "ecommerceStartedDesc": "Creating professional product photo...",
+        "ecommerceFailed": "Failed to start e-commerce photo"
+      },
+      "garmentUploader": {
+        "title": "Upload Garment Images",
+        "dragDrop": "Drag and drop or click to select",
+        "selected": "{{count}} of {{max}} garments selected",
+        "discount": "10% discount applied! You're processing {{count}} garments at once."
+      },
+      "settings": {
+        "title": "Settings",
+        "outputFormat": "Output Format",
+        "formats": {
+          "jpg": "JPG (Smaller file size)",
+          "png": "PNG (Higher quality)",
+          "both": "Both formats"
+        }
+      }
     }
   }
 }

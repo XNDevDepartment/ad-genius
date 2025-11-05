@@ -736,6 +736,100 @@
       "viewLibrary": "Ver Biblioteca",
       "createContent": "Criar Conteúdo",
       "accountSettings": "Definições da Conta"
+    },
+    "outfitSwap": {
+      "title": "Troca de Roupa",
+      "subtitle": "Processe até 10 peças de uma vez",
+      "steps": {
+        "step1Title": "Passo 1: Selecionar Modelo Base",
+        "step2Title": "Passo 2: Enviar Peças",
+        "continueToUpload": "Continuar para Enviar Peças",
+        "changeModel": "Mudar Modelo",
+        "back": "Voltar"
+      },
+      "errors": {
+        "accessDenied": "Acesso Negado",
+        "adminRequired": "Acesso de administrador necessário para o módulo de Troca de Roupa",
+        "missingData": "Dados ausentes",
+        "selectModelAndGarments": "Por favor, selecione um modelo e envie peças",
+        "failedToStart": "Falha ao iniciar lote"
+      },
+      "review": {
+        "title": "Revisão e Configurações",
+        "selectedModel": "Modelo Selecionado:",
+        "garments": "Peças:",
+        "garmentsCount": "{{count}} peças",
+        "cost": "Custo:",
+        "credits": "créditos",
+        "saveCredits": "Economize {{savings}} créditos!"
+      },
+      "actions": {
+        "startBatch": "Iniciar Lote ({{cost}} créditos)",
+        "uploading": "Enviando...",
+        "starting": "Iniciando...",
+        "cancelBatch": "Cancelar Lote",
+        "refresh": "Atualizar",
+        "downloadAll": "Baixar Tudo",
+        "startNewBatch": "Iniciar Novo Lote"
+      },
+      "batch": {
+        "title": "Processamento em Lote",
+        "completedOf": "{{completed}} de {{total}} concluídos",
+        "failed": "{{count}} falharam",
+        "adminUnlimited": "Admin: Créditos Ilimitados",
+        "creditsUsed": "{{count}} créditos usados",
+        "overallProgress": "Progresso Geral",
+        "individualSwaps": "Trocas Individuais",
+        "swap": "Troca {{index}}"
+      },
+      "status": {
+        "processing": "processando",
+        "completed": "concluído",
+        "failed": "falhou",
+        "queued": "na fila"
+      },
+      "buttons": {
+        "preview": "Visualizar",
+        "open": "Abrir",
+        "animate": "Animar",
+        "ecommerce": "E-commerce",
+        "photoshoot": "Ensaio",
+        "download": "Baixar"
+      },
+      "warnings": {
+        "stuckJob": "⚠️ Este trabalho pode estar travado. Tente clicar em Atualizar."
+      },
+      "errorMessages": {
+        "rateLimit": "Limite de taxa da API Google Gemini atingido. Aguarde alguns minutos e tente novamente.",
+        "authError": "Problema de configuração do sistema com a API Google Gemini. Entre em contato com o suporte.",
+        "serverError": "A API Google Gemini está temporariamente indisponível. Tente novamente mais tarde."
+      },
+      "toasts": {
+        "resultReady": "Resultado pronto",
+        "resultReadyDesc": "Um novo resultado de troca de roupa está disponível",
+        "resultsRefreshed": "Resultados atualizados",
+        "resultsRefreshedDesc": "{{count}} resultados carregados",
+        "adminAccessRequired": "Acesso de administrador necessário",
+        "onlyAdminsPhotoshoots": "Apenas administradores podem criar ensaios",
+        "ecommerceStarted": "Foto de e-commerce iniciada",
+        "ecommerceStartedDesc": "Criando foto profissional do produto...",
+        "ecommerceFailed": "Falha ao iniciar foto de e-commerce"
+      },
+      "garmentUploader": {
+        "title": "Enviar Imagens de Peças",
+        "dragDrop": "Arraste e solte ou clique para selecionar",
+        "selected": "{{count}} de {{max}} peças selecionadas",
+        "discount": "10% de desconto aplicado! Você está processando {{count}} peças de uma vez."
+      },
+      "settings": {
+        "title": "Configurações",
+        "outputFormat": "Formato de Saída",
+        "formats": {
+          "jpg": "JPG (Tamanho de arquivo menor)",
+          "png": "PNG (Qualidade superior)",
+          "both": "Ambos os formatos"
+        }
+      }
     }
   }
 }

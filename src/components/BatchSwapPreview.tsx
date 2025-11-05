@@ -15,6 +15,7 @@ import { ImagePreviewModal } from "./ImagePreviewModal";
 import { PhotoshootModal } from "./PhotoshootModal";
 import { photoshootApi } from "@/api/photoshoot-api";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface BatchSwapPreviewProps {
   batch: OutfitSwapBatch;
@@ -34,6 +35,7 @@ export const BatchSwapPreview = ({
   loading = false,
 }: BatchSwapPreviewProps) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { isAdmin } = useAdminAuth();
   const { toast } = useToast();
   const [results, setResults] = useState<Record<string, OutfitSwapResult>>({});
@@ -111,8 +113,8 @@ export const BatchSwapPreview = ({
               [newResult.job_id]: newResult,
             }));
             toast({
-              title: "Result ready",
-              description: "A new outfit swap result is available",
+              title: t('outfitSwap.toasts.resultReady'),
+              description: t('outfitSwap.toasts.resultReadyDesc'),
             });
           }
         }
@@ -147,8 +149,8 @@ export const BatchSwapPreview = ({
       });
       setResults(resultsMap);
       toast({
-        title: "Results refreshed",
-        description: `Loaded ${data.length} results`,
+        title: t('outfitSwap.toasts.resultsRefreshed'),
+        description: t('outfitSwap.toasts.resultsRefreshedDesc', { count: data.length }),
       });
     }
     setIsRefreshing(false);
@@ -209,8 +211,8 @@ export const BatchSwapPreview = ({
     if (!isAdmin) {
       toast({
         variant: "destructive",
-        title: "Admin access required",
-        description: "Only admins can create photoshoots",
+        title: t('outfitSwap.toasts.adminAccessRequired'),
+        description: t('outfitSwap.toasts.onlyAdminsPhotoshoots'),
       });
       return;
     }
@@ -231,13 +233,13 @@ export const BatchSwapPreview = ({
         originalImageUrl: result.public_url,
       });
       toast({
-        title: "E-commerce photo started",
-        description: "Creating professional product photo...",
+        title: t('outfitSwap.toasts.ecommerceStarted'),
+        description: t('outfitSwap.toasts.ecommerceStartedDesc'),
       });
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Failed to start e-commerce photo",
+        title: t('outfitSwap.toasts.ecommerceFailed'),
         description: error.message,
       });
     }
@@ -248,18 +250,18 @@ export const BatchSwapPreview = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Batch Processing</h2>
+          <h2 className="text-2xl font-bold">{t('outfitSwap.batch.title')}</h2>
           <p className="text-muted-foreground">
-            {batch.completed_jobs} of {batch.total_jobs} completed
-            {batch.failed_jobs > 0 && ` • ${batch.failed_jobs} failed`}
-            {isAdmin ? " • Admin: Unlimited Credits" : creditsUsed > 0 && ` • ${creditsUsed} credits used`}
+            {t('outfitSwap.batch.completedOf', { completed: batch.completed_jobs, total: batch.total_jobs })}
+            {batch.failed_jobs > 0 && ` • ${t('outfitSwap.batch.failed', { count: batch.failed_jobs })}`}
+            {isAdmin ? ` • ${t('outfitSwap.batch.adminUnlimited')}` : creditsUsed > 0 && ` • ${t('outfitSwap.batch.creditsUsed', { count: creditsUsed })}`}
           </p>
         </div>
         <div className="flex gap-2">
           {isProcessing && (
             <Button variant="outline" onClick={onCancel}>
               <X className="w-4 h-4 mr-2" />
-              Cancel Batch
+              {t('outfitSwap.actions.cancelBatch')}
             </Button>
           )}
           {(isCompleted || isFailed) && (
@@ -276,16 +278,16 @@ export const BatchSwapPreview = ({
                 disabled={isRefreshing || loading}
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-                Refresh
+                {t('outfitSwap.actions.refresh')}
               </Button>
               {batch.completed_jobs > 0 && (
                 <Button onClick={downloadAll}>
                   <Download className="w-4 h-4 mr-2" />
-                  Download All
+                  {t('outfitSwap.actions.downloadAll')}
                 </Button>
               )}
               <Button variant="outline" onClick={onReset}>
-                Start New Batch
+                {t('outfitSwap.actions.startNewBatch')}
               </Button>
             </>
           )}
@@ -296,7 +298,7 @@ export const BatchSwapPreview = ({
       <Card className="p-6">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="font-semibold">Overall Progress</span>
+            <span className="font-semibold">{t('outfitSwap.batch.overallProgress')}</span>
             <Badge
               variant={
                 isCompleted
@@ -306,7 +308,7 @@ export const BatchSwapPreview = ({
                   : "secondary"
               }
             >
-              {batch.status}
+              {t(`outfitSwap.status.${batch.status}`)}
             </Badge>
           </div>
           <Progress value={progress} className="h-2" />
@@ -316,7 +318,7 @@ export const BatchSwapPreview = ({
 
       {/* Jobs Grid */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Individual Swaps</h3>
+        <h3 className="text-lg font-semibold mb-4">{t('outfitSwap.batch.individualSwaps')}</h3>
         <ScrollArea className="h-[500px]">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {jobs.map((job, index) => {
@@ -342,7 +344,7 @@ export const BatchSwapPreview = ({
                   </div>
                   <div className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Swap {index + 1}</span>
+                      <span className="text-sm font-medium">{t('outfitSwap.batch.swap', { index: index + 1 })}</span>
                       {getJobIcon(job.status)}
                     </div>
                     {job.progress > 0 && job.status === "processing" && (
@@ -355,17 +357,17 @@ export const BatchSwapPreview = ({
                         </p>
                         {job.metadata?.error_type === "rate_limit" && (
                           <p className="text-xs text-muted-foreground">
-                            Google Gemini API rate limit reached. Please wait a few minutes and try again.
+                            {t('outfitSwap.errorMessages.rateLimit')}
                           </p>
                         )}
                         {job.metadata?.error_type === "auth_error" && (
                           <p className="text-xs text-muted-foreground">
-                            System configuration issue with Google Gemini API. Please contact support.
+                            {t('outfitSwap.errorMessages.authError')}
                           </p>
                         )}
                         {job.metadata?.error_type === "server_error" && (
                           <p className="text-xs text-muted-foreground">
-                            Google Gemini API is temporarily unavailable. Please try again later.
+                            {t('outfitSwap.errorMessages.serverError')}
                           </p>
                         )}
                       </div>
@@ -373,7 +375,7 @@ export const BatchSwapPreview = ({
                     {isStuck && (
                       <div className="p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-md mt-2">
                         <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                          ⚠️ This job may be stuck. Try clicking Refresh.
+                          {t('outfitSwap.warnings.stuckJob')}
                         </p>
                       </div>
                     )}
@@ -382,10 +384,10 @@ export const BatchSwapPreview = ({
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setPreviewImage({ url: result.public_url, name: `Swap ${index + 1}` })}
+                          onClick={() => setPreviewImage({ url: result.public_url, name: t('outfitSwap.batch.swap', { index: index + 1 }) })}
                         >
                           <Eye className="w-3 h-3 mr-1" />
-                          Preview
+                          {t('outfitSwap.buttons.preview')}
                         </Button>
                         <Button
                           size="sm"
@@ -393,7 +395,7 @@ export const BatchSwapPreview = ({
                           onClick={() => openInNewTab(result.public_url)}
                         >
                           <ExternalLink className="w-3 h-3 mr-1" />
-                          Open
+                          {t('outfitSwap.buttons.open')}
                         </Button>
                         <Button
                           size="sm"
@@ -401,7 +403,7 @@ export const BatchSwapPreview = ({
                           onClick={() => handleAnimate(result.public_url, result)}
                         >
                           <Film className="w-3 h-3 mr-1" />
-                          Animate
+                          {t('outfitSwap.buttons.animate')}
                         </Button>
                         <Button
                           size="sm"
@@ -409,7 +411,7 @@ export const BatchSwapPreview = ({
                           onClick={() => handleCreateEcommercePhoto(result)}
                         >
                           <ShoppingBag className="w-3 h-3 mr-1" />
-                          E-commerce
+                          {t('outfitSwap.buttons.ecommerce')}
                         </Button>
                         {isAdmin && (
                           <Button
@@ -418,7 +420,7 @@ export const BatchSwapPreview = ({
                             onClick={() => handleCreatePhotoshoot(result)}
                           >
                             <Camera className="w-3 h-3 mr-1" />
-                            Photoshoot
+                            {t('outfitSwap.buttons.photoshoot')}
                           </Button>
                         )}
                         <Button
@@ -427,7 +429,7 @@ export const BatchSwapPreview = ({
                           onClick={() => downloadImage(result.public_url, job.id)}
                         >
                           <Download className="w-3 h-3 mr-1" />
-                          Download
+                          {t('outfitSwap.buttons.download')}
                         </Button>
                       </div>
                     )}
