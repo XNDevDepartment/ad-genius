@@ -14,6 +14,95 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_prompt_history: {
+        Row: {
+          change_notes: string | null
+          changed_by: string | null
+          created_at: string | null
+          id: string
+          prompt_id: string | null
+          prompt_template: string
+          version: number
+        }
+        Insert: {
+          change_notes?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          prompt_id?: string | null
+          prompt_template: string
+          version: number
+        }
+        Update: {
+          change_notes?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          prompt_id?: string | null
+          prompt_template?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_prompt_history_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "ai_prompts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_prompts: {
+        Row: {
+          category: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          prompt_key: string
+          prompt_name: string
+          prompt_template: string
+          prompt_type: string
+          updated_at: string | null
+          updated_by: string | null
+          variables: Json | null
+          version: number | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          prompt_key: string
+          prompt_name: string
+          prompt_template: string
+          prompt_type: string
+          updated_at?: string | null
+          updated_by?: string | null
+          variables?: Json | null
+          version?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          prompt_key?: string
+          prompt_name?: string
+          prompt_template?: string
+          prompt_type?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          variables?: Json | null
+          version?: number | null
+        }
+        Relationships: []
+      }
       conversation_messages: {
         Row: {
           content: string
@@ -545,6 +634,65 @@ export type Database = {
           },
         ]
       }
+      outfit_swap_ecommerce_photos: {
+        Row: {
+          created_at: string | null
+          error: string | null
+          finished_at: string | null
+          id: string
+          metadata: Json | null
+          progress: number | null
+          prompt_used: string | null
+          public_url: string | null
+          result_id: string
+          started_at: string | null
+          status: string
+          storage_path: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          metadata?: Json | null
+          progress?: number | null
+          prompt_used?: string | null
+          public_url?: string | null
+          result_id: string
+          started_at?: string | null
+          status?: string
+          storage_path?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          metadata?: Json | null
+          progress?: number | null
+          prompt_used?: string | null
+          public_url?: string | null
+          result_id?: string
+          started_at?: string | null
+          status?: string
+          storage_path?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outfit_swap_ecommerce_photos_result_id_fkey"
+            columns: ["result_id"]
+            isOneToOne: false
+            referencedRelation: "outfit_swap_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outfit_swap_jobs: {
         Row: {
           base_model_id: string | null
@@ -632,6 +780,8 @@ export type Database = {
       }
       outfit_swap_photoshoots: {
         Row: {
+          back_image_path: string | null
+          back_image_url: string | null
           created_at: string | null
           error: string | null
           finished_at: string | null
@@ -653,6 +803,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          back_image_path?: string | null
+          back_image_url?: string | null
           created_at?: string | null
           error?: string | null
           finished_at?: string | null
@@ -674,6 +826,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          back_image_path?: string | null
+          back_image_url?: string | null
           created_at?: string | null
           error?: string | null
           finished_at?: string | null

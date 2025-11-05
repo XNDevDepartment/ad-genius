@@ -5,47 +5,107 @@ import { Progress } from "@/components/ui/progress";
 import { Download, X, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { photoshootApi, PhotoshootJob } from "@/api/photoshoot-api";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import ImageUploader from "@/components/ImageUploader";
+import { Label } from "@/components/ui/label";
 
 interface PhotoshootModalProps {
   isOpen: boolean;
   onClose: () => void;
-  photoshootId: string | null;
-  originalImageUrl?: string;
+  resultId: string;
+  originalImageUrl: string;
 }
 
-export const PhotoshootModal = ({ isOpen, onClose, photoshootId, originalImageUrl }: PhotoshootModalProps) => {
+export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }: PhotoshootModalProps) => {
+  const [stage, setStage] = useState<'setup' | 'processing'>('setup');
   const [photoshoot, setPhotoshoot] = useState<PhotoshootJob | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [backImageFile, setBackImageFile] = useState<File | null>(null);
+  const [backImageUrl, setBackImageUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleBackImageUpload = async (file: File | null) => {
+    if (!file) {
+      setBackImageFile(null);
+      setBackImageUrl(null);
+      return;
+    }
+
+    setBackImageFile(file);
+    setIsUploading(true);
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `temp/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('outfit-user-models')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('outfit-user-models')
+        .getPublicUrl(filePath);
+
+      setBackImageUrl(publicUrl);
+      toast.success("Back image uploaded");
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload back image");
+      setBackImageFile(null);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleStartPhotoshoot = async () => {
+    setLoading(true);
+    setStage('processing');
+
+    try {
+      const createdPhotoshoot = await photoshootApi.createPhotoshoot(resultId, backImageUrl || undefined);
+      setPhotoshoot(createdPhotoshoot);
+
+      // Subscribe to updates
+      const unsubscribe = photoshootApi.subscribeToPhotoshoot(createdPhotoshoot.id, (updatedPhotoshoot) => {
+        setPhotoshoot(updatedPhotoshoot);
+
+        if (updatedPhotoshoot.status === "completed") {
+          toast.success("Photoshoot completed!");
+          
+          // Delete the back image from storage if it was uploaded
+          if (backImageUrl && backImageUrl.includes('outfit-user-models/temp/')) {
+            const path = backImageUrl.split('outfit-user-models/')[1];
+            supabase.storage.from('outfit-user-models').remove([path]).catch(console.error);
+          }
+        } else if (updatedPhotoshoot.status === "failed") {
+          toast.error(updatedPhotoshoot.error || "Photoshoot failed");
+        }
+      });
+
+      setLoading(false);
+
+      // Cleanup subscription on unmount
+      return unsubscribe;
+    } catch (error) {
+      console.error("Error starting photoshoot:", error);
+      toast.error("Failed to start photoshoot");
+      setStage('setup');
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!photoshootId || !isOpen) return;
-
-    setLoading(true);
-
-    // Initial fetch
-    photoshootApi.getPhotoshoot(photoshootId)
-      .then(setPhotoshoot)
-      .catch((error) => {
-        console.error("Failed to fetch photoshoot:", error);
-        toast.error("Failed to load photoshoot");
-      })
-      .finally(() => setLoading(false));
-
-    // Subscribe to real-time updates
-    const unsubscribe = photoshootApi.subscribeToPhotoshoot(photoshootId, (updatedPhotoshoot) => {
-      setPhotoshoot(updatedPhotoshoot);
-      
-      if (updatedPhotoshoot.status === "completed") {
-        toast.success("Photoshoot completed!");
-      } else if (updatedPhotoshoot.status === "failed") {
-        toast.error("Photoshoot failed: " + (updatedPhotoshoot.error || "Unknown error"));
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [photoshootId, isOpen]);
+    if (!isOpen) {
+      // Reset when modal closes
+      setStage('setup');
+      setPhotoshoot(null);
+      setBackImageFile(null);
+      setBackImageUrl(null);
+    }
+  }, [isOpen]);
 
   const handleDownloadImage = (url: string, index: number) => {
     const link = document.createElement("a");
@@ -76,10 +136,10 @@ export const PhotoshootModal = ({ isOpen, onClose, photoshootId, originalImageUr
   };
 
   const handleCancel = async () => {
-    if (!photoshootId) return;
+    if (!photoshoot?.id) return;
     
     try {
-      await photoshootApi.cancelPhotoshoot(photoshootId);
+      await photoshootApi.cancelPhotoshoot(photoshoot.id);
       toast.success("Photoshoot canceled");
       onClose();
     } catch (error: any) {
@@ -102,15 +162,58 @@ export const PhotoshootModal = ({ isOpen, onClose, photoshootId, originalImageUr
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Photoshoot Generation</DialogTitle>
+          <DialogTitle>Professional Photoshoot</DialogTitle>
           <DialogDescription>
-            Creating 4 professional product photography angles (4 credits)
+            Generate 4 professional product angles (4 credits)
           </DialogDescription>
         </DialogHeader>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        {stage === 'setup' ? (
+          <div className="space-y-6">
+            {/* Original Image Preview */}
+            <div className="space-y-2">
+              <Label>Original Image</Label>
+              <img 
+                src={originalImageUrl} 
+                alt="Original outfit swap"
+                className="w-full rounded-lg border max-h-64 object-contain"
+              />
+            </div>
+
+            {/* Optional Back Image Uploader */}
+            <div className="space-y-2">
+              <Label>Product Back (Optional)</Label>
+              <p className="text-xs text-muted-foreground mb-2">
+                Upload a photo of the garment's back to improve back-view angles
+              </p>
+              <ImageUploader
+                onImageSelect={handleBackImageUpload}
+                selectedImage={backImageFile}
+                isAnalyzing={isUploading}
+                analyzingText="Uploading..."
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 justify-end pt-4">
+              <Button variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleStartPhotoshoot}
+                disabled={isUploading || loading}
+                size="lg"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Starting...
+                  </>
+                ) : (
+                  'Start Photoshooting'
+                )}
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="space-y-6">
@@ -119,9 +222,9 @@ export const PhotoshootModal = ({ isOpen, onClose, photoshootId, originalImageUr
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Progress</span>
-                  <span className="font-medium">{photoshoot.progress}%</span>
+                  <span className="font-medium">{photoshoot?.progress}%</span>
                 </div>
-                <Progress value={photoshoot.progress} />
+                <Progress value={photoshoot?.progress} />
               </div>
             )}
 
@@ -131,7 +234,7 @@ export const PhotoshootModal = ({ isOpen, onClose, photoshootId, originalImageUr
                 <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-medium text-destructive">Generation Failed</p>
-                  <p className="text-sm text-muted-foreground">{photoshoot.error || "Unknown error occurred"}</p>
+                  <p className="text-sm text-muted-foreground">{photoshoot?.error || "Unknown error occurred"}</p>
                 </div>
               </div>
             )}
@@ -144,14 +247,12 @@ export const PhotoshootModal = ({ isOpen, onClose, photoshootId, originalImageUr
             )}
 
             {/* Original Image Reference */}
-            {originalImageUrl && (
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium">Original Image</h3>
-                <div className="relative aspect-square w-full max-w-xs mx-auto rounded-lg overflow-hidden border">
-                  <img src={originalImageUrl} alt="Original" className="w-full h-full object-cover" />
-                </div>
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Original Image</h3>
+              <div className="relative aspect-square w-full max-w-xs mx-auto rounded-lg overflow-hidden border">
+                <img src={originalImageUrl} alt="Original" className="w-full h-full object-cover" />
               </div>
-            )}
+            </div>
 
             {/* Generated Images Grid */}
             <div className="space-y-2">
@@ -169,7 +270,7 @@ export const PhotoshootModal = ({ isOpen, onClose, photoshootId, originalImageUr
                 {[1, 2, 3, 4].map((index) => {
                   const imageUrl = photoshoot?.[`image_${index}_url` as keyof PhotoshootJob] as string | null;
                   const isGenerated = !!imageUrl;
-                  const isCurrentlyGenerating = isProcessing && photoshoot.progress >= (index - 1) * 25 && photoshoot.progress < index * 25;
+                  const isCurrentlyGenerating = isProcessing && photoshoot && photoshoot.progress >= (index - 1) * 25 && photoshoot.progress < index * 25;
 
                   return (
                     <div key={index} className="space-y-2">
@@ -208,7 +309,7 @@ export const PhotoshootModal = ({ isOpen, onClose, photoshootId, originalImageUr
             <div className="flex justify-end gap-2">
               {isProcessing && (
                 <Button variant="outline" onClick={handleCancel}>
-                  <X className="w-4 h-4 mr-2" />
+                  <X className="w-4 w-4 mr-2" />
                   Cancel
                 </Button>
               )}

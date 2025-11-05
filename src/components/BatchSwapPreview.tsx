@@ -4,8 +4,10 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { OutfitSwapBatch, OutfitSwapJob, OutfitSwapResult } from "@/api/outfit-swap-api";
-import { Download, X, CheckCircle2, XCircle, Loader2, AlertCircle, RefreshCw, Eye, Film, ExternalLink, Camera } from "lucide-react";
+import { Download, X, CheckCircle2, XCircle, Loader2, AlertCircle, RefreshCw, Eye, Film, ExternalLink, Camera, ShoppingBag } from "lucide-react";
 import { useState, useEffect } from "react";
+import { ecommercePhotoApi, EcommercePhotoJob } from "@/api/ecommerce-photo-api";
+import { EcommercePhotoModal } from "@/components/EcommercePhotoModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -40,10 +42,14 @@ export const BatchSwapPreview = ({
   const [photoshootLoading, setPhotoshootLoading] = useState<Record<string, boolean>>({});
   const [photoshootModal, setPhotoshootModal] = useState<{
     isOpen: boolean;
-    photoshootId: string | null;
     resultId: string | null;
     originalImageUrl: string | null;
-  }>({ isOpen: false, photoshootId: null, resultId: null, originalImageUrl: null });
+  }>({ isOpen: false, resultId: null, originalImageUrl: null });
+  const [ecommercePhotoModal, setEcommercePhotoModal] = useState<{
+    isOpen: boolean;
+    photoId: string | null;
+    originalImageUrl: string | null;
+  }>({ isOpen: false, photoId: null, originalImageUrl: null });
 
   const progress = batch.total_jobs > 0
     ? Math.round(((batch.completed_jobs + batch.failed_jobs) / batch.total_jobs) * 100)
@@ -209,30 +215,31 @@ export const BatchSwapPreview = ({
       return;
     }
 
+    setPhotoshootModal({
+      isOpen: true,
+      resultId: result.id,
+      originalImageUrl: result.public_url,
+    });
+  };
+
+  const handleCreateEcommercePhoto = async (result: OutfitSwapResult) => {
     try {
-      setPhotoshootLoading((prev) => ({ ...prev, [result.id]: true }));
-      
-      const photoshoot = await photoshootApi.createPhotoshoot(result.id);
-      
-      setPhotoshootModal({
+      const ecommercePhoto = await ecommercePhotoApi.createEcommercePhoto(result.id);
+      setEcommercePhotoModal({
         isOpen: true,
-        photoshootId: photoshoot.id,
-        resultId: result.id,
+        photoId: ecommercePhoto.id,
         originalImageUrl: result.public_url,
       });
-      
       toast({
-        title: "Photoshoot started",
-        description: "Generating 4 product angles...",
+        title: "E-commerce photo started",
+        description: "Creating professional product photo...",
       });
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Failed to start photoshoot",
+        title: "Failed to start e-commerce photo",
         description: error.message,
       });
-    } finally {
-      setPhotoshootLoading((prev) => ({ ...prev, [result.id]: false }));
     }
   };
 
@@ -399,12 +406,21 @@ export const BatchSwapPreview = ({
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleCreatePhotoshoot(result)}
-                          disabled={photoshootLoading[result.id]}
+                          onClick={() => handleCreateEcommercePhoto(result)}
                         >
-                          <Camera className="w-3 h-3 mr-1" />
-                          {photoshootLoading[result.id] ? "..." : "Photoshoot"}
+                          <ShoppingBag className="w-3 h-3 mr-1" />
+                          E-commerce
                         </Button>
+                        {isAdmin && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCreatePhotoshoot(result)}
+                          >
+                            <Camera className="w-3 h-3 mr-1" />
+                            Photoshoot
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           variant="outline"
@@ -432,12 +448,23 @@ export const BatchSwapPreview = ({
         onOpenInNewTab={() => previewImage && openInNewTab(previewImage.url)}
       />
 
-      <PhotoshootModal
-        isOpen={photoshootModal.isOpen}
-        onClose={() => setPhotoshootModal({ isOpen: false, photoshootId: null, resultId: null, originalImageUrl: null })}
-        photoshootId={photoshootModal.photoshootId}
-        originalImageUrl={photoshootModal.originalImageUrl || undefined}
-      />
+      {photoshootModal.resultId && (
+        <PhotoshootModal
+          isOpen={photoshootModal.isOpen}
+          onClose={() => setPhotoshootModal({ isOpen: false, resultId: null, originalImageUrl: null })}
+          resultId={photoshootModal.resultId}
+          originalImageUrl={photoshootModal.originalImageUrl || ""}
+        />
+      )}
+
+      {ecommercePhotoModal.photoId && (
+        <EcommercePhotoModal
+          isOpen={ecommercePhotoModal.isOpen}
+          onClose={() => setEcommercePhotoModal({ isOpen: false, photoId: null, originalImageUrl: null })}
+          photoId={ecommercePhotoModal.photoId}
+          originalImageUrl={ecommercePhotoModal.originalImageUrl || ""}
+        />
+      )}
     </div>
   );
 };

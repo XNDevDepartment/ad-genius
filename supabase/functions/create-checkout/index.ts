@@ -87,6 +87,7 @@ serve(async (req) => {
       customer: customerId,
       customer_email: customerId ? undefined : user.email!,
       allow_promotion_codes: true,
+      
       line_items: [
         {
           price_data: {
@@ -97,7 +98,7 @@ serve(async (req) => {
                 ? `Limited-time Founders subscription with lifetime pricing guarantee! (Billed ${interval === 'year' ? 'annually' : 'monthly'})` 
                 : interval === 'year' 
                   ? 'Annual subscription (2 months free! Billed annually)' 
-                  : 'Monthly subscription (Billed monthly)'
+                  : 'Monthly subscription (Billed monthly)',
             },
             unit_amount: unitAmount,
             recurring: { interval: interval as 'month' | 'year' },

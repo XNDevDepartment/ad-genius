@@ -5,10 +5,106 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
 };
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
-const serviceClient = ()=>createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_API_KEY")!;
+
+const serviceClient = () => createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+// Fallback prompts (used if database is unavailable)
+const FALLBACK_GARMENT_ANALYSIS_PROMPT = `Analyze this garment image in detail. Describe:
+1. Type of clothing (e.g., t-shirt, dress, pants, jacket, full outfit)
+2. Style and fit (e.g., casual, formal, athletic, oversized, fitted)
+3. Color and patterns
+4. Material appearance (e.g., cotton, denim, leather, knit)
+5. Key distinctive features (e.g., collar type, sleeve length, buttons, zippers)
+6. What body parts it covers (e.g., torso only, full legs, arms, etc.)
+
+Be specific and concise. This description will be used for AI outfit swapping.`;
+
+const FALLBACK_OUTFIT_SWAP_PROMPT = `You are an expert e-commerce outfit swap AI. Your task is to replace the person's current outfit with a NEW garment while maintaining photographic realism.
+
+GARMENT TO SWAP IN:
+{garment_description}
+
+CRITICAL REQUIREMENTS:
+1. COMPLETE REPLACEMENT: Remove the person's ENTIRE current outfit and replace it with the new garment described above
+2. IDENTITY PRESERVATION: Keep the person's face, hair, skin tone, hands, and body pose 100% IDENTICAL
+3. VISIBLE CHANGE: The final image MUST show CLEARLY DIFFERENT clothing than the original - this is CRITICAL
+4. BODY COVERAGE: Replace all clothing that covers the same body parts as the new garment:
+  - If the new garment is a top: Replace the current top completely
+  - If it's pants/bottoms: Replace the current bottoms completely  
+  - If it's a dress/full outfit: Replace ALL current clothing
+  - If it's a jacket/outerwear: Layer it appropriately over a compatible base
+  — If the new garment is not full body piece, create the rest of the outfit
+
+COMPOSITION & QUALITY:
+- Center the model in the frame for professional product photography
+- Clean, minimal background - remove/blur distracting elements (plants, furniture, clutter)
+- Professional e-commerce lighting and presentation
+- Natural shadows and highlights matching the garment
+- Seamless blending at all garment edges (neckline, sleeves, hem, waist)
+
+SMART STYLING:
+- Match footwear to outfit style (heels for formal, sneakers for casual/athletic, boots for edgy/outdoor)
+- Adjust accessories if they clash with the new outfit
+- If the new garment requires different proportions, adjust body naturally (e.g., fitted dress vs oversized hoodie)
+- Ensure overall look is cohesive and realistic.
+- Don't leave on underwear. Imagine a complement piece of cloth in case of being only a partial garment.
+
+QUALITY STANDARDS:
+- High-resolution, professional e-commerce product photo quality
+- No visible AI artifacts, seams, or blending errors
+- The result should look like a real fashion shoot
+
+VALIDATION: Before generating, confirm that:
+✓ The new garment is VISIBLY DIFFERENT from the original outfit
+✓ All relevant clothing items are being replaced
+✓ The person's identity remains identical
+✓ The composition is professional and centered
+
+Generate a high-quality outfit swap that clearly shows the NEW garment on the person.`;
+
+// Helper: Get prompt from database with fallback
+async function getPrompt(
+  promptKey: string,
+  variables: Record<string, string> = {},
+  fallback: string
+): Promise<string> {
+  try {
+    const supabase = serviceClient();
+    const { data, error } = await supabase
+      .from('ai_prompts')
+      .select('prompt_template')
+      .eq('prompt_key', promptKey)
+      .eq('is_active', true)
+      .single();
+    
+    if (error) throw error;
+    
+    let prompt = data.prompt_template;
+    
+    // Replace variables
+    for (const [key, value] of Object.entries(variables)) {
+      prompt = prompt.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
+    }
+    
+    console.log(`[getPrompt] Successfully loaded prompt: ${promptKey}`);
+    return prompt;
+  } catch (error) {
+    console.warn(`[getPrompt] Failed to load prompt ${promptKey}, using fallback:`, error);
+    
+    // Apply variables to fallback
+    let prompt = fallback;
+    for (const [key, value] of Object.entries(variables)) {
+      prompt = prompt.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
+    }
+    
+    return prompt;
+  }
+}
+
 // Helper: Convert ArrayBuffer to base64 in chunks to avoid stack overflow
 function bufferToBase64(uint8Array) {
   let binary = '';
@@ -42,6 +138,10 @@ serve(async (req)=>{
     if (action === "processPhotoshoot") {
       return await processPhotoshoot(params.photoshootId);
     }
+    if (action === "processEcommercePhoto") {
+      return await processEcommercePhoto(params.photoId);
+    }
+
     // All other actions require authentication
     const authHeader = req.headers.get("authorization");
     if (!authHeader) {
@@ -85,6 +185,12 @@ serve(async (req)=>{
         return await getPhotoshoot(user.id, params.photoshootId);
       case "cancelPhotoshoot":
         return await cancelPhotoshoot(user.id, params.photoshootId);
+      case "createEcommercePhoto":
+        return await createEcommercePhotoJob(user.id, params);
+      case "getEcommercePhoto":
+        return await getEcommercePhoto(user.id, params.photoId);
+      case "cancelEcommercePhoto":
+        return await cancelEcommercePhoto(user.id, params.photoId);
       default:
         return jsonResponse({
           error: "Invalid action"
@@ -143,6 +249,14 @@ async function analyzeGarment(garmentUrl) {
     const mimeType = garmentResponse.headers.get('content-type') ?? 'image/jpeg';
     const imageBuffer = await garmentResponse.arrayBuffer();
     const base64Image = bufferToBase64(new Uint8Array(imageBuffer));
+
+    // Get analysis prompt from database
+    const analysisPrompt = await getPrompt(
+      'outfit_swap_garment_analysis',
+      {},
+      FALLBACK_GARMENT_ANALYSIS_PROMPT
+    );
+
     // Call Gemini API for analysis
     const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
       method: "POST",
@@ -154,22 +268,12 @@ async function analyzeGarment(garmentUrl) {
         contents: [
           {
             parts: [
-              {
-                text: `Analyze this garment image in detail. Describe:
-1. Type of clothing (e.g., t-shirt, dress, pants, jacket, full outfit)
-2. Style and fit (e.g., casual, formal, athletic, oversized, fitted)
-3. Color and patterns
-4. Material appearance (e.g., cotton, denim, leather, knit)
-5. Key distinctive features (e.g., collar type, sleeve length, buttons, zippers)
-6. What body parts it covers (e.g., torso only, full legs, arms, etc.)
-
-Be specific and concise. This description will be used for AI outfit swapping.`
-              },
-              {
-                inlineData: {
-                  mimeType: mimeType,
-                  data: base64Image
-                }
+              { text: analysisPrompt },
+              { 
+                inlineData: { 
+                  mimeType: mimeType, 
+                  data: base64Image 
+                } 
               }
             ]
           }
@@ -308,51 +412,17 @@ async function processOutfitSwap(jobId) {
     }).eq("id", jobId);
     // STEP 2: Generate improved prompt with garment analysis
     const startTime = Date.now();
-    const prompt = `You are an expert e-commerce outfit swap AI. Your task is to replace the person's current outfit with a NEW garment while maintaining photographic realism.
+    const prompt = await getPrompt(
+      'outfit_swap_main',
+      { garment_description: garmentDescription },
+      FALLBACK_OUTFIT_SWAP_PROMPT
+    );
 
-        GARMENT TO SWAP IN:
-        ${garmentDescription}
+    await supabase
+      .from("outfit_swap_jobs")
+      .update({ progress: 70 })
+      .eq("id", jobId);
 
-        CRITICAL REQUIREMENTS:
-        1. COMPLETE REPLACEMENT: Remove the person's ENTIRE current outfit and replace it with the new garment described above
-        2. IDENTITY PRESERVATION: Keep the person's face, hair, skin tone, hands, and body pose 100% IDENTICAL
-        3. VISIBLE CHANGE: The final image MUST show CLEARLY DIFFERENT clothing than the original - this is CRITICAL
-        4. BODY COVERAGE: Replace all clothing that covers the same body parts as the new garment:
-          - If the new garment is a top: Replace the current top completely
-          - If it's pants/bottoms: Replace the current bottoms completely  
-          - If it's a dress/full outfit: Replace ALL current clothing
-          - If it's a jacket/outerwear: Layer it appropriately over a compatible base
-          — If the new garment is not full body piece, create the rest of the outfit
-
-        COMPOSITION & QUALITY:
-        - Center the model in the frame for professional product photography
-        - Clean, minimal background - remove/blur distracting elements (plants, furniture, clutter)
-        - Professional e-commerce lighting and presentation
-        - Natural shadows and highlights matching the garment
-        - Seamless blending at all garment edges (neckline, sleeves, hem, waist)
-
-        SMART STYLING:
-        - Match footwear to outfit style (heels for formal, sneakers for casual/athletic, boots for edgy/outdoor)
-        - Adjust accessories if they clash with the new outfit
-        - If the new garment requires different proportions, adjust body naturally (e.g., fitted dress vs oversized hoodie)
-        - Ensure overall look is cohesive and realistic.
-        - Don't leave on underwear. Imagine a complement piece of cloth in case of being only a partial garment.
-
-        QUALITY STANDARDS:
-        - High-resolution, professional e-commerce product photo quality
-        - No visible AI artifacts, seams, or blending errors
-        - The result should look like a real fashion shoot
-
-        VALIDATION: Before generating, confirm that:
-        ✓ The new garment is VISIBLY DIFFERENT from the original outfit
-        ✓ All relevant clothing items are being replaced
-        ✓ The person's identity remains identical
-        ✓ The composition is professional and centered
-
-        Generate a high-quality outfit swap that clearly shows the NEW garment on the person.`;
-    await supabase.from("outfit_swap_jobs").update({
-      progress: 70
-    }).eq("id", jobId);
     // STEP 3: Fetch source images and prepare for Gemini API
     const personResponse = await fetch(personUrl.signedUrl);
     const garmentResponse = await fetch(garmentUrl.signedUrl);
@@ -770,8 +840,9 @@ const PHOTOSHOOT_PROMPTS = [
   `Create a high-quality e-commerce product photo: On-body true side profile, chin parallel to floor, arms relaxed (small air gap at elbow), head to mid-thigh framing. Seamless light-grey background, soft key from camera front, gentle fill to preserve knit detail, micro-shadow under hem. 70mm equivalent look, f/8, ISO 100. Prioritize silhouette, shoulder slope, sleeve taper, and ribbed cuff definition. Premium catalog style. ###IMPORTANT: Don't change the clothes of the model. Keep the model exatly as it is.`,
   `Create a high-quality e-commerce product photo: Upper-torso close-up crop from shoulders to mid-torso, camera perpendicular to garment. Soft, even light to reveal rib-knit texture and stitching. 85–100mm look, f/8. High sharpness, no moiré, color-accurate wool tone. Background remains seamless light grey. ###IMPORTANT:  Don't change the clothes of the model. Keep the model exatly as it is.`
 ];
-async function createPhotoshootJob(userId, params) {
-  const { resultId } = params;
+
+async function createPhotoshootJob(userId: string, params: any) {
+  const { resultId, backImageUrl } = params;
   const supabase = serviceClient();
   const creditsNeeded = 4;
   console.log(`[createPhotoshoot] Creating photoshoot for result ${resultId}`);
@@ -811,15 +882,22 @@ async function createPhotoshootJob(userId, params) {
     }, 404);
   }
   // Create photoshoot record
-  const { data: photoshoot, error: photoshootError } = await supabase.from("outfit_swap_photoshoots").insert({
-    user_id: userId,
-    result_id: resultId,
-    status: "queued",
-    metadata: {
-      original_result_url: result.public_url,
-      credits_deducted: creditsNeeded
-    }
-  }).select().single();
+  const { data: photoshoot, error: photoshootError } = await supabase
+    .from("outfit_swap_photoshoots")
+    .insert({
+      user_id: userId,
+      result_id: resultId,
+      back_image_url: backImageUrl || null,
+      status: "queued",
+      metadata: {
+        original_result_url: result.public_url,
+        credits_deducted: creditsNeeded,
+        has_custom_back_image: !!backImageUrl
+      },
+    })
+    .select()
+    .single();
+
   if (photoshootError) {
     console.error("[createPhotoshoot] Creation error:", photoshootError);
     if (!isAdmin) {
@@ -1071,12 +1149,183 @@ async function cancelPhotoshoot(userId, photoshootId) {
     success: true
   }, 200);
 }
-function jsonResponse(data, status) {
+
+// E-commerce Photo Generation
+async function createEcommercePhotoJob(userId: string, params: any) {
+  const { resultId } = params;
+  const supabase = serviceClient();
+  const creditsNeeded = 1;
+
+  const isAdmin = await checkIsAdmin(userId);
+  if (!isAdmin) {
+    const deductResult = await deductCredits(userId, creditsNeeded);
+    if (!deductResult.success) {
+      return jsonResponse({ error: deductResult.error }, 400);
+    }
+  }
+
+  const { data: result } = await supabase
+    .from("outfit_swap_results")
+    .select("*")
+    .eq("id", resultId)
+    .eq("user_id", userId)
+    .single();
+
+  if (!result) {
+    if (!isAdmin) await refundCredits(userId, creditsNeeded);
+    return jsonResponse({ error: "Result not found" }, 404);
+  }
+
+  const { data: ecommercePhoto, error } = await supabase
+    .from("outfit_swap_ecommerce_photos")
+    .insert({
+      user_id: userId,
+      result_id: resultId,
+      status: "queued",
+      metadata: { original_result_url: result.public_url, credits_deducted: creditsNeeded }
+    })
+    .select()
+    .single();
+
+  if (error) {
+    if (!isAdmin) await refundCredits(userId, creditsNeeded);
+    return jsonResponse({ error: "Failed to create e-commerce photo job" }, 500);
+  }
+
+  await supabase.functions.invoke("outfit-swap", {
+    body: { action: "processEcommercePhoto", photoId: ecommercePhoto.id }
+  });
+
+  return jsonResponse({ ecommercePhoto }, 200);
+}
+
+async function processEcommercePhoto(photoId: string) {
+  const supabase = serviceClient();
+
+  const { data: photo } = await supabase
+    .from("outfit_swap_ecommerce_photos")
+    .select("*, outfit_swap_results(*)")
+    .eq("id", photoId)
+    .single();
+
+  if (!photo) return jsonResponse({ error: "Photo not found" }, 404);
+
+  await supabase.from("outfit_swap_ecommerce_photos")
+    .update({ status: "processing", started_at: new Date().toISOString(), progress: 10 })
+    .eq("id", photoId);
+
+  try {
+    const originalUrl = photo.outfit_swap_results.public_url;
+    const imageResp = await fetch(originalUrl);
+    const imageBuffer = new Uint8Array(await imageResp.arrayBuffer());
+    const base64Image = bufferToBase64(imageBuffer);
+
+    const prompt = `Create a professional e-commerce fashion photo by placing this model with their current outfit into a perfectly matching, photorealistic environment.
+
+ANALYZE THE GARMENT STYLE and match to appropriate environment:
+- Casual: Urban street, coffee shop, park
+- Formal: Modern office, elegant venue, city backdrop
+- Athletic: Gym, outdoor track, yoga studio
+- Evening: Upscale restaurant, gala venue
+- Outerwear: City street, outdoor scene
+
+REQUIREMENTS:
+1. Keep the model and garment EXACTLY as they appear
+2. Change ONLY the background and lighting
+3. Ensure lighting matches the new environment
+4. Professional photography quality with proper depth of field
+5. Environment complements but doesn't distract from the product
+
+OUTPUT: Magazine-quality fashion photograph.`;
+
+    await supabase.from("outfit_swap_ecommerce_photos").update({ progress: 40 }).eq("id", photoId);
+
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GOOGLE_AI_KEY}`;
+    const geminiResp = await fetch(geminiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: prompt },
+            { inline_data: { mime_type: "image/jpeg", data: base64Image } }
+          ]
+        }],
+        generationConfig: { response_modalities: ["image"] }
+      })
+    });
+
+    const geminiData = await geminiResp.json();
+    const resultBase64 = extractBase64Image(geminiData);
+    if (!resultBase64) throw new Error("No image in Gemini response");
+
+    await supabase.from("outfit_swap_ecommerce_photos").update({ progress: 80 }).eq("id", photoId);
+
+    const resultBuffer = Uint8Array.from(atob(resultBase64), c => c.charCodeAt(0));
+    const storagePath = `ecommerce/${photoId}.jpg`;
+    
+    await supabase.storage.from("outfit-swap-photoshoots").upload(storagePath, resultBuffer, {
+      contentType: "image/jpeg",
+      upsert: true
+    });
+
+    const { data: { publicUrl } } = supabase.storage
+      .from("outfit-swap-photoshoots")
+      .getPublicUrl(storagePath);
+
+    await supabase.from("outfit_swap_ecommerce_photos").update({
+      status: "completed",
+      progress: 100,
+      public_url: publicUrl,
+      storage_path: storagePath,
+      finished_at: new Date().toISOString()
+    }).eq("id", photoId);
+
+    return jsonResponse({ success: true }, 200);
+  } catch (error) {
+    await supabase.from("outfit_swap_ecommerce_photos").update({
+      status: "failed",
+      error: error.message,
+      finished_at: new Date().toISOString()
+    }).eq("id", photoId);
+
+    const isAdmin = await checkIsAdmin(photo.user_id);
+    if (!isAdmin) await refundCredits(photo.user_id, 1);
+
+    return jsonResponse({ error: error.message }, 500);
+  }
+}
+
+async function getEcommercePhoto(userId: string, photoId: string) {
+  const supabase = serviceClient();
+  const { data, error } = await supabase
+    .from("outfit_swap_ecommerce_photos")
+    .select("*")
+    .eq("id", photoId)
+    .eq("user_id", userId)
+    .single();
+
+  if (error) return jsonResponse({ error: "Photo not found" }, 404);
+  return jsonResponse({ ecommercePhoto: data }, 200);
+}
+
+async function cancelEcommercePhoto(userId: string, photoId: string) {
+  const supabase = serviceClient();
+  const { error } = await supabase
+    .from("outfit_swap_ecommerce_photos")
+    .update({ status: "canceled", finished_at: new Date().toISOString() })
+    .eq("id", photoId)
+    .eq("user_id", userId)
+    .in("status", ["queued", "processing"]);
+
+  if (error) return jsonResponse({ error: "Failed to cancel" }, 500);
+  return jsonResponse({ success: true }, 200);
+}
+
+function jsonResponse(data: any, status: number) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: {
-      ...corsHeaders,
-      "Content-Type": "application/json"
-    }
+    headers: { ...corsHeaders, "Content-Type": "application/json" }
   });
 }
+
