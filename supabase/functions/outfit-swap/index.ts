@@ -34,7 +34,7 @@ CRITICAL REQUIREMENTS:
 3. VISIBLE CHANGE: The final image MUST show CLEARLY DIFFERENT clothing than the original - this is CRITICAL
 4. BODY COVERAGE: Replace all clothing that covers the same body parts as the new garment:
   - If the new garment is a top: Replace the current top completely
-  - If it's pants/bottoms: Replace the current bottoms completely  
+  - If it's pants/bottoms: Replace the current bottoms completely
   - If it's a dress/full outfit: Replace ALL current clothing
   - If it's a jacket/outerwear: Layer it appropriately over a compatible base
   — If the new garment is not full body piece, create the rest of the outfit
@@ -64,7 +64,7 @@ VALIDATION: Before generating, confirm that:
 ✓ The person's identity remains identical
 ✓ The composition is professional and centered
 
-Generate a high-quality outfit swap that clearly shows the NEW garment on the person.`;
+Generate a high-quality outfit swap that clearly shows the NEW garment on the person. ###NO SEXUALISE CONTENT`;
 
 // Helper: Get prompt from database with fallback
 async function getPrompt(
