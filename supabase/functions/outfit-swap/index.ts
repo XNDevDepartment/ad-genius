@@ -1,45 +1,39 @@
 // outfit-swap/index.ts - Gemini API v1.0.1
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.4";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
 };
-
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_API_KEY")!;
-
-const serviceClient = () => createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
+const serviceClient = ()=>createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 // Helper: Convert ArrayBuffer to base64 in chunks to avoid stack overflow
-function bufferToBase64(uint8Array: Uint8Array): string {
+function bufferToBase64(uint8Array) {
   let binary = '';
   const chunkSize = 32768;
-  for (let i = 0; i < uint8Array.length; i += chunkSize) {
+  for(let i = 0; i < uint8Array.length; i += chunkSize){
     const chunk = uint8Array.subarray(i, i + chunkSize);
     binary += String.fromCharCode.apply(null, Array.from(chunk));
   }
   return btoa(binary);
 }
-
 // Helper: Extract base64 image from Gemini response
-function extractBase64Image(jsonResp: any): string | null {
+function extractBase64Image(jsonResp) {
   const parts = jsonResp?.candidates?.[0]?.content?.parts ?? [];
-  const imgPart = parts.find((p: any) => p?.inlineData?.mimeType?.startsWith('image/'));
+  const imgPart = parts.find((p)=>p?.inlineData?.mimeType?.startsWith('image/'));
   return imgPart?.inlineData?.data ?? null;
 }
-
-serve(async (req) => {
+serve(async (req)=>{
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, {
+      headers: corsHeaders
+    });
   }
-
   try {
     const { action, ...params } = await req.json();
     console.log("Outfit swap action:", action);
-
     // Handle internal processing actions WITHOUT authentication
     // This is safe because it's only triggered internally by the function itself
     if (action === "processJob") {
@@ -48,25 +42,29 @@ serve(async (req) => {
     if (action === "processPhotoshoot") {
       return await processPhotoshoot(params.photoshootId);
     }
-
     // All other actions require authentication
     const authHeader = req.headers.get("authorization");
     if (!authHeader) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
+      return jsonResponse({
+        error: "Unauthorized"
+      }, 401);
     }
-
     const token = authHeader.replace("Bearer ", "");
-    const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
-      global: { headers: { Authorization: authHeader } },
+    const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY"), {
+      global: {
+        headers: {
+          Authorization: authHeader
+        }
+      }
     });
-
     const { data: { user }, error: userError } = await userClient.auth.getUser(token);
     if (userError || !user) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
+      return jsonResponse({
+        error: "Unauthorized"
+      }, 401);
     }
-
     // Route to appropriate handler
-    switch (action) {
+    switch(action){
       case "createJob":
         return await createOutfitSwapJob(user.id, params);
       case "getJob":
@@ -88,78 +86,75 @@ serve(async (req) => {
       case "cancelPhotoshoot":
         return await cancelPhotoshoot(user.id, params.photoshootId);
       default:
-        return jsonResponse({ error: "Invalid action" }, 400);
+        return jsonResponse({
+          error: "Invalid action"
+        }, 400);
     }
   } catch (error) {
     console.error("Outfit swap error:", error);
-    return jsonResponse({ error: error.message }, 500);
+    return jsonResponse({
+      error: error.message
+    }, 500);
   }
 });
-
-async function createOutfitSwapJob(userId: string, params: any) {
+async function createOutfitSwapJob(userId, params) {
   const { sourcePersonId, sourceGarmentId, settings } = params;
   const supabase = serviceClient();
-
   // Create job
-  const { data: job, error: jobError } = await supabase
-    .from("outfit_swap_jobs")
-    .insert({
-      user_id: userId,
-      source_person_id: sourcePersonId,
-      source_garment_id: sourceGarmentId,
-      settings: settings || {},
-      status: "queued",
-    })
-    .select()
-    .single();
-
+  const { data: job, error: jobError } = await supabase.from("outfit_swap_jobs").insert({
+    user_id: userId,
+    source_person_id: sourcePersonId,
+    source_garment_id: sourceGarmentId,
+    settings: settings || {},
+    status: "queued"
+  }).select().single();
   if (jobError) {
     console.error("Error creating job:", jobError);
-    return jsonResponse({ error: "Failed to create job" }, 500);
+    return jsonResponse({
+      error: "Failed to create job"
+    }, 500);
   }
-
   // Trigger processing asynchronously
   const functionUrl = `${SUPABASE_URL}/functions/v1/outfit-swap`;
   fetch(functionUrl, {
     method: "POST",
-    headers: { 
-      ...corsHeaders, 
+    headers: {
+      ...corsHeaders,
       "Content-Type": "application/json",
       "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`
     },
-    body: JSON.stringify({ action: "processJob", jobId: job.id }),
+    body: JSON.stringify({
+      action: "processJob",
+      jobId: job.id
+    })
   }).catch(console.error);
-
-  return jsonResponse({ job }, 200);
+  return jsonResponse({
+    job
+  }, 200);
 }
-
-async function analyzeGarment(garmentUrl: string): Promise<string> {
+async function analyzeGarment(garmentUrl) {
   console.log("[analyzeGarment] Analyzing garment image...");
-  
   try {
     // Fetch the garment image
     const garmentResponse = await fetch(garmentUrl);
     if (!garmentResponse.ok) {
       throw new Error(`Failed to fetch garment image: ${garmentResponse.status}`);
     }
-
     const mimeType = garmentResponse.headers.get('content-type') ?? 'image/jpeg';
     const imageBuffer = await garmentResponse.arrayBuffer();
     const base64Image = bufferToBase64(new Uint8Array(imageBuffer));
-
     // Call Gemini API for analysis
-    const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
-      {
-        method: "POST",
-        headers: {
-          "x-goog-api-key": GOOGLE_AI_KEY,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: [{
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+      method: "POST",
+      headers: {
+        "x-goog-api-key": GOOGLE_AI_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        contents: [
+          {
             parts: [
-              { 
+              {
                 text: `Analyze this garment image in detail. Describe:
 1. Type of clothing (e.g., t-shirt, dress, pants, jacket, full outfit)
 2. Style and fit (e.g., casual, formal, athletic, oversized, fitted)
@@ -170,24 +165,22 @@ async function analyzeGarment(garmentUrl: string): Promise<string> {
 
 Be specific and concise. This description will be used for AI outfit swapping.`
               },
-              { 
-                inlineData: { 
-                  mimeType: mimeType, 
-                  data: base64Image 
-                } 
+              {
+                inlineData: {
+                  mimeType: mimeType,
+                  data: base64Image
+                }
               }
             ]
-          }]
-        }),
-      }
-    );
-
+          }
+        ]
+      })
+    });
     if (!response.ok) {
       const errorText = await response.text();
       console.error("[analyzeGarment] API error:", response.status, errorText);
       return "clothing garment"; // Fallback
     }
-
     const data = await response.json();
     const analysis = data.candidates?.[0]?.content?.parts?.[0]?.text || "clothing garment";
     console.log("[analyzeGarment] Analysis result:", analysis);
@@ -197,65 +190,43 @@ Be specific and concise. This description will be used for AI outfit swapping.`
     return "clothing garment"; // Fallback
   }
 }
-
-async function processOutfitSwap(jobId: string) {
+async function processOutfitSwap(jobId) {
   const supabase = serviceClient();
   console.log("Processing outfit swap job:", jobId);
-
   try {
     // Update status to processing
-    await supabase
-      .from("outfit_swap_jobs")
-      .update({ status: "processing", started_at: new Date().toISOString(), progress: 10 })
-      .eq("id", jobId);
-
+    await supabase.from("outfit_swap_jobs").update({
+      status: "processing",
+      started_at: new Date().toISOString(),
+      progress: 10
+    }).eq("id", jobId);
     // Fetch job details
-    const { data: job, error: jobError } = await supabase
-      .from("outfit_swap_jobs")
-      .select("*")
-      .eq("id", jobId)
-      .single();
-
+    const { data: job, error: jobError } = await supabase.from("outfit_swap_jobs").select("*").eq("id", jobId).single();
     if (jobError || !job) {
       throw new Error("Job not found");
     }
-
     // Get signed URLs for source images
-    await supabase
-      .from("outfit_swap_jobs")
-      .update({ progress: 20 })
-      .eq("id", jobId);
-
+    await supabase.from("outfit_swap_jobs").update({
+      progress: 20
+    }).eq("id", jobId);
     // Determine person image source and fetch storage path
-    let personStoragePath: string;
-    let personBucket: string;
-
+    let personStoragePath;
+    let personBucket;
     if (job.base_model_id) {
       console.log(`[processOutfitSwap] Job ${jobId}: Using base model ${job.base_model_id}`);
-      const { data: baseModel } = await supabase
-        .from("outfit_swap_base_models")
-        .select("storage_path, name, is_system")
-        .eq("id", job.base_model_id)
-        .single();
-      
+      const { data: baseModel } = await supabase.from("outfit_swap_base_models").select("storage_path, name, is_system").eq("id", job.base_model_id).single();
       if (!baseModel?.storage_path) {
         throw new Error("Base model storage path not found in database");
       }
-      
       personStoragePath = baseModel.storage_path;
       // Select correct bucket based on whether it's a system or user model
       personBucket = baseModel.is_system ? "outfit-base-models" : "outfit-user-models";
-      
       console.log(`[processOutfitSwap] Job ${jobId}: Using bucket "${personBucket}" for ${baseModel.is_system ? 'system' : 'user'} model`);
-
       // Verify file exists in storage before proceeding
       console.log(`[processOutfitSwap] Job ${jobId}: Verifying base model file exists in storage...`);
-      const { data: fileList, error: listError } = await supabase.storage
-        .from(personBucket)
-        .list(personStoragePath.includes('/') ? personStoragePath.split('/').slice(0, -1).join('/') : '', {
-          search: personStoragePath.includes('/') ? personStoragePath.split('/').pop() : personStoragePath
-        });
-
+      const { data: fileList, error: listError } = await supabase.storage.from(personBucket).list(personStoragePath.includes('/') ? personStoragePath.split('/').slice(0, -1).join('/') : '', {
+        search: personStoragePath.includes('/') ? personStoragePath.split('/').pop() : personStoragePath
+      });
       if (listError || !fileList || fileList.length === 0) {
         console.error(`[processOutfitSwap] Job ${jobId}: Base model file not found in storage:`, {
           bucket: personBucket,
@@ -263,95 +234,60 @@ async function processOutfitSwap(jobId: string) {
           is_system: baseModel.is_system,
           listError
         });
-        throw new Error(
-          `Base model image file does not exist in storage. The model "${baseModel.name || 'Unknown'}" may need to be re-uploaded. Please contact support or re-upload the model. (Bucket: ${personBucket}, Path: ${personStoragePath})`
-        );
+        throw new Error(`Base model image file does not exist in storage. The model "${baseModel.name || 'Unknown'}" may need to be re-uploaded. Please contact support or re-upload the model. (Bucket: ${personBucket}, Path: ${personStoragePath})`);
       }
-      
       console.log(`[processOutfitSwap] Job ${jobId}: Base model file verified in storage (${personBucket}/${personStoragePath})`);
     } else if (job.source_person_id) {
       console.log(`[processOutfitSwap] Job ${jobId}: Using source image ${job.source_person_id}`);
-      const { data: sourceImage } = await supabase
-        .from("source_images")
-        .select("storage_path")
-        .eq("id", job.source_person_id)
-        .single();
-      
+      const { data: sourceImage } = await supabase.from("source_images").select("storage_path").eq("id", job.source_person_id).single();
       if (!sourceImage?.storage_path) {
         throw new Error("Source image storage path not found");
       }
-      
       personStoragePath = sourceImage.storage_path;
       personBucket = "ugc-inputs";
     } else {
       throw new Error("No person image source specified (neither base_model_id nor source_person_id)");
     }
-
     // Get garment storage path
-    const { data: garmentImage } = await supabase
-      .from("source_images")
-      .select("storage_path, file_name")
-      .eq("id", job.source_garment_id)
-      .single();
-    
+    const { data: garmentImage } = await supabase.from("source_images").select("storage_path, file_name").eq("id", job.source_garment_id).single();
     if (!garmentImage?.storage_path) {
       throw new Error("Garment image storage path not found in database");
     }
-
     // Verify garment file exists in storage
     console.log(`[processOutfitSwap] Job ${jobId}: Verifying garment file exists in storage...`);
     const garmentBucket = "ugc-inputs";
-    const { data: garmentFileList, error: garmentListError } = await supabase.storage
-      .from(garmentBucket)
-      .list(garmentImage.storage_path.includes('/') ? garmentImage.storage_path.split('/').slice(0, -1).join('/') : '', {
-        search: garmentImage.storage_path.includes('/') ? garmentImage.storage_path.split('/').pop() : garmentImage.storage_path
-      });
-
+    const { data: garmentFileList, error: garmentListError } = await supabase.storage.from(garmentBucket).list(garmentImage.storage_path.includes('/') ? garmentImage.storage_path.split('/').slice(0, -1).join('/') : '', {
+      search: garmentImage.storage_path.includes('/') ? garmentImage.storage_path.split('/').pop() : garmentImage.storage_path
+    });
     if (garmentListError || !garmentFileList || garmentFileList.length === 0) {
       console.error(`[processOutfitSwap] Job ${jobId}: Garment file not found in storage:`, {
         bucket: garmentBucket,
         path: garmentImage.storage_path,
         garmentListError
       });
-      throw new Error(
-        `Garment image file "${garmentImage.file_name || 'Unknown'}" does not exist in storage. Please re-upload the garment image.`
-      );
+      throw new Error(`Garment image file "${garmentImage.file_name || 'Unknown'}" does not exist in storage. Please re-upload the garment image.`);
     }
-
     console.log(`[processOutfitSwap] Job ${jobId}: Garment file verified in storage`);
-
     // Create signed URLs with proper error handling
     console.log(`[processOutfitSwap] Job ${jobId}: Creating signed URLs...`);
-    const { data: personUrl, error: personError } = await supabase.storage
-      .from(personBucket)
-      .createSignedUrl(personStoragePath, 3600);
-
-    const { data: garmentUrl, error: garmentError } = await supabase.storage
-      .from(garmentBucket)
-      .createSignedUrl(garmentImage.storage_path, 3600);
-
+    const { data: personUrl, error: personError } = await supabase.storage.from(personBucket).createSignedUrl(personStoragePath, 3600);
+    const { data: garmentUrl, error: garmentError } = await supabase.storage.from(garmentBucket).createSignedUrl(garmentImage.storage_path, 3600);
     if (personError) {
       console.error(`[processOutfitSwap] Job ${jobId}: Failed to get person image signed URL:`, {
         error: personError,
         bucket: personBucket,
         path: personStoragePath
       });
-      throw new Error(
-        `Failed to access base model image. The file may be missing or corrupted. Error: ${personError.message}`
-      );
+      throw new Error(`Failed to access base model image. The file may be missing or corrupted. Error: ${personError.message}`);
     }
-
     if (garmentError) {
       console.error(`[processOutfitSwap] Job ${jobId}: Failed to get garment image signed URL:`, {
         error: garmentError,
         bucket: garmentBucket,
         path: garmentImage.storage_path
       });
-      throw new Error(
-        `Failed to access garment image. The file may be missing or corrupted. Error: ${garmentError.message}`
-      );
+      throw new Error(`Failed to access garment image. The file may be missing or corrupted. Error: ${garmentError.message}`);
     }
-
     if (!personUrl?.signedUrl || !garmentUrl?.signedUrl) {
       console.error(`[processOutfitSwap] Job ${jobId}: Signed URLs are null/undefined:`, {
         personUrl,
@@ -359,24 +295,17 @@ async function processOutfitSwap(jobId: string) {
       });
       throw new Error("Failed to get source image URLs: URLs are null");
     }
-
     console.log(`[processOutfitSwap] Job ${jobId}: URLs ready for AI processing`);
-
     // Update progress
-    await supabase
-      .from("outfit_swap_jobs")
-      .update({ progress: 30 })
-      .eq("id", jobId);
-
+    await supabase.from("outfit_swap_jobs").update({
+      progress: 30
+    }).eq("id", jobId);
     // STEP 1: Analyze the garment first
     console.log(`[processOutfitSwap] Job ${jobId}: Analyzing garment...`);
     const garmentDescription = await analyzeGarment(garmentUrl.signedUrl);
-    
-    await supabase
-      .from("outfit_swap_jobs")
-      .update({ progress: 50 })
-      .eq("id", jobId);
-
+    await supabase.from("outfit_swap_jobs").update({
+      progress: 50
+    }).eq("id", jobId);
     // STEP 2: Generate improved prompt with garment analysis
     const startTime = Date.now();
     const prompt = `You are an expert e-commerce outfit swap AI. Your task is to replace the person's current outfit with a NEW garment while maintaining photographic realism.
@@ -421,62 +350,65 @@ async function processOutfitSwap(jobId: string) {
         ✓ The composition is professional and centered
 
         Generate a high-quality outfit swap that clearly shows the NEW garment on the person.`;
-
-    await supabase
-      .from("outfit_swap_jobs")
-      .update({ progress: 70 })
-      .eq("id", jobId);
-
+    await supabase.from("outfit_swap_jobs").update({
+      progress: 70
+    }).eq("id", jobId);
     // STEP 3: Fetch source images and prepare for Gemini API
     const personResponse = await fetch(personUrl.signedUrl);
     const garmentResponse = await fetch(garmentUrl.signedUrl);
-
     if (!personResponse.ok || !garmentResponse.ok) {
       throw new Error("Failed to fetch source images for AI processing");
     }
-
     // Convert to base64 for Gemini API
     const personBuffer = await personResponse.arrayBuffer();
     const garmentBuffer = await garmentResponse.arrayBuffer();
-
     const personBase64 = bufferToBase64(new Uint8Array(personBuffer));
     const garmentBase64 = bufferToBase64(new Uint8Array(garmentBuffer));
-
     const personMimeType = personResponse.headers.get('content-type') ?? 'image/jpeg';
     const garmentMimeType = garmentResponse.headers.get('content-type') ?? 'image/jpeg';
-
     // Call Gemini API with multimodal input
-    const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent',
-      {
-        method: 'POST',
-        headers: {
-          'x-goog-api-key': GOOGLE_AI_KEY,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent', {
+      method: 'POST',
+      headers: {
+        'x-goog-api-key': GOOGLE_AI_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [
+          {
             parts: [
-              { text: prompt },
-              { inlineData: { mimeType: personMimeType, data: personBase64 } },
-              { inlineData: { mimeType: garmentMimeType, data: garmentBase64 } }
+              {
+                text: prompt
+              },
+              {
+                inlineData: {
+                  mimeType: personMimeType,
+                  data: personBase64
+                }
+              },
+              {
+                inlineData: {
+                  mimeType: garmentMimeType,
+                  data: garmentBase64
+                }
+              }
             ]
-          }],
-          generationConfig: {
-            responseModalities: ['TEXT', 'IMAGE']
           }
-        })
-      }
-    );
-
+        ],
+        generationConfig: {
+          responseModalities: [
+            'TEXT',
+            'IMAGE'
+          ]
+        }
+      })
+    });
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Gemini API error:", response.status, errorText);
-      
       // Parse error to provide better user feedback
       let errorMessage = `Gemini API error: ${response.status}`;
       let errorType = "generation_error";
-      
       if (response.status === 429) {
         errorType = "rate_limit";
         errorMessage = "Gemini API rate limit exceeded. Please try again in a few minutes.";
@@ -487,76 +419,58 @@ async function processOutfitSwap(jobId: string) {
         errorType = "server_error";
         errorMessage = "Gemini API server error. Please try again later.";
       }
-      
       // Update job with specific error type
-      await supabase
-        .from("outfit_swap_jobs")
-        .update({
-          status: "failed",
-          error: errorMessage,
-          metadata: { error_type: errorType, error_code: response.status },
-          finished_at: new Date().toISOString(),
-        })
-        .eq("id", jobId);
-      
+      await supabase.from("outfit_swap_jobs").update({
+        status: "failed",
+        error: errorMessage,
+        metadata: {
+          error_type: errorType,
+          error_code: response.status
+        },
+        finished_at: new Date().toISOString()
+      }).eq("id", jobId);
       throw new Error(errorMessage);
     }
-
-    await supabase
-      .from("outfit_swap_jobs")
-      .update({ progress: 80 })
-      .eq("id", jobId);
-
+    await supabase.from("outfit_swap_jobs").update({
+      progress: 80
+    }).eq("id", jobId);
     const data = await response.json();
     const base64Image = extractBase64Image(data);
-
     if (!base64Image) {
       console.error("No image data in Gemini response:", JSON.stringify(data).slice(0, 500));
       throw new Error("No image generated by Gemini API");
     }
-
     const processingTime = Date.now() - startTime;
-
     // Convert base64 to buffer
-    const imageBuffer = Uint8Array.from(atob(base64Image), (c) => c.charCodeAt(0));
-
+    const imageBuffer = Uint8Array.from(atob(base64Image), (c)=>c.charCodeAt(0));
     // Upload to storage (JPG and PNG)
     const timestamp = Date.now();
     const basePath = `${job.user_id}/${jobId}`;
-
-    await supabase
-      .from("outfit_swap_jobs")
-      .update({ progress: 90 })
-      .eq("id", jobId);
-
+    await supabase.from("outfit_swap_jobs").update({
+      progress: 90
+    }).eq("id", jobId);
     // Upload JPG
     const jpgPath = `${basePath}/result_${timestamp}.jpg`;
     const { error: jpgUploadError } = await supabase.storage.from("outfit-user-models").upload(jpgPath, imageBuffer, {
       contentType: "image/jpeg",
-      upsert: false,
+      upsert: false
     });
-
     if (jpgUploadError) {
       console.error("JPG upload error:", jpgUploadError);
     }
-
     // Upload PNG
     const pngPath = `${basePath}/result_${timestamp}.png`;
     const { error: pngUploadError } = await supabase.storage.from("outfit-user-models").upload(pngPath, imageBuffer, {
       contentType: "image/png",
-      upsert: false,
+      upsert: false
     });
-
     if (pngUploadError) {
       console.error("PNG upload error:", pngUploadError);
     }
-
     // Get public URLs
     const { data: jpgPublicUrl } = supabase.storage.from("outfit-user-models").getPublicUrl(jpgPath);
     const { data: pngPublicUrl } = supabase.storage.from("outfit-user-models").getPublicUrl(pngPath);
-
     // Note: generated_images table has been removed - only storing in outfit_swap_results
-    
     // Save results to outfit_swap_results
     const { error: resultError } = await supabase.from("outfit_swap_results").insert({
       job_id: jobId,
@@ -569,191 +483,141 @@ async function processOutfitSwap(jobId: string) {
         model_used: "gemini-2.5-flash-image-preview",
         processing_time_ms: processingTime,
         dimensions: "1024x1024",
-        exif_stripped: true,
-      },
+        exif_stripped: true
+      }
     });
-
     if (resultError) {
       console.error("Error saving results:", resultError);
     }
-
     // Update job as completed
-    await supabase
-      .from("outfit_swap_jobs")
-      .update({
-        status: "completed",
-        progress: 100,
-        finished_at: new Date().toISOString(),
-        metadata: {
-          model_used: "gemini-2.5-flash-image-preview",
-          processing_time_ms: processingTime,
-        },
-      })
-      .eq("id", jobId);
-
+    await supabase.from("outfit_swap_jobs").update({
+      status: "completed",
+      progress: 100,
+      finished_at: new Date().toISOString(),
+      metadata: {
+        model_used: "gemini-2.5-flash-image-preview",
+        processing_time_ms: processingTime
+      }
+    }).eq("id", jobId);
     // If this job is part of a batch, update batch progress
-    const { data: jobData } = await supabase
-      .from("outfit_swap_jobs")
-      .select("batch_id")
-      .eq("id", jobId)
-      .single();
-
+    const { data: jobData } = await supabase.from("outfit_swap_jobs").select("batch_id").eq("id", jobId).single();
     if (jobData?.batch_id) {
       await updateBatchProgress(jobData.batch_id);
     }
-
-    return jsonResponse({ success: true }, 200);
+    return jsonResponse({
+      success: true
+    }, 200);
   } catch (error) {
     console.error("Processing error:", error);
-    await supabase
-      .from("outfit_swap_jobs")
-      .update({
-        status: "failed",
-        error: error.message,
-        finished_at: new Date().toISOString(),
-      })
-      .eq("id", jobId);
-
+    await supabase.from("outfit_swap_jobs").update({
+      status: "failed",
+      error: error.message,
+      finished_at: new Date().toISOString()
+    }).eq("id", jobId);
     // If this job is part of a batch, update batch progress
-    const { data: failedJobData } = await supabase
-      .from("outfit_swap_jobs")
-      .select("batch_id")
-      .eq("id", jobId)
-      .single();
-
+    const { data: failedJobData } = await supabase.from("outfit_swap_jobs").select("batch_id").eq("id", jobId).single();
     if (failedJobData?.batch_id) {
       await updateBatchProgress(failedJobData.batch_id);
     }
-
-    return jsonResponse({ error: error.message }, 500);
+    return jsonResponse({
+      error: error.message
+    }, 500);
   }
 }
-
-async function updateBatchProgress(batchId: string) {
+async function updateBatchProgress(batchId) {
   const supabase = serviceClient();
-  
   // Get all jobs in batch
-  const { data: jobs } = await supabase
-    .from("outfit_swap_jobs")
-    .select("status")
-    .eq("batch_id", batchId);
-
+  const { data: jobs } = await supabase.from("outfit_swap_jobs").select("status").eq("batch_id", batchId);
   if (!jobs) {
     console.error(`[updateBatchProgress] No jobs found for batch ${batchId}`);
     return;
   }
-
-  const completed = jobs.filter((j) => j.status === "completed").length;
-  const failed = jobs.filter((j) => j.status === "failed").length;
+  const completed = jobs.filter((j)=>j.status === "completed").length;
+  const failed = jobs.filter((j)=>j.status === "failed").length;
   const total = jobs.length;
-
   let batchStatus = "processing";
   if (completed + failed === total) {
     batchStatus = failed === total ? "failed" : "completed";
   }
-
   console.log(`[updateBatchProgress] Batch ${batchId}: Status=${batchStatus}, ${completed}/${total} completed, ${failed} failed`);
-
-  await supabase
-    .from("outfit_swap_batches")
-    .update({
-      completed_jobs: completed,
-      failed_jobs: failed,
-      status: batchStatus,
-      finished_at: batchStatus === "completed" || batchStatus === "failed" 
-        ? new Date().toISOString() 
-        : null,
-    })
-    .eq("id", batchId);
+  await supabase.from("outfit_swap_batches").update({
+    completed_jobs: completed,
+    failed_jobs: failed,
+    status: batchStatus,
+    finished_at: batchStatus === "completed" || batchStatus === "failed" ? new Date().toISOString() : null
+  }).eq("id", batchId);
 }
-
-async function getJob(userId: string, jobId: string) {
+async function getJob(userId, jobId) {
   const supabase = serviceClient();
-
-  const { data: job, error } = await supabase
-    .from("outfit_swap_jobs")
-    .select("*")
-    .eq("id", jobId)
-    .eq("user_id", userId)
-    .single();
-
+  const { data: job, error } = await supabase.from("outfit_swap_jobs").select("*").eq("id", jobId).eq("user_id", userId).single();
   if (error) {
-    return jsonResponse({ error: "Job not found" }, 404);
+    return jsonResponse({
+      error: "Job not found"
+    }, 404);
   }
-
-  return jsonResponse({ job }, 200);
+  return jsonResponse({
+    job
+  }, 200);
 }
-
-async function getJobResults(userId: string, jobId: string) {
+async function getJobResults(userId, jobId) {
   const supabase = serviceClient();
-
-  const { data: results, error } = await supabase
-    .from("outfit_swap_results")
-    .select("*")
-    .eq("job_id", jobId)
-    .eq("user_id", userId)
-    .single();
-
+  const { data: results, error } = await supabase.from("outfit_swap_results").select("*").eq("job_id", jobId).eq("user_id", userId).single();
   if (error) {
-    return jsonResponse({ error: "Results not found" }, 404);
+    return jsonResponse({
+      error: "Results not found"
+    }, 404);
   }
-
-  return jsonResponse({ results }, 200);
+  return jsonResponse({
+    results
+  }, 200);
 }
-
-async function cancelJob(userId: string, jobId: string) {
+async function cancelJob(userId, jobId) {
   const supabase = serviceClient();
-
-  const { error } = await supabase
-    .from("outfit_swap_jobs")
-    .update({ status: "canceled", finished_at: new Date().toISOString() })
-    .eq("id", jobId)
-    .eq("user_id", userId)
-    .in("status", ["queued", "processing"]);
-
+  const { error } = await supabase.from("outfit_swap_jobs").update({
+    status: "canceled",
+    finished_at: new Date().toISOString()
+  }).eq("id", jobId).eq("user_id", userId).in("status", [
+    "queued",
+    "processing"
+  ]);
   if (error) {
-    return jsonResponse({ error: "Failed to cancel job" }, 500);
+    return jsonResponse({
+      error: "Failed to cancel job"
+    }, 500);
   }
-
-  return jsonResponse({ success: true }, 200);
+  return jsonResponse({
+    success: true
+  }, 200);
 }
-
-async function createBatchJob(userId: string, params: any) {
+async function createBatchJob(userId, params) {
   const { baseModelId, garmentIds, settings } = params;
   const supabase = serviceClient();
-
   // Validate max 10 garments
   if (!garmentIds || garmentIds.length === 0) {
-    return jsonResponse({ error: "No garments provided" }, 400);
+    return jsonResponse({
+      error: "No garments provided"
+    }, 400);
   }
   if (garmentIds.length > 10) {
-    return jsonResponse({ error: "Maximum 10 garments per batch" }, 400);
+    return jsonResponse({
+      error: "Maximum 10 garments per batch"
+    }, 400);
   }
-
   console.log(`[createBatchJob] Creating batch for ${garmentIds.length} garments`);
-
   // Calculate credits: 1 per garment, with 10% batch discount for 5+
   const baseCreditsNeeded = garmentIds.length * 1;
   const discount = garmentIds.length >= 5 ? 0.1 : 0;
   const creditsNeeded = Math.ceil(baseCreditsNeeded * (1 - discount));
-
   console.log(`[createBatchJob] Credits needed: ${creditsNeeded}`);
-
   // Check admin status for credit bypass
   const { data: isAdmin } = await supabase.rpc("is_user_admin", {
-    check_user_id: userId,
+    check_user_id: userId
   });
-
   // Check and deduct credits only for non-admins
   if (!isAdmin) {
-    const { data: subscriber } = await supabase
-      .from("subscribers")
-      .select("credits_balance")
-      .eq("user_id", userId)
-      .single();
-
+    const { data: subscriber } = await supabase.from("subscribers").select("credits_balance").eq("user_id", userId).single();
     if (!subscriber || subscriber.credits_balance < creditsNeeded) {
-      return jsonResponse({ 
+      return jsonResponse({
         error: "Insufficient credits",
         required: creditsNeeded,
         available: subscriber?.credits_balance || 0
@@ -762,539 +626,457 @@ async function createBatchJob(userId: string, params: any) {
   } else {
     console.log(`[createBatchJob] Admin bypass: Skipping credit check for user ${userId}`);
   }
-
   // Create batch record
-  const { data: batch, error: batchError } = await supabase
-    .from("outfit_swap_batches")
-    .insert({
-      user_id: userId,
-      base_model_id: baseModelId,
-      total_jobs: garmentIds.length,
-      metadata: {
-        settings,
-        credits_deducted: creditsNeeded,
-        discount_applied: discount,
-      },
-    })
-    .select()
-    .single();
-
+  const { data: batch, error: batchError } = await supabase.from("outfit_swap_batches").insert({
+    user_id: userId,
+    base_model_id: baseModelId,
+    total_jobs: garmentIds.length,
+    metadata: {
+      settings,
+      credits_deducted: creditsNeeded,
+      discount_applied: discount
+    }
+  }).select().single();
   if (batchError) {
     console.error("[createBatchJob] Batch creation error:", batchError);
-    return jsonResponse({ error: "Failed to create batch" }, 500);
+    return jsonResponse({
+      error: "Failed to create batch"
+    }, 500);
   }
-
   // Deduct credits upfront (only for non-admins)
   if (!isAdmin) {
-    const { data: deductResult, error: deductError } = await supabase.rpc(
-      "deduct_user_credits",
-      {
-        p_user_id: userId,
-        p_amount: creditsNeeded,
-        p_reason: "outfit_swap_batch",
-      }
-    );
-
+    const { data: deductResult, error: deductError } = await supabase.rpc("deduct_user_credits", {
+      p_user_id: userId,
+      p_amount: creditsNeeded,
+      p_reason: "outfit_swap_batch"
+    });
     if (deductError || !deductResult?.success) {
       console.error("[createBatchJob] Credit deduction error:", deductError || deductResult);
       await supabase.from("outfit_swap_batches").delete().eq("id", batch.id);
-      return jsonResponse({ error: "Failed to deduct credits" }, 500);
+      return jsonResponse({
+        error: "Failed to deduct credits"
+      }, 500);
     }
   } else {
     console.log(`[createBatchJob] Admin bypass: Skipping credit deduction`);
   }
-
   // Create individual jobs for each garment
   const jobs = [];
-  for (let i = 0; i < garmentIds.length; i++) {
+  for(let i = 0; i < garmentIds.length; i++){
     const garmentId = garmentIds[i];
     console.log(`[createBatchJob] Creating job ${i + 1}/${garmentIds.length} for garment ${garmentId}`);
-    
-    const { data: job, error: jobError } = await supabase
-      .from("outfit_swap_jobs")
-      .insert({
-        user_id: userId,
-        batch_id: batch.id,
-        base_model_id: baseModelId,
-        source_person_id: null,  // Batch jobs use base_model_id, not source_person_id
-        source_garment_id: garmentId,
-        settings,
-        garment_ids: [garmentId],
-        total_garments: 1,
-      })
-      .select()
-      .single();
-
+    const { data: job, error: jobError } = await supabase.from("outfit_swap_jobs").insert({
+      user_id: userId,
+      batch_id: batch.id,
+      base_model_id: baseModelId,
+      source_person_id: null,
+      source_garment_id: garmentId,
+      settings,
+      garment_ids: [
+        garmentId
+      ],
+      total_garments: 1
+    }).select().single();
     if (jobError) {
       console.error(`[createBatchJob] Job ${i + 1} creation error:`, jobError);
-      
       // Track failed job creation
-      await supabase
-        .from("outfit_swap_batches")
-        .update({ failed_jobs: i + 1 })
-        .eq("id", batch.id);
-      
+      await supabase.from("outfit_swap_batches").update({
+        failed_jobs: i + 1
+      }).eq("id", batch.id);
       continue;
     }
-
     jobs.push(job);
   }
-
   // If ALL jobs failed to create, mark batch as failed immediately
   if (jobs.length === 0) {
     console.error(`[createBatchJob] All ${garmentIds.length} jobs failed to create`);
-    await supabase
-      .from("outfit_swap_batches")
-      .update({ 
-        status: "failed",
-        failed_jobs: garmentIds.length,
-        finished_at: new Date().toISOString()
-      })
-      .eq("id", batch.id);
-    
-    return jsonResponse({ 
-      error: "All jobs failed to create", 
-      batch, 
-      jobs: [] 
+    await supabase.from("outfit_swap_batches").update({
+      status: "failed",
+      failed_jobs: garmentIds.length,
+      finished_at: new Date().toISOString()
+    }).eq("id", batch.id);
+    return jsonResponse({
+      error: "All jobs failed to create",
+      batch,
+      jobs: []
     }, 500);
   }
-
   console.log(`[createBatchJob] Successfully created ${jobs.length}/${garmentIds.length} jobs`);
-
   // Update batch status to processing
-  await supabase
-    .from("outfit_swap_batches")
-    .update({ status: "processing", started_at: new Date().toISOString() })
-    .eq("id", batch.id);
-
+  await supabase.from("outfit_swap_batches").update({
+    status: "processing",
+    started_at: new Date().toISOString()
+  }).eq("id", batch.id);
   // Process jobs asynchronously
   const functionUrl = `${SUPABASE_URL}/functions/v1/outfit-swap`;
-  for (const job of jobs) {
+  for (const job of jobs){
     fetch(functionUrl, {
       method: "POST",
-      headers: { 
-        ...corsHeaders, 
+      headers: {
+        ...corsHeaders,
         "Content-Type": "application/json",
         "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`
       },
-      body: JSON.stringify({ action: "processJob", jobId: job.id }),
-    }).catch((err) => console.error(`Failed to trigger job ${job.id}:`, err));
+      body: JSON.stringify({
+        action: "processJob",
+        jobId: job.id
+      })
+    }).catch((err)=>console.error(`Failed to trigger job ${job.id}:`, err));
   }
-
-  return jsonResponse({ batch, jobs }, 200);
+  return jsonResponse({
+    batch,
+    jobs
+  }, 200);
 }
-
-async function getBatch(userId: string, batchId: string) {
+async function getBatch(userId, batchId) {
   const supabase = serviceClient();
-
-  const { data: batch, error } = await supabase
-    .from("outfit_swap_batches")
-    .select("*")
-    .eq("id", batchId)
-    .eq("user_id", userId)
-    .single();
-
+  const { data: batch, error } = await supabase.from("outfit_swap_batches").select("*").eq("id", batchId).eq("user_id", userId).single();
   if (error) {
-    return jsonResponse({ error: "Batch not found" }, 404);
+    return jsonResponse({
+      error: "Batch not found"
+    }, 404);
   }
-
-  return jsonResponse({ batch }, 200);
+  return jsonResponse({
+    batch
+  }, 200);
 }
-
-async function cancelBatch(userId: string, batchId: string) {
+async function cancelBatch(userId, batchId) {
   const supabase = serviceClient();
-
   // Update batch status
-  const { error: batchError } = await supabase
-    .from("outfit_swap_batches")
-    .update({ status: "canceled", finished_at: new Date().toISOString() })
-    .eq("id", batchId)
-    .eq("user_id", userId);
-
+  const { error: batchError } = await supabase.from("outfit_swap_batches").update({
+    status: "canceled",
+    finished_at: new Date().toISOString()
+  }).eq("id", batchId).eq("user_id", userId);
   if (batchError) {
-    return jsonResponse({ error: "Failed to cancel batch" }, 500);
+    return jsonResponse({
+      error: "Failed to cancel batch"
+    }, 500);
   }
-
   // Cancel all pending jobs in this batch
-  await supabase
-    .from("outfit_swap_jobs")
-    .update({ status: "canceled" })
-    .eq("batch_id", batchId)
-    .in("status", ["queued", "processing"]);
-
-  return jsonResponse({ success: true }, 200);
+  await supabase.from("outfit_swap_jobs").update({
+    status: "canceled"
+  }).eq("batch_id", batchId).in("status", [
+    "queued",
+    "processing"
+  ]);
+  return jsonResponse({
+    success: true
+  }, 200);
 }
-
 // Photoshoot prompts for 4 professional angles
 const PHOTOSHOOT_PROMPTS = [
   `Create a high-quality e-commerce product photo: On-body three-quarter view (45° turn), head to mid-thigh framing, one foot slightly forward to show torso depth and shoulder line. Seamless light-grey background, soft key, subtle rim light to separate from background, controlled specularity on knit. 50mm lens look, f/8, ISO 100. Emphasize side seam, sleeve length, and hem fall. Clean, editorial retail lighting. ###IMPORTANT:  Don't change the clothes of the model. Keep the model exatly as it is.`,
-
   `Create a high-quality e-commerce product photo: On-body back view, shoulders level, arms relaxed, straight posture. Seamless light-grey background, balanced key/fill to avoid hotspots, faint floor shadow. 50–70mm lens look, f/8, ISO 100. Capture yoke/neck ribbing, back drape, and hem alignment. Centered, color-accurate, luxury e-commerce finish. ###IMPORTANT:  Don't change the clothes of the model. Keep the model exatly as it is.`,
-
   `Create a high-quality e-commerce product photo: On-body true side profile, chin parallel to floor, arms relaxed (small air gap at elbow), head to mid-thigh framing. Seamless light-grey background, soft key from camera front, gentle fill to preserve knit detail, micro-shadow under hem. 70mm equivalent look, f/8, ISO 100. Prioritize silhouette, shoulder slope, sleeve taper, and ribbed cuff definition. Premium catalog style. ###IMPORTANT: Don't change the clothes of the model. Keep the model exatly as it is.`,
-
   `Create a high-quality e-commerce product photo: Upper-torso close-up crop from shoulders to mid-torso, camera perpendicular to garment. Soft, even light to reveal rib-knit texture and stitching. 85–100mm look, f/8. High sharpness, no moiré, color-accurate wool tone. Background remains seamless light grey. ###IMPORTANT:  Don't change the clothes of the model. Keep the model exatly as it is.`
 ];
-
-async function createPhotoshootJob(userId: string, params: any) {
+async function createPhotoshootJob(userId, params) {
   const { resultId } = params;
   const supabase = serviceClient();
   const creditsNeeded = 4;
-
   console.log(`[createPhotoshoot] Creating photoshoot for result ${resultId}`);
-
   // Check admin status
   const { data: isAdmin } = await supabase.rpc("is_user_admin", {
-    check_user_id: userId,
+    check_user_id: userId
   });
-
   // Check and deduct credits only for non-admins
   if (!isAdmin) {
-    const { data: deductResult, error: deductError } = await supabase.rpc(
-      "deduct_user_credits",
-      {
-        p_user_id: userId,
-        p_amount: creditsNeeded,
-        p_reason: "photoshoot_generation",
-      }
-    );
-
+    const { data: deductResult, error: deductError } = await supabase.rpc("deduct_user_credits", {
+      p_user_id: userId,
+      p_amount: creditsNeeded,
+      p_reason: "photoshoot_generation"
+    });
     if (deductError || !deductResult?.success) {
       console.error("[createPhotoshoot] Credit deduction error:", deductError || deductResult);
-      return jsonResponse({ 
+      return jsonResponse({
         error: "Insufficient credits",
-        required: creditsNeeded,
+        required: creditsNeeded
       }, 402);
     }
   } else {
     console.log(`[createPhotoshoot] Admin bypass: Skipping credit check`);
   }
-
   // Verify result exists and belongs to user
-  const { data: result, error: resultError } = await supabase
-    .from("outfit_swap_results")
-    .select("*")
-    .eq("id", resultId)
-    .eq("user_id", userId)
-    .single();
-
+  const { data: result, error: resultError } = await supabase.from("outfit_swap_results").select("*").eq("id", resultId).eq("user_id", userId).single();
   if (resultError || !result) {
     if (!isAdmin) {
       await supabase.rpc("refund_user_credits", {
         p_user_id: userId,
         p_amount: creditsNeeded,
-        p_reason: "photoshoot_result_not_found",
+        p_reason: "photoshoot_result_not_found"
       });
     }
-    return jsonResponse({ error: "Result not found" }, 404);
+    return jsonResponse({
+      error: "Result not found"
+    }, 404);
   }
-
   // Create photoshoot record
-  const { data: photoshoot, error: photoshootError } = await supabase
-    .from("outfit_swap_photoshoots")
-    .insert({
-      user_id: userId,
-      result_id: resultId,
-      status: "queued",
-      metadata: {
-        original_result_url: result.public_url,
-        credits_deducted: creditsNeeded,
-      },
-    })
-    .select()
-    .single();
-
+  const { data: photoshoot, error: photoshootError } = await supabase.from("outfit_swap_photoshoots").insert({
+    user_id: userId,
+    result_id: resultId,
+    status: "queued",
+    metadata: {
+      original_result_url: result.public_url,
+      credits_deducted: creditsNeeded
+    }
+  }).select().single();
   if (photoshootError) {
     console.error("[createPhotoshoot] Creation error:", photoshootError);
     if (!isAdmin) {
       await supabase.rpc("refund_user_credits", {
         p_user_id: userId,
         p_amount: creditsNeeded,
-        p_reason: "photoshoot_creation_failed",
+        p_reason: "photoshoot_creation_failed"
       });
     }
-    return jsonResponse({ error: "Failed to create photoshoot" }, 500);
+    return jsonResponse({
+      error: "Failed to create photoshoot"
+    }, 500);
   }
-
   // Trigger async processing
   const functionUrl = `${SUPABASE_URL}/functions/v1/outfit-swap`;
   fetch(functionUrl, {
     method: "POST",
-    headers: { 
-      ...corsHeaders, 
+    headers: {
+      ...corsHeaders,
       "Content-Type": "application/json",
       "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`
     },
-    body: JSON.stringify({ action: "processPhotoshoot", photoshootId: photoshoot.id }),
+    body: JSON.stringify({
+      action: "processPhotoshoot",
+      photoshootId: photoshoot.id
+    })
   }).catch(console.error);
-
-  return jsonResponse({ photoshoot }, 200);
+  return jsonResponse({
+    photoshoot
+  }, 200);
 }
-
-async function processPhotoshoot(photoshootId: string) {
+async function processPhotoshoot(photoshootId) {
   const supabase = serviceClient();
   console.log(`[processPhotoshoot] Starting photoshoot ${photoshootId}`);
-
   try {
     // Update status to processing
-    await supabase
-      .from("outfit_swap_photoshoots")
-      .update({ 
-        status: "processing", 
-        started_at: new Date().toISOString(),
-        progress: 0
-      })
-      .eq("id", photoshootId);
-
+    await supabase.from("outfit_swap_photoshoots").update({
+      status: "processing",
+      started_at: new Date().toISOString(),
+      progress: 0
+    }).eq("id", photoshootId);
     // Fetch photoshoot and original result
-    const { data: photoshoot, error: photoshootError } = await supabase
-      .from("outfit_swap_photoshoots")
-      .select("*, outfit_swap_results(*)")
-      .eq("id", photoshootId)
-      .single();
-
+    const { data: photoshoot, error: photoshootError } = await supabase.from("outfit_swap_photoshoots").select("*, outfit_swap_results(*)").eq("id", photoshootId).single();
     if (photoshootError || !photoshoot) {
       throw new Error("Photoshoot not found");
     }
-
     const originalImageUrl = photoshoot.outfit_swap_results?.public_url;
     if (!originalImageUrl) {
       throw new Error("Original image URL not found");
     }
-
     // Fetch original image
     const imageResponse = await fetch(originalImageUrl);
     if (!imageResponse.ok) {
       throw new Error(`Failed to fetch original image: ${imageResponse.status}`);
     }
-
     const imageBuffer = await imageResponse.arrayBuffer();
     const base64Image = bufferToBase64(new Uint8Array(imageBuffer));
     const mimeType = imageResponse.headers.get('content-type') || 'image/jpeg';
-
     // Generate all 4 images concurrently
     console.log(`[processPhotoshoot] Starting concurrent generation of 4 images`);
-    
-    const imageGenerationPromises = PHOTOSHOOT_PROMPTS.map(async (prompt, index) => {
+    const imageGenerationPromises = PHOTOSHOOT_PROMPTS.map(async (prompt, index)=>{
       const imageNum = index + 1;
       console.log(`[processPhotoshoot] Starting image ${imageNum}/4`);
-
       try {
         // Call Gemini API
-        const response = await fetch(
-          'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent',
-          {
-            method: 'POST',
-            headers: {
-              'x-goog-api-key': GOOGLE_AI_KEY,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              contents: [{
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent', {
+          method: 'POST',
+          headers: {
+            'x-goog-api-key': GOOGLE_AI_KEY,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            contents: [
+              {
                 parts: [
-                  { text: prompt },
-                  { inlineData: { mimeType: mimeType, data: base64Image } }
+                  {
+                    text: prompt
+                  },
+                  {
+                    inlineData: {
+                      mimeType: mimeType,
+                      data: base64Image
+                    }
+                  }
                 ]
-              }],
-              generationConfig: {
-                responseModalities: ['IMAGE']
               }
-            })
-          }
-        );
-
+            ],
+            generationConfig: {
+              responseModalities: [
+                'IMAGE'
+              ]
+            }
+          })
+        });
         if (!response.ok) {
           const errorText = await response.text();
           console.error(`[processPhotoshoot] Image ${imageNum} API error:`, response.status, errorText);
-          return { success: false, imageNum };
+          return {
+            success: false,
+            imageNum
+          };
         }
-
         const data = await response.json();
         const generatedBase64 = extractBase64Image(data);
-
         if (!generatedBase64) {
           console.error(`[processPhotoshoot] Image ${imageNum}: No image in response`);
-          return { success: false, imageNum };
+          return {
+            success: false,
+            imageNum
+          };
         }
-
         // Upload to storage
-        const imageBlob = Uint8Array.from(atob(generatedBase64), (c) => c.charCodeAt(0));
+        const imageBlob = Uint8Array.from(atob(generatedBase64), (c)=>c.charCodeAt(0));
         const storagePath = `${photoshoot.user_id}/${photoshootId}/image_${imageNum}.png`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("outfit-swap-photoshoots")
-          .upload(storagePath, imageBlob, { 
-            contentType: "image/png",
-            upsert: false 
-          });
-
+        const { error: uploadError } = await supabase.storage.from("outfit-swap-photoshoots").upload(storagePath, imageBlob, {
+          contentType: "image/png",
+          upsert: false
+        });
         if (uploadError) {
           console.error(`[processPhotoshoot] Image ${imageNum} upload error:`, uploadError);
-          return { success: false, imageNum };
+          return {
+            success: false,
+            imageNum
+          };
         }
-
         // Get public URL
-        const { data: urlData } = supabase.storage
-          .from("outfit-swap-photoshoots")
-          .getPublicUrl(storagePath);
-
+        const { data: urlData } = supabase.storage.from("outfit-swap-photoshoots").getPublicUrl(storagePath);
         // Update photoshoot record for this specific image
-        await supabase
-          .from("outfit_swap_photoshoots")
-          .update({
-            [`image_${imageNum}_url`]: urlData.publicUrl,
-            [`image_${imageNum}_path`]: storagePath,
-          })
-          .eq("id", photoshootId);
-
+        await supabase.from("outfit_swap_photoshoots").update({
+          [`image_${imageNum}_url`]: urlData.publicUrl,
+          [`image_${imageNum}_path`]: storagePath
+        }).eq("id", photoshootId);
         console.log(`[processPhotoshoot] Image ${imageNum} completed successfully`);
-        return { success: true, imageNum };
-
+        return {
+          success: true,
+          imageNum
+        };
       } catch (error) {
         console.error(`[processPhotoshoot] Image ${imageNum} error:`, error);
-        return { success: false, imageNum };
+        return {
+          success: false,
+          imageNum
+        };
       }
     });
-
     // Wait for all 4 images to complete
     const results = await Promise.allSettled(imageGenerationPromises);
-
     // Count successes and failures
     let successfulImages = 0;
     let failedImages = 0;
-
-    results.forEach((result, index) => {
+    results.forEach((result, index)=>{
       if (result.status === 'fulfilled' && result.value.success) {
         successfulImages++;
       } else {
         failedImages++;
       }
-      
       // Update progress as each completes
-      const progressPercent = Math.round(((index + 1) / 4) * 100);
-      supabase
-        .from("outfit_swap_photoshoots")
-        .update({ progress: progressPercent })
-        .eq("id", photoshootId);
+      const progressPercent = Math.round((index + 1) / 4 * 100);
+      supabase.from("outfit_swap_photoshoots").update({
+        progress: progressPercent
+      }).eq("id", photoshootId);
     });
-
     console.log(`[processPhotoshoot] Generation complete - ${successfulImages} succeeded, ${failedImages} failed`);
-
     // Determine final status
     const finalStatus = successfulImages === 0 ? "failed" : "completed";
-    const errorMessage = failedImages > 0 
-      ? `${failedImages} out of 4 images failed to generate`
-      : null;
-
-    await supabase
-      .from("outfit_swap_photoshoots")
-      .update({
-        status: finalStatus,
-        progress: 100,
-        finished_at: new Date().toISOString(),
-        error: errorMessage,
-        metadata: {
-          ...photoshoot.metadata,
-          successful_images: successfulImages,
-          failed_images: failedImages,
-        },
-      })
-      .eq("id", photoshootId);
-
+    const errorMessage = failedImages > 0 ? `${failedImages} out of 4 images failed to generate` : null;
+    await supabase.from("outfit_swap_photoshoots").update({
+      status: finalStatus,
+      progress: 100,
+      finished_at: new Date().toISOString(),
+      error: errorMessage,
+      metadata: {
+        ...photoshoot.metadata,
+        successful_images: successfulImages,
+        failed_images: failedImages
+      }
+    }).eq("id", photoshootId);
     // Refund credits if all images failed (only for non-admins)
     if (successfulImages === 0) {
       const { data: isAdmin } = await supabase.rpc("is_user_admin", {
-        check_user_id: photoshoot.user_id,
+        check_user_id: photoshoot.user_id
       });
-      
       if (!isAdmin) {
         await supabase.rpc("refund_user_credits", {
           p_user_id: photoshoot.user_id,
           p_amount: 4,
-          p_reason: "photoshoot_all_failed",
+          p_reason: "photoshoot_all_failed"
         });
       }
     }
-
-    return jsonResponse({ success: true, successfulImages, failedImages }, 200);
-
+    return jsonResponse({
+      success: true,
+      successfulImages,
+      failedImages
+    }, 200);
   } catch (error) {
     console.error("[processPhotoshoot] Error:", error);
-    
-    await supabase
-      .from("outfit_swap_photoshoots")
-      .update({
-        status: "failed",
-        error: error.message,
-        finished_at: new Date().toISOString(),
-      })
-      .eq("id", photoshootId);
-
+    await supabase.from("outfit_swap_photoshoots").update({
+      status: "failed",
+      error: error.message,
+      finished_at: new Date().toISOString()
+    }).eq("id", photoshootId);
     // Fetch user_id for refund
-    const { data: photoshoot } = await supabase
-      .from("outfit_swap_photoshoots")
-      .select("user_id")
-      .eq("id", photoshootId)
-      .single();
-
+    const { data: photoshoot } = await supabase.from("outfit_swap_photoshoots").select("user_id").eq("id", photoshootId).single();
     if (photoshoot?.user_id) {
       const { data: isAdmin } = await supabase.rpc("is_user_admin", {
-        check_user_id: photoshoot.user_id,
+        check_user_id: photoshoot.user_id
       });
-      
       if (!isAdmin) {
         await supabase.rpc("refund_user_credits", {
           p_user_id: photoshoot.user_id,
           p_amount: 4,
-          p_reason: "photoshoot_processing_failed",
+          p_reason: "photoshoot_processing_failed"
         });
       }
     }
-
-    return jsonResponse({ error: error.message }, 500);
+    return jsonResponse({
+      error: error.message
+    }, 500);
   }
 }
-
-async function getPhotoshoot(userId: string, photoshootId: string) {
+async function getPhotoshoot(userId, photoshootId) {
   const supabase = serviceClient();
-
-  const { data: photoshoot, error } = await supabase
-    .from("outfit_swap_photoshoots")
-    .select("*")
-    .eq("id", photoshootId)
-    .eq("user_id", userId)
-    .single();
-
+  const { data: photoshoot, error } = await supabase.from("outfit_swap_photoshoots").select("*").eq("id", photoshootId).eq("user_id", userId).single();
   if (error) {
-    return jsonResponse({ error: "Photoshoot not found" }, 404);
+    return jsonResponse({
+      error: "Photoshoot not found"
+    }, 404);
   }
-
-  return jsonResponse({ photoshoot }, 200);
+  return jsonResponse({
+    photoshoot
+  }, 200);
 }
-
-async function cancelPhotoshoot(userId: string, photoshootId: string) {
+async function cancelPhotoshoot(userId, photoshootId) {
   const supabase = serviceClient();
-
-  const { error } = await supabase
-    .from("outfit_swap_photoshoots")
-    .update({ 
-      status: "canceled", 
-      finished_at: new Date().toISOString() 
-    })
-    .eq("id", photoshootId)
-    .eq("user_id", userId)
-    .in("status", ["queued", "processing"]);
-
+  const { error } = await supabase.from("outfit_swap_photoshoots").update({
+    status: "canceled",
+    finished_at: new Date().toISOString()
+  }).eq("id", photoshootId).eq("user_id", userId).in("status", [
+    "queued",
+    "processing"
+  ]);
   if (error) {
-    return jsonResponse({ error: "Failed to cancel photoshoot" }, 500);
+    return jsonResponse({
+      error: "Failed to cancel photoshoot"
+    }, 500);
   }
-
-  return jsonResponse({ success: true }, 200);
+  return jsonResponse({
+    success: true
+  }, 200);
 }
-
-function jsonResponse(data: any, status: number) {
+function jsonResponse(data, status) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json"
+    }
   });
 }
