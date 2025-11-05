@@ -87,6 +87,17 @@ serve(async (req) => {
       customer: customerId,
       customer_email: customerId ? undefined : user.email!,
       allow_promotion_codes: true,
+      
+      // Enable automatic tax collection
+      automatic_tax: {
+        enabled: true,
+      },
+      
+      // Collect customer address for accurate tax calculation
+      customer_update: {
+        address: 'auto',
+      },
+      
       line_items: [
         {
           price_data: {
@@ -97,10 +108,14 @@ serve(async (req) => {
                 ? `Limited-time Founders subscription with lifetime pricing guarantee! (Billed ${interval === 'year' ? 'annually' : 'monthly'})` 
                 : interval === 'year' 
                   ? 'Annual subscription (2 months free! Billed annually)' 
-                  : 'Monthly subscription (Billed monthly)'
+                  : 'Monthly subscription (Billed monthly)',
+              // Tax code for SaaS - Digital services
+              tax_code: 'txcd_10000000',
             },
             unit_amount: unitAmount,
             recurring: { interval: interval as 'month' | 'year' },
+            // Tax is included in the displayed price
+            tax_behavior: 'inclusive',
           },
           quantity: 1,
         },

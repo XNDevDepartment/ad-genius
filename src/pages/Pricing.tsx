@@ -230,9 +230,14 @@ const Pricing = () => {
                 Save 2 months!
               </Badge>
             </div>
-            <p className="text-xs text-primary-foreground/70">
-              Have a promotion code? You can enter it at checkout
-            </p>
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-xs text-primary-foreground/70">
+                Have a promotion code? You can enter it at checkout
+              </p>
+              <p className="text-xs text-primary-foreground/70">
+                All prices include applicable taxes
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-wrap justify-center gap-4 text-sm">
