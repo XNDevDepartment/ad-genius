@@ -8,13 +8,13 @@
     "account": "Conta"
   },
   "announcement": {
-    "foundersTitle": "🎉 Pacote Fundadores Disponível!",
-    "foundersDesc": "Acesso vitalício + 80 créditos / mês - Vagas limitadas",
-    "foundersCTA": "Reivindicar Agora"
+    "foundersTitle": "🎉 Pack Founders Disponível!",
+    "foundersDesc": "Acesso vitalício + 80 créditos/mês — Vagas limitadas",
+    "foundersCTA": "Resgatar Agora"
   },
   "auth": {
-    "signIn": "Entrar / Registar",
-    "signOut": "Sair"
+    "signIn": "Iniciar sessão / Registar",
+    "signOut": "Terminar sessão"
   },
   "settings": {
     "quickSettings": "Definições Rápidas",
@@ -37,13 +37,13 @@
     "tagline": "Marketing com IA"
   },
   "trustBar": {
-    "conversionStat": "conversão média quando há UGC nas PDPs",
-    "trustStat": "confiam mais no conteúdo do consumidor do que no da marca",
-    "ctrStat": "CTR mais elevada em anúncios com UGC",
+    "conversionStat": "taxa média de conversão quando há UGC nas páginas de produto (PDP)",
+    "trustStat": "confiam mais no conteúdo dos consumidores do que no das marcas",
+    "ctrStat": "CTR mais elevado em anúncios com UGC",
     "source": "Fonte"
   },
   "ugcTrustSection": {
-    "title": "Porque o Conteúdo Gerado pelo Utilizador importa"
+    "title": "Porque o Conteúdo Gerado pelos Utilizadores importa"
   },
   "library": {
     "title": "Biblioteca",
@@ -60,17 +60,17 @@
     },
     "actions": {
       "downloadStarted": "Transferência iniciada",
-      "downloading": "A transferir imagem...",
+      "downloading": "A transferir a imagem...",
       "downloadFailed": {
-        "title": "Falha na Transferência",
+        "title": "Falha na transferência",
         "description": "Não foi possível transferir a imagem. Tente novamente."
       },
       "imageDeleted": {
-        "title": "Imagem Eliminada",
+        "title": "Imagem eliminada",
         "description": "Removida da sua biblioteca."
       },
       "deleteFailed": {
-        "title": "Falha ao Eliminar",
+        "title": "Falha ao eliminar",
         "description": "Não foi possível eliminar a imagem. Tente novamente."
       },
       "deleteConfirm": {
@@ -87,21 +87,21 @@
     "description": "Selecione o tipo de conteúdo que pretende criar",
     "ugcCreator": {
       "title": "Criador de UGC",
-      "description": "Crie conteúdo autêntico gerado pelo utilizador com ajuda de IA"
+      "description": "Crie conteúdo autêntico gerado por utilizadores com ajuda da IA"
     },
     "videoCreator": {
       "title": "Image Animator",
-      "description": "Transforma as tuas imagens UGC em vídeos realistas, realçando as suas Caracteristicas e a sua utilização"
+      "description": "Transforme imagens UGC em vídeos realistas, destacando funcionalidades e utilizações"
     },
     "studioPhotos": {
       "title": "Fotos de Estúdio",
-      "description": "Gere fotografia profissional de produto"
+      "description": "Gere fotos de produto profissionais"
     },
-    "comingSoon": "Em breve"
+    "comingSoon": "Brevemente"
   },
   "common": {
     "getStarted": "Começar",
-    "comingSoon": "Em breve",
+    "comingSoon": "Brevemente",
     "startNow": "Começar Agora",
     "limited": "LIMITADO",
     "cancel": "Cancelar",
@@ -111,9 +111,9 @@
     "loading": "A carregar...",
     "saving": "A guardar...",
     "deleting": "A eliminar...",
-    "upgrade": "Upgrade",
-    "upgradeForMore": "Upgrade para mais",
-    "upgradeToUnlock": "Upgrade para desbloquear",
+    "upgrade": "Fazer upgrade",
+    "upgradeForMore": "Fazer upgrade para mais",
+    "upgradeToUnlock": "Fazer upgrade para desbloquear",
     "of": "de",
     "remove": "Remover",
     "search": "Pesquisar",
@@ -121,8 +121,8 @@
     "filter": "Filtrar",
     "newest": "Mais recente",
     "oldest": "Mais antigo",
-    "noResults": "Nenhum resultado encontrado",
-    "currentlyGenerating": "A gerar atualmente"
+    "noResults": "Sem resultados",
+    "currentlyGenerating": "A gerar"
   },
   "a11y": {
     "logoAlt": "Logótipo",
@@ -133,7 +133,7 @@
     "languageToggle": "Alternar idioma"
   },
   "userStats": {
-    "title": "A sua Atividade",
+    "title": "A Sua Atividade",
     "credits": "Créditos",
     "totalImages": "Total de Imagens",
     "thisMonth": "Este Mês",
@@ -147,26 +147,26 @@
     "productImage": {
       "title": "Imagem do Produto",
       "subtitle": "Carregue uma imagem do seu produto para análise",
-      "analyzing": "A analisar imagem...",
-      "tooltip": "Carregue uma imagem clara e de alta qualidade do seu produto. A IA irá analisá-la para entender o que está a vender e sugerir cenários relevantes.",
+      "analyzing": "A analisar a imagem...",
+      "tooltip": "Carregue uma imagem nítida e de alta qualidade do seu produto. A IA irá analisá-la para compreender o que vende e sugerir cenários relevantes.",
       "dragDrop": "Largue a sua imagem aqui",
       "clickUpload": "Carregar Imagem do Produto",
       "releaseUpload": "Largar para carregar",
-      "supportedFormats": "PNG, JPG até 10MB • Clique ou arraste e largue",
+      "supportedFormats": "PNG, JPG até 10 MB • Clique ou arraste e largue",
       "preview": "Pré-visualização do produto",
       "remove": "Remover imagem"
     },
     "productDetails": {
-      "title": "Caracteristicas do produto",
-      "subtitle": "Indique alguns detalhes do seu produto em uso ",
-      "placeholder": "Ex.: Mangas até aos cotovelos, colar ligeiramente abaixo do pesqueço, chapéu com 3cm de largura ...",
-      "tooltip": "Descreva como o seu produto é usado ou como assenta nas pessoas. Isto ajuda o Genius a posicionar o produto corretamente."
+      "title": "Caraterísticas do produto",
+      "subtitle": "Indique alguns detalhes sobre a utilização do seu produto.",
+      "placeholder": "Ex.: mangas até aos cotovelos, gola ligeiramente abaixo do pescoço, chapéu com aba de 3 cm…",
+      "tooltip": "Descreva como o seu produto é usado ou como assenta nas pessoas. Isto ajuda o Genius a posicionar corretamente o produto."
     },
     "desireAudience": {
-      "title": "Audiência Desejada",
-      "subtitle": "Detalhe ao máximo o público desejado a apresentar o seu produto",
-      "placeholder": "Ex.: Atletas de alta performance, aventureiros ao ar livre, profissionais ocupados, mulheres elegantes ...",
-      "tooltip": "Descreva quem é que deverá usar o seu produto. Isto ajuda o Genius a gerar cenários relevantes que correspondem ao seu público-alvo."
+      "title": "Público-alvo desejado",
+      "subtitle": "Descreva com a maior precisão possível o público-alvo a quem pretende apresentar o seu produto.",
+      "placeholder": "Ex.: atletas de alto rendimento, aventureiros ao ar livre, profissionais muito ocupados, mulheres elegantes…",
+      "tooltip": "Descreva quem deve usar o seu produto. Isto ajuda o Genius a gerar cenários relevantes para o seu público-alvo."
     },
     "scenarios": {
       "title": "Cenários UGC",
@@ -179,7 +179,7 @@
     "generationSettings": {
       "title": "Definições de Imagem",
       "subtitle": "Personalize as suas preferências de saída",
-      "tooltip": "Ajuste estas definições para controlar o estilo, a qualidade e o formato das imagens geradas.",
+      "tooltip": "Ajuste estas definições para controlar o estilo, qualidade e formato das imagens geradas.",
       "settings": "Definições"
     },
     "settings": {
@@ -197,8 +197,8 @@
       "low": "Baixa",
       "medium": "Média",
       "high": "Alta",
-      "png": "PNG (Sem perdas)",
-      "jpg": "JPG (Ficheiro menor)",
+      "png": "PNG (Sem perda)",
+      "jpg": "JPG (Ficheiro mais leve)",
       "image": "Imagem",
       "images": "Imagens",
       "openSettings": "Abrir definições de imagem"
@@ -209,18 +209,18 @@
     "credits_plural": "créditos",
     "numImages": {
       "title": "Número de Imagens",
-      "tooltip": "Escolha quantas variações pretende gerar. Mais imagens = mais opções, mas maior custo em créditos."
+      "tooltip": "Escolha quantas variantes gerar. Mais imagens = mais opções mas também mais créditos."
     },
     "imageQuality": {
       "title": "Qualidade da Imagem",
       "low": "Baixa",
       "medium": "Média",
       "high": "Alta",
-      "tooltip": "Imagens de maior qualidade têm melhor aspeto mas custam mais créditos. Baixa=1 crédito, Média=2 créditos, Alta=3 créditos por imagem."
+      "tooltip": "Qualidade superior oferece melhor resultado mas custa mais créditos. Baixa=1, Média=2, Alta=3 por imagem."
     },
     "orientation": {
       "title": "Orientação da Imagem",
-      "tooltip": "Escolha a proporção das imagens consoante onde planeia usá-las.",
+      "tooltip": "Escolha o rácio conforme o uso previsto.",
       "landscape": "Paisagem (3:2)",
       "landscapeDesc": "Formato horizontal",
       "square": "Quadrado (1:1)",
@@ -235,11 +235,11 @@
       "portraitDesc9/16": "Formato vertical 9:16",
       "landscapeDesc4/3": "Formato horizontal 4:3",
       "landscapeDesc16/9": "Formato horizontal 16:9",
-      "source": "Fonte",
-      "sourceDesc": "Manter proporção e dimensões originais da imagem (sem corte)"
+      "source": "Origem",
+      "sourceDesc": "Manter as proporções e dimensões originais da imagem (sem corte)"
     },
     "highlight": {
-      "title": "Destacar Produto",
+      "title": "Destacar o Produto",
       "yes": "Sim",
       "no": "Não"
     },
@@ -247,42 +247,42 @@
       "title": "Estilo",
       "lifestyle": "Lifestyle",
       "studio": "Estúdio",
-      "cinematic": "Cinemático",
+      "cinematic": "Cinematográfico",
       "natural": "Natural",
       "professional": "Profissional",
       "minimal": "Minimal",
       "vibrant": "Vibrante"
     },
     "lighting": {
-      "title": "Hora do Dia"
+      "title": "Momento do Dia"
     },
     "qualitySettings": {
       "title": "Qualidade",
-      "tooltip": "Maior qualidade usa mais créditos mas produz melhores resultados",
+      "tooltip": "Melhor qualidade consome mais créditos mas gera melhores resultados",
       "low": "Baixa",
       "medium": "Média",
       "high": "Alta",
       "lowCredits": "1 crédito",
-      "mediumCredits": "1,5 créditos",
+      "mediumCredits": "1,5 crédito",
       "highCredits": "2 créditos"
     },
     "freePlanLimited": "Plano gratuito limitado a 1 imagem por geração.",
-    "premiumScenariosAvailable": "2 cenários premium disponíveis com planos pagos.",
+    "premiumScenariosAvailable": "2 cenários premium disponíveis nos planos pagos.",
     "advancedSettings": {
       "title": "Definições Avançadas",
       "timeOfDay": {
-        "title": "Hora do Dia",
+        "title": "Momento do Dia",
         "natural": "Natural",
         "golden": "Hora Dourada",
         "night": "Luz Noturna",
         "soft": "Manhã Suave",
-        "tooltip": "Controla o ambiente de iluminação nas imagens geradas."
+        "tooltip": "Controla a ambiência luminosa das imagens geradas."
       },
       "highlight": {
         "title": "Foco no Produto",
         "yes": "Sim",
         "no": "Não",
-        "tooltip": "Escolha se o produto deve ser o foco principal ou integrar-se naturalmente na cena."
+        "tooltip": "Escolha entre colocar o produto em primeiro plano ou integrá-lo naturalmente na cena."
       },
       "style": {
         "title": "Estilo Visual",
@@ -290,14 +290,14 @@
         "professional": "Profissional",
         "casual": "Casual",
         "minimalist": "Minimalista",
-        "tooltip": "Define a estética e o ambiente gerais das imagens geradas."
+        "tooltip": "Define a estética e a ambiência gerais das imagens geradas."
       }
     },
     "generateButton": "Gerar Imagens",
     "generating": "A gerar as suas imagens UGC...",
     "results": {
       "title": "Imagens Geradas",
-      "downloadAll": "Transferir Todas",
+      "downloadAll": "Transferir Tudo",
       "downloadSelected": "Transferir Selecionadas",
       "generateMore": "Gerar Mais",
       "newCreation": "Nova Criação"
@@ -308,32 +308,32 @@
   },
   "account": {
     "title": "Conta",
-    "signOut": "Sair",
+    "signOut": "Terminar sessão",
     "member": "Membro",
     "sections": {
       "settings": "Definições",
       "settingsDescription": "Preferências da aplicação e notificações",
       "notifications": "Notificações",
-      "notificationsDescription": "Gira as suas preferências de notificação",
+      "notificationsDescription": "Gerir preferências de notificação",
       "privacy": "Privacidade",
       "privacyDescription": "Definições de dados e privacidade",
       "billing": "Faturação",
-      "billingDescription": "Gira a sua subscrição",
+      "billingDescription": "Gerir a sua subscrição",
       "helpSupport": "Ajuda e Suporte",
       "helpSupportDescription": "Obtenha ajuda e contacte o suporte"
     },
     "editProfile": {
       "title": "Editar Perfil",
-      "profileInfo": "Informações de Perfil",
-      "profileDescription": "Aqui encontra todas as suas informações"
+      "profileInfo": "Informações do Perfil",
+      "profileDescription": "Encontre aqui todas as suas informações"
     },
     "profile": {
-      "title": "Informações de Perfil",
-      "description": "Atualize os seus dados pessoais e preferências",
+      "title": "Informações do Perfil",
+      "description": "Atualize as suas informações pessoais e preferências",
       "firstName": "Nome",
       "lastName": "Apelido",
-      "displayName": "Nome de Exibição",
-      "displayNamePlaceholder": "Como devemos mostrar o seu nome?",
+      "displayName": "Nome de Apresentação",
+      "displayNamePlaceholder": "Como devemos apresentar o seu nome?",
       "email": "Email",
       "profession": "Profissão",
       "professionPlaceholder": "ex.: Programador de Software",
@@ -344,39 +344,39 @@
       "saveChanges": "Guardar Alterações",
       "cancel": "Cancelar"
     },
-    "displayName": "Nome de Exibição",
-    "displayNameDesc": "Como quer ser tratado",
+    "displayName": "Nome de Apresentação",
+    "displayNameDesc": "Como pretende ser chamado",
     "settings": {
       "title": "Definições",
-      "desc": "Gira as preferências da sua conta",
-      "generationDefaults": "Padrões de Geração",
+      "desc": "Gerir as preferências da sua conta",
+      "generationDefaults": "Predefinições de Geração",
       "generationDefaultsDesc": "Defina as suas preferências de geração de imagens",
       "autoSaveImages": "Guardar Imagens Automaticamente",
-      "autoSaveImagesDesc": "Guardar imagens automaticamente quando terminarem",
-      "interfacePreferences": "Preferências da Interface",
-      "interfacePreferencesDesc": "Personalize a experiência na aplicação",
+      "autoSaveImagesDesc": "Guardar automaticamente as imagens quando estiverem prontas",
+      "interfacePreferences": "Preferências de Interface",
+      "interfacePreferencesDesc": "Personalize a sua experiência",
       "theme": "Tema",
       "light": "Claro",
       "dark": "Escuro",
       "system": "Sistema",
       "language": "Idioma",
-      "languageDesc": "Defina a sua preferência de idioma",
-      "autoSave": "Guardar Automaticamente",
-      "autoSaveDesc": "Guardar definições automaticamente",
+      "languageDesc": "Defina o seu idioma preferido",
+      "autoSave": "Guardar automaticamente",
+      "autoSaveDesc": "Guardar automaticamente as definições",
       "saveChanges": "Guardar Alterações",
       "saving": "A guardar..."
     },
     "notifications": {
       "title": "Notificações",
-      "desc": "Gira as suas preferências de notificação",
+      "desc": "Gerir preferências de notificação",
       "emailNotifications": "Notificações por Email",
-      "emailNotificationsDesc": "Escolha os emails que quer receber",
+      "emailNotificationsDesc": "Escolha os emails que pretende receber",
       "generationComplete": "Geração Concluída",
-      "generationCompleteDesc": "Quando a geração da imagem terminar",
+      "generationCompleteDesc": "Quando a geração da sua imagem estiver concluída",
       "monthlySummary": "Resumo Mensal",
       "monthlySummaryDesc": "Relatório mensal da sua atividade e créditos",
       "newFeatures": "Novas Funcionalidades",
-      "newFeaturesDesc": "Atualizações sobre novidades e melhorias",
+      "newFeaturesDesc": "Atualizações de novidades e melhorias",
       "marketing": "Marketing e Promoções",
       "marketingDesc": "Ofertas especiais e conteúdo promocional",
       "accountUpdates": "Atualizações da Conta",
@@ -390,31 +390,31 @@
       "title": "Privacidade e Segurança",
       "desc": "Controle a sua privacidade e dados",
       "privacySettings": "Definições de Privacidade",
-      "privacySettingsDesc": "Controle como os seus dados são usados e partilhados",
+      "privacySettingsDesc": "Controle a utilização e partilha dos seus dados",
       "showGenerationHistory": "Mostrar Histórico de Gerações",
-      "showGenerationHistoryDesc": "Permitir que outros vejam as suas gerações públicas",
-      "analyticsData": "Dados de Análise",
-      "analyticsDataDesc": "Ajude a melhorar o serviço com análises de uso",
+      "showGenerationHistoryDesc": "Permitir que outros vejam as suas criações públicas",
+      "analyticsData": "Dados Analíticos",
+      "analyticsDataDesc": "Ajude-nos a melhorar através da análise de utilização",
       "contentVisibility": "Visibilidade do Conteúdo",
-      "contentVisibilityDesc": "Controle quem pode ver o conteúdo gerado",
+      "contentVisibilityDesc": "Controle quem pode ver o seu conteúdo gerado",
       "publicGallery": "Galeria Pública",
       "publicGalleryDesc": "Mostrar as suas imagens na galeria pública",
       "dataManagement": "Gestão de Dados",
-      "dataManagementDesc": "Gira os seus dados pessoais e a conta",
+      "dataManagementDesc": "Gerir os seus dados pessoais e a sua conta",
       "deleteAccount": "Eliminar Conta",
       "deleteAccountDesc": "Eliminar permanentemente a sua conta e todos os dados",
       "delete": "Eliminar",
       "security": "Segurança",
-      "securityDesc": "Gira as definições de segurança da sua conta",
+      "securityDesc": "Gerir as definições de segurança da sua conta",
       "loginNotifications": "Notificações de Início de Sessão",
-      "loginNotificationsDesc": "Receba um alerta quando alguém entrar na sua conta",
+      "loginNotificationsDesc": "Receber alerta quando ocorrer um início de sessão",
       "changePassword": "Alterar Palavra-passe"
     },
     "billing": {
       "title": "Faturação e Utilização",
-      "desc": "Gira a sua subscrição e detalhes de pagamento",
+      "desc": "Gerir a sua subscrição e pagamentos",
       "currentPlan": "Plano Atual",
-      "currentPlanDesc": "Gira a sua subscrição e faturação",
+      "currentPlanDesc": "Gerir a sua subscrição e detalhes de faturação",
       "plan": "Plano",
       "active": "Ativo",
       "free": "Gratuito",
@@ -422,20 +422,20 @@
       "monthlyCredits": "Créditos mensais",
       "credits": "créditos",
       "manageSubscription": "Gerir Subscrição",
-      "upgradePlan": "Atualizar Plano",
+      "upgradePlan": "Fazer Upgrade do Plano",
       "creditUsage": "Utilização de Créditos",
-      "creditUsageDesc": "Acompanhe os créditos mensais de geração",
+      "creditUsageDesc": "Acompanhe os seus créditos mensais de geração",
       "creditsUsed": "Créditos usados este mês",
       "remaining": "Restantes",
       "daysLeft": "Dias restantes",
-      "upgradeForMore": "Fazer upgrade para mais créditos",
+      "upgradeForMore": "Faça upgrade para mais créditos",
       "subscriptionManagement": "Gestão da Subscrição",
-      "subscriptionManagementDesc": "Gira a sua subscrição e faturação",
+      "subscriptionManagementDesc": "Gerir a sua subscrição e faturação",
       "subscriptionDetails": "Detalhes da Subscrição",
       "status": "Estado",
       "renewal": "Renovação",
-      "openStripePortal": "Abrir Portal do Cliente Stripe",
-      "stripePortalDesc": "Gira a subscrição, atualize pagamentos e veja o histórico de faturação no portal seguro da Stripe.",
+      "openStripePortal": "Abrir Portal de Cliente Stripe",
+      "stripePortalDesc": "Gira a sua subscrição, atualize os pagamentos e veja o histórico no portal seguro da Stripe.",
       "planDetails": "Detalhes do Plano",
       "billingHistory": "Histórico de Faturação",
       "paymentMethod": "Método de Pagamento",
@@ -447,8 +447,8 @@
       "title": "Ajuda e Suporte",
       "desc": "Obtenha ajuda ou contacte-nos",
       "quickHelp": "Ajuda Rápida",
-      "quickHelpDesc": "Encontre respostas para perguntas comuns",
-      "gettingStarted": "Guia de Introdução",
+      "quickHelpDesc": "Encontre respostas para questões comuns",
+      "gettingStarted": "Guia de Início",
       "faq": "FAQ",
       "contactSupport": "Contactar Suporte",
       "contactSupportDesc": "Envie-nos uma mensagem e ajudamos",
@@ -459,7 +459,7 @@
       "technical": "Problema Técnico",
       "billing": "Questão de Faturação",
       "feature": "Pedido de Funcionalidade",
-      "account": "Ajuda com a Conta",
+      "account": "Ajuda de Conta",
       "general": "Geral",
       "message": "Mensagem",
       "messagePlaceholder": "Descreva o seu problema em detalhe...",
@@ -470,7 +470,7 @@
       "emailSupport": "Suporte por Email",
       "businessHours": "Horário",
       "responseTime": "Tempo de Resposta",
-      "businessHoursValue": "09:00 - 18:00 ECT",
+      "businessHoursValue": "09:00 - 18:00",
       "responseTimeValue": "Dentro de 24 horas"
     },
     "toasts": {
@@ -484,7 +484,7 @@
       },
       "dataExportRequested": {
         "title": "Exportação de dados solicitada",
-        "description": "A exportação será enviada para o seu email em até 24 horas."
+        "description": "A sua exportação será enviada por email dentro de 24 horas."
       },
       "accountDeletionRequested": {
         "title": "Eliminação de conta solicitada",
@@ -493,7 +493,7 @@
       "error": {
         "title": "Erro",
         "description": "Falha ao atualizar o perfil. Tente novamente.",
-        "settingsDescription": "Falha ao guardar preferências. Tente novamente."
+        "settingsDescription": "Falha ao guardar as preferências. Tente novamente."
       },
       "warning": {
         "title": "Aviso",
@@ -507,107 +507,107 @@
     "description": "Selecione uma imagem e forneça instruções para gerar um vídeo animado de 5s ou 10s.",
     "infoBox": {
       "title": "Como Funciona",
-      "description": "Este módulo anima imagens existentes com movimento, motion e efeitos de câmera, de forma a dar um contexto real à imagem."
+      "description": "Este módulo anima imagens existentes com movimentos e efeitos de câmara para dar contexto real à imagem."
     },
     "sourceImage": {
       "label": "Imagem de Origem",
       "fromLibrary": "Da Biblioteca",
       "importFromUrl": "Importar de URL",
-      "dragDrop": "Arrastar e Soltar",
-      "changeImage": "Alterar Imagem",
-      "ugcPreselected": "Imagem UGC pré-selecionada. Você pode alterá-la usando as opções acima.",
+      "dragDrop": "Arrastar e Largar",
+      "changeImage": "Mudar Imagem",
+      "ugcPreselected": "Imagem UGC pré-selecionada. Pode alterá-la nas opções acima.",
       "preselectedFromUGC": "Pré-selecionada do Gerador UGC"
     },
     "instructions": {
       "label": "Instruções de Movimento",
-      "placeholder": "Descreva o movimento / comportamento desejado (ex: 'pessoa caminhando para frente e sorrindo', 'câmera aproximando lentamente')",
+      "placeholder": "Descreva o movimento / comportamento desejado (ex.: 'pessoa a caminhar em frente e a sorrir', 'câmara a fazer zoom lento')",
       "aiSuggestion": {
         "title": "Instruções de Movimento Sugeridas por IA",
-        "analyzing": "Analisando imagem e gerando sugestão de movimento...",
+        "analyzing": "A analisar a imagem e a gerar sugestão de movimento...",
         "usePrompt": "Usar Este Prompt",
-        "dismiss": "Dispensar",
+        "dismiss": "Ignorar",
         "applied": "Instruções Aplicadas",
-        "appliedDescription": "Você pode editá-las antes de gerar."
+        "appliedDescription": "Pode editá-las antes de gerar."
       }
     },
     "settings": {
-      "label": "Configurações",
+      "label": "Definições",
       "duration": "Duração",
-      "cameraMovement": "Movimento da Câmera",
+      "cameraMovement": "Movimento de Câmara",
       "motionIntensity": "Intensidade do Movimento",
       "animationStyle": "Estilo de Animação"
     },
     "cameraMovements": {
       "none": "Nenhum (Estático)",
-      "zoomIn": "Aproximar",
-      "zoomOut": "Afastar",
-      "panLeft": "Panorâmica Esquerda",
-      "panRight": "Panorâmica Direita",
-      "panUp": "Panorâmica Cima",
-      "panDown": "Panorâmica Baixo"
+      "zoomIn": "Zoom In",
+      "zoomOut": "Zoom Out",
+      "panLeft": "Pan esquerda",
+      "panRight": "Pan direita",
+      "panUp": "Pan cima",
+      "panDown": "Pan baixo"
     },
     "motionIntensities": {
-      "subtle": "Sutil",
+      "subtle": "Subtil",
       "moderate": "Moderado",
       "dynamic": "Dinâmico"
     },
     "animationStyles": {
       "natural": "Natural",
-      "cinematic": "Cinematográfico",
-      "smooth": "Suave"
+      "cinematic": "Cinemático",
+      "smooth": "Fluido"
     },
     "duration5": "5 segundos (5 créditos)",
     "duration10": "10 segundos (10 créditos)",
     "generateVideo": "Gerar Vídeo",
-    "creatingJob": "Criando Trabalho…",
+    "creatingJob": "A criar tarefa…",
     "status": {
-      "label": "Status",
-      "queued": "Seu vídeo está na fila…",
-      "processing": "Gerando seu vídeo…",
+      "label": "Estado",
+      "queued": "O seu vídeo está em fila de espera…",
+      "processing": "A gerar o seu vídeo…",
       "completed": "Vídeo gerado com sucesso.",
-      "failed": "Falha na geração do vídeo.",
-      "canceled": "Geração do vídeo foi cancelada."
+      "failed": "A geração do vídeo falhou.",
+      "canceled": "A geração do vídeo foi cancelada."
     },
     "actions": {
       "newVideo": "Novo Vídeo",
       "cancel": "Cancelar",
-      "openNewTab": "Abrir em Nova Aba",
-      "download": "Baixar",
-      "refresh": "Atualizar dados do trabalho",
+      "openNewTab": "Abrir num Novo Separador",
+      "download": "Transferir",
+      "refresh": "Atualizar dados da tarefa",
       "copyDebug": "Copiar informações de depuração"
     },
     "errors": {
-      "selectImageAndPrompt": "Por favor, selecione uma imagem e insira instruções.",
-      "videoLoadFailed": "Falha ao carregar o vídeo. Verifique o console para detalhes."
+      "selectImageAndPrompt": "Selecione uma imagem e introduza instruções.",
+      "videoLoadFailed": "Falha ao carregar o vídeo. Verifique a consola para mais detalhes."
     }
   },
   "help": {
     "gettingStarted": {
-      "title": "Guia de Introdução",
+      "title": "Guia de Início",
       "welcome": {
         "title": "Bem-vindo ao Genius UGC! 🚀",
-        "description": "Comece em minutos com o nosso guia passo a passo. Crie conteúdo UGC incrível com o poder da IA."
+        "description": "Arranque em poucos minutos com o nosso guia passo a passo. Crie UGC incrível com o poder da IA."
       },
       "steps": {
         "title": "Passos de Configuração Rápida",
         "createAccount": {
-          "title": "Crie a sua Conta",
-          "description": "Registe-se e verifique o email para começar a usar o Genius UGC",
-          "action": "Ir ao Perfil"
+          "title": "Crie a Sua Conta",
+          "description": "Registe-se e verifique o email para começar com o Genius UGC",
+          "action": "Ir para o Perfil"
         },
         "exploreCreate": {
           "title": "Explore a Secção Criar",
-          "description": "Aprenda a gerar conteúdo UGC usando as nossas ferramentas com IA",
+          "description": "Aprenda a gerar conteúdo UGC com as nossas ferramentas com IA",
           "action": "Começar a Criar"
         },
         "manageLibrary": {
           "title": "Gira a sua Biblioteca",
-          "description": "Organize e aceda a todo o conteúdo gerado num só lugar",
+          "description": "Organize e aceda a todo o seu conteúdo gerado num só lugar",
           "action": "Ver Biblioteca"
         },
         "customizeSettings": {
           "title": "Personalize as Definições",
-          "description": "Personalize a experiência e as preferências de notificação",
+          "description": "Personalize a sua experiência e as preferências de notificação",
           "action": "Abrir Definições"
         },
         "completed": "Concluído"
@@ -627,7 +627,7 @@
     "faq": {
       "title": "Perguntas Frequentes",
       "subtitle": "Como podemos ajudar?",
-      "description": "Pesquise a nossa base de conhecimento ou navegue pelas categorias abaixo",
+      "description": "Pesquise na nossa base de conhecimento ou percorra as categorias abaixo",
       "searchPlaceholder": "Pesquisar perguntas...",
       "categories": {
         "accountSetup": {
@@ -635,12 +635,12 @@
           "badge": "Popular",
           "questions": {
             "changeEmail": {
-              "q": "Posso alterar o meu endereço de email?",
-              "a": "Sim. Pode atualizar o seu email nas definições da conta: Conta > Definições > Informações de Perfil."
+              "q": "Posso mudar o meu endereço de email?",
+              "a": "Sim. Pode atualizá-lo nas definições da conta: Conta > Definições > Informações do Perfil."
             },
             "resetPassword": {
               "q": "Como redefinir a minha palavra-passe?",
-              "a": "Clique em 'Esqueci-me da Palavra-passe' na página de login, introduza o seu email e enviaremos um link para redefinição."
+              "a": "Clique em «Esqueci-me da palavra-passe» na página de login, introduza o seu email e enviaremos um link de redefinição."
             }
           }
         },
@@ -650,19 +650,19 @@
           "questions": {
             "contentTypes": {
               "q": "Que tipos de conteúdo posso criar?",
-              "a": "O Genius UGC suporta vários tipos de conteúdo gerado pelo utilizador, incluindo publicações para redes sociais, demonstrações de ambiente de produto, posicionamentos de produto e materiais de marketing com ferramentas de IA."
+              "a": "O Genius UGC permite criar vários conteúdos gerados por utilizadores: publicações sociais, enquadramentos de produto, posicionamentos e suportes de marketing com ferramentas de IA."
             },
             "aiGeneration": {
               "q": "Como funciona a geração por IA?",
-              "a": "A nossa IA analisa as suas instruções e preferências para gerar conteúdo relevante e de alta qualidade. Pode personalizar iluminação, estilo e formato conforme necessário."
+              "a": "A nossa IA analisa as suas indicações e preferências para gerar conteúdo relevante e de alta qualidade. Pode personalizar luz, estilo e formato."
             },
             "editContent": {
               "q": "Posso editar o conteúdo gerado?",
-              "a": "De momento não. Estamos a desenvolver o ProduktPix com o objetivo de se tornar o principal agente de marketing móvel para ajudar a vender produtos de forma rápida e eficiente."
+              "a": "De momento, não. Estamos a desenvolver o ProduktPix para se tornar o agente de marketing móvel n.º 1 para ajudar a vender de forma rápida e eficaz."
             },
             "fileFormats": {
               "q": "Que formatos de ficheiro são suportados?",
-              "a": "Suportamos formatos populares como JPG, PNG para imagens e vários formatos de texto para conteúdo escrito."
+              "a": "Suportamos formatos populares, incluindo JPG e PNG para imagens, e vários formatos de texto para conteúdo escrito."
             }
           }
         },
@@ -672,19 +672,19 @@
           "questions": {
             "paymentMethods": {
               "q": "Que métodos de pagamento aceitam?",
-              "a": "Aceitamos os principais cartões de crédito: Visa, MasterCard e American Express."
+              "a": "Aceitamos os principais cartões: Visa, MasterCard e American Express."
             },
             "cancelSubscription": {
-              "q": "Posso cancelar a subscrição a qualquer momento?",
-              "a": "Sim. Pode cancelar a qualquer momento nas definições de faturação. O acesso continua até ao fim do período atual."
+              "q": "Posso cancelar a minha subscrição a qualquer momento?",
+              "a": "Sim. Pode cancelar a qualquer momento nas definições de faturação. O acesso continua até ao fim do período em curso."
             },
             "refunds": {
               "q": "Oferecem reembolsos?",
-              "a": "Oferecemos garantia de devolução de 14 dias para novos subscritores. Contacte o suporte se não estiver satisfeito."
+              "a": "Oferecemos garantia de reembolso de 14 dias para novos subscritores. Contacte o suporte se não estiver satisfeito."
             },
             "usageLimit": {
-              "q": "O que acontece quando atinjo o limite de uso?",
-              "a": "Quando atingir o limite do seu plano, pode fazer upgrade para um plano superior ou aguardar o próximo ciclo de faturação."
+              "q": "O que acontece quando atinjo o limite de utilização?",
+              "a": "Pode passar para um plano superior ou aguardar o próximo ciclo de faturação."
             }
           }
         },
@@ -693,142 +693,201 @@
           "questions": {
             "generationTime": {
               "q": "Quanto tempo demora a geração?",
-              "a": "Depende da complexidade e da carga do servidor. A maioria conclui em 30–60 segundos. Se demorar mais, tente atualizar a página."
+              "a": "Depende da complexidade e da carga do servidor. A maioria termina em 30–60 segundos. Se demorar mais, tente atualizar a página."
             },
             "contentMismatch": {
-              "q": "O conteúdo gerado não corresponde ao pedido",
-              "a": "Seja mais específico nos detalhes e público. Inclua usabilidade, tamanho, nicho e requisitos para melhores resultados."
+              "q": "O conteúdo gerado não corresponde ao meu pedido",
+              "a": "Seja mais específico nos detalhes e no público. Inclua uso, tamanho, nicho e requisitos."
             },
             "mobileSupport": {
-              "q": "Posso usar a plataforma no telemóvel?",
-              "a": "Sim. O Genius UGC é totalmente responsivo e funciona em telemóvel, tablet e desktop."
+              "q": "Posso usar a plataforma no mobile?",
+              "a": "Sim. O Genius UGC é totalmente responsivo e funciona em telemóvel, tablet e computador."
             },
             "reportBug": {
-              "q": "Como reportar um erro?",
-              "a": "Use o formulário de suporte ou envie um email. Inclua detalhes do que estava a fazer quando o problema ocorreu."
+              "q": "Como reporto um bug?",
+              "a": "Use o nosso formulário de contacto ou envie-nos um email. Descreva o que estava a fazer quando o problema ocorreu."
             }
           }
         }
       },
       "noResults": {
-        "title": "Nenhum resultado encontrado",
-        "description": "Ajuste os termos de pesquisa ou navegue por todas as categorias",
+        "title": "Sem resultados",
+        "description": "Ajuste os termos de pesquisa ou percorra todas as categorias",
         "clearSearch": "Limpar pesquisa"
       },
       "stillNeedHelp": {
         "title": "Ainda precisa de ajuda?",
-        "description": "Não encontrou o que procura? A nossa equipa de suporte pode ajudar.",
+        "description": "Não encontra o que procura? A nossa equipa de suporte está aqui para ajudar.",
         "contactSupport": "Contactar Suporte",
-        "gettingStarted": "Guia de Introdução"
+        "gettingStarted": "Guia de Início"
       }
     }
   },
   "index": {
     "auth": {
       "title": "Crie imagens de produto que vendem",
-      "subtitle": "Transforme os seus produtos em imagens impressionantes e focadas na conversão com IA",
+      "subtitle": "Transforme os seus produtos em visuais de impacto, orientados para conversão, com IA",
       "startCreating": "Começar a Criar",
       "welcome": "Bem-vindo de volta",
-      "welcomeDesc": "Pronto para criar conteúdo incrível?",
+      "welcomeDesc": "Preparado para criar conteúdo incrível?",
       "quickActions": "Ações Rápidas",
       "recentActivity": "Atividade Recente",
       "noRecentActivity": "Sem atividade recente",
       "viewLibrary": "Ver Biblioteca",
       "createContent": "Criar Conteúdo",
       "accountSettings": "Definições da Conta"
+    }
+  },
+  "outfitSwap": {
+    "title": "Troca de Outfit",
+    "subtitle": "Trate até 10 peças de roupa de uma vez",
+    "steps": {
+      "step1Title": "Passo 1: Selecionar Modelo Base",
+      "step2Title": "Passo 2: Carregar as Peças de Roupa",
+      "continueToUpload": "Continuar para Carregamento de Roupa",
+      "changeModel": "Mudar Modelo",
+      "back": "Voltar"
     },
-    "outfitSwap": {
-      "title": "Troca de Roupa",
-      "subtitle": "Processe até 10 peças de uma vez",
-      "steps": {
-        "step1Title": "Passo 1: Selecionar Modelo Base",
-        "step2Title": "Passo 2: Enviar Peças",
-        "continueToUpload": "Continuar para Enviar Peças",
-        "changeModel": "Mudar Modelo",
-        "back": "Voltar"
+    "errors": {
+      "accessDenied": "Acesso Negado",
+      "adminRequired": "É necessário acesso de administrador para o módulo de Troca de Outfit",
+      "missingData": "Dados em falta",
+      "selectModelAndGarments": "Selecione um modelo e carregue peças de roupa",
+      "failedToStart": "Falha ao iniciar o lote"
+    },
+    "review": {
+      "title": "Revisão e Definições",
+      "selectedModel": "Modelo Selecionado:",
+      "garments": "Peças de Roupa:",
+      "garmentsCount": "{{count}} peças",
+      "cost": "Custo:",
+      "credits": "créditos",
+      "saveCredits": "Poupe {{savings}} créditos!"
+    },
+    "actions": {
+      "startBatch": "Iniciar Lote ({{cost}} créditos)",
+      "uploading": "A carregar...",
+      "starting": "A iniciar...",
+      "cancelBatch": "Cancelar Lote",
+      "refresh": "Atualizar",
+      "downloadAll": "Transferir Tudo",
+      "startNewBatch": "Iniciar Novo Lote"
+    },
+    "batch": {
+      "title": "Processamento em Lote",
+      "completedOf": "{{completed}} de {{total}} concluídos",
+      "failed": "{{count}} falhas",
+      "adminUnlimited": "Admin: Créditos Ilimitados",
+      "creditsUsed": "{{count}} créditos usados",
+      "overallProgress": "Progresso Global",
+      "individualSwaps": "Trocas Individuais",
+      "swap": "Troca {{index}}"
+    },
+    "status": {
+      "processing": "em processamento",
+      "completed": "concluído",
+      "failed": "falhou",
+      "queued": "em fila de espera"
+    },
+    "buttons": {
+      "preview": "Pré-visualizar",
+      "open": "Abrir",
+      "animate": "Animar",
+      "ecommerce": "E-commerce",
+      "photoshoot": "Sessão Fotográfica",
+      "download": "Transferir"
+    },
+    "warnings": {
+      "stuckJob": "⚠️ Esta tarefa parece bloqueada. Tente clicar em Atualizar."
+    },
+    "errorMessages": {
+      "rateLimit": "Limite de taxa da API Google Gemini atingido. Aguarde alguns minutos e tente novamente.",
+      "authError": "Problema de configuração do sistema com a API Google Gemini. Contacte o suporte.",
+      "serverError": "A API Google Gemini está temporariamente indisponível. Tente novamente mais tarde."
+    },
+    "toasts": {
+      "resultReady": "Resultado pronto",
+      "resultReadyDesc": "Novo resultado de troca de outfit disponível",
+      "resultsRefreshed": "Resultados atualizados",
+      "resultsRefreshedDesc": "{{count}} resultados carregados",
+      "adminAccessRequired": "Acesso de administrador necessário",
+      "onlyAdminsPhotoshoots": "Apenas administradores podem criar sessões fotográficas",
+      "ecommerceStarted": "Foto e-commerce iniciada",
+      "ecommerceStartedDesc": "A criar uma foto de produto profissional...",
+      "ecommerceFailed": "Falha ao iniciar a foto e-commerce"
+    },
+    "baseModelSelector": {
+      "filters": {
+        "gender": "Género",
+        "ageRange": "Faixa Etária",
+        "bodyType": "Tipo de Corpo",
+        "pose": "Posição",
+        "skinTone": "Tom de Pele",
+        "all": "Todos"
       },
-      "errors": {
-        "accessDenied": "Acesso Negado",
-        "adminRequired": "Acesso de administrador necessário para o módulo de Troca de Roupa",
-        "missingData": "Dados ausentes",
-        "selectModelAndGarments": "Por favor, selecione um modelo e envie peças",
-        "failedToStart": "Falha ao iniciar lote"
+      "genderOptions": {
+        "male": "Masculino",
+        "female": "Feminino",
+        "unisex": "Unissexo"
       },
-      "review": {
-        "title": "Revisão e Configurações",
-        "selectedModel": "Modelo Selecionado:",
-        "garments": "Peças:",
-        "garmentsCount": "{{count}} peças",
-        "cost": "Custo:",
-        "credits": "créditos",
-        "saveCredits": "Economize {{savings}} créditos!"
+      "ageRanges": {
+        "0-12months": "0–12 meses",
+        "1-3years": "1–3 anos",
+        "4-7years": "4–7 anos",
+        "8-12years": "8–12 anos",
+        "13-17years": "13–17 anos",
+        "18-22years": "18–22 anos",
+        "23-35years": "23–35 anos",
+        "36-50years": "36–50 anos",
+        "51-65years": "51–65 anos",
+        "65plus": "65+ anos"
       },
-      "actions": {
-        "startBatch": "Iniciar Lote ({{cost}} créditos)",
-        "uploading": "Enviando...",
-        "starting": "Iniciando...",
-        "cancelBatch": "Cancelar Lote",
-        "refresh": "Atualizar",
-        "downloadAll": "Baixar Tudo",
-        "startNewBatch": "Iniciar Novo Lote"
+      "bodyTypes": {
+        "slim": "Magro",
+        "athletic": "Atlético",
+        "average": "Médio",
+        "plus": "Tamanho Grande"
       },
-      "batch": {
-        "title": "Processamento em Lote",
-        "completedOf": "{{completed}} de {{total}} concluídos",
-        "failed": "{{count}} falharam",
-        "adminUnlimited": "Admin: Créditos Ilimitados",
-        "creditsUsed": "{{count}} créditos usados",
-        "overallProgress": "Progresso Geral",
-        "individualSwaps": "Trocas Individuais",
-        "swap": "Troca {{index}}"
+      "poses": {
+        "front": "Frente",
+        "side": "Perfil",
+        "back": "Costas",
+        "angled": "Ângulo"
       },
-      "status": {
-        "processing": "processando",
-        "completed": "concluído",
-        "failed": "falhou",
-        "queued": "na fila"
+      "skinTones": {
+        "light": "Claro",
+        "medium": "Médio",
+        "tan": "Bronzeado",
+        "dark": "Escuro"
       },
-      "buttons": {
-        "preview": "Visualizar",
-        "open": "Abrir",
-        "animate": "Animar",
-        "ecommerce": "E-commerce",
-        "photoshoot": "Ensaio",
-        "download": "Baixar"
+      "search": "Pesquisar modelos por nome...",
+      "upload": {
+        "title": "Carregar o Seu Modelo",
+        "titleUploading": "A carregar...",
+        "premiumFeature": "Funcionalidade premium",
+        "uploadOwn": "Carregar o Seu",
+        "createWithAI": "Criar com IA"
       },
-      "warnings": {
-        "stuckJob": "⚠️ Este trabalho pode estar travado. Tente clicar em Atualizar."
+      "badges": {
+        "yourModel": "O Seu Modelo",
+        "system": "Sistema"
       },
-      "errorMessages": {
-        "rateLimit": "Limite de taxa da API Google Gemini atingido. Aguarde alguns minutos e tente novamente.",
-        "authError": "Problema de configuração do sistema com a API Google Gemini. Entre em contato com o suporte.",
-        "serverError": "A API Google Gemini está temporariamente indisponível. Tente novamente mais tarde."
-      },
-      "toasts": {
-        "resultReady": "Resultado pronto",
-        "resultReadyDesc": "Um novo resultado de troca de roupa está disponível",
-        "resultsRefreshed": "Resultados atualizados",
-        "resultsRefreshedDesc": "{{count}} resultados carregados",
-        "adminAccessRequired": "Acesso de administrador necessário",
-        "onlyAdminsPhotoshoots": "Apenas administradores podem criar ensaios",
-        "ecommerceStarted": "Foto de e-commerce iniciada",
-        "ecommerceStartedDesc": "Criando foto profissional do produto...",
-        "ecommerceFailed": "Falha ao iniciar foto de e-commerce"
-      },
-      "garmentUploader": {
-        "title": "Enviar Imagens de Peças",
-        "dragDrop": "Arraste e solte ou clique para selecionar",
-        "selected": "{{count}} de {{max}} peças selecionadas",
-        "discount": "10% de desconto aplicado! Você está processando {{count}} peças de uma vez."
-      },
-      "settings": {
-        "title": "Configurações",
-        "outputFormat": "Formato de Saída",
-        "formats": {
-          "jpg": "JPG (Tamanho de arquivo menor)",
-          "png": "PNG (Qualidade superior)",
-          "both": "Ambos os formatos"
-        }
+      "loading": "A carregar modelos...",
+      "noModels": "Nenhum modelo encontrado"
+    },
+    "garmentUploader": {
+      "title": "Carregar Imagens de Roupa",
+      "dragDrop": "Arraste e largue ou clique para selecionar",
+      "selected": "{{count}} de {{max}} peças selecionadas",
+      "discount": "Desconto de 10% aplicado! Está a processar {{count}} peças de uma vez."
+    },
+    "settings": {
+      "title": "Definições",
+      "outputFormat": "Formato de Saída",
+      "formats": {
+        "jpg": "JPG (Ficheiro mais leve)",
+        "png": "PNG (Qualidade superior)",
+        "both": "Ambos os formatos"
       }
     }
   }

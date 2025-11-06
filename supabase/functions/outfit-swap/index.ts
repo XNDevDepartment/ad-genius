@@ -5,13 +5,10 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
 };
-
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_API_KEY")!;
-
-const serviceClient = () => createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
+const serviceClient = ()=>createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 // Fallback prompts (used if database is unavailable)
 const FALLBACK_GARMENT_ANALYSIS_PROMPT = `Analyze this garment image in detail. Describe:
 1. Type of clothing (e.g., t-shirt, dress, pants, jacket, full outfit)
@@ -22,7 +19,6 @@ const FALLBACK_GARMENT_ANALYSIS_PROMPT = `Analyze this garment image in detail. 
 6. What body parts it covers (e.g., torso only, full legs, arms, etc.)
 
 Be specific and concise. This description will be used for AI outfit swapping.`;
-
 const FALLBACK_OUTFIT_SWAP_PROMPT = `You are an expert e-commerce outfit swap AI. Your task is to replace the person's current outfit with a NEW garment while maintaining photographic realism.
 
 GARMENT TO SWAP IN:
@@ -65,46 +61,29 @@ VALIDATION: Before generating, confirm that:
 ✓ The composition is professional and centered
 
 Generate a high-quality outfit swap that clearly shows the NEW garment on the person. ###NO SEXUALISE CONTENT`;
-
 // Helper: Get prompt from database with fallback
-async function getPrompt(
-  promptKey: string,
-  variables: Record<string, string> = {},
-  fallback: string
-): Promise<string> {
+async function getPrompt(promptKey, variables = {}, fallback) {
   try {
     const supabase = serviceClient();
-    const { data, error } = await supabase
-      .from('ai_prompts')
-      .select('prompt_template')
-      .eq('prompt_key', promptKey)
-      .eq('is_active', true)
-      .single();
-    
+    const { data, error } = await supabase.from('ai_prompts').select('prompt_template').eq('prompt_key', promptKey).eq('is_active', true).single();
     if (error) throw error;
-    
     let prompt = data.prompt_template;
-    
     // Replace variables
-    for (const [key, value] of Object.entries(variables)) {
+    for (const [key, value] of Object.entries(variables)){
       prompt = prompt.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
     }
-    
     console.log(`[getPrompt] Successfully loaded prompt: ${promptKey}`);
     return prompt;
   } catch (error) {
     console.warn(`[getPrompt] Failed to load prompt ${promptKey}, using fallback:`, error);
-    
     // Apply variables to fallback
     let prompt = fallback;
-    for (const [key, value] of Object.entries(variables)) {
+    for (const [key, value] of Object.entries(variables)){
       prompt = prompt.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
     }
-    
     return prompt;
   }
 }
-
 // Helper: Convert ArrayBuffer to base64 in chunks to avoid stack overflow
 function bufferToBase64(uint8Array) {
   let binary = '';
@@ -141,7 +120,6 @@ serve(async (req)=>{
     if (action === "processEcommercePhoto") {
       return await processEcommercePhoto(params.photoId);
     }
-
     // All other actions require authentication
     const authHeader = req.headers.get("authorization");
     if (!authHeader) {
@@ -203,12 +181,12 @@ serve(async (req)=>{
     }, 500);
   }
 });
-async function createOutfitSwapJob(userId, params) {
+async function createOutfitSwapJob(userId1, params) {
   const { sourcePersonId, sourceGarmentId, settings } = params;
   const supabase = serviceClient();
   // Create job
   const { data: job, error: jobError } = await supabase.from("outfit_swap_jobs").insert({
-    user_id: userId,
+    user_id: userId1,
     source_person_id: sourcePersonId,
     source_garment_id: sourceGarmentId,
     settings: settings || {},
@@ -242,6 +220,7 @@ async function analyzeGarment(garmentUrl) {
   console.log("[analyzeGarment] Analyzing garment image...");
   try {
     // Fetch the garment image
+    const controller = new AbortController();
     const garmentResponse = await fetch(garmentUrl);
     if (!garmentResponse.ok) {
       throw new Error(`Failed to fetch garment image: ${garmentResponse.status}`);
@@ -249,14 +228,8 @@ async function analyzeGarment(garmentUrl) {
     const mimeType = garmentResponse.headers.get('content-type') ?? 'image/jpeg';
     const imageBuffer = await garmentResponse.arrayBuffer();
     const base64Image = bufferToBase64(new Uint8Array(imageBuffer));
-
     // Get analysis prompt from database
-    const analysisPrompt = await getPrompt(
-      'outfit_swap_garment_analysis',
-      {},
-      FALLBACK_GARMENT_ANALYSIS_PROMPT
-    );
-
+    const analysisPrompt = await getPrompt('outfit_swap_garment_analysis', {}, FALLBACK_GARMENT_ANALYSIS_PROMPT);
     // Call Gemini API for analysis
     const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
       method: "POST",
@@ -268,17 +241,25 @@ async function analyzeGarment(garmentUrl) {
         contents: [
           {
             parts: [
-              { text: analysisPrompt },
-              { 
-                inlineData: { 
-                  mimeType: mimeType, 
-                  data: base64Image 
-                } 
+              {
+                text: analysisPrompt
+              },
+              {
+                inlineData: {
+                  mimeType: mimeType,
+                  data: base64Image
+                }
               }
             ]
           }
-        ]
-      })
+        ],
+        generationConfig: {
+          responseModalities: [
+            'IMAGE'
+          ]
+        }
+      }),
+      signal: controller.signal
     });
     if (!response.ok) {
       const errorText = await response.text();
@@ -412,17 +393,12 @@ async function processOutfitSwap(jobId) {
     }).eq("id", jobId);
     // STEP 2: Generate improved prompt with garment analysis
     const startTime = Date.now();
-    const prompt = await getPrompt(
-      'outfit_swap_main',
-      { garment_description: garmentDescription },
-      FALLBACK_OUTFIT_SWAP_PROMPT
-    );
-
-    await supabase
-      .from("outfit_swap_jobs")
-      .update({ progress: 70 })
-      .eq("id", jobId);
-
+    const prompt = await getPrompt('outfit_swap_main', {
+      garment_description: garmentDescription
+    }, FALLBACK_OUTFIT_SWAP_PROMPT);
+    await supabase.from("outfit_swap_jobs").update({
+      progress: 70
+    }).eq("id", jobId);
     // STEP 3: Fetch source images and prepare for Gemini API
     const personResponse = await fetch(personUrl.signedUrl);
     const garmentResponse = await fetch(garmentUrl.signedUrl);
@@ -467,7 +443,6 @@ async function processOutfitSwap(jobId) {
         ],
         generationConfig: {
           responseModalities: [
-            'TEXT',
             'IMAGE'
           ]
         }
@@ -617,9 +592,9 @@ async function updateBatchProgress(batchId) {
     finished_at: batchStatus === "completed" || batchStatus === "failed" ? new Date().toISOString() : null
   }).eq("id", batchId);
 }
-async function getJob(userId, jobId) {
+async function getJob(userId1, jobId) {
   const supabase = serviceClient();
-  const { data: job, error } = await supabase.from("outfit_swap_jobs").select("*").eq("id", jobId).eq("user_id", userId).single();
+  const { data: job, error } = await supabase.from("outfit_swap_jobs").select("*").eq("id", jobId).eq("user_id", userId1).single();
   if (error) {
     return jsonResponse({
       error: "Job not found"
@@ -629,9 +604,9 @@ async function getJob(userId, jobId) {
     job
   }, 200);
 }
-async function getJobResults(userId, jobId) {
+async function getJobResults(userId1, jobId) {
   const supabase = serviceClient();
-  const { data: results, error } = await supabase.from("outfit_swap_results").select("*").eq("job_id", jobId).eq("user_id", userId).single();
+  const { data: results, error } = await supabase.from("outfit_swap_results").select("*").eq("job_id", jobId).eq("user_id", userId1).single();
   if (error) {
     return jsonResponse({
       error: "Results not found"
@@ -641,12 +616,12 @@ async function getJobResults(userId, jobId) {
     results
   }, 200);
 }
-async function cancelJob(userId, jobId) {
+async function cancelJob(userId1, jobId) {
   const supabase = serviceClient();
   const { error } = await supabase.from("outfit_swap_jobs").update({
     status: "canceled",
     finished_at: new Date().toISOString()
-  }).eq("id", jobId).eq("user_id", userId).in("status", [
+  }).eq("id", jobId).eq("user_id", userId1).in("status", [
     "queued",
     "processing"
   ]);
@@ -659,7 +634,7 @@ async function cancelJob(userId, jobId) {
     success: true
   }, 200);
 }
-async function createBatchJob(userId, params) {
+async function createBatchJob(userId1, params) {
   const { baseModelId, garmentIds, settings } = params;
   const supabase = serviceClient();
   // Validate max 10 garments
@@ -681,11 +656,11 @@ async function createBatchJob(userId, params) {
   console.log(`[createBatchJob] Credits needed: ${creditsNeeded}`);
   // Check admin status for credit bypass
   const { data: isAdmin } = await supabase.rpc("is_user_admin", {
-    check_user_id: userId
+    check_user_id: userId1
   });
   // Check and deduct credits only for non-admins
   if (!isAdmin) {
-    const { data: subscriber } = await supabase.from("subscribers").select("credits_balance").eq("user_id", userId).single();
+    const { data: subscriber } = await supabase.from("subscribers").select("credits_balance").eq("user_id", userId1).single();
     if (!subscriber || subscriber.credits_balance < creditsNeeded) {
       return jsonResponse({
         error: "Insufficient credits",
@@ -694,11 +669,11 @@ async function createBatchJob(userId, params) {
       }, 402);
     }
   } else {
-    console.log(`[createBatchJob] Admin bypass: Skipping credit check for user ${userId}`);
+    console.log(`[createBatchJob] Admin bypass: Skipping credit check for user ${userId1}`);
   }
   // Create batch record
   const { data: batch, error: batchError } = await supabase.from("outfit_swap_batches").insert({
-    user_id: userId,
+    user_id: userId1,
     base_model_id: baseModelId,
     total_jobs: garmentIds.length,
     metadata: {
@@ -716,7 +691,7 @@ async function createBatchJob(userId, params) {
   // Deduct credits upfront (only for non-admins)
   if (!isAdmin) {
     const { data: deductResult, error: deductError } = await supabase.rpc("deduct_user_credits", {
-      p_user_id: userId,
+      p_user_id: userId1,
       p_amount: creditsNeeded,
       p_reason: "outfit_swap_batch"
     });
@@ -736,7 +711,7 @@ async function createBatchJob(userId, params) {
     const garmentId = garmentIds[i];
     console.log(`[createBatchJob] Creating job ${i + 1}/${garmentIds.length} for garment ${garmentId}`);
     const { data: job, error: jobError } = await supabase.from("outfit_swap_jobs").insert({
-      user_id: userId,
+      user_id: userId1,
       batch_id: batch.id,
       base_model_id: baseModelId,
       source_person_id: null,
@@ -798,9 +773,9 @@ async function createBatchJob(userId, params) {
     jobs
   }, 200);
 }
-async function getBatch(userId, batchId) {
+async function getBatch(userId1, batchId) {
   const supabase = serviceClient();
-  const { data: batch, error } = await supabase.from("outfit_swap_batches").select("*").eq("id", batchId).eq("user_id", userId).single();
+  const { data: batch, error } = await supabase.from("outfit_swap_batches").select("*").eq("id", batchId).eq("user_id", userId1).single();
   if (error) {
     return jsonResponse({
       error: "Batch not found"
@@ -810,13 +785,13 @@ async function getBatch(userId, batchId) {
     batch
   }, 200);
 }
-async function cancelBatch(userId, batchId) {
+async function cancelBatch(userId1, batchId) {
   const supabase = serviceClient();
   // Update batch status
   const { error: batchError } = await supabase.from("outfit_swap_batches").update({
     status: "canceled",
     finished_at: new Date().toISOString()
-  }).eq("id", batchId).eq("user_id", userId);
+  }).eq("id", batchId).eq("user_id", userId1);
   if (batchError) {
     return jsonResponse({
       error: "Failed to cancel batch"
@@ -840,20 +815,19 @@ const PHOTOSHOOT_PROMPTS = [
   `Create a high-quality e-commerce product photo: On-body true side profile, chin parallel to floor, arms relaxed (small air gap at elbow), head to mid-thigh framing. Seamless light-grey background, soft key from camera front, gentle fill to preserve knit detail, micro-shadow under hem. 70mm equivalent look, f/8, ISO 100. Prioritize silhouette, shoulder slope, sleeve taper, and ribbed cuff definition. Premium catalog style. ###IMPORTANT: Don't change the clothes of the model. Keep the model exatly as it is.`,
   `Create a high-quality e-commerce product photo: Upper-torso close-up crop from shoulders to mid-torso, camera perpendicular to garment. Soft, even light to reveal rib-knit texture and stitching. 85–100mm look, f/8. High sharpness, no moiré, color-accurate wool tone. Background remains seamless light grey. ###IMPORTANT:  Don't change the clothes of the model. Keep the model exatly as it is.`
 ];
-
-async function createPhotoshootJob(userId: string, params: any) {
+async function createPhotoshootJob(userId1, params) {
   const { resultId, backImageUrl } = params;
   const supabase = serviceClient();
   const creditsNeeded = 4;
   console.log(`[createPhotoshoot] Creating photoshoot for result ${resultId}`);
   // Check admin status
   const { data: isAdmin } = await supabase.rpc("is_user_admin", {
-    check_user_id: userId
+    check_user_id: userId1
   });
   // Check and deduct credits only for non-admins
   if (!isAdmin) {
     const { data: deductResult, error: deductError } = await supabase.rpc("deduct_user_credits", {
-      p_user_id: userId,
+      p_user_id: userId1,
       p_amount: creditsNeeded,
       p_reason: "photoshoot_generation"
     });
@@ -868,11 +842,11 @@ async function createPhotoshootJob(userId: string, params: any) {
     console.log(`[createPhotoshoot] Admin bypass: Skipping credit check`);
   }
   // Verify result exists and belongs to user
-  const { data: result, error: resultError } = await supabase.from("outfit_swap_results").select("*").eq("id", resultId).eq("user_id", userId).single();
+  const { data: result, error: resultError } = await supabase.from("outfit_swap_results").select("*").eq("id", resultId).eq("user_id", userId1).single();
   if (resultError || !result) {
     if (!isAdmin) {
       await supabase.rpc("refund_user_credits", {
-        p_user_id: userId,
+        p_user_id: userId1,
         p_amount: creditsNeeded,
         p_reason: "photoshoot_result_not_found"
       });
@@ -882,27 +856,22 @@ async function createPhotoshootJob(userId: string, params: any) {
     }, 404);
   }
   // Create photoshoot record
-  const { data: photoshoot, error: photoshootError } = await supabase
-    .from("outfit_swap_photoshoots")
-    .insert({
-      user_id: userId,
-      result_id: resultId,
-      back_image_url: backImageUrl || null,
-      status: "queued",
-      metadata: {
-        original_result_url: result.public_url,
-        credits_deducted: creditsNeeded,
-        has_custom_back_image: !!backImageUrl
-      },
-    })
-    .select()
-    .single();
-
+  const { data: photoshoot, error: photoshootError } = await supabase.from("outfit_swap_photoshoots").insert({
+    user_id: userId1,
+    result_id: resultId,
+    back_image_url: backImageUrl || null,
+    status: "queued",
+    metadata: {
+      original_result_url: result.public_url,
+      credits_deducted: creditsNeeded,
+      has_custom_back_image: !!backImageUrl
+    }
+  }).select().single();
   if (photoshootError) {
     console.error("[createPhotoshoot] Creation error:", photoshootError);
     if (!isAdmin) {
       await supabase.rpc("refund_user_credits", {
-        p_user_id: userId,
+        p_user_id: userId1,
         p_amount: creditsNeeded,
         p_reason: "photoshoot_creation_failed"
       });
@@ -1119,9 +1088,9 @@ async function processPhotoshoot(photoshootId) {
     }, 500);
   }
 }
-async function getPhotoshoot(userId, photoshootId) {
+async function getPhotoshoot(userId1, photoshootId) {
   const supabase = serviceClient();
-  const { data: photoshoot, error } = await supabase.from("outfit_swap_photoshoots").select("*").eq("id", photoshootId).eq("user_id", userId).single();
+  const { data: photoshoot, error } = await supabase.from("outfit_swap_photoshoots").select("*").eq("id", photoshootId).eq("user_id", userId1).single();
   if (error) {
     return jsonResponse({
       error: "Photoshoot not found"
@@ -1131,12 +1100,12 @@ async function getPhotoshoot(userId, photoshootId) {
     photoshoot
   }, 200);
 }
-async function cancelPhotoshoot(userId, photoshootId) {
+async function cancelPhotoshoot(userId1, photoshootId) {
   const supabase = serviceClient();
   const { error } = await supabase.from("outfit_swap_photoshoots").update({
     status: "canceled",
     finished_at: new Date().toISOString()
-  }).eq("id", photoshootId).eq("user_id", userId).in("status", [
+  }).eq("id", photoshootId).eq("user_id", userId1).in("status", [
     "queued",
     "processing"
   ]);
@@ -1149,77 +1118,71 @@ async function cancelPhotoshoot(userId, photoshootId) {
     success: true
   }, 200);
 }
-
 // E-commerce Photo Generation
-async function createEcommercePhotoJob(userId: string, params: any) {
+async function createEcommercePhotoJob(userId1, params) {
   const { resultId } = params;
   const supabase = serviceClient();
   const creditsNeeded = 1;
-
-  const isAdmin = await checkIsAdmin(userId);
+  // Check admin status
+  const { data: isAdmin } = await supabase.rpc("is_user_admin", {
+    check_user_id: userId1
+  });
   if (!isAdmin) {
-    const deductResult = await deductCredits(userId, creditsNeeded);
+    const deductResult = await deductCredits(userId1, creditsNeeded);
     if (!deductResult.success) {
-      return jsonResponse({ error: deductResult.error }, 400);
+      return jsonResponse({
+        error: deductResult.error
+      }, 400);
     }
   }
-
-  const { data: result } = await supabase
-    .from("outfit_swap_results")
-    .select("*")
-    .eq("id", resultId)
-    .eq("user_id", userId)
-    .single();
-
+  const { data: result } = await supabase.from("outfit_swap_results").select("*").eq("id", resultId).eq("user_id", userId1).single();
   if (!result) {
-    if (!isAdmin) await refundCredits(userId, creditsNeeded);
-    return jsonResponse({ error: "Result not found" }, 404);
+    if (!isAdmin) await refundCredits(userId1, creditsNeeded);
+    return jsonResponse({
+      error: "Result not found"
+    }, 404);
   }
-
-  const { data: ecommercePhoto, error } = await supabase
-    .from("outfit_swap_ecommerce_photos")
-    .insert({
-      user_id: userId,
-      result_id: resultId,
-      status: "queued",
-      metadata: { original_result_url: result.public_url, credits_deducted: creditsNeeded }
-    })
-    .select()
-    .single();
-
+  const { data: ecommercePhoto, error } = await supabase.from("outfit_swap_ecommerce_photos").insert({
+    user_id: userId1,
+    result_id: resultId,
+    status: "queued",
+    metadata: {
+      original_result_url: result.public_url,
+      credits_deducted: creditsNeeded
+    }
+  }).select().single();
   if (error) {
-    if (!isAdmin) await refundCredits(userId, creditsNeeded);
-    return jsonResponse({ error: "Failed to create e-commerce photo job" }, 500);
+    if (!isAdmin) await refundCredits(userId1, creditsNeeded);
+    return jsonResponse({
+      error: "Failed to create e-commerce photo job"
+    }, 500);
   }
-
   await supabase.functions.invoke("outfit-swap", {
-    body: { action: "processEcommercePhoto", photoId: ecommercePhoto.id }
+    body: {
+      action: "processEcommercePhoto",
+      photoId: ecommercePhoto.id
+    }
   });
-
-  return jsonResponse({ ecommercePhoto }, 200);
+  return jsonResponse({
+    ecommercePhoto
+  }, 200);
 }
-
-async function processEcommercePhoto(photoId: string) {
+async function processEcommercePhoto(photoId) {
   const supabase = serviceClient();
-
-  const { data: photo } = await supabase
-    .from("outfit_swap_ecommerce_photos")
-    .select("*, outfit_swap_results(*)")
-    .eq("id", photoId)
-    .single();
-
-  if (!photo) return jsonResponse({ error: "Photo not found" }, 404);
-
-  await supabase.from("outfit_swap_ecommerce_photos")
-    .update({ status: "processing", started_at: new Date().toISOString(), progress: 10 })
-    .eq("id", photoId);
-
+  const { data: photo } = await supabase.from("outfit_swap_ecommerce_photos").select("*, outfit_swap_results(*)").eq("id", photoId).single();
+  if (!photo) return jsonResponse({
+    error: "Photo not found"
+  }, 404);
+  await supabase.from("outfit_swap_ecommerce_photos").update({
+    status: "processing",
+    started_at: new Date().toISOString(),
+    progress: 10
+  }).eq("id", photoId);
   try {
     const originalUrl = photo.outfit_swap_results.public_url;
     const imageResp = await fetch(originalUrl);
     const imageBuffer = new Uint8Array(await imageResp.arrayBuffer());
     const base64Image = bufferToBase64(imageBuffer);
-
     const prompt = `Create a professional e-commerce fashion photo by placing this model with their current outfit into a perfectly matching, photorealistic environment.
 
 ANALYZE THE GARMENT STYLE and match to appropriate environment:
@@ -1237,42 +1200,51 @@ REQUIREMENTS:
 5. Environment complements but doesn't distract from the product
 
 OUTPUT: Magazine-quality fashion photograph.`;
-
-    await supabase.from("outfit_swap_ecommerce_photos").update({ progress: 40 }).eq("id", photoId);
-
+    await supabase.from("outfit_swap_ecommerce_photos").update({
+      progress: 40
+    }).eq("id", photoId);
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GOOGLE_AI_KEY}`;
     const geminiResp = await fetch(geminiUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: prompt },
-            { inline_data: { mime_type: "image/jpeg", data: base64Image } }
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              },
+              {
+                inline_data: {
+                  mime_type: "image/jpeg",
+                  data: base64Image
+                }
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          response_modalities: [
+            "IMAGE"
           ]
-        }],
-        generationConfig: { response_modalities: ["image"] }
+        }
       })
     });
-
     const geminiData = await geminiResp.json();
     const resultBase64 = extractBase64Image(geminiData);
     if (!resultBase64) throw new Error("No image in Gemini response");
-
-    await supabase.from("outfit_swap_ecommerce_photos").update({ progress: 80 }).eq("id", photoId);
-
-    const resultBuffer = Uint8Array.from(atob(resultBase64), c => c.charCodeAt(0));
+    await supabase.from("outfit_swap_ecommerce_photos").update({
+      progress: 80
+    }).eq("id", photoId);
+    const resultBuffer = Uint8Array.from(atob(resultBase64), (c)=>c.charCodeAt(0));
     const storagePath = `ecommerce/${photoId}.jpg`;
-    
     await supabase.storage.from("outfit-swap-photoshoots").upload(storagePath, resultBuffer, {
       contentType: "image/jpeg",
       upsert: true
     });
-
-    const { data: { publicUrl } } = supabase.storage
-      .from("outfit-swap-photoshoots")
-      .getPublicUrl(storagePath);
-
+    const { data: { publicUrl } } = supabase.storage.from("outfit-swap-photoshoots").getPublicUrl(storagePath);
     await supabase.from("outfit_swap_ecommerce_photos").update({
       status: "completed",
       progress: 100,
@@ -1280,52 +1252,57 @@ OUTPUT: Magazine-quality fashion photograph.`;
       storage_path: storagePath,
       finished_at: new Date().toISOString()
     }).eq("id", photoId);
-
-    return jsonResponse({ success: true }, 200);
+    return jsonResponse({
+      success: true
+    }, 200);
   } catch (error) {
     await supabase.from("outfit_swap_ecommerce_photos").update({
       status: "failed",
       error: error.message,
       finished_at: new Date().toISOString()
     }).eq("id", photoId);
-
-    const isAdmin = await checkIsAdmin(photo.user_id);
+    // Check admin status
+    const { data: isAdmin } = await supabase.rpc("is_user_admin", {
+      check_user_id: photo.user_id
+    });
     if (!isAdmin) await refundCredits(photo.user_id, 1);
-
-    return jsonResponse({ error: error.message }, 500);
+    return jsonResponse({
+      error: error.message
+    }, 500);
   }
 }
-
-async function getEcommercePhoto(userId: string, photoId: string) {
+async function getEcommercePhoto(userId1, photoId) {
   const supabase = serviceClient();
-  const { data, error } = await supabase
-    .from("outfit_swap_ecommerce_photos")
-    .select("*")
-    .eq("id", photoId)
-    .eq("user_id", userId)
-    .single();
-
-  if (error) return jsonResponse({ error: "Photo not found" }, 404);
-  return jsonResponse({ ecommercePhoto: data }, 200);
+  const { data, error } = await supabase.from("outfit_swap_ecommerce_photos").select("*").eq("id", photoId).eq("user_id", userId1).single();
+  if (error) return jsonResponse({
+    error: "Photo not found"
+  }, 404);
+  return jsonResponse({
+    ecommercePhoto: data
+  }, 200);
 }
-
-async function cancelEcommercePhoto(userId: string, photoId: string) {
+async function cancelEcommercePhoto(userId1, photoId) {
   const supabase = serviceClient();
-  const { error } = await supabase
-    .from("outfit_swap_ecommerce_photos")
-    .update({ status: "canceled", finished_at: new Date().toISOString() })
-    .eq("id", photoId)
-    .eq("user_id", userId)
-    .in("status", ["queued", "processing"]);
-
-  if (error) return jsonResponse({ error: "Failed to cancel" }, 500);
-  return jsonResponse({ success: true }, 200);
+  const { error } = await supabase.from("outfit_swap_ecommerce_photos").update({
+    status: "canceled",
+    finished_at: new Date().toISOString()
+  }).eq("id", photoId).eq("user_id", userId1).in("status", [
+    "queued",
+    "processing"
+  ]);
+  if (error) return jsonResponse({
+    error: "Failed to cancel"
+  }, 500);
+  return jsonResponse({
+    success: true
+  }, 200);
 }
-
-function jsonResponse(data: any, status: number) {
+function jsonResponse(data, status) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" }
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json"
+    }
   });
 }
-

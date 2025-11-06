@@ -9,12 +9,12 @@
   },
   "announcement": {
     "foundersTitle": "🎉 Founders Pack Available!",
-    "foundersDesc": "Lifetime access + 80 credits/month - Limited spaces",
+    "foundersDesc": "Lifetime access + 80 credits/month — Limited spots",
     "foundersCTA": "Claim Now"
   },
   "auth": {
-    "signIn": "Sign In / Register",
-    "signOut": "Sign Out"
+    "signIn": "Sign in / Register",
+    "signOut": "Sign out"
   },
   "settings": {
     "quickSettings": "Quick Settings",
@@ -34,44 +34,44 @@
     "german": "German"
   },
   "header": {
-    "tagline": "AI Marketing"
+    "tagline": "Marketing with AI"
   },
   "trustBar": {
-    "conversionStat": "average conversion when UGC is present in PDPs",
+    "conversionStat": "average conversion rate when UGC is present on product detail pages (PDPs)",
     "trustStat": "trust consumer content more than brand content",
-    "ctrStat": "higher CTR on ads with UGC",
+    "ctrStat": "Higher CTR on ads with UGC",
     "source": "Source"
   },
   "ugcTrustSection": {
-    "title": "Why User-Generated Content matters"
+    "title": "Why User-Generated Content Matters"
   },
   "library": {
     "title": "Library",
     "generatedImages": "Generated Images",
     "sourceImages": "Source Images",
-    "aiGenerated": "AI Generated",
+    "aiGenerated": "AI-Generated",
     "sourceImagesToggle": "Source Images",
     "showSource": "Show Source",
     "loading": "Loading your library...",
     "empty": {
       "title": "No images in your library yet",
-      "description": "Generate some UGC content to see it here",
+      "description": "Generate UGC to display it here",
       "searchDescription": "Try adjusting your search terms"
     },
     "actions": {
-      "downloadStarted": "Download Started",
+      "downloadStarted": "Download started",
       "downloading": "Downloading image...",
       "downloadFailed": {
-        "title": "Download Failed",
-        "description": "Failed to download image. Please try again."
+        "title": "Download failed",
+        "description": "Couldn't download the image. Please try again."
       },
       "imageDeleted": {
-        "title": "Image Deleted",
+        "title": "Image deleted",
         "description": "Removed from your library."
       },
       "deleteFailed": {
-        "title": "Delete Failed",
-        "description": "Failed to delete image. Please try again."
+        "title": "Delete failed",
+        "description": "Couldn't delete the image. Please try again."
       },
       "deleteConfirm": {
         "title": "Delete this image?",
@@ -83,7 +83,7 @@
     }
   },
   "createSelection": {
-    "title": "Choose your Workflow",
+    "title": "Choose Your Workflow",
     "description": "Select the type of content you want to create",
     "ugcCreator": {
       "title": "UGC Creator",
@@ -91,17 +91,17 @@
     },
     "videoCreator": {
       "title": "Image Animator",
-      "description": "Transforms your UGC images into realistic videos, highlighting their features and uses"
+      "description": "Transform your UGC images into realistic videos highlighting features and use cases"
     },
     "studioPhotos": {
       "title": "Studio Photos",
-      "description": "Generate professional product photography"
+      "description": "Generate professional product photos"
     },
-    "comingSoon": "Coming Soon"
+    "comingSoon": "Coming soon"
   },
   "common": {
     "getStarted": "Get Started",
-    "comingSoon": "Coming Soon",
+    "comingSoon": "Coming soon",
     "startNow": "Start Now",
     "limited": "LIMITED",
     "cancel": "Cancel",
@@ -121,8 +121,8 @@
     "filter": "Filter",
     "newest": "Newest",
     "oldest": "Oldest",
-    "noResults": "No results found",
-    "currentlyGenerating": "Currently Generating"
+    "noResults": "No results",
+    "currentlyGenerating": "Currently generating"
   },
   "a11y": {
     "logoAlt": "Logo",
@@ -139,7 +139,7 @@
     "thisMonth": "This Month",
     "favorites": "Favorites",
     "used": "Used",
-    "errorLoading": "Failed to load statistics",
+    "errorLoading": "Failed to load stats",
     "retry": "Retry"
   },
   "ugc": {
@@ -148,25 +148,25 @@
       "title": "Product Image",
       "subtitle": "Upload an image of your product for analysis",
       "analyzing": "Analyzing image...",
-      "tooltip": "Upload a clear, high-quality image of your product. The AI will analyze it to understand what you're selling and suggest relevant scenarios.",
+      "tooltip": "Upload a sharp, high-quality image of your product. The AI will analyze it to understand what you sell and suggest relevant scenarios.",
       "dragDrop": "Drop your image here",
       "clickUpload": "Upload Product Image",
       "releaseUpload": "Release to upload",
-      "supportedFormats": "PNG, JPG up to 10MB • Click or drag & drop",
+      "supportedFormats": "PNG, JPG up to 10 MB • Click or drag & drop",
       "preview": "Product preview",
       "remove": "Remove image"
     },
     "productDetails": {
-      "title": "Product Features",
-      "subtitle": "Provide a few details about your product in use.",
-      "placeholder": "E.g.: sleeves to the elbows, collar slightly below the neck, hat with a 3 cm brim …",
+      "title": "Product characteristics",
+      "subtitle": "Provide a few details about how your product is used.",
+      "placeholder": "E.g.: sleeves to the elbows, neckline slightly below the neck, hat with 3 cm brim…",
       "tooltip": "Describe how your product is used or how it fits on people. This helps Genius position the product correctly."
     },
     "desireAudience": {
-      "title": "Desired Audience",
-      "subtitle": "Describe, as thoroughly as possible, the desired audience you want to present your product to.",
-      "placeholder": "E.g.: high-performance athletes, outdoor adventurers, busy professionals, elegant women …",
-      "tooltip": "Describe who should use your product. This helps Genius generate relevant scenarios that match your target audience."
+      "title": "Desired target audience",
+      "subtitle": "Describe as precisely as possible the target audience you want to present your product to.",
+      "placeholder": "E.g.: elite athletes, outdoor adventurers, busy professionals, elegant women…",
+      "tooltip": "Describe who should use your product. This helps Genius generate relevant scenarios for your target audience."
     },
     "scenarios": {
       "title": "UGC Scenarios",
@@ -174,12 +174,12 @@
       "generateButton": "Get Scenario Ideas",
       "generateMoreButton": "Generate More Ideas",
       "loading": "Generating scenarios...",
-      "tooltip": "Choose from AI-generated scenarios that show your product in realistic, engaging situations."
+      "tooltip": "Choose from AI-generated scenarios showing your product in realistic, engaging situations."
     },
     "generationSettings": {
       "title": "Image Settings",
-      "subtitle": "Customize your image output preferences",
-      "tooltip": "Adjust these settings to control the style, quality, and format of your generated images.",
+      "subtitle": "Customize your output preferences",
+      "tooltip": "Adjust these settings to control the style, quality, and format of generated images.",
       "settings": "Settings"
     },
     "settings": {
@@ -209,18 +209,18 @@
     "credits_plural": "credits",
     "numImages": {
       "title": "Number of Images",
-      "tooltip": "Choose how many variations you want to generate. More images = more options but higher credit cost."
+      "tooltip": "Choose how many variants to generate. More images = more options but more credits."
     },
     "imageQuality": {
       "title": "Image Quality",
       "low": "Low",
       "medium": "Medium",
       "high": "High",
-      "tooltip": "Higher quality images look better but cost more credits. Low=1 credit, Medium=2 credits, High=3 credits per image."
+      "tooltip": "Higher quality yields better results but costs more credits. Low=1, Medium=2, High=3 per image."
     },
     "orientation": {
       "title": "Image Orientation",
-      "tooltip": "Choose the aspect ratio for your images based on where you plan to use them.",
+      "tooltip": "Choose the aspect ratio based on intended use.",
       "landscape": "Landscape (3:2)",
       "landscapeDesc": "Horizontal format",
       "square": "Square (1:1)",
@@ -236,10 +236,10 @@
       "landscapeDesc4/3": "Horizontal format 4:3",
       "landscapeDesc16/9": "Horizontal format 16:9",
       "source": "Source",
-      "sourceDesc": "Keep original image aspect ratio and dimensions (no cropping)"
+      "sourceDesc": "Keep the image’s original proportions and dimensions (no cropping)"
     },
     "highlight": {
-      "title": "Highlight Product",
+      "title": "Highlight the Product",
       "yes": "Yes",
       "no": "No"
     },
@@ -258,7 +258,7 @@
     },
     "qualitySettings": {
       "title": "Quality",
-      "tooltip": "Higher quality uses more credits but produces better results",
+      "tooltip": "Better quality uses more credits but delivers better results",
       "low": "Low",
       "medium": "Medium",
       "high": "High",
@@ -267,7 +267,7 @@
       "highCredits": "2 credits"
     },
     "freePlanLimited": "Free plan limited to 1 image per generation.",
-    "premiumScenariosAvailable": "2 premium scenarios available with paid plans.",
+    "premiumScenariosAvailable": "2 premium scenarios available on paid plans.",
     "advancedSettings": {
       "title": "Advanced Settings",
       "timeOfDay": {
@@ -276,13 +276,13 @@
         "golden": "Golden Hour",
         "night": "Night Light",
         "soft": "Soft Morning",
-        "tooltip": "Controls the lighting mood in your generated images."
+        "tooltip": "Controls the lighting mood of the generated images."
       },
       "highlight": {
-        "title": "Focus on Product",
+        "title": "Product Focus",
         "yes": "Yes",
         "no": "No",
-        "tooltip": "Choose whether to make your product the main focus or blend it naturally into the scene."
+        "tooltip": "Choose to foreground the product or integrate it naturally in the scene."
       },
       "style": {
         "title": "Visual Style",
@@ -290,7 +290,7 @@
         "professional": "Professional",
         "casual": "Casual",
         "minimalist": "Minimalist",
-        "tooltip": "Sets the overall aesthetic and mood of the generated images."
+        "tooltip": "Defines the overall aesthetic and mood of generated images."
       }
     },
     "generateButton": "Generate Images",
@@ -308,7 +308,7 @@
   },
   "account": {
     "title": "Account",
-    "signOut": "Sign Out",
+    "signOut": "Sign out",
     "member": "Member",
     "sections": {
       "settings": "Settings",
@@ -325,7 +325,7 @@
     "editProfile": {
       "title": "Edit Profile",
       "profileInfo": "Profile Information",
-      "profileDescription": "Here you can find all your information"
+      "profileDescription": "Find all your information here"
     },
     "profile": {
       "title": "Profile Information",
@@ -350,33 +350,33 @@
       "title": "Settings",
       "desc": "Manage your account preferences",
       "generationDefaults": "Generation Defaults",
-      "generationDefaultsDesc": "Set your preferred image generation settings",
-      "autoSaveImages": "Auto Save Images",
-      "autoSaveImagesDesc": "Automatically save images when finished",
+      "generationDefaultsDesc": "Set your image generation preferences",
+      "autoSaveImages": "Auto-save Images",
+      "autoSaveImagesDesc": "Automatically save images when they are ready",
       "interfacePreferences": "Interface Preferences",
-      "interfacePreferencesDesc": "Customize your app experience",
+      "interfacePreferencesDesc": "Customize your experience",
       "theme": "Theme",
       "light": "Light",
       "dark": "Dark",
       "system": "System",
       "language": "Language",
-      "languageDesc": "Set your language preference",
-      "autoSave": "Auto Save",
+      "languageDesc": "Set your preferred language",
+      "autoSave": "Auto-save",
       "autoSaveDesc": "Automatically save settings",
       "saveChanges": "Save Changes",
       "saving": "Saving..."
     },
     "notifications": {
       "title": "Notifications",
-      "desc": "Manage your notification preferences",
+      "desc": "Manage notification preferences",
       "emailNotifications": "Email Notifications",
       "emailNotificationsDesc": "Choose which emails you want to receive",
       "generationComplete": "Generation Complete",
-      "generationCompleteDesc": "When your image generation is finished",
+      "generationCompleteDesc": "When your image generation finishes",
       "monthlySummary": "Monthly Summary",
       "monthlySummaryDesc": "Monthly report of your activity and credits",
       "newFeatures": "New Features",
-      "newFeaturesDesc": "Updates about new features and improvements",
+      "newFeaturesDesc": "Updates on new features and improvements",
       "marketing": "Marketing & Promotions",
       "marketingDesc": "Special offers and promotional content",
       "accountUpdates": "Account Updates",
@@ -388,17 +388,17 @@
     },
     "privacy": {
       "title": "Privacy & Security",
-      "desc": "Control your privacy and data settings",
+      "desc": "Control your privacy and data",
       "privacySettings": "Privacy Settings",
       "privacySettingsDesc": "Control how your data is used and shared",
       "showGenerationHistory": "Show Generation History",
       "showGenerationHistoryDesc": "Allow others to see your public generations",
       "analyticsData": "Analytics Data",
-      "analyticsDataDesc": "Help improve our service with usage analytics",
+      "analyticsDataDesc": "Help us improve via usage analytics",
       "contentVisibility": "Content Visibility",
       "contentVisibilityDesc": "Control who can see your generated content",
       "publicGallery": "Public Gallery",
-      "publicGalleryDesc": "Show your images in the public gallery",
+      "publicGalleryDesc": "Display your images in the public gallery",
       "dataManagement": "Data Management",
       "dataManagementDesc": "Manage your personal data and account",
       "deleteAccount": "Delete Account",
@@ -407,19 +407,19 @@
       "security": "Security",
       "securityDesc": "Manage your account security settings",
       "loginNotifications": "Login Notifications",
-      "loginNotificationsDesc": "Get notified when someone logs into your account",
+      "loginNotificationsDesc": "Receive an alert when a login occurs",
       "changePassword": "Change Password"
     },
     "billing": {
       "title": "Billing & Usage",
-      "desc": "Manage your subscription and payment details",
+      "desc": "Manage your subscription and payments",
       "currentPlan": "Current Plan",
       "currentPlanDesc": "Manage your subscription and billing details",
       "plan": "Plan",
       "active": "Active",
       "free": "Free",
       "nextBilling": "Next billing date",
-      "monthlyCredits": "Monthly credit allowance",
+      "monthlyCredits": "Monthly credits",
       "credits": "credits",
       "manageSubscription": "Manage Subscription",
       "upgradePlan": "Upgrade Plan",
@@ -428,14 +428,14 @@
       "creditsUsed": "Credits used this month",
       "remaining": "Remaining",
       "daysLeft": "Days left",
-      "upgradeForMore": "Upgrade for More Credits",
+      "upgradeForMore": "Upgrade for more credits",
       "subscriptionManagement": "Subscription Management",
-      "subscriptionManagementDesc": "Manage your subscription and billing details",
+      "subscriptionManagementDesc": "Manage your subscription and billing",
       "subscriptionDetails": "Subscription Details",
       "status": "Status",
       "renewal": "Renewal",
       "openStripePortal": "Open Stripe Customer Portal",
-      "stripePortalDesc": "Manage your subscription, update payment methods, and view billing history in Stripe's secure portal.",
+      "stripePortalDesc": "Manage your subscription, update payments, and view history in Stripe’s secure portal.",
       "planDetails": "Plan Details",
       "billingHistory": "Billing History",
       "paymentMethod": "Payment Method",
@@ -451,7 +451,7 @@
       "gettingStarted": "Getting Started Guide",
       "faq": "FAQ",
       "contactSupport": "Contact Support",
-      "contactSupportDesc": "Send us a message and we'll help you out",
+      "contactSupportDesc": "Send us a message and we’ll help",
       "subject": "Subject",
       "subjectPlaceholder": "Brief description of your issue",
       "category": "Category",
@@ -468,27 +468,27 @@
       "contactInfo": "Contact Information",
       "contactInfoDesc": "Other ways to reach us",
       "emailSupport": "Email Support",
-      "businessHours": "Business Hours",
+      "businessHours": "Hours",
       "responseTime": "Response Time",
-      "businessHoursValue": "9 AM - 6 PM ECT",
+      "businessHoursValue": "09:00 - 18:00",
       "responseTimeValue": "Within 24 hours"
     },
     "toasts": {
       "profileUpdated": {
         "title": "Profile updated",
-        "description": "Your profile has been updated successfully."
+        "description": "Your profile was updated successfully."
       },
       "settingsSaved": {
         "title": "Settings saved",
-        "description": "Your preferences have been updated successfully."
+        "description": "Your preferences were updated successfully."
       },
       "dataExportRequested": {
         "title": "Data export requested",
-        "description": "Your data export will be sent to your email within 24 hours."
+        "description": "Your export will be emailed within 24 hours."
       },
       "accountDeletionRequested": {
         "title": "Account deletion requested",
-        "description": "A confirmation email has been sent to verify this action."
+        "description": "A confirmation email was sent to validate this action."
       },
       "error": {
         "title": "Error",
@@ -497,17 +497,17 @@
       },
       "warning": {
         "title": "Warning",
-        "description": "Profile data saved, but updating the authentication profile failed."
+        "description": "Profile data saved, but updating the auth profile failed."
       }
     }
   },
   "videoGenerator": {
     "title": "Image → Video",
     "createVideo": "Create Video",
-    "description": "Select an image and provide instructions to generate a 5s or 10s animated video.",
+    "description": "Select an image and provide instructions to generate an animated 5s or 10s video.",
     "infoBox": {
       "title": "How It Works",
-      "description": "This module animates existing images with motion and camera effects, adding a real sense of context to the image."
+      "description": "This module animates existing images with movement and camera effects to give real-world context to the image."
     },
     "sourceImage": {
       "label": "Source Image",
@@ -515,19 +515,19 @@
       "importFromUrl": "Import from URL",
       "dragDrop": "Drag & Drop",
       "changeImage": "Change Image",
-      "ugcPreselected": "UGC image pre-selected. You can change it using the options above.",
+      "ugcPreselected": "Pre-selected UGC image. You can change it with the options above.",
       "preselectedFromUGC": "Pre-selected from UGC Generator"
     },
     "instructions": {
-      "label": "Motion Instructions",
-      "placeholder": "Describe the motion / behavior you want (e.g., 'person walking forward and smiling', 'camera slowly zooming in')",
+      "label": "Movement Instructions",
+      "placeholder": "Describe desired movement/behavior (e.g., 'person walking forward and smiling', 'camera slowly zooming')",
       "aiSuggestion": {
-        "title": "AI-Suggested Motion Instructions",
-        "analyzing": "Analyzing image and generating motion suggestion...",
+        "title": "AI-Suggested Movement Instructions",
+        "analyzing": "Analyzing the image and generating a movement suggestion...",
         "usePrompt": "Use This Prompt",
         "dismiss": "Dismiss",
         "applied": "Instructions Applied",
-        "appliedDescription": "You can edit it before generating."
+        "appliedDescription": "You can edit them before generating."
       }
     },
     "settings": {
@@ -559,10 +559,10 @@
     "duration5": "5 seconds (5 credits)",
     "duration10": "10 seconds (10 credits)",
     "generateVideo": "Generate Video",
-    "creatingJob": "Creating Job…",
+    "creatingJob": "Creating job…",
     "status": {
       "label": "Status",
-      "queued": "Your video is queued…",
+      "queued": "Your video is in queue…",
       "processing": "Generating your video…",
       "completed": "Video generated successfully.",
       "failed": "Video generation failed.",
@@ -574,11 +574,11 @@
       "openNewTab": "Open in New Tab",
       "download": "Download",
       "refresh": "Refresh job data",
-      "copyDebug": "Copy debug info"
+      "copyDebug": "Copy debug information"
     },
     "errors": {
       "selectImageAndPrompt": "Please select an image and enter instructions.",
-      "videoLoadFailed": "Failed to load video. Check console for details."
+      "videoLoadFailed": "Failed to load video. Check the console for more details."
     }
   },
   "help": {
@@ -586,7 +586,7 @@
       "title": "Getting Started Guide",
       "welcome": {
         "title": "Welcome to Genius UGC! 🚀",
-        "description": "Get up and running in minutes with our step-by-step guide. Create amazing UGC content with the power of AI."
+        "description": "Get up and running in minutes with our step-by-step guide. Create amazing UGC powered by AI."
       },
       "steps": {
         "title": "Quick Setup Steps",
@@ -597,7 +597,7 @@
         },
         "exploreCreate": {
           "title": "Explore the Create Section",
-          "description": "Learn how to generate UGC content using our AI-powered tools",
+          "description": "Learn to generate UGC with our AI-powered tools",
           "action": "Start Creating"
         },
         "manageLibrary": {
@@ -614,20 +614,20 @@
       },
       "readyToCreate": {
         "title": "Ready to Create?",
-        "description": "Now that you're set up, let's create your first UGC content!",
+        "description": "Now that everything’s set, let’s create your first UGC!",
         "action": "Start Creating Content"
       },
       "needMoreHelp": {
-        "title": "Need More Help?",
-        "description": "Explore our other resources or contact support",
+        "title": "Need more help?",
+        "description": "Explore other resources or contact support",
         "viewFaq": "View FAQ",
         "watchTutorials": "Watch Tutorials"
       }
     },
     "faq": {
       "title": "Frequently Asked Questions",
-      "subtitle": "How can we help you?",
-      "description": "Search our knowledge base or browse categories below",
+      "subtitle": "How can we help?",
+      "description": "Search our knowledge base or browse the categories below",
       "searchPlaceholder": "Search questions...",
       "categories": {
         "accountSetup": {
@@ -636,11 +636,11 @@
           "questions": {
             "changeEmail": {
               "q": "Can I change my email address?",
-              "a": "Yes, you can update your email address in your account settings. Go to Account > Settings > Profile Information to make changes."
+              "a": "Yes. You can update it in account settings: Account > Settings > Profile Information."
             },
             "resetPassword": {
               "q": "How do I reset my password?",
-              "a": "Click on 'Forgot Password' on the login page, enter your email, and we'll send you a password reset link."
+              "a": "Click “Forgot password” on the login page, enter your email, and we’ll send a reset link."
             }
           }
         },
@@ -650,19 +650,19 @@
           "questions": {
             "contentTypes": {
               "q": "What types of content can I create?",
-              "a": "Genius UGC supports creating various types of user-generated content including social media posts, product environment demonstrations, product positionings, and marketing materials using AI-powered tools."
+              "a": "Genius UGC lets you create various user-generated content: social posts, product placements, positioning, and marketing assets using AI tools."
             },
             "aiGeneration": {
-              "q": "How does the AI content generation work?",
-              "a": "Our Genius AI analyzes your input prompts and preferences to generate relevant, high-quality content. You can customize the light, style, and format to match your desire."
+              "q": "How does AI generation work?",
+              "a": "Our AI analyzes your prompts and preferences to generate relevant, high-quality content. You can customize lighting, style, and format."
             },
             "editContent": {
               "q": "Can I edit generated content?",
-              "a": "For the moment you cannot! We are working on developing the ProduktPix with a goal to become the number one mobile marketing agent in order to quickly and efficiently help people sell their products."
+              "a": "Not for now. We’re developing ProduktPix to become the #1 mobile marketing agent to help you sell quickly and effectively."
             },
             "fileFormats": {
-              "q": "What file formats are supported?",
-              "a": "We support popular formats including JPG, PNG for images, and various text formats for written content."
+              "q": "Which file formats are supported?",
+              "a": "We support popular formats, including JPG and PNG for images, and various text formats for written content."
             }
           }
         },
@@ -671,20 +671,20 @@
           "badge": "Important",
           "questions": {
             "paymentMethods": {
-              "q": "What payment methods do you accept?",
-              "a": "We accept all major credit cards Visa, MasterCard and American Express for your convenience."
+              "q": "Which payment methods do you accept?",
+              "a": "We accept major cards: Visa, MasterCard, and American Express."
             },
             "cancelSubscription": {
               "q": "Can I cancel my subscription anytime?",
-              "a": "Yes, you can cancel your subscription at any time from your billing settings. Your access will continue until the end of your current billing period."
+              "a": "Yes. You can cancel anytime in billing settings. Access continues until the end of the current period."
             },
             "refunds": {
               "q": "Do you offer refunds?",
-              "a": "We offer a 14-day money-back guarantee for new subscribers. Contact our support team if you're not satisfied with the service."
+              "a": "We offer a 14-day money-back guarantee for new subscribers. Contact support if you’re not satisfied."
             },
             "usageLimit": {
               "q": "What happens when I reach my usage limit?",
-              "a": "When you reach your plan's limit, you can either upgrade to a higher plan or wait for your next billing cycle to reset your usage."
+              "a": "You can upgrade to a higher plan or wait for the next billing cycle."
             }
           }
         },
@@ -692,32 +692,32 @@
           "name": "Technical Support",
           "questions": {
             "generationTime": {
-              "q": "How long does generating takes to complete?",
-              "a": "Generation times can vary based on complexity and server load. Most content is generated within 30-60 seconds. If you experience longer delays, try refreshing the page."
+              "q": "How long does generation take?",
+              "a": "It depends on complexity and server load. Most complete in 30–60 seconds. If it takes longer, try refreshing the page."
             },
             "contentMismatch": {
-              "q": "My generated content doesn't match my request",
-              "a": "Try being more specific in your details and audience. Include details about usability, size, niched target audience, and specific requirements for better results."
+              "q": "The generated content doesn’t match my request",
+              "a": "Be more specific about details and audience. Include use case, size, niche, and requirements."
             },
             "mobileSupport": {
-              "q": "Can I use the platform on mobile devices?",
-              "a": "Yes! Genius UGC is fully responsive and works great on mobile devices, tablets, and desktop computers."
+              "q": "Can I use the platform on mobile?",
+              "a": "Yes. Genius UGC is fully responsive and works on mobile, tablet, and desktop."
             },
             "reportBug": {
-              "q": "How do I report a bug or issue?",
-              "a": "You can report bugs through our support contact form or email us directly. Please include details about what you were doing when the issue occurred."
+              "q": "How do I report a bug?",
+              "a": "Use our contact form or email us. Describe what you were doing when the issue occurred."
             }
           }
         }
       },
       "noResults": {
-        "title": "No results found",
-        "description": "Try adjusting your search terms or browse all categories",
-        "clearSearch": "Clear Search"
+        "title": "No results",
+        "description": "Adjust your search terms or browse all categories",
+        "clearSearch": "Clear search"
       },
       "stillNeedHelp": {
         "title": "Still need help?",
-        "description": "Can't find what you're looking for? Our support team is here to help.",
+        "description": "Can’t find what you’re looking for? Our support team is here to help.",
         "contactSupport": "Contact Support",
         "gettingStarted": "Getting Started Guide"
       }
@@ -726,7 +726,7 @@
   "index": {
     "auth": {
       "title": "Create product images that sell",
-      "subtitle": "Transform your products into stunning, conversion-focused imagery with AI",
+      "subtitle": "Turn your products into conversion-driven visuals with AI",
       "startCreating": "Start Creating",
       "welcome": "Welcome back",
       "welcomeDesc": "Ready to create amazing content?",
@@ -736,99 +736,158 @@
       "viewLibrary": "View Library",
       "createContent": "Create Content",
       "accountSettings": "Account Settings"
+    }
+  },
+  "outfitSwap": {
+    "title": "Outfit Swap",
+    "subtitle": "Process up to 10 garments at once",
+    "steps": {
+      "step1Title": "Step 1: Select Base Model",
+      "step2Title": "Step 2: Upload Garments",
+      "continueToUpload": "Continue to Garment Upload",
+      "changeModel": "Change Model",
+      "back": "Back"
     },
-    "outfitSwap": {
-      "title": "Outfit Swap",
-      "subtitle": "Process up to 10 garments at once",
-      "steps": {
-        "step1Title": "Step 1: Select Base Model",
-        "step2Title": "Step 2: Upload Garments",
-        "continueToUpload": "Continue to Upload Garments",
-        "changeModel": "Change Model",
-        "back": "Back"
+    "errors": {
+      "accessDenied": "Access Denied",
+      "adminRequired": "Admin access required for the Outfit Swap module",
+      "missingData": "Missing data",
+      "selectModelAndGarments": "Please select a model and upload garments",
+      "failedToStart": "Failed to start batch"
+    },
+    "review": {
+      "title": "Review & Settings",
+      "selectedModel": "Selected Model:",
+      "garments": "Garments:",
+      "garmentsCount": "{{count}} garments",
+      "cost": "Cost:",
+      "credits": "credits",
+      "saveCredits": "Save {{savings}} credits!"
+    },
+    "actions": {
+      "startBatch": "Start Batch ({{cost}} credits)",
+      "uploading": "Uploading...",
+      "starting": "Starting...",
+      "cancelBatch": "Cancel Batch",
+      "refresh": "Refresh",
+      "downloadAll": "Download All",
+      "startNewBatch": "Start New Batch"
+    },
+    "batch": {
+      "title": "Batch Processing",
+      "completedOf": "{{completed}} of {{total}} completed",
+      "failed": "{{count}} failed",
+      "adminUnlimited": "Admin: Unlimited Credits",
+      "creditsUsed": "{{count}} credits used",
+      "overallProgress": "Overall Progress",
+      "individualSwaps": "Individual Swaps",
+      "swap": "Swap {{index}}"
+    },
+    "status": {
+      "processing": "processing",
+      "completed": "completed",
+      "failed": "failed",
+      "queued": "queued"
+    },
+    "buttons": {
+      "preview": "Preview",
+      "open": "Open",
+      "animate": "Animate",
+      "ecommerce": "E-commerce",
+      "photoshoot": "Photoshoot",
+      "download": "Download"
+    },
+    "warnings": {
+      "stuckJob": "⚠️ This job seems stuck. Try clicking Refresh."
+    },
+    "errorMessages": {
+      "rateLimit": "Google Gemini API rate limit reached. Please wait a few minutes and try again.",
+      "authError": "System configuration issue with Google Gemini API. Please contact support.",
+      "serverError": "Google Gemini API is temporarily unavailable. Please try again later."
+    },
+    "toasts": {
+      "resultReady": "Result ready",
+      "resultReadyDesc": "A new outfit swap result is available",
+      "resultsRefreshed": "Results refreshed",
+      "resultsRefreshedDesc": "{{count}} results loaded",
+      "adminAccessRequired": "Admin access required",
+      "onlyAdminsPhotoshoots": "Only admins can create photoshoots",
+      "ecommerceStarted": "E-commerce photo started",
+      "ecommerceStartedDesc": "Creating a professional product photo...",
+      "ecommerceFailed": "Failed to start e-commerce photo"
+    },
+    "baseModelSelector": {
+      "filters": {
+        "gender": "Gender",
+        "ageRange": "Age Range",
+        "bodyType": "Body Type",
+        "pose": "Pose",
+        "skinTone": "Skin Tone",
+        "all": "All"
       },
-      "errors": {
-        "accessDenied": "Access Denied",
-        "adminRequired": "Admin access required for Outfit Swap module",
-        "missingData": "Missing data",
-        "selectModelAndGarments": "Please select a model and upload garments",
-        "failedToStart": "Failed to start batch"
+      "genderOptions": {
+        "male": "Male",
+        "female": "Female",
+        "unisex": "Unisex"
       },
-      "review": {
-        "title": "Review & Settings",
-        "selectedModel": "Selected Model:",
-        "garments": "Garments:",
-        "garmentsCount": "{{count}} garments",
-        "cost": "Cost:",
-        "credits": "credits",
-        "saveCredits": "Save {{savings}} credits!"
+      "ageRanges": {
+        "0-12months": "0–12 months",
+        "1-3years": "1–3 years",
+        "4-7years": "4–7 years",
+        "8-12years": "8–12 years",
+        "13-17years": "13–17 years",
+        "18-22years": "18–22 years",
+        "23-35years": "23–35 years",
+        "36-50years": "36–50 years",
+        "51-65years": "51–65 years",
+        "65plus": "65+ years"
       },
-      "actions": {
-        "startBatch": "Start Batch ({{cost}} credits)",
-        "uploading": "Uploading...",
-        "starting": "Starting...",
-        "cancelBatch": "Cancel Batch",
-        "refresh": "Refresh",
-        "downloadAll": "Download All",
-        "startNewBatch": "Start New Batch"
+      "bodyTypes": {
+        "slim": "Slim",
+        "athletic": "Athletic",
+        "average": "Average",
+        "plus": "Plus Size"
       },
-      "batch": {
-        "title": "Batch Processing",
-        "completedOf": "{{completed}} of {{total}} completed",
-        "failed": "{{count}} failed",
-        "adminUnlimited": "Admin: Unlimited Credits",
-        "creditsUsed": "{{count}} credits used",
-        "overallProgress": "Overall Progress",
-        "individualSwaps": "Individual Swaps",
-        "swap": "Swap {{index}}"
+      "poses": {
+        "front": "Front",
+        "side": "Side",
+        "back": "Back",
+        "angled": "Angled"
       },
-      "status": {
-        "processing": "processing",
-        "completed": "completed",
-        "failed": "failed",
-        "queued": "queued"
+      "skinTones": {
+        "light": "Light",
+        "medium": "Medium",
+        "tan": "Tan",
+        "dark": "Dark"
       },
-      "buttons": {
-        "preview": "Preview",
-        "open": "Open",
-        "animate": "Animate",
-        "ecommerce": "E-commerce",
-        "photoshoot": "Photoshoot",
-        "download": "Download"
+      "search": "Search models by name...",
+      "upload": {
+        "title": "Upload Your Model",
+        "titleUploading": "Uploading...",
+        "premiumFeature": "Premium feature",
+        "uploadOwn": "Upload Yours",
+        "createWithAI": "Create with AI"
       },
-      "warnings": {
-        "stuckJob": "⚠️ This job may be stuck. Try clicking Refresh."
+      "badges": {
+        "yourModel": "Your Model",
+        "system": "System"
       },
-      "errorMessages": {
-        "rateLimit": "Google Gemini API rate limit reached. Please wait a few minutes and try again.",
-        "authError": "System configuration issue with Google Gemini API. Please contact support.",
-        "serverError": "Google Gemini API is temporarily unavailable. Please try again later."
-      },
-      "toasts": {
-        "resultReady": "Result ready",
-        "resultReadyDesc": "A new outfit swap result is available",
-        "resultsRefreshed": "Results refreshed",
-        "resultsRefreshedDesc": "Loaded {{count}} results",
-        "adminAccessRequired": "Admin access required",
-        "onlyAdminsPhotoshoots": "Only admins can create photoshoots",
-        "ecommerceStarted": "E-commerce photo started",
-        "ecommerceStartedDesc": "Creating professional product photo...",
-        "ecommerceFailed": "Failed to start e-commerce photo"
-      },
-      "garmentUploader": {
-        "title": "Upload Garment Images",
-        "dragDrop": "Drag and drop or click to select",
-        "selected": "{{count}} of {{max}} garments selected",
-        "discount": "10% discount applied! You're processing {{count}} garments at once."
-      },
-      "settings": {
-        "title": "Settings",
-        "outputFormat": "Output Format",
-        "formats": {
-          "jpg": "JPG (Smaller file size)",
-          "png": "PNG (Higher quality)",
-          "both": "Both formats"
-        }
+      "loading": "Loading models...",
+      "noModels": "No models found"
+    },
+    "garmentUploader": {
+      "title": "Upload Garment Images",
+      "dragDrop": "Drag & drop or click to select",
+      "selected": "{{count}} of {{max}} garments selected",
+      "discount": "10% discount applied! You’re processing {{count}} garments at once."
+    },
+    "settings": {
+      "title": "Settings",
+      "outputFormat": "Output Format",
+      "formats": {
+        "jpg": "JPG (Smaller file)",
+        "png": "PNG (Higher quality)",
+        "both": "Both formats"
       }
     }
   }
