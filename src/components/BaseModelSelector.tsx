@@ -121,6 +121,7 @@ export const BaseModelSelector = ({
         metadata: {
           name: params.name,
           gender: params.gender,
+          nationality: params.nationality,
           age_range: params.ageRange,
           body_type: params.bodyType,
           skin_tone: params.skinTone,

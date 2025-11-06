@@ -194,7 +194,7 @@ async function uploadAndProcessModel(supabaseClient, userId, params, googleApiKe
   }
 }
 async function generateModelWithAI(supabaseClient, userId, params, googleApiKey) {
-  const { name, gender, ageRange, bodyType, height, skinTone, hair, eyes, pose, gentleSmile, previewMode = false } = params;
+  const { name, gender, nationality, ageRange, bodyType, height, skinTone, hair, eyes, pose, gentleSmile, previewMode = false } = params;
   const creditCost = 6;
   // ONLY deduct credits if NOT in preview mode
   if (!previewMode) {
@@ -209,8 +209,11 @@ async function generateModelWithAI(supabaseClient, userId, params, googleApiKey)
   }
   try {
     // Build the generation prompt
+    const nationalityText = nationality && nationality !== 'not-specified' 
+      ? `, ${nationality} features and appearance` 
+      : '';
     const smileText = gentleSmile ? ", gentle smile" : "";
-    const prompt = `Create an image of Photorealistic full-body studio ${gender} model, age bracket ${ageRange}, height ${height} cm, body type ${bodyType}, skin tone ${skinTone}, hair ${hair.length} ${hair.texture} ${hair.color}, eyes ${eyes}. Pose: ${pose}${smileText}. Wardrobe baseline: seamless neutral-tone fitted bodysuit (no logos/patterns), barefoot. Background: seamless light gray studio. Camera 50mm f/4 ISO200 1/125. Lighting: softbox 45° key + reflector fill, even exposure. Neutral expression, hands relaxed, fingers natural, head to toe visible, clean silhouette. One subject only. Output 2048x3072, sRGB, 300dpi. Negative: only produce model and no more elements in the picture, lowres, blurry, jpeg artifacts, extra limbs, extra fingers, fused fingers, disfigured, distorted proportions, wet/oily skin, cleavage emphasis, lingerie, underwear straps, see-through fabric, strong face shadows, color cast, watermark, logo, text, border.`;
+    const prompt = `Create an image of Photorealistic full-body studio ${gender} model${nationalityText}, age bracket ${ageRange}, height ${height} cm, body type ${bodyType}, skin tone ${skinTone}, hair ${hair.length} ${hair.texture} ${hair.color}, eyes ${eyes}. Pose: ${pose}${smileText}. Wardrobe baseline: seamless neutral-tone fitted bodysuit (no logos/patterns), barefoot. Background: seamless light gray studio. Camera 50mm f/4 ISO200 1/125. Lighting: softbox 45° key + reflector fill, even exposure. Neutral expression, hands relaxed, fingers natural, head to toe visible, clean silhouette. One subject only. Output 2048x3072, sRGB, 300dpi. Negative: only produce model and no more elements in the picture, lowres, blurry, jpeg artifacts, extra limbs, extra fingers, fused fingers, disfigured, distorted proportions, wet/oily skin, cleavage emphasis, lingerie, underwear straps, see-through fabric, strong face shadows, color cast, watermark, logo, text, border.`;
     console.log("Generating AI model with prompt:", prompt);
     const controller = new AbortController();
     const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent`, {
@@ -303,6 +306,7 @@ async function generateModelWithAI(supabaseClient, userId, params, googleApiKey)
         height,
         hair,
         eyes,
+        nationality,
         gentleSmile,
         generatedWithAI: true
       }

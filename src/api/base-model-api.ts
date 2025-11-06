@@ -30,6 +30,7 @@ export const baseModelApi = {
     options: {
       name: string;
       gender: string;
+      nationality: string;
       ageRange: string;
       bodyType: string;
       height: number;
