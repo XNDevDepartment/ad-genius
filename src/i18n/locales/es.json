@@ -737,5 +737,158 @@
       "createContent": "Crear Contenido",
       "accountSettings": "Ajustes de la Cuenta"
     }
+  },
+  "outfitSwap": {
+    "title": "Cambio de Vestuario",
+    "subtitle": "Procesa hasta 10 prendas a la vez",
+    "steps": {
+      "step1Title": "Paso 1: Seleccionar Modelo Base",
+      "step2Title": "Paso 2: Subir Prendas",
+      "continueToUpload": "Continuar a Subir Prendas",
+      "changeModel": "Cambiar Modelo",
+      "back": "Volver"
+    },
+    "errors": {
+      "accessDenied": "Acceso Denegado",
+      "adminRequired": "Se requiere acceso de administrador para el módulo de Cambio de Vestuario",
+      "missingData": "Faltan datos",
+      "selectModelAndGarments": "Por favor selecciona un modelo y sube las prendas",
+      "failedToStart": "Error al iniciar el lote"
+    },
+    "review": {
+      "title": "Revisar y Ajustes",
+      "selectedModel": "Modelo Seleccionado:",
+      "garments": "Prendas:",
+      "garmentsCount": "{{count}} prendas",
+      "cost": "Coste:",
+      "credits": "créditos",
+      "saveCredits": "¡Ahorra {{savings}} créditos!"
+    },
+    "actions": {
+      "startBatch": "Iniciar Lote ({{cost}} créditos)",
+      "uploading": "Subiendo...",
+      "starting": "Iniciando...",
+      "cancelBatch": "Cancelar Lote",
+      "refresh": "Actualizar",
+      "downloadAll": "Descargar Todo",
+      "startNewBatch": "Iniciar Nuevo Lote"
+    },
+    "batch": {
+      "title": "Procesamiento por Lotes",
+      "completedOf": "{{completed}} de {{total}} completados",
+      "failed": "{{count}} fallidos",
+      "adminUnlimited": "Admin: Créditos Ilimitados",
+      "creditsUsed": "{{count}} créditos usados",
+      "overallProgress": "Progreso General",
+      "individualSwaps": "Cambios Individuales",
+      "swap": "Cambio {{index}}"
+    },
+    "status": {
+      "processing": "procesando",
+      "completed": "completado",
+      "failed": "fallido",
+      "queued": "en cola"
+    },
+    "buttons": {
+      "preview": "Vista Previa",
+      "open": "Abrir",
+      "animate": "Animar",
+      "ecommerce": "E-commerce",
+      "photoshoot": "Sesión de Fotos",
+      "download": "Descargar"
+    },
+    "warnings": {
+      "stuckJob": "⚠️ Este trabajo puede estar atascado. Intenta hacer clic en Actualizar."
+    },
+    "errorMessages": {
+      "rateLimit": "Límite de tasa de la API de Google Gemini alcanzado. Por favor espera unos minutos e inténtalo de nuevo.",
+      "authError": "Problema de configuración del sistema con la API de Google Gemini. Por favor contacta a soporte.",
+      "serverError": "La API de Google Gemini no está disponible temporalmente. Por favor inténtalo de nuevo más tarde."
+    },
+    "toasts": {
+      "resultReady": "Resultado listo",
+      "resultReadyDesc": "Un nuevo resultado de cambio de vestuario está disponible",
+      "resultsRefreshed": "Resultados actualizados",
+      "resultsRefreshedDesc": "{{count}} resultados cargados",
+      "adminAccessRequired": "Se requiere acceso de administrador",
+      "onlyAdminsPhotoshoots": "Solo los administradores pueden crear sesiones de fotos",
+      "ecommerceStarted": "Foto de e-commerce iniciada",
+      "ecommerceStartedDesc": "Creando foto profesional del producto...",
+      "ecommerceFailed": "Error al iniciar la foto de e-commerce"
+    },
+    "baseModelSelector": {
+      "filters": {
+        "gender": "Género",
+        "ageRange": "Rango de Edad",
+        "bodyType": "Tipo de Cuerpo",
+        "pose": "Pose",
+        "skinTone": "Tono de Piel",
+        "all": "Todos"
+      },
+      "genderOptions": {
+        "male": "Masculino",
+        "female": "Femenino",
+        "unisex": "Unisex"
+      },
+      "ageRanges": {
+        "0-12months": "0-12 meses",
+        "1-3years": "1-3 años",
+        "4-7years": "4-7 años",
+        "8-12years": "8-12 años",
+        "13-17years": "13-17 años",
+        "18-22years": "18-22 años",
+        "23-35years": "23-35 años",
+        "36-50years": "36-50 años",
+        "51-65years": "51-65 años",
+        "65plus": "65+ años"
+      },
+      "bodyTypes": {
+        "slim": "Delgado",
+        "athletic": "Atlético",
+        "average": "Promedio",
+        "plus": "Plus"
+      },
+      "poses": {
+        "front": "Frontal",
+        "side": "Lateral",
+        "back": "Posterior",
+        "angled": "Angulado"
+      },
+      "skinTones": {
+        "light": "Claro",
+        "medium": "Medio",
+        "tan": "Bronceado",
+        "dark": "Oscuro"
+      },
+      "search": "Buscar modelos por nombre...",
+      "upload": {
+        "title": "Subir Tu Modelo",
+        "titleUploading": "Subiendo...",
+        "premiumFeature": "Función premium",
+        "uploadOwn": "Subir el Tuyo",
+        "createWithAI": "Crear con IA"
+      },
+      "badges": {
+        "yourModel": "Tu Modelo",
+        "system": "Sistema"
+      },
+      "loading": "Cargando modelos...",
+      "noModels": "No se encontraron modelos"
+    },
+    "garmentUploader": {
+      "title": "Subir Imágenes de Prendas",
+      "dragDrop": "Arrastra y suelta o haz clic para seleccionar",
+      "selected": "{{count}} de {{max}} prendas seleccionadas",
+      "discount": "¡10% de descuento aplicado! Estás procesando {{count}} prendas a la vez."
+    },
+    "settings": {
+      "title": "Ajustes",
+      "outputFormat": "Formato de Salida",
+      "formats": {
+        "jpg": "JPG (Tamaño de archivo más pequeño)",
+        "png": "PNG (Mayor calidad)",
+        "both": "Ambos formatos"
+      }
+    }
   }
 }

@@ -10,6 +10,7 @@ import { Upload, Check, User, Sparkles, Crown, AirVentIcon, WandSparkles } from 
 import { cn } from "@/lib/utils";
 import { useCredits } from "@/hooks/useCredits";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { UploadModelDialog } from "./UploadModelDialog";
 import { AIModelGenerationForm } from "./AIModelGenerationForm";
 import { ModelPreviewDialog } from "./ModelPreviewDialog";
@@ -29,6 +30,7 @@ export const BaseModelSelector = ({
 }: BaseModelSelectorProps) => {
   const { systemModels, userModels, loading, fetchSystemModels, uploadUserModel, uploading, fetchUserModels } = useBaseModels();
   const { isFreeTier } = useCredits();
+  const { t } = useTranslation();
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [uploadDialogAIOpen, setUploadDialogAIOpen] = useState(false);
   const [filters, setFilters] = useState<BaseModelFilters>({});
@@ -53,7 +55,7 @@ export const BaseModelSelector = ({
 
   const handleUploadClick = () => {
     if (isFreeTier()) {
-      toast.error('Premium subscription required to upload custom base models');
+      toast.error(t('outfitSwap.baseModelSelector.upload.premiumFeature'));
       return;
     }
     setUploadDialogOpen(true);
@@ -101,7 +103,7 @@ export const BaseModelSelector = ({
       setPreviewDialogOpen(true);
       setUploadDialogOpen(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to process image");
+      toast.error(error instanceof Error ? error.message : t('outfitSwap.errors.failedToStart'));
     } finally {
       setIsProcessing(false);
     }
@@ -177,89 +179,89 @@ export const BaseModelSelector = ({
       {/* Filters */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div className="space-y-2">
-          <Label className="text-sm">Gender</Label>
+          <Label className="text-sm">{t('outfitSwap.baseModelSelector.filters.gender')}</Label>
           <select
             className="w-full px-3 py-2 text-sm border rounded-lg bg-background"
             value={filters.gender || ""}
             onChange={(e) => handleFilterChange("gender", e.target.value)}
           >
-            <option value="">All</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="unisex">Unisex</option>
+            <option value="">{t('outfitSwap.baseModelSelector.filters.all')}</option>
+            <option value="male">{t('outfitSwap.baseModelSelector.genderOptions.male')}</option>
+            <option value="female">{t('outfitSwap.baseModelSelector.genderOptions.female')}</option>
+            <option value="unisex">{t('outfitSwap.baseModelSelector.genderOptions.unisex')}</option>
           </select>
         </div>
 
         <div className="space-y-2">
-          <Label className="text-sm">Age Range</Label>
+          <Label className="text-sm">{t('outfitSwap.baseModelSelector.filters.ageRange')}</Label>
           <select
             className="w-full px-3 py-2 text-sm border rounded-lg bg-background"
             value={filters.ageRange || ""}
             onChange={(e) => handleFilterChange("ageRange", e.target.value)}
           >
-            <option value="">All</option>
-            <option value="0-12 months">0-12 months</option>
-            <option value="1-3 years">1-3 years</option>
-            <option value="4-7 years">4-7 years</option>
-            <option value="8-12 years">8-12 years</option>
-            <option value="13-17 years">13-17 years</option>
-            <option value="18-22 years">18-22 years</option>
-            <option value="23-35 years">23-35 years</option>
-            <option value="36-50 years">36-50 years</option>
-            <option value="51-65 years">51-65 years</option>
-            <option value="65+ years">65+ years</option>
+            <option value="">{t('outfitSwap.baseModelSelector.filters.all')}</option>
+            <option value="0-12 months">{t('outfitSwap.baseModelSelector.ageRanges.0-12months')}</option>
+            <option value="1-3 years">{t('outfitSwap.baseModelSelector.ageRanges.1-3years')}</option>
+            <option value="4-7 years">{t('outfitSwap.baseModelSelector.ageRanges.4-7years')}</option>
+            <option value="8-12 years">{t('outfitSwap.baseModelSelector.ageRanges.8-12years')}</option>
+            <option value="13-17 years">{t('outfitSwap.baseModelSelector.ageRanges.13-17years')}</option>
+            <option value="18-22 years">{t('outfitSwap.baseModelSelector.ageRanges.18-22years')}</option>
+            <option value="23-35 years">{t('outfitSwap.baseModelSelector.ageRanges.23-35years')}</option>
+            <option value="36-50 years">{t('outfitSwap.baseModelSelector.ageRanges.36-50years')}</option>
+            <option value="51-65 years">{t('outfitSwap.baseModelSelector.ageRanges.51-65years')}</option>
+            <option value="65+ years">{t('outfitSwap.baseModelSelector.ageRanges.65plus')}</option>
           </select>
         </div>
 
         <div className="space-y-2">
-          <Label className="text-sm">Body Type</Label>
+          <Label className="text-sm">{t('outfitSwap.baseModelSelector.filters.bodyType')}</Label>
           <select
             className="w-full px-3 py-2 text-sm border rounded-lg bg-background"
             value={filters.bodyType || ""}
             onChange={(e) => handleFilterChange("bodyType", e.target.value)}
           >
-            <option value="">All</option>
-            <option value="slim">Slim</option>
-            <option value="athletic">Athletic</option>
-            <option value="average">Average</option>
-            <option value="plus">Plus</option>
+            <option value="">{t('outfitSwap.baseModelSelector.filters.all')}</option>
+            <option value="slim">{t('outfitSwap.baseModelSelector.bodyTypes.slim')}</option>
+            <option value="athletic">{t('outfitSwap.baseModelSelector.bodyTypes.athletic')}</option>
+            <option value="average">{t('outfitSwap.baseModelSelector.bodyTypes.average')}</option>
+            <option value="plus">{t('outfitSwap.baseModelSelector.bodyTypes.plus')}</option>
           </select>
         </div>
 
         <div className="space-y-2">
-          <Label className="text-sm">Pose</Label>
+          <Label className="text-sm">{t('outfitSwap.baseModelSelector.filters.pose')}</Label>
           <select
             className="w-full px-3 py-2 text-sm border rounded-lg bg-background"
             value={filters.poseType || ""}
             onChange={(e) => handleFilterChange("poseType", e.target.value)}
           >
-            <option value="">All</option>
-            <option value="front">Front</option>
-            <option value="side">Side</option>
-            <option value="back">Back</option>
-            <option value="angled">Angled</option>
+            <option value="">{t('outfitSwap.baseModelSelector.filters.all')}</option>
+            <option value="front">{t('outfitSwap.baseModelSelector.poses.front')}</option>
+            <option value="side">{t('outfitSwap.baseModelSelector.poses.side')}</option>
+            <option value="back">{t('outfitSwap.baseModelSelector.poses.back')}</option>
+            <option value="angled">{t('outfitSwap.baseModelSelector.poses.angled')}</option>
           </select>
         </div>
 
         <div className="space-y-2">
-          <Label className="text-sm">Skin Tone</Label>
+          <Label className="text-sm">{t('outfitSwap.baseModelSelector.filters.skinTone')}</Label>
           <select
             className="w-full px-3 py-2 text-sm border rounded-lg bg-background"
             value={filters.skinTone || ""}
             onChange={(e) => handleFilterChange("skinTone", e.target.value)}
           >
-            <option value="">All</option>
-            <option value="light">Light</option>
-            <option value="medium">Medium</option>
-            <option value="tan">Tan</option>
-            <option value="dark">Dark</option>
+            <option value="">{t('outfitSwap.baseModelSelector.filters.all')}</option>
+            <option value="light">{t('outfitSwap.baseModelSelector.skinTones.light')}</option>
+            <option value="medium">{t('outfitSwap.baseModelSelector.skinTones.medium')}</option>
+            <option value="tan">{t('outfitSwap.baseModelSelector.skinTones.tan')}</option>
+            <option value="dark">{t('outfitSwap.baseModelSelector.skinTones.dark')}</option>
           </select>
         </div>
       </div>
 
       {/* Search */}
       <Input
-        placeholder="Search models by name..."
+        placeholder={t('outfitSwap.baseModelSelector.search')}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className="max-w-md"
@@ -283,18 +285,18 @@ export const BaseModelSelector = ({
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm">
-                    {uploading ? 'Uploading...' : 'Upload Your Model'}
+                    {uploading ? t('outfitSwap.baseModelSelector.upload.titleUploading') : t('outfitSwap.baseModelSelector.upload.title')}
                   </h3>
                   <div className="flex items-center justify-center gap-1 mt-1">
                     <Crown className="w-3 h-3 text-primary" />
                     <p className="text-xs text-muted-foreground">
-                      Premium feature
+                      {t('outfitSwap.baseModelSelector.upload.premiumFeature')}
                     </p>
                   </div>
                 </div>
                 {!uploading && (
                   <Button size="sm" variant="outline" onClick={handleUploadClick}>
-                    Upload Your Own
+                    {t('outfitSwap.baseModelSelector.upload.uploadOwn')}
                   </Button>
                 )}
                 or
@@ -303,18 +305,18 @@ export const BaseModelSelector = ({
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm">
-                    {uploading ? 'Uploading...' : 'Upload Your Model'}
+                    {uploading ? t('outfitSwap.baseModelSelector.upload.titleUploading') : t('outfitSwap.baseModelSelector.upload.title')}
                   </h3>
                   <div className="flex items-center justify-center gap-1 mt-1">
                     <Crown className="w-3 h-3 text-primary" />
                     <p className="text-xs text-muted-foreground">
-                      Premium feature
+                      {t('outfitSwap.baseModelSelector.upload.premiumFeature')}
                     </p>
                   </div>
                 </div>
                 {!uploading && (
                   <Button size="sm" variant="outline" onClick={handleUploadAIClick}>
-                    Create with AI
+                    {t('outfitSwap.baseModelSelector.upload.createWithAI')}
                   </Button>
                 )}
               </div>
@@ -344,7 +346,7 @@ export const BaseModelSelector = ({
                 )}
                 <Badge className="absolute top-2 left-2" variant="default">
                   <User className="w-3 h-3 mr-1" />
-                  Your Model
+                  {t('outfitSwap.baseModelSelector.badges.yourModel')}
                 </Badge>
               </div>
               <div className="p-3">
@@ -394,7 +396,7 @@ export const BaseModelSelector = ({
                 )}
                 <Badge className="absolute top-2 left-2" variant="secondary">
                   <Sparkles className="w-3 h-3 mr-1" />
-                  System
+                  {t('outfitSwap.baseModelSelector.badges.system')}
                 </Badge>
               </div>
               <div className="p-3">
@@ -423,13 +425,13 @@ export const BaseModelSelector = ({
 
         {loading && (
           <div className="text-center py-8 text-muted-foreground">
-            Loading models...
+            {t('outfitSwap.baseModelSelector.loading')}
           </div>
         )}
 
         {!loading && filteredModels.length === 0 && userModels.length === 0 && (
           <div className="text-center py-8 text-muted-foreground">
-            No models found
+            {t('outfitSwap.baseModelSelector.noModels')}
           </div>
         )}
       </ScrollArea>
