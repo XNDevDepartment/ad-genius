@@ -120,17 +120,138 @@ async function deductCredits(userId: string, amount: number): Promise<{ success:
 }
 
 // Helper: Refund credits to user
-async function refundCredits(userId: string, amount: number): Promise<void> {
+async function refundCredits(userId: string, amount: number, reason: string = 'ecommerce_photo_failed_or_cancelled'): Promise<void> {
   const supabase = serviceClient();
   const { error } = await supabase.rpc('refund_user_credits', {
     p_user_id: userId,
     p_amount: amount,
-    p_reason: 'ecommerce_photo_failed_or_cancelled'
+    p_reason: reason
   });
   
   if (error) {
     console.error('[refundCredits] Error:', error);
   }
+}
+
+// Helper: Extract base64 image from Gemini response
+function extractBase64Image(jsonResp: any): string | null {
+  console.log('[extractBase64Image] Parsing response structure...');
+  
+  if (!jsonResp?.candidates) {
+    console.error('[extractBase64Image] No candidates in response');
+    return null;
+  }
+  
+  const parts = jsonResp.candidates?.[0]?.content?.parts ?? [];
+  console.log(`[extractBase64Image] Found ${parts.length} parts in response`);
+  
+  const imgPart = parts.find((p: any) => p?.inlineData?.mimeType?.startsWith('image/'));
+  
+  if (!imgPart) {
+    console.error('[extractBase64Image] No image part found. Parts structure:', 
+      JSON.stringify(parts.map((p: any) => Object.keys(p))));
+    return null;
+  }
+  
+  const imageData = imgPart.inlineData?.data;
+  if (!imageData) {
+    console.error('[extractBase64Image] Image part found but no data');
+    return null;
+  }
+  
+  console.log(`[extractBase64Image] ✅ Extracted image data (${imageData.length} chars)`);
+  return imageData;
+}
+
+// Helper: Generate image with retry logic and exponential backoff
+async function generateImageWithRetry(
+  prompt: string, 
+  base64Image: string, 
+  mimeType: string,
+  maxRetries = 3
+): Promise<string | null> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`[Attempt ${attempt}/${maxRetries}] Calling Gemini API...`);
+      
+      const response = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent',
+        {
+          method: 'POST',
+          headers: {
+            'x-goog-api-key': GOOGLE_AI_KEY,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: prompt },
+                { inlineData: { mimeType, data: base64Image } }
+              ]
+            }],
+            generationConfig: { responseModalities: ['IMAGE'] }
+          })
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[Attempt ${attempt}] API error:`, response.status, errorText);
+        
+        if (errorText.includes('not available in your country')) {
+          throw new Error('REGION_BLOCKED: Image generation not available in this region');
+        }
+        
+        if (response.status === 429) {
+          const delay = Math.min(1000 * Math.pow(2, attempt), 10000);
+          console.log(`[Attempt ${attempt}] Rate limited. Waiting ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(`[Attempt ${attempt}] Response received:`, JSON.stringify(data).substring(0, 200));
+      
+      const resultBase64 = extractBase64Image(data);
+      
+      if (!resultBase64) {
+        console.error(`[Attempt ${attempt}] No image in response. Full response:`, 
+          JSON.stringify(data).substring(0, 500));
+        
+        if (attempt < maxRetries) {
+          const delay = 2000 * attempt;
+          console.log(`[Attempt ${attempt}] Retrying in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        
+        return null;
+      }
+      
+      console.log(`[Attempt ${attempt}] ✅ Image generated successfully`);
+      return resultBase64;
+      
+    } catch (error) {
+      console.error(`[Attempt ${attempt}] Error:`, error);
+      
+      if (error.message?.includes('REGION_BLOCKED')) {
+        throw error;
+      }
+      
+      if (attempt === maxRetries) {
+        return null;
+      }
+      
+      const delay = 2000 * attempt;
+      console.log(`[Attempt ${attempt}] Retrying in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  
+  return null;
 }
 
 // Helper: Convert ArrayBuffer to base64 in chunks to avoid stack overflow
@@ -867,6 +988,28 @@ const PHOTOSHOOT_PROMPTS = [
 async function createPhotoshootJob(userId1, params) {
   const { resultId, backImageUrl } = params;
   const supabase = serviceClient();
+  
+  // Quick region availability check
+  try {
+    const testResponse = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview',
+      { headers: { 'x-goog-api-key': GOOGLE_AI_KEY } }
+    );
+    
+    if (!testResponse.ok) {
+      const errorText = await testResponse.text();
+      if (errorText.includes('not available in your country')) {
+        return jsonResponse({
+          error: "IMAGE_GENERATION_UNAVAILABLE",
+          message: "Image generation is not available in your region. Please contact support.",
+          details: "This feature requires Google Gemini API access which may be restricted in certain countries."
+        }, 503);
+      }
+    }
+  } catch (error) {
+    console.warn('[Region check] Failed:', error);
+  }
+  
   const creditsNeeded = 4;
   console.log(`[createPhotoshoot] Creating photoshoot for result ${resultId}`);
   // Check admin status
@@ -974,59 +1117,32 @@ async function processPhotoshoot(photoshootId) {
     const imageBuffer = await imageResponse.arrayBuffer();
     const base64Image = bufferToBase64(new Uint8Array(imageBuffer));
     const mimeType = imageResponse.headers.get('content-type') || 'image/jpeg';
-    // Generate all 4 images concurrently
-    console.log(`[processPhotoshoot] Starting concurrent generation of 4 images`);
+    // Generate all 4 images with staggered requests to avoid rate limiting
+    console.log(`[processPhotoshoot] Starting staggered generation of 4 images`);
     const imageGenerationPromises = PHOTOSHOOT_PROMPTS.map(async (prompt, index)=>{
       const imageNum = index + 1;
+      
+      // Stagger requests by 500ms to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, index * 500));
+      
       console.log(`[processPhotoshoot] Starting image ${imageNum}/4`);
       try {
-        // Call Gemini API
-        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent', {
-          method: 'POST',
-          headers: {
-            'x-goog-api-key': GOOGLE_AI_KEY,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: prompt
-                  },
-                  {
-                    inlineData: {
-                      mimeType: mimeType,
-                      data: base64Image
-                    }
-                  }
-                ]
-              }
-            ],
-            generationConfig: {
-              responseModalities: [
-                'IMAGE'
-              ]
-            }
-          })
-        });
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`[processPhotoshoot] Image ${imageNum} API error:`, response.status, errorText);
-          return {
-            success: false,
-            imageNum
-          };
-        }
-        const data = await response.json();
-        const generatedBase64 = extractBase64Image(data);
+        // Update progress
+        await supabase.from("outfit_swap_photoshoots").update({
+          progress: 20 + (imageNum - 1) * 15
+        }).eq("id", photoshootId);
+
+        // Call Gemini API with retry logic
+        const generatedBase64 = await generateImageWithRetry(prompt, base64Image, mimeType);
+        
         if (!generatedBase64) {
-          console.error(`[processPhotoshoot] Image ${imageNum}: No image in response`);
+          console.error(`[processPhotoshoot] Image ${imageNum}: Failed after all retries`);
           return {
             success: false,
             imageNum
           };
         }
+        
         // Upload to storage
         const imageBlob = Uint8Array.from(atob(generatedBase64), (c)=>c.charCodeAt(0));
         const storagePath = `${photoshoot.user_id}/${photoshootId}/image_${imageNum}.png`;
@@ -1093,17 +1209,13 @@ async function processPhotoshoot(photoshootId) {
         failed_images: failedImages
       }
     }).eq("id", photoshootId);
-    // Refund credits if all images failed (only for non-admins)
-    if (successfulImages === 0) {
-      const { data: isAdmin } = await supabase.rpc("is_user_admin", {
-        check_user_id: photoshoot.user_id
-      });
+    
+    // Refund credits for failed images (only for non-admins)
+    if (failedImages > 0) {
+      const isAdmin = await checkIsAdmin(photoshoot.user_id);
       if (!isAdmin) {
-        await supabase.rpc("refund_user_credits", {
-          p_user_id: photoshoot.user_id,
-          p_amount: 4,
-          p_reason: "photoshoot_all_failed"
-        });
+        console.log(`[processPhotoshoot] Refunding ${failedImages} credits for failed images`);
+        await refundCredits(photoshoot.user_id, failedImages, `photoshoot_partial_failure_${failedImages}_failed`);
       }
     }
     return jsonResponse({
@@ -1113,23 +1225,35 @@ async function processPhotoshoot(photoshootId) {
     }, 200);
   } catch (error) {
     console.error("[processPhotoshoot] Error:", error);
+    
+    let userMessage = error.message || "Failed to generate photoshoot";
+    let errorType = 'UNKNOWN_ERROR';
+    
+    if (error.message?.includes('REGION_BLOCKED')) {
+      userMessage = 'Image generation is not available in your region';
+      errorType = 'REGION_BLOCKED';
+    } else if (error.message?.includes('429')) {
+      userMessage = 'Too many requests. Please try again in a few minutes';
+      errorType = 'RATE_LIMIT';
+    }
+    
     await supabase.from("outfit_swap_photoshoots").update({
       status: "failed",
-      error: error.message,
-      finished_at: new Date().toISOString()
+      error: userMessage,
+      finished_at: new Date().toISOString(),
+      metadata: {
+        error_type: errorType,
+        error_details: error.message
+      }
     }).eq("id", photoshootId);
-    // Fetch user_id for refund
+    
+    // Refund all 4 credits on complete failure
     const { data: photoshoot } = await supabase.from("outfit_swap_photoshoots").select("user_id").eq("id", photoshootId).single();
     if (photoshoot?.user_id) {
-      const { data: isAdmin } = await supabase.rpc("is_user_admin", {
-        check_user_id: photoshoot.user_id
-      });
+      const isAdmin = await checkIsAdmin(photoshoot.user_id);
       if (!isAdmin) {
-        await supabase.rpc("refund_user_credits", {
-          p_user_id: photoshoot.user_id,
-          p_amount: 4,
-          p_reason: "photoshoot_processing_failed"
-        });
+        console.log(`[processPhotoshoot] Refunding 4 credits due to complete failure`);
+        await refundCredits(photoshoot.user_id, 4, 'photoshoot_generation_failed');
       }
     }
     return jsonResponse({
@@ -1171,6 +1295,28 @@ async function cancelPhotoshoot(userId1, photoshootId) {
 async function createEcommercePhotoJob(userId1, params) {
   const { resultId } = params;
   const supabase = serviceClient();
+  
+  // Quick region availability check
+  try {
+    const testResponse = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview',
+      { headers: { 'x-goog-api-key': GOOGLE_AI_KEY } }
+    );
+    
+    if (!testResponse.ok) {
+      const errorText = await testResponse.text();
+      if (errorText.includes('not available in your country')) {
+        return jsonResponse({
+          error: "IMAGE_GENERATION_UNAVAILABLE",
+          message: "Image generation is not available in your region. Please contact support.",
+          details: "This feature requires Google Gemini API access which may be restricted in certain countries."
+        }, 503);
+      }
+    }
+  } catch (error) {
+    console.warn('[Region check] Failed:', error);
+  }
+  
   const creditsNeeded = 1;
   // Check admin status
   const { data: isAdmin } = await supabase.rpc("is_user_admin", {
@@ -1274,38 +1420,11 @@ OUTPUT: Magazine-quality fashion photograph.`;
 
     await supabase.from("outfit_swap_ecommerce_photos").update({ progress: 40 }).eq("id", photoId);
 
-    console.log(`[processEcommercePhoto] Calling Gemini API...`);
-    const geminiResp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent', {
-      method: "POST",
-      headers: {
-        'x-goog-api-key': GOOGLE_AI_KEY,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: prompt },
-            { inlineData: { mimeType: "image/jpeg", data: base64Image } }
-          ]
-        }],
-        generationConfig: {
-          responseModalities: ['IMAGE']
-        }
-      })
-    });
+    console.log(`[processEcommercePhoto] Calling Gemini API with retry logic...`);
+    const resultBase64 = await generateImageWithRetry(prompt, base64Image, "image/jpeg");
 
-    if (!geminiResp.ok) {
-      const errorText = await geminiResp.text();
-      console.error(`[processEcommercePhoto] Gemini API error:`, geminiResp.status, errorText);
-      throw new Error(`Gemini API error: ${geminiResp.status}`);
-    }
-
-    const geminiData = await geminiResp.json();
-    const resultBase64 = extractBase64Image(geminiData);
-    
     if (!resultBase64) {
-      console.error(`[processEcommercePhoto] No image in response:`, JSON.stringify(geminiData).substring(0, 500));
-      throw new Error("No image in Gemini response");
+      throw new Error("Failed to generate image after 3 attempts");
     }
     
     console.log(`[processEcommercePhoto] Image generated successfully`);
@@ -1337,16 +1456,43 @@ OUTPUT: Magazine-quality fashion photograph.`;
     }, 200);
   } catch (error) {
     console.error(`[processEcommercePhoto] Error:`, error);
+    
+    let userMessage = error.message;
+    let errorType = 'UNKNOWN_ERROR';
+    
+    if (error.message?.includes('REGION_BLOCKED')) {
+      userMessage = 'Image generation is not available in your region';
+      errorType = 'REGION_BLOCKED';
+    } else if (error.message?.includes('429')) {
+      userMessage = 'Too many requests. Please try again in a few minutes';
+      errorType = 'RATE_LIMIT';
+    } else if (error.message?.includes('timeout')) {
+      userMessage = 'Request timed out. Please try again';
+      errorType = 'TIMEOUT';
+    } else if (error.message?.includes('Failed to generate image after')) {
+      userMessage = 'Failed to generate image after multiple attempts. Please try again later';
+      errorType = 'GENERATION_FAILED';
+    }
+    
     await supabase.from("outfit_swap_ecommerce_photos").update({
       status: "failed",
-      error: error.message,
-      finished_at: new Date().toISOString()
+      error: userMessage,
+      finished_at: new Date().toISOString(),
+      metadata: {
+        ...photo.metadata,
+        error_type: errorType,
+        error_details: error.message
+      }
     }).eq("id", photoId);
+    
     // Check admin status
     const { data: isAdmin } = await supabase.rpc("is_user_admin", {
       check_user_id: photo.user_id
     });
-    if (!isAdmin) await refundCredits(photo.user_id, 1);
+    if (!isAdmin) {
+      console.log(`[processEcommercePhoto] Refunding 1 credit to user`);
+      await refundCredits(photo.user_id, 1, 'ecommerce_photo_failed');
+    }
     return jsonResponse({
       error: error.message
     }, 500);
