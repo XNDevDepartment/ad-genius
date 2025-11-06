@@ -84,6 +84,55 @@ async function getPrompt(promptKey, variables = {}, fallback) {
     return prompt;
   }
 }
+
+// Helper: Check if user is admin
+async function checkIsAdmin(userId: string): Promise<boolean> {
+  const supabase = serviceClient();
+  const { data, error } = await supabase.rpc('is_user_admin', {
+    check_user_id: userId
+  });
+  if (error) {
+    console.error('[checkIsAdmin] Error:', error);
+    return false;
+  }
+  return data || false;
+}
+
+// Helper: Deduct credits from user
+async function deductCredits(userId: string, amount: number): Promise<{ success: boolean; error?: string }> {
+  const supabase = serviceClient();
+  const { data, error } = await supabase.rpc('deduct_user_credits', {
+    p_user_id: userId,
+    p_amount: amount,
+    p_reason: 'ecommerce_photo_generation'
+  });
+  
+  if (error) {
+    console.error('[deductCredits] Error:', error);
+    return { success: false, error: error.message };
+  }
+  
+  if (!data?.success) {
+    return { success: false, error: 'Insufficient credits' };
+  }
+  
+  return { success: true };
+}
+
+// Helper: Refund credits to user
+async function refundCredits(userId: string, amount: number): Promise<void> {
+  const supabase = serviceClient();
+  const { error } = await supabase.rpc('refund_user_credits', {
+    p_user_id: userId,
+    p_amount: amount,
+    p_reason: 'ecommerce_photo_failed_or_cancelled'
+  });
+  
+  if (error) {
+    console.error('[refundCredits] Error:', error);
+  }
+}
+
 // Helper: Convert ArrayBuffer to base64 in chunks to avoid stack overflow
 function bufferToBase64(uint8Array) {
   let binary = '';
@@ -1157,30 +1206,52 @@ async function createEcommercePhotoJob(userId1, params) {
       error: "Failed to create e-commerce photo job"
     }, 500);
   }
-  await supabase.functions.invoke("outfit-swap", {
-    body: {
+
+  // Trigger async processing
+  const functionUrl = `${SUPABASE_URL}/functions/v1/outfit-swap`;
+  fetch(functionUrl, {
+    method: "POST",
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`
+    },
+    body: JSON.stringify({
       action: "processEcommercePhoto",
       photoId: ecommercePhoto.id
-    }
-  });
-  return jsonResponse({
-    ecommercePhoto
-  }, 200);
+    })
+  }).catch(console.error);
+
+  return jsonResponse({ ecommercePhoto }, 200);
 }
 async function processEcommercePhoto(photoId) {
   const supabase = serviceClient();
-  const { data: photo } = await supabase.from("outfit_swap_ecommerce_photos").select("*, outfit_swap_results(*)").eq("id", photoId).single();
-  if (!photo) return jsonResponse({
-    error: "Photo not found"
-  }, 404);
-  await supabase.from("outfit_swap_ecommerce_photos").update({
-    status: "processing",
-    started_at: new Date().toISOString(),
-    progress: 10
-  }).eq("id", photoId);
+  console.log(`[processEcommercePhoto] Starting photo ${photoId}`);
+
+  const { data: photo } = await supabase
+    .from("outfit_swap_ecommerce_photos")
+    .select("*, outfit_swap_results(*)")
+    .eq("id", photoId)
+    .single();
+
+  if (!photo) {
+    console.error(`[processEcommercePhoto] Photo ${photoId} not found`);
+    return jsonResponse({ error: "Photo not found" }, 404);
+  }
+
+  await supabase.from("outfit_swap_ecommerce_photos")
+    .update({ status: "processing", started_at: new Date().toISOString(), progress: 10 })
+    .eq("id", photoId);
+
   try {
     const originalUrl = photo.outfit_swap_results.public_url;
+    console.log(`[processEcommercePhoto] Fetching original image from ${originalUrl}`);
+    
     const imageResp = await fetch(originalUrl);
+    if (!imageResp.ok) {
+      throw new Error(`Failed to fetch original image: ${imageResp.status}`);
+    }
+    
     const imageBuffer = new Uint8Array(await imageResp.arrayBuffer());
     const base64Image = bufferToBase64(imageBuffer);
     const prompt = `Create a professional e-commerce fashion photo by placing this model with their current outfit into a perfectly matching, photorealistic environment.
@@ -1200,51 +1271,60 @@ REQUIREMENTS:
 5. Environment complements but doesn't distract from the product
 
 OUTPUT: Magazine-quality fashion photograph.`;
-    await supabase.from("outfit_swap_ecommerce_photos").update({
-      progress: 40
-    }).eq("id", photoId);
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GOOGLE_AI_KEY}`;
-    const geminiResp = await fetch(geminiUrl, {
+
+    await supabase.from("outfit_swap_ecommerce_photos").update({ progress: 40 }).eq("id", photoId);
+
+    console.log(`[processEcommercePhoto] Calling Gemini API...`);
+    const geminiResp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent', {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        'x-goog-api-key': GOOGLE_AI_KEY,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt
-              },
-              {
-                inline_data: {
-                  mime_type: "image/jpeg",
-                  data: base64Image
-                }
-              }
-            ]
-          }
-        ],
-        generationConfig: {
-          response_modalities: [
-            "IMAGE"
+        contents: [{
+          parts: [
+            { text: prompt },
+            { inlineData: { mimeType: "image/jpeg", data: base64Image } }
           ]
+        }],
+        generationConfig: {
+          responseModalities: ['IMAGE']
         }
       })
     });
+
+    if (!geminiResp.ok) {
+      const errorText = await geminiResp.text();
+      console.error(`[processEcommercePhoto] Gemini API error:`, geminiResp.status, errorText);
+      throw new Error(`Gemini API error: ${geminiResp.status}`);
+    }
+
     const geminiData = await geminiResp.json();
     const resultBase64 = extractBase64Image(geminiData);
-    if (!resultBase64) throw new Error("No image in Gemini response");
-    await supabase.from("outfit_swap_ecommerce_photos").update({
-      progress: 80
-    }).eq("id", photoId);
-    const resultBuffer = Uint8Array.from(atob(resultBase64), (c)=>c.charCodeAt(0));
+    
+    if (!resultBase64) {
+      console.error(`[processEcommercePhoto] No image in response:`, JSON.stringify(geminiData).substring(0, 500));
+      throw new Error("No image in Gemini response");
+    }
+    
+    console.log(`[processEcommercePhoto] Image generated successfully`);
+    await supabase.from("outfit_swap_ecommerce_photos").update({ progress: 80 }).eq("id", photoId);
+
+    const resultBuffer = Uint8Array.from(atob(resultBase64), c => c.charCodeAt(0));
     const storagePath = `ecommerce/${photoId}.jpg`;
+    
+    console.log(`[processEcommercePhoto] Uploading to storage: ${storagePath}`);
     await supabase.storage.from("outfit-swap-photoshoots").upload(storagePath, resultBuffer, {
       contentType: "image/jpeg",
       upsert: true
     });
-    const { data: { publicUrl } } = supabase.storage.from("outfit-swap-photoshoots").getPublicUrl(storagePath);
+
+    const { data: { publicUrl } } = supabase.storage
+      .from("outfit-swap-photoshoots")
+      .getPublicUrl(storagePath);
+
+    console.log(`[processEcommercePhoto] Complete! Public URL: ${publicUrl}`);
     await supabase.from("outfit_swap_ecommerce_photos").update({
       status: "completed",
       progress: 100,
@@ -1256,6 +1336,7 @@ OUTPUT: Magazine-quality fashion photograph.`;
       success: true
     }, 200);
   } catch (error) {
+    console.error(`[processEcommercePhoto] Error:`, error);
     await supabase.from("outfit_swap_ecommerce_photos").update({
       status: "failed",
       error: error.message,
