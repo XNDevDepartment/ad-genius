@@ -25,8 +25,8 @@ const ModuleSelection = () => {
   const workflows = [
     {
       id: "ugc",
-      title: "UGC Creator",
-      description: "Create realistic UGC content using our Genius XN framework",
+      title: t('createSelection.ugcCreator.title'),
+      description: t('createSelection.ugcCreator.description'),
       icon: Zap,
       path: "/create/ugc",
       isAdmin: false
@@ -50,8 +50,8 @@ const ModuleSelection = () => {
     // }] : []),
     ...(isAdmin ? [{
       id: "outfit-swap",
-      title: "Outfit Swap",
-      description: "AI-powered outfit replacement on person photos",
+      title: t('createSelection.outfitSwap.title'),
+      description: t('createSelection.outfitSwap.description'),
       icon: Shirt,
       path: "/create/outfit-swap",
       isAdmin: true

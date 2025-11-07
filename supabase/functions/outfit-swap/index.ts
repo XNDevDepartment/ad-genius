@@ -264,12 +264,7 @@ function bufferToBase64(uint8Array) {
   }
   return btoa(binary);
 }
-// Helper: Extract base64 image from Gemini response
-function extractBase64Image(jsonResp) {
-  const parts = jsonResp?.candidates?.[0]?.content?.parts ?? [];
-  const imgPart = parts.find((p)=>p?.inlineData?.mimeType?.startsWith('image/'));
-  return imgPart?.inlineData?.data ?? null;
-}
+
 serve(async (req)=>{
   if (req.method === "OPTIONS") {
     return new Response(null, {

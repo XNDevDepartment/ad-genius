@@ -86,12 +86,16 @@
     "title": "Escolha o seu Fluxo de Trabalho",
     "description": "Selecione o tipo de conteúdo que pretende criar",
     "ugcCreator": {
-      "title": "Criador de UGC",
+      "title": "UGC Images",
       "description": "Crie conteúdo autêntico gerado por utilizadores com ajuda da IA"
     },
     "videoCreator": {
       "title": "Image Animator",
       "description": "Transforme imagens UGC em vídeos realistas, destacando funcionalidades e utilizações"
+    },
+    "outfitSwap": {
+      "title": "Provador",
+      "description": "Veste a tua roupa nos nossos modelos e faz uma sessão fotográfica profissional"
     },
     "studioPhotos": {
       "title": "Fotos de Estúdio",

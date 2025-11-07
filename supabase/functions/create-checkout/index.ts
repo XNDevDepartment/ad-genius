@@ -87,7 +87,11 @@ serve(async (req) => {
       customer: customerId,
       customer_email: customerId ? undefined : user.email!,
       allow_promotion_codes: true,
-      
+      tax_id_collection: { enabled: true },
+      billing_address_collection: 'required',
+      custom_fields: [
+        { key: 'nif', label: { type: 'custom', custom: 'NIF (optional)' }, type: 'text' }
+      ],
       line_items: [
         {
           price_data: {
