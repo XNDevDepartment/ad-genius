@@ -36,7 +36,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
 
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+      const fileName = `${Date.now()}_${crypto.randomUUID()}.${fileExt}`;
       const filePath = `temp/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -51,9 +51,13 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
 
       setBackImageUrl(publicUrl);
       toast.success("Back image uploaded");
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast.error("Failed to upload back image");
+    } catch (error: any) {
+      console.error("Upload error details:", {
+        message: error.message,
+        statusCode: error.statusCode,
+        error: error
+      });
+      toast.error(`Failed to upload back image: ${error.message || 'Unknown error'}`);
       setBackImageFile(null);
     } finally {
       setIsUploading(false);
@@ -106,6 +110,36 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
       setBackImageUrl(null);
     }
   }, [isOpen]);
+
+  // Polling fallback for photoshoot status updates
+  useEffect(() => {
+    if (!photoshoot?.id || photoshoot.status === 'completed' || photoshoot.status === 'failed') {
+      return;
+    }
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const updatedPhotoshoot = await photoshootApi.getPhotoshoot(photoshoot.id);
+        setPhotoshoot(updatedPhotoshoot);
+
+        if (updatedPhotoshoot.status === 'completed') {
+          toast.success("Photoshoot completed!");
+          
+          // Delete the back image from storage if it was uploaded
+          if (backImageUrl && backImageUrl.includes('outfit-user-models/temp/')) {
+            const path = backImageUrl.split('outfit-user-models/')[1];
+            supabase.storage.from('outfit-user-models').remove([path]).catch(console.error);
+          }
+        } else if (updatedPhotoshoot.status === 'failed') {
+          toast.error(updatedPhotoshoot.error || "Photoshoot failed");
+        }
+      } catch (error) {
+        console.error("Polling error:", error);
+      }
+    }, 2000);
+
+    return () => clearInterval(pollInterval);
+  }, [photoshoot?.id, photoshoot?.status, backImageUrl]);
 
   const handleDownloadImage = (url: string, index: number) => {
     const link = document.createElement("a");

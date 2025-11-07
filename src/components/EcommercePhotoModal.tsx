@@ -49,6 +49,30 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
     };
   }, [isOpen, photoId]);
 
+  // Polling fallback for ecommerce photo status
+  useEffect(() => {
+    if (!photo?.id || photo.status === 'completed' || photo.status === 'failed' || photo.status === 'canceled') {
+      return;
+    }
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const updatedPhoto = await ecommercePhotoApi.getEcommercePhoto(photo.id);
+        setPhoto(updatedPhoto);
+
+        if (updatedPhoto.status === 'completed') {
+          toast.success("E-commerce photo generated!");
+        } else if (updatedPhoto.status === 'failed') {
+          toast.error(updatedPhoto.error || "Failed to generate e-commerce photo");
+        }
+      } catch (error) {
+        console.error("Polling error:", error);
+      }
+    }, 2000);
+
+    return () => clearInterval(pollInterval);
+  }, [photo?.id, photo?.status]);
+
   const handleDownload = async (url: string) => {
     try {
       const response = await fetch(url);
