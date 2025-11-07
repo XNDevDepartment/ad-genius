@@ -36,9 +36,9 @@ serve(async (req) => {
     // Define plan pricing
     const planPricing = {
       founders: { monthly: 1999, yearly: 23988 }, // €19.99/month, €239.88/year (12 months)
-      starter: { monthly: 2900, yearly: 2417 }, // €29/month, €24.17/month when billed yearly
-      plus: { monthly: 4900, yearly: 4083 },   // €49/month, €40.83/month when billed yearly
-      pro: { monthly: 9900, yearly: 8250 }     // €99/month, €82.50/month when billed yearly
+      starter: { monthly: 2900, yearly: 29004 }, // €29/month, €290.04/year (€24.17/month × 12)
+      plus: { monthly: 4900, yearly: 48996 },   // €49/month, €489.96/year (€40.83/month × 12)
+      pro: { monthly: 9900, yearly: 99000 }     // €99/month, €990/year (€82.50/month × 12)
     };
 
     // Validate pricing to prevent future bugs
