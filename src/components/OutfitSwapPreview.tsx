@@ -54,6 +54,7 @@ export const OutfitSwapPreview = ({
     if (!results) return;
     navigate("/create/video", {
       state: {
+        source: 'outfit_swap',
         preselectedImageUrl: results.public_url,
       },
     });
