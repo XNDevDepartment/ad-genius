@@ -1354,7 +1354,7 @@ async function cancelPhotoshoot(userId1, photoshootId) {
 }
 // E-commerce Photo Generation
 async function generateEcommerceIdeas(userId1, params) {
-  const { imageUrl } = params;
+  const { imageUrl, language } = params;
   const supabase = serviceClient();
   if (!imageUrl) {
     return jsonResponse({
@@ -1371,17 +1371,19 @@ async function generateEcommerceIdeas(userId1, params) {
     const base64Image = bufferToBase64(imageBuffer);
     const prompt = `Analyze this fashion/product image and suggest 4 creative e-commerce presentation styles.
 
-For each style, provide:
-1. A short catchy title (3-5 words)
-2. A brief description (1-2 sentences) of the visual style and mood
+                    For each style, provide:
+                    1. A short catchy title (3-5 words)
+                    2. A brief description (1-2 sentences) of the visual style and mood
 
-Focus on diverse approaches:
-- Minimal/Clean e-commerce
-- Lifestyle/Contextual
-- Magazine/Editorial
-- Street/Urban
+                    Focus on diverse approaches:
+                    - Minimal/Clean e-commerce
+                    - Lifestyle/Contextual
+                    - Magazine/Editorial
+                    - Street/Urban
 
-Format as JSON array: [{"title": "...", "description": "..."}, ...]`;
+                    Format as JSON array: [{"title": "...", "description": "..."}, ...]
+
+                    ###IMPORTANT: You must return the text on this language: ` + language;
     console.log(`[generateEcommerceIdeas] Calling Gemini API...`);
     const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
       method: 'POST',

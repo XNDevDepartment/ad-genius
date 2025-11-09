@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface EcommerceIdea {
   title: string;
@@ -29,6 +30,8 @@ export const EcommerceIdeasModal = ({
   const [selectedIdea, setSelectedIdea] = useState<string | null>(null);
   const { toast } = useToast();
 
+  const { language } = useLanguage();
+
   useEffect(() => {
     if (isOpen && imageUrl) {
       generateIdeas();
@@ -42,6 +45,8 @@ export const EcommerceIdeasModal = ({
         body: {
           action: "generateEcommerceIdeas",
           imageUrl,
+          language
+
         },
       });
 
