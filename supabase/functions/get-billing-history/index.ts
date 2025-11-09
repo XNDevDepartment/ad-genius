@@ -45,7 +45,7 @@ serve(async (req) => {
     });
 
     return new Response(JSON.stringify({ 
-      invoices: invoices.data.map(invoice => ({
+      invoices: invoices.data.map((invoice: any) => ({
         id: invoice.id,
         number: invoice.number,
         amount: invoice.amount_paid / 100,

@@ -8,6 +8,7 @@ import { Download, X, CheckCircle2, XCircle, Loader2, AlertCircle, RefreshCw, Ey
 import { useState, useEffect } from "react";
 import { ecommercePhotoApi, EcommercePhotoJob } from "@/api/ecommerce-photo-api";
 import { EcommercePhotoModal } from "@/components/EcommercePhotoModal";
+import { EcommerceIdeasModal } from "@/components/EcommerceIdeasModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -47,6 +48,11 @@ export const BatchSwapPreview = ({
     resultId: string | null;
     originalImageUrl: string | null;
   }>({ isOpen: false, resultId: null, originalImageUrl: null });
+  const [ecommerceIdeasModal, setEcommerceIdeasModal] = useState<{
+    isOpen: boolean;
+    resultId: string | null;
+    imageUrl: string | null;
+  }>({ isOpen: false, resultId: null, imageUrl: null });
   const [ecommercePhotoModal, setEcommercePhotoModal] = useState<{
     isOpen: boolean;
     photoId: string | null;
@@ -225,13 +231,23 @@ export const BatchSwapPreview = ({
   };
 
   const handleCreateEcommercePhoto = async (result: OutfitSwapResult) => {
+    // Open ideas modal first
+    setEcommerceIdeasModal({
+      isOpen: true,
+      resultId: result.id,
+      imageUrl: result.public_url,
+    });
+  };
+
+  const handleEcommerceIdeaSelected = async (stylePrompt: string, resultId: string) => {
     try {
-      const ecommercePhoto = await ecommercePhotoApi.createEcommercePhoto(result.id);
+      const ecommercePhoto = await ecommercePhotoApi.createEcommercePhoto(resultId, stylePrompt);
       setEcommercePhotoModal({
         isOpen: true,
         photoId: ecommercePhoto.id,
-        originalImageUrl: result.public_url,
+        originalImageUrl: ecommerceIdeasModal.imageUrl,
       });
+      setEcommerceIdeasModal({ isOpen: false, resultId: null, imageUrl: null });
       toast({
         title: t('outfitSwap.toasts.ecommerceStarted'),
         description: t('outfitSwap.toasts.ecommerceStartedDesc'),
@@ -456,6 +472,15 @@ export const BatchSwapPreview = ({
           onClose={() => setPhotoshootModal({ isOpen: false, resultId: null, originalImageUrl: null })}
           resultId={photoshootModal.resultId}
           originalImageUrl={photoshootModal.originalImageUrl || ""}
+        />
+      )}
+
+      {ecommerceIdeasModal.resultId && (
+        <EcommerceIdeasModal
+          isOpen={ecommerceIdeasModal.isOpen}
+          onClose={() => setEcommerceIdeasModal({ isOpen: false, resultId: null, imageUrl: null })}
+          imageUrl={ecommerceIdeasModal.imageUrl || ""}
+          onSelectIdea={(idea) => handleEcommerceIdeaSelected(idea, ecommerceIdeasModal.resultId!)}
         />
       )}
 

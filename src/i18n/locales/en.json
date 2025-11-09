@@ -748,6 +748,14 @@
       "changeModel": "Change Model",
       "back": "Back"
     },
+    "garmentUploader": {
+      "title": "Upload Garments",
+      "dragDrop": "Drag & drop images or click to browse",
+      "selected": "{{count}} of {{max}} garments selected",
+      "discount": "Upload 5+ garments and save 10%!",
+      "detailsLabel": "Garment Details (Optional)",
+      "detailsPlaceholder": "E.g., red cotton t-shirt, slim fit, v-neck..."
+    },
     "errors": {
       "accessDenied": "Access Denied",
       "adminRequired": "Admin access required for the Outfit Swap module",

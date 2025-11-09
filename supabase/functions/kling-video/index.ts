@@ -43,14 +43,14 @@ serve(async (req)=>{
         }, 400);
     }
     return json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error("[KLING-VIDEO] Error:", error);
     return json({
-      error: error.message
+      error: error?.message || "Unknown error"
     }, 500);
   }
 });
-function json(body, status = 200) {
+function json(body: any, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
@@ -59,7 +59,7 @@ function json(body, status = 200) {
     }
   });
 }
-async function isUserAdmin(supabase, userId) {
+async function isUserAdmin(supabase: any, userId: string): Promise<boolean> {
   const { data, error } = await supabase.rpc('is_user_admin', {
     check_user_id: userId
   });

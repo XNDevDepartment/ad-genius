@@ -18,13 +18,11 @@ export interface EcommercePhotoJob {
 }
 
 export const ecommercePhotoApi = {
-  async createEcommercePhoto(resultId: string) {
-    const { data, error } = await supabase.functions.invoke("outfit-swap", {
-      body: {
-        action: "createEcommercePhoto",
-        resultId,
-      },
-    });
+  async createEcommercePhoto(resultId: string, stylePrompt?: string) {
+    const body: any = { action: "createEcommercePhoto", resultId };
+    if (stylePrompt) body.stylePrompt = stylePrompt;
+
+    const { data, error } = await supabase.functions.invoke("outfit-swap", { body });
 
     if (error) throw error;
     return data.ecommercePhoto as EcommercePhotoJob;

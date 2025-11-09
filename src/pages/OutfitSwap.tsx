@@ -30,10 +30,9 @@ const OutfitSwap = () => {
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [selectedModel, setSelectedModel] = useState<BaseModel | null>(null);
   const [garmentFiles, setGarmentFiles] = useState<File[]>([]);
+  const [garmentDetails, setGarmentDetails] = useState<Record<number, string>>({});
   const [uploading, setUploading] = useState(false);
-  const [settings, setSettings] = useState({
-    outputFormat: "both" as "jpg" | "png" | "both",
-  });
+  const [settings, setSettings] = useState({});
 
   useEffect(() => {
     if (!adminLoading && (!user || !isAdmin)) {
@@ -66,8 +65,11 @@ const OutfitSwap = () => {
         garmentIds.push(uploaded.id);
       }
 
-      // Create batch
-      await createBatch(selectedModel.id, garmentIds, settings);
+      // Prepare garment details array
+      const detailsArray = garmentFiles.map((_, index) => garmentDetails[index] || "");
+
+      // Create batch with garment details
+      await createBatch(selectedModel.id, garmentIds, { ...settings, garmentDetails: detailsArray });
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -84,6 +86,7 @@ const OutfitSwap = () => {
     setCurrentStep(1);
     setSelectedModel(null);
     setGarmentFiles([]);
+    setGarmentDetails({});
   };
 
   if (adminLoading) {
@@ -186,7 +189,11 @@ const OutfitSwap = () => {
 
                 <MultiGarmentUploader
                   garments={garmentFiles}
-                  onGarmentsChange={setGarmentFiles}
+                  garmentDetails={garmentDetails}
+                  onGarmentsChange={(files, details) => {
+                    setGarmentFiles(files);
+                    setGarmentDetails(details);
+                  }}
                   maxGarments={10}
                 />
 

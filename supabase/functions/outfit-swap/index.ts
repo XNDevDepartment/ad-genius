@@ -330,6 +330,8 @@ serve(async (req)=>{
         return await cancelPhotoshoot(user.id, params.photoshootId);
       case "createEcommercePhoto":
         return await createEcommercePhotoJob(user.id, params);
+      case "generateEcommerceIdeas":
+        return await generateEcommerceIdeas(user.id, params);
       case "getEcommercePhoto":
         return await getEcommercePhoto(user.id, params.photoId);
       case "cancelEcommercePhoto":
@@ -872,16 +874,19 @@ async function createBatchJob(userId1, params) {
   }
   // Create individual jobs for each garment
   const jobs = [];
+  const garmentDetails = settings?.garmentDetails || [];
   for(let i = 0; i < garmentIds.length; i++){
     const garmentId = garmentIds[i];
+    const garmentDetail = garmentDetails[i] || "";
     console.log(`[createBatchJob] Creating job ${i + 1}/${garmentIds.length} for garment ${garmentId}`);
+    const jobSettings = { ...settings, garmentDetail };
     const { data: job, error: jobError } = await supabase.from("outfit_swap_jobs").insert({
       user_id: userId1,
       batch_id: batch.id,
       base_model_id: baseModelId,
       source_person_id: null,
       source_garment_id: garmentId,
-      settings,
+      settings: jobSettings,
       garment_ids: [
         garmentId
       ],
@@ -1287,8 +1292,88 @@ async function cancelPhotoshoot(userId1, photoshootId) {
   }, 200);
 }
 // E-commerce Photo Generation
+async function generateEcommerceIdeas(userId1, params) {
+  const { imageUrl } = params;
+  const supabase = serviceClient();
+
+  if (!imageUrl) {
+    return jsonResponse({ error: "Image URL is required" }, 400);
+  }
+
+  try {
+    console.log(`[generateEcommerceIdeas] Fetching image from ${imageUrl}`);
+    const imageResp = await fetch(imageUrl);
+    if (!imageResp.ok) {
+      throw new Error(`Failed to fetch image: ${imageResp.status}`);
+    }
+
+    const imageBuffer = new Uint8Array(await imageResp.arrayBuffer());
+    const base64Image = bufferToBase64(imageBuffer);
+
+    const prompt = `Analyze this fashion/product image and suggest 4 creative e-commerce presentation styles.
+
+For each style, provide:
+1. A short catchy title (3-5 words)
+2. A brief description (1-2 sentences) of the visual style and mood
+
+Focus on diverse approaches:
+- Minimal/Clean e-commerce
+- Lifestyle/Contextual
+- Magazine/Editorial
+- Street/Urban
+
+Format as JSON array: [{"title": "...", "description": "..."}, ...]`;
+
+    console.log(`[generateEcommerceIdeas] Calling Gemini API...`);
+    const response = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+      {
+        method: 'POST',
+        headers: {
+          'x-goog-api-key': GOOGLE_AI_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: prompt },
+              { inlineData: { mimeType: 'image/jpeg', data: base64Image } }
+            ]
+          }]
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[generateEcommerceIdeas] Gemini API error:', response.status, errorText);
+      throw new Error(`Gemini API error: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    const textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!textResponse) {
+      throw new Error("No response from Gemini");
+    }
+
+    // Parse JSON response
+    const jsonMatch = textResponse.match(/\[[\s\S]*\]/);
+    const ideas = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
+
+    console.log(`[generateEcommerceIdeas] Generated ${ideas.length} ideas`);
+    return jsonResponse({ ideas }, 200);
+  } catch (error) {
+    console.error('[generateEcommerceIdeas] Error:', error);
+    return jsonResponse({
+      error: "Failed to generate ideas",
+      message: error.message
+    }, 500);
+  }
+}
+
 async function createEcommercePhotoJob(userId1, params) {
-  const { resultId } = params;
+  const { resultId, stylePrompt } = params;
   const supabase = serviceClient();
   
   // Quick region availability check
@@ -1338,7 +1423,8 @@ async function createEcommercePhotoJob(userId1, params) {
     status: "queued",
     metadata: {
       original_result_url: result.public_url,
-      credits_deducted: creditsNeeded
+      credits_deducted: creditsNeeded,
+      style_prompt: stylePrompt || null
     }
   }).select().single();
   if (error) {
@@ -1395,9 +1481,16 @@ async function processEcommercePhoto(photoId) {
     
     const imageBuffer = new Uint8Array(await imageResp.arrayBuffer());
     const base64Image = bufferToBase64(imageBuffer);
-    const prompt = `Create a professional UGC magazine fashion photo by placing this model with their current outfit into a perfectly matching, photorealistic environment.
-
-        ###ANALYZE THE GARMENT STYLE and match to appropriate environment:
+    
+    // Check for custom style prompt from metadata
+    const stylePrompt = photo.metadata?.style_prompt;
+    let prompt = `Create a professional UGC magazine fashion photo by placing this model with their current outfit into a perfectly matching, photorealistic environment.`;
+    
+    if (stylePrompt) {
+      prompt += `\n\n###STYLE DIRECTION: ${stylePrompt}\nCreate a photo that matches this specific style and mood.`;
+    }
+    
+    prompt += `\n\n###ANALYZE THE GARMENT STYLE and match to appropriate environment:
         - Casual: Urban street, coffee shop, park, etc...
         - Formal: Modern office, elegant venue, city backdrop, etc...
         - Athletic: Gym, outdoor track, yoga studio, etc...
