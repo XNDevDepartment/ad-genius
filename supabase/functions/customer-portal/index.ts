@@ -35,15 +35,46 @@ serve(async (req) => {
     const user = userData.user;
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
-    const customers = await stripe.customers.list({ email: user.email!, limit: 1 });
+    log("Searching for Stripe customer", { email: user.email });
+
+    // Procurar cliente Stripe existente
+    let customers = await stripe.customers.list({ email: user.email!, limit: 1 });
+    let customerId: string;
+
     if (customers.data.length === 0) {
-      throw new Error("No Stripe customer found for this user");
+      // Cliente não existe - criar novo
+      log("No Stripe customer found, creating new customer");
+      
+      const newCustomer = await stripe.customers.create({
+        email: user.email!,
+        metadata: {
+          supabase_user_id: user.id,
+          created_via: 'customer_portal_auto_creation'
+        }
+      });
+      
+      customerId = newCustomer.id;
+      log("Created new Stripe customer", { customerId });
+      
+      // Atualizar a tabela subscribers com o novo stripe_customer_id
+      const { error: updateError } = await supabaseService
+        .from('subscribers')
+        .update({ stripe_customer_id: customerId })
+        .eq('user_id', user.id);
+        
+      if (updateError) {
+        console.error("Error updating stripe_customer_id:", updateError);
+        // Não falhar se a atualização falhar - o portal ainda funcionará
+      }
+    } else {
+      customerId = customers.data[0].id;
+      log("Found existing Stripe customer", { customerId });
     }
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
     const portalSession = await stripe.billingPortal.sessions.create({
-      customer: customers.data[0].id,
-      return_url: `${origin}/`,
+      customer: customerId,
+      return_url: `${origin}/account`,
     });
 
     return new Response(JSON.stringify({ url: portalSession.url }), {
