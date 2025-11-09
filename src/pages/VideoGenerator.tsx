@@ -23,6 +23,8 @@ import { useCredits } from "@/hooks/useCredits";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useTranslation } from "react-i18next";
 import { VideoSettingsPanel, VideoSettings } from "@/components/VideoSettings";
+import { useLanguage } from "@/contexts/LanguageContext";
+
 
 
 type Duration = 5 | 10;
@@ -57,6 +59,8 @@ export default function VideoGenerator() {
   const [analyzingImage, setAnalyzingImage] = useState(false);
   const [suggestedPrompt, setSuggestedPrompt] = useState<string | null>(null);
   const [showSuggestion, setShowSuggestion] = useState(false);
+
+  const { language } = useLanguage();
 
   // Video settings state
   const [videoSettings, setVideoSettings] = useState<VideoSettings>({
@@ -103,7 +107,7 @@ export default function VideoGenerator() {
     try {
       console.log('[VideoGenerator] Invoking analyze-image-for-motion edge function...');
       const { data, error } = await supabase.functions.invoke('analyze-image-for-motion', {
-        body: { imageUrl }
+        body: { imageUrl, language }
       });
 
       console.log('[VideoGenerator] Edge function response:', { data, error });

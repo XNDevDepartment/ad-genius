@@ -30,7 +30,7 @@ Avoid:
 
 Keep it raw and relatable - like someone genuinely showing off a product they love.
 
-Return ONLY a simple, conversational motion description (max 350 characters). No technical jargon, just natural language describing what should move and how.`;
+Return ONLY a simple, conversational motion description (max 350 characters). No technical jargon, just natural language describing what should move and how. Create the final prompt in this language: `;
 
 // Helper: Get prompt from database with fallback
 async function getPrompt(
@@ -56,6 +56,17 @@ async function getPrompt(
   }
 }
 
+function getLanguageName(code: string): string {
+  const names: Record<string, string> = {
+    en: 'English',
+    pt: 'Portuguese',
+    es: 'Spanish',
+    fr: 'French',
+    de: 'German'
+  };
+  return names[code] || 'English';
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -63,7 +74,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageUrl } = await req.json();
+    const { imageUrl, language = 'en' } = await req.json();
 
     if (!imageUrl) {
       return new Response(JSON.stringify({
@@ -111,7 +122,7 @@ serve(async (req) => {
             content: [
               {
                 type: 'text',
-                text: FALLBACK_MOTION_PROMPT
+                text: `${FALLBACK_MOTION_PROMPT} ${language}.\n\nIMPORTANT: Respond in ${getLanguageName(language)}. The user expects the motion description in their language.`
               },
               {
                 type: 'image_url',
