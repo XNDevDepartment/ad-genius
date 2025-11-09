@@ -215,6 +215,15 @@ async function generateImageWithRetry(
       const data = await response.json();
       console.log(`[Attempt ${attempt}] Response received:`, JSON.stringify(data).substring(0, 200));
       
+      // Check for IMAGE_OTHER rejection
+      if (data.candidates?.[0]?.finishReason === 'IMAGE_OTHER') {
+        console.error(`[Attempt ${attempt}] Gemini refused to generate (IMAGE_OTHER):`, 
+          data.candidates[0].finishMessage);
+        
+        // Don't retry on safety rejections - the prompt needs to be fixed
+        throw new Error(`Image generation refused by AI: ${data.candidates[0].finishMessage || 'Safety filters triggered'}`);
+      }
+      
       const resultBase64 = extractBase64Image(data);
       
       if (!resultBase64) {
@@ -1507,28 +1516,30 @@ async function processEcommercePhoto(photoId) {
     
     // Check for custom style prompt from metadata
     const stylePrompt = photo.metadata?.style_prompt;
-    let prompt = `Create a professional UGC magazine fashion photo by placing this model with their current outfit into a perfectly matching, photorealistic environment.`;
+    let prompt = `Generate a professional fashion magazine photograph featuring the model and outfit shown in the reference image.`;
     
     if (stylePrompt) {
-      prompt += `\n\n###STYLE DIRECTION: ${stylePrompt}\nCreate a photo that matches this specific style and mood.`;
+      prompt += `\n\nSTYLE DIRECTION: ${stylePrompt}`;
     }
     
-    prompt += `\n\n###ANALYZE THE GARMENT STYLE and match to appropriate environment:
-        - Casual: Urban street, coffee shop, park, etc...
-        - Formal: Modern office, elegant venue, city backdrop, etc...
-        - Athletic: Gym, outdoor track, yoga studio, etc...
-        - Evening: Upscale restaurant, gala venue, etc...
-        - Outerwear: City street, outdoor scene, etc...
+    prompt += `\n\nCreate a complete fashion scene where:
 
-        ###IMPORTANT: You must use your intelligence to create the most human and realistic image possible.
+GARMENT ANALYSIS - Match environment to style:
+- Casual wear → Urban street, coffee shop, park setting
+- Formal wear → Modern office, elegant venue, city backdrop
+- Athletic wear → Gym, outdoor track, yoga studio
+- Evening wear → Upscale restaurant, gala venue
+- Outerwear → City street, outdoor scene
 
-        ###REQUIREMENTS:
-        1. Change ONLY the background and lighting
-        2. Ensure lighting matches the new environment
-        3. Professional photography quality with proper depth of field
-        4. Environment complements but doesn't distract from the product
+PHOTOGRAPHY REQUIREMENTS:
+- Magazine-quality professional photography
+- Natural lighting that complements the environment
+- Proper depth of field with soft background blur
+- Environment enhances but doesn't distract from outfit
+- Model positioned naturally within the scene
+- Cohesive color palette between outfit and setting
 
-        OUTPUT: Magazine-quality fashion photograph.`;
+OUTPUT: A polished, magazine-ready fashion photograph where model, outfit, and environment create a unified, professional presentation.`;
 
     await supabase.from("outfit_swap_ecommerce_photos").update({ progress: 40 }).eq("id", photoId);
 
@@ -1575,6 +1586,9 @@ async function processEcommercePhoto(photoId) {
     if (error.message?.includes('REGION_BLOCKED')) {
       userMessage = 'Image generation is not available in your region';
       errorType = 'REGION_BLOCKED';
+    } else if (error.message?.includes('Image generation refused')) {
+      userMessage = 'Unable to generate this style. Please try a different approach or contact support.';
+      errorType = 'AI_REFUSED';
     } else if (error.message?.includes('429')) {
       userMessage = 'Too many requests. Please try again in a few minutes';
       errorType = 'RATE_LIMIT';
@@ -1582,7 +1596,7 @@ async function processEcommercePhoto(photoId) {
       userMessage = 'Request timed out. Please try again';
       errorType = 'TIMEOUT';
     } else if (error.message?.includes('Failed to generate image after')) {
-      userMessage = 'Failed to generate image after multiple attempts. Please try again later';
+      userMessage = 'Image generation timed out. Please try again.';
       errorType = 'GENERATION_FAILED';
     }
     
