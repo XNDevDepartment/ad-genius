@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTranslation } from "react-i18next";
 
 interface EcommerceIdea {
   title: string;
@@ -25,6 +26,7 @@ export const EcommerceIdeasModal = ({
   imageUrl,
   onSelectIdea,
 }: EcommerceIdeasModalProps) => {
+  const { t } = useTranslation();
   const [ideas, setIdeas] = useState<EcommerceIdea[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIdea, setSelectedIdea] = useState<string | null>(null);
@@ -61,26 +63,26 @@ export const EcommerceIdeasModal = ({
       console.error("Failed to generate ideas:", error);
       toast({
         variant: "destructive",
-        title: "Failed to generate ideas",
-        description: error.message || "Please try again",
+        title: t('ecommerceIdeasModal.failedToGenerate'),
+        description: error.message || t('ecommerceIdeasModal.pleaseTryAgain'),
       });
       // Set fallback ideas
       setIdeas([
         {
-          title: "Clean Studio Shot",
-          description: "Minimal white background with professional lighting, perfect for product catalogs",
+          title: t('ecommerceIdeasModal.fallbackIdeas.cleanStudio.title'),
+          description: t('ecommerceIdeasModal.fallbackIdeas.cleanStudio.description'),
         },
         {
-          title: "Lifestyle Context",
-          description: "Natural environment setting that showcases real-world usage",
+          title: t('ecommerceIdeasModal.fallbackIdeas.lifestyleContext.title'),
+          description: t('ecommerceIdeasModal.fallbackIdeas.lifestyleContext.description'),
         },
         {
-          title: "Editorial Magazine",
-          description: "High-fashion editorial style with dramatic lighting and composition",
+          title: t('ecommerceIdeasModal.fallbackIdeas.editorialMagazine.title'),
+          description: t('ecommerceIdeasModal.fallbackIdeas.editorialMagazine.description'),
         },
         {
-          title: "Street Urban",
-          description: "Contemporary urban backdrop with authentic street style vibes",
+          title: t('ecommerceIdeasModal.fallbackIdeas.streetUrban.title'),
+          description: t('ecommerceIdeasModal.fallbackIdeas.streetUrban.description'),
         },
       ]);
     } finally {
@@ -98,9 +100,9 @@ export const EcommerceIdeasModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Choose E-commerce Style</DialogTitle>
+          <DialogTitle>{t('ecommerceIdeasModal.title')}</DialogTitle>
           <DialogDescription>
-            Select a creative direction for your e-commerce photo
+            {t('ecommerceIdeasModal.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -130,10 +132,10 @@ export const EcommerceIdeasModal = ({
 
         <div className="flex gap-2 justify-end pt-4 border-t">
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {t('ecommerceIdeasModal.cancel')}
           </Button>
           <Button onClick={handleSelect} disabled={!selectedIdea || loading}>
-            Generate with Selected Style
+            {t('ecommerceIdeasModal.generateWithStyle')}
           </Button>
         </div>
       </DialogContent>

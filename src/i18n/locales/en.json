@@ -738,6 +738,110 @@
       "accountSettings": "Account Settings"
     }
   },
+  "photoshootModal": {
+    "title": "Professional Photoshoot",
+    "setupDescription": "Set up your photoshoot with optional back image",
+    "angleSelectionDescription": "Select angles to generate ({{count}} credit{{plural}})",
+    "processingDescription": "Generating your professional angles...",
+    "originalImage": "Original Image",
+    "productBack": "Product Back (Optional)",
+    "backImageHelp": "Upload a photo of the garment's back to improve back-view angles",
+    "uploading": "Uploading...",
+    "cancel": "Cancel",
+    "continue": "Continue",
+    "back": "Back",
+    "selectAllAngles": "Select All",
+    "deselectAllAngles": "Deselect All",
+    "selectAnglesLabel": "Select Angles to Generate",
+    "costLabel": "Cost",
+    "anglesLabel": "Angles",
+    "anglesCount": "{{count}} of {{total}}",
+    "startPhotoshoot": "Start Photoshoot ({{count}} credit{{plural}})",
+    "starting": "Starting...",
+    "progress": "Progress",
+    "generationFailed": "Generation Failed",
+    "unknownError": "Unknown error occurred",
+    "allAnglesGenerated": "All angles generated successfully!",
+    "generatedAngles": "Generated Angles",
+    "downloadAll": "Download All",
+    "downloading": "Downloading {{count}} images...",
+    "download": "Download",
+    "done": "Done",
+    "close": "Close",
+    "pending": "Pending",
+    "photoshootCompleted": "Photoshoot completed!",
+    "photoshootFailed": "Photoshoot failed",
+    "photoshootCanceled": "Photoshoot canceled",
+    "failedToCancel": "Failed to cancel: {{message}}",
+    "backImageUploaded": "Back image uploaded",
+    "failedToUpload": "Failed to upload back image: {{message}}",
+    "angles": {
+      "threeQuarter": {
+        "label": "Three-Quarter View",
+        "description": "Angled view showing depth"
+      },
+      "back": {
+        "label": "Back View",
+        "description": "Full back view"
+      },
+      "side": {
+        "label": "Side Profile",
+        "description": "Pure side angle"
+      },
+      "detail": {
+        "label": "Detail Close-Up",
+        "description": "Close-up of key features"
+      }
+    }
+  },
+  "ecommercePhotoModal": {
+    "title": "E-commerce Fashion Photo",
+    "description": "Transform your outfit into a professional e-commerce style photo",
+    "generating": "Generating e-commerce photo...",
+    "generationFailed": "Generation Failed",
+    "unknownError": "Unknown error occurred",
+    "generatedSuccessfully": "E-commerce photo generated successfully!",
+    "original": "Original",
+    "ecommerceStyle": "E-commerce Style",
+    "noImageYet": "No image yet",
+    "cancel": "Cancel",
+    "download": "Download",
+    "open": "Open",
+    "animate": "Animate",
+    "done": "Done",
+    "close": "Close",
+    "imageDownloaded": "Image downloaded",
+    "downloadFailed": "Failed to download image",
+    "generationCancelled": "E-commerce photo generation cancelled",
+    "cancelFailed": "Failed to cancel generation",
+    "failedToLoad": "Failed to load e-commerce photo"
+  },
+  "ecommerceIdeasModal": {
+    "title": "Choose E-commerce Style",
+    "description": "Select a creative direction for your e-commerce photo",
+    "cancel": "Cancel",
+    "generateWithStyle": "Generate with Selected Style",
+    "failedToGenerate": "Failed to generate ideas",
+    "pleaseTryAgain": "Please try again",
+    "fallbackIdeas": {
+      "cleanStudio": {
+        "title": "Clean Studio Shot",
+        "description": "Minimal white background with professional lighting, perfect for product catalogs"
+      },
+      "lifestyleContext": {
+        "title": "Lifestyle Context",
+        "description": "Natural environment setting that showcases real-world usage"
+      },
+      "editorialMagazine": {
+        "title": "Editorial Magazine",
+        "description": "High-fashion editorial style with dramatic lighting and composition"
+      },
+      "streetUrban": {
+        "title": "Street Urban",
+        "description": "Contemporary urban backdrop with authentic street style vibes"
+      }
+    }
+  },
   "outfitSwap": {
     "title": "Outfit Swap",
     "subtitle": "Process up to 10 garments at once",

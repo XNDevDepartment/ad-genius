@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import ImageUploader from "@/components/ImageUploader";
 import { Label } from "@/components/ui/label";
+import { useTranslation } from "react-i18next";
 
 interface PhotoshootModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ interface PhotoshootModalProps {
 }
 
 export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }: PhotoshootModalProps) => {
+  const { t } = useTranslation();
   const [stage, setStage] = useState<'setup' | 'angle-selection' | 'processing'>('setup');
   const [photoshoot, setPhotoshoot] = useState<PhotoshootJob | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,10 +28,10 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
   const [selectedAngles, setSelectedAngles] = useState<string[]>(['front', 'three_quarter', 'back', 'side']);
 
   const AVAILABLE_ANGLES = [
-    { id: 'three_quarter', label: 'Three-Quarter View', description: 'Angled view showing depth' },
-    { id: 'back', label: 'Back View', description: 'Full back view' },
-    { id: 'side', label: 'Side Profile', description: 'Pure side angle' },
-    { id: 'detail', label: 'Detail Close-Up', description: 'Close-up of key features' },
+    { id: 'three_quarter', label: t('photoshootModal.angles.threeQuarter.label'), description: t('photoshootModal.angles.threeQuarter.description') },
+    { id: 'back', label: t('photoshootModal.angles.back.label'), description: t('photoshootModal.angles.back.description') },
+    { id: 'side', label: t('photoshootModal.angles.side.label'), description: t('photoshootModal.angles.side.description') },
+    { id: 'detail', label: t('photoshootModal.angles.detail.label'), description: t('photoshootModal.angles.detail.description') },
   ];
 
   const handleBackImageUpload = async (file: File | null) => {
@@ -58,14 +60,14 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
         .getPublicUrl(filePath);
 
       setBackImageUrl(publicUrl);
-      toast.success("Back image uploaded");
+      toast.success(t('photoshootModal.backImageUploaded'));
     } catch (error: any) {
       console.error("Upload error details:", {
         message: error.message,
         statusCode: error.statusCode,
         error: error
       });
-      toast.error(`Failed to upload back image: ${error.message || 'Unknown error'}`);
+      toast.error(t('photoshootModal.failedToUpload', { message: error.message || 'Unknown error' }));
       setBackImageFile(null);
     } finally {
       setIsUploading(false);
@@ -89,7 +91,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
         setPhotoshoot(updatedPhotoshoot);
 
         if (updatedPhotoshoot.status === "completed") {
-          toast.success("Photoshoot completed!");
+          toast.success(t('photoshootModal.photoshootCompleted'));
           
           // Delete the back image from storage if it was uploaded
           if (backImageUrl && backImageUrl.includes('outfit-user-models/temp/')) {
@@ -97,7 +99,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
             supabase.storage.from('outfit-user-models').remove([path]).catch(console.error);
           }
         } else if (updatedPhotoshoot.status === "failed") {
-          toast.error(updatedPhotoshoot.error || "Photoshoot failed");
+          toast.error(updatedPhotoshoot.error || t('photoshootModal.photoshootFailed'));
         }
       });
 
@@ -156,7 +158,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
         setPhotoshoot(updatedPhotoshoot);
 
         if (updatedPhotoshoot.status === 'completed') {
-          toast.success("Photoshoot completed!");
+          toast.success(t('photoshootModal.photoshootCompleted'));
           
           // Delete the back image from storage if it was uploaded
           if (backImageUrl && backImageUrl.includes('outfit-user-models/temp/')) {
@@ -164,7 +166,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
             supabase.storage.from('outfit-user-models').remove([path]).catch(console.error);
           }
         } else if (updatedPhotoshoot.status === 'failed') {
-          toast.error(updatedPhotoshoot.error || "Photoshoot failed");
+          toast.error(updatedPhotoshoot.error || t('photoshootModal.photoshootFailed'));
         }
       } catch (error) {
         console.error("Polling error:", error);
@@ -199,7 +201,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
       }
     });
 
-    toast.success(`Downloading ${images.length} images...`);
+    toast.success(t('photoshootModal.downloading', { count: images.length }));
   };
 
   const handleCancel = async () => {
@@ -207,10 +209,10 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
     
     try {
       await photoshootApi.cancelPhotoshoot(photoshoot.id);
-      toast.success("Photoshoot canceled");
+      toast.success(t('photoshootModal.photoshootCanceled'));
       onClose();
     } catch (error: any) {
-      toast.error("Failed to cancel: " + error.message);
+      toast.error(t('photoshootModal.failedToCancel', { message: error.message }));
     }
   };
 
@@ -219,21 +221,21 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
   const isFailed = photoshoot?.status === "failed";
 
   const angleLabelsMap: Record<string, string> = {
-    'three_quarter': 'Three-Quarter View',
-    'back': 'Back View',
-    'side': 'Side Profile',
-    'detail': 'Detail Close-Up'
+    'three_quarter': t('photoshootModal.angles.threeQuarter.label'),
+    'back': t('photoshootModal.angles.back.label'),
+    'side': t('photoshootModal.angles.side.label'),
+    'detail': t('photoshootModal.angles.detail.label')
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Professional Photoshoot</DialogTitle>
+          <DialogTitle>{t('photoshootModal.title')}</DialogTitle>
           <DialogDescription>
-            {stage === 'setup' && 'Set up your photoshoot with optional back image'}
-            {stage === 'angle-selection' && `Select angles to generate (${selectedAngles.length} credit${selectedAngles.length !== 1 ? 's' : ''})`}
-            {stage === 'processing' && 'Generating your professional angles...'}
+            {stage === 'setup' && t('photoshootModal.setupDescription')}
+            {stage === 'angle-selection' && t('photoshootModal.angleSelectionDescription', { count: selectedAngles.length, plural: selectedAngles.length !== 1 ? 's' : '' })}
+            {stage === 'processing' && t('photoshootModal.processingDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -241,7 +243,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
           <div className="space-y-6">
             {/* Original Image Preview */}
             <div className="space-y-2">
-              <Label>Original Image</Label>
+              <Label>{t('photoshootModal.originalImage')}</Label>
               <img 
                 src={originalImageUrl} 
                 alt="Original outfit swap"
@@ -251,29 +253,29 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
 
             {/* Optional Back Image Uploader */}
             <div className="space-y-2">
-              <Label>Product Back (Optional)</Label>
+              <Label>{t('photoshootModal.productBack')}</Label>
               <p className="text-xs text-muted-foreground mb-2">
-                Upload a photo of the garment's back to improve back-view angles
+                {t('photoshootModal.backImageHelp')}
               </p>
               <ImageUploader
                 onImageSelect={handleBackImageUpload}
                 selectedImage={backImageFile}
                 isAnalyzing={isUploading}
-                analyzingText="Uploading..."
+                analyzingText={t('photoshootModal.uploading')}
               />
             </div>
 
             {/* Action Buttons */}
             <div className="flex gap-2 justify-end pt-4">
               <Button variant="outline" onClick={onClose}>
-                Cancel
+                {t('photoshootModal.cancel')}
               </Button>
               <Button 
                 onClick={handleContinueToAngleSelection}
                 disabled={isUploading}
                 size="lg"
               >
-                Continue
+                {t('photoshootModal.continue')}
               </Button>
             </div>
           </div>
@@ -281,7 +283,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
           <div className="space-y-6">
             {/* Original Image Preview */}
             <div className="space-y-2">
-              <Label>Original Image</Label>
+              <Label>{t('photoshootModal.originalImage')}</Label>
               <img 
                 src={originalImageUrl} 
                 alt="Original outfit swap"
@@ -292,7 +294,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
             {/* Angle Selection */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label>Select Angles to Generate</Label>
+                <Label>{t('photoshootModal.selectAnglesLabel')}</Label>
                 <div className="flex gap-2">
                   <Button
                     size="sm"
@@ -300,7 +302,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
                     onClick={selectAllAngles}
                     disabled={selectedAngles.length === AVAILABLE_ANGLES.length}
                   >
-                    Select All
+                    {t('photoshootModal.selectAllAngles')}
                   </Button>
                   <Button
                     size="sm"
@@ -308,7 +310,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
                     onClick={deselectAllAngles}
                     disabled={selectedAngles.length === 1}
                   >
-                    Deselect All
+                    {t('photoshootModal.deselectAllAngles')}
                   </Button>
                 </div>
               </div>
@@ -346,8 +348,8 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
 
               <div className="p-4 bg-muted rounded-lg">
                 <p className="text-sm text-muted-foreground">
-                  <strong>Cost:</strong> {selectedAngles.length} credit{selectedAngles.length !== 1 ? 's' : ''} • 
-                  <strong className="ml-2">Angles:</strong> {selectedAngles.length} of {AVAILABLE_ANGLES.length}
+                  <strong>{t('photoshootModal.costLabel')}:</strong> {selectedAngles.length} {t('common.credit', { count: selectedAngles.length })} • 
+                  <strong className="ml-2">{t('photoshootModal.anglesLabel')}:</strong> {t('photoshootModal.anglesCount', { count: selectedAngles.length, total: AVAILABLE_ANGLES.length })}
                 </p>
               </div>
             </div>
@@ -355,7 +357,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
             {/* Action Buttons */}
             <div className="flex gap-2 justify-end pt-4">
               <Button variant="outline" onClick={() => setStage('setup')}>
-                Back
+                {t('photoshootModal.back')}
               </Button>
               <Button 
                 onClick={handleStartPhotoshoot}
@@ -365,10 +367,10 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
                 {loading ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Starting...
+                    {t('photoshootModal.starting')}
                   </>
                 ) : (
-                  `Start Photoshoot (${selectedAngles.length} credit${selectedAngles.length !== 1 ? 's' : ''})`
+                  t('photoshootModal.startPhotoshoot', { count: selectedAngles.length, plural: selectedAngles.length !== 1 ? 's' : '' })
                 )}
               </Button>
             </div>
@@ -379,7 +381,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
             {isProcessing && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Progress</span>
+                  <span className="text-muted-foreground">{t('photoshootModal.progress')}</span>
                   <span className="font-medium">{photoshoot?.progress}%</span>
                 </div>
                 <Progress value={photoshoot?.progress} />
@@ -391,8 +393,8 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
               <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3">
                 <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium text-destructive">Generation Failed</p>
-                  <p className="text-sm text-muted-foreground">{photoshoot?.error || "Unknown error occurred"}</p>
+                  <p className="font-medium text-destructive">{t('photoshootModal.generationFailed')}</p>
+                  <p className="text-sm text-muted-foreground">{photoshoot?.error || t('photoshootModal.unknownError')}</p>
                 </div>
               </div>
             )}
@@ -400,13 +402,13 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
             {isComplete && (
               <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-3">
                 <CheckCircle2 className="w-5 h-5 text-green-600" />
-                <p className="font-medium text-green-600">All angles generated successfully!</p>
+                <p className="font-medium text-green-600">{t('photoshootModal.allAnglesGenerated')}</p>
               </div>
             )}
 
             {/* Original Image Reference */}
             <div className="space-y-2">
-              <h3 className="text-sm font-medium">Original Image</h3>
+              <h3 className="text-sm font-medium">{t('photoshootModal.originalImage')}</h3>
               <div className="relative aspect-square w-full max-w-xs mx-auto rounded-lg overflow-hidden border">
                 <img src={originalImageUrl} alt="Original" className="w-full h-full object-cover" />
               </div>
@@ -415,11 +417,11 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
             {/* Generated Images Grid */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium">Generated Angles</h3>
+                <h3 className="text-sm font-medium">{t('photoshootModal.generatedAngles')}</h3>
                 {isComplete && (
                   <Button size="sm" variant="outline" onClick={handleDownloadAll}>
                     <Download className="w-3 h-3 mr-1" />
-                    Download All
+                    {t('photoshootModal.downloadAll')}
                   </Button>
                 )}
               </div>
@@ -444,7 +446,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
                           </div>
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
-                            Pending
+                            {t('photoshootModal.pending')}
                           </div>
                         )}
                       </div>
@@ -471,11 +473,11 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
               {isProcessing && (
                 <Button variant="outline" onClick={handleCancel}>
                   <X className="w-4 w-4 mr-2" />
-                  Cancel
+                  {t('photoshootModal.cancel')}
                 </Button>
               )}
               <Button variant={isComplete ? "default" : "outline"} onClick={onClose}>
-                {isComplete ? "Done" : "Close"}
+                {isComplete ? t('photoshootModal.done') : t('photoshootModal.close')}
               </Button>
             </div>
           </div>

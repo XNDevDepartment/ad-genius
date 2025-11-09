@@ -738,6 +738,110 @@
       "accountSettings": "Kontoeinstellungen"
     }
   },
+  "photoshootModal": {
+    "title": "Professionelles Fotoshooting",
+    "setupDescription": "Richten Sie Ihr Fotoshooting mit optionalem Rückenbild ein",
+    "angleSelectionDescription": "Winkel zum Generieren auswählen ({{count}} Kredit{{plural}})",
+    "processingDescription": "Generiere Ihre professionellen Winkel...",
+    "originalImage": "Originalbild",
+    "productBack": "Produktrückseite (Optional)",
+    "backImageHelp": "Laden Sie ein Foto der Rückseite des Kleidungsstücks hoch, um die Rückenansichten zu verbessern",
+    "uploading": "Wird hochgeladen...",
+    "cancel": "Abbrechen",
+    "continue": "Weiter",
+    "back": "Zurück",
+    "selectAllAngles": "Alle Auswählen",
+    "deselectAllAngles": "Alle Abwählen",
+    "selectAnglesLabel": "Winkel zum Generieren Auswählen",
+    "costLabel": "Kosten",
+    "anglesLabel": "Winkel",
+    "anglesCount": "{{count}} von {{total}}",
+    "startPhotoshoot": "Fotoshooting Starten ({{count}} Kredit{{plural}})",
+    "starting": "Wird gestartet...",
+    "progress": "Fortschritt",
+    "generationFailed": "Generierung Fehlgeschlagen",
+    "unknownError": "Ein unbekannter Fehler ist aufgetreten",
+    "allAnglesGenerated": "Alle Winkel erfolgreich generiert!",
+    "generatedAngles": "Generierte Winkel",
+    "downloadAll": "Alle Herunterladen",
+    "downloading": "{{count}} Bilder werden heruntergeladen...",
+    "download": "Herunterladen",
+    "done": "Fertig",
+    "close": "Schließen",
+    "pending": "Ausstehend",
+    "photoshootCompleted": "Fotoshooting abgeschlossen!",
+    "photoshootFailed": "Fotoshooting fehlgeschlagen",
+    "photoshootCanceled": "Fotoshooting abgebrochen",
+    "failedToCancel": "Abbruch fehlgeschlagen: {{message}}",
+    "backImageUploaded": "Rückenbild hochgeladen",
+    "failedToUpload": "Hochladen des Rückenbilds fehlgeschlagen: {{message}}",
+    "angles": {
+      "threeQuarter": {
+        "label": "Dreiviertelansicht",
+        "description": "Winklige Ansicht, die Tiefe zeigt"
+      },
+      "back": {
+        "label": "Rückansicht",
+        "description": "Vollständige Rückansicht"
+      },
+      "side": {
+        "label": "Seitenprofil",
+        "description": "Reiner Seitenwinkel"
+      },
+      "detail": {
+        "label": "Detailnahaufnahme",
+        "description": "Nahaufnahme wichtiger Merkmale"
+      }
+    }
+  },
+  "ecommercePhotoModal": {
+    "title": "E-Commerce-Modefoto",
+    "description": "Verwandeln Sie Ihr Outfit in ein professionelles E-Commerce-Foto",
+    "generating": "E-Commerce-Foto wird generiert...",
+    "generationFailed": "Generierung Fehlgeschlagen",
+    "unknownError": "Ein unbekannter Fehler ist aufgetreten",
+    "generatedSuccessfully": "E-Commerce-Foto erfolgreich generiert!",
+    "original": "Original",
+    "ecommerceStyle": "E-Commerce-Stil",
+    "noImageYet": "Noch kein Bild",
+    "cancel": "Abbrechen",
+    "download": "Herunterladen",
+    "open": "Öffnen",
+    "animate": "Animieren",
+    "done": "Fertig",
+    "close": "Schließen",
+    "imageDownloaded": "Bild heruntergeladen",
+    "downloadFailed": "Herunterladen des Bildes fehlgeschlagen",
+    "generationCancelled": "E-Commerce-Foto-Generierung abgebrochen",
+    "cancelFailed": "Abbruch der Generierung fehlgeschlagen",
+    "failedToLoad": "Laden des E-Commerce-Fotos fehlgeschlagen"
+  },
+  "ecommerceIdeasModal": {
+    "title": "E-Commerce-Stil Wählen",
+    "description": "Wählen Sie eine kreative Richtung für Ihr E-Commerce-Foto",
+    "cancel": "Abbrechen",
+    "generateWithStyle": "Mit Ausgewähltem Stil Generieren",
+    "failedToGenerate": "Generierung von Ideen fehlgeschlagen",
+    "pleaseTryAgain": "Bitte versuchen Sie es erneut",
+    "fallbackIdeas": {
+      "cleanStudio": {
+        "title": "Saubere Studioaufnahme",
+        "description": "Minimalistischer weißer Hintergrund mit professioneller Beleuchtung, perfekt für Produktkataloge"
+      },
+      "lifestyleContext": {
+        "title": "Lifestyle-Kontext",
+        "description": "Natürliche Umgebung, die die Verwendung in der realen Welt zeigt"
+      },
+      "editorialMagazine": {
+        "title": "Editorial-Magazin",
+        "description": "High-Fashion-Editorial-Stil mit dramatischer Beleuchtung und Komposition"
+      },
+      "streetUrban": {
+        "title": "Straßen-Urban",
+        "description": "Zeitgenössische urbane Kulisse mit authentischen Streetstyle-Vibes"
+      }
+    }
+  },
   "outfitSwap": {
     "title": "Outfit-Tausch",
     "subtitle": "Verarbeite bis zu 10 Kleidungsstücke auf einmal",

@@ -6,6 +6,7 @@ import { AlertCircle, CheckCircle2, Download, ExternalLink, Loader2, X } from "l
 import { ecommercePhotoApi, EcommercePhotoJob } from "@/api/ecommerce-photo-api";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface EcommercePhotoModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface EcommercePhotoModalProps {
 }
 
 export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl }: EcommercePhotoModalProps) => {
+  const { t } = useTranslation();
   const [photo, setPhoto] = useState<EcommercePhotoJob | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -29,7 +31,7 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
       .then(setPhoto)
       .catch((error) => {
         console.error("Error fetching ecommerce photo:", error);
-        toast.error("Failed to load ecommerce photo");
+        toast.error(t('ecommercePhotoModal.failedToLoad'));
       })
       .finally(() => setLoading(false));
 
@@ -38,9 +40,9 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
       setPhoto(updatedPhoto);
 
       if (updatedPhoto.status === "completed") {
-        toast.success("E-commerce photo generated!");
+        toast.success(t('ecommercePhotoModal.generatedSuccessfully'));
       } else if (updatedPhoto.status === "failed") {
-        toast.error(updatedPhoto.error || "Failed to generate e-commerce photo");
+        toast.error(updatedPhoto.error || t('ecommercePhotoModal.generationFailed'));
       }
     });
 
@@ -61,9 +63,9 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
         setPhoto(updatedPhoto);
 
         if (updatedPhoto.status === 'completed') {
-          toast.success("E-commerce photo generated!");
+          toast.success(t('ecommercePhotoModal.generatedSuccessfully'));
         } else if (updatedPhoto.status === 'failed') {
-          toast.error(updatedPhoto.error || "Failed to generate e-commerce photo");
+          toast.error(updatedPhoto.error || t('ecommercePhotoModal.generationFailed'));
         }
       } catch (error) {
         console.error("Polling error:", error);
@@ -85,10 +87,10 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(blobUrl);
-      toast.success("Image downloaded");
+      toast.success(t('ecommercePhotoModal.imageDownloaded'));
     } catch (error) {
       console.error("Download error:", error);
-      toast.error("Failed to download image");
+      toast.error(t('ecommercePhotoModal.downloadFailed'));
     }
   };
 
@@ -108,11 +110,11 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
     
     try {
       await ecommercePhotoApi.cancelEcommercePhoto(photo.id);
-      toast.success("E-commerce photo generation cancelled");
+      toast.success(t('ecommercePhotoModal.generationCancelled'));
       onClose();
     } catch (error) {
       console.error("Cancel error:", error);
-      toast.error("Failed to cancel generation");
+      toast.error(t('ecommercePhotoModal.cancelFailed'));
     }
   };
 
@@ -136,9 +138,9 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>E-commerce Fashion Photo</DialogTitle>
+          <DialogTitle>{t('ecommercePhotoModal.title')}</DialogTitle>
           <DialogDescription>
-            Transform your outfit into a professional e-commerce style photo
+            {t('ecommercePhotoModal.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -148,7 +150,7 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm">
                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                <span>Generating e-commerce photo...</span>
+                <span>{t('ecommercePhotoModal.generating')}</span>
               </div>
               <Progress value={photo.progress} className="h-2" />
             </div>
@@ -158,8 +160,8 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
             <div className="flex items-start gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
               <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="text-sm font-medium text-destructive">Generation Failed</p>
-                <p className="text-sm text-muted-foreground">{photo.error || "Unknown error occurred"}</p>
+                <p className="text-sm font-medium text-destructive">{t('ecommercePhotoModal.generationFailed')}</p>
+                <p className="text-sm text-muted-foreground">{photo.error || t('ecommercePhotoModal.unknownError')}</p>
               </div>
             </div>
           )}
@@ -167,7 +169,7 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
           {isComplete && (
             <div className="flex items-center gap-2 text-sm text-green-600">
               <CheckCircle2 className="h-4 w-4" />
-              <span>E-commerce photo generated successfully!</span>
+              <span>{t('ecommercePhotoModal.generatedSuccessfully')}</span>
             </div>
           )}
 
@@ -175,7 +177,7 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
           <div className="grid grid-cols-2 gap-6">
             {/* Original */}
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Original</p>
+              <p className="text-sm font-medium text-muted-foreground">{t('ecommercePhotoModal.original')}</p>
               <img
                 src={originalImageUrl}
                 alt="Original"
@@ -185,7 +187,7 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
 
             {/* Generated */}
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">E-commerce Style</p>
+              <p className="text-sm font-medium text-muted-foreground">{t('ecommercePhotoModal.ecommerceStyle')}</p>
               {isComplete && photo.public_url ? (
                 <img
                   src={photo.public_url}
@@ -197,7 +199,7 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
                   {isProcessing ? (
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                   ) : (
-                    <span className="text-sm text-muted-foreground">No image yet</span>
+                    <span className="text-sm text-muted-foreground">{t('ecommercePhotoModal.noImageYet')}</span>
                   )}
                 </div>
               )}
@@ -209,7 +211,7 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
             {isProcessing && (
               <Button variant="outline" onClick={handleCancel}>
                 <X className="h-4 w-4 mr-2" />
-                Cancel
+                {t('ecommercePhotoModal.cancel')}
               </Button>
             )}
 
@@ -217,20 +219,20 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
               <>
                 <Button variant="outline" onClick={() => handleDownload(photo.public_url!)}>
                   <Download className="h-4 w-4 mr-2" />
-                  Download
+                  {t('ecommercePhotoModal.download')}
                 </Button>
                 <Button variant="outline" onClick={() => openInNewTab(photo.public_url!)}>
                   <ExternalLink className="h-4 w-4 mr-2" />
-                  Open
+                  {t('ecommercePhotoModal.open')}
                 </Button>
                 <Button onClick={handleAnimate}>
-                  Animate
+                  {t('ecommercePhotoModal.animate')}
                 </Button>
               </>
             )}
 
             <Button variant={isComplete ? "outline" : "default"} onClick={onClose}>
-              {isComplete ? "Done" : "Close"}
+              {isComplete ? t('ecommercePhotoModal.done') : t('ecommercePhotoModal.close')}
             </Button>
           </div>
         </div>

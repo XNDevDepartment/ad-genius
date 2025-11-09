@@ -738,6 +738,110 @@
       "accountSettings": "Paramètres du Compte"
     }
   },
+  "photoshootModal": {
+    "title": "Séance Photo Professionnelle",
+    "setupDescription": "Configurez votre séance photo avec image arrière optionnelle",
+    "angleSelectionDescription": "Sélectionnez les angles à générer ({{count}} crédit{{plural}})",
+    "processingDescription": "Génération de vos angles professionnels...",
+    "originalImage": "Image Originale",
+    "productBack": "Dos du Produit (Optionnel)",
+    "backImageHelp": "Téléchargez une photo de l'arrière du vêtement pour améliorer les angles arrière",
+    "uploading": "Téléchargement...",
+    "cancel": "Annuler",
+    "continue": "Continuer",
+    "back": "Retour",
+    "selectAllAngles": "Tout Sélectionner",
+    "deselectAllAngles": "Tout Désélectionner",
+    "selectAnglesLabel": "Sélectionner les Angles à Générer",
+    "costLabel": "Coût",
+    "anglesLabel": "Angles",
+    "anglesCount": "{{count}} sur {{total}}",
+    "startPhotoshoot": "Démarrer la Séance ({{count}} crédit{{plural}})",
+    "starting": "Démarrage...",
+    "progress": "Progression",
+    "generationFailed": "Échec de la Génération",
+    "unknownError": "Une erreur inconnue s'est produite",
+    "allAnglesGenerated": "Tous les angles générés avec succès !",
+    "generatedAngles": "Angles Générés",
+    "downloadAll": "Tout Télécharger",
+    "downloading": "Téléchargement de {{count}} images...",
+    "download": "Télécharger",
+    "done": "Terminé",
+    "close": "Fermer",
+    "pending": "En Attente",
+    "photoshootCompleted": "Séance photo terminée !",
+    "photoshootFailed": "La séance photo a échoué",
+    "photoshootCanceled": "Séance photo annulée",
+    "failedToCancel": "Échec de l'annulation : {{message}}",
+    "backImageUploaded": "Image arrière téléchargée",
+    "failedToUpload": "Échec du téléchargement de l'image arrière : {{message}}",
+    "angles": {
+      "threeQuarter": {
+        "label": "Vue Trois Quarts",
+        "description": "Vue angulaire montrant la profondeur"
+      },
+      "back": {
+        "label": "Vue Arrière",
+        "description": "Vue complète de l'arrière"
+      },
+      "side": {
+        "label": "Profil Latéral",
+        "description": "Angle latéral pur"
+      },
+      "detail": {
+        "label": "Gros Plan Détaillé",
+        "description": "Gros plan des caractéristiques clés"
+      }
+    }
+  },
+  "ecommercePhotoModal": {
+    "title": "Photo Mode E-commerce",
+    "description": "Transformez votre tenue en photo professionnelle de style e-commerce",
+    "generating": "Génération de la photo e-commerce...",
+    "generationFailed": "Échec de la Génération",
+    "unknownError": "Une erreur inconnue s'est produite",
+    "generatedSuccessfully": "Photo e-commerce générée avec succès !",
+    "original": "Original",
+    "ecommerceStyle": "Style E-commerce",
+    "noImageYet": "Pas encore d'image",
+    "cancel": "Annuler",
+    "download": "Télécharger",
+    "open": "Ouvrir",
+    "animate": "Animer",
+    "done": "Terminé",
+    "close": "Fermer",
+    "imageDownloaded": "Image téléchargée",
+    "downloadFailed": "Échec du téléchargement de l'image",
+    "generationCancelled": "Génération de photo e-commerce annulée",
+    "cancelFailed": "Échec de l'annulation de la génération",
+    "failedToLoad": "Échec du chargement de la photo e-commerce"
+  },
+  "ecommerceIdeasModal": {
+    "title": "Choisir le Style E-commerce",
+    "description": "Sélectionnez une direction créative pour votre photo e-commerce",
+    "cancel": "Annuler",
+    "generateWithStyle": "Générer avec le Style Sélectionné",
+    "failedToGenerate": "Échec de la génération d'idées",
+    "pleaseTryAgain": "Veuillez réessayer",
+    "fallbackIdeas": {
+      "cleanStudio": {
+        "title": "Prise de Studio Propre",
+        "description": "Fond blanc minimaliste avec éclairage professionnel, parfait pour les catalogues de produits"
+      },
+      "lifestyleContext": {
+        "title": "Contexte de Style de Vie",
+        "description": "Cadre naturel qui présente l'utilisation dans le monde réel"
+      },
+      "editorialMagazine": {
+        "title": "Magazine Éditorial",
+        "description": "Style éditorial haute couture avec éclairage et composition dramatiques"
+      },
+      "streetUrban": {
+        "title": "Urbain de Rue",
+        "description": "Toile de fond urbaine contemporaine avec des vibrations authentiques de style de rue"
+      }
+    }
+  },
   "outfitSwap": {
     "title": "Changement de Tenue",
     "subtitle": "Traitez jusqu'à 10 vêtements à la fois",

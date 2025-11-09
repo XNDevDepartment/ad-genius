@@ -742,6 +742,110 @@
       "accountSettings": "Definições da Conta"
     }
   },
+  "photoshootModal": {
+    "title": "Sessão de Fotos Profissional",
+    "setupDescription": "Configure sua sessão de fotos com imagem traseira opcional",
+    "angleSelectionDescription": "Selecione ângulos para gerar ({{count}} crédito{{plural}})",
+    "processingDescription": "Gerando seus ângulos profissionais...",
+    "originalImage": "Imagem Original",
+    "productBack": "Verso do Produto (Opcional)",
+    "backImageHelp": "Envie uma foto da parte traseira da roupa para melhorar os ângulos traseiros",
+    "uploading": "Enviando...",
+    "cancel": "Cancelar",
+    "continue": "Continuar",
+    "back": "Voltar",
+    "selectAllAngles": "Selecionar Todos",
+    "deselectAllAngles": "Desselecionar Todos",
+    "selectAnglesLabel": "Selecione Ângulos para Gerar",
+    "costLabel": "Custo",
+    "anglesLabel": "Ângulos",
+    "anglesCount": "{{count}} de {{total}}",
+    "startPhotoshoot": "Iniciar Sessão ({{count}} crédito{{plural}})",
+    "starting": "Iniciando...",
+    "progress": "Progresso",
+    "generationFailed": "Falha na Geração",
+    "unknownError": "Erro desconhecido ocorreu",
+    "allAnglesGenerated": "Todos os ângulos gerados com sucesso!",
+    "generatedAngles": "Ângulos Gerados",
+    "downloadAll": "Baixar Todos",
+    "downloading": "Baixando {{count}} imagens...",
+    "download": "Baixar",
+    "done": "Concluído",
+    "close": "Fechar",
+    "pending": "Pendente",
+    "photoshootCompleted": "Sessão de fotos concluída!",
+    "photoshootFailed": "Sessão de fotos falhou",
+    "photoshootCanceled": "Sessão de fotos cancelada",
+    "failedToCancel": "Falha ao cancelar: {{message}}",
+    "backImageUploaded": "Imagem traseira enviada",
+    "failedToUpload": "Falha ao enviar imagem traseira: {{message}}",
+    "angles": {
+      "threeQuarter": {
+        "label": "Vista de Três Quartos",
+        "description": "Vista angulada mostrando profundidade"
+      },
+      "back": {
+        "label": "Vista Traseira",
+        "description": "Vista completa de trás"
+      },
+      "side": {
+        "label": "Perfil Lateral",
+        "description": "Ângulo lateral puro"
+      },
+      "detail": {
+        "label": "Close-up Detalhado",
+        "description": "Close-up de características principais"
+      }
+    }
+  },
+  "ecommercePhotoModal": {
+    "title": "Foto de Moda E-commerce",
+    "description": "Transforme sua roupa em uma foto profissional de e-commerce",
+    "generating": "Gerando foto de e-commerce...",
+    "generationFailed": "Falha na Geração",
+    "unknownError": "Erro desconhecido ocorreu",
+    "generatedSuccessfully": "Foto de e-commerce gerada com sucesso!",
+    "original": "Original",
+    "ecommerceStyle": "Estilo E-commerce",
+    "noImageYet": "Ainda sem imagem",
+    "cancel": "Cancelar",
+    "download": "Baixar",
+    "open": "Abrir",
+    "animate": "Animar",
+    "done": "Concluído",
+    "close": "Fechar",
+    "imageDownloaded": "Imagem baixada",
+    "downloadFailed": "Falha ao baixar imagem",
+    "generationCancelled": "Geração de foto de e-commerce cancelada",
+    "cancelFailed": "Falha ao cancelar geração",
+    "failedToLoad": "Falha ao carregar foto de e-commerce"
+  },
+  "ecommerceIdeasModal": {
+    "title": "Escolha o Estilo E-commerce",
+    "description": "Selecione uma direção criativa para sua foto de e-commerce",
+    "cancel": "Cancelar",
+    "generateWithStyle": "Gerar com Estilo Selecionado",
+    "failedToGenerate": "Falha ao gerar ideias",
+    "pleaseTryAgain": "Por favor, tente novamente",
+    "fallbackIdeas": {
+      "cleanStudio": {
+        "title": "Foto de Estúdio Limpa",
+        "description": "Fundo branco minimalista com iluminação profissional, perfeito para catálogos de produtos"
+      },
+      "lifestyleContext": {
+        "title": "Contexto de Estilo de Vida",
+        "description": "Ambiente natural que mostra o uso no mundo real"
+      },
+      "editorialMagazine": {
+        "title": "Revista Editorial",
+        "description": "Estilo editorial de alta moda com iluminação e composição dramáticas"
+      },
+      "streetUrban": {
+        "title": "Urbano de Rua",
+        "description": "Cenário urbano contemporâneo com vibrações autênticas de estilo de rua"
+      }
+    }
+  },
   "outfitSwap": {
     "title": "Troca de Outfit",
     "subtitle": "Trate até 10 peças de roupa de uma vez",
