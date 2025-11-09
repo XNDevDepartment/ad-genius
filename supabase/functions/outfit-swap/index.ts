@@ -1395,23 +1395,17 @@ async function processEcommercePhoto(photoId) {
     
     const imageBuffer = new Uint8Array(await imageResp.arrayBuffer());
     const base64Image = bufferToBase64(imageBuffer);
-    const prompt = `Create a professional e-commerce fashion photo by placing this model with their current outfit into a perfectly matching, photorealistic environment.
+    const prompt = `Create a professional e-commerce magazine fashion photo by placing this model with their current outfit into a perfectly matching, photorealistic environment.
 
-ANALYZE THE GARMENT STYLE and match to appropriate environment:
-- Casual: Urban street, coffee shop, park
-- Formal: Modern office, elegant venue, city backdrop
-- Athletic: Gym, outdoor track, yoga studio
-- Evening: Upscale restaurant, gala venue
-- Outerwear: City street, outdoor scene
+        ANALYZE THE GARMENT STYLE and match to appropriate environment.
 
-REQUIREMENTS:
-1. Keep the model and garment EXACTLY as they appear
-2. Change ONLY the background and lighting
-3. Ensure lighting matches the new environment
-4. Professional photography quality with proper depth of field
-5. Environment complements but doesn't distract from the product
+        REQUIREMENTS:
+        1. Change ONLY the background and lighting
+        2. Ensure lighting matches the new environment
+        3. Professional photography quality with proper depth of field
+        4. Environment complements but doesn't distract from the product
 
-OUTPUT: Magazine-quality fashion photograph.`;
+        OUTPUT: Magazine-quality fashion photograph.`;
 
     await supabase.from("outfit_swap_ecommerce_photos").update({ progress: 40 }).eq("id", photoId);
 
