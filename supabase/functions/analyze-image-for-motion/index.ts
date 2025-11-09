@@ -30,6 +30,11 @@ Avoid:
 
 Keep it raw and relatable - like someone genuinely showing off a product they love.
 
+The image you are watching represents the beggining frame of the video. The idea is to promote the product that has more relevance on the picture. 
+The motion prompt will generate a video that will be used for UGC purposes. You must suggest human behaviour. For example: "Appear a hand and rotate the product" is not a human behaviour.
+
+###IMPORTANT: Keep it natural, no brutal pans. The image you'll find will be the initial frame of the video. Start from there.
+
 Return ONLY a simple, conversational motion description (max 350 characters). No technical jargon, just natural language describing what should move and how. Create the final prompt in this language: `;
 
 // Helper: Get prompt from database with fallback
