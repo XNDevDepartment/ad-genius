@@ -19,7 +19,11 @@ export interface LibraryImage {
   desiredAudience?: string;
   prodSpecs?: string;
   source_image_ids?: string[];
-  source_type?: 'ugc' | 'outfit_swap';
+  source_type?: 'ugc' | 'outfit_swap' | 'photoshoot' | 'ecommerce';
+  photoshoot_id?: string;
+  angle_type?: 'front' | 'three_quarter' | 'back' | 'side';
+  style_prompt?: string;
+  original_result_id?: string;
 }
 
 interface PaginationOptions {
@@ -100,6 +104,8 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       // Conditionally fetch based on filter
       let ugcResult = { data: null, error: null };
       let outfitSwapResult = { data: null, error: null };
+      let photoshootResult = { data: null, error: null };
+      let ecommerceResult = { data: null, error: null };
 
       if (filter === 'all' || filter === 'ugc') {
         ugcResult = await supabase
@@ -117,13 +123,33 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .range(offset, offset + limit - 1);
+        
+        photoshootResult = await supabase
+          .from('outfit_swap_photoshoots')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'completed')
+          .order('created_at', { ascending: false })
+          .range(offset, offset + limit - 1);
+        
+        ecommerceResult = await supabase
+          .from('outfit_swap_ecommerce_photos')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'completed')
+          .order('created_at', { ascending: false })
+          .range(offset, offset + limit - 1);
       }
 
       console.log('[useLibraryImages] Query results:', { 
         ugcCount: ugcResult.data?.length || 0, 
         outfitSwapCount: outfitSwapResult.data?.length || 0,
+        photoshootCount: photoshootResult.data?.length || 0,
+        ecommerceCount: ecommerceResult.data?.length || 0,
         ugcError: ugcResult.error,
-        outfitSwapError: outfitSwapResult.error
+        outfitSwapError: outfitSwapResult.error,
+        photoshootError: photoshootResult.error,
+        ecommerceError: ecommerceResult.error
       });
 
       if (ugcResult.error) {
@@ -133,6 +159,14 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       if (outfitSwapResult.error) {
         console.error('[useLibraryImages] Outfit swap results query error:', outfitSwapResult.error);
         throw outfitSwapResult.error;
+      }
+      if (photoshootResult.error) {
+        console.error('[useLibraryImages] Photoshoot query error:', photoshootResult.error);
+        throw photoshootResult.error;
+      }
+      if (ecommerceResult.error) {
+        console.error('[useLibraryImages] E-commerce query error:', ecommerceResult.error);
+        throw ecommerceResult.error;
       }
 
       // Normalize both data sources to LibraryImage format
@@ -177,19 +211,73 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
         };
       });
 
+      // Process photoshoot images
+      const photoshootImages: LibraryImage[] = (photoshootResult.data || []).flatMap((photoshoot: any) => {
+        const images: LibraryImage[] = [];
+        const selectedAngles = photoshoot.selected_angles || ['front', 'three_quarter', 'back', 'side'];
+        
+        selectedAngles.forEach((angle: string, index: number) => {
+          const imageUrl = photoshoot[`image_${index + 1}_url`];
+          
+          if (imageUrl) {
+            images.push({
+              id: `${photoshoot.id}_${angle}`,
+              url: imageUrl,
+              prompt: `Photoshoot - ${angle.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())} View`,
+              created_at: photoshoot.created_at,
+              settings: {
+                size: '1024x1024',
+                quality: 'high',
+                numberOfImages: 1,
+                format: 'png'
+              },
+              source_type: 'photoshoot',
+              photoshoot_id: photoshoot.id,
+              angle_type: angle as any,
+              original_result_id: photoshoot.result_id
+            });
+          }
+        });
+        
+        return images;
+      });
+
+      // Process e-commerce photos
+      const ecommerceImages: LibraryImage[] = (ecommerceResult.data || []).map((photo: any) => ({
+        id: photo.id,
+        url: photo.public_url,
+        prompt: photo.prompt_used || 'E-commerce Photo',
+        created_at: photo.created_at,
+        settings: {
+          size: '1024x1024',
+          quality: 'high',
+          numberOfImages: 1,
+          format: 'png'
+        },
+        source_type: 'ecommerce',
+        style_prompt: photo.prompt_used,
+        original_result_id: photo.result_id
+      }));
+
       // Combine and sort by creation date
-      const processedImages = [...ugcImages, ...outfitSwapImages]
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const processedImages = [
+        ...ugcImages, 
+        ...outfitSwapImages, 
+        ...photoshootImages, 
+        ...ecommerceImages
+      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       console.log('[useLibraryImages] Processed images:', { 
         ugc: ugcImages.length, 
         outfitSwap: outfitSwapImages.length,
+        photoshoot: photoshootImages.length,
+        ecommerce: ecommerceImages.length,
         total: processedImages.length 
       });
 
       // Estimate total count and hasMore status
-      const currentCount = ugcImages.length + outfitSwapImages.length;
-      setHasMore(currentCount === limit);
+      const currentCount = ugcImages.length + outfitSwapImages.length + photoshootImages.length + ecommerceImages.length;
+      setHasMore(currentCount >= limit);
 
       // Get source image signed URLs for thumbnail overlays (batch optimized)
       // Support both singular source_image_id and array source_image_ids
@@ -303,25 +391,37 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
     try {
       console.log('[useLibraryImages] Attempting to delete image:', imageId);
       
-      // Try deleting from all possible tables
-      const [ugcResult, outfitSwapResult] = await Promise.all([
-        supabase.from('ugc_images').delete().eq('id', imageId).eq('user_id', user.id),
-        supabase.from('outfit_swap_results').delete().eq('id', imageId).eq('user_id', user.id)
-      ]);
+      // Check if it's a composite ID for photoshoot images (format: "photoshoot_id_angle")
+      const isPhotoshootImage = imageId.includes('_front') || imageId.includes('_back') || 
+                                 imageId.includes('_side') || imageId.includes('_three_quarter');
+      
+      let deleteResults;
+      
+      if (isPhotoshootImage) {
+        // Extract photoshoot ID from composite ID (remove the angle suffix)
+        const photoshootId = imageId.split('_').slice(0, -1).join('_');
+        
+        // Delete entire photoshoot (deleting individual angles isn't supported)
+        deleteResults = await Promise.all([
+          supabase.from('outfit_swap_photoshoots').delete().eq('id', photoshootId).eq('user_id', user.id)
+        ]);
+      } else {
+        // Try deleting from all possible tables
+        deleteResults = await Promise.all([
+          supabase.from('ugc_images').delete().eq('id', imageId).eq('user_id', user.id),
+          supabase.from('outfit_swap_results').delete().eq('id', imageId).eq('user_id', user.id),
+          supabase.from('outfit_swap_ecommerce_photos').delete().eq('id', imageId).eq('user_id', user.id)
+        ]);
+      }
 
-      console.log('[useLibraryImages] Delete results:', { 
-        ugcError: ugcResult.error, 
-        outfitSwapError: outfitSwapResult.error
-      });
+      console.log('[useLibraryImages] Delete results:', deleteResults.map(r => ({ error: r.error })));
 
-      // Check if either deletion succeeded
-      const ugcDeleted = !ugcResult.error;
-      const outfitSwapDeleted = !outfitSwapResult.error;
-
-      // If both failed, throw an error
-      if (!ugcDeleted && !outfitSwapDeleted) {
-        const errorMsg = ugcResult.error?.message || outfitSwapResult.error?.message || 'Unknown error';
-        console.error('[useLibraryImages] All delete operations failed:', { ugcResult, outfitSwapResult });
+      // Check if any deletion succeeded
+      const anySuccess = deleteResults.some(result => !result.error);
+      
+      if (!anySuccess) {
+        const errorMsg = deleteResults.find(r => r.error)?.error?.message || 'Unknown error';
+        console.error('[useLibraryImages] All delete operations failed');
         throw new Error(`Failed to delete image: ${errorMsg}`);
       }
 

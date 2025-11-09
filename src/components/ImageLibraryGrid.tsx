@@ -26,6 +26,11 @@ interface LibraryImage {
   desiredAudience?: string;
   prodSpecs?: string;
   source_image_ids?: string[];
+  source_type?: 'ugc' | 'outfit_swap' | 'photoshoot' | 'ecommerce';
+  photoshoot_id?: string;
+  angle_type?: 'front' | 'three_quarter' | 'back' | 'side';
+  style_prompt?: string;
+  original_result_id?: string;
 }
 
 interface ImageLibraryGridProps {
@@ -138,6 +143,30 @@ export const ImageLibraryGrid = ({
                   alt={imageAlt}
                   className="w-full h-full object-cover shadow-card transition-transform group-hover:scale-105"
                 />
+
+                {/* Image type badge */}
+                {viewMode === "ai" && (
+                  <div className="absolute top-2 left-2 z-20">
+                    {image.source_type === 'photoshoot' && (
+                      <div className="bg-purple-500/90 text-white text-xs px-2 py-1 rounded-md font-medium flex items-center gap-1">
+                        <span>📸</span>
+                        <span>{image.angle_type?.replace('_', ' ')}</span>
+                      </div>
+                    )}
+                    {image.source_type === 'ecommerce' && (
+                      <div className="bg-green-500/90 text-white text-xs px-2 py-1 rounded-md font-medium flex items-center gap-1">
+                        <span>🛍️</span>
+                        <span>E-commerce</span>
+                      </div>
+                    )}
+                    {image.source_type === 'outfit_swap' && (
+                      <div className="bg-blue-500/90 text-white text-xs px-2 py-1 rounded-md font-medium flex items-center gap-1">
+                        <span>👔</span>
+                        <span>Outfit Swap</span>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Source image thumbnail overlay */}
                 {viewMode === "ai" && showSourceThumbnails && image.sourceSignedUrl && (
