@@ -37,16 +37,36 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
     
     try {
       const { data, error } = await supabase.functions.invoke('customer-portal');
-      if (error) throw error;
+      
+      if (error) {
+        console.error('Customer portal error:', error);
+        
+        if (error.message?.includes('billing portal') || error.message?.includes('not configured')) {
+          toast({
+            title: t("common.error"),
+            description: "The billing portal is not configured. Please contact support.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: t("common.error"),
+            description: error.message || t("account.errorSaving"),
+            variant: "destructive",
+          });
+        }
+        return;
+      }
       
       if (data?.url) {
         window.open(data.url, '_blank');
+      } else {
+        throw new Error('No portal URL returned');
       }
     } catch (error) {
       console.error('Error opening customer portal:', error);
       toast({
         title: t("common.error"),
-        description: t("account.errorSaving"),
+        description: error instanceof Error ? error.message : t("account.errorSaving"),
         variant: "destructive",
       });
     }

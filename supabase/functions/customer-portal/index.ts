@@ -72,15 +72,28 @@ serve(async (req) => {
     }
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
-    const portalSession = await stripe.billingPortal.sessions.create({
-      customer: customerId,
-      return_url: `${origin}/account`,
-    });
+    log("Creating billing portal session", { customerId, origin });
 
-    return new Response(JSON.stringify({ url: portalSession.url }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+    try {
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: customerId,
+        configuration: 'bpc_1SRUmDCdNWwdXCd8UEwLRTlQ',
+        return_url: `${origin}/account`,
+      });
+      
+      log("Portal session created successfully", { url: portalSession.url });
+      
+      return new Response(JSON.stringify({ url: portalSession.url }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    } catch (portalError) {
+      log("Error creating portal session", { 
+        error: portalError instanceof Error ? portalError.message : String(portalError),
+        customerId,
+      });
+      throw portalError;
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     return new Response(JSON.stringify({ error: message }), {
