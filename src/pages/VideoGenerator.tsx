@@ -769,7 +769,7 @@ export default function VideoGenerator() {
                   onClick={onCreate}
                   className="flex-1"
                   size="lg"
-                  disabled={creating || (!selectedImage && !ugcImageId) || !prompt.trim() || !preselectedImageUrl}
+                  disabled={creating || (!selectedImage && !ugcImageId && !preselectedImageUrl) || !prompt.trim()}
                 >
                   {creating ? (
                     <>
