@@ -797,6 +797,7 @@ export type Database = {
           metadata: Json | null
           progress: number | null
           result_id: string
+          selected_angles: string[] | null
           started_at: string | null
           status: string
           updated_at: string | null
@@ -820,6 +821,7 @@ export type Database = {
           metadata?: Json | null
           progress?: number | null
           result_id: string
+          selected_angles?: string[] | null
           started_at?: string | null
           status?: string
           updated_at?: string | null
@@ -843,6 +845,7 @@ export type Database = {
           metadata?: Json | null
           progress?: number | null
           result_id?: string
+          selected_angles?: string[] | null
           started_at?: string | null
           status?: string
           updated_at?: string | null

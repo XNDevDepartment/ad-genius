@@ -978,16 +978,27 @@ async function cancelBatch(userId1, batchId) {
     success: true
   }, 200);
 }
-// Photoshoot prompts for 4 professional angles
-const PHOTOSHOOT_PROMPTS = [
-  `Create a high-quality e-commerce product photo: On-body three-quarter view (45° turn), head to mid-thigh framing, one foot slightly forward to show torso depth and shoulder line. Seamless light-grey background, soft key, subtle rim light to separate from background, controlled specularity on knit. 50mm lens look, f/8, ISO 100. Emphasize side seam, sleeve length, and hem fall. Clean, editorial retail lighting. ###IMPORTANT:  Don't change the clothes of the model. Keep the model exatly as it is.`,
-  `Create a high-quality e-commerce product photo: On-body back view, shoulders level, arms relaxed, straight posture. Seamless light-grey background, balanced key/fill to avoid hotspots, faint floor shadow. 50–70mm lens look, f/8, ISO 100. Capture yoke/neck ribbing, back drape, and hem alignment. Centered, color-accurate, luxury e-commerce finish. ###IMPORTANT:  Don't change the clothes of the model. Keep the model exatly as it is.`,
-  `Create a high-quality e-commerce product photo: On-body true side profile, chin parallel to floor, arms relaxed (small air gap at elbow), head to mid-thigh framing. Seamless light-grey background, soft key from camera front, gentle fill to preserve knit detail, micro-shadow under hem. 70mm equivalent look, f/8, ISO 100. Prioritize silhouette, shoulder slope, sleeve taper, and ribbed cuff definition. Premium catalog style. ###IMPORTANT: Don't change the clothes of the model. Keep the model exatly as it is.`,
-  `Create a high-quality e-commerce product photo: Upper-torso close-up crop from shoulders to mid-torso, camera perpendicular to garment. Soft, even light to reveal rib-knit texture and stitching. 85–100mm look, f/8. High sharpness, no moiré, color-accurate wool tone. Background remains seamless light grey. ###IMPORTANT:  Don't change the clothes of the model. Keep the model exatly as it is.`
-];
+// Angle-specific prompts for photoshoot
+const ANGLE_PROMPTS: Record<string, string> = {
+  'front': `Create a high-quality e-commerce product photo: On-body front view, centered framing from head to mid-thigh, straight posture with arms relaxed. Seamless light-grey background, soft key lighting, balanced fill to eliminate harsh shadows. 50mm lens look, f/8, ISO 100. Emphasize garment details, fit, and color accuracy. Clean, professional e-commerce style. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`,
+  'three_quarter': `Create a high-quality e-commerce product photo: On-body three-quarter view (45° turn), head to mid-thigh framing, one foot slightly forward to show torso depth and shoulder line. Seamless light-grey background, soft key, subtle rim light to separate from background, controlled specularity on knit. 50mm lens look, f/8, ISO 100. Emphasize side seam, sleeve length, and hem fall. Clean, editorial retail lighting. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`,
+  'back': `Create a high-quality e-commerce product photo: On-body back view, shoulders level, arms relaxed, straight posture. Seamless light-grey background, balanced key/fill to avoid hotspots, faint floor shadow. 50–70mm lens look, f/8, ISO 100. Capture yoke/neck ribbing, back drape, and hem alignment. Centered, color-accurate, luxury e-commerce finish. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`,
+  'side': `Create a high-quality e-commerce product photo: On-body true side profile, chin parallel to floor, arms relaxed (small air gap at elbow), head to mid-thigh framing. Seamless light-grey background, soft key from camera front, gentle fill to preserve knit detail, micro-shadow under hem. 70mm equivalent look, f/8, ISO 100. Prioritize silhouette, shoulder slope, sleeve taper, and ribbed cuff definition. Premium catalog style. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`,
+  'detail': `Create a high-quality e-commerce product photo: Upper-torso close-up crop from shoulders to mid-torso, camera perpendicular to garment. Soft, even light to reveal rib-knit texture and stitching. 85–100mm look, f/8. High sharpness, no moiré, color-accurate wool tone. Background remains seamless light grey. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`
+};
 async function createPhotoshootJob(userId1, params) {
-  const { resultId, backImageUrl } = params;
+  const { resultId, backImageUrl, selectedAngles = ['front', 'three_quarter', 'back', 'side'] } = params;
   const supabase = serviceClient();
+  
+  // Validate selectedAngles
+  const validAngles = ['front', 'three_quarter', 'back', 'side', 'detail'];
+  const angles = selectedAngles.filter((angle: string) => validAngles.includes(angle));
+  
+  if (angles.length === 0) {
+    return jsonResponse({
+      error: "At least one angle must be selected"
+    }, 400);
+  }
   
   // Quick region availability check
   try {
@@ -1010,8 +1021,8 @@ async function createPhotoshootJob(userId1, params) {
     console.warn('[Region check] Failed:', error);
   }
   
-  const creditsNeeded = 4;
-  console.log(`[createPhotoshoot] Creating photoshoot for result ${resultId}`);
+  const creditsNeeded = angles.length;
+  console.log(`[createPhotoshoot] Creating photoshoot for result ${resultId} with ${angles.length} angles:`, angles);
   // Check admin status
   const { data: isAdmin } = await supabase.rpc("is_user_admin", {
     check_user_id: userId1
@@ -1052,11 +1063,13 @@ async function createPhotoshootJob(userId1, params) {
     user_id: userId1,
     result_id: resultId,
     back_image_url: backImageUrl || null,
+    selected_angles: angles,
     status: "queued",
     metadata: {
       original_result_url: result.public_url,
       credits_deducted: creditsNeeded,
-      has_custom_back_image: !!backImageUrl
+      has_custom_back_image: !!backImageUrl,
+      selected_angle_count: angles.length
     }
   }).select().single();
   if (photoshootError) {
@@ -1105,6 +1118,12 @@ async function processPhotoshoot(photoshootId) {
     if (photoshootError || !photoshoot) {
       throw new Error("Photoshoot not found");
     }
+    
+    // Get selected angles (default to all if not specified)
+    const selectedAngles = photoshoot.selected_angles || ['front', 'three_quarter', 'back', 'side'];
+    const angleCount = selectedAngles.length;
+    console.log(`[processPhotoshoot] Generating ${angleCount} angles:`, selectedAngles);
+    
     const originalImageUrl = photoshoot.outfit_swap_results?.public_url;
     if (!originalImageUrl) {
       throw new Error("Original image URL not found");
@@ -1117,19 +1136,22 @@ async function processPhotoshoot(photoshootId) {
     const imageBuffer = await imageResponse.arrayBuffer();
     const base64Image = bufferToBase64(new Uint8Array(imageBuffer));
     const mimeType = imageResponse.headers.get('content-type') || 'image/jpeg';
-    // Generate all 4 images with staggered requests to avoid rate limiting
-    console.log(`[processPhotoshoot] Starting staggered generation of 4 images`);
-    const imageGenerationPromises = PHOTOSHOOT_PROMPTS.map(async (prompt, index)=>{
+    
+    // Generate images for selected angles with staggered requests to avoid rate limiting
+    console.log(`[processPhotoshoot] Starting staggered generation of ${angleCount} images`);
+    const imageGenerationPromises = selectedAngles.map(async (angleId: string, index: number)=>{
       const imageNum = index + 1;
+      const prompt = ANGLE_PROMPTS[angleId] || ANGLE_PROMPTS['front'];
       
       // Stagger requests by 500ms to avoid rate limiting
       await new Promise(resolve => setTimeout(resolve, index * 500));
       
-      console.log(`[processPhotoshoot] Starting image ${imageNum}/4`);
+      console.log(`[processPhotoshoot] Starting angle ${angleId} (${imageNum}/${angleCount})`);
       try {
-        // Update progress
+        // Update progress based on number of selected angles
+        const progressIncrement = 80 / angleCount; // 80% for generation, 20% for setup
         await supabase.from("outfit_swap_photoshoots").update({
-          progress: 20 + (imageNum - 1) * 15
+          progress: Math.round(20 + (imageNum - 1) * progressIncrement)
         }).eq("id", photoshootId);
 
         // Call Gemini API with retry logic
@@ -1177,7 +1199,7 @@ async function processPhotoshoot(photoshootId) {
         };
       }
     });
-    // Wait for all 4 images to complete
+    // Wait for all selected images to complete
     const results = await Promise.allSettled(imageGenerationPromises);
     // Count successes and failures
     let successfulImages = 0;
@@ -1189,15 +1211,15 @@ async function processPhotoshoot(photoshootId) {
         failedImages++;
       }
       // Update progress as each completes
-      const progressPercent = Math.round((index + 1) / 4 * 100);
+      const progressPercent = Math.round(20 + ((index + 1) / angleCount) * 80);
       supabase.from("outfit_swap_photoshoots").update({
         progress: progressPercent
       }).eq("id", photoshootId);
     });
-    console.log(`[processPhotoshoot] Generation complete - ${successfulImages} succeeded, ${failedImages} failed`);
+    console.log(`[processPhotoshoot] Generation complete - ${successfulImages} succeeded, ${failedImages} failed out of ${angleCount}`);
     // Determine final status
     const finalStatus = successfulImages === 0 ? "failed" : "completed";
-    const errorMessage = failedImages > 0 ? `${failedImages} out of 4 images failed to generate` : null;
+    const errorMessage = failedImages > 0 ? `${failedImages} out of ${angleCount} images failed to generate` : null;
     await supabase.from("outfit_swap_photoshoots").update({
       status: finalStatus,
       progress: 100,
@@ -1247,13 +1269,14 @@ async function processPhotoshoot(photoshootId) {
       }
     }).eq("id", photoshootId);
     
-    // Refund all 4 credits on complete failure
-    const { data: photoshoot } = await supabase.from("outfit_swap_photoshoots").select("user_id").eq("id", photoshootId).single();
+    // Refund all credits on complete failure
+    const { data: photoshoot } = await supabase.from("outfit_swap_photoshoots").select("user_id, selected_angles").eq("id", photoshootId).single();
     if (photoshoot?.user_id) {
+      const angleCount = photoshoot.selected_angles?.length || 4;
       const isAdmin = await checkIsAdmin(photoshoot.user_id);
       if (!isAdmin) {
-        console.log(`[processPhotoshoot] Refunding 4 credits due to complete failure`);
-        await refundCredits(photoshoot.user_id, 4, 'photoshoot_generation_failed');
+        console.log(`[processPhotoshoot] Refunding ${angleCount} credits due to complete failure`);
+        await refundCredits(photoshoot.user_id, angleCount, 'photoshoot_generation_failed');
       }
     }
     return jsonResponse({

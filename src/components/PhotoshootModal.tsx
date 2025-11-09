@@ -17,12 +17,21 @@ interface PhotoshootModalProps {
 }
 
 export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }: PhotoshootModalProps) => {
-  const [stage, setStage] = useState<'setup' | 'processing'>('setup');
+  const [stage, setStage] = useState<'setup' | 'angle-selection' | 'processing'>('setup');
   const [photoshoot, setPhotoshoot] = useState<PhotoshootJob | null>(null);
   const [loading, setLoading] = useState(false);
   const [backImageFile, setBackImageFile] = useState<File | null>(null);
   const [backImageUrl, setBackImageUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedAngles, setSelectedAngles] = useState<string[]>(['front', 'three_quarter', 'back', 'side']);
+
+  const AVAILABLE_ANGLES = [
+    { id: 'front', label: 'Front View', description: 'Centered front-facing shot' },
+    { id: 'three_quarter', label: 'Three-Quarter View', description: 'Angled view showing depth' },
+    { id: 'back', label: 'Back View', description: 'Full back view' },
+    { id: 'side', label: 'Side Profile', description: 'Pure side angle' },
+    { id: 'detail', label: 'Detail Close-Up', description: 'Close-up of key features' },
+  ];
 
   const handleBackImageUpload = async (file: File | null) => {
     if (!file) {
@@ -64,12 +73,16 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
     }
   };
 
+  const handleContinueToAngleSelection = () => {
+    setStage('angle-selection');
+  };
+
   const handleStartPhotoshoot = async () => {
     setLoading(true);
     setStage('processing');
 
     try {
-      const createdPhotoshoot = await photoshootApi.createPhotoshoot(resultId, backImageUrl || undefined);
+      const createdPhotoshoot = await photoshootApi.createPhotoshoot(resultId, selectedAngles, backImageUrl || undefined);
       setPhotoshoot(createdPhotoshoot);
 
       // Subscribe to updates
@@ -108,8 +121,29 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
       setPhotoshoot(null);
       setBackImageFile(null);
       setBackImageUrl(null);
+      setSelectedAngles(['front', 'three_quarter', 'back', 'side']);
     }
   }, [isOpen]);
+
+  const toggleAngle = (angleId: string) => {
+    setSelectedAngles(prev => {
+      if (prev.includes(angleId)) {
+        // Don't allow deselecting if it's the last one
+        if (prev.length === 1) return prev;
+        return prev.filter(id => id !== angleId);
+      } else {
+        return [...prev, angleId];
+      }
+    });
+  };
+
+  const selectAllAngles = () => {
+    setSelectedAngles(AVAILABLE_ANGLES.map(a => a.id));
+  };
+
+  const deselectAllAngles = () => {
+    setSelectedAngles([AVAILABLE_ANGLES[0].id]); // Keep at least one
+  };
 
   // Polling fallback for photoshoot status updates
   useEffect(() => {
@@ -185,12 +219,13 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
   const isComplete = photoshoot?.status === "completed";
   const isFailed = photoshoot?.status === "failed";
 
-  const angleLabels = [
-    "Three-Quarter View",
-    "Back View",
-    "Side Profile",
-    "Detail Close-Up"
-  ];
+  const angleLabelsMap: Record<string, string> = {
+    'front': 'Front View',
+    'three_quarter': 'Three-Quarter View',
+    'back': 'Back View',
+    'side': 'Side Profile',
+    'detail': 'Detail Close-Up'
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -198,7 +233,9 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
         <DialogHeader>
           <DialogTitle>Professional Photoshoot</DialogTitle>
           <DialogDescription>
-            Generate 4 professional product angles (4 credits)
+            {stage === 'setup' && 'Set up your photoshoot with optional back image'}
+            {stage === 'angle-selection' && `Select angles to generate (${selectedAngles.length} credit${selectedAngles.length !== 1 ? 's' : ''})`}
+            {stage === 'processing' && 'Generating your professional angles...'}
           </DialogDescription>
         </DialogHeader>
 
@@ -234,8 +271,97 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
                 Cancel
               </Button>
               <Button 
+                onClick={handleContinueToAngleSelection}
+                disabled={isUploading}
+                size="lg"
+              >
+                Continue
+              </Button>
+            </div>
+          </div>
+        ) : stage === 'angle-selection' ? (
+          <div className="space-y-6">
+            {/* Original Image Preview */}
+            <div className="space-y-2">
+              <Label>Original Image</Label>
+              <img 
+                src={originalImageUrl} 
+                alt="Original outfit swap"
+                className="w-full rounded-lg border max-h-48 object-contain"
+              />
+            </div>
+
+            {/* Angle Selection */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Select Angles to Generate</Label>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={selectAllAngles}
+                    disabled={selectedAngles.length === AVAILABLE_ANGLES.length}
+                  >
+                    Select All
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={deselectAllAngles}
+                    disabled={selectedAngles.length === 1}
+                  >
+                    Deselect All
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3">
+                {AVAILABLE_ANGLES.map((angle) => {
+                  const isSelected = selectedAngles.includes(angle.id);
+                  return (
+                    <div
+                      key={angle.id}
+                      className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                        isSelected
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                      onClick={() => toggleAngle(angle.id)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                          isSelected ? 'border-primary bg-primary' : 'border-muted-foreground'
+                        }`}>
+                          {isSelected && (
+                            <CheckCircle2 className="w-3 h-3 text-primary-foreground" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium">{angle.label}</h4>
+                          <p className="text-sm text-muted-foreground">{angle.description}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Cost:</strong> {selectedAngles.length} credit{selectedAngles.length !== 1 ? 's' : ''} • 
+                  <strong className="ml-2">Angles:</strong> {selectedAngles.length} of {AVAILABLE_ANGLES.length}
+                </p>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 justify-end pt-4">
+              <Button variant="outline" onClick={() => setStage('setup')}>
+                Back
+              </Button>
+              <Button 
                 onClick={handleStartPhotoshoot}
-                disabled={isUploading || loading}
+                disabled={loading || selectedAngles.length === 0}
                 size="lg"
               >
                 {loading ? (
@@ -244,7 +370,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
                     Starting...
                   </>
                 ) : (
-                  'Start Photoshooting'
+                  `Start Photoshoot (${selectedAngles.length} credit${selectedAngles.length !== 1 ? 's' : ''})`
                 )}
               </Button>
             </div>
@@ -301,16 +427,19 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                {[1, 2, 3, 4].map((index) => {
-                  const imageUrl = photoshoot?.[`image_${index}_url` as keyof PhotoshootJob] as string | null;
+                {selectedAngles.map((angleId, index) => {
+                  const imageUrl = photoshoot?.[`image_${index + 1}_url` as keyof PhotoshootJob] as string | null;
                   const isGenerated = !!imageUrl;
-                  const isCurrentlyGenerating = isProcessing && photoshoot && photoshoot.progress >= (index - 1) * 25 && photoshoot.progress < index * 25;
+                  const progressPerAngle = 100 / selectedAngles.length;
+                  const isCurrentlyGenerating = isProcessing && photoshoot && 
+                    photoshoot.progress >= index * progressPerAngle && 
+                    photoshoot.progress < (index + 1) * progressPerAngle;
 
                   return (
-                    <div key={index} className="space-y-2">
+                    <div key={angleId} className="space-y-2">
                       <div className="relative aspect-square w-full rounded-lg overflow-hidden border bg-muted">
                         {isGenerated ? (
-                          <img src={imageUrl} alt={`Angle ${index}`} className="w-full h-full object-cover" />
+                          <img src={imageUrl} alt={`${angleLabelsMap[angleId]}`} className="w-full h-full object-cover" />
                         ) : isCurrentlyGenerating ? (
                           <div className="w-full h-full flex items-center justify-center">
                             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
@@ -322,12 +451,12 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
                         )}
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">{angleLabels[index - 1]}</span>
+                        <span className="text-xs text-muted-foreground">{angleLabelsMap[angleId]}</span>
                         {isGenerated && (
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => handleDownloadImage(imageUrl, index)}
+                            onClick={() => handleDownloadImage(imageUrl, index + 1)}
                           >
                             <Download className="w-3 h-3" />
                           </Button>
