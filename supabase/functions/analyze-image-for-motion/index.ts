@@ -15,7 +15,7 @@ const serviceClient = () => createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 const FALLBACK_MOTION_PROMPT = `Analyze this UGC image and describe natural motion that would make it feel like authentic social media content.
 
 Think like a content creator holding a phone camera. Suggest simple, realistic movements:
-- Subtle handheld camera shake or gentle pans
+- Handheld camera shake or gentle pans
 - Natural product handling (picking up, rotating, setting down)
 - Organic environmental motion (slight wind, natural lighting shifts)
 - Minimal, purposeful movements that feel unscripted
@@ -25,10 +25,12 @@ Avoid:
 - Complex effects or transitions
 - Anything that looks professionally produced
 - Fast or exaggerated motions
+- Creating new items of nowhere
+- Avoid unrealistic movement
 
 Keep it raw and relatable - like someone genuinely showing off a product they love.
 
-Return ONLY a simple, conversational motion description (max 500 characters). No technical jargon, just natural language describing what should move and how.`;
+Return ONLY a simple, conversational motion description (max 350 characters). No technical jargon, just natural language describing what should move and how.`;
 
 // Helper: Get prompt from database with fallback
 async function getPrompt(
@@ -109,7 +111,7 @@ serve(async (req) => {
             content: [
               {
                 type: 'text',
-                text: 'Analyze this image and suggest a motion prompt for video generation:'
+                text: FALLBACK_MOTION_PROMPT
               },
               {
                 type: 'image_url',
