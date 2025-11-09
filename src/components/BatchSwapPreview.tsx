@@ -335,15 +335,15 @@ export const BatchSwapPreview = ({
       {/* Jobs Grid */}
       <div>
         <h3 className="text-lg font-semibold mb-4">{t('outfitSwap.batch.individualSwaps')}</h3>
-        <ScrollArea className="h-[500px]">
+        <ScrollArea className="h-[800px]">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {jobs.map((job, index) => {
               const result = results[job.id];
               const isStuck = job.status === "processing" && 
                 new Date().getTime() - new Date(job.created_at || Date.now()).getTime() > 120000; // 2 minutes
-              
+
               return (
-                <Card key={job.id} className="overflow-hidden">
+                <Card key={job.id} className="overflow-hidden h-max">
                   <div className="aspect-square relative bg-muted">
                     {result && (
                       <img
@@ -358,7 +358,7 @@ export const BatchSwapPreview = ({
                       </div>
                     )}
                   </div>
-                  <div className="p-4">
+                  <div className="p-4 h-full">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium">{t('outfitSwap.batch.swap', { index: index + 1 })}</span>
                       {getJobIcon(job.status)}

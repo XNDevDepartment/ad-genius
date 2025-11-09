@@ -26,7 +26,6 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
   const [selectedAngles, setSelectedAngles] = useState<string[]>(['front', 'three_quarter', 'back', 'side']);
 
   const AVAILABLE_ANGLES = [
-    { id: 'front', label: 'Front View', description: 'Centered front-facing shot' },
     { id: 'three_quarter', label: 'Three-Quarter View', description: 'Angled view showing depth' },
     { id: 'back', label: 'Back View', description: 'Full back view' },
     { id: 'side', label: 'Side Profile', description: 'Pure side angle' },
@@ -220,7 +219,6 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
   const isFailed = photoshoot?.status === "failed";
 
   const angleLabelsMap: Record<string, string> = {
-    'front': 'Front View',
     'three_quarter': 'Three-Quarter View',
     'back': 'Back View',
     'side': 'Side Profile',

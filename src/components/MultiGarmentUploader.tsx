@@ -88,7 +88,7 @@ export const MultiGarmentUploader = ({
         <>
           {garments.map((garment, index) => (
             <Card key={index} className="relative group overflow-hidden p-4 space-y-3">
-              <div className="relative aspect-square rounded-md overflow-hidden">
+              <div className="relative aspect-square rounded-md overflow-hidden align-middle">
                 <img
                   src={previews[index]}
                   alt={`Garment ${index + 1}`}

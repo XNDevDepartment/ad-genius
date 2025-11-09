@@ -60,7 +60,7 @@ VALIDATION: Before generating, confirm that:
 ✓ The person's identity remains identical
 ✓ The composition is professional and centered
 
-Generate a high-quality outfit swap that clearly shows the NEW garment on the person. ###NO SEXUALISE CONTENT`;
+Generate a high-quality outfit swap that clearly shows the NEW garment on the person. ###NO SEXUALISE CONTENT ###RULES - Image must not infringe any System Safety margins and rules.`;
 // Helper: Get prompt from database with fallback
 async function getPrompt(promptKey, variables = {}, fallback) {
   try {
@@ -973,17 +973,22 @@ async function cancelBatch(userId1, batchId) {
 }
 // Angle-specific prompts for photoshoot
 const ANGLE_PROMPTS = {
-  'front': `Create a high-quality e-commerce product photo: On-body front view, centered framing from head to mid-thigh, straight posture with arms relaxed. Seamless light-grey background, soft key lighting, balanced fill to eliminate harsh shadows. 50mm lens look, f/8, ISO 100. Emphasize garment details, fit, and color accuracy. Clean, professional e-commerce style. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`,
-  'three_quarter': `Create a high-quality e-commerce product photo: On-body three-quarter view (45° turn), head to mid-thigh framing, one foot slightly forward to show torso depth and shoulder line. Seamless light-grey background, soft key, subtle rim light to separate from background, controlled specularity on knit. 50mm lens look, f/8, ISO 100. Emphasize side seam, sleeve length, and hem fall. Clean, editorial retail lighting. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`,
-  'back': `Create a high-quality e-commerce product photo: On-body back view, shoulders level, arms relaxed, straight posture. Seamless light-grey background, balanced key/fill to avoid hotspots, faint floor shadow. 50–70mm lens look, f/8, ISO 100. Capture yoke/neck ribbing, back drape, and hem alignment. Centered, color-accurate, luxury e-commerce finish. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`,
-  'side': `Create a high-quality e-commerce product photo: On-body true side profile, chin parallel to floor, arms relaxed (small air gap at elbow), head to mid-thigh framing. Seamless light-grey background, soft key from camera front, gentle fill to preserve knit detail, micro-shadow under hem. 70mm equivalent look, f/8, ISO 100. Prioritize silhouette, shoulder slope, sleeve taper, and ribbed cuff definition. Premium catalog style. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`,
-  'detail': `Create a high-quality e-commerce product photo: Upper-torso close-up crop from shoulders to mid-torso, camera perpendicular to garment. Soft, even light to reveal rib-knit texture and stitching. 85–100mm look, f/8. High sharpness, no moiré, color-accurate wool tone. Background remains seamless light grey. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`
+  'three_quarter': `Create a high-quality e-commerce product photo: On-body three-quarter view (45° turn), head to mid-thigh framing, one foot slightly forward to show torso depth and shoulder line. Seamless light-grey background, soft key, subtle rim light to separate from background, controlled specularity on knit. 50mm lens look, f/8, ISO 100. Emphasize side seam, sleeve length, and hem fall. Clean, editorial retail lighting. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
+  'back': `Create a high-quality e-commerce product photo: On-body back view, shoulders level, arms relaxed, straight posture. Seamless light-grey background, balanced key/fill to avoid hotspots, faint floor shadow. 50–70mm lens look, f/8, ISO 100. Capture yoke/neck ribbing, back drape, and hem alignment. Centered, color-accurate, luxury e-commerce finish. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is. ###RULES - Image must not infringe any System Safety margins and rules.`,
+  'side': `Create a high-quality e-commerce product photo: On-body true side profile, chin parallel to floor, arms relaxed (small air gap at elbow), head to mid-thigh framing. Seamless light-grey background, soft key from camera front, gentle fill to preserve knit detail, micro-shadow under hem. 70mm equivalent look, f/8, ISO 100. Prioritize silhouette, shoulder slope, sleeve taper, and ribbed cuff definition. Premium catalog style. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is. ###RULES - Image must not infringe any System Safety margins and rules.`,
+  'detail': `Create a high-quality e-commerce product photo: Upper-torso close-up crop from shoulders to mid-torso, camera perpendicular to garment. Soft, even light to reveal rib-knit texture and stitching. 85–100mm look, f/8. High sharpness, no moiré, color-accurate wool tone. Background remains seamless light grey. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is. ###RULES - Image must not infringe any System Safety margins and rules.`
 };
 // Special prompt for back view when a custom back garment image is provided
 const BACK_WITH_REFERENCE_PROMPT = `
 REFERENCE IMAGES PROVIDED:
 - Image 1: The model wearing the garment (front view)
 - Image 2: The back of the garment (product reference)
+
+###RULES:
+— You must use exactly the uploaded back view (image 2) garment, without changing logos, images, and characteristics position and format.
+- It is priority to respect the new garment so it can accomplish the objective of the photoshoot.
+- Image must not infringe any System Safety margins and rules.
+
 OUTPUT: A cohesive back view photograph where the model from Image 1 is wearing the garment whose back is shown in Image 2.
 Create a high-quality e-commerce product photo: On-body back view, shoulders level, arms relaxed, straight posture. Seamless light-grey background, balanced key/fill to avoid hotspots, faint floor shadow. 50–70mm lens look, f/8, ISO 100. Capture yoke/neck ribbing, back drape, and hem alignment. Centered, color-accurate, luxury e-commerce finish. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.
 `;
@@ -1188,7 +1193,7 @@ async function processPhotoshoot(photoshootId) {
           prompt = BACK_WITH_REFERENCE_PROMPT;
           additionalImages = [
             {
-              data: backGarmentBase64,
+              base64: backGarmentBase64,
               mimeType: backGarmentMimeType
             }
           ];
