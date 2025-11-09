@@ -980,32 +980,13 @@ const ANGLE_PROMPTS = {
   'detail': `Create a high-quality e-commerce product photo: Upper-torso close-up crop from shoulders to mid-torso, camera perpendicular to garment. Soft, even light to reveal rib-knit texture and stitching. 85–100mm look, f/8. High sharpness, no moiré, color-accurate wool tone. Background remains seamless light grey. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`
 };
 // Special prompt for back view when a custom back garment image is provided
-const BACK_WITH_REFERENCE_PROMPT = `Create a high-quality e-commerce product photo showing the BACK VIEW of the model wearing the garment.
-
+const BACK_WITH_REFERENCE_PROMPT = `
 REFERENCE IMAGES PROVIDED:
 - Image 1: The model wearing the garment (front view)
 - Image 2: The back of the garment (product reference)
-
-INSTRUCTIONS:
-1. Use the MODEL'S BODY, POSE, and OVERALL APPEARANCE from Image 1
-2. Use the GARMENT'S BACK DESIGN, DETAILS, and FEATURES from Image 2
-3. Generate a back view showing this model wearing this specific garment from behind
-
-PHOTOGRAPHY SPECIFICATIONS:
-- On-body back view, shoulders level, arms relaxed at sides, straight posture
-- Seamless light-grey background
-- Balanced key/fill lighting to avoid hotspots, subtle floor shadow
-- 50–70mm lens look, f/8, ISO 100
-- Centered framing, head to mid-thigh
-- Capture all back details: yoke/neck ribbing, back drape, hem alignment, any logos/graphics/patterns
-
-CRITICAL REQUIREMENTS:
-- The model's physique, skin tone, hair, and build must match Image 1
-- The garment's back design must accurately reflect Image 2 (colors, patterns, text, logos, stitching)
-- Professional e-commerce quality with accurate color representation
-- Natural body positioning as if the model from Image 1 simply turned around
-
-OUTPUT: A cohesive back view photograph where the model from Image 1 is wearing the garment whose back is shown in Image 2.`;
+OUTPUT: A cohesive back view photograph where the model from Image 1 is wearing the garment whose back is shown in Image 2.
+Create a high-quality e-commerce product photo: On-body back view, shoulders level, arms relaxed, straight posture. Seamless light-grey background, balanced key/fill to avoid hotspots, faint floor shadow. 50–70mm lens look, f/8, ISO 100. Capture yoke/neck ribbing, back drape, and hem alignment. Centered, color-accurate, luxury e-commerce finish. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.
+`;
 async function createPhotoshootJob(userId1, params) {
   const { resultId, backImageUrl, selectedAngles = [
     'front',
