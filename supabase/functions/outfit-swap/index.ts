@@ -165,9 +165,10 @@ function extractBase64Image(jsonResp: any): string | null {
 
 // Helper: Generate image with retry logic and exponential backoff
 async function generateImageWithRetry(
-  prompt: string, 
-  base64Image: string, 
+  prompt: string,
+  base64Image: string,
   mimeType: string,
+  additionalImages: Array<{ base64: string; mimeType: string }> = [],
   maxRetries = 3
 ): Promise<string | null> {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -186,7 +187,10 @@ async function generateImageWithRetry(
             contents: [{
               parts: [
                 { text: prompt },
-                { inlineData: { mimeType, data: base64Image } }
+                { inlineData: { mimeType, data: base64Image } },
+                ...additionalImages.map(img => ({
+                  inlineData: { mimeType: img.mimeType, data: img.base64 }
+                }))
               ]
             }],
             generationConfig: { responseModalities: ['IMAGE'] }
@@ -995,6 +999,35 @@ const ANGLE_PROMPTS: Record<string, string> = {
   'side': `Create a high-quality e-commerce product photo: On-body true side profile, chin parallel to floor, arms relaxed (small air gap at elbow), head to mid-thigh framing. Seamless light-grey background, soft key from camera front, gentle fill to preserve knit detail, micro-shadow under hem. 70mm equivalent look, f/8, ISO 100. Prioritize silhouette, shoulder slope, sleeve taper, and ribbed cuff definition. Premium catalog style. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`,
   'detail': `Create a high-quality e-commerce product photo: Upper-torso close-up crop from shoulders to mid-torso, camera perpendicular to garment. Soft, even light to reveal rib-knit texture and stitching. 85–100mm look, f/8. High sharpness, no moiré, color-accurate wool tone. Background remains seamless light grey. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`
 };
+
+// Special prompt for back view when a custom back garment image is provided
+const BACK_WITH_REFERENCE_PROMPT = `Create a high-quality e-commerce product photo showing the BACK VIEW of the model wearing the garment.
+
+REFERENCE IMAGES PROVIDED:
+- Image 1: The model wearing the garment (front view)
+- Image 2: The back of the garment (product reference)
+
+INSTRUCTIONS:
+1. Use the MODEL'S BODY, POSE, and OVERALL APPEARANCE from Image 1
+2. Use the GARMENT'S BACK DESIGN, DETAILS, and FEATURES from Image 2
+3. Generate a back view showing this model wearing this specific garment from behind
+
+PHOTOGRAPHY SPECIFICATIONS:
+- On-body back view, shoulders level, arms relaxed at sides, straight posture
+- Seamless light-grey background
+- Balanced key/fill lighting to avoid hotspots, subtle floor shadow
+- 50–70mm lens look, f/8, ISO 100
+- Centered framing, head to mid-thigh
+- Capture all back details: yoke/neck ribbing, back drape, hem alignment, any logos/graphics/patterns
+
+CRITICAL REQUIREMENTS:
+- The model's physique, skin tone, hair, and build must match Image 1
+- The garment's back design must accurately reflect Image 2 (colors, patterns, text, logos, stitching)
+- Professional e-commerce quality with accurate color representation
+- Natural body positioning as if the model from Image 1 simply turned around
+
+OUTPUT: A cohesive back view photograph where the model from Image 1 is wearing the garment whose back is shown in Image 2.`;
+
 async function createPhotoshootJob(userId1, params) {
   const { resultId, backImageUrl, selectedAngles = ['front', 'three_quarter', 'back', 'side'] } = params;
   const supabase = serviceClient();
@@ -1146,11 +1179,31 @@ async function processPhotoshoot(photoshootId) {
     const base64Image = bufferToBase64(new Uint8Array(imageBuffer));
     const mimeType = imageResponse.headers.get('content-type') || 'image/jpeg';
     
+    // Fetch back garment image if provided
+    let backGarmentBase64: string | null = null;
+    let backGarmentMimeType: string | null = null;
+
+    if (photoshoot.back_image_url) {
+      console.log('[processPhotoshoot] Fetching custom back garment image:', photoshoot.back_image_url);
+      try {
+        const backImageResponse = await fetch(photoshoot.back_image_url);
+        if (backImageResponse.ok) {
+          const backImageBuffer = await backImageResponse.arrayBuffer();
+          backGarmentBase64 = bufferToBase64(new Uint8Array(backImageBuffer));
+          backGarmentMimeType = backImageResponse.headers.get('content-type') || 'image/jpeg';
+          console.log('[processPhotoshoot] Back garment image fetched successfully, size:', backImageBuffer.byteLength);
+        } else {
+          console.warn('[processPhotoshoot] Failed to fetch back image:', backImageResponse.status);
+        }
+      } catch (error) {
+        console.warn('[processPhotoshoot] Error fetching back image:', error);
+      }
+    }
+    
     // Generate images for selected angles with staggered requests to avoid rate limiting
     console.log(`[processPhotoshoot] Starting staggered generation of ${angleCount} images`);
     const imageGenerationPromises = selectedAngles.map(async (angleId: string, index: number)=>{
       const imageNum = index + 1;
-      const prompt = ANGLE_PROMPTS[angleId] || ANGLE_PROMPTS['front'];
       
       // Stagger requests by 500ms to avoid rate limiting
       await new Promise(resolve => setTimeout(resolve, index * 500));
@@ -1163,8 +1216,22 @@ async function processPhotoshoot(photoshootId) {
           progress: Math.round(20 + (imageNum - 1) * progressIncrement)
         }).eq("id", photoshootId);
 
-        // Call Gemini API with retry logic
-        const generatedBase64 = await generateImageWithRetry(prompt, base64Image, mimeType);
+        // Determine prompt and additional images based on angle
+        let prompt = ANGLE_PROMPTS[angleId] || ANGLE_PROMPTS['front'];
+        let additionalImages: Array<{ base64: string; mimeType: string }> = [];
+        
+        // Special handling for back angle with custom back image
+        if (angleId === 'back' && backGarmentBase64 && backGarmentMimeType) {
+          console.log(`[processPhotoshoot] Using custom back garment image for back angle`);
+          prompt = BACK_WITH_REFERENCE_PROMPT;
+          additionalImages = [{
+            base64: backGarmentBase64,
+            mimeType: backGarmentMimeType
+          }];
+        }
+
+        // Call Gemini API with retry logic (now with optional additional images)
+        const generatedBase64 = await generateImageWithRetry(prompt, base64Image, mimeType, additionalImages);
         
         if (!generatedBase64) {
           console.error(`[processPhotoshoot] Image ${imageNum}: Failed after all retries`);
@@ -1237,7 +1304,8 @@ async function processPhotoshoot(photoshootId) {
       metadata: {
         ...photoshoot.metadata,
         successful_images: successfulImages,
-        failed_images: failedImages
+        failed_images: failedImages,
+        back_angle_used_custom_image: !!(photoshoot.back_image_url && selectedAngles.includes('back'))
       }
     }).eq("id", photoshootId);
     
