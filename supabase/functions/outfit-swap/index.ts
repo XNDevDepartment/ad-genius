@@ -1395,11 +1395,18 @@ async function processEcommercePhoto(photoId) {
     
     const imageBuffer = new Uint8Array(await imageResp.arrayBuffer());
     const base64Image = bufferToBase64(imageBuffer);
-    const prompt = `Create a professional e-commerce magazine fashion photo by placing this model with their current outfit into a perfectly matching, photorealistic environment.
+    const prompt = `Create a professional UGC magazine fashion photo by placing this model with their current outfit into a perfectly matching, photorealistic environment.
 
-        ANALYZE THE GARMENT STYLE and match to appropriate environment.
+        ###ANALYZE THE GARMENT STYLE and match to appropriate environment:
+        - Casual: Urban street, coffee shop, park, etc...
+        - Formal: Modern office, elegant venue, city backdrop, etc...
+        - Athletic: Gym, outdoor track, yoga studio, etc...
+        - Evening: Upscale restaurant, gala venue, etc...
+        - Outerwear: City street, outdoor scene, etc...
 
-        REQUIREMENTS:
+        ###IMPORTANT: You must use your intelligence to create the most human and realistic image possible.
+
+        ###REQUIREMENTS:
         1. Change ONLY the background and lighting
         2. Ensure lighting matches the new environment
         3. Professional photography quality with proper depth of field
