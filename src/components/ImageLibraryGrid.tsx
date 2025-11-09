@@ -145,7 +145,7 @@ export const ImageLibraryGrid = ({
                 />
 
                 {/* Image type badge */}
-                {viewMode === "ai" && (
+                {/* {viewMode === "ai" && (
                   <div className="absolute top-2 left-2 z-20">
                     {image.source_type === 'photoshoot' && (
                       <div className="bg-purple-500/90 text-white text-xs px-2 py-1 rounded-md font-medium flex items-center gap-1">
@@ -166,7 +166,7 @@ export const ImageLibraryGrid = ({
                       </div>
                     )}
                   </div>
-                )}
+                )} */}
 
                 {/* Source image thumbnail overlay */}
                 {viewMode === "ai" && showSourceThumbnails && image.sourceSignedUrl && (
