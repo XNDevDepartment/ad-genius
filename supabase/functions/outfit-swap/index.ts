@@ -84,9 +84,8 @@ async function getPrompt(promptKey, variables = {}, fallback) {
     return prompt;
   }
 }
-
 // Helper: Check if user is admin
-async function checkIsAdmin(userId: string): Promise<boolean> {
+async function checkIsAdmin(userId) {
   const supabase = serviceClient();
   const { data, error } = await supabase.rpc('is_user_admin', {
     check_user_id: userId
@@ -97,176 +96,155 @@ async function checkIsAdmin(userId: string): Promise<boolean> {
   }
   return data || false;
 }
-
 // Helper: Deduct credits from user
-async function deductCredits(userId: string, amount: number): Promise<{ success: boolean; error?: string }> {
+async function deductCredits(userId, amount) {
   const supabase = serviceClient();
   const { data, error } = await supabase.rpc('deduct_user_credits', {
     p_user_id: userId,
     p_amount: amount,
     p_reason: 'ecommerce_photo_generation'
   });
-  
   if (error) {
     console.error('[deductCredits] Error:', error);
-    return { success: false, error: error.message };
+    return {
+      success: false,
+      error: error.message
+    };
   }
-  
   if (!data?.success) {
-    return { success: false, error: 'Insufficient credits' };
+    return {
+      success: false,
+      error: 'Insufficient credits'
+    };
   }
-  
-  return { success: true };
+  return {
+    success: true
+  };
 }
-
 // Helper: Refund credits to user
-async function refundCredits(userId: string, amount: number, reason: string = 'ecommerce_photo_failed_or_cancelled'): Promise<void> {
+async function refundCredits(userId, amount, reason = 'ecommerce_photo_failed_or_cancelled') {
   const supabase = serviceClient();
   const { error } = await supabase.rpc('refund_user_credits', {
     p_user_id: userId,
     p_amount: amount,
     p_reason: reason
   });
-  
   if (error) {
     console.error('[refundCredits] Error:', error);
   }
 }
-
 // Helper: Extract base64 image from Gemini response
-function extractBase64Image(jsonResp: any): string | null {
+function extractBase64Image(jsonResp) {
   console.log('[extractBase64Image] Parsing response structure...');
-  
   if (!jsonResp?.candidates) {
     console.error('[extractBase64Image] No candidates in response');
     return null;
   }
-  
   const parts = jsonResp.candidates?.[0]?.content?.parts ?? [];
   console.log(`[extractBase64Image] Found ${parts.length} parts in response`);
-  
-  const imgPart = parts.find((p: any) => p?.inlineData?.mimeType?.startsWith('image/'));
-  
+  const imgPart = parts.find((p)=>p?.inlineData?.mimeType?.startsWith('image/'));
   if (!imgPart) {
-    console.error('[extractBase64Image] No image part found. Parts structure:', 
-      JSON.stringify(parts.map((p: any) => Object.keys(p))));
+    console.error('[extractBase64Image] No image part found. Parts structure:', JSON.stringify(parts.map((p)=>Object.keys(p))));
     return null;
   }
-  
   const imageData = imgPart.inlineData?.data;
   if (!imageData) {
     console.error('[extractBase64Image] Image part found but no data');
     return null;
   }
-  
   console.log(`[extractBase64Image] ✅ Extracted image data (${imageData.length} chars)`);
   return imageData;
 }
-
 // Helper: Generate image with retry logic and exponential backoff
-async function generateImageWithRetry(
-  prompt: string,
-  base64Image: string,
-  mimeType: string,
-  additionalImages: Array<{ base64: string; mimeType: string }> = [],
-  maxRetries = 3
-): Promise<string | null> {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+async function generateImageWithRetry(prompt, base64Image, mimeType, additionalImages = [], maxRetries = 3) {
+  for(let attempt = 1; attempt <= maxRetries; attempt++){
     try {
       console.log(`[Attempt ${attempt}/${maxRetries}] Calling Gemini API...`);
-      
-      const response = await fetch(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent',
-        {
-          method: 'POST',
-          headers: {
-            'x-goog-api-key': GOOGLE_AI_KEY,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            contents: [{
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent', {
+        method: 'POST',
+        headers: {
+          'x-goog-api-key': GOOGLE_AI_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [
+            {
               parts: [
-                { text: prompt },
-                { inlineData: { mimeType, data: base64Image } },
-                ...additionalImages.map(img => ({
-                  inlineData: { mimeType: img.mimeType, data: img.base64 }
-                }))
+                {
+                  text: prompt
+                },
+                {
+                  inlineData: {
+                    mimeType,
+                    data: base64Image
+                  }
+                },
+                ...additionalImages.map((img)=>({
+                    inlineData: {
+                      mimeType: img.mimeType,
+                      data: img.base64
+                    }
+                  }))
               ]
-            }],
-            generationConfig: { responseModalities: ['IMAGE'] }
-          })
-        }
-      );
-
+            }
+          ],
+          generationConfig: {
+            responseModalities: [
+              'IMAGE'
+            ]
+          }
+        })
+      });
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`[Attempt ${attempt}] API error:`, response.status, errorText);
-        
         if (errorText.includes('not available in your country')) {
           throw new Error('REGION_BLOCKED: Image generation not available in this region');
         }
-        
         if (response.status === 429) {
           const delay = Math.min(1000 * Math.pow(2, attempt), 10000);
           console.log(`[Attempt ${attempt}] Rate limited. Waiting ${delay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve)=>setTimeout(resolve, delay));
           continue;
         }
-        
         throw new Error(`API error: ${response.status}`);
       }
-
       const data = await response.json();
       console.log(`[Attempt ${attempt}] Response received:`, JSON.stringify(data).substring(0, 200));
-      
       // Check for IMAGE_OTHER rejection
       if (data.candidates?.[0]?.finishReason === 'IMAGE_OTHER') {
-        console.error(`[Attempt ${attempt}] Gemini refused to generate (IMAGE_OTHER):`, 
-          data.candidates[0].finishMessage);
-        
+        console.error(`[Attempt ${attempt}] Gemini refused to generate (IMAGE_OTHER):`, data.candidates[0].finishMessage);
         // Don't retry on safety rejections - the prompt needs to be fixed
         throw new Error(`Image generation refused by AI: ${data.candidates[0].finishMessage || 'Safety filters triggered'}`);
       }
-      
       const resultBase64 = extractBase64Image(data);
-      
       if (!resultBase64) {
-        console.error(`[Attempt ${attempt}] No image in response. Full response:`, 
-          JSON.stringify(data).substring(0, 500));
-        
+        console.error(`[Attempt ${attempt}] No image in response. Full response:`, JSON.stringify(data).substring(0, 500));
         if (attempt < maxRetries) {
           const delay = 2000 * attempt;
           console.log(`[Attempt ${attempt}] Retrying in ${delay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve)=>setTimeout(resolve, delay));
           continue;
         }
-        
         return null;
       }
-      
       console.log(`[Attempt ${attempt}] ✅ Image generated successfully`);
       return resultBase64;
-      
     } catch (error) {
       console.error(`[Attempt ${attempt}] Error:`, error);
-      
       if (error.message?.includes('REGION_BLOCKED')) {
         throw error;
       }
-      
       if (attempt === maxRetries) {
         return null;
       }
-      
       const delay = 2000 * attempt;
       console.log(`[Attempt ${attempt}] Retrying in ${delay}ms...`);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve)=>setTimeout(resolve, delay));
     }
   }
-  
   return null;
 }
-
 // Helper: Convert ArrayBuffer to base64 in chunks to avoid stack overflow
 function bufferToBase64(uint8Array) {
   let binary = '';
@@ -277,7 +255,6 @@ function bufferToBase64(uint8Array) {
   }
   return btoa(binary);
 }
-
 serve(async (req)=>{
   if (req.method === "OPTIONS") {
     return new Response(null, {
@@ -593,7 +570,7 @@ async function processOutfitSwap(jobId) {
     const personMimeType = personResponse.headers.get('content-type') ?? 'image/jpeg';
     const garmentMimeType = garmentResponse.headers.get('content-type') ?? 'image/jpeg';
     // Call Gemini API with multimodal input
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent', {
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent', {
       method: 'POST',
       headers: {
         'x-goog-api-key': GOOGLE_AI_KEY,
@@ -705,7 +682,7 @@ async function processOutfitSwap(jobId) {
       jpg_url: jpgPublicUrl.publicUrl,
       png_url: pngPublicUrl.publicUrl,
       metadata: {
-        model_used: "gemini-2.5-flash-image-preview",
+        model_used: "gemini-2.5-flash-image",
         processing_time_ms: processingTime,
         dimensions: "1024x1024",
         exif_stripped: true
@@ -720,7 +697,7 @@ async function processOutfitSwap(jobId) {
       progress: 100,
       finished_at: new Date().toISOString(),
       metadata: {
-        model_used: "gemini-2.5-flash-image-preview",
+        model_used: "gemini-2.5-flash-image",
         processing_time_ms: processingTime
       }
     }).eq("id", jobId);
@@ -892,7 +869,10 @@ async function createBatchJob(userId1, params) {
     const garmentId = garmentIds[i];
     const garmentDetail = garmentDetails[i] || "";
     console.log(`[createBatchJob] Creating job ${i + 1}/${garmentIds.length} for garment ${garmentId}`);
-    const jobSettings = { ...settings, garmentDetail };
+    const jobSettings = {
+      ...settings,
+      garmentDetail
+    };
     const { data: job, error: jobError } = await supabase.from("outfit_swap_jobs").insert({
       user_id: userId1,
       batch_id: batch.id,
@@ -992,14 +972,13 @@ async function cancelBatch(userId1, batchId) {
   }, 200);
 }
 // Angle-specific prompts for photoshoot
-const ANGLE_PROMPTS: Record<string, string> = {
+const ANGLE_PROMPTS = {
   'front': `Create a high-quality e-commerce product photo: On-body front view, centered framing from head to mid-thigh, straight posture with arms relaxed. Seamless light-grey background, soft key lighting, balanced fill to eliminate harsh shadows. 50mm lens look, f/8, ISO 100. Emphasize garment details, fit, and color accuracy. Clean, professional e-commerce style. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`,
   'three_quarter': `Create a high-quality e-commerce product photo: On-body three-quarter view (45° turn), head to mid-thigh framing, one foot slightly forward to show torso depth and shoulder line. Seamless light-grey background, soft key, subtle rim light to separate from background, controlled specularity on knit. 50mm lens look, f/8, ISO 100. Emphasize side seam, sleeve length, and hem fall. Clean, editorial retail lighting. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`,
   'back': `Create a high-quality e-commerce product photo: On-body back view, shoulders level, arms relaxed, straight posture. Seamless light-grey background, balanced key/fill to avoid hotspots, faint floor shadow. 50–70mm lens look, f/8, ISO 100. Capture yoke/neck ribbing, back drape, and hem alignment. Centered, color-accurate, luxury e-commerce finish. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`,
   'side': `Create a high-quality e-commerce product photo: On-body true side profile, chin parallel to floor, arms relaxed (small air gap at elbow), head to mid-thigh framing. Seamless light-grey background, soft key from camera front, gentle fill to preserve knit detail, micro-shadow under hem. 70mm equivalent look, f/8, ISO 100. Prioritize silhouette, shoulder slope, sleeve taper, and ribbed cuff definition. Premium catalog style. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`,
   'detail': `Create a high-quality e-commerce product photo: Upper-torso close-up crop from shoulders to mid-torso, camera perpendicular to garment. Soft, even light to reveal rib-knit texture and stitching. 85–100mm look, f/8. High sharpness, no moiré, color-accurate wool tone. Background remains seamless light grey. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.`
 };
-
 // Special prompt for back view when a custom back garment image is provided
 const BACK_WITH_REFERENCE_PROMPT = `Create a high-quality e-commerce product photo showing the BACK VIEW of the model wearing the garment.
 
@@ -1027,28 +1006,35 @@ CRITICAL REQUIREMENTS:
 - Natural body positioning as if the model from Image 1 simply turned around
 
 OUTPUT: A cohesive back view photograph where the model from Image 1 is wearing the garment whose back is shown in Image 2.`;
-
 async function createPhotoshootJob(userId1, params) {
-  const { resultId, backImageUrl, selectedAngles = ['front', 'three_quarter', 'back', 'side'] } = params;
+  const { resultId, backImageUrl, selectedAngles = [
+    'front',
+    'three_quarter',
+    'back',
+    'side'
+  ] } = params;
   const supabase = serviceClient();
-  
   // Validate selectedAngles
-  const validAngles = ['front', 'three_quarter', 'back', 'side', 'detail'];
-  const angles = selectedAngles.filter((angle: string) => validAngles.includes(angle));
-  
+  const validAngles = [
+    'front',
+    'three_quarter',
+    'back',
+    'side',
+    'detail'
+  ];
+  const angles = selectedAngles.filter((angle)=>validAngles.includes(angle));
   if (angles.length === 0) {
     return jsonResponse({
       error: "At least one angle must be selected"
     }, 400);
   }
-  
   // Quick region availability check
   try {
-    const testResponse = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview',
-      { headers: { 'x-goog-api-key': GOOGLE_AI_KEY } }
-    );
-    
+    const testResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image', {
+      headers: {
+        'x-goog-api-key': GOOGLE_AI_KEY
+      }
+    });
     if (!testResponse.ok) {
       const errorText = await testResponse.text();
       if (errorText.includes('not available in your country')) {
@@ -1062,7 +1048,6 @@ async function createPhotoshootJob(userId1, params) {
   } catch (error) {
     console.warn('[Region check] Failed:', error);
   }
-  
   const creditsNeeded = angles.length;
   console.log(`[createPhotoshoot] Creating photoshoot for result ${resultId} with ${angles.length} angles:`, angles);
   // Check admin status
@@ -1160,12 +1145,15 @@ async function processPhotoshoot(photoshootId) {
     if (photoshootError || !photoshoot) {
       throw new Error("Photoshoot not found");
     }
-    
     // Get selected angles (default to all if not specified)
-    const selectedAngles = photoshoot.selected_angles || ['front', 'three_quarter', 'back', 'side'];
+    const selectedAngles = photoshoot.selected_angles || [
+      'front',
+      'three_quarter',
+      'back',
+      'side'
+    ];
     const angleCount = selectedAngles.length;
     console.log(`[processPhotoshoot] Generating ${angleCount} angles:`, selectedAngles);
-    
     const originalImageUrl = photoshoot.outfit_swap_results?.public_url;
     if (!originalImageUrl) {
       throw new Error("Original image URL not found");
@@ -1178,11 +1166,9 @@ async function processPhotoshoot(photoshootId) {
     const imageBuffer = await imageResponse.arrayBuffer();
     const base64Image = bufferToBase64(new Uint8Array(imageBuffer));
     const mimeType = imageResponse.headers.get('content-type') || 'image/jpeg';
-    
     // Fetch back garment image if provided
-    let backGarmentBase64: string | null = null;
-    let backGarmentMimeType: string | null = null;
-
+    let backGarmentBase64 = null;
+    let backGarmentMimeType = null;
     if (photoshoot.back_image_url) {
       console.log('[processPhotoshoot] Fetching custom back garment image:', photoshoot.back_image_url);
       try {
@@ -1199,15 +1185,12 @@ async function processPhotoshoot(photoshootId) {
         console.warn('[processPhotoshoot] Error fetching back image:', error);
       }
     }
-    
     // Generate images for selected angles with staggered requests to avoid rate limiting
     console.log(`[processPhotoshoot] Starting staggered generation of ${angleCount} images`);
-    const imageGenerationPromises = selectedAngles.map(async (angleId: string, index: number)=>{
+    const imageGenerationPromises = selectedAngles.map(async (angleId, index)=>{
       const imageNum = index + 1;
-      
       // Stagger requests by 500ms to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, index * 500));
-      
+      await new Promise((resolve)=>setTimeout(resolve, index * 500));
       console.log(`[processPhotoshoot] Starting angle ${angleId} (${imageNum}/${angleCount})`);
       try {
         // Update progress based on number of selected angles
@@ -1215,24 +1198,22 @@ async function processPhotoshoot(photoshootId) {
         await supabase.from("outfit_swap_photoshoots").update({
           progress: Math.round(20 + (imageNum - 1) * progressIncrement)
         }).eq("id", photoshootId);
-
         // Determine prompt and additional images based on angle
         let prompt = ANGLE_PROMPTS[angleId] || ANGLE_PROMPTS['front'];
-        let additionalImages: Array<{ base64: string; mimeType: string }> = [];
-        
+        let additionalImages = [];
         // Special handling for back angle with custom back image
         if (angleId === 'back' && backGarmentBase64 && backGarmentMimeType) {
           console.log(`[processPhotoshoot] Using custom back garment image for back angle`);
           prompt = BACK_WITH_REFERENCE_PROMPT;
-          additionalImages = [{
-            base64: backGarmentBase64,
-            mimeType: backGarmentMimeType
-          }];
+          additionalImages = [
+            {
+              data: backGarmentBase64,
+              mimeType: backGarmentMimeType
+            }
+          ];
         }
-
         // Call Gemini API with retry logic (now with optional additional images)
         const generatedBase64 = await generateImageWithRetry(prompt, base64Image, mimeType, additionalImages);
-        
         if (!generatedBase64) {
           console.error(`[processPhotoshoot] Image ${imageNum}: Failed after all retries`);
           return {
@@ -1240,7 +1221,6 @@ async function processPhotoshoot(photoshootId) {
             imageNum
           };
         }
-        
         // Upload to storage
         const imageBlob = Uint8Array.from(atob(generatedBase64), (c)=>c.charCodeAt(0));
         const storagePath = `${photoshoot.user_id}/${photoshootId}/image_${imageNum}.png`;
@@ -1287,7 +1267,7 @@ async function processPhotoshoot(photoshootId) {
         failedImages++;
       }
       // Update progress as each completes
-      const progressPercent = Math.round(20 + ((index + 1) / angleCount) * 80);
+      const progressPercent = Math.round(20 + (index + 1) / angleCount * 80);
       supabase.from("outfit_swap_photoshoots").update({
         progress: progressPercent
       }).eq("id", photoshootId);
@@ -1308,7 +1288,6 @@ async function processPhotoshoot(photoshootId) {
         back_angle_used_custom_image: !!(photoshoot.back_image_url && selectedAngles.includes('back'))
       }
     }).eq("id", photoshootId);
-    
     // Refund credits for failed images (only for non-admins)
     if (failedImages > 0) {
       const isAdmin = await checkIsAdmin(photoshoot.user_id);
@@ -1324,10 +1303,8 @@ async function processPhotoshoot(photoshootId) {
     }, 200);
   } catch (error) {
     console.error("[processPhotoshoot] Error:", error);
-    
     let userMessage = error.message || "Failed to generate photoshoot";
     let errorType = 'UNKNOWN_ERROR';
-    
     if (error.message?.includes('REGION_BLOCKED')) {
       userMessage = 'Image generation is not available in your region';
       errorType = 'REGION_BLOCKED';
@@ -1335,7 +1312,6 @@ async function processPhotoshoot(photoshootId) {
       userMessage = 'Too many requests. Please try again in a few minutes';
       errorType = 'RATE_LIMIT';
     }
-    
     await supabase.from("outfit_swap_photoshoots").update({
       status: "failed",
       error: userMessage,
@@ -1345,7 +1321,6 @@ async function processPhotoshoot(photoshootId) {
         error_details: error.message
       }
     }).eq("id", photoshootId);
-    
     // Refund all credits on complete failure
     const { data: photoshoot } = await supabase.from("outfit_swap_photoshoots").select("user_id, selected_angles").eq("id", photoshootId).single();
     if (photoshoot?.user_id) {
@@ -1395,21 +1370,19 @@ async function cancelPhotoshoot(userId1, photoshootId) {
 async function generateEcommerceIdeas(userId1, params) {
   const { imageUrl } = params;
   const supabase = serviceClient();
-
   if (!imageUrl) {
-    return jsonResponse({ error: "Image URL is required" }, 400);
+    return jsonResponse({
+      error: "Image URL is required"
+    }, 400);
   }
-
   try {
     console.log(`[generateEcommerceIdeas] Fetching image from ${imageUrl}`);
     const imageResp = await fetch(imageUrl);
     if (!imageResp.ok) {
       throw new Error(`Failed to fetch image: ${imageResp.status}`);
     }
-
     const imageBuffer = new Uint8Array(await imageResp.arrayBuffer());
     const base64Image = bufferToBase64(imageBuffer);
-
     const prompt = `Analyze this fashion/product image and suggest 4 creative e-commerce presentation styles.
 
 For each style, provide:
@@ -1423,46 +1396,48 @@ Focus on diverse approaches:
 - Street/Urban
 
 Format as JSON array: [{"title": "...", "description": "..."}, ...]`;
-
     console.log(`[generateEcommerceIdeas] Calling Gemini API...`);
-    const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
-      {
-        method: 'POST',
-        headers: {
-          'x-goog-api-key': GOOGLE_AI_KEY,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          contents: [{
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+      method: 'POST',
+      headers: {
+        'x-goog-api-key': GOOGLE_AI_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [
+          {
             parts: [
-              { text: prompt },
-              { inlineData: { mimeType: 'image/jpeg', data: base64Image } }
+              {
+                text: prompt
+              },
+              {
+                inlineData: {
+                  mimeType: 'image/jpeg',
+                  data: base64Image
+                }
+              }
             ]
-          }]
-        })
-      }
-    );
-
+          }
+        ]
+      })
+    });
     if (!response.ok) {
       const errorText = await response.text();
       console.error('[generateEcommerceIdeas] Gemini API error:', response.status, errorText);
       throw new Error(`Gemini API error: ${response.statusText}`);
     }
-
     const result = await response.json();
     const textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
-
     if (!textResponse) {
       throw new Error("No response from Gemini");
     }
-
     // Parse JSON response
     const jsonMatch = textResponse.match(/\[[\s\S]*\]/);
     const ideas = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
-
     console.log(`[generateEcommerceIdeas] Generated ${ideas.length} ideas`);
-    return jsonResponse({ ideas }, 200);
+    return jsonResponse({
+      ideas
+    }, 200);
   } catch (error) {
     console.error('[generateEcommerceIdeas] Error:', error);
     return jsonResponse({
@@ -1471,18 +1446,16 @@ Format as JSON array: [{"title": "...", "description": "..."}, ...]`;
     }, 500);
   }
 }
-
 async function createEcommercePhotoJob(userId1, params) {
   const { resultId, stylePrompt } = params;
   const supabase = serviceClient();
-  
   // Quick region availability check
   try {
-    const testResponse = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview',
-      { headers: { 'x-goog-api-key': GOOGLE_AI_KEY } }
-    );
-    
+    const testResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image', {
+      headers: {
+        'x-goog-api-key': GOOGLE_AI_KEY
+      }
+    });
     if (!testResponse.ok) {
       const errorText = await testResponse.text();
       if (errorText.includes('not available in your country')) {
@@ -1496,7 +1469,6 @@ async function createEcommercePhotoJob(userId1, params) {
   } catch (error) {
     console.warn('[Region check] Failed:', error);
   }
-  
   const creditsNeeded = 1;
   // Check admin status
   const { data: isAdmin } = await supabase.rpc("is_user_admin", {
@@ -1533,7 +1505,6 @@ async function createEcommercePhotoJob(userId1, params) {
       error: "Failed to create e-commerce photo job"
     }, 500);
   }
-
   // Trigger async processing
   const functionUrl = `${SUPABASE_URL}/functions/v1/outfit-swap`;
   fetch(functionUrl, {
@@ -1548,48 +1519,40 @@ async function createEcommercePhotoJob(userId1, params) {
       photoId: ecommercePhoto.id
     })
   }).catch(console.error);
-
-  return jsonResponse({ ecommercePhoto }, 200);
+  return jsonResponse({
+    ecommercePhoto
+  }, 200);
 }
 async function processEcommercePhoto(photoId) {
   const supabase = serviceClient();
   console.log(`[processEcommercePhoto] Starting photo ${photoId}`);
-
-  const { data: photo } = await supabase
-    .from("outfit_swap_ecommerce_photos")
-    .select("*, outfit_swap_results(*)")
-    .eq("id", photoId)
-    .single();
-
+  const { data: photo } = await supabase.from("outfit_swap_ecommerce_photos").select("*, outfit_swap_results(*)").eq("id", photoId).single();
   if (!photo) {
     console.error(`[processEcommercePhoto] Photo ${photoId} not found`);
-    return jsonResponse({ error: "Photo not found" }, 404);
+    return jsonResponse({
+      error: "Photo not found"
+    }, 404);
   }
-
-  await supabase.from("outfit_swap_ecommerce_photos")
-    .update({ status: "processing", started_at: new Date().toISOString(), progress: 10 })
-    .eq("id", photoId);
-
+  await supabase.from("outfit_swap_ecommerce_photos").update({
+    status: "processing",
+    started_at: new Date().toISOString(),
+    progress: 10
+  }).eq("id", photoId);
   try {
     const originalUrl = photo.outfit_swap_results.public_url;
     console.log(`[processEcommercePhoto] Fetching original image from ${originalUrl}`);
-    
     const imageResp = await fetch(originalUrl);
     if (!imageResp.ok) {
       throw new Error(`Failed to fetch original image: ${imageResp.status}`);
     }
-    
     const imageBuffer = new Uint8Array(await imageResp.arrayBuffer());
     const base64Image = bufferToBase64(imageBuffer);
-    
     // Check for custom style prompt from metadata
     const stylePrompt = photo.metadata?.style_prompt;
     let prompt = `Generate a professional fashion magazine photograph featuring the model and outfit shown in the reference image.`;
-    
     if (stylePrompt) {
       prompt += `\n\nSTYLE DIRECTION: ${stylePrompt}`;
     }
-    
     prompt += `\n\nCreate a complete fashion scene where:
 
 GARMENT ANALYSIS - Match environment to style:
@@ -1608,32 +1571,26 @@ PHOTOGRAPHY REQUIREMENTS:
 - Cohesive color palette between outfit and setting
 
 OUTPUT: A polished, magazine-ready fashion photograph where model, outfit, and environment create a unified, professional presentation.`;
-
-    await supabase.from("outfit_swap_ecommerce_photos").update({ progress: 40 }).eq("id", photoId);
-
+    await supabase.from("outfit_swap_ecommerce_photos").update({
+      progress: 40
+    }).eq("id", photoId);
     console.log(`[processEcommercePhoto] Calling Gemini API with retry logic...`);
     const resultBase64 = await generateImageWithRetry(prompt, base64Image, "image/jpeg");
-
     if (!resultBase64) {
       throw new Error("Failed to generate image after 3 attempts");
     }
-    
     console.log(`[processEcommercePhoto] Image generated successfully`);
-    await supabase.from("outfit_swap_ecommerce_photos").update({ progress: 80 }).eq("id", photoId);
-
-    const resultBuffer = Uint8Array.from(atob(resultBase64), c => c.charCodeAt(0));
+    await supabase.from("outfit_swap_ecommerce_photos").update({
+      progress: 80
+    }).eq("id", photoId);
+    const resultBuffer = Uint8Array.from(atob(resultBase64), (c)=>c.charCodeAt(0));
     const storagePath = `ecommerce/${photoId}.jpg`;
-    
     console.log(`[processEcommercePhoto] Uploading to storage: ${storagePath}`);
     await supabase.storage.from("outfit-swap-photoshoots").upload(storagePath, resultBuffer, {
       contentType: "image/jpeg",
       upsert: true
     });
-
-    const { data: { publicUrl } } = supabase.storage
-      .from("outfit-swap-photoshoots")
-      .getPublicUrl(storagePath);
-
+    const { data: { publicUrl } } = supabase.storage.from("outfit-swap-photoshoots").getPublicUrl(storagePath);
     console.log(`[processEcommercePhoto] Complete! Public URL: ${publicUrl}`);
     await supabase.from("outfit_swap_ecommerce_photos").update({
       status: "completed",
@@ -1647,10 +1604,8 @@ OUTPUT: A polished, magazine-ready fashion photograph where model, outfit, and e
     }, 200);
   } catch (error) {
     console.error(`[processEcommercePhoto] Error:`, error);
-    
     let userMessage = error.message;
     let errorType = 'UNKNOWN_ERROR';
-    
     if (error.message?.includes('REGION_BLOCKED')) {
       userMessage = 'Image generation is not available in your region';
       errorType = 'REGION_BLOCKED';
@@ -1667,7 +1622,6 @@ OUTPUT: A polished, magazine-ready fashion photograph where model, outfit, and e
       userMessage = 'Image generation timed out. Please try again.';
       errorType = 'GENERATION_FAILED';
     }
-    
     await supabase.from("outfit_swap_ecommerce_photos").update({
       status: "failed",
       error: userMessage,
@@ -1678,7 +1632,6 @@ OUTPUT: A polished, magazine-ready fashion photograph where model, outfit, and e
         error_details: error.message
       }
     }).eq("id", photoId);
-    
     // Check admin status
     const { data: isAdmin } = await supabase.rpc("is_user_admin", {
       check_user_id: photo.user_id

@@ -753,8 +753,8 @@
       "dragDrop": "Drag & drop images or click to browse",
       "selected": "{{count}} of {{max}} garments selected",
       "discount": "Upload 5+ garments and save 10%!",
-      "detailsLabel": "Garment Details (Optional)",
-      "detailsPlaceholder": "E.g., red cotton t-shirt, slim fit, v-neck..."
+      "detailsLabel": "Clothing Details",
+      "detailsPlaceholder": "Ex: Long sleeve sweater. Oversize jacket. Knee-length dress. Stretch leggings"
     },
     "errors": {
       "accessDenied": "Access Denied",
@@ -882,12 +882,6 @@
       },
       "loading": "Loading models...",
       "noModels": "No models found"
-    },
-    "garmentUploader": {
-      "title": "Upload Garment Images",
-      "dragDrop": "Drag & drop or click to select",
-      "selected": "{{count}} of {{max}} garments selected",
-      "discount": "10% discount applied! You’re processing {{count}} garments at once."
     },
     "settings": {
       "title": "Settings",

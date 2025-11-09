@@ -879,7 +879,9 @@
       "title": "Subir Imágenes de Prendas",
       "dragDrop": "Arrastra y suelta o haz clic para seleccionar",
       "selected": "{{count}} de {{max}} prendas seleccionadas",
-      "discount": "¡10% de descuento aplicado! Estás procesando {{count}} prendas a la vez."
+      "discount": "¡10% de descuento aplicado! Estás procesando {{count}} prendas a la vez.",
+      "detailsLabel": "Detalles de la prenda",
+      "detailsPlaceholder": "Ej: Jersey de manga larga. Chaqueta oversize. Vestido hasta la rodilla. Leggings elásticos"
     },
     "settings": {
       "title": "Ajustes",

@@ -83,8 +83,9 @@ export const MultiGarmentUploader = ({
   return (
     <div className="space-y-4">
       {/* Uploaded Garments Grid */}
-      {garments.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {garments.length > 0 && (
+        <>
           {garments.map((garment, index) => (
             <Card key={index} className="relative group overflow-hidden p-4 space-y-3">
               <div className="relative aspect-square rounded-md overflow-hidden">
@@ -122,14 +123,12 @@ export const MultiGarmentUploader = ({
               </div>
             </Card>
           ))}
-        </div>
-      )}
-
-      {/* Upload Area */}
+          </>
+        )}
       {garments.length < maxGarments && (
         <Card
           className={cn(
-            "border-2 border-dashed transition-all cursor-pointer hover:border-primary",
+            "border-2 border-dashed transition-all cursor-pointer hover:border-primary align-middle",
             isDragOver && "border-primary bg-primary/5"
           )}
           onDragOver={handleDragOver}
@@ -153,6 +152,9 @@ export const MultiGarmentUploader = ({
           </div>
         </Card>
       )}
+        </div>
+
+      {/* Upload Area */}
 
       {/* Info */}
       {garments.length >= 5 && (

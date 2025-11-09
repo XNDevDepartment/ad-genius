@@ -879,7 +879,9 @@
       "title": "Téléverser des Images de Vêtements",
       "dragDrop": "Glissez-déposez ou cliquez pour sélectionner",
       "selected": "{{count}} sur {{max}} vêtements sélectionnés",
-      "discount": "Réduction de 10% appliquée ! Vous traitez {{count}} vêtements à la fois."
+      "discount": "Réduction de 10% appliquée ! Vous traitez {{count}} vêtements à la fois.",
+      "detailsLabel": "Détails du vêtement",
+      "detailsPlaceholder": "Ex : Pull à manches longues. Veste oversize. Robe jusqu’aux genoux. Leggings extensibles"
     },
     "settings": {
       "title": "Paramètres",

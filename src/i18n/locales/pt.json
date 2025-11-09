@@ -883,7 +883,9 @@
       "title": "Carregar Imagens de Roupa",
       "dragDrop": "Arraste e largue ou clique para selecionar",
       "selected": "{{count}} de {{max}} peças selecionadas",
-      "discount": "Desconto de 10% aplicado! Está a processar {{count}} peças de uma vez."
+      "discount": "Desconto de 10% aplicado! Está a processar {{count}} peças de uma vez.",
+      "detailsLabel": "Detalhes da Roupa",
+      "detailsPlaceholder": "Ex: Camisola de mangas largas. Casaco tamnho Oversize. Vestido até ao joelho. Leggins elasticas"
     },
     "settings": {
       "title": "Definições",

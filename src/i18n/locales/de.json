@@ -879,7 +879,9 @@
       "title": "Kleidungsbilder Hochladen",
       "dragDrop": "Ziehen und ablegen oder klicken zum Auswählen",
       "selected": "{{count}} von {{max}} Kleidungsstücken ausgewählt",
-      "discount": "10% Rabatt angewendet! Du verarbeitest {{count}} Kleidungsstücke auf einmal."
+      "discount": "10% Rabatt angewendet! Du verarbeitest {{count}} Kleidungsstücke auf einmal.",
+      "detailsLabel": "Kleidungsdetails",
+      "detailsPlaceholder": "Z. B.: Langärmliger Pullover. Oversize-Jacke. Knielanges Kleid. Dehnbare Leggings"
     },
     "settings": {
       "title": "Einstellungen",
