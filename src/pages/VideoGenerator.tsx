@@ -80,11 +80,11 @@ export default function VideoGenerator() {
       navigate('/account');
       return;
     }
-    
+
     // Skip access checks for admins
     if (isAdminLoading) return;
     if (isAdmin) return;
-    
+
     // Regular users still get checked
     if (!canAccessVideos()) {
       toast({
@@ -144,11 +144,11 @@ export default function VideoGenerator() {
   // Handle pre-selection from UGC or Outfit Swap
   useEffect(() => {
     const state = location.state as any;
-    
+
     if (state?.source === 'outfit_swap' && state?.preselectedImageUrl) {
       // Handle outfit swap source
       setPreselectedImageUrl(state.preselectedImageUrl);
-      
+
       toast({
         title: "Outfit Swap Loaded",
         description: "Outfit swap result ready to animate.",
@@ -769,7 +769,7 @@ export default function VideoGenerator() {
                   onClick={onCreate}
                   className="flex-1"
                   size="lg"
-                  disabled={creating || (!selectedImage && !ugcImageId) || !prompt.trim()}
+                  disabled={creating || (!selectedImage && !ugcImageId) || !prompt.trim() || !preselectedImageUrl}
                 >
                   {creating ? (
                     <>
