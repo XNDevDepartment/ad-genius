@@ -52,16 +52,25 @@ const ModuleSelection = () => {
     //   path: "/create/adgenius",
     //   isAdmin: true
     // }] : []),
-    {
+     // ...(isAdmin ? [{
+  //  ...(isAdmin ? [{
+    //   id: "adgenius",
+    //   title: "AdGenius (Admin Only)",
+    //   description: "Advanced creative generation for advertising campaigns",
+    //   icon: Sparkles,
+    //   path: "/create/adgenius",
+    //   isAdmin: true
+    // }] : []),
+    ...(isAdmin ? [{
       id: "outfit-swap",
       title: t('createSelection.outfitSwap.title'),
       description: t('createSelection.outfitSwap.description'),
       icon: Shirt,
       path: "/create/outfit-swap",
-      isAdmin: false,
-      isBeta: true,
-      locked: !canAccessOutfitSwap()
-    },
+      isAdmin: true,
+      isBeta: false,
+      // locked: !canAccessOutfitSwap()
+    }] : []),
 
     // ...(isAdmin ? [{
     //   id: "product-studio",
