@@ -795,67 +795,46 @@ async function cancelJob(userId1, jobId) {
 }
 async function retryJob(userId1, jobId) {
   const supabase = serviceClient();
-  
   // Fetch the failed job details
-  const { data: originalJob, error: fetchError } = await supabase
-    .from("outfit_swap_jobs")
-    .select("*")
-    .eq("id", jobId)
-    .eq("user_id", userId1)
-    .eq("status", "failed")
-    .single();
-    
+  const { data: originalJob, error: fetchError } = await supabase.from("outfit_swap_jobs").select("*").eq("id", jobId).eq("user_id", userId1).eq("status", "failed").single();
   if (fetchError || !originalJob) {
-    return jsonResponse({ error: "Job not found or not failed" }, 404);
+    return jsonResponse({
+      error: "Job not found or not failed"
+    }, 404);
   }
-  
   console.log(`[retryJob] Retrying job ${jobId} with same parameters`);
-  
   // Create a new job with the same parameters
-  const { data: newJob, error: createError } = await supabase
-    .from("outfit_swap_jobs")
-    .insert({
-      user_id: userId1,
-      batch_id: originalJob.batch_id,
-      source_person_id: originalJob.source_person_id,
-      base_model_id: originalJob.base_model_id,
-      source_garment_id: originalJob.source_garment_id,
-      settings: originalJob.settings,
-      status: "queued",
-      metadata: {
-        ...originalJob.metadata,
-        is_retry: true,
-        original_job_id: jobId,
-        retry_count: (originalJob.metadata?.retry_count || 0) + 1
-      }
-    })
-    .select()
-    .single();
-    
+  const { data: newJob, error: createError } = await supabase.from("outfit_swap_jobs").insert({
+    user_id: userId1,
+    batch_id: originalJob.batch_id,
+    source_person_id: originalJob.source_person_id,
+    base_model_id: originalJob.base_model_id,
+    source_garment_id: originalJob.source_garment_id,
+    settings: originalJob.settings,
+    status: "queued",
+    metadata: {
+      ...originalJob.metadata,
+      is_retry: true,
+      original_job_id: jobId,
+      retry_count: (originalJob.metadata?.retry_count || 0) + 1
+    }
+  }).select().single();
   if (createError) {
     console.error("[retryJob] Error creating retry job:", createError);
-    return jsonResponse({ error: "Failed to create retry job" }, 500);
+    return jsonResponse({
+      error: "Failed to create retry job"
+    }, 500);
   }
-  
   // If part of a batch, update batch status back to processing if it was failed
   if (originalJob.batch_id) {
-    const { data: batch } = await supabase
-      .from("outfit_swap_batches")
-      .select("status, failed_jobs")
-      .eq("id", originalJob.batch_id)
-      .single();
-      
+    const { data: batch } = await supabase.from("outfit_swap_batches").select("status, failed_jobs").eq("id", originalJob.batch_id).single();
     if (batch && (batch.status === "failed" || batch.status === "completed")) {
-      await supabase
-        .from("outfit_swap_batches")
-        .update({
-          status: "processing",
-          failed_jobs: Math.max(0, (batch.failed_jobs || 0) - 1)
-        })
-        .eq("id", originalJob.batch_id);
+      await supabase.from("outfit_swap_batches").update({
+        status: "processing",
+        failed_jobs: Math.max(0, (batch.failed_jobs || 0) - 1)
+      }).eq("id", originalJob.batch_id);
     }
   }
-  
   // Trigger async processing
   const functionUrl = `${SUPABASE_URL}/functions/v1/outfit-swap`;
   fetch(functionUrl, {
@@ -870,8 +849,9 @@ async function retryJob(userId1, jobId) {
       jobId: newJob.id
     })
   }).catch(console.error);
-  
-  return jsonResponse({ job: newJob }, 200);
+  return jsonResponse({
+    job: newJob
+  }, 200);
 }
 async function createBatchJob(userId1, params) {
   const { baseModelId, garmentIds, settings } = params;
@@ -1488,7 +1468,12 @@ async function generateEcommerceIdeas(userId1, params) {
               }
             ]
           }
-        ]
+        ],
+        generationConfig: {
+          responseModalities: [
+            'TEXT'
+          ]
+        }
       })
     });
     if (!response.ok) {
@@ -1625,22 +1610,22 @@ async function processEcommercePhoto(photoId) {
     }
     prompt += `\n\nCreate a complete fashion scene where:
 
-GARMENT ANALYSIS - Match environment to style:
-- Casual wear → Urban street, coffee shop, park setting
-- Formal wear → Modern office, elegant venue, city backdrop
-- Athletic wear → Gym, outdoor track, yoga studio
-- Evening wear → Upscale restaurant, gala venue
-- Outerwear → City street, outdoor scene
+            GARMENT ANALYSIS - Match environment to style:
+            - Casual wear → Urban street, coffee shop, park setting
+            - Formal wear → Modern office, elegant venue, city backdrop
+            - Athletic wear → Gym, outdoor track, yoga studio
+            - Evening wear → Upscale restaurant, gala venue
+            - Outerwear → City street, outdoor scene
 
-PHOTOGRAPHY REQUIREMENTS:
-- Magazine-quality professional photography
-- Natural lighting that complements the environment
-- Proper depth of field with soft background blur
-- Environment enhances but doesn't distract from outfit
-- Model positioned naturally within the scene
-- Cohesive color palette between outfit and setting
+            PHOTOGRAPHY REQUIREMENTS:
+            - Magazine-quality professional photography
+            - Natural lighting that complements the environment
+            - Proper depth of field with soft background blur
+            - Environment enhances but doesn't distract from outfit
+            - Model positioned naturally within the scene
+            - Cohesive color palette between outfit and setting
 
-OUTPUT: A polished, magazine-ready fashion photograph where model, outfit, and environment create a unified, professional presentation.`;
+            OUTPUT: A polished, magazine-ready fashion photograph where model, outfit, and environment create a unified, professional presentation.`;
     await supabase.from("outfit_swap_ecommerce_photos").update({
       progress: 40
     }).eq("id", photoId);
