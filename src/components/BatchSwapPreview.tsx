@@ -24,6 +24,8 @@ interface BatchSwapPreviewProps {
   onCancel: () => void;
   onReset: () => void;
   onRefresh?: () => Promise<void>;
+  onRetryJob?: (jobId: string) => Promise<void>;
+  retryingJobs?: Set<string>;
   loading?: boolean;
 }
 
@@ -33,6 +35,8 @@ export const BatchSwapPreview = ({
   onCancel,
   onReset,
   onRefresh,
+  onRetryJob,
+  retryingJobs = new Set(),
   loading = false,
 }: BatchSwapPreviewProps) => {
   const navigate = useNavigate();
@@ -387,6 +391,18 @@ export const BatchSwapPreview = ({
                           </p>
                         )}
                       </div>
+                    )}
+                    {job.status === "failed" && onRetryJob && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full mt-2"
+                        onClick={() => onRetryJob(job.id)}
+                        disabled={retryingJobs.has(job.id)}
+                      >
+                        <RefreshCw className={`w-3 h-3 mr-1 ${retryingJobs.has(job.id) ? 'animate-spin' : ''}`} />
+                        {retryingJobs.has(job.id) ? t('outfitSwap.buttons.retrying') : t('outfitSwap.buttons.retry')}
+                      </Button>
                     )}
                     {isStuck && (
                       <div className="p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-md mt-2">

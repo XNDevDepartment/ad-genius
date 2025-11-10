@@ -907,7 +907,9 @@
       "animate": "Animate",
       "ecommerce": "E-commerce",
       "photoshoot": "Photoshoot",
-      "download": "Download"
+      "download": "Download",
+      "retry": "Retry",
+      "retrying": "Retrying..."
     },
     "warnings": {
       "stuckJob": "⚠️ This job seems stuck. Try clicking Refresh."

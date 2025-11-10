@@ -133,6 +133,18 @@ export const outfitSwapApi = {
     return data;
   },
 
+  async retryJob(jobId: string) {
+    const { data, error } = await supabase.functions.invoke("outfit-swap", {
+      body: {
+        action: "retryJob",
+        jobId,
+      },
+    });
+
+    if (error) throw error;
+    return data.job as OutfitSwapJob;
+  },
+
   subscribeToJob(jobId: string, callback: (job: OutfitSwapJob) => void) {
     const channel = supabase
       .channel(`outfit-swap-job-${jobId}`)

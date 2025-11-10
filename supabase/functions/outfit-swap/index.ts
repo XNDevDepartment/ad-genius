@@ -326,6 +326,8 @@ serve(async (req)=>{
         return await getEcommercePhoto(user.id, params.photoId);
       case "cancelEcommercePhoto":
         return await cancelEcommercePhoto(user.id, params.photoId);
+      case "retryJob":
+        return await retryJob(user.id, params.jobId);
       default:
         return jsonResponse({
           error: "Invalid action"
@@ -790,6 +792,86 @@ async function cancelJob(userId1, jobId) {
   return jsonResponse({
     success: true
   }, 200);
+}
+async function retryJob(userId1, jobId) {
+  const supabase = serviceClient();
+  
+  // Fetch the failed job details
+  const { data: originalJob, error: fetchError } = await supabase
+    .from("outfit_swap_jobs")
+    .select("*")
+    .eq("id", jobId)
+    .eq("user_id", userId1)
+    .eq("status", "failed")
+    .single();
+    
+  if (fetchError || !originalJob) {
+    return jsonResponse({ error: "Job not found or not failed" }, 404);
+  }
+  
+  console.log(`[retryJob] Retrying job ${jobId} with same parameters`);
+  
+  // Create a new job with the same parameters
+  const { data: newJob, error: createError } = await supabase
+    .from("outfit_swap_jobs")
+    .insert({
+      user_id: userId1,
+      batch_id: originalJob.batch_id,
+      source_person_id: originalJob.source_person_id,
+      base_model_id: originalJob.base_model_id,
+      source_garment_id: originalJob.source_garment_id,
+      settings: originalJob.settings,
+      status: "queued",
+      metadata: {
+        ...originalJob.metadata,
+        is_retry: true,
+        original_job_id: jobId,
+        retry_count: (originalJob.metadata?.retry_count || 0) + 1
+      }
+    })
+    .select()
+    .single();
+    
+  if (createError) {
+    console.error("[retryJob] Error creating retry job:", createError);
+    return jsonResponse({ error: "Failed to create retry job" }, 500);
+  }
+  
+  // If part of a batch, update batch status back to processing if it was failed
+  if (originalJob.batch_id) {
+    const { data: batch } = await supabase
+      .from("outfit_swap_batches")
+      .select("status, failed_jobs")
+      .eq("id", originalJob.batch_id)
+      .single();
+      
+    if (batch && (batch.status === "failed" || batch.status === "completed")) {
+      await supabase
+        .from("outfit_swap_batches")
+        .update({
+          status: "processing",
+          failed_jobs: Math.max(0, (batch.failed_jobs || 0) - 1)
+        })
+        .eq("id", originalJob.batch_id);
+    }
+  }
+  
+  // Trigger async processing
+  const functionUrl = `${SUPABASE_URL}/functions/v1/outfit-swap`;
+  fetch(functionUrl, {
+    method: "POST",
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`
+    },
+    body: JSON.stringify({
+      action: "processJob",
+      jobId: newJob.id
+    })
+  }).catch(console.error);
+  
+  return jsonResponse({ job: newJob }, 200);
 }
 async function createBatchJob(userId1, params) {
   const { baseModelId, garmentIds, settings } = params;

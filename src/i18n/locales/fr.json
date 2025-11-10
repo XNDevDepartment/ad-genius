@@ -899,7 +899,9 @@
       "animate": "Animer",
       "ecommerce": "E-commerce",
       "photoshoot": "Séance Photo",
-      "download": "Télécharger"
+      "download": "Télécharger",
+      "retry": "Réessayer",
+      "retrying": "Réessai..."
     },
     "warnings": {
       "stuckJob": "⚠️ Ce travail semble bloqué. Essayez de cliquer sur Actualiser."
