@@ -97,7 +97,9 @@
       "title": "Photos de Studio",
       "description": "Générez des photos de produit professionnelles"
     },
-    "comingSoon": "Bientôt disponible"
+    "comingSoon": "Bientôt disponible",
+    "betaBadge": "BÊTA",
+    "betaLockedDescription": "Passe à un plan payant pour accéder à cette fonctionnalité bêta. Aide-nous à perfectionner l’outfit-swap !"
   },
   "common": {
     "getStarted": "Commencer",

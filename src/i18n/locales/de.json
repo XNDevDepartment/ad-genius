@@ -97,7 +97,9 @@
       "title": "Studiofotos",
       "description": "Erzeuge professionelle Produktfotografie"
     },
-    "comingSoon": "Demnächst"
+    "comingSoon": "Demnächst",
+    "betaBadge": "BETA",
+    "betaLockedDescription": "Upgrade auf einen beliebigen kostenpflichtigen Plan, um auf diese Beta-Funktion zuzugreifen. Hilf uns, das Outfit-Swap zu perfektionieren!"
   },
   "common": {
     "getStarted": "Loslegen",

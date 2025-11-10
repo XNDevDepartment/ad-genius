@@ -97,7 +97,9 @@
       "title": "Fotos de Estudio",
       "description": "Genera fotografía de producto profesional"
     },
-    "comingSoon": "Próximamente"
+    "comingSoon": "Próximamente",
+    "betaBadge": "BETA",
+    "betaLockedDescription": "Haz upgrade a cualquier plan de pago para acceder a esta función beta. ¡Ayúdanos a perfeccionar el outfit-swap!"
   },
   "common": {
     "getStarted": "Empezar",

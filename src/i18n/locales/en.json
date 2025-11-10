@@ -97,7 +97,9 @@
       "title": "Studio Photos",
       "description": "Generate professional product photos"
     },
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "betaBadge": "BETA",
+    "betaLockedDescription": "Upgrade to any paid plan to access this beta feature. Help us perfect outfit-swap!"
   },
   "common": {
     "getStarted": "Get Started",

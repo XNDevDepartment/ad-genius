@@ -8,12 +8,14 @@ import { useTranslation } from "react-i18next";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useCredits } from "@/hooks/useCredits";
 
+
 const ModuleSelection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation();
   const { isAdmin } = useAdminAuth();
-  const { canAccessVideos } = useCredits();
+  const { canAccessVideos, canAccessOutfitSwap } = useCredits();
+
 
   // Block access if not authenticated
   useEffect(() => {
@@ -50,15 +52,17 @@ const ModuleSelection = () => {
     //   path: "/create/adgenius",
     //   isAdmin: true
     // }] : []),
-    ...(isAdmin ? [{
+    {
       id: "outfit-swap",
       title: t('createSelection.outfitSwap.title'),
       description: t('createSelection.outfitSwap.description'),
       icon: Shirt,
       path: "/create/outfit-swap",
       isAdmin: false,
-      isBeta: true
-    }] : []),
+      isBeta: true,
+      locked: !canAccessOutfitSwap()
+    },
+
     // ...(isAdmin ? [{
     //   id: "product-studio",
     //   title: "Product Studio Background",
@@ -139,7 +143,9 @@ const ModuleSelection = () => {
               key={workflow.id}
               className={`bg-transparent shadow-md cursor-pointer transition-all hover:shadow-lg ${
                 workflow.disabled || workflow.locked ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'
-              } ${workflow.isAdmin ? 'border-2 border-orange-500/30 bg-orange-500/5' : ''}`}
+              } ${workflow.isAdmin ? 'border-2 border-orange-500/30 bg-orange-500/5' : ''} ${
+                workflow.isBeta && !workflow.isAdmin ? 'border-2 border-purple-500/30 bg-purple-500/5' : ''
+              }`}
               onClick={() => {
                 if (workflow.locked) {
                   navigate('/pricing');
@@ -149,27 +155,38 @@ const ModuleSelection = () => {
               }}
             >
               <CardHeader className="text-center">
-                <div className={`relative w-16 h-16 mx-auto mb-4 rounded-apple flex items-center justify-center ${
-                  workflow.isAdmin ? 'bg-orange-500/20' : 'bg-primary/10'
+              <div className={`relative w-16 h-16 mx-auto mb-4 rounded-apple flex items-center justify-center ${
+                  workflow.isAdmin ? 'bg-orange-500/20' : 
+                  workflow.isBeta ? 'bg-purple-500/20' : 
+                  'bg-primary/10'
                 }`}>
-                  <workflow.icon className={`h-8 w-8 ${workflow.isAdmin ? 'text-orange-500' : 'text-primary'}`} />
+                  <workflow.icon className={`h-8 w-8 ${
+                    workflow.isAdmin ? 'text-orange-500' : 
+                    workflow.isBeta ? 'text-purple-500' : 
+                    'text-primary'
+                  }`} />
                   {workflow.locked && (
                     <div className="absolute inset-0 bg-black/50 rounded-apple flex items-center justify-center">
                       <Lock className="h-6 w-6 text-white" />
                     </div>
                   )}
                 </div>
-                <CardTitle className="text-xl flex items-center gap-2 justify-center">
+                <CardTitle className="text-xl flex items-center gap-2 justify-center flex-wrap">
                   {workflow.title}
                   {workflow.isAdmin && (
                     <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full">ADMIN</span>
+                  )}
+                  {workflow.isBeta && !workflow.isAdmin && (
+                    <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded-full">BETA</span>
                   )}
                   {workflow.locked && (
                     <span className="text-xs bg-amber-500 text-white px-2 py-1 rounded-full">PLUS+</span>
                   )}
                 </CardTitle>
                 <CardDescription>
-                  {workflow.locked 
+                  {workflow.locked && workflow.isBeta
+                    ? "Upgrade to any paid plan to access this beta feature. Help us perfect outfit-swap!"
+                    : workflow.locked 
                     ? "Upgrade to Plus or use Free tier to unlock video generation"
                     : workflow.description
                   }
