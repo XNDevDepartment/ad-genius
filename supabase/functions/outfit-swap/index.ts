@@ -414,7 +414,7 @@ async function analyzeGarment(garmentUrl) {
         ],
         generationConfig: {
           responseModalities: [
-            'IMAGE'
+            'TEXT'
           ]
         }
       }),
