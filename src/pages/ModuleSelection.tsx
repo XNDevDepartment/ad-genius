@@ -29,7 +29,8 @@ const ModuleSelection = () => {
       description: t('createSelection.ugcCreator.description'),
       icon: Zap,
       path: "/create/ugc",
-      isAdmin: false
+      isAdmin: false,
+      isBeta: false,
     },
     {
       id: "video",
@@ -38,6 +39,7 @@ const ModuleSelection = () => {
       icon: Video,
       path: "/create/video",
       isAdmin: false,
+      isBeta: false,
       locked: !canAccessVideos()
     },
     // ...(isAdmin ? [{
@@ -54,7 +56,8 @@ const ModuleSelection = () => {
       description: t('createSelection.outfitSwap.description'),
       icon: Shirt,
       path: "/create/outfit-swap",
-      isAdmin: true
+      isAdmin: false,
+      isBeta: true
     }] : []),
     // ...(isAdmin ? [{
     //   id: "product-studio",
@@ -70,7 +73,8 @@ const ModuleSelection = () => {
       description: "Process multiple products at once with batch background replacement",
       icon: Images,
       path: "/create/product-studio-bulk",
-      isAdmin: true
+      isAdmin: true,
+      isBeta: false
     }] : []),
     ...(isAdmin ? [{
       id: "magazine-photoshoot",
@@ -78,7 +82,8 @@ const ModuleSelection = () => {
       description: "Transform photos into high-fashion editorial magazine spreads",
       icon: Camera,
       path: "/create/magazine-photoshoot",
-      isAdmin: true
+      isAdmin: true,
+      isBeta: false
     }] : []),
     // ...(isAdmin ? [{
     //   id: "custom-model",
