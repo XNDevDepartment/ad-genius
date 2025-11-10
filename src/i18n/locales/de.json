@@ -122,7 +122,8 @@
     "newest": "Neueste",
     "oldest": "Älteste",
     "noResults": "Keine Ergebnisse gefunden",
-    "currentlyGenerating": "Wird derzeit generiert"
+    "currentlyGenerating": "Wird derzeit generiert",
+    "credit": "Créditos:"
   },
   "a11y": {
     "logoAlt": "Logo",

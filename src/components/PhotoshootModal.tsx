@@ -25,7 +25,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
   const [backImageFile, setBackImageFile] = useState<File | null>(null);
   const [backImageUrl, setBackImageUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [selectedAngles, setSelectedAngles] = useState<string[]>(['front', 'three_quarter', 'back', 'side']);
+  const [selectedAngles, setSelectedAngles] = useState<string[]>(['three_quarter', 'back', 'side', 'detail']);
 
   const AVAILABLE_ANGLES = [
     { id: 'three_quarter', label: t('photoshootModal.angles.threeQuarter.label'), description: t('photoshootModal.angles.threeQuarter.description') },
@@ -348,7 +348,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
 
               <div className="p-4 bg-muted rounded-lg">
                 <p className="text-sm text-muted-foreground">
-                  <strong>{t('photoshootModal.costLabel')}:</strong> {selectedAngles.length} {t('common.credit', { count: selectedAngles.length })} • 
+                  <strong>{t('photoshootModal.costLabel')}:</strong> {selectedAngles.length} {t('common.credit', { count: selectedAngles.length })} •
                   <strong className="ml-2">{t('photoshootModal.anglesLabel')}:</strong> {t('photoshootModal.anglesCount', { count: selectedAngles.length, total: AVAILABLE_ANGLES.length })}
                 </p>
               </div>
