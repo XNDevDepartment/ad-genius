@@ -802,14 +802,14 @@
     }
   },
   "ecommercePhotoModal": {
-    "title": "Foto de Moda E-commerce",
-    "description": "Transforme su atuendo en una foto profesional de estilo e-commerce",
-    "generating": "Generando foto de e-commerce...",
+    "title": "Foto de Moda UGC",
+    "description": "Transforme su atuendo en una foto profesional de estilo UGC",
+    "generating": "Generando foto de UGC...",
     "generationFailed": "Fallo en la Generación",
     "unknownError": "Ocurrió un error desconocido",
-    "generatedSuccessfully": "¡Foto de e-commerce generada con éxito!",
+    "generatedSuccessfully": "¡Foto UGC generada con éxito!",
     "original": "Original",
-    "ecommerceStyle": "Estilo E-commerce",
+    "ecommerceStyle": "Estilo UGC",
     "noImageYet": "Aún sin imagen",
     "cancel": "Cancelar",
     "download": "Descargar",
@@ -819,13 +819,13 @@
     "close": "Cerrar",
     "imageDownloaded": "Imagen descargada",
     "downloadFailed": "Error al descargar imagen",
-    "generationCancelled": "Generación de foto de e-commerce cancelada",
+    "generationCancelled": "Generación de foto ugc cancelada",
     "cancelFailed": "Error al cancelar generación",
-    "failedToLoad": "Error al cargar foto de e-commerce"
+    "failedToLoad": "Error al cargar foto UGC"
   },
   "ecommerceIdeasModal": {
-    "title": "Elija Estilo E-commerce",
-    "description": "Seleccione una dirección creativa para su foto de e-commerce",
+    "title": "Elija Estilo UGC",
+    "description": "Seleccione una dirección creativa para su foto de UGC",
     "cancel": "Cancelar",
     "generateWithStyle": "Generar con Estilo Seleccionado",
     "failedToGenerate": "Error al generar ideas",
@@ -925,9 +925,9 @@
       "resultsRefreshedDesc": "{{count}} resultados cargados",
       "adminAccessRequired": "Se requiere acceso de administrador",
       "onlyAdminsPhotoshoots": "Solo los administradores pueden crear sesiones de fotos",
-      "ecommerceStarted": "Foto de e-commerce iniciada",
+      "ecommerceStarted": "Foto UGC iniciada",
       "ecommerceStartedDesc": "Creando foto profesional del producto...",
-      "ecommerceFailed": "Error al iniciar la foto de e-commerce"
+      "ecommerceFailed": "Error al iniciar la foto UGC"
     },
     "baseModelSelector": {
       "filters": {

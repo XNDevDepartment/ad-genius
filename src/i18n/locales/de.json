@@ -802,14 +802,14 @@
     }
   },
   "ecommercePhotoModal": {
-    "title": "E-Commerce-Modefoto",
-    "description": "Verwandeln Sie Ihr Outfit in ein professionelles E-Commerce-Foto",
-    "generating": "E-Commerce-Foto wird generiert...",
+    "title": "UGC-Modefoto",
+    "description": "Verwandeln Sie Ihr Outfit in ein professionelles UGC-Foto",
+    "generating": "UGC-Foto wird generiert...",
     "generationFailed": "Generierung Fehlgeschlagen",
     "unknownError": "Ein unbekannter Fehler ist aufgetreten",
-    "generatedSuccessfully": "E-Commerce-Foto erfolgreich generiert!",
+    "generatedSuccessfully": "UGC-Foto erfolgreich generiert!",
     "original": "Original",
-    "ecommerceStyle": "E-Commerce-Stil",
+    "ecommerceStyle": "UGC-Stil",
     "noImageYet": "Noch kein Bild",
     "cancel": "Abbrechen",
     "download": "Herunterladen",
@@ -819,13 +819,13 @@
     "close": "Schließen",
     "imageDownloaded": "Bild heruntergeladen",
     "downloadFailed": "Herunterladen des Bildes fehlgeschlagen",
-    "generationCancelled": "E-Commerce-Foto-Generierung abgebrochen",
+    "generationCancelled": "UGC-Foto-Generierung abgebrochen",
     "cancelFailed": "Abbruch der Generierung fehlgeschlagen",
-    "failedToLoad": "Laden des E-Commerce-Fotos fehlgeschlagen"
+    "failedToLoad": "Laden des UGC-Fotos fehlgeschlagen"
   },
   "ecommerceIdeasModal": {
-    "title": "E-Commerce-Stil Wählen",
-    "description": "Wählen Sie eine kreative Richtung für Ihr E-Commerce-Foto",
+    "title": "UGC-Stil Wählen",
+    "description": "Wählen Sie eine kreative Richtung für Ihr UGC-Foto",
     "cancel": "Abbrechen",
     "generateWithStyle": "Mit Ausgewähltem Stil Generieren",
     "failedToGenerate": "Generierung von Ideen fehlgeschlagen",
@@ -925,9 +925,9 @@
       "resultsRefreshedDesc": "{{count}} Ergebnisse geladen",
       "adminAccessRequired": "Admin-Zugriff erforderlich",
       "onlyAdminsPhotoshoots": "Nur Admins können Fotoshootings erstellen",
-      "ecommerceStarted": "E-Commerce-Foto gestartet",
+      "ecommerceStarted": "UGC-Foto gestartet",
       "ecommerceStartedDesc": "Erstelle professionelles Produktfoto...",
-      "ecommerceFailed": "E-Commerce-Foto konnte nicht gestartet werden"
+      "ecommerceFailed": "UGC-Foto konnte nicht gestartet werden"
     },
     "baseModelSelector": {
       "filters": {

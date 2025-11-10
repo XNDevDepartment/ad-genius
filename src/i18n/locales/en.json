@@ -802,14 +802,14 @@
     }
   },
   "ecommercePhotoModal": {
-    "title": "E-commerce Fashion Photo",
-    "description": "Transform your outfit into a professional e-commerce style photo",
-    "generating": "Generating e-commerce photo...",
+    "title": "UGC Fashion Photo",
+    "description": "Transform your outfit into a professional UGC style photo",
+    "generating": "Generating UGC photo...",
     "generationFailed": "Generation Failed",
     "unknownError": "Unknown error occurred",
-    "generatedSuccessfully": "E-commerce photo generated successfully!",
+    "generatedSuccessfully": "UGC photo generated successfully!",
     "original": "Original",
-    "ecommerceStyle": "E-commerce Style",
+    "ecommerceStyle": "UGC Style",
     "noImageYet": "No image yet",
     "cancel": "Cancel",
     "download": "Download",
@@ -819,13 +819,13 @@
     "close": "Close",
     "imageDownloaded": "Image downloaded",
     "downloadFailed": "Failed to download image",
-    "generationCancelled": "E-commerce photo generation cancelled",
+    "generationCancelled": "UGC photo generation cancelled",
     "cancelFailed": "Failed to cancel generation",
-    "failedToLoad": "Failed to load e-commerce photo"
+    "failedToLoad": "Failed to load UGC photo"
   },
   "ecommerceIdeasModal": {
-    "title": "Choose E-commerce Style",
-    "description": "Select a creative direction for your e-commerce photo",
+    "title": "Choose UGC Style",
+    "description": "Select a creative direction for your UGC photo",
     "cancel": "Cancel",
     "generateWithStyle": "Generate with Selected Style",
     "failedToGenerate": "Failed to generate ideas",
@@ -933,9 +933,9 @@
       "resultsRefreshedDesc": "{{count}} results loaded",
       "adminAccessRequired": "Admin access required",
       "onlyAdminsPhotoshoots": "Only admins can create photoshoots",
-      "ecommerceStarted": "E-commerce photo started",
+      "ecommerceStarted": "UGC photo started",
       "ecommerceStartedDesc": "Creating a professional product photo...",
-      "ecommerceFailed": "Failed to start e-commerce photo"
+      "ecommerceFailed": "Failed to start UGC photo"
     },
     "baseModelSelector": {
       "filters": {
