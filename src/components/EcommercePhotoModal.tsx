@@ -225,9 +225,9 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
                   <ExternalLink className="h-4 w-4 mr-2" />
                   {t('ecommercePhotoModal.open')}
                 </Button>
-                <Button onClick={handleAnimate}>
+                {/* <Button onClick={handleAnimate}>
                   {t('ecommercePhotoModal.animate')}
-                </Button>
+                </Button> */}
               </>
             )}
 
