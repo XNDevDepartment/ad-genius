@@ -900,7 +900,9 @@
       "animate": "Animieren",
       "ecommerce": "E-Commerce",
       "photoshoot": "Fotoshooting",
-      "download": "Herunterladen"
+      "download": "Herunterladen",
+      "retry": "Wiederholen",
+      "retrying": "Wiederhole..."
     },
     "warnings": {
       "stuckJob": "⚠️ Dieser Job scheint festzustecken. Versuche auf Aktualisieren zu klicken."

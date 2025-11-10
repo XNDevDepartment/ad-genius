@@ -900,7 +900,9 @@
       "animate": "Animar",
       "ecommerce": "E-commerce",
       "photoshoot": "Sesión de Fotos",
-      "download": "Descargar"
+      "download": "Descargar",
+      "retry": "Reintentar",
+      "retrying": "Reintentando..."
     },
     "warnings": {
       "stuckJob": "⚠️ Este trabajo puede estar atascado. Intenta hacer clic en Actualizar."

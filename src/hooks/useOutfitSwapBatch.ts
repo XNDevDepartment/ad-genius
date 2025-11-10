@@ -8,6 +8,7 @@ export const useOutfitSwapBatch = () => {
   const [jobs, setJobs] = useState<OutfitSwapJob[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [retryingJobs, setRetryingJobs] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   // Subscribe to batch updates
@@ -213,6 +214,7 @@ export const useOutfitSwapBatch = () => {
     setBatch(null);
     setJobs([]);
     setError(null);
+    setRetryingJobs(new Set());
   };
 
   const getProgress = () => {
@@ -221,6 +223,36 @@ export const useOutfitSwapBatch = () => {
     return Math.round(
       ((batch.completed_jobs + batch.failed_jobs) / batch.total_jobs) * 100
     );
+  };
+
+  const retryJob = async (jobId: string) => {
+    try {
+      setRetryingJobs(prev => new Set(prev).add(jobId));
+      
+      const newJob = await outfitSwapApi.retryJob(jobId);
+      
+      // Update the jobs array - replace failed job with new job
+      setJobs(prevJobs => 
+        prevJobs.map(j => j.id === jobId ? newJob : j)
+      );
+      
+      toast({
+        title: "Retry started",
+        description: "The failed generation is being retried...",
+      });
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to retry",
+        description: err.message,
+      });
+    } finally {
+      setRetryingJobs(prev => {
+        const next = new Set(prev);
+        next.delete(jobId);
+        return next;
+      });
+    }
   };
 
   return {
@@ -234,5 +266,7 @@ export const useOutfitSwapBatch = () => {
     reset,
     getProgress,
     refreshBatch,
+    retryJob,
+    retryingJobs,
   };
 };

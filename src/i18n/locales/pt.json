@@ -904,7 +904,9 @@
       "animate": "Animar",
       "ecommerce": "E-commerce",
       "photoshoot": "Sessão Fotográfica",
-      "download": "Transferir"
+      "download": "Transferir",
+      "retry": "Tentar Novamente",
+      "retrying": "Tentando..."
     },
     "warnings": {
       "stuckJob": "⚠️ Esta tarefa parece bloqueada. Tente clicar em Atualizar."
