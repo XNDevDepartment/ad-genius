@@ -97,6 +97,10 @@
       "title": "Photos de Studio",
       "description": "Générez des photos de produit professionnelles"
     },
+    "outfitSwap": {
+      "title": "Essayage Virtuel",
+      "description": "Habille nos modèles avec tes vêtements et obtiens des photos de qualité professionnelle"
+    },
     "comingSoon": "Bientôt disponible",
     "betaBadge": "BÊTA",
     "betaLockedDescription": "Passe à un plan payant pour accéder à cette fonctionnalité bêta. Aide-nous à perfectionner l’outfit-swap !"

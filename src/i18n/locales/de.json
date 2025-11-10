@@ -97,6 +97,10 @@
       "title": "Studiofotos",
       "description": "Erzeuge professionelle Produktfotografie"
     },
+    "outfitSwap": {
+      "title": "Virtuelle Anprobe",
+      "description": "Ziehe unseren Models deine Kleidung an und erhalte Fotos in professioneller Qualität"
+    },
     "comingSoon": "Demnächst",
     "betaBadge": "BETA",
     "betaLockedDescription": "Upgrade auf einen beliebigen kostenpflichtigen Plan, um auf diese Beta-Funktion zuzugreifen. Hilf uns, das Outfit-Swap zu perfektionieren!"

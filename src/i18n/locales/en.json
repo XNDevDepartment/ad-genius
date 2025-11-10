@@ -97,6 +97,10 @@
       "title": "Studio Photos",
       "description": "Generate professional product photos"
     },
+    "outfitSwap": {
+      "title": "Outfit Swap",
+      "description": "Dress our models with your clothes and get professional-quality photos"
+    },
     "comingSoon": "Coming soon",
     "betaBadge": "BETA",
     "betaLockedDescription": "Upgrade to any paid plan to access this beta feature. Help us perfect outfit-swap!"

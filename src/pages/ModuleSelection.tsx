@@ -61,16 +61,16 @@ const ModuleSelection = () => {
     //   path: "/create/adgenius",
     //   isAdmin: true
     // }] : []),
-    ...(isAdmin ? [{
+    {
       id: "outfit-swap",
       title: t('createSelection.outfitSwap.title'),
       description: t('createSelection.outfitSwap.description'),
       icon: Shirt,
       path: "/create/outfit-swap",
-      isAdmin: true,
-      isBeta: false,
-      // locked: !canAccessOutfitSwap()
-    }] : []),
+      isAdmin: false,
+      isBeta: true,
+      locked: !canAccessOutfitSwap()
+    },
 
     // ...(isAdmin ? [{
     //   id: "product-studio",

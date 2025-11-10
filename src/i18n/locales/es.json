@@ -97,6 +97,10 @@
       "title": "Fotos de Estudio",
       "description": "Genera fotografía de producto profesional"
     },
+    "outfitSwap": {
+      "title": "Probador",
+      "description": "Viste a nuestros modelos con tu ropa y consigue fotos con calidad profesional"
+    },
     "comingSoon": "Próximamente",
     "betaBadge": "BETA",
     "betaLockedDescription": "Haz upgrade a cualquier plan de pago para acceder a esta función beta. ¡Ayúdanos a perfeccionar el outfit-swap!"
