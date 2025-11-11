@@ -123,19 +123,13 @@ export const useCredits = () => {
   };
 
   const canAccessOutfitSwap = (): boolean => {
-    if (!subscriptionData) return false;
-    // Free tier cannot access outfit-swap (paid users only)
-    return subscriptionData.subscription_tier !== 'Free' && subscriptionData.subscribed;
+    // Beta feature now available to all authenticated users
+    return !!subscriptionData;
   };
 
   const getOutfitSwapAccessMessage = (): string => {
     if (!subscriptionData) return 'Please sign in to access outfit-swap features.';
-    const tier = subscriptionData.subscription_tier;
-
-    if (tier === 'Free' || !subscriptionData.subscribed) {
-      return 'Outfit-swap is only available for paid plans. Upgrade to access this beta feature!';
-    }
-    return 'You have access to outfit-swap! This feature is currently in beta testing.';
+    return 'You have access to outfit-swap! This feature is currently in beta testing. Help us perfect it!';
   };
 
   return {
