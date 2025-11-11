@@ -69,7 +69,7 @@ const ModuleSelection = () => {
       path: "/create/outfit-swap",
       isAdmin: false,
       isBeta: true,
-      locked: !canAccessOutfitSwap()
+      locked: !isAdmin && !canAccessOutfitSwap()
     },
 
     // ...(isAdmin ? [{
