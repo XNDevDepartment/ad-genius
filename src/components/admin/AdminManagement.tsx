@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Shield, UserPlus, Trash2, Mail } from 'lucide-react';
+import { Shield, UserPlus, Trash2, Mail, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface AdminUser {
@@ -23,6 +23,7 @@ export const AdminManagement = () => {
   const [newAdminEmail, setNewAdminEmail] = useState('');
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -185,6 +186,34 @@ export const AdminManagement = () => {
     }
   };
 
+  const handleBulkSyncMailerLite = async () => {
+    try {
+      setSyncing(true);
+      toast({
+        title: "Syncing...",
+        description: "This may take a few minutes for large user bases",
+      });
+
+      const { data, error } = await supabase.functions.invoke('bulk-sync-mailerlite');
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Sync Complete",
+        description: `Synced ${data.synced} users successfully. ${data.failed} failed.`,
+      });
+    } catch (error: any) {
+      console.error('Bulk sync error:', error);
+      toast({
+        title: "Sync Failed",
+        description: error.message || "Failed to sync users to MailerLite",
+        variant: "destructive"
+      });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   if (loading) {
     return <div>Loading admin management...</div>;
   }
@@ -218,6 +247,29 @@ export const AdminManagement = () => {
               </Button>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <RefreshCw className="w-5 h-5" />
+            MailerLite Sync
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            Sync all existing users who haven't been synced to MailerLite yet.
+            This is useful after enabling the integration or for users who signed up before sync was working.
+          </p>
+          <Button 
+            onClick={handleBulkSyncMailerLite} 
+            disabled={syncing}
+            className="gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+            {syncing ? 'Syncing Users...' : 'Bulk Sync to MailerLite'}
+          </Button>
         </CardContent>
       </Card>
 

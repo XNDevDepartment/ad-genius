@@ -80,15 +80,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (oldTier && oldTier !== newTier) {
         setTimeout(async () => {
           try {
+            // Fetch user name from profiles
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('name')
+              .eq('id', user.id)
+              .single();
+
             await supabase.functions.invoke('sync-mailerlite', {
               body: {
                 action: 'update',
                 email: user.email,
-                userId: user.id,
-                oldTier,
-                newTier
+                name: profileData?.name || '',
+                subscription_tier: newTier,
+                newsletter_subscribed: true
               }
             });
+            console.log('[AuthContext] MailerLite tier sync completed');
           } catch (syncError) {
             console.error('[AuthContext] MailerLite tier sync error:', syncError);
           }
@@ -226,7 +234,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               email: data.user!.email,
               userId: data.user!.id,
               name: userData?.name || userData?.first_name || '',
-              subscriptionTier: 'Free'
+              subscription_tier: 'Free',
+              newsletter_subscribed: true
             }
           });
         } catch (syncError) {
