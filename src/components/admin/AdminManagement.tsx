@@ -4,7 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Shield, UserPlus, Trash2, Mail, RefreshCw } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Shield, UserPlus, Trash2, Mail, RefreshCw, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface AdminUser {
@@ -18,12 +20,27 @@ interface AdminUser {
   } | null;
 }
 
+interface SyncStatus {
+  user_id: string;
+  name: string | null;
+  email: string;
+  subscription_tier: string;
+  mailerlite_subscriber_id: string | null;
+  newsletter_subscribed: boolean;
+  last_sync_at: string | null;
+  last_sync_success: boolean | null;
+  last_sync_error: string | null;
+}
+
 export const AdminManagement = () => {
   const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [newAdminEmail, setNewAdminEmail] = useState('');
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [syncStatuses, setSyncStatuses] = useState<SyncStatus[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'synced' | 'unsynced' | 'error'>('all');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -65,6 +82,57 @@ export const AdminManagement = () => {
       console.error('Error fetching admins:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSyncStatuses = async () => {
+    try {
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, name, email, mailerlite_subscriber_id, newsletter_subscribed');
+
+      if (profilesError) throw profilesError;
+
+      const { data: subscribers, error: subscribersError } = await supabase
+        .from('subscribers')
+        .select('user_id, subscription_tier');
+
+      if (subscribersError) throw subscribersError;
+
+      const { data: syncLogs, error: syncLogsError } = await supabase
+        .from('mailerlite_sync_log')
+        .select('user_id, success, error_message, synced_at')
+        .order('synced_at', { ascending: false });
+
+      if (syncLogsError) throw syncLogsError;
+
+      const latestSyncByUser = new Map();
+      syncLogs?.forEach((log: any) => {
+        if (!latestSyncByUser.has(log.user_id)) {
+          latestSyncByUser.set(log.user_id, log);
+        }
+      });
+
+      const statuses: SyncStatus[] = (profiles || []).map((profile: any) => {
+        const subscriber = subscribers?.find((s: any) => s.user_id === profile.id);
+        const syncLog = latestSyncByUser.get(profile.id);
+
+        return {
+          user_id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          subscription_tier: subscriber?.subscription_tier || 'Free',
+          mailerlite_subscriber_id: profile.mailerlite_subscriber_id,
+          newsletter_subscribed: profile.newsletter_subscribed,
+          last_sync_at: syncLog?.synced_at || null,
+          last_sync_success: syncLog?.success ?? null,
+          last_sync_error: syncLog?.error_message || null,
+        };
+      });
+
+      setSyncStatuses(statuses);
+    } catch (error) {
+      console.error('Error fetching sync statuses:', error);
     }
   };
 
@@ -203,6 +271,7 @@ export const AdminManagement = () => {
         title: "Sync Complete",
         description: `Synced ${data.synced} users successfully. ${data.failed} failed.`,
       });
+      fetchSyncStatuses();
     } catch (error: any) {
       console.error('Bulk sync error:', error);
       toast({
@@ -213,6 +282,34 @@ export const AdminManagement = () => {
     } finally {
       setSyncing(false);
     }
+  };
+
+  const tierToGroupMap: Record<string, string> = {
+    'Free': 'produktpix-free',
+    'Starter': 'produktpix-starter',
+    'Plus': 'produktpix-plus',
+    'Pro': 'produktpix-pro',
+    'Founders': 'produktpix-founders',
+  };
+
+  const filteredStatuses = syncStatuses.filter(status => {
+    const matchesSearch = searchTerm === '' || 
+      status.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      status.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesFilter = filterStatus === 'all' || 
+      (filterStatus === 'synced' && status.mailerlite_subscriber_id) ||
+      (filterStatus === 'unsynced' && !status.mailerlite_subscriber_id) ||
+      (filterStatus === 'error' && status.last_sync_success === false);
+    
+    return matchesSearch && matchesFilter;
+  });
+
+  const stats = {
+    total: syncStatuses.length,
+    synced: syncStatuses.filter(s => s.mailerlite_subscriber_id).length,
+    unsynced: syncStatuses.filter(s => !s.mailerlite_subscriber_id).length,
+    errors: syncStatuses.filter(s => s.last_sync_success === false).length,
   };
 
   if (loading) {
@@ -313,6 +410,153 @@ export const AdminManagement = () => {
                 </Button>
               </div>
             ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Mail className="w-5 h-5" />
+              MailerLite Sync Status
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchSyncStatuses}
+              className="gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="grid grid-cols-4 gap-4">
+              <div className="p-4 border rounded-lg">
+                <div className="text-2xl font-bold">{stats.total}</div>
+                <div className="text-sm text-muted-foreground">Total Users</div>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <div className="text-2xl font-bold text-green-600">{stats.synced}</div>
+                <div className="text-sm text-muted-foreground">Synced</div>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <div className="text-2xl font-bold text-yellow-600">{stats.unsynced}</div>
+                <div className="text-sm text-muted-foreground">Unsynced</div>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <div className="text-2xl font-bold text-red-600">{stats.errors}</div>
+                <div className="text-sm text-muted-foreground">Errors</div>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <Input
+                placeholder="Search by email or name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1"
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant={filterStatus === 'all' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFilterStatus('all')}
+                >
+                  All
+                </Button>
+                <Button
+                  variant={filterStatus === 'synced' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFilterStatus('synced')}
+                >
+                  Synced
+                </Button>
+                <Button
+                  variant={filterStatus === 'unsynced' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFilterStatus('unsynced')}
+                >
+                  Unsynced
+                </Button>
+                <Button
+                  variant={filterStatus === 'error' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFilterStatus('error')}
+                >
+                  Errors
+                </Button>
+              </div>
+            </div>
+
+            <div className="border rounded-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Status</TableHead>
+                    <TableHead>User</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Tier</TableHead>
+                    <TableHead>Group</TableHead>
+                    <TableHead>Newsletter</TableHead>
+                    <TableHead>Last Sync</TableHead>
+                    <TableHead>Error</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredStatuses.map((status) => (
+                    <TableRow key={status.user_id}>
+                      <TableCell>
+                        {status.mailerlite_subscriber_id ? (
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                        ) : (
+                          <XCircle className="w-5 h-5 text-yellow-600" />
+                        )}
+                      </TableCell>
+                      <TableCell>{status.name || '-'}</TableCell>
+                      <TableCell className="font-mono text-sm">{status.email}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{status.subscription_tier}</Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {tierToGroupMap[status.subscription_tier] || '-'}
+                      </TableCell>
+                      <TableCell>
+                        {status.newsletter_subscribed ? (
+                          <Badge variant="default">Subscribed</Badge>
+                        ) : (
+                          <Badge variant="secondary">Not subscribed</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {status.last_sync_at ? (
+                          <div className="flex items-center gap-2">
+                            {status.last_sync_success ? (
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <AlertCircle className="w-4 h-4 text-red-600" />
+                            )}
+                            <span className="text-sm text-muted-foreground">
+                              {new Date(status.last_sync_at).toLocaleString()}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">Never</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {status.last_sync_error && (
+                          <span className="text-xs text-red-600">{status.last_sync_error}</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </CardContent>
       </Card>
