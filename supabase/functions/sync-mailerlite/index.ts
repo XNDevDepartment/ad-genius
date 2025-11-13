@@ -87,19 +87,90 @@ async function deleteSubscriber(subscriberId: string): Promise<void> {
   }
 }
 
+async function getGroupIdByName(groupName: string): Promise<string | null> {
+  try {
+    const response = await fetch(`${MAILERLITE_API_URL}/groups`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${MAILERLITE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`[SYNC-MAILERLITE] Failed to fetch groups: ${response.status}`);
+      return null;
+    }
+
+    const result = await response.json();
+    const group = result.data?.find((g: any) => g.name === groupName);
+    
+    if (group) {
+      console.log(`[SYNC-MAILERLITE] Found group "${groupName}" with ID: ${group.id}`);
+      return group.id;
+    }
+    
+    console.warn(`[SYNC-MAILERLITE] Group "${groupName}" not found in MailerLite`);
+    return null;
+  } catch (error) {
+    console.error(`[SYNC-MAILERLITE] Error fetching group ID for "${groupName}":`, error);
+    return null;
+  }
+}
+
+async function assignSubscriberToGroup(subscriberId: string, groupId: string): Promise<void> {
+  const response = await fetch(`${MAILERLITE_API_URL}/subscribers/${subscriberId}/groups/${groupId}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${MAILERLITE_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to assign to group: ${response.status} ${await response.text()}`);
+  }
+  
+  console.log(`[SYNC-MAILERLITE] Assigned subscriber ${subscriberId} to group ${groupId}`);
+}
+
+async function removeSubscriberFromGroup(subscriberId: string, groupId: string): Promise<void> {
+  const response = await fetch(`${MAILERLITE_API_URL}/subscribers/${subscriberId}/groups/${groupId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${MAILERLITE_API_KEY}`,
+    },
+  });
+
+  if (!response.ok && response.status !== 404) {
+    console.warn(`[SYNC-MAILERLITE] Failed to remove from group: ${response.status}`);
+    return;
+  }
+  
+  console.log(`[SYNC-MAILERLITE] Removed subscriber ${subscriberId} from group ${groupId}`);
+}
+
 async function updateSubscriberGroups(subscriberId: string, oldTier?: string, newTier?: string): Promise<void> {
-  // Remove from old group
-  if (oldTier && tierToGroupMap[oldTier]) {
+  // Remove from old group if tier changed
+  if (oldTier && oldTier !== newTier && tierToGroupMap[oldTier]) {
     const oldGroupName = tierToGroupMap[oldTier];
-    // Note: MailerLite API requires group ID, not name
-    // In production, you'd need to fetch group IDs first or store them
-    console.log(`Would remove subscriber ${subscriberId} from group ${oldGroupName}`);
+    const oldGroupId = await getGroupIdByName(oldGroupName);
+    
+    if (oldGroupId) {
+      await removeSubscriberFromGroup(subscriberId, oldGroupId);
+    }
   }
 
   // Add to new group
   if (newTier && tierToGroupMap[newTier]) {
     const newGroupName = tierToGroupMap[newTier];
-    console.log(`Would add subscriber ${subscriberId} to group ${newGroupName}`);
+    const newGroupId = await getGroupIdByName(newGroupName);
+    
+    if (newGroupId) {
+      await assignSubscriberToGroup(subscriberId, newGroupId);
+    } else {
+      console.warn(`[SYNC-MAILERLITE] Cannot assign to group - group "${newGroupName}" not found. Please create it in MailerLite.`);
+    }
   }
 }
 
@@ -165,6 +236,12 @@ serve(async (req) => {
 
     const result = await createOrUpdateSubscriber(subscriberData);
     console.log(`[SYNC-MAILERLITE] Subscriber synced:`, result.data);
+
+    // Assign to appropriate group based on subscription tier
+    const oldTier = existingSubscriber?.data?.fields?.subscription_tier;
+    const newTier = subscription_tier || 'Free';
+    
+    await updateSubscriberGroups(result.data.id, oldTier, newTier);
 
     // Update database with MailerLite subscriber ID
     await supabase
