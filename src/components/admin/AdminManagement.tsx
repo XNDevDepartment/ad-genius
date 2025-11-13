@@ -28,6 +28,7 @@ export const AdminManagement = () => {
 
   useEffect(() => {
     fetchAdmins();
+    fetchSyncStatuses();
   }, []);
 
   const fetchAdmins = async () => {
