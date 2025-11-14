@@ -281,7 +281,7 @@ export const BaseModelSelector = ({
               )}
             >
               <div className="aspect-[3/4] flex items-center justify-center flex-col gap-3 p-6 text-center">
-                {/* <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
                   <Upload className="w-8 h-8 text-primary" />
                 </div>
                 <div>
@@ -300,7 +300,7 @@ export const BaseModelSelector = ({
                     {t('outfitSwap.baseModelSelector.upload.uploadOwn')}
                   </Button>
                 )}
-                or */}
+                or
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
                   <WandSparkles className="w-8 h-8 text-primary" />
                 </div>
