@@ -835,23 +835,74 @@ const CreateUGCGemini = () => {
       const commonNeg = `--negative "AI artifacts, text overlays, watermark, extreme bokeh, macro close-up, center-composed product, invented branding, extra limbs, low resolution, duplicated faces, similar persons"`;
 
       // Build prompt with aspect ratio instruction for Gemini
-      const highlightYes =
-        `Ultra-detailed, authentic UGC-style ${style} photograph showcasing product in genuine scenario: ${selectedScenario.description}. ` +
-        `Shot with full-frame DSLR, 50 mm prime lens, aperture f/4, shutter 1/125's, ISO 200 at ${timeOfDay} with authentic light direction and quality. ` +
-        `For this product here are some details you should have in attention when editing the image: ${prodSpecs}` +
-        `For the models in the picture have my desired audience in consideration: ${desiredAudience}` +
-        `${commonNeg}` + 
-        ' Focus on the product. Make it occupy 70% of the image; Place product centered square in the image';
+      const highlightYes = `
+        Create an ultra-realistic user-generated (UGC) photo to advertise this product.
 
-      const highlightNo =
-        `Photorealistic ${style} scene: ${selectedScenario.description}. Product naturally placed (20% of frame, off-center). ` +
-        `Environment-first composition with sharp background detail. ${timeOfDay} lighting with authentic shadows and reflections. ` +
-        `Natural imperfections, realistic textures, believable environmental interaction. Avoid: centered product, studio lighting, artificial blur, stock photo aesthetics. ` +
-        `Use full-frame DSLR, 50'mm prime lens, aperture f/4, shutter 1/125's, ISO 200. ` +
-        `For this product here are some details you should have in attention when editing the image: ${prodSpecs}` +
-        `For the models in the picture have my desired audience in consideration: ${desiredAudience}` +
-        '. Place product centered square in the image' +
-        `${commonNeg}`;
+        ###CONTEXT:
+        - You receive a real product image as reference. Use that image as the base.
+        - Keep the exact product design, shape, label, colors and materials from the reference image.
+        - Do NOT invent new branding, packaging, flavors or text.
+        - Product details to keep in mind: ${prodSpecs}
+        - Target audience this image must resonate with: ${desiredAudience}
+        - Scenario to follow (take this literally): ${selectedScenario.description}
+
+        ###VISUAL STYLE:
+        - Look and feel: authentic ${style} UGC photo, as if taken by a real customer on a modern smartphone for social media.
+        - Pure realism: natural skin, natural textures, believable surfaces and reflections.
+        - Lighting: ${timeOfDay} natural light, with realistic shadows and highlights that match the environment.
+
+        ###COMPOSITION:
+        - Product is the clear hero: around 60–70% of the frame, in sharp focus.
+        - Place the product slightly off-center using rule of thirds, not perfectly centered.
+        - Background reinforces the scenario and is softly out of focus but still recognizable.
+
+        ###QUALITY & CONSTRAINTS:
+        - Realistic anatomy, hands and faces.
+        - No text, no UI, no watermarks, no fake logos.
+        - Avoid AI artifacts, warped anatomy, duplicated elements, extreme blur or oversaturation.
+
+        ${commonNeg}
+
+        ###OUTPUT:
+        Generate a single, polished UGC-style photo that feels like a real customer photo and can be used directly as an ad creative.
+        `;
+
+        const highlightNo = `
+        Create an ultra-realistic lifestyle photo where the environment is the hero and the product feels naturally integrated.
+
+        ###CONTEXT:
+        - You receive a real product image as reference. Use that image as the base.
+        - Preserve the exact product design, shape, label, colors and materials from the reference image.
+        - Do NOT invent new branding, packaging, flavors or text.
+        - Product details to keep in mind: ${prodSpecs}
+        - Target audience this image must resonate with: ${desiredAudience}
+        - Scenario to follow (take this literally): ${selectedScenario.description}
+
+        ###COMPOSITION:
+        - Environment-first composition: the setting tells the story, not a studio backdrop.
+        - The product is clearly visible but secondary: roughly 15–30% of the frame.
+        - Place the product naturally in the scene (on a table, shelf, bag, hand, countertop, etc.), slightly off-center.
+        - Keep most of the environment in relatively sharp focus so details are readable and the context feels rich and real.
+        - Use subtle depth of field only if it matches a modern smartphone photo, not heavy artificial blur.
+
+        ###VISUAL STYLE:
+        - Authentic ${style} lifestyle photo, as if captured on a modern smartphone by a real person in their daily life.
+        - ${timeOfDay} natural light with believable shadows and reflections that match the environment.
+        - Natural imperfections: small mess, folds, crumbs, wear-and-tear, slightly imperfect framing.
+
+        ###QUALITY & CONSTRAINTS:
+        - Pure realism: no CGI, no illustration, no 3D render look.
+        - Realistic anatomy for any visible people, hands or body parts.
+        - Avoid: studio lighting, seamless backdrops, stock-photo aesthetics, centered product on clean gradient, artificial bokeh, neon oversaturation, plastic skin.
+        - No text overlays, no UI elements, no emojis, no watermarks.
+        - No extra logos or brands besides the real product label.
+
+        ###NEGATIVE GUIDANCE:
+        ${commonNeg}
+
+        ###OUTPUT:
+        Generate a single, environment-first lifestyle photo that looks like a real candid shot and still clearly showcases the product in use.
+        `
 
       const prompt = (highlight === 'yes' ? highlightYes : highlightNo).trim();
 
