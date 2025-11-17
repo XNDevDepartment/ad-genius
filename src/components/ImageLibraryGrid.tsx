@@ -125,7 +125,7 @@ export const ImageLibraryGrid = ({
     }
 
     // Navigate to outfit-swap page with result context
-    navigate('/outfit-swap', {
+    navigate('/create/outfit-swap', {
       state: {
         replicateMode: true,
         jobId: image.job_id,
