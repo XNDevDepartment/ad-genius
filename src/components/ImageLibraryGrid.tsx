@@ -114,6 +114,32 @@ export const ImageLibraryGrid = ({
     });
   };
 
+  const handleReplicateOutfitSwap = (image: LibraryImage) => {
+    if (!image.job_id || image.source_type !== 'outfit_swap') {
+      toast({
+        title: "Cannot Replicate",
+        description: "Outfit swap information not available for this image.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Navigate to outfit-swap page with result context
+    navigate('/outfit-swap', {
+      state: {
+        replicateMode: true,
+        jobId: image.job_id,
+        resultId: image.id,
+        imageUrl: image.url
+      }
+    });
+
+    toast({
+      title: "Loading Outfit Swap Result",
+      description: "Preparing to create photoshoots or e-commerce images...",
+    });
+  };
+
   if (images.length === 0 && !loading) {
     return (
       <div className="text-center py-12">
@@ -191,7 +217,18 @@ export const ImageLibraryGrid = ({
                   </Button>
                   
                   {/* Replicate button - only for AI images with job data */}
-                  {viewMode === "ai" && image.job_id && (
+                  {viewMode === "ai" && image.job_id && image.source_type === 'outfit_swap' && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => handleReplicateOutfitSwap(image)}
+                      className="bg-background/90 hover:bg-background"
+                      title="Reuse this outfit swap result"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {viewMode === "ai" && image.job_id && image.source_type !== 'outfit_swap' && (
                     <Button
                       size="sm"
                       variant="secondary"

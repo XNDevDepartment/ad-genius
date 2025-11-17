@@ -27,6 +27,7 @@ interface BatchSwapPreviewProps {
   onRetryJob?: (jobId: string) => Promise<void>;
   retryingJobs?: Set<string>;
   loading?: boolean;
+  initialResults?: Record<string, OutfitSwapResult>;
 }
 
 export const BatchSwapPreview = ({
@@ -38,12 +39,13 @@ export const BatchSwapPreview = ({
   onRetryJob,
   retryingJobs = new Set(),
   loading = false,
+  initialResults,
 }: BatchSwapPreviewProps) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { isAdmin } = useAdminAuth();
   const { toast } = useToast();
-  const [results, setResults] = useState<Record<string, OutfitSwapResult>>({});
+  const [results, setResults] = useState<Record<string, OutfitSwapResult>>(initialResults || {});
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
   const [photoshootLoading, setPhotoshootLoading] = useState<Record<string, boolean>>({});
