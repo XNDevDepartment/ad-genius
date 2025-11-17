@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Shirt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,9 +16,12 @@ import { BaseModel } from "@/hooks/useBaseModels";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "react-i18next";
+import { OutfitSwapJob, OutfitSwapResult } from "@/api/outfit-swap-api";
+import { supabase } from "@/integrations/supabase/client";
 
 const OutfitSwap = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const { user } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdminAuth();
@@ -33,6 +36,11 @@ const OutfitSwap = () => {
   const [garmentDetails, setGarmentDetails] = useState<Record<number, string>>({});
   const [uploading, setUploading] = useState(false);
   const [settings, setSettings] = useState({});
+  
+  // Replicate mode state
+  const [replicateMode, setReplicateMode] = useState(false);
+  const [replicatedJob, setReplicatedJob] = useState<OutfitSwapJob | null>(null);
+  const [replicatedResult, setReplicatedResult] = useState<OutfitSwapResult | null>(null);
 
   useEffect(() => {
     if (!adminLoading && (!user || !isAdmin)) {
@@ -44,6 +52,47 @@ const OutfitSwap = () => {
       });
     }
   }, [user, isAdmin, adminLoading, navigate, toast, t]);
+
+  // Handle replicate mode from location state
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.replicateMode && state?.jobId && state?.resultId) {
+      const loadReplicateData = async () => {
+        try {
+          // Fetch the job
+          const { data: jobData, error: jobError } = await supabase
+            .from('outfit_swap_jobs')
+            .select('*')
+            .eq('id', state.jobId)
+            .single();
+
+          if (jobError) throw jobError;
+
+          // Fetch the result
+          const { data: resultData, error: resultError } = await supabase
+            .from('outfit_swap_results')
+            .select('*')
+            .eq('id', state.resultId)
+            .single();
+
+          if (resultError) throw resultError;
+
+          setReplicatedJob(jobData as OutfitSwapJob);
+          setReplicatedResult(resultData as OutfitSwapResult);
+          setReplicateMode(true);
+        } catch (error: any) {
+          toast({
+            variant: "destructive",
+            title: "Failed to Load Result",
+            description: error.message,
+          });
+          navigate('/outfit-swap', { replace: true });
+        }
+      };
+
+      loadReplicateData();
+    }
+  }, [location.state]);
 
   const handleStartBatch = async () => {
     if (!selectedModel || garmentFiles.length === 0) {
@@ -87,6 +136,10 @@ const OutfitSwap = () => {
     setSelectedModel(null);
     setGarmentFiles([]);
     setGarmentDetails({});
+    setReplicateMode(false);
+    setReplicatedJob(null);
+    setReplicatedResult(null);
+    navigate('/outfit-swap', { replace: true });
   };
 
   if (adminLoading) {
