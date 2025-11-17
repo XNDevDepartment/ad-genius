@@ -186,7 +186,7 @@ const ModuleSelection = () => {
                     <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full">ADMIN</span>
                   )}
                   {workflow.isBeta && !workflow.isAdmin && (
-                    <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded-full">BETA</span>
+                    <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded-full">NEW</span>
                   )}
                   {workflow.locked && (
                     <span className="text-xs bg-amber-500 text-white px-2 py-1 rounded-full">PLUS+</span>

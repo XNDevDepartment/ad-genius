@@ -1625,7 +1625,9 @@ async function processEcommercePhoto(photoId) {
             - Model positioned naturally within the scene
             - Cohesive color palette between outfit and setting
 
-            OUTPUT: A polished, magazine-ready fashion photograph where model, outfit, and environment create a unified, professional presentation.`;
+            OUTPUT: A polished, magazine-ready fashion photograph where model, outfit, and environment create a unified, professional presentation.
+            
+            ###RULE: Don't add new elements to the image, like text, barcodes, logos, etc. Just focus on recreating the photograph.`;
     await supabase.from("outfit_swap_ecommerce_photos").update({
       progress: 40
     }).eq("id", photoId);
