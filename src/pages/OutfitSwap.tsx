@@ -179,18 +179,49 @@ const OutfitSwap = () => {
           </div>
         </div>
 
-        {/* Show batch preview if processing/complete */}
-        {batch ? (
-          <BatchSwapPreview
-            batch={batch}
-            jobs={jobs}
-            onCancel={cancelBatch}
-            onReset={handleReset}
-            onRefresh={refreshBatch}
-            onRetryJob={retryJob}
-            retryingJobs={retryingJobs}
-            loading={loading}
-          />
+        {/* Show batch preview if processing/complete or in replicate mode */}
+        {batch || replicateMode ? (
+          (() => {
+            // If in replicate mode with a single result, construct a display batch
+            const displayBatch = replicateMode && replicatedJob && replicatedResult
+              ? {
+                  id: replicatedJob.id,
+                  user_id: replicatedJob.user_id,
+                  base_model_id: replicatedJob.base_model_id || '',
+                  total_jobs: 1,
+                  completed_jobs: 1,
+                  failed_jobs: 0,
+                  status: 'completed' as const,
+                  metadata: replicatedJob.metadata || {},
+                  created_at: replicatedJob.created_at,
+                  updated_at: replicatedJob.updated_at,
+                  started_at: replicatedJob.started_at,
+                  finished_at: replicatedJob.finished_at,
+                }
+              : batch;
+              
+            const displayJobs = replicateMode && replicatedJob
+              ? [replicatedJob]
+              : jobs;
+              
+            const initialResults = replicateMode && replicatedResult && replicatedJob
+              ? { [replicatedJob.id]: replicatedResult }
+              : undefined;
+
+            return (
+              <BatchSwapPreview
+                batch={displayBatch!}
+                jobs={displayJobs}
+                onCancel={cancelBatch}
+                onReset={handleReset}
+                onRefresh={refreshBatch}
+                onRetryJob={retryJob}
+                retryingJobs={retryingJobs}
+                loading={loading}
+                initialResults={initialResults}
+              />
+            );
+          })()
         ) : (
           <>
             {/* Step Indicator */}
