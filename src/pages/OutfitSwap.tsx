@@ -86,7 +86,7 @@ const OutfitSwap = () => {
             title: "Failed to Load Result",
             description: error.message,
           });
-          navigate('/outfit-swap', { replace: true });
+    navigate('/create/outfit-swap', { replace: true });
         }
       };
 
