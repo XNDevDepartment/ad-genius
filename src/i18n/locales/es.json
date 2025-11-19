@@ -850,7 +850,7 @@
     }
   },
   "outfitSwap": {
-    "title": "Cambio de Vestuario",
+    "title": "Probador",
     "subtitle": "Procesa hasta 10 prendas a la vez",
     "steps": {
       "step1Title": "Paso 1: Seleccionar Modelo Base",

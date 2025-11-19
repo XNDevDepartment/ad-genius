@@ -179,7 +179,7 @@ export const BaseModelSelector = ({
     <div className="space-y-4">
       {/* Filters */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label className="text-sm">{t('outfitSwap.baseModelSelector.filters.gender')}</Label>
           <select
             className="w-full px-3 py-2 text-sm border rounded-lg bg-background"
@@ -191,9 +191,9 @@ export const BaseModelSelector = ({
             <option value="female">{t('outfitSwap.baseModelSelector.genderOptions.female')}</option>
             <option value="unisex">{t('outfitSwap.baseModelSelector.genderOptions.unisex')}</option>
           </select>
-        </div>
+        </div> */}
 
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label className="text-sm">{t('outfitSwap.baseModelSelector.filters.ageRange')}</Label>
           <select
             className="w-full px-3 py-2 text-sm border rounded-lg bg-background"
@@ -212,9 +212,9 @@ export const BaseModelSelector = ({
             <option value="51-65 years">{t('outfitSwap.baseModelSelector.ageRanges.51-65years')}</option>
             <option value="65+ years">{t('outfitSwap.baseModelSelector.ageRanges.65plus')}</option>
           </select>
-        </div>
+        </div> */}
 
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label className="text-sm">{t('outfitSwap.baseModelSelector.filters.bodyType')}</Label>
           <select
             className="w-full px-3 py-2 text-sm border rounded-lg bg-background"
@@ -242,9 +242,9 @@ export const BaseModelSelector = ({
             <option value="back">{t('outfitSwap.baseModelSelector.poses.back')}</option>
             <option value="angled">{t('outfitSwap.baseModelSelector.poses.angled')}</option>
           </select>
-        </div>
+        </div> */}
 
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label className="text-sm">{t('outfitSwap.baseModelSelector.filters.skinTone')}</Label>
           <select
             className="w-full px-3 py-2 text-sm border rounded-lg bg-background"
@@ -257,16 +257,16 @@ export const BaseModelSelector = ({
             <option value="tan">{t('outfitSwap.baseModelSelector.skinTones.tan')}</option>
             <option value="dark">{t('outfitSwap.baseModelSelector.skinTones.dark')}</option>
           </select>
-        </div>
+        </div> */}
       </div>
 
       {/* Search */}
-      <Input
+      {/* <Input
         placeholder={t('outfitSwap.baseModelSelector.search')}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className="max-w-md"
-      />
+      /> */}
 
       {/* Model Grid */}
       <ScrollArea className="h-[500px] w-full">

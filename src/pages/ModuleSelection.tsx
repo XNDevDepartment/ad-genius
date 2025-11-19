@@ -146,7 +146,7 @@ const ModuleSelection = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
           {workflows.map((workflow) => (
             <Card 
               key={workflow.id}
@@ -181,7 +181,7 @@ const ModuleSelection = () => {
                     </div>
                   )}
                 </div>
-                <h3 className="text-xs font-semibold text-center leading-tight line-clamp-2 px-1">
+                <h3 className="text-md font-semibold text-center leading-tight line-clamp-2 px-1">
                   {workflow.title}
                 </h3>
                 {workflow.disabled && (
