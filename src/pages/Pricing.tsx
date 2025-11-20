@@ -134,7 +134,7 @@ const comparisonFeatures = [
 
 const Pricing = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [isYearly, setIsYearly] = useState(false);
 
   useEffect(() => {
@@ -145,6 +145,12 @@ const Pricing = () => {
     if (planId === "free") {
       // Free plan - redirect to account to sign up
       navigate('/account');
+      return;
+    }
+
+    // Wait for authentication to finish loading
+    if (loading) {
+      console.log('[Pricing] Authentication still loading, please wait...');
       return;
     }
 
@@ -254,6 +260,14 @@ const Pricing = () => {
 
       {/* Pricing Cards */}
       <div className="container mx-auto px-6 py-16">
+        {loading && (
+          <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-lg text-center max-w-7xl mx-auto">
+            <div className="flex items-center justify-center gap-2 text-sm">
+              <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+              <span>Loading your account information...</span>
+            </div>
+          </div>
+        )}
         <div className="grid md:grid-cols-4 gap-6 max-w-7xl mx-auto mb-20">
           {plans.map((plan) => (
             <Card
@@ -359,8 +373,9 @@ const Pricing = () => {
                       : "variant-outline"
                   }`}
                   size="sm"
+                  disabled={loading}
                 >
-                  {plan.cta}
+                  {loading ? 'Loading...' : plan.cta}
                 </Button>
               </CardContent>
             </Card>
