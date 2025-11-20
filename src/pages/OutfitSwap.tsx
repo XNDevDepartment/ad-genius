@@ -42,16 +42,17 @@ const OutfitSwap = () => {
   const [replicatedJob, setReplicatedJob] = useState<OutfitSwapJob | null>(null);
   const [replicatedResult, setReplicatedResult] = useState<OutfitSwapResult | null>(null);
 
+  // Check authentication only - outfit-swap is available to all authenticated users
   useEffect(() => {
-    if (!adminLoading && (!user || !isAdmin)) {
-      navigate("/");
+    if (!user) {
+      navigate("/account");
       toast({
         variant: "destructive",
         title: t('outfitSwap.errors.accessDenied'),
-        description: t('outfitSwap.errors.adminRequired'),
+        description: "Please sign in to access outfit-swap features.",
       });
     }
-  }, [user, isAdmin, adminLoading, navigate, toast, t]);
+  }, [user, navigate, toast, t]);
 
   // Handle replicate mode from location state
   useEffect(() => {

@@ -8,7 +8,7 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
-const serviceClient = ()=>createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+const serviceClient = () => createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 // Fallback prompts (used if database is unavailable)
 const FALLBACK_GARMENT_ANALYSIS_PROMPT = `Analyze this garment image in detail. Describe:
 1. Type of clothing (e.g., t-shirt, dress, pants, jacket, full outfit)
@@ -62,7 +62,7 @@ VALIDATION: Before generating, confirm that:
 
 Generate a high-quality outfit swap that clearly shows the NEW garment on the person. ###NO SEXUALISE CONTENT ###RULES - Image must not infringe any System Safety margins and rules.`;
 // Helper: Get prompt from database with fallback
-async function getPrompt(promptKey, variables = {}, fallback) {
+async function getPrompt(promptKey: string, variables: Record<string, string> = {}, fallback: string): Promise<string> {
   try {
     const supabase = serviceClient();
     const { data, error } = await supabase.from('ai_prompts').select('prompt_template').eq('prompt_key', promptKey).eq('is_active', true).single();
@@ -85,7 +85,7 @@ async function getPrompt(promptKey, variables = {}, fallback) {
   }
 }
 // Helper: Check if user is admin
-async function checkIsAdmin(userId) {
+async function checkIsAdmin(userId: string): Promise<boolean> {
   const supabase = serviceClient();
   const { data, error } = await supabase.rpc('is_user_admin', {
     check_user_id: userId
@@ -97,7 +97,7 @@ async function checkIsAdmin(userId) {
   return data || false;
 }
 // Helper: Deduct credits from user
-async function deductCredits(userId, amount) {
+async function deductCredits(userId: string, amount: number): Promise<{ success: boolean; error?: string }> {
   const supabase = serviceClient();
   const { data, error } = await supabase.rpc('deduct_user_credits', {
     p_user_id: userId,
@@ -122,7 +122,7 @@ async function deductCredits(userId, amount) {
   };
 }
 // Helper: Refund credits to user
-async function refundCredits(userId, amount, reason = 'ecommerce_photo_failed_or_cancelled') {
+async function refundCredits(userId: string, amount: number, reason: string = 'ecommerce_photo_failed_or_cancelled'): Promise<void> {
   const supabase = serviceClient();
   const { error } = await supabase.rpc('refund_user_credits', {
     p_user_id: userId,
@@ -134,7 +134,7 @@ async function refundCredits(userId, amount, reason = 'ecommerce_photo_failed_or
   }
 }
 // Helper: Extract base64 image from Gemini response
-function extractBase64Image(jsonResp) {
+function extractBase64Image(jsonResp: any): string | null {
   console.log('[extractBase64Image] Parsing response structure...');
   if (!jsonResp?.candidates) {
     console.error('[extractBase64Image] No candidates in response');
@@ -156,7 +156,13 @@ function extractBase64Image(jsonResp) {
   return imageData;
 }
 // Helper: Generate image with retry logic and exponential backoff
-async function generateImageWithRetry(prompt, base64Image, mimeType, additionalImages = [], maxRetries = 3) {
+async function generateImageWithRetry(
+  prompt: string,
+  base64Image: string,
+  mimeType: string,
+  additionalImages: Array<{ base64: string; mimeType: string }> = [],
+  maxRetries: number = 3
+): Promise<string | null> {
   for(let attempt = 1; attempt <= maxRetries; attempt++){
     try {
       console.log(`[Attempt ${attempt}/${maxRetries}] Calling Gemini API...`);
@@ -246,7 +252,7 @@ async function generateImageWithRetry(prompt, base64Image, mimeType, additionalI
   return null;
 }
 // Helper: Convert ArrayBuffer to base64 in chunks to avoid stack overflow
-function bufferToBase64(uint8Array) {
+function bufferToBase64(uint8Array: Uint8Array): string {
   let binary = '';
   const chunkSize = 32768;
   for(let i = 0; i < uint8Array.length; i += chunkSize){
