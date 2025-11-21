@@ -11,7 +11,7 @@ import { useCredits } from "@/hooks/useCredits";
 
 const ModuleSelection = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { t } = useTranslation();
   const { isAdmin } = useAdminAuth();
   const { canAccessVideos, canAccessOutfitSwap } = useCredits();
@@ -19,10 +19,19 @@ const ModuleSelection = () => {
 
   // Block access if not authenticated
   useEffect(() => {
-    if (!user) {
+    if (!loading && !user) {
       navigate('/account');
     }
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
+
+  // Show loading state while auth is initializing
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   const workflows = [
     {

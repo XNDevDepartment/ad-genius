@@ -145,8 +145,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // THEN get and validate initial session
     const initSession = async () => {
+      console.log('[AuthContext] Initializing session...');
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
+        
+        console.log('[AuthContext] Session retrieved:', { 
+          hasSession: !!session, 
+          hasUser: !!session?.user,
+          expiresAt: session?.expires_at ? new Date(session.expires_at * 1000).toISOString() : null,
+          error: error?.message 
+        });
         
         if (error) {
           console.error('[AuthContext] Session error:', error);
@@ -162,6 +170,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
           const now = Date.now();
           
+          console.log('[AuthContext] Session validation:', {
+            expiresAt: new Date(expiresAt).toISOString(),
+            now: new Date(now).toISOString(),
+            isExpired: expiresAt < now
+          });
+          
           if (expiresAt < now) {
             console.warn('[AuthContext] Session expired, clearing');
             localStorage.clear();
@@ -169,7 +183,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setSession(null);
             setUser(null);
           } else {
-            console.log('[AuthContext] Valid session found');
+            console.log('[AuthContext] Valid session found, user:', session.user.email);
             setSession(session);
             setUser(session.user);
           }
@@ -184,6 +198,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(null);
         setUser(null);
       } finally {
+        console.log('[AuthContext] Session initialization complete, loading=false');
         setLoading(false);
       }
     };
