@@ -146,8 +146,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // THEN get and validate initial session
     const initSession = async () => {
       console.log('[AuthContext] Initializing session...');
+      
+      // Set a timeout - if we're still loading after 10 seconds, force completion
+      const timeout = setTimeout(() => {
+        console.error('[AuthContext] Session initialization timeout - forcing completion');
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+      }, 10000);
+      
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
+        clearTimeout(timeout);
         
         console.log('[AuthContext] Session retrieved:', { 
           hasSession: !!session, 
@@ -193,6 +203,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(null);
         }
       } catch (err) {
+        clearTimeout(timeout);
         console.error('[AuthContext] Init session error:', err);
         localStorage.clear();
         setSession(null);
