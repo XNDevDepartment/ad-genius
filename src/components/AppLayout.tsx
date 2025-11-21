@@ -10,7 +10,7 @@ const AppLayout = () => {
   const location = useLocation();
   const showHeader = location.pathname === "/";
 
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
 
   return (
@@ -31,13 +31,19 @@ const AppLayout = () => {
       <div className="hidden lg:block">
           <SidebarProvider>
             <div className="flex min-h-screen w-full">
-              {user &&
+              {!loading && user &&
               <AppSidebar />
               }
               <div className="flex-1 flex flex-col">
                 <AnnouncementBanner />
                 <main className="flex-1">
-                  <Outlet />
+                  {loading ? (
+                    <div className="flex items-center justify-center min-h-screen">
+                      <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full"></div>
+                    </div>
+                  ) : (
+                    <Outlet />
+                  )}
                 </main>
               </div>
             </div>

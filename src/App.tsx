@@ -12,6 +12,8 @@ import "@/i18n";
 import AppLayout from "./components/AppLayout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { LoadingFallback } from "./components/LoadingFallback";
 
 // Lazy load non-critical routes for better code splitting
 const CreateSelection = lazy(() => import("./pages/ModuleSelection"));
@@ -61,9 +63,11 @@ const App = () => {
               <Route path="/" element={<AppLayout />}>
                 <Route index element={<Index />} />
                 <Route path="create" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <CreateSelection />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <CreateSelection />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="create/product-display" element={
                   <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
@@ -126,24 +130,32 @@ const App = () => {
                   </Suspense>
                 } />
                 <Route path="account" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <Account />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Account />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="signin" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <SignIn />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <SignIn />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="signup" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <SignUp />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <SignUp />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="pricing" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <Pricing />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Pricing />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="help/getting-started" element={
                   <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
