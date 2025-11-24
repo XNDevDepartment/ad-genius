@@ -1185,5 +1185,65 @@
         "both": "Beide Formate"
       }
     }
+  },
+  "foundersPlan": {
+    "badge": "Exklusives Gründer-Angebot",
+    "title": "Gründer-Paket",
+    "subtitle": "Werden Sie einer unserer ersten Nutzer und sichern Sie sich lebenslangen Preis. Dieses exklusive Angebot wird nie wieder verfügbar sein.",
+    "limitedTime": "Zeitlich begrenztes Angebot - Begrenzte Plätze",
+    "monthly": "Monatlich",
+    "yearly": "Jährlich",
+    "save2Months": "2 Monate sparen",
+    "planName": "Gründer-Plan",
+    "planDescription": "Lebenslanger Zugang mit garantiertem Preis für immer",
+    "perMonth": "/Monat",
+    "billedAnnually": "Jährlich abgerechnet ({{total}}€/Jahr)",
+    "billedMonthly": "Monatlich abgerechnet",
+    "whatsIncluded": "Was ist enthalten:",
+    "features": {
+      "credits": {
+        "title": "80 Monatliche Credits",
+        "description": "Genug Credits für 80 Bilder oder mehrere Videos pro Monat"
+      },
+      "images": {
+        "title": "Unbegrenzte Bildgenerierung",
+        "description": "Erstellen Sie Produktbilder, UGC und professionelle Fotografie"
+      },
+      "video": {
+        "title": "Videogenerierung Inklusive",
+        "description": "Verwandeln Sie Bilder in ansprechende Videos (5s und 10s)"
+      },
+      "allScenarios": {
+        "title": "Alle UGC-Szenarien",
+        "description": "Voller Zugang zu allen Szenarien und Vorlagen"
+      },
+      "allQualities": {
+        "title": "Alle Qualitätsstufen",
+        "description": "Hohe, mittlere und niedrige Qualität verfügbar"
+      },
+      "commercial": {
+        "title": "Kommerzielle Nutzung",
+        "description": "Verwenden Sie Bilder für kommerzielle Projekte und Kunden"
+      },
+      "prioritySupport": {
+        "title": "Prioritäts-Support",
+        "description": "Erhalten Sie schnellere Hilfe, wenn Sie sie brauchen"
+      },
+      "lifetimePricing": {
+        "title": "Lebenslange Preisgarantie",
+        "description": "Ihr Preis wird nie steigen - garantiert für immer"
+      }
+    },
+    "cta": "Gründer-Zugang Sichern",
+    "loading": "Laden...",
+    "processing": "Verarbeitung...",
+    "guarantee": "30-tägige Geld-zurück-Garantie. Jederzeit kündbar.",
+    "whyFounders": {
+      "title": "Warum das Gründer-Paket?",
+      "reason1": "🔒 Lebenslange Preisgarantie - Ihr Preis wird nie steigen, selbst wenn die Preise für neue Nutzer erhöht werden",
+      "reason2": "⚡ Prioritätszugang zu neuen Funktionen und Verbesserungen vor allen anderen",
+      "reason3": "👥 Werden Sie Teil einer exklusiven Gründer-Community mit direktem Einfluss auf die Produktentwicklung"
+    },
+    "viewOtherPlans": "Andere Pläne Anzeigen"
   }
 }

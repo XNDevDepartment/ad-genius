@@ -1185,5 +1185,65 @@
         "both": "Les deux formats"
       }
     }
+  },
+  "foundersPlan": {
+    "badge": "Offre Exclusive Fondateurs",
+    "title": "Pack Fondateurs",
+    "subtitle": "Rejoignez nos premiers utilisateurs et verrouillez le tarif à vie. Cette offre exclusive ne sera plus jamais disponible.",
+    "limitedTime": "Offre à durée limitée - Places limitées",
+    "monthly": "Mensuel",
+    "yearly": "Annuel",
+    "save2Months": "Économisez 2 mois",
+    "planName": "Plan Fondateurs",
+    "planDescription": "Accès à vie avec tarif garanti pour toujours",
+    "perMonth": "/mois",
+    "billedAnnually": "Facturé annuellement ({{total}}€/an)",
+    "billedMonthly": "Facturé mensuellement",
+    "whatsIncluded": "Ce qui est inclus:",
+    "features": {
+      "credits": {
+        "title": "80 Crédits Mensuels",
+        "description": "Suffisamment de crédits pour 80 images ou plusieurs vidéos par mois"
+      },
+      "images": {
+        "title": "Génération d'Images Illimitée",
+        "description": "Créez des images de produits, UGC et photographie professionnelle"
+      },
+      "video": {
+        "title": "Génération Vidéo Incluse",
+        "description": "Transformez des images en vidéos engageantes (5s et 10s)"
+      },
+      "allScenarios": {
+        "title": "Tous les Scénarios UGC",
+        "description": "Accès complet à tous les scénarios et modèles"
+      },
+      "allQualities": {
+        "title": "Tous les Niveaux de Qualité",
+        "description": "Qualité haute, moyenne et basse disponibles"
+      },
+      "commercial": {
+        "title": "Usage Commercial",
+        "description": "Utilisez les images pour des projets commerciaux et des clients"
+      },
+      "prioritySupport": {
+        "title": "Support Prioritaire",
+        "description": "Obtenez de l'aide plus rapidement quand vous en avez besoin"
+      },
+      "lifetimePricing": {
+        "title": "Tarif à Vie Garanti",
+        "description": "Votre prix n'augmentera jamais - garanti pour toujours"
+      }
+    },
+    "cta": "Sécuriser l'Accès Fondateurs",
+    "loading": "Chargement...",
+    "processing": "Traitement...",
+    "guarantee": "Garantie de remboursement de 30 jours. Annulez à tout moment.",
+    "whyFounders": {
+      "title": "Pourquoi le Pack Fondateurs?",
+      "reason1": "🔒 Garantie de prix à vie - votre prix n'augmentera jamais, même lorsque les prix augmentent pour les nouveaux utilisateurs",
+      "reason2": "⚡ Accès prioritaire aux nouvelles fonctionnalités et améliorations avant tout le monde",
+      "reason3": "👥 Rejoignez une communauté exclusive de fondateurs avec une influence directe sur le développement du produit"
+    },
+    "viewOtherPlans": "Voir les Autres Plans"
   }
 }

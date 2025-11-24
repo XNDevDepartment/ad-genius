@@ -1185,5 +1185,65 @@
         "both": "Ambos os formatos"
       }
     }
+  },
+  "foundersPlan": {
+    "badge": "Oferta Exclusiva de Fundadores",
+    "title": "Pack Founders",
+    "subtitle": "Junte-se aos nossos primeiros utilizadores e garanta preço vitalício. Esta oferta exclusiva nunca mais estará disponível.",
+    "limitedTime": "Oferta por tempo limitado - Vagas limitadas",
+    "monthly": "Mensal",
+    "yearly": "Anual",
+    "save2Months": "Poupe 2 meses",
+    "planName": "Founders Plan",
+    "planDescription": "Acesso vitalício com preço garantido para sempre",
+    "perMonth": "/mês",
+    "billedAnnually": "Cobrado anualmente (€{{total}}/ano)",
+    "billedMonthly": "Cobrado mensalmente",
+    "whatsIncluded": "O que está incluído:",
+    "features": {
+      "credits": {
+        "title": "80 Créditos Mensais",
+        "description": "Créditos suficientes para 80 imagens ou múltiplos vídeos por mês"
+      },
+      "images": {
+        "title": "Geração Ilimitada de Imagens",
+        "description": "Crie imagens de produto, UGC e fotografia profissional"
+      },
+      "video": {
+        "title": "Geração de Vídeo Incluída",
+        "description": "Transforme imagens em vídeos envolventes (5s e 10s)"
+      },
+      "allScenarios": {
+        "title": "Todos os Cenários UGC",
+        "description": "Acesso completo a todos os cenários e templates"
+      },
+      "allQualities": {
+        "title": "Todos os Níveis de Qualidade",
+        "description": "Alta, média e baixa qualidade disponíveis"
+      },
+      "commercial": {
+        "title": "Uso Comercial",
+        "description": "Use as imagens para projetos comerciais e clientes"
+      },
+      "prioritySupport": {
+        "title": "Suporte Prioritário",
+        "description": "Obtenha ajuda mais rápida quando precisar"
+      },
+      "lifetimePricing": {
+        "title": "Preço Vitalício Garantido",
+        "description": "O seu preço nunca aumentará - garantido para sempre"
+      }
+    },
+    "cta": "Garantir Acesso de Fundador",
+    "loading": "A carregar...",
+    "processing": "A processar...",
+    "guarantee": "Garantia de reembolso de 30 dias. Cancele a qualquer momento.",
+    "whyFounders": {
+      "title": "Porquê o Pack Founders?",
+      "reason1": "🔒 Garantia de preço vitalício - o seu preço nunca aumentará, mesmo quando os preços subirem para novos utilizadores",
+      "reason2": "⚡ Acesso prioritário a novas funcionalidades e melhorias antes de todos os outros",
+      "reason3": "👥 Junte-se a uma comunidade exclusiva de fundadores com influência direta no desenvolvimento do produto"
+    },
+    "viewOtherPlans": "Ver Outros Planos"
   }
 }
