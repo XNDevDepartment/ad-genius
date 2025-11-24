@@ -5,7 +5,6 @@ import NavigationHeader from "./NavigationHeader";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { useAuth } from "@/contexts/AuthContext";
-import { AnnouncementBanner } from "./AnnouncementBanner";
 
 const AppLayout = () => {
   const location = useLocation();
@@ -47,7 +46,6 @@ const AppLayout = () => {
             <div className="flex min-h-screen w-full">
               <AppSidebar />
               <div className="flex-1 flex flex-col">
-                <AnnouncementBanner />
                 <main className="flex-1">
                   <Outlet />
                 </main>
@@ -57,7 +55,6 @@ const AppLayout = () => {
         ) : (
           // Public/loading layout without sidebar
           <div className="flex flex-col min-h-screen w-full">
-            <AnnouncementBanner />
             <main className="flex-1">
               {loading ? (
                 <div className="flex items-center justify-center min-h-screen">
