@@ -23,16 +23,13 @@ const plans = [
     description: "Perfect for small businesses and content creators",
     credits: 80,
     features: [
-      "feature1",
-      "feature2",
-      "feature3",
-      "feature4",
-      "feature5",
-      "feature6"
+      "credits",
+      "images",
+      "maxImages",
+      "scenarios",
+      "support"
     ],
-    limitations: [
-      "limitation1"
-    ],
+    limitations: [],
     cta: "Start Creating",
     popular: false,
     icon: <Star className="h-6 w-6" />,
@@ -47,14 +44,12 @@ const plans = [
     description: "Best for agencies and growing businesses",
     credits: 200,
     features: [
-      "feature1",
-      "feature2",
-      "feature3",
-      "feature4",
-      "feature5",
-      "feature6",
-      "feature7",
-      "feature8"
+      "credits",
+      "images",
+      "maxImages",
+      "scenarios",
+      "support",
+      "commercial"
     ],
     limitations: [],
     cta: "Go Plus",
@@ -71,15 +66,11 @@ const plans = [
     description: "For high-volume users and enterprises",
     credits: 400,
     features: [
-      "feature1",
-      "feature2",
-      "feature3",
-      "feature4",
-      "feature5",
-      "feature6",
-      "feature7",
-      "feature8",
-      "feature9"
+      "credits",
+      "images",
+      "maxImages",
+      "scenarios",
+      "support"
     ],
     limitations: [],
     cta: "Go Pro",
@@ -221,11 +212,11 @@ const Pricing = () => {
                 {t('pricing.yearly')}
               </span>
               <Badge variant="secondary" className="ml-2">
-                {t('pricing.header.saveMonths')}
+                {t('pricing.saveMonths')}
               </Badge>
             </div>
             <p className="text-xs text-primary-foreground/70">
-              {t('pricing.header.promoCode')}
+              {t('pricing.promoCode')}
             </p>
           </div>
 
@@ -252,7 +243,7 @@ const Pricing = () => {
           <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-lg text-center max-w-7xl mx-auto">
             <div className="flex items-center justify-center gap-2 text-sm">
               <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
-              <span>{t('pricing.header.loadingAccount')}</span>
+              <span>{t('pricing.loadingAccount')}</span>
             </div>
           </div>
         )}
@@ -286,7 +277,7 @@ const Pricing = () => {
                   <div className="mb-2">
                     <span className="inline-flex items-center gap-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full">
                       <VideoIcon className="h-3 w-3" />
-                      {t('pricing.header.includesVideo')}
+                      {t('pricing.includesVideo')}
                     </span>
                   </div>
                 )}
@@ -298,7 +289,7 @@ const Pricing = () => {
                   )}
                   {isYearly && plan.monthlyPrice && plan.yearlyPrice && (
                     <div className="text-xs text-muted-foreground">
-                      {t('pricing.header.billedAnnually', { amount: (plan.yearlyPrice * 12).toFixed(0) })}
+                      {t('pricing.billedAnnually', { amount: (plan.yearlyPrice * 12).toFixed(0) })}
                     </div>
                   )}
                 </div>
@@ -310,7 +301,7 @@ const Pricing = () => {
               <CardContent className="space-y-6">
                 <div className="text-center p-3 bg-muted rounded-lg">
                   <div className="text-xl font-bold text-primary">{plan.credits}</div>
-                  <div className="text-xs text-muted-foreground">{t('pricing.header.creditsPerMonth')}</div>
+                  <div className="text-xs text-muted-foreground">{t('pricing.creditsPerMonth')}</div>
                 </div>
 
                 <ul className="space-y-2">
@@ -322,18 +313,6 @@ const Pricing = () => {
                   ))}
                 </ul>
 
-                {plan.limitations.length > 0 && (
-                  <div className="border-t pt-3">
-                    <ul className="space-y-1">
-                      {plan.limitations.map((limitationKey, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <X className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
-                          <span className="text-xs text-muted-foreground">{t(`pricing.plans.${plan.id}.limitations.${limitationKey}`)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
 
                 <Button
                   onClick={() => handlePlanSelect(plan.id)}
@@ -345,7 +324,7 @@ const Pricing = () => {
                   size="sm"
                   disabled={loading}
                 >
-                  {loading ? t('pricing.header.loading') : t(`pricing.cta.${plan.id === 'starter' ? 'start' : plan.id === 'plus' ? 'goPlus' : 'goPro'}`)}
+                  {loading ? t('pricing.loading') : t(`pricing.cta.${plan.id === 'starter' ? 'start' : plan.id === 'plus' ? 'goPlus' : 'goPro'}`)}
                 </Button>
               </CardContent>
             </Card>
@@ -442,7 +421,7 @@ const Pricing = () => {
                 <div className="text-center p-6 bg-muted rounded-lg">
                   <div className="text-2xl font-bold text-primary mb-2">{t('pricing.creditSystem.video5s')}</div>
                   <div className="text-sm font-medium">{t('pricing.creditSystem.video5sLabel')}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{t('pricing.creditSystem.videoGeneration')}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{t('pricing.creditSystem.imageToVideo')}</div>
                 </div>
                 <div className="text-center p-6 bg-muted rounded-lg">
                   <div className="text-2xl font-bold text-primary mb-2">{t('pricing.creditSystem.video10s')}</div>
@@ -464,9 +443,9 @@ const Pricing = () => {
           <div className="space-y-6 text-left">
             {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((index) => (
               <div key={index}>
-                <h3 className="font-medium mb-2">{t(`pricing.faq.questions.${index}.q`)}</h3>
+                <h3 className="font-medium mb-2">{t(`pricing.faq.questions.${index}.question`)}</h3>
                 <p className="text-muted-foreground text-sm">
-                  {t(`pricing.faq.questions.${index}.a`)}
+                  {t(`pricing.faq.questions.${index}.answer`)}
                 </p>
               </div>
             ))}
