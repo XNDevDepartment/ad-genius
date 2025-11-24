@@ -82,6 +82,92 @@
       }
     }
   },
+  "pricing": {
+    "title": "Choisissez Votre Plan",
+    "subtitle": "Commencez gratuitement, évoluez à votre rythme. Aucun frais caché.",
+    "plans": {
+      "starter": {
+        "name": "Starter",
+        "price": "€29",
+        "period": "/mois",
+        "description": "Parfait pour les petites entreprises et les entrepreneurs individuels",
+        "features": {
+          "credits": "80 crédits par mois",
+          "images": "Jusqu'à 80 images (toute qualité)",
+          "maxImages": "Générez jusqu'à 3 images simultanément",
+          "scenarios": "Scénarios Illimités",
+          "support": "Support d'équipe"
+        }
+      },
+      "plus": {
+        "name": "Plus",
+        "price": "€49",
+        "period": "/mois",
+        "description": "Idéal pour les agences et les entreprises en croissance",
+        "features": {
+          "credits": "200 crédits par mois",
+          "images": "Jusqu'à 200 images (toute qualité)",
+          "maxImages": "Générez jusqu'à 3 images simultanément",
+          "scenarios": "Scénarios Illimités",
+          "support": "Prioritaire + Chat en direct",
+          "commercial": "Usage commercial"
+        },
+        "popular": "Le Plus Populaire"
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "€99",
+        "period": "/mois",
+        "description": "Pour les utilisateurs à volume élevé et les entreprises",
+        "features": {
+          "credits": "400 crédits par mois",
+          "images": "Jusqu'à 400 images (toute qualité)",
+          "maxImages": "Générez jusqu'à 3 images simultanément",
+          "scenarios": "Scénarios Illimités",
+          "support": "Gestionnaire dédié"
+        }
+      }
+    },
+    "cta": {
+      "start": "Commencer à Créer",
+      "goPlus": "Choisir Plus",
+      "goPro": "Choisir Pro",
+      "startTrial": "Démarrer Votre Essai"
+    },
+    "creditSystem": {
+      "title": "Comment Fonctionnent les Crédits",
+      "imageCredit": "1 Crédit = 1 Image",
+      "anyQuality": "Tout Niveau de Qualité",
+      "description": "Toutes les qualités d'image (512px à 1024px) coûtent le même prix - 1 crédit par image",
+      "video5s": "5 Crédits",
+      "video5sLabel": "vidéo de 5 secondes",
+      "video10s": "10 Crédits",
+      "video10sLabel": "vidéo de 10 secondes"
+    },
+    "comparison": {
+      "title": "Comparer les Plans",
+      "features": {
+        "monthlyCredits": "Crédits Mensuels",
+        "imagesPerMonth": "Images par Mois (toute qualité)",
+        "maxImagesPerGen": "Max. d'Images par Génération",
+        "videoGen": "Génération Image vers Vidéo",
+        "videoDuration": "Options de Durée Vidéo",
+        "scenarios": "Scénarios UGC Disponibles",
+        "allQualities": "Tous les Niveaux de Qualité",
+        "commercial": "Usage Commercial",
+        "prioritySupport": "Support Prioritaire",
+        "liveChat": "Support par Chat en Direct",
+        "dedicatedManager": "Gestionnaire Dédié",
+        "unlimited": "illimité"
+      }
+    },
+    "footer": {
+      "trial": "Tous les plans incluent un essai gratuit",
+      "noCard": "Aucune carte de crédit requise",
+      "cancel": "Annulez à tout moment",
+      "fullDetails": "Voir Tous les Détails Tarifaires"
+    }
+  },
   "createSelection": {
     "title": "Choisissez votre Flux de Travail",
     "description": "Sélectionnez le type de contenu que vous souhaitez créer",
