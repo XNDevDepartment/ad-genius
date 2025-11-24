@@ -10,7 +10,7 @@ import { AdminOutfitSwapsList } from './AdminOutfitSwapsList';
 import { EnhancedMetrics } from './EnhancedMetrics';
 import { FinancialDashboard } from './FinancialDashboard';
 import { PromptManagement } from './PromptManagement';
-import { Image } from 'lucide-react';
+import { Image, AlertTriangle } from 'lucide-react';
 
 export const AdminOverview = () => {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
@@ -18,7 +18,11 @@ export const AdminOverview = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end gap-2 mb-4">
+        <Button onClick={() => navigate('/admin/subscription-audit')} variant="outline" className="gap-2">
+          <AlertTriangle className="w-4 h-4" />
+          Subscription Audit
+        </Button>
         <Button onClick={() => navigate('/admin/base-models')} className="gap-2">
           <Image className="w-4 h-4" />
           Manage Base Models
