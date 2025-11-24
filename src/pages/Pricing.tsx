@@ -12,32 +12,32 @@ import { useEffect, useState } from "react";
 import { trackInitiateCheckout } from "@/lib/metaPixel";
 
 const plans = [
-  {
-    id: "founders",
-    name: "Founders",
-    monthlyPrice: 19.99,
-    yearlyPrice: 19.99,
-    period: "/month",
-    description: "🚀 Limited launch offer - Lifetime Starter benefits!",
-    credits: 80,
-    features: [
-      "80 credits per month (forever!)",
-      "Generate up to 3 images at once",
-      "All quality levels available", 
-      "Up to 40 high-quality images",
-      "Image-to-Video generation ✨",
-      "5s & 10s video duration options",
-      "Access to email support",
-      "Commercial usage rights",
-      "Lifetime pricing guarantee"
-    ],
-    limitations: [],
-    cta: "Join Founders 🚀",
-    popular: true,
-    special: "founders",
-    icon: <Crown className="h-6 w-6" />,
-    bgClass: "bg-gradient-to-br from-amber-500/20 to-orange-500/20 border-2 border-amber-400/50"
-  },
+  // {
+  //   id: "founders",
+  //   name: "Founders",
+  //   monthlyPrice: 19.99,
+  //   yearlyPrice: 19.99,
+  //   period: "/month",
+  //   description: "🚀 Limited launch offer - Lifetime Starter benefits!",
+  //   credits: 80,
+  //   features: [
+  //     "80 credits per month (forever!)",
+  //     "Generate up to 3 images at once",
+  //     "All quality levels available", 
+  //     "Up to 40 high-quality images",
+  //     "Image-to-Video generation ✨",
+  //     "5s & 10s video duration options",
+  //     "Access to email support",
+  //     "Commercial usage rights",
+  //     "Lifetime pricing guarantee"
+  //   ],
+  //   limitations: [],
+  //   cta: "Join Founders 🚀",
+  //   popular: true,
+  //   special: "founders",
+  //   icon: <Crown className="h-6 w-6" />,
+  //   bgClass: "bg-gradient-to-br from-amber-500/20 to-orange-500/20 border-2 border-amber-400/50"
+  // },
   {
     id: "starter",
     name: "Starter",
@@ -113,23 +113,41 @@ const plans = [
   }
 ];
 
+// const comparisonFeatures = [
+//   { feature: "Monthly Credits", founders: "80", starter: "80", plus: "200", pro: "400" },
+//   { feature: "Max Images per Generation", founders: "3", starter: "3", plus: "3", pro: "3" },
+//   { feature: "High Quality Images/Month", founders: "40", starter: "40", plus: "100", pro: "200" },
+//   { feature: "Medium Quality Images/Month", founders: "53", starter: "53", plus: "133", pro: "266" },
+//   { feature: "Low Quality Images/Month", founders: "80", starter: "80", plus: "200", pro: "400" },
+//   { feature: "Image-to-Video Generation", founders: true, starter: false, plus: true, pro: true },
+//   { feature: "Video Duration Options", founders: "5s & 10s", starter: "-", plus: "5s & 10s", pro: "5s & 10s" },
+//   { feature: "Video Cost (5s)", founders: "5 credits", starter: "-", plus: "5 credits", pro: "5 credits" },
+//   { feature: "Video Cost (10s)", founders: "10 credits", starter: "-", plus: "10 credits", pro: "10 credits" },
+//   { feature: "UGC Scenarios Available", founders: "unlimited", starter: "unlimited", plus: "unlimited", pro: "unlimited" },
+//   { feature: "All Quality Levels", founders: true, starter: true, plus: true, pro: true },
+//   { feature: "Commercial Usage", founders: true, starter: true, plus: true, pro: true },
+//   { feature: "Priority Support", founders: true, starter: true, plus: true, pro: true },
+//   { feature: "Live Chat Support", founders: false, starter: false, plus: true, pro: true },
+//   { feature: "Dedicated Manager", founders: false, starter: false, plus: false, pro: true },
+//   { feature: "Lifetime Pricing", founders: true, starter: false, plus: false, pro: false }
+// ];
 const comparisonFeatures = [
-  { feature: "Monthly Credits", founders: "80", starter: "80", plus: "200", pro: "400" },
-  { feature: "Max Images per Generation", founders: "3", starter: "3", plus: "3", pro: "3" },
-  { feature: "High Quality Images/Month", founders: "40", starter: "40", plus: "100", pro: "200" },
-  { feature: "Medium Quality Images/Month", founders: "53", starter: "53", plus: "133", pro: "266" },
-  { feature: "Low Quality Images/Month", founders: "80", starter: "80", plus: "200", pro: "400" },
-  { feature: "Image-to-Video Generation", founders: true, starter: false, plus: true, pro: true },
-  { feature: "Video Duration Options", founders: "5s & 10s", starter: "-", plus: "5s & 10s", pro: "5s & 10s" },
-  { feature: "Video Cost (5s)", founders: "5 credits", starter: "-", plus: "5 credits", pro: "5 credits" },
-  { feature: "Video Cost (10s)", founders: "10 credits", starter: "-", plus: "10 credits", pro: "10 credits" },
-  { feature: "UGC Scenarios Available", founders: "unlimited", starter: "unlimited", plus: "unlimited", pro: "unlimited" },
-  { feature: "All Quality Levels", founders: true, starter: true, plus: true, pro: true },
-  { feature: "Commercial Usage", founders: true, starter: true, plus: true, pro: true },
-  { feature: "Priority Support", founders: true, starter: true, plus: true, pro: true },
-  { feature: "Live Chat Support", founders: false, starter: false, plus: true, pro: true },
-  { feature: "Dedicated Manager", founders: false, starter: false, plus: false, pro: true },
-  { feature: "Lifetime Pricing", founders: true, starter: false, plus: false, pro: false }
+  { feature: "Monthly Credits", starter: "80", plus: "200", pro: "400" },
+  { feature: "Max Images per Generation", starter: "3", plus: "3", pro: "3" },
+  { feature: "High Quality Images/Month", starter: "40", plus: "100", pro: "200" },
+  { feature: "Medium Quality Images/Month", starter: "53", plus: "133", pro: "266" },
+  { feature: "Low Quality Images/Month", starter: "80", plus: "200", pro: "400" },
+  { feature: "Image-to-Video Generation", starter: false, plus: true, pro: true },
+  { feature: "Video Duration Options", starter: "-", plus: "5s & 10s", pro: "5s & 10s" },
+  { feature: "Video Cost (5s)", starter: "-", plus: "5 credits", pro: "5 credits" },
+  { feature: "Video Cost (10s)", starter: "-", plus: "10 credits", pro: "10 credits" },
+  { feature: "UGC Scenarios Available", starter: "unlimited", plus: "unlimited", pro: "unlimited" },
+  { feature: "All Quality Levels", starter: true, plus: true, pro: true },
+  { feature: "Commercial Usage", starter: true, plus: true, pro: true },
+  { feature: "Priority Support", starter: true, plus: true, pro: true },
+  { feature: "Live Chat Support", starter: false, plus: true, pro: true },
+  { feature: "Dedicated Manager", starter: false, plus: false, pro: true },
+  { feature: "Lifetime Pricing", starter: false, plus: false, pro: false }
 ];
 
 const Pricing = () => {
@@ -254,7 +272,7 @@ const Pricing = () => {
 
       {/* Pricing Cards */}
       <div className="container mx-auto px-6 py-16">
-        <div className="grid md:grid-cols-4 gap-6 max-w-7xl mx-auto mb-20">
+        <div className="grid md:grid-cols-3 gap-6 max-w-7xl mx-auto mb-20">
           {plans.map((plan) => (
             <Card
               key={plan.id}
@@ -382,10 +400,6 @@ const Pricing = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-1/5">Feature</TableHead>
-                    <TableHead className="text-center bg-amber-50 dark:bg-amber-950/20">
-                      Founders
-                      <Badge className="ml-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white">Limited</Badge>
-                    </TableHead>
                     <TableHead className="text-center">Starter</TableHead>
                     <TableHead className="text-center bg-primary/5">
                       Plus
@@ -398,17 +412,6 @@ const Pricing = () => {
                   {comparisonFeatures.map((item, index) => (
                     <TableRow key={index}>
                       <TableCell className="font-medium">{item.feature}</TableCell>
-                      <TableCell className="text-center bg-amber-50 dark:bg-amber-950/20">
-                        {typeof item.founders === 'boolean' ? (
-                          item.founders ? (
-                            <Check className="h-5 w-5 text-amber-600 mx-auto" />
-                          ) : (
-                            <X className="h-5 w-5 text-muted-foreground mx-auto" />
-                          )
-                        ) : (
-                          <span className="font-medium text-amber-600">{item.founders}</span>
-                        )}
-                      </TableCell>
                       <TableCell className="text-center">
                         {typeof item.starter === 'boolean' ? (
                           item.starter ? (

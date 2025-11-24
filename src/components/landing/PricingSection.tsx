@@ -7,21 +7,21 @@ import { Badge } from '@/components/ui/badge';
 import { Check } from "lucide-react";
 
 const plans = [
-  {
-    name: "Founders",
-    price: "19.99",
-    period: "/month",
-    description: "Become part of our founders community",
-    features: [
-      "80 credits per month",
-      "Generate up to 3 images simultaneously",
-      "Unlimited Scenarios",
-      "Team support",
-    ],
-    cta: "Become a Founder",
-    popular: false,
-    enterprise: false
-  },
+  // {
+  //   name: "Founders",
+  //   price: "19.99",
+  //   period: "/month",
+  //   description: "Become part of our founders community",
+  //   features: [
+  //     "80 credits per month",
+  //     "Generate up to 3 images simultaneously",
+  //     "Unlimited Scenarios",
+  //     "Team support",
+  //   ],
+  //   cta: "Become a Founder",
+  //   popular: false,
+  //   enterprise: false
+  // },
   {
     name: "Starter",
     price: "€29",
@@ -83,7 +83,7 @@ const PricingSection = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {plans.map((plan, index) => {
             if(plan.name === 'Founders'){
               return(
