@@ -186,6 +186,35 @@
         "videoDurations": "5s & 10s"
       }
     },
+    "comparisonTable": {
+      "title": "Detailed Feature Comparison",
+      "subtitle": "Compare all features across our plans to find the perfect fit for your needs.",
+      "headers": {
+        "feature": "Feature",
+        "starter": "Starter",
+        "plus": "Plus",
+        "pro": "Pro",
+        "popular": "Popular"
+      },
+      "features": {
+        "monthlyCredits": "Monthly Credits",
+        "imagesPerMonth": "Images per Month (any quality)",
+        "maxImagesPerGeneration": "Max Images per Generation",
+        "imageToVideo": "Image-to-Video Generation",
+        "videoDuration": "Video Duration Options",
+        "ugcScenarios": "UGC Scenarios Available",
+        "allQualityLevels": "All Quality Levels",
+        "commercialUsage": "Commercial Usage",
+        "prioritySupport": "Priority Support",
+        "liveChat": "Live Chat Support",
+        "dedicatedManager": "Dedicated Manager"
+      },
+      "values": {
+        "unlimited": "unlimited",
+        "notAvailable": "-",
+        "videoDurations": "5s & 10s"
+      }
+    },
     "faq": {
       "title": "Frequently Asked Questions",
       "questions": [
