@@ -85,6 +85,8 @@
   "pricing": {
     "title": "Escolha o Seu Plano",
     "subtitle": "Comece grátis, cresça à medida que avança. Sem taxas ocultas.",
+    "monthly": "Mensal",
+    "yearly": "Anual",
     "plans": {
       "starter": {
         "name": "Starter",

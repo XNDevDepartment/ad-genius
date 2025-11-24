@@ -85,6 +85,8 @@
   "pricing": {
     "title": "Choisissez Votre Plan",
     "subtitle": "Commencez gratuitement, évoluez à votre rythme. Aucun frais caché.",
+    "monthly": "Mensuel",
+    "yearly": "Annuel",
     "plans": {
       "starter": {
         "name": "Starter",

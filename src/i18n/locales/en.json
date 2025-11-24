@@ -85,6 +85,8 @@
   "pricing": {
     "title": "Choose Your Plan",
     "subtitle": "Start free, scale as you grow. No hidden fees.",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
     "plans": {
       "starter": {
         "name": "Starter",

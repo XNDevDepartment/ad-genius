@@ -227,7 +227,7 @@ const Pricing = () => {
           <div className="flex flex-col items-center justify-center gap-2 mb-8">
             <div className="flex items-center gap-4">
               <span className={`text-sm ${!isYearly ? 'text-primary-foreground' : 'text-primary-foreground/70'}`}>
-                Monthly
+                {t('pricing.monthly')}
               </span>
               <button
                 onClick={() => setIsYearly(!isYearly)}
@@ -242,7 +242,7 @@ const Pricing = () => {
                 />
               </button>
               <span className={`text-sm ${isYearly ? 'text-primary-foreground' : 'text-primary-foreground/70'}`}>
-                Yearly
+                {t('pricing.yearly')}
               </span>
               <Badge variant="secondary" className="ml-2">
                 Save 2 months!

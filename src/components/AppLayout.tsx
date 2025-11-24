@@ -29,7 +29,7 @@ const AppLayout = () => {
     <div className="min-h-screen bg-background">
       {/* Mobile Layout */}
       <div className="lg:hidden">
-        <AnnouncementBanner />
+        {/* <AnnouncementBanner /> */}
         {showHeader && <NavigationHeader />}
         <main className="pb-20">
           <Outlet />
