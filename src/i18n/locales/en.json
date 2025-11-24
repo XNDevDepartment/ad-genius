@@ -1190,5 +1190,65 @@
         "both": "Both formats"
       }
     }
+  },
+  "foundersPlan": {
+    "badge": "Exclusive Founders Offer",
+    "title": "Founders Pack",
+    "subtitle": "Join our earliest users and lock in lifetime pricing. This exclusive offer will never be available again.",
+    "limitedTime": "Limited time offer - Limited spots available",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "save2Months": "Save 2 months",
+    "planName": "Founders Plan",
+    "planDescription": "Lifetime access with guaranteed pricing forever",
+    "perMonth": "/month",
+    "billedAnnually": "Billed annually (€{{total}}/year)",
+    "billedMonthly": "Billed monthly",
+    "whatsIncluded": "What's included:",
+    "features": {
+      "credits": {
+        "title": "80 Monthly Credits",
+        "description": "Enough credits for 80 images or multiple videos per month"
+      },
+      "images": {
+        "title": "Unlimited Image Generation",
+        "description": "Create product images, UGC, and professional photography"
+      },
+      "video": {
+        "title": "Video Generation Included",
+        "description": "Transform images into engaging videos (5s and 10s)"
+      },
+      "allScenarios": {
+        "title": "All UGC Scenarios",
+        "description": "Full access to all scenarios and templates"
+      },
+      "allQualities": {
+        "title": "All Quality Levels",
+        "description": "High, medium, and low quality available"
+      },
+      "commercial": {
+        "title": "Commercial Use",
+        "description": "Use images for commercial projects and clients"
+      },
+      "prioritySupport": {
+        "title": "Priority Support",
+        "description": "Get faster help when you need it"
+      },
+      "lifetimePricing": {
+        "title": "Lifetime Pricing Guaranteed",
+        "description": "Your price will never increase - guaranteed forever"
+      }
+    },
+    "cta": "Secure Founders Access",
+    "loading": "Loading...",
+    "processing": "Processing...",
+    "guarantee": "30-day money-back guarantee. Cancel anytime.",
+    "whyFounders": {
+      "title": "Why Founders Pack?",
+      "reason1": "🔒 Lifetime price guarantee - your price will never increase, even when prices go up for new users",
+      "reason2": "⚡ Priority access to new features and improvements before everyone else",
+      "reason3": "👥 Join an exclusive founders community with direct influence on product development"
+    },
+    "viewOtherPlans": "View Other Plans"
   }
 }

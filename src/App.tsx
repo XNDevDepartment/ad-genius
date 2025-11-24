@@ -34,6 +34,7 @@ const FAQPage = lazy(() => import("./pages/help/FAQPage"));
 const VideoTutorialsPage = lazy(() => import("./pages/help/VideoTutorialsPage"));
 const APIDocsPage = lazy(() => import("./pages/help/APIDocsPage"));
 const Pricing = lazy(() => import("./pages/Pricing"));
+const FoundersPlan = lazy(() => import("./pages/FoundersPlan"));
 const Success = lazy(() => import("./pages/Success"));
 const Cancel = lazy(() => import("./pages/Cancel"));
 const TestVideoGeneration = lazy(() => import("./pages/VideoGenerator"));
@@ -184,6 +185,13 @@ const App = () => {
                   <ErrorBoundary>
                     <Suspense fallback={<LoadingFallback />}>
                       <Pricing />
+                    </Suspense>
+                  </ErrorBoundary>
+                } />
+                <Route path="founders" element={
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <FoundersPlan />
                     </Suspense>
                   </ErrorBoundary>
                 } />
