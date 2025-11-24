@@ -87,6 +87,13 @@
     "subtitle": "Start free, scale as you grow. No hidden fees.",
     "monthly": "Monthly",
     "yearly": "Yearly",
+    "saveMonths": "Save 2 months!",
+    "promoCode": "Have a promotion code? You can enter it at checkout",
+    "loadingAccount": "Loading your account information...",
+    "includesVideo": "Includes Video Generation",
+    "billedAnnually": "Billed annually (€{amount}/year)",
+    "creditsPerMonth": "Credits per month",
+    "loading": "Loading...",
     "plans": {
       "starter": {
         "name": "Starter",
@@ -137,17 +144,29 @@
       "startTrial": "Start Your Trial"
     },
     "creditSystem": {
-      "title": "How Credits Work",
-      "imageCredit": "1 Credit = 1 Image",
-      "anyQuality": "Any Quality Level",
-      "description": "All image qualities (512px to 1024px) cost the same - 1 credit per image",
+      "title": "Understanding Credits",
+      "subtitle": "Simple, transparent pricing for all your content generation needs",
+      "imageCredit": "1 Credit",
+      "anyQuality": "= 1 Image (any quality)",
+      "description": "Generate high, medium, or low quality images - all cost the same 1 credit. Choose the quality that fits your needs.",
       "video5s": "5 Credits",
       "video5sLabel": "5-second video",
+      "imageToVideo": "Image-to-video generation",
       "video10s": "10 Credits",
-      "video10sLabel": "10-second video"
+      "video10sLabel": "10-second video",
+      "extendedDuration": "Extended video duration",
+      "rollover": "Credits roll over monthly - unused credits are added to your next billing cycle. Upgrade or downgrade anytime."
     },
     "comparison": {
-      "title": "Compare Plans",
+      "title": "Detailed Feature Comparison",
+      "subtitle": "Compare all features across our plans to find the perfect fit for your needs.",
+      "headers": {
+        "feature": "Feature",
+        "starter": "Starter",
+        "plus": "Plus",
+        "pro": "Pro",
+        "popular": "Popular"
+      },
       "features": {
         "monthlyCredits": "Monthly Credits",
         "imagesPerMonth": "Images per Month (any quality)",
@@ -159,9 +178,58 @@
         "commercial": "Commercial Usage",
         "prioritySupport": "Priority Support",
         "liveChat": "Live Chat Support",
-        "dedicatedManager": "Dedicated Manager",
-        "unlimited": "unlimited"
+        "dedicatedManager": "Dedicated Manager"
+      },
+      "values": {
+        "unlimited": "unlimited",
+        "notAvailable": "-",
+        "videoDurations": "5s & 10s"
       }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "questions": [
+        {
+          "question": "Can I change plans anytime?",
+          "answer": "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately."
+        },
+        {
+          "question": "Do unused credits roll over?",
+          "answer": "Yes! Unused credits roll over to the next month. We believe in fair pricing - you keep what you don't use."
+        },
+        {
+          "question": "What's the difference between yearly and monthly billing?",
+          "answer": "Yearly plans save you 2 months - you pay for 10 months and get 12 months of service."
+        },
+        {
+          "question": "What are scenarios?",
+          "answer": "Scenarios are pre-designed UGC settings tailored to your product and niche. For example: a cosmetic placed on a backstage table at a fashion show."
+        },
+        {
+          "question": "What happens if I exceed my credit limit?",
+          "answer": "If you run out of credits, you can upgrade your plan or wait for the next billing cycle when new credits are added to your account."
+        },
+        {
+          "question": "Can I cancel my subscription anytime?",
+          "answer": "Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your billing period."
+        },
+        {
+          "question": "What payment methods do you accept?",
+          "answer": "We accept all major credit cards, debit cards, and digital wallets through our secure Stripe payment processing."
+        },
+        {
+          "question": "Is there a free trial for paid plans?",
+          "answer": "Every new user starts with our generous Free plan (10 credits) to try our service. Upgrade anytime to unlock more features."
+        },
+        {
+          "question": "Can I use the generated images commercially?",
+          "answer": "Commercial usage rights are included with Starter, Plus, and Pro plans. Free trial users have personal use rights only."
+        },
+        {
+          "question": "How does the credit system work?",
+          "answer": "Each image generation costs 1 credit, regardless of quality. Unused credits roll over monthly with your subscription."
+        }
+      ]
     },
     "footer": {
       "trial": "All plans include free trial",
