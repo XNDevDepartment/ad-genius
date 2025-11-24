@@ -84,63 +84,7 @@ const PricingSection = () => {
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {plans.map((plan, index) => {
-            if(plan.name === 'Founders'){
-              return(
-                <Card
-                key={plan.name}
-                className={`relative border-2 transition-all duration-300 hover:shadow-lg border-amber-400 shadow-xl scale-105 bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20"`}
-              >
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-1 shadow-lg">
-                      🚀 Limited Time
-                    </Badge>
-                  </div>
-  
-                <CardHeader className="text-center">
-                  <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
-                  <div className="mb-4">
-                    <span className={`text-2xl font-bold ${plan.popular ? "text-secondary" : "text-gray-400"}`}>
-                      {plan.price}
-                    </span>
-                    {plan.period && (
-                      <span className="text-muted-foreground text-sm">{plan.period}</span>
-                    )}
-                      <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                        Lifetime pricing!
-                      </div>
-                  </div>
-                  <CardDescription className="text-sm">
-                    {plan.description}
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="space-y-6">
-
-                  <ul className="space-y-2">
-                    {plan.features.slice(0, 4).map((feature, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span className="text-xs">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Button
-                    onClick={() => {localStorage.setItem("billing", 'true'); navigate('/signup')}}
-                    className={`w-full ${
-                      plan.popular
-                        ? "btn-primary"
-                        : "bg-black/70 hover:bg-black/60 text-white border border-black/90"
-                    }`}
-                    size="sm"
-                  >
-                  Start Your Trial
-                  </Button>
-                </CardContent>
-              </Card>
-          )} else {
-              return (
+          {plans.map((plan, index) => (
             <div
               key={index}
               className={`relative rounded-2xl p-6 ${
@@ -206,10 +150,10 @@ const PricingSection = () => {
                 }`}
                 size="sm"
               >
-               Start Your Trial
+                Start Your Trial
               </Button>
             </div>
-          )}})}
+          ))}
         </div>
 
         <div className="text-center mt-12">

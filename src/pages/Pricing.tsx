@@ -50,7 +50,7 @@ const plans = [
       "80 credits per month",
       "Generate up to 3 images at once",
       "All quality levels available",
-      "Up to 40 high-quality images",
+      "Up to 80 images (any quality)",
       "Access to email support",
       "Commercial usage rights"
     ],
@@ -74,7 +74,7 @@ const plans = [
       "200 credits per month",
       "Generate up to 3 images at once",
       "All quality levels available",
-      "Up to 100 high-quality images",
+      "Up to 200 images (any quality)",
       "Image-to-Video generation ✨",
       "5s & 10s video duration options",
       "Priority support + Live chat",
@@ -98,7 +98,7 @@ const plans = [
       "400 credits per month",
       "Generate up to 3 images at once",
       "All quality levels available",
-      "Up to 200 high-quality images",
+      "Up to 400 images (any quality)",
       "Image-to-Video generation ✨",
       "5s & 10s video duration options",
       "Dedicated account manager",
@@ -131,24 +131,19 @@ const plans = [
 //   { feature: "Dedicated Manager", founders: false, starter: false, plus: false, pro: true },
 //   { feature: "Lifetime Pricing", founders: true, starter: false, plus: false, pro: false }
 // ];
-const comparisonFeatures = [
-  { feature: "Monthly Credits", starter: "80", plus: "200", pro: "400" },
-  { feature: "Max Images per Generation", starter: "3", plus: "3", pro: "3" },
-  { feature: "High Quality Images/Month", starter: "40", plus: "100", pro: "200" },
-  { feature: "Medium Quality Images/Month", starter: "53", plus: "133", pro: "266" },
-  { feature: "Low Quality Images/Month", starter: "80", plus: "200", pro: "400" },
-  { feature: "Image-to-Video Generation", starter: false, plus: true, pro: true },
-  { feature: "Video Duration Options", starter: "-", plus: "5s & 10s", pro: "5s & 10s" },
-  { feature: "Video Cost (5s)", starter: "-", plus: "5 credits", pro: "5 credits" },
-  { feature: "Video Cost (10s)", starter: "-", plus: "10 credits", pro: "10 credits" },
-  { feature: "UGC Scenarios Available", starter: "unlimited", plus: "unlimited", pro: "unlimited" },
-  { feature: "All Quality Levels", starter: true, plus: true, pro: true },
-  { feature: "Commercial Usage", starter: true, plus: true, pro: true },
-  { feature: "Priority Support", starter: true, plus: true, pro: true },
-  { feature: "Live Chat Support", starter: false, plus: true, pro: true },
-  { feature: "Dedicated Manager", starter: false, plus: false, pro: true },
-  { feature: "Lifetime Pricing", starter: false, plus: false, pro: false }
-];
+  const comparisonFeatures = [
+    { feature: "Monthly Credits", starter: "80", plus: "200", pro: "400" },
+    { feature: "Images per Month (any quality)", starter: "80", plus: "200", pro: "400" },
+    { feature: "Max Images per Generation", starter: "3", plus: "3", pro: "3" },
+    { feature: "Image-to-Video Generation", starter: false, plus: true, pro: true },
+    { feature: "Video Duration Options", starter: "-", plus: "5s & 10s", pro: "5s & 10s" },
+    { feature: "UGC Scenarios Available", starter: "unlimited", plus: "unlimited", pro: "unlimited" },
+    { feature: "All Quality Levels", starter: true, plus: true, pro: true },
+    { feature: "Commercial Usage", starter: true, plus: true, pro: true },
+    { feature: "Priority Support", starter: true, plus: true, pro: true },
+    { feature: "Live Chat Support", starter: false, plus: true, pro: true },
+    { feature: "Dedicated Manager", starter: false, plus: false, pro: true }
+  ];
 
 const Pricing = () => {
   const navigate = useNavigate();
@@ -203,9 +198,6 @@ const Pricing = () => {
 
   const getDisplayPrice = (plan: any) => {
     if (plan.price === "Free") return "Free";
-    
-    // Special handling for Founders plan (no yearly option)
-    if (plan.id === "founders") return `€${plan.monthlyPrice}`;
 
     const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
     return `€${price}`;
@@ -291,21 +283,12 @@ const Pricing = () => {
             <Card
               key={plan.id}
               className={`relative border-2 transition-all duration-300 hover:shadow-lg ${
-                plan.special === "founders"
-                  ? "border-amber-400 shadow-xl scale-105 bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20"
-                  : plan.popular
+                plan.popular
                   ? "border-primary shadow-lg scale-105 bg-white dark:bg-card"
                   : "border-border hover:border-primary/50"
               }`}
             >
-              {plan.special === "founders" && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-1 shadow-lg">
-                    🚀 Limited Time
-                  </Badge>
-                </div>
-              )}
-              {plan.popular && plan.special !== "founders" && (
+              {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <Badge className="bg-primary text-primary-foreground px-4 py-1">
                     Most Popular
@@ -316,9 +299,7 @@ const Pricing = () => {
               <CardHeader className="text-center">
                 <div className="flex justify-center mb-4">
                   <div className={`p-3 rounded-full ${
-                    plan.special === "founders" 
-                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white' 
-                      : plan.popular ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                    plan.popular ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                   }`}>
                     {plan.icon}
                   </div>
@@ -340,11 +321,6 @@ const Pricing = () => {
                   {isYearly && plan.monthlyPrice && plan.yearlyPrice && (
                     <div className="text-xs text-muted-foreground">
                       Billed annually (€{(plan.yearlyPrice * 12).toFixed(0)}/year)
-                    </div>
-                  )}
-                  {plan.special === "founders" && (
-                    <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                      Lifetime pricing!
                     </div>
                   )}
                 </div>
@@ -384,9 +360,7 @@ const Pricing = () => {
                 <Button
                   onClick={() => handlePlanSelect(plan.id)}
                   className={`w-full ${
-                    plan.special === "founders"
-                      ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg"
-                      : plan.popular
+                    plan.popular
                       ? "bg-primary hover:bg-primary/90"
                       : "variant-outline"
                   }`}
@@ -469,30 +443,33 @@ const Pricing = () => {
         </div>
 
         {/* Credit System Explanation */}
-        <div className="max-w-4xl mx-auto mt-20">
+        <div className="max-w-5xl mx-auto mt-20">
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl">How Our Credit System Works</CardTitle>
+              <CardTitle className="text-3xl font-bold mb-2">Understanding Your Credits</CardTitle>
               <CardDescription>
-                Simple, transparent pricing based on image quality and usage
+                Simple, transparent pricing for all your content generation needs
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-3 gap-6">
+            <CardContent className="space-y-8">
+              <div className="text-center p-8 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg">
+                <div className="text-4xl font-bold text-primary mb-3">1 Credit = 1 Image</div>
+                <div className="text-lg font-medium mb-2">Any Quality Level</div>
+                <div className="text-sm text-muted-foreground max-w-2xl mx-auto">
+                  All image qualities (512px to 1024px) cost the same - 1 credit per image. Generate low, medium, or high quality images without worrying about variable pricing.
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto">
                 <div className="text-center p-6 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold text-primary mb-2">1 Credit</div>
-                  <div className="text-sm font-medium mb-1">Low Quality</div>
-                  <div className="text-xs text-muted-foreground">512x512px, fast generation</div>
+                  <div className="text-2xl font-bold text-primary mb-2">5 Credits</div>
+                  <div className="text-sm font-medium">5-second video</div>
+                  <div className="text-xs text-muted-foreground mt-1">Image-to-video generation</div>
                 </div>
                 <div className="text-center p-6 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold text-primary mb-2">1.5 Credits</div>
-                  <div className="text-sm font-medium mb-1">Medium Quality</div>
-                  <div className="text-xs text-muted-foreground">768x768px, balanced quality</div>
-                </div>
-                <div className="text-center p-6 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold text-primary mb-2">2 Credits</div>
-                  <div className="text-sm font-medium mb-1">High Quality</div>
-                  <div className="text-xs text-muted-foreground">1024x1024px, premium results</div>
+                  <div className="text-2xl font-bold text-primary mb-2">10 Credits</div>
+                  <div className="text-sm font-medium">10-second video</div>
+                  <div className="text-xs text-muted-foreground mt-1">Extended video duration</div>
                 </div>
               </div>
               
