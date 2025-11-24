@@ -14,30 +14,21 @@ export default function Success() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkSubscription = async () => {
-      // Wait a moment for Stripe webhook to process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+    // Webhook has already processed the payment and updated the database
+    // Just refresh to show the latest data
+    const loadSubscription = async () => {
       try {
         await refreshSubscription();
-        
-        // Track the purchase/subscription in Meta Pixel
-        // You can pass the actual subscription value if available
-        trackPurchase(29.99); // Update this with actual subscription price if available
-        
-        toast({
-          title: "Subscription activated!",
-          description: "Your Pro subscription is now active. You can start creating unlimited content.",
-        });
+        trackPurchase(29.99); // Track conversion
+        setLoading(false);
       } catch (error) {
-        console.error('Error refreshing subscription:', error);
-      } finally {
+        console.error('Error loading subscription:', error);
         setLoading(false);
       }
     };
 
-    checkSubscription();
-  }, [refreshSubscription, toast]);
+    loadSubscription();
+  }, [refreshSubscription]);
 
   useEffect(() => {
     // Auto-redirect after 5 seconds
