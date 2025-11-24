@@ -63,7 +63,7 @@ export const BaseModelSelector = ({
 
   const handleUploadAIClick = () => {
     if (isFreeTier()) {
-      // toast.error('Premium subscription required to upload custom base models');
+      toast.error(t('outfitSwap.baseModelSelector.upload.premiumFeature'));
       return;
     }
     setUploadDialogAIOpen(true);
