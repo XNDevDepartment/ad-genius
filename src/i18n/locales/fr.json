@@ -144,14 +144,54 @@
       "startTrial": "Démarrer Votre Essai"
     },
     "creditSystem": {
-      "title": "Comment Fonctionnent les Crédits",
+      "title": "Système de Crédits Simple",
+      "subtitle": "Tarification simple et transparente pour tous vos besoins créatifs",
+      "description": "Chaque forfait comprend des crédits mensuels qui peuvent être utilisés sur tous nos outils d'IA.",
+      "anyQuality": {
+        "title": "Génération d'images de toute qualité",
+        "description": "1 crédit par image"
+      },
+      "imageToVideo": "Génération d'image en vidéo",
+      "extendedDuration": "Durée vidéo prolongée disponible sur les forfaits Plus et Pro",
+      "rollover": "Les crédits se reportent mensuellement - ne perdez jamais vos crédits inutilisés",
       "imageCredit": "1 Crédit = 1 Image",
-      "anyQuality": "Tout Niveau de Qualité",
-      "description": "Toutes les qualités d'image (512px à 1024px) coûtent le même prix - 1 crédit par image",
       "video5s": "5 Crédits",
       "video5sLabel": "vidéo de 5 secondes",
       "video10s": "10 Crédits",
       "video10sLabel": "vidéo de 10 secondes"
+    },
+    "comparisonTable": {
+      "title": "Comparaison Détaillée des Fonctionnalités",
+      "subtitle": "Découvrez ce qui est inclus dans chaque forfait",
+      "headers": {
+        "feature": "Fonctionnalité",
+        "starter": "Débutant",
+        "plus": "Plus",
+        "pro": "Pro",
+        "popular": "Populaire"
+      },
+      "features": {
+        "monthlyCredits": "Crédits mensuels",
+        "imagesPerMonth": "Images par mois",
+        "maxImagesPerGeneration": "Max d'images par génération",
+        "imageToVideo": "Image en vidéo",
+        "videoDuration": "Durée de la vidéo",
+        "ugcScenarios": "Scénarios UGC",
+        "allQualityLevels": "Tous les niveaux de qualité",
+        "commercialUsage": "Usage commercial",
+        "prioritySupport": "Support prioritaire",
+        "liveChat": "Chat en direct",
+        "dedicatedManager": "Gestionnaire dédié"
+      },
+      "values": {
+        "unlimited": "illimité",
+        "notAvailable": "-",
+        "videoDurations": {
+          "starter": "-",
+          "plus": "5s et 10s",
+          "pro": "5s, 10s et 15s"
+        }
+      }
     },
     "comparison": {
       "title": "Comparer les Plans",
@@ -168,6 +208,51 @@
         "liveChat": "Support par Chat en Direct",
         "dedicatedManager": "Gestionnaire Dédié",
         "unlimited": "illimité"
+      }
+    },
+    "faq": {
+      "title": "Questions Fréquemment Posées",
+      "questions": {
+        "0": {
+          "question": "Comment fonctionnent les crédits?",
+          "answer": "Chaque forfait comprend des crédits mensuels qui peuvent être utilisés sur n'importe lequel de nos outils d'IA. La génération d'images coûte 1 crédit par image, quelle que soit la qualité. La génération de vidéo utilise des crédits en fonction de la durée: les vidéos de 5 secondes utilisent 10 crédits, les vidéos de 10 secondes utilisent 20 crédits et les vidéos de 15 secondes (Pro uniquement) utilisent 30 crédits."
+        },
+        "1": {
+          "question": "Les crédits inutilisés sont-ils reportés?",
+          "answer": "Oui! Tous les crédits inutilisés sont reportés au mois suivant, vous ne perdez donc jamais ce que vous avez payé. Cela rend nos forfaits parfaits pour une utilisation régulière et des besoins intermittents."
+        },
+        "2": {
+          "question": "Puis-je changer de forfait à tout moment?",
+          "answer": "Oui, vous pouvez améliorer ou réduire votre forfait à tout moment. Lors d'une amélioration, vous aurez un accès immédiat aux fonctionnalités de niveau supérieur. Lors d'une réduction, les modifications prendront effet au prochain cycle de facturation."
+        },
+        "3": {
+          "question": "Quelle est la différence entre les forfaits en termes de qualité d'image?",
+          "answer": "Tous les forfaits offrent un accès aux mêmes niveaux de qualité d'image - il n'y a aucune différence dans la qualité de sortie. La principale différence réside dans le nombre de crédits que vous recevez par mois et les fonctionnalités supplémentaires comme la génération de vidéo et le support prioritaire."
+        },
+        "4": {
+          "question": "Puis-je utiliser les images générées commercialement?",
+          "answer": "Oui! Tous les forfaits payants (Débutant, Plus et Pro) incluent les droits d'utilisation commerciale. Vous possédez les images que vous créez et pouvez les utiliser dans n'importe quel projet commercial sans restrictions."
+        },
+        "5": {
+          "question": "Quels moyens de paiement acceptez-vous?",
+          "answer": "Nous acceptons toutes les principales cartes de crédit (Visa, Mastercard, American Express) via Stripe. La facturation est sécurisée et vous pouvez gérer votre mode de paiement dans les paramètres de votre compte à tout moment."
+        },
+        "6": {
+          "question": "Y a-t-il des frais d'installation ou des coûts cachés?",
+          "answer": "Non! Le prix que vous voyez est le prix que vous payez. Il n'y a pas de frais d'installation, de coûts cachés ou de frais surprise. Vous ne payez que pour votre abonnement mensuel et obtenez un accès complet à toutes les fonctionnalités de votre forfait."
+        },
+        "7": {
+          "question": "Que se passe-t-il si je n'ai plus de crédits?",
+          "answer": "Si vous utilisez tous vos crédits mensuels, vous pouvez améliorer votre forfait pour obtenir plus de crédits immédiatement, ou attendre le prochain renouvellement mensuel. Nous travaillons également sur des packs de crédits supplémentaires qui seront bientôt disponibles."
+        },
+        "8": {
+          "question": "Puis-je annuler mon abonnement à tout moment?",
+          "answer": "Oui, vous pouvez annuler votre abonnement à tout moment depuis le panneau de paramètres de votre compte. Vous conserverez l'accès aux fonctionnalités de votre forfait jusqu'à la fin de la période de facturation actuelle, et il n'y aura pas de frais supplémentaires."
+        },
+        "9": {
+          "question": "Offrez-vous des réductions pour les étudiants ou les organisations à but non lucratif?",
+          "answer": "Oui! Nous offrons des réductions spéciales pour les étudiants et les organisations à but non lucratif. Contactez notre équipe d'assistance avec une preuve d'éligibilité, et nous serons heureux de configurer une réduction pour vous."
+        }
       }
     },
     "footer": {

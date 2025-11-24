@@ -144,14 +144,54 @@
       "startTrial": "Iniciar Período de Teste"
     },
     "creditSystem": {
-      "title": "Como Funcionam os Créditos",
+      "title": "Sistema de Créditos Simples",
+      "subtitle": "Preços simples e transparentes para todas as suas necessidades criativas",
+      "description": "Cada plano inclui créditos mensais que podem ser usados em todas as nossas ferramentas de IA.",
+      "anyQuality": {
+        "title": "Geração de imagens de qualquer qualidade",
+        "description": "1 crédito por imagem"
+      },
+      "imageToVideo": "Geração de imagem para vídeo",
+      "extendedDuration": "Duração de vídeo estendida disponível em planos Plus e Pro",
+      "rollover": "Os créditos são transferidos mensalmente - nunca perca seus créditos não utilizados",
       "imageCredit": "1 Crédito = 1 Imagem",
-      "anyQuality": "Qualquer Nível de Qualidade",
-      "description": "Todas as qualidades de imagem (512px a 1024px) custam o mesmo - 1 crédito por imagem",
       "video5s": "5 Créditos",
       "video5sLabel": "vídeo de 5 segundos",
       "video10s": "10 Créditos",
       "video10sLabel": "vídeo de 10 segundos"
+    },
+    "comparisonTable": {
+      "title": "Comparação Detalhada de Recursos",
+      "subtitle": "Veja o que está incluído em cada plano",
+      "headers": {
+        "feature": "Recurso",
+        "starter": "Inicial",
+        "plus": "Plus",
+        "pro": "Pro",
+        "popular": "Popular"
+      },
+      "features": {
+        "monthlyCredits": "Créditos mensais",
+        "imagesPerMonth": "Imagens por mês",
+        "maxImagesPerGeneration": "Máx de imagens por geração",
+        "imageToVideo": "Imagem para vídeo",
+        "videoDuration": "Duração do vídeo",
+        "ugcScenarios": "Cenários UGC",
+        "allQualityLevels": "Todos os níveis de qualidade",
+        "commercialUsage": "Uso comercial",
+        "prioritySupport": "Suporte prioritário",
+        "liveChat": "Chat ao vivo",
+        "dedicatedManager": "Gerente dedicado"
+      },
+      "values": {
+        "unlimited": "ilimitado",
+        "notAvailable": "-",
+        "videoDurations": {
+          "starter": "-",
+          "plus": "5s & 10s",
+          "pro": "5s, 10s & 15s"
+        }
+      }
     },
     "comparison": {
       "title": "Comparar Planos",
@@ -168,6 +208,51 @@
         "liveChat": "Suporte por Chat ao Vivo",
         "dedicatedManager": "Gestor Dedicado",
         "unlimited": "ilimitado"
+      }
+    },
+    "faq": {
+      "title": "Perguntas Frequentes",
+      "questions": {
+        "0": {
+          "question": "Como funcionam os créditos?",
+          "answer": "Cada plano vem com créditos mensais que podem ser usados em qualquer uma de nossas ferramentas de IA. A geração de imagens custa 1 crédito por imagem, independentemente da qualidade. A geração de vídeo usa créditos com base na duração: vídeos de 5 segundos usam 10 créditos, vídeos de 10 segundos usam 20 créditos e vídeos de 15 segundos (apenas Pro) usam 30 créditos."
+        },
+        "1": {
+          "question": "Os créditos não utilizados são transferidos?",
+          "answer": "Sim! Todos os créditos não utilizados são transferidos para o próximo mês, então você nunca perde o que pagou. Isso torna nossos planos perfeitos tanto para uso consistente quanto para necessidades intermitentes."
+        },
+        "2": {
+          "question": "Posso mudar de plano a qualquer momento?",
+          "answer": "Sim, você pode fazer upgrade ou downgrade do seu plano a qualquer momento. Ao fazer upgrade, você terá acesso imediato aos recursos do nível superior. Ao fazer downgrade, as mudanças entrarão em vigor no próximo ciclo de cobrança."
+        },
+        "3": {
+          "question": "Qual é a diferença entre os planos em termos de qualidade de imagem?",
+          "answer": "Todos os planos oferecem acesso aos mesmos níveis de qualidade de imagem - não há diferença na qualidade de saída. A principal diferença está no número de créditos que você recebe por mês e nos recursos adicionais, como a geração de vídeo e o suporte prioritário."
+        },
+        "4": {
+          "question": "Posso usar as imagens geradas comercialmente?",
+          "answer": "Sim! Todos os planos pagos (Inicial, Plus e Pro) incluem direitos de uso comercial. Você possui as imagens que cria e pode usá-las em qualquer projeto comercial sem restrições."
+        },
+        "5": {
+          "question": "Que métodos de pagamento você aceita?",
+          "answer": "Aceitamos todos os principais cartões de crédito (Visa, Mastercard, American Express) através do Stripe. A cobrança é feita de forma segura e você pode gerenciar seu método de pagamento nas configurações da sua conta a qualquer momento."
+        },
+        "6": {
+          "question": "Há taxa de configuração ou custos ocultos?",
+          "answer": "Não! O preço que você vê é o preço que você paga. Não há taxas de configuração, custos ocultos ou cobranças surpresa. Você paga apenas pela sua assinatura mensal e tem acesso completo a todos os recursos do seu plano."
+        },
+        "7": {
+          "question": "O que acontece se eu ficar sem créditos?",
+          "answer": "Se você usar todos os seus créditos mensais, você pode fazer upgrade do seu plano para obter mais créditos imediatamente, ou aguardar até a próxima renovação mensal. Também estamos trabalhando em pacotes adicionais de créditos que estarão disponíveis em breve."
+        },
+        "8": {
+          "question": "Posso cancelar minha assinatura a qualquer momento?",
+          "answer": "Sim, você pode cancelar sua assinatura a qualquer momento no painel de configurações da sua conta. Você manterá o acesso aos recursos do seu plano até o final do período de cobrança atual, e não haverá cobranças adicionais."
+        },
+        "9": {
+          "question": "Vocês oferecem descontos para estudantes ou organizações sem fins lucrativos?",
+          "answer": "Sim! Oferecemos descontos especiais para estudantes e organizações sem fins lucrativos. Entre em contato com nossa equipe de suporte com prova de elegibilidade, e teremos prazer em configurar um desconto para você."
+        }
       }
     },
     "footer": {

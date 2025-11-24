@@ -144,14 +144,54 @@
       "startTrial": "Testversion Starten"
     },
     "creditSystem": {
-      "title": "So Funktionieren Credits",
+      "title": "Einfaches Credit-System",
+      "subtitle": "Einfache, transparente Preise für alle Ihre kreativen Bedürfnisse",
+      "description": "Jeder Plan enthält monatliche Credits, die für alle unsere KI-Tools verwendet werden können.",
+      "anyQuality": {
+        "title": "Bildgenerierung jeder Qualität",
+        "description": "1 Credit pro Bild"
+      },
+      "imageToVideo": "Bild-zu-Video-Generierung",
+      "extendedDuration": "Erweiterte Videodauer verfügbar in Plus- und Pro-Plänen",
+      "rollover": "Credits werden monatlich übertragen - verlieren Sie nie Ihre ungenutzten Credits",
       "imageCredit": "1 Credit = 1 Bild",
-      "anyQuality": "Jede Qualitätsstufe",
-      "description": "Alle Bildqualitäten (512px bis 1024px) kosten dasselbe - 1 Credit pro Bild",
       "video5s": "5 Credits",
       "video5sLabel": "5-Sekunden-Video",
       "video10s": "10 Credits",
       "video10sLabel": "10-Sekunden-Video"
+    },
+    "comparisonTable": {
+      "title": "Detaillierter Funktionsvergleich",
+      "subtitle": "Sehen Sie, was in jedem Plan enthalten ist",
+      "headers": {
+        "feature": "Funktion",
+        "starter": "Starter",
+        "plus": "Plus",
+        "pro": "Pro",
+        "popular": "Beliebt"
+      },
+      "features": {
+        "monthlyCredits": "Monatliche Credits",
+        "imagesPerMonth": "Bilder pro Monat",
+        "maxImagesPerGeneration": "Max Bilder pro Generierung",
+        "imageToVideo": "Bild zu Video",
+        "videoDuration": "Videodauer",
+        "ugcScenarios": "UGC-Szenarien",
+        "allQualityLevels": "Alle Qualitätsstufen",
+        "commercialUsage": "Kommerzielle Nutzung",
+        "prioritySupport": "Prioritäts-Support",
+        "liveChat": "Live-Chat",
+        "dedicatedManager": "Dedizierter Manager"
+      },
+      "values": {
+        "unlimited": "unbegrenzt",
+        "notAvailable": "-",
+        "videoDurations": {
+          "starter": "-",
+          "plus": "5s & 10s",
+          "pro": "5s, 10s & 15s"
+        }
+      }
     },
     "comparison": {
       "title": "Pläne Vergleichen",
@@ -168,6 +208,51 @@
         "liveChat": "Live-Chat-Support",
         "dedicatedManager": "Dedizierter Manager",
         "unlimited": "unbegrenzt"
+      }
+    },
+    "faq": {
+      "title": "Häufig gestellte Fragen",
+      "questions": {
+        "0": {
+          "question": "Wie funktionieren die Credits?",
+          "answer": "Jeder Plan enthält monatliche Credits, die für alle unsere KI-Tools verwendet werden können. Die Bildgenerierung kostet 1 Credit pro Bild, unabhängig von der Qualität. Die Videogenerierung verwendet Credits basierend auf der Dauer: 5-Sekunden-Videos verwenden 10 Credits, 10-Sekunden-Videos verwenden 20 Credits und 15-Sekunden-Videos (nur Pro) verwenden 30 Credits."
+        },
+        "1": {
+          "question": "Werden ungenutzte Credits übertragen?",
+          "answer": "Ja! Alle ungenutzten Credits werden auf den nächsten Monat übertragen, sodass Sie nie verlieren, wofür Sie bezahlt haben. Dies macht unsere Pläne perfekt für konsistente Nutzung und gelegentliche Bedürfnisse."
+        },
+        "2": {
+          "question": "Kann ich meinen Plan jederzeit ändern?",
+          "answer": "Ja, Sie können Ihren Plan jederzeit upgraden oder downgraden. Beim Upgrade erhalten Sie sofortigen Zugriff auf die Funktionen der höheren Stufe. Beim Downgrade werden die Änderungen im nächsten Abrechnungszyklus wirksam."
+        },
+        "3": {
+          "question": "Was ist der Unterschied zwischen den Plänen in Bezug auf die Bildqualität?",
+          "answer": "Alle Pläne bieten Zugang zu denselben Bildqualitätsstufen - es gibt keinen Unterschied in der Ausgabequalität. Der Hauptunterschied liegt in der Anzahl der Credits, die Sie pro Monat erhalten, und zusätzlichen Funktionen wie Videogenerierung und Prioritäts-Support."
+        },
+        "4": {
+          "question": "Kann ich die generierten Bilder kommerziell nutzen?",
+          "answer": "Ja! Alle kostenpflichtigen Pläne (Starter, Plus und Pro) beinhalten kommerzielle Nutzungsrechte. Sie besitzen die Bilder, die Sie erstellen, und können sie ohne Einschränkungen in jedem kommerziellen Projekt verwenden."
+        },
+        "5": {
+          "question": "Welche Zahlungsmethoden akzeptieren Sie?",
+          "answer": "Wir akzeptieren alle gängigen Kreditkarten (Visa, Mastercard, American Express) über Stripe. Die Abrechnung ist sicher und Sie können Ihre Zahlungsmethode jederzeit in Ihren Kontoeinstellungen verwalten."
+        },
+        "6": {
+          "question": "Gibt es eine Einrichtungsgebühr oder versteckte Kosten?",
+          "answer": "Nein! Der Preis, den Sie sehen, ist der Preis, den Sie zahlen. Es gibt keine Einrichtungsgebühren, versteckte Kosten oder Überraschungsgebühren. Sie zahlen nur für Ihr monatliches Abonnement und erhalten vollen Zugriff auf alle Funktionen Ihres Plans."
+        },
+        "7": {
+          "question": "Was passiert, wenn mir die Credits ausgehen?",
+          "answer": "Wenn Sie alle Ihre monatlichen Credits aufgebraucht haben, können Sie Ihren Plan upgraden, um sofort mehr Credits zu erhalten, oder bis zur nächsten monatlichen Erneuerung warten. Wir arbeiten auch an zusätzlichen Credit-Paketen, die bald verfügbar sein werden."
+        },
+        "8": {
+          "question": "Kann ich mein Abonnement jederzeit kündigen?",
+          "answer": "Ja, Sie können Ihr Abonnement jederzeit über das Dashboard in Ihren Kontoeinstellungen kündigen. Sie behalten Zugriff auf die Funktionen Ihres Plans bis zum Ende des aktuellen Abrechnungszeitraums, und es fallen keine zusätzlichen Gebühren an."
+        },
+        "9": {
+          "question": "Bieten Sie Rabatte für Studenten oder gemeinnützige Organisationen an?",
+          "answer": "Ja! Wir bieten spezielle Rabatte für Studenten und gemeinnützige Organisationen an. Kontaktieren Sie unser Support-Team mit einem Nachweis der Berechtigung, und wir richten gerne einen Rabatt für Sie ein."
+        }
       }
     },
     "footer": {
