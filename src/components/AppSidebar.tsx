@@ -30,7 +30,7 @@ const navigationItems = [
   { id: "create", icon: Plus, path: "/create", primary: true, userAuth: true },
   { id: "library", icon: Image, path: "/library", userAuth: true },
   { id: "videos", icon: Video, path: "/videos", userAuth: true },
-  { id: "pricing", icon: CreditCard, path: "/pricing", userAuth: false, badge: true },
+  { id: "pricing", icon: CreditCard, path: "/pricing", userAuth: false, badge: false },
   { id: "account", icon: User, path: "/account", userAuth: false },
 ];
 
