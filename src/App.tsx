@@ -28,6 +28,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const EmailConfirmation = lazy(() => import("./pages/EmailConfirmation"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const BaseModelManager = lazy(() => import("./pages/admin/BaseModelManager"));
+const SubscriptionAudit = lazy(() => import("./pages/admin/SubscriptionAudit"));
 const GettingStartedGuide = lazy(() => import("./pages/help/GettingStartedGuide"));
 const FAQPage = lazy(() => import("./pages/help/FAQPage"));
 const VideoTutorialsPage = lazy(() => import("./pages/help/VideoTutorialsPage"));
@@ -254,6 +255,13 @@ const App = () => {
                 <ErrorBoundary>
                   <Suspense fallback={<LoadingFallback />}>
                     <BaseModelManager />
+                  </Suspense>
+                </ErrorBoundary>
+              } />
+              <Route path="/admin/subscription-audit" element={
+                <ErrorBoundary>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <SubscriptionAudit />
                   </Suspense>
                 </ErrorBoundary>
               } />
