@@ -97,7 +97,93 @@
       "title": "Studiofotos",
       "description": "Erzeuge professionelle Produktfotografie"
     },
-    "outfitSwap": {
+  "pricing": {
+    "title": "Wähle Deinen Plan",
+    "subtitle": "Starte kostenlos, skaliere mit deinem Wachstum. Keine versteckten Gebühren.",
+    "plans": {
+      "starter": {
+        "name": "Starter",
+        "price": "€29",
+        "period": "/Monat",
+        "description": "Perfekt für kleine Unternehmen und Einzelunternehmer",
+        "features": {
+          "credits": "80 Credits pro Monat",
+          "images": "Bis zu 80 Bilder (jede Qualität)",
+          "maxImages": "Generiere bis zu 3 Bilder gleichzeitig",
+          "scenarios": "Unbegrenzte Szenarien",
+          "support": "Team-Support"
+        }
+      },
+      "plus": {
+        "name": "Plus",
+        "price": "€49",
+        "period": "/Monat",
+        "description": "Am besten für Agenturen und wachsende Unternehmen",
+        "features": {
+          "credits": "200 Credits pro Monat",
+          "images": "Bis zu 200 Bilder (jede Qualität)",
+          "maxImages": "Generiere bis zu 3 Bilder gleichzeitig",
+          "scenarios": "Unbegrenzte Szenarien",
+          "support": "Priorität + Live-Chat",
+          "commercial": "Kommerzielle Nutzung"
+        },
+        "popular": "Am Beliebtesten"
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "€99",
+        "period": "/Monat",
+        "description": "Für Vielnutzer und Unternehmen",
+        "features": {
+          "credits": "400 Credits pro Monat",
+          "images": "Bis zu 400 Bilder (jede Qualität)",
+          "maxImages": "Generiere bis zu 3 Bilder gleichzeitig",
+          "scenarios": "Unbegrenzte Szenarien",
+          "support": "Dedizierter Manager"
+        }
+      }
+    },
+    "cta": {
+      "start": "Mit Erstellen Beginnen",
+      "goPlus": "Plus Wählen",
+      "goPro": "Pro Wählen",
+      "startTrial": "Testversion Starten"
+    },
+    "creditSystem": {
+      "title": "So Funktionieren Credits",
+      "imageCredit": "1 Credit = 1 Bild",
+      "anyQuality": "Jede Qualitätsstufe",
+      "description": "Alle Bildqualitäten (512px bis 1024px) kosten dasselbe - 1 Credit pro Bild",
+      "video5s": "5 Credits",
+      "video5sLabel": "5-Sekunden-Video",
+      "video10s": "10 Credits",
+      "video10sLabel": "10-Sekunden-Video"
+    },
+    "comparison": {
+      "title": "Pläne Vergleichen",
+      "features": {
+        "monthlyCredits": "Monatliche Credits",
+        "imagesPerMonth": "Bilder pro Monat (jede Qualität)",
+        "maxImagesPerGen": "Max. Bilder pro Generierung",
+        "videoGen": "Bild-zu-Video-Generierung",
+        "videoDuration": "Videodauer-Optionen",
+        "scenarios": "Verfügbare UGC-Szenarien",
+        "allQualities": "Alle Qualitätsstufen",
+        "commercial": "Kommerzielle Nutzung",
+        "prioritySupport": "Priority Support",
+        "liveChat": "Live-Chat-Support",
+        "dedicatedManager": "Dedizierter Manager",
+        "unlimited": "unbegrenzt"
+      }
+    },
+    "footer": {
+      "trial": "Alle Pläne beinhalten kostenlose Testversion",
+      "noCard": "Keine Kreditkarte erforderlich",
+      "cancel": "Jederzeit kündbar",
+      "fullDetails": "Alle Preisdetails Anzeigen"
+    }
+  },
+  "outfitSwap": {
       "title": "Virtuelle Anprobe",
       "description": "Ziehe unseren Models deine Kleidung an und erhalte Fotos in professioneller Qualität"
     },
