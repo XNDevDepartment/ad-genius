@@ -1,10 +1,10 @@
-
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const plans = [
   // {
@@ -72,14 +72,15 @@ const plans = [
 
 const PricingSection = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   
   return (
     <section className="py-5 bg-black text-white" id="pricing-section">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
-          <h2 className="mb-4 text-3xl lg:text-4xl font-bold text-primary-foreground">Choose your plan</h2>
+          <h2 className="mb-4 text-3xl lg:text-4xl font-bold text-primary-foreground">{t('pricing.title')}</h2>
           <p className="text-1xl lg:text-2xl text-primary-foreground text-gray-300 max-w-2xl mx-auto">
-            Start free, scale as you grow. No hidden fees.
+            {t('pricing.subtitle')}
           </p>
         </div>
 
@@ -96,7 +97,7 @@ const PricingSection = () => {
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <span className="bg-gradient-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
-                    Most Popular
+                    {t('pricing.plans.plus.popular')}
                   </span>
                 </div>
               )}
@@ -150,7 +151,7 @@ const PricingSection = () => {
                 }`}
                 size="sm"
               >
-                Start Your Trial
+                {t('pricing.cta.startTrial')}
               </Button>
             </div>
           ))}
@@ -158,14 +159,14 @@ const PricingSection = () => {
 
         <div className="text-center mt-12">
           <p className="text-gray-400 text-sm mb-6">
-            All plans include free trial • No credit card required • Cancel anytime
+            {t('pricing.footer.trial')} • {t('pricing.footer.noCard')} • {t('pricing.footer.cancel')}
           </p>
           <Button 
             onClick={() => navigate('/pricing')} 
             variant="link" 
             className="border-white/20 text-white hover:bg-white/10"
           >
-            See Full Pricing Details
+            {t('pricing.footer.fullDetails')}
           </Button>
         </div>
       </div>

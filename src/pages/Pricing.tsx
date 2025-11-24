@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import HeaderSection from "@/components/landing/HeaderSection";
 import { useEffect, useState } from "react";
 import { trackInitiateCheckout } from "@/lib/metaPixel";
+import { useTranslation } from "react-i18next";
 
 const plans = [
   // {
@@ -149,6 +150,7 @@ const Pricing = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [isYearly, setIsYearly] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     localStorage.removeItem("billing")
@@ -215,10 +217,10 @@ const Pricing = () => {
       <div className="bg-gradient-hero text-primary-foreground py-20 ">
         <div className="container mx-auto px-6 text-center">
           <h1 className="text-4xl lg:text-6xl font-bold mb-6">
-            Choose Your Perfect Plan
+            {t('pricing.title')}
           </h1>
           <p className="text-xl lg:text-2xl text-primary-foreground/90 max-w-3xl mx-auto mb-8">
-            Start free and scale as you grow. Flexible credit-based pricing for all your AI image generation needs.
+            {t('pricing.subtitle')}
           </p>
           
           {/* Billing Toggle */}
@@ -254,15 +256,15 @@ const Pricing = () => {
           <div className="flex flex-wrap justify-center gap-4 text-sm">
             <div className="flex items-center gap-2">
               <Check className="h-4 w-4" />
-              <span>Start with 10 free credits</span>
+              <span>{t('pricing.footer.trial')}</span>
             </div>
             <div className="flex items-center gap-2">
               <Check className="h-4 w-4" />
-              <span>No credit card required to start</span>
+              <span>{t('pricing.footer.noCard')}</span>
             </div>
             <div className="flex items-center gap-2">
               <Check className="h-4 w-4" />
-              <span>Cancel anytime</span>
+              <span>{t('pricing.footer.cancel')}</span>
             </div>
           </div>
         </div>
@@ -291,7 +293,7 @@ const Pricing = () => {
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <Badge className="bg-primary text-primary-foreground px-4 py-1">
-                    Most Popular
+                    {t('pricing.plans.plus.popular')}
                   </Badge>
                 </div>
               )}
@@ -312,11 +314,11 @@ const Pricing = () => {
                     </span>
                   </div>
                 )}
-                <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
+                <CardTitle className="text-xl font-bold">{t(`pricing.plans.${plan.id}.name`)}</CardTitle>
                 <div className="mb-4">
                   <span className="text-3xl font-bold text-primary">{getDisplayPrice(plan)}</span>
                   {plan.period && (
-                    <span className="text-muted-foreground text-sm">{plan.period}</span>
+                    <span className="text-muted-foreground text-sm">{t(`pricing.plans.${plan.id}.period`)}</span>
                   )}
                   {isYearly && plan.monthlyPrice && plan.yearlyPrice && (
                     <div className="text-xs text-muted-foreground">
@@ -325,7 +327,7 @@ const Pricing = () => {
                   )}
                 </div>
                 <CardDescription className="text-sm">
-                  {plan.description}
+                  {t(`pricing.plans.${plan.id}.description`)}
                 </CardDescription>
               </CardHeader>
 
@@ -367,7 +369,7 @@ const Pricing = () => {
                   size="sm"
                   disabled={loading}
                 >
-                  {loading ? 'Loading...' : plan.cta}
+                  {loading ? 'Loading...' : t(`pricing.cta.${plan.id === 'starter' ? 'start' : plan.id === 'plus' ? 'goPlus' : 'goPro'}`)}
                 </Button>
               </CardContent>
             </Card>
@@ -446,29 +448,29 @@ const Pricing = () => {
         <div className="max-w-5xl mx-auto mt-20">
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-bold mb-2">Understanding Your Credits</CardTitle>
+              <CardTitle className="text-3xl font-bold mb-2">{t('pricing.creditSystem.title')}</CardTitle>
               <CardDescription>
                 Simple, transparent pricing for all your content generation needs
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
               <div className="text-center p-8 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg">
-                <div className="text-4xl font-bold text-primary mb-3">1 Credit = 1 Image</div>
-                <div className="text-lg font-medium mb-2">Any Quality Level</div>
+                <div className="text-4xl font-bold text-primary mb-3">{t('pricing.creditSystem.imageCredit')}</div>
+                <div className="text-lg font-medium mb-2">{t('pricing.creditSystem.anyQuality')}</div>
                 <div className="text-sm text-muted-foreground max-w-2xl mx-auto">
-                  All image qualities (512px to 1024px) cost the same - 1 credit per image. Generate low, medium, or high quality images without worrying about variable pricing.
+                  {t('pricing.creditSystem.description')}
                 </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto">
                 <div className="text-center p-6 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold text-primary mb-2">5 Credits</div>
-                  <div className="text-sm font-medium">5-second video</div>
+                  <div className="text-2xl font-bold text-primary mb-2">{t('pricing.creditSystem.video5s')}</div>
+                  <div className="text-sm font-medium">{t('pricing.creditSystem.video5sLabel')}</div>
                   <div className="text-xs text-muted-foreground mt-1">Image-to-video generation</div>
                 </div>
                 <div className="text-center p-6 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold text-primary mb-2">10 Credits</div>
-                  <div className="text-sm font-medium">10-second video</div>
+                  <div className="text-2xl font-bold text-primary mb-2">{t('pricing.creditSystem.video10s')}</div>
+                  <div className="text-sm font-medium">{t('pricing.creditSystem.video10sLabel')}</div>
                   <div className="text-xs text-muted-foreground mt-1">Extended video duration</div>
                 </div>
               </div>
