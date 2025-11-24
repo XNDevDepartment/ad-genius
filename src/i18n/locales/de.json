@@ -87,6 +87,13 @@
     "subtitle": "Starte kostenlos, skaliere mit deinem Wachstum. Keine versteckten Gebühren.",
     "monthly": "Monatlich",
     "yearly": "Jährlich",
+    "saveMonths": "Spare 2 Monate!",
+    "promoCode": "Hast du einen Aktionscode? Du kannst ihn beim Checkout eingeben",
+    "loadingAccount": "Lade deine Kontoinformationen...",
+    "includesVideo": "Beinhaltet Videogenerierung",
+    "billedAnnually": "Jährlich abgerechnet (€{amount}/Jahr)",
+    "creditsPerMonth": "Credits pro Monat",
+    "loading": "Lädt...",
     "plans": {
       "starter": {
         "name": "Starter",
