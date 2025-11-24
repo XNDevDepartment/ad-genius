@@ -145,8 +145,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // THEN get and validate initial session
     const initSession = async () => {
+      console.log('[AuthContext] Initializing session...');
+      
+      // Set a timeout - if we're still loading after 10 seconds, force completion
+      const timeout = setTimeout(() => {
+        console.error('[AuthContext] Session initialization timeout - forcing completion');
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+      }, 10000);
+      
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
+        clearTimeout(timeout);
+        
+        console.log('[AuthContext] Session retrieved:', { 
+          hasSession: !!session, 
+          hasUser: !!session?.user,
+          expiresAt: session?.expires_at ? new Date(session.expires_at * 1000).toISOString() : null,
+          error: error?.message 
+        });
         
         if (error) {
           console.error('[AuthContext] Session error:', error);
@@ -162,6 +180,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
           const now = Date.now();
           
+          console.log('[AuthContext] Session validation:', {
+            expiresAt: new Date(expiresAt).toISOString(),
+            now: new Date(now).toISOString(),
+            isExpired: expiresAt < now
+          });
+          
           if (expiresAt < now) {
             console.warn('[AuthContext] Session expired, clearing');
             localStorage.clear();
@@ -169,7 +193,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setSession(null);
             setUser(null);
           } else {
-            console.log('[AuthContext] Valid session found');
+            console.log('[AuthContext] Valid session found, user:', session.user.email);
             setSession(session);
             setUser(session.user);
           }
@@ -179,11 +203,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(null);
         }
       } catch (err) {
+        clearTimeout(timeout);
         console.error('[AuthContext] Init session error:', err);
         localStorage.clear();
         setSession(null);
         setUser(null);
       } finally {
+        console.log('[AuthContext] Session initialization complete, loading=false');
         setLoading(false);
       }
     };

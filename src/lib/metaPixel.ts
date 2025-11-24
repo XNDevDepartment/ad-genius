@@ -1,14 +1,13 @@
 // Helper to safely call Meta Pixel
 export const trackMetaPixelEvent = (eventName: string, data?: object) => {
-  if (typeof window !== 'undefined' && (window as any).fbq) {
-    try {
+  try {
+    if (typeof window !== 'undefined' && (window as any).fbq) {
       (window as any).fbq('track', eventName, data);
-      console.log('Meta Pixel event tracked:', eventName, data);
-    } catch (error) {
-      console.error('Error tracking Meta Pixel event:', error);
+      console.log('[Meta Pixel] Event tracked:', eventName, data);
     }
-  } else {
-    console.warn('Meta Pixel not loaded yet');
+  } catch (error) {
+    // Silently fail - tracking should never break the app
+    console.debug('[Meta Pixel] Tracking failed (non-critical):', error);
   }
 };
 

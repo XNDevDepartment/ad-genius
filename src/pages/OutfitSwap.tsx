@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Shirt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useOutfitSwapBatch } from "@/hooks/useOutfitSwapBatch";
 import { useOutfitSwapLimit } from "@/hooks/useOutfitSwapLimit";
 import { useToast } from "@/hooks/use-toast";
@@ -24,7 +23,6 @@ const OutfitSwap = () => {
   const location = useLocation();
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { isAdmin, loading: adminLoading } = useAdminAuth();
   const { toast } = useToast();
   const { batch, jobs, loading, createBatch, cancelBatch, reset, refreshBatch, retryJob, retryingJobs } = useOutfitSwapBatch();
   const { calculateBatchCost, canAffordBatch, getSavings } = useOutfitSwapLimit();
@@ -42,16 +40,17 @@ const OutfitSwap = () => {
   const [replicatedJob, setReplicatedJob] = useState<OutfitSwapJob | null>(null);
   const [replicatedResult, setReplicatedResult] = useState<OutfitSwapResult | null>(null);
 
+  // Check authentication only - outfit-swap is available to all authenticated users
   useEffect(() => {
-    if (!adminLoading && (!user || !isAdmin)) {
-      navigate("/");
+    if (!user) {
+      navigate("/account");
       toast({
         variant: "destructive",
         title: t('outfitSwap.errors.accessDenied'),
-        description: t('outfitSwap.errors.adminRequired'),
+        description: "Please sign in to access outfit-swap features.",
       });
     }
-  }, [user, isAdmin, adminLoading, navigate, toast, t]);
+  }, [user, navigate, toast, t]);
 
   // Handle replicate mode from location state
   useEffect(() => {
@@ -142,15 +141,7 @@ const OutfitSwap = () => {
     navigate('/outfit-swap', { replace: true });
   };
 
-  if (adminLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
-      </div>
-    );
-  }
-
-  if (!user || !isAdmin) {
+  if (!user) {
     return null;
   }
 

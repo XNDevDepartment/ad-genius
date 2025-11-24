@@ -7,11 +7,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import "@/i18n";
 import AppLayout from "./components/AppLayout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { LoadingFallback } from "./components/LoadingFallback";
+import { checkForCachedVersion } from "./utils/cacheCheck";
 
 // Lazy load non-critical routes for better code splitting
 const CreateSelection = lazy(() => import("./pages/ModuleSelection"));
@@ -25,6 +28,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const EmailConfirmation = lazy(() => import("./pages/EmailConfirmation"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const BaseModelManager = lazy(() => import("./pages/admin/BaseModelManager"));
+const SubscriptionAudit = lazy(() => import("./pages/admin/SubscriptionAudit"));
 const GettingStartedGuide = lazy(() => import("./pages/help/GettingStartedGuide"));
 const FAQPage = lazy(() => import("./pages/help/FAQPage"));
 const VideoTutorialsPage = lazy(() => import("./pages/help/VideoTutorialsPage"));
@@ -47,6 +51,10 @@ const queryClient = new QueryClient();
 
 const App = () => {
   console.log('App component rendering...');
+  
+  useEffect(() => {
+    checkForCachedVersion();
+  }, []);
  
   return (
     <QueryClientProvider client={queryClient}>
@@ -61,140 +69,201 @@ const App = () => {
               <Route path="/" element={<AppLayout />}>
                 <Route index element={<Index />} />
                 <Route path="create" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <CreateSelection />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <CreateSelection />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="create/product-display" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <CreateUGC />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <CreateUGC />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="create/ugc" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <CreateUGCGemini />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <CreateUGCGemini />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="create/video" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <TestVideoGeneration />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <TestVideoGeneration />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="create/adgenius" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <AdGenius />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdGenius />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="create/outfit-swap" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <OutfitSwap />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <OutfitSwap />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="create/product-studio" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <ProductStudioBackground />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <ProductStudioBackground />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="create/product-studio-bulk" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <ProductStudioBackgroundBulk />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <ProductStudioBackgroundBulk />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="create/magazine-photoshoot" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <MagazinePhotoshoot />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <MagazinePhotoshoot />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="create/custom-model" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <CreateCustomModel />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <CreateCustomModel />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="create/video-ads" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <VideoAds />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <VideoAds />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="library" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <Library />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Library />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="videos" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <VideoLibrary />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <VideoLibrary />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="account" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <Account />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Account />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="signin" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <SignIn />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <SignIn />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="signup" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <SignUp />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <SignUp />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="pricing" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <Pricing />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Pricing />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="help/getting-started" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <GettingStartedGuide />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <GettingStartedGuide />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="help/faq" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <FAQPage />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <FAQPage />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="help/tutorials" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <VideoTutorialsPage />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <VideoTutorialsPage />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
                 <Route path="help/api-docs" element={
-                  <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                    <APIDocsPage />
-                  </Suspense>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <APIDocsPage />
+                    </Suspense>
+                  </ErrorBoundary>
                 } />
               </Route>
               <Route path="/email-confirmation" element={
-                <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                  <EmailConfirmation />
-                </Suspense>
+                <ErrorBoundary>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <EmailConfirmation />
+                  </Suspense>
+                </ErrorBoundary>
               } />
               <Route path="/reset-password" element={
-                <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                  <ResetPassword />
-                </Suspense>
+                <ErrorBoundary>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <ResetPassword />
+                  </Suspense>
+                </ErrorBoundary>
               } />
               <Route path="/success" element={
-                <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                  <Success />
-                </Suspense>
+                <ErrorBoundary>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <Success />
+                  </Suspense>
+                </ErrorBoundary>
               } />
               <Route path="/cancel" element={
-                <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                  <Cancel />
-                </Suspense>
+                <ErrorBoundary>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <Cancel />
+                  </Suspense>
+                </ErrorBoundary>
               } />
               <Route path="/admin" element={
-                <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                  <AdminDashboard />
-                </Suspense>
+                <ErrorBoundary>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <AdminDashboard />
+                  </Suspense>
+                </ErrorBoundary>
               } />
               <Route path="/admin/base-models" element={
-                <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading...</div>}>
-                  <BaseModelManager />
-                </Suspense>
+                <ErrorBoundary>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <BaseModelManager />
+                  </Suspense>
+                </ErrorBoundary>
+              } />
+              <Route path="/admin/subscription-audit" element={
+                <ErrorBoundary>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <SubscriptionAudit />
+                  </Suspense>
+                </ErrorBoundary>
               } />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
