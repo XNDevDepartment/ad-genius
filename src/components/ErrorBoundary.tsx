@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 
 interface Props {
   children: ReactNode;
+  resetKey?: string; // Route key to trigger reset on navigation
 }
 
 interface State {
@@ -14,6 +15,13 @@ export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false };
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    // Reset error state when route changes
+    if (this.state.hasError && prevProps.resetKey !== this.props.resetKey) {
+      this.setState({ hasError: false, error: undefined });
+    }
   }
 
   static getDerivedStateFromError(error: Error): State {
