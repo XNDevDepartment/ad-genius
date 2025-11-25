@@ -142,9 +142,9 @@ function extractBase64Image(jsonResp: any): string | null {
   }
   const parts = jsonResp.candidates?.[0]?.content?.parts ?? [];
   console.log(`[extractBase64Image] Found ${parts.length} parts in response`);
-  const imgPart = parts.find((p)=>p?.inlineData?.mimeType?.startsWith('image/'));
+  const imgPart = parts.find((p: any)=>p?.inlineData?.mimeType?.startsWith('image/'));
   if (!imgPart) {
-    console.error('[extractBase64Image] No image part found. Parts structure:', JSON.stringify(parts.map((p)=>Object.keys(p))));
+    console.error('[extractBase64Image] No image part found. Parts structure:', JSON.stringify(parts.map((p: any)=>Object.keys(p))));
     return null;
   }
   const imageData = imgPart.inlineData?.data;

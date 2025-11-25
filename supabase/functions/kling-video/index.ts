@@ -69,7 +69,7 @@ async function isUserAdmin(supabase: any, userId: string): Promise<boolean> {
   }
   return data === true;
 }
-async function createVideoJob(supabase, userId, payload) {
+async function createVideoJob(supabase: any, userId: string, payload: any): Promise<any> {
   const { source_image_id, ugc_image_id, prompt, duration = 5, model, negative_prompt, cfg_scale, static_mask_url, dynamic_masks, tail_image_url } = payload;
   console.log("[CREATE-JOB] Starting job creation", {
     userId,
@@ -187,7 +187,7 @@ async function createVideoJob(supabase, userId, payload) {
   }
   console.log("[CREATE-JOB] Job created:", job.id);
   // Kick off processing in background with error handling
-  EdgeRuntime.waitUntil(
+  (globalThis as any).EdgeRuntime?.waitUntil(
     processVideoJobAsync(supabase, job.id, null).catch(async (e) => {
       console.error("[PROCESS-JOB] Background task error:", e);
       // Mark job as failed so it can be retried
@@ -204,7 +204,7 @@ async function createVideoJob(supabase, userId, payload) {
     status: "queued"
   };
 }
-async function processVideoJobAsync(supabase, jobId, webhookUrl) {
+async function processVideoJobAsync(supabase: any, jobId: string, webhookUrl?: string): Promise<void> {
   // Fetch job
   const { data: job } = await supabase.from("kling_jobs").select("*").eq("id", jobId).single();
   if (!job) {
@@ -225,11 +225,11 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
   };
   // carry optional knobs from metadata if present
   const md = job.metadata || {};
-  if (md.negative_prompt) inputPayload.negative_prompt = md.negative_prompt;
-  if (typeof md.cfg_scale === "number") inputPayload.cfg_scale = md.cfg_scale;
-  if (md.static_mask_url) inputPayload.static_mask_url = md.static_mask_url;
-  if (md.dynamic_masks) inputPayload.dynamic_masks = md.dynamic_masks;
-  if (md.tail_image_url) inputPayload.tail_image_url = md.tail_image_url;
+  if ((md as any).negative_prompt) (inputPayload as any).negative_prompt = (md as any).negative_prompt;
+  if (typeof (md as any).cfg_scale === "number") (inputPayload as any).cfg_scale = (md as any).cfg_scale;
+  if ((md as any).static_mask_url) (inputPayload as any).static_mask_url = (md as any).static_mask_url;
+  if ((md as any).dynamic_masks) (inputPayload as any).dynamic_masks = (md as any).dynamic_masks;
+  if ((md as any).tail_image_url) (inputPayload as any).tail_image_url = (md as any).tail_image_url;
   console.log("[PROCESS-JOB] Calling FAL queue:", job.model);
   const enqueueUrl = `https://queue.fal.run/${job.model}` + (webhookUrl ? `?fal_webhook=${encodeURIComponent(webhookUrl)}` : "");
   const submitRes = await fetch(enqueueUrl, {
@@ -298,7 +298,7 @@ async function processVideoJobAsync(supabase, jobId, webhookUrl) {
   }
   throw new Error("Video generation timed out");
 }
-async function persistVideoToStorage(supabase, job, jobId, videoUrl) {
+async function persistVideoToStorage(supabase: any, job: any, jobId: string, videoUrl: string): Promise<void> {
   console.log("[PROCESS-JOB] Downloading video:", videoUrl);
   const videoResponse = await fetch(videoUrl);
   if (!videoResponse.ok) throw new Error(`Download failed: ${videoResponse.status}`);
@@ -320,7 +320,7 @@ async function persistVideoToStorage(supabase, job, jobId, videoUrl) {
   }).eq("id", jobId);
   console.log("[PROCESS-JOB] Job completed:", jobId, publicUrl);
 }
-async function getVideoJob(supabase, userId, jobId) {
+async function getVideoJob(supabase: any, userId: string, jobId: string): Promise<any> {
   const { data: job, error } = await supabase.from("kling_jobs").select("*").eq("id", jobId).eq("user_id", userId).single();
   if (error) return {
     success: false,
@@ -331,7 +331,7 @@ async function getVideoJob(supabase, userId, jobId) {
     job
   };
 }
-async function cancelVideoJob(supabase, userId, jobId) {
+async function cancelVideoJob(supabase: any, userId: string, jobId: string): Promise<any> {
   console.log(`[CANCEL-JOB] Canceling job ${jobId} for user ${userId}`);
   // Check if user is admin
   const isAdmin = await isUserAdmin(supabase, userId);
@@ -383,7 +383,7 @@ async function cancelVideoJob(supabase, userId, jobId) {
     success: true
   };
 }
-async function retryVideoJob(supabase, userId, jobId) {
+async function retryVideoJob(supabase: any, userId: string, jobId: string): Promise<any> {
   console.log(`[RETRY-JOB] Retrying job ${jobId}`);
   
   const { data: job } = await supabase
@@ -457,7 +457,7 @@ async function retryVideoJob(supabase, userId, jobId) {
     };
   } else if (status.status === "IN_PROGRESS" || status.status === "IN_QUEUE") {
     // Still processing - restart background polling
-    EdgeRuntime.waitUntil(
+    (globalThis as any).EdgeRuntime?.waitUntil(
       processVideoJobAsync(supabase, jobId, null).catch(async (e) => {
         console.error("[RETRY-JOB] Polling error:", e);
         await supabase.from("kling_jobs").update({
@@ -478,6 +478,6 @@ async function retryVideoJob(supabase, userId, jobId) {
   return { success: false, error: `Unexpected FAL status: ${status.status}` };
 }
 
-function delay(ms) {
+function delay(ms: number): Promise<void> {
   return new Promise((r)=>setTimeout(r, ms));
 }
