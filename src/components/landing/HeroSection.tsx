@@ -81,16 +81,22 @@ const HeroSection = () => {
 
             {/* Dynamic Headline */}
             <div className="space-y-4">
-              <motion.h1 
-                key={currentHeadline}
-                initial={currentHeadline === 0 ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: currentHeadline === 0 ? 0 : 0.5 }}
-                className="text-4xl lg:text-6xl font-bold leading-tight text-foreground"
-              >
-                {headlines[currentHeadline]}
-              </motion.h1>
+              {currentHeadline === 0 ? (
+                <h1 className="text-4xl lg:text-6xl font-bold leading-tight text-foreground">
+                  {headlines[currentHeadline]}
+                </h1>
+              ) : (
+                <motion.h1 
+                  key={currentHeadline}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.5 }}
+                  className="text-4xl lg:text-6xl font-bold leading-tight text-foreground"
+                >
+                  {headlines[currentHeadline]}
+                </motion.h1>
+              )}
 
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
