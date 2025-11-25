@@ -1369,5 +1369,71 @@
       "fashionRunway": "Passarela de Moda",
       "profile": "Vista de Perfil"
     }
+  },
+  "uploadModelDialog": {
+    "title": "Carregar o Seu Modelo",
+    "modelImage": "Imagem do Modelo",
+    "clickToUpload": "Clique para carregar imagem",
+    "modelName": "Nome do Modelo",
+    "modelNamePlaceholder": "ex., O Meu Modelo Personalizado",
+    "gender": "Género",
+    "selectGender": "Selecionar género",
+    "ageRange": "Faixa Etária",
+    "selectAgeRange": "Selecionar faixa etária",
+    "bodyType": "Tipo de Corpo",
+    "selectBodyType": "Selecionar tipo de corpo",
+    "poseType": "Tipo de Pose",
+    "selectPoseType": "Selecionar tipo de pose",
+    "skinTone": "Tom de Pele",
+    "selectSkinTone": "Selecionar tom de pele",
+    "cancel": "Cancelar",
+    "uploading": "A carregar...",
+    "uploadModel": "Carregar Modelo",
+    "missingInfo": "Informação em falta",
+    "missingInfoDesc": "Por favor forneça um ficheiro e nome do modelo",
+    "genders": {
+      "male": "Masculino",
+      "female": "Feminino",
+      "unisex": "Unissexo"
+    },
+    "ageRanges": {
+      "baby": "0-12 meses",
+      "toddler": "1-3 anos",
+      "youngChild": "4-7 anos",
+      "child": "8-12 anos",
+      "teen": "13-17 anos",
+      "youngAdult": "18-22 anos",
+      "adult": "23-35 anos",
+      "middleAge": "36-50 anos",
+      "mature": "51-65 anos",
+      "senior": "65+ anos"
+    },
+    "bodyTypes": {
+      "slim": "Magro",
+      "athletic": "Atlético",
+      "average": "Médio",
+      "plus": "Plus"
+    },
+    "poseTypes": {
+      "standing": "Em pé",
+      "sitting": "Sentado",
+      "walking": "A caminhar",
+      "casual": "Casual",
+      "formal": "Formal"
+    },
+    "skinTones": {
+      "light": "Claro",
+      "medium": "Médio",
+      "tan": "Bronzeado",
+      "dark": "Escuro"
+    }
+  },
+  "modelPreviewDialog": {
+    "title": "Pré-visualizar o Seu Modelo",
+    "description": "Reveja o seu modelo antes de guardar. Os créditos serão deduzidos quando guardar.",
+    "modelName": "Nome do Modelo",
+    "cancel": "Cancelar",
+    "saving": "A guardar...",
+    "saveModel": "Guardar Modelo"
   }
 }

@@ -1374,5 +1374,71 @@
       "fashionRunway": "Fashion Runway",
       "profile": "Profile View"
     }
+  },
+  "uploadModelDialog": {
+    "title": "Upload Your Model",
+    "modelImage": "Model Image",
+    "clickToUpload": "Click to upload image",
+    "modelName": "Model Name",
+    "modelNamePlaceholder": "e.g., My Custom Model",
+    "gender": "Gender",
+    "selectGender": "Select gender",
+    "ageRange": "Age Range",
+    "selectAgeRange": "Select age range",
+    "bodyType": "Body Type",
+    "selectBodyType": "Select body type",
+    "poseType": "Pose Type",
+    "selectPoseType": "Select pose type",
+    "skinTone": "Skin Tone",
+    "selectSkinTone": "Select skin tone",
+    "cancel": "Cancel",
+    "uploading": "Uploading...",
+    "uploadModel": "Upload Model",
+    "missingInfo": "Missing information",
+    "missingInfoDesc": "Please provide a file and model name",
+    "genders": {
+      "male": "Male",
+      "female": "Female",
+      "unisex": "Unisex"
+    },
+    "ageRanges": {
+      "baby": "0-12 months",
+      "toddler": "1-3 years",
+      "youngChild": "4-7 years",
+      "child": "8-12 years",
+      "teen": "13-17 years",
+      "youngAdult": "18-22 years",
+      "adult": "23-35 years",
+      "middleAge": "36-50 years",
+      "mature": "51-65 years",
+      "senior": "65+ years"
+    },
+    "bodyTypes": {
+      "slim": "Slim",
+      "athletic": "Athletic",
+      "average": "Average",
+      "plus": "Plus"
+    },
+    "poseTypes": {
+      "standing": "Standing",
+      "sitting": "Sitting",
+      "walking": "Walking",
+      "casual": "Casual",
+      "formal": "Formal"
+    },
+    "skinTones": {
+      "light": "Light",
+      "medium": "Medium",
+      "tan": "Tan",
+      "dark": "Dark"
+    }
+  },
+  "modelPreviewDialog": {
+    "title": "Preview Your Model",
+    "description": "Review your model before saving. Credits will be deducted when you save.",
+    "modelName": "Model Name",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "saveModel": "Save Model"
   }
 }

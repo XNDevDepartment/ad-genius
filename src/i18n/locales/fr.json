@@ -1369,5 +1369,71 @@
       "fashionRunway": "Défilé de Mode",
       "profile": "Vue de Profil"
     }
+  },
+  "uploadModelDialog": {
+    "title": "Télécharger Votre Modèle",
+    "modelImage": "Image du Modèle",
+    "clickToUpload": "Cliquez pour télécharger l'image",
+    "modelName": "Nom du Modèle",
+    "modelNamePlaceholder": "ex., Mon Modèle Personnalisé",
+    "gender": "Genre",
+    "selectGender": "Sélectionner le genre",
+    "ageRange": "Tranche d'Âge",
+    "selectAgeRange": "Sélectionner la tranche d'âge",
+    "bodyType": "Type de Corps",
+    "selectBodyType": "Sélectionner le type de corps",
+    "poseType": "Type de Pose",
+    "selectPoseType": "Sélectionner le type de pose",
+    "skinTone": "Teint de Peau",
+    "selectSkinTone": "Sélectionner le teint",
+    "cancel": "Annuler",
+    "uploading": "Téléchargement...",
+    "uploadModel": "Télécharger le Modèle",
+    "missingInfo": "Information manquante",
+    "missingInfoDesc": "Veuillez fournir un fichier et un nom de modèle",
+    "genders": {
+      "male": "Masculin",
+      "female": "Féminin",
+      "unisex": "Unisexe"
+    },
+    "ageRanges": {
+      "baby": "0-12 mois",
+      "toddler": "1-3 ans",
+      "youngChild": "4-7 ans",
+      "child": "8-12 ans",
+      "teen": "13-17 ans",
+      "youngAdult": "18-22 ans",
+      "adult": "23-35 ans",
+      "middleAge": "36-50 ans",
+      "mature": "51-65 ans",
+      "senior": "65+ ans"
+    },
+    "bodyTypes": {
+      "slim": "Mince",
+      "athletic": "Athlétique",
+      "average": "Moyenne",
+      "plus": "Grande taille"
+    },
+    "poseTypes": {
+      "standing": "Debout",
+      "sitting": "Assis",
+      "walking": "Marchant",
+      "casual": "Décontracté",
+      "formal": "Formel"
+    },
+    "skinTones": {
+      "light": "Clair",
+      "medium": "Moyen",
+      "tan": "Bronzé",
+      "dark": "Foncé"
+    }
+  },
+  "modelPreviewDialog": {
+    "title": "Aperçu de Votre Modèle",
+    "description": "Examinez votre modèle avant de l'enregistrer. Les crédits seront déduits lors de l'enregistrement.",
+    "modelName": "Nom du Modèle",
+    "cancel": "Annuler",
+    "saving": "Enregistrement...",
+    "saveModel": "Enregistrer le Modèle"
   }
 }
