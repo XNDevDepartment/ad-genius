@@ -344,13 +344,13 @@
       "remove": "Quitar imagen"
     },
     "productDetails": {
-      "title": "Características del producto",
+      "title": "Características del producto (Opcional)",
       "subtitle": "Indica algunos detalles de tu producto en uso.",
       "placeholder": "Ej.: mangas hasta los codos, escote ligeramente por debajo del cuello, sombrero con ala de 3 cm…",
       "tooltip": "Describe cómo se usa tu producto o cómo se ajusta a las personas. Esto ayuda a Genius a posicionar el producto correctamente."
     },
     "desireAudience": {
-      "title": "Audiencia deseada",
+      "title": "Audiencia deseada (Obligatorio)",
       "subtitle": "Describe con el mayor detalle posible la audiencia deseada a la que presentarás tu producto.",
       "placeholder": "Ej.: atletas de alto rendimiento, aventureros al aire libre, profesionales ocupados, mujeres elegantes…",
       "tooltip": "Describe quién debería usar tu producto. Esto ayuda a Genius a generar escenarios relevantes que se ajusten a tu público objetivo."

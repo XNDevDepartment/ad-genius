@@ -349,13 +349,13 @@
       "remove": "Remove image"
     },
     "productDetails": {
-      "title": "Product characteristics",
+      "title": "Product characteristics (optional)",
       "subtitle": "Provide a few details about how your product is used.",
       "placeholder": "E.g.: sleeves to the elbows, neckline slightly below the neck, hat with 3 cm brim…",
       "tooltip": "Describe how your product is used or how it fits on people. This helps Genius position the product correctly."
     },
     "desireAudience": {
-      "title": "Desired target audience",
+      "title": "Desired target audience (required)",
       "subtitle": "Describe as precisely as possible the target audience you want to present your product to.",
       "placeholder": "E.g.: elite athletes, outdoor adventurers, busy professionals, elegant women…",
       "tooltip": "Describe who should use your product. This helps Genius generate relevant scenarios for your target audience."
