@@ -22,9 +22,9 @@ const OutfitSwap = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { toast } = useToast();
-  const { batch, jobs, loading, createBatch, cancelBatch, reset, refreshBatch, retryJob, retryingJobs } = useOutfitSwapBatch();
+  const { batch, jobs, loading: batchLoading, createBatch, cancelBatch, reset, refreshBatch, retryJob, retryingJobs } = useOutfitSwapBatch();
   const { calculateBatchCost, canAffordBatch, getSavings } = useOutfitSwapLimit();
   const { uploadSourceImage } = useSourceImageUpload();
 
@@ -42,7 +42,7 @@ const OutfitSwap = () => {
 
   // Check authentication only - outfit-swap is available to all authenticated users
   useEffect(() => {
-    if (!user) {
+    if (!loading && !user) {
       navigate("/account");
       toast({
         variant: "destructive",
@@ -50,7 +50,7 @@ const OutfitSwap = () => {
         description: "Please sign in to access outfit-swap features.",
       });
     }
-  }, [user, navigate, toast, t]);
+  }, [user, loading, navigate, toast, t]);
 
   // Handle replicate mode from location state
   useEffect(() => {
@@ -141,6 +141,18 @@ const OutfitSwap = () => {
     navigate('/outfit-swap', { replace: true });
   };
 
+  // Show loading spinner while auth initializes
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">{t('common.loading')}</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!user) {
     return null;
   }
@@ -208,7 +220,7 @@ const OutfitSwap = () => {
                 onRefresh={refreshBatch}
                 onRetryJob={retryJob}
                 retryingJobs={retryingJobs}
-                loading={loading}
+                loading={batchLoading}
                 initialResults={initialResults}
               />
             );
@@ -313,12 +325,12 @@ const OutfitSwap = () => {
                   <Button
                     size="lg"
                     onClick={handleStartBatch}
-                    disabled={garmentFiles.length === 0 || !canAfford || loading || uploading}
+                    disabled={garmentFiles.length === 0 || !canAfford || batchLoading || uploading}
                     className="min-w-[200px]"
                   >
                     {uploading
                       ? t('outfitSwap.actions.uploading')
-                      : loading
+                      : batchLoading
                       ? t('outfitSwap.actions.starting')
                       : t('outfitSwap.actions.startBatch', { cost })}
                   </Button>

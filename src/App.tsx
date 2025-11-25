@@ -3,11 +3,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import "@/i18n";
 import AppLayout from "./components/AppLayout";
 import Index from "./pages/Index";
@@ -15,40 +15,47 @@ import NotFound from "./pages/NotFound";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LoadingFallback } from "./components/LoadingFallback";
 import { checkForCachedVersion } from "./utils/cacheCheck";
+import { lazyWithRetry } from "./utils/lazyWithRetry";
 
-// Lazy load non-critical routes for better code splitting
-const CreateSelection = lazy(() => import("./pages/ModuleSelection"));
-const CreateUGC = lazy(() => import("./pages/CreateGPT"));
-const CreateUGCGemini = lazy(() => import("./pages/CreateUGCGemini"));
-const Library = lazy(() => import("./pages/Library"));
-const Account = lazy(() => import("./pages/Account"));
-const SignIn = lazy(() => import("./pages/SignIn"));
-const SignUp = lazy(() => import("./pages/SignUp"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword"));
-const EmailConfirmation = lazy(() => import("./pages/EmailConfirmation"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const BaseModelManager = lazy(() => import("./pages/admin/BaseModelManager"));
-const SubscriptionAudit = lazy(() => import("./pages/admin/SubscriptionAudit"));
-const GettingStartedGuide = lazy(() => import("./pages/help/GettingStartedGuide"));
-const FAQPage = lazy(() => import("./pages/help/FAQPage"));
-const VideoTutorialsPage = lazy(() => import("./pages/help/VideoTutorialsPage"));
-const APIDocsPage = lazy(() => import("./pages/help/APIDocsPage"));
-const Pricing = lazy(() => import("./pages/Pricing"));
-const FoundersPlan = lazy(() => import("./pages/FoundersPlan"));
-const Success = lazy(() => import("./pages/Success"));
-const Cancel = lazy(() => import("./pages/Cancel"));
-const TestVideoGeneration = lazy(() => import("./pages/VideoGenerator"));
-const VideoLibrary = lazy(() => import("./pages/VideoLibrary"));
-const AdGenius = lazy(() => import("./pages/AdGenius"));
-const OutfitSwap = lazy(() => import("./pages/OutfitSwap"));
-const ProductStudioBackground = lazy(() => import("./pages/ProductStudioBackground"));
-const ProductStudioBackgroundBulk = lazy(() => import("./pages/ProductStudioBackgroundBulk"));
-const MagazinePhotoshoot = lazy(() => import("./pages/MagazinePhotoshoot"));
-const CreateCustomModel = lazy(() => import("./pages/CreateCustomModel"));
-const VideoAds = lazy(() => import("./pages/VideoAds"));
+// Lazy load non-critical routes with automatic retry logic
+const CreateSelection = lazyWithRetry(() => import("./pages/ModuleSelection"));
+const CreateUGC = lazyWithRetry(() => import("./pages/CreateGPT"));
+const CreateUGCGemini = lazyWithRetry(() => import("./pages/CreateUGCGemini"));
+const Library = lazyWithRetry(() => import("./pages/Library"));
+const Account = lazyWithRetry(() => import("./pages/Account"));
+const SignIn = lazyWithRetry(() => import("./pages/SignIn"));
+const SignUp = lazyWithRetry(() => import("./pages/SignUp"));
+const ResetPassword = lazyWithRetry(() => import("./pages/ResetPassword"));
+const EmailConfirmation = lazyWithRetry(() => import("./pages/EmailConfirmation"));
+const AdminDashboard = lazyWithRetry(() => import("./pages/AdminDashboard"));
+const BaseModelManager = lazyWithRetry(() => import("./pages/admin/BaseModelManager"));
+const SubscriptionAudit = lazyWithRetry(() => import("./pages/admin/SubscriptionAudit"));
+const GettingStartedGuide = lazyWithRetry(() => import("./pages/help/GettingStartedGuide"));
+const FAQPage = lazyWithRetry(() => import("./pages/help/FAQPage"));
+const VideoTutorialsPage = lazyWithRetry(() => import("./pages/help/VideoTutorialsPage"));
+const APIDocsPage = lazyWithRetry(() => import("./pages/help/APIDocsPage"));
+const Pricing = lazyWithRetry(() => import("./pages/Pricing"));
+const FoundersPlan = lazyWithRetry(() => import("./pages/FoundersPlan"));
+const Success = lazyWithRetry(() => import("./pages/Success"));
+const Cancel = lazyWithRetry(() => import("./pages/Cancel"));
+const TestVideoGeneration = lazyWithRetry(() => import("./pages/VideoGenerator"));
+const VideoLibrary = lazyWithRetry(() => import("./pages/VideoLibrary"));
+const AdGenius = lazyWithRetry(() => import("./pages/AdGenius"));
+const OutfitSwap = lazyWithRetry(() => import("./pages/OutfitSwap"));
+const ProductStudioBackground = lazyWithRetry(() => import("./pages/ProductStudioBackground"));
+const ProductStudioBackgroundBulk = lazyWithRetry(() => import("./pages/ProductStudioBackgroundBulk"));
+const MagazinePhotoshoot = lazyWithRetry(() => import("./pages/MagazinePhotoshoot"));
+const CreateCustomModel = lazyWithRetry(() => import("./pages/CreateCustomModel"));
+const VideoAds = lazyWithRetry(() => import("./pages/VideoAds"));
 
 
 const queryClient = new QueryClient();
+
+// Wrapper component to provide resetKey to ErrorBoundary
+const ErrorBoundaryWithReset = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  return <ErrorBoundary resetKey={location.pathname}>{children}</ErrorBoundary>;
+};
 
 const App = () => {
   console.log('App component rendering...');
@@ -70,208 +77,208 @@ const App = () => {
               <Route path="/" element={<AppLayout />}>
                 <Route index element={<Index />} />
                 <Route path="create" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <CreateSelection />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="create/product-display" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <CreateUGC />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="create/ugc" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <CreateUGCGemini />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="create/video" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <TestVideoGeneration />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="create/adgenius" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <AdGenius />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="create/outfit-swap" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <OutfitSwap />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="create/product-studio" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <ProductStudioBackground />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="create/product-studio-bulk" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <ProductStudioBackgroundBulk />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="create/magazine-photoshoot" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <MagazinePhotoshoot />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="create/custom-model" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <CreateCustomModel />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="create/video-ads" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <VideoAds />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="library" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <Library />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="videos" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <VideoLibrary />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="account" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <Account />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="signin" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <SignIn />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="signup" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <SignUp />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="pricing" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <Pricing />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="founders" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <FoundersPlan />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="help/getting-started" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <GettingStartedGuide />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="help/faq" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <FAQPage />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="help/tutorials" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <VideoTutorialsPage />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
                 <Route path="help/api-docs" element={
-                  <ErrorBoundary>
+                  <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <APIDocsPage />
                     </Suspense>
-                  </ErrorBoundary>
+                  </ErrorBoundaryWithReset>
                 } />
               </Route>
               <Route path="/email-confirmation" element={
-                <ErrorBoundary>
+                <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
                     <EmailConfirmation />
                   </Suspense>
-                </ErrorBoundary>
+                </ErrorBoundaryWithReset>
               } />
               <Route path="/reset-password" element={
-                <ErrorBoundary>
+                <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
                     <ResetPassword />
                   </Suspense>
-                </ErrorBoundary>
+                </ErrorBoundaryWithReset>
               } />
               <Route path="/success" element={
-                <ErrorBoundary>
+                <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
                     <Success />
                   </Suspense>
-                </ErrorBoundary>
+                </ErrorBoundaryWithReset>
               } />
               <Route path="/cancel" element={
-                <ErrorBoundary>
+                <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
                     <Cancel />
                   </Suspense>
-                </ErrorBoundary>
+                </ErrorBoundaryWithReset>
               } />
               <Route path="/admin" element={
-                <ErrorBoundary>
+                <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
                     <AdminDashboard />
                   </Suspense>
-                </ErrorBoundary>
+                </ErrorBoundaryWithReset>
               } />
               <Route path="/admin/base-models" element={
-                <ErrorBoundary>
+                <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
                     <BaseModelManager />
                   </Suspense>
-                </ErrorBoundary>
+                </ErrorBoundaryWithReset>
               } />
               <Route path="/admin/subscription-audit" element={
-                <ErrorBoundary>
+                <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
                     <SubscriptionAudit />
                   </Suspense>
-                </ErrorBoundary>
+                </ErrorBoundaryWithReset>
               } />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
