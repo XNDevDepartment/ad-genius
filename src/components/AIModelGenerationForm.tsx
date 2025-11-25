@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,7 @@ export const AIModelGenerationForm = ({
   onGenerate,
   isGenerating,
 }: AIModelGenerationFormProps) => {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [gender, setGender] = useState<string>("");
   const [nationality, setNationality] = useState<string>("");
@@ -99,53 +101,53 @@ export const AIModelGenerationForm = ({
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
-              Create Model with AI
+              {t('aiModelForm.title')}
             </DialogTitle>
-            <Badge variant="secondary" className="text-sm">6 credits</Badge>
+            <Badge variant="secondary" className="text-sm">6 {t('aiModelForm.credits')}</Badge>
           </div>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Model Name */}
           <div className="space-y-2">
-            <Label htmlFor="ai-name">Model Name *</Label>
+            <Label htmlFor="ai-name">{t('aiModelForm.modelName')} *</Label>
             <Input
               id="ai-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., AI Generated Model"
+              placeholder={t('aiModelForm.modelNamePlaceholder')}
             />
           </div>
 
           {/* Gender/Identity */}
           <div className="space-y-2">
-            <Label htmlFor="ai-gender">Gender / Identity *</Label>
+            <Label htmlFor="ai-gender">{t('aiModelForm.genderIdentity')} *</Label>
             <Select value={gender} onValueChange={setGender}>
               <SelectTrigger>
-                <SelectValue placeholder="Select gender" />
+                <SelectValue placeholder={t('aiModelForm.selectGender')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="female">Female</SelectItem>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="unisex">Unisex</SelectItem>
-                <SelectItem value="non-binary">Non-binary</SelectItem>
-                <SelectItem value="gender-fluid">Gender-fluid</SelectItem>
+                <SelectItem value="female">{t('aiModelForm.genders.female')}</SelectItem>
+                <SelectItem value="male">{t('aiModelForm.genders.male')}</SelectItem>
+                <SelectItem value="unisex">{t('aiModelForm.genders.unisex')}</SelectItem>
+                <SelectItem value="non-binary">{t('aiModelForm.genders.nonBinary')}</SelectItem>
+                <SelectItem value="gender-fluid">{t('aiModelForm.genders.genderFluid')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Nationality/Ethnicity */}
           <div className="space-y-2">
-            <Label htmlFor="ai-nationality">Nationality / Ethnicity *</Label>
+            <Label htmlFor="ai-nationality">{t('aiModelForm.nationality')} *</Label>
             <Select value={nationality} onValueChange={setNationality}>
               <SelectTrigger>
-                <SelectValue placeholder="Select nationality" />
+                <SelectValue placeholder={t('aiModelForm.selectNationality')} />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
-                <SelectItem value="mixed">Mixed Ethnicity</SelectItem>
-                <SelectItem value="not-specified">Not Specified</SelectItem>
+                <SelectItem value="mixed">{t('aiModelForm.nationalities.mixed')}</SelectItem>
+                <SelectItem value="not-specified">{t('aiModelForm.nationalities.notSpecified')}</SelectItem>
                 
-                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Africa</div>
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t('aiModelForm.nationalities.africa')}</div>
                 <SelectItem value="nigerian">Nigerian</SelectItem>
                 <SelectItem value="ethiopian">Ethiopian</SelectItem>
                 <SelectItem value="kenyan">Kenyan</SelectItem>
@@ -155,7 +157,7 @@ export const AIModelGenerationForm = ({
                 <SelectItem value="ghanaian">Ghanaian</SelectItem>
                 <SelectItem value="senegalese">Senegalese</SelectItem>
                 
-                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Asia</div>
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t('aiModelForm.nationalities.asia')}</div>
                 <SelectItem value="chinese">Chinese</SelectItem>
                 <SelectItem value="japanese">Japanese</SelectItem>
                 <SelectItem value="korean">Korean</SelectItem>
@@ -167,7 +169,7 @@ export const AIModelGenerationForm = ({
                 <SelectItem value="indonesian">Indonesian</SelectItem>
                 <SelectItem value="malay">Malay</SelectItem>
                 
-                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Europe</div>
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t('aiModelForm.nationalities.europe')}</div>
                 <SelectItem value="british">British</SelectItem>
                 <SelectItem value="french">French</SelectItem>
                 <SelectItem value="german">German</SelectItem>
@@ -179,14 +181,14 @@ export const AIModelGenerationForm = ({
                 <SelectItem value="scandinavian">Scandinavian</SelectItem>
                 <SelectItem value="irish">Irish</SelectItem>
                 
-                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Middle East</div>
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t('aiModelForm.nationalities.middleEast')}</div>
                 <SelectItem value="arab">Arab / Middle Eastern</SelectItem>
                 <SelectItem value="turkish">Turkish</SelectItem>
                 <SelectItem value="persian">Persian / Iranian</SelectItem>
                 <SelectItem value="israeli">Israeli</SelectItem>
                 <SelectItem value="lebanese">Lebanese</SelectItem>
                 
-                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Americas</div>
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t('aiModelForm.nationalities.americas')}</div>
                 <SelectItem value="mexican">Mexican</SelectItem>
                 <SelectItem value="brazilian">Brazilian</SelectItem>
                 <SelectItem value="colombian">Colombian</SelectItem>
@@ -196,7 +198,7 @@ export const AIModelGenerationForm = ({
                 <SelectItem value="canadian">Canadian</SelectItem>
                 <SelectItem value="caribbean">Caribbean</SelectItem>
                 
-                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Pacific</div>
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t('aiModelForm.nationalities.pacific')}</div>
                 <SelectItem value="australian">Australian</SelectItem>
                 <SelectItem value="new-zealander">New Zealander</SelectItem>
                 <SelectItem value="pacific-islander">Pacific Islander</SelectItem>
@@ -207,17 +209,17 @@ export const AIModelGenerationForm = ({
 
           {/* Age Range */}
           <div className="space-y-2">
-            <Label htmlFor="ai-age">Age Range *</Label>
+            <Label htmlFor="ai-age">{t('aiModelForm.ageRange')} *</Label>
             <Select value={ageRange} onValueChange={setAgeRange}>
               <SelectTrigger>
-                <SelectValue placeholder="Select age range" />
+                <SelectValue placeholder={t('aiModelForm.selectAgeRange')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0-12 months">0-12 months (baby)</SelectItem>
-                <SelectItem value="1-3">1-3 years (toddler)</SelectItem>
-                <SelectItem value="4-7">4-7 years (young child)</SelectItem>
-                <SelectItem value="8-12">8-12 years (child)</SelectItem>
-                <SelectItem value="13-17">13-17 (teen)</SelectItem>
+                <SelectItem value="0-12 months">{t('aiModelForm.ageRanges.baby')}</SelectItem>
+                <SelectItem value="1-3">{t('aiModelForm.ageRanges.toddler')}</SelectItem>
+                <SelectItem value="4-7">{t('aiModelForm.ageRanges.youngChild')}</SelectItem>
+                <SelectItem value="8-12">{t('aiModelForm.ageRanges.child')}</SelectItem>
+                <SelectItem value="13-17">{t('aiModelForm.ageRanges.teen')}</SelectItem>
                 <SelectItem value="18-24">18-24</SelectItem>
                 <SelectItem value="25-34">25-34</SelectItem>
                 <SelectItem value="35-44">35-44</SelectItem>
@@ -230,31 +232,31 @@ export const AIModelGenerationForm = ({
 
           {/* Body Characteristics Section */}
           <div className="space-y-4 pt-4 border-t">
-            <h3 className="text-sm font-semibold">Body Characteristics</h3>
+            <h3 className="text-sm font-semibold">{t('aiModelForm.bodyCharacteristics')}</h3>
             
             {/* Body Type */}
             <div className="space-y-2">
-              <Label htmlFor="ai-body">Body Type *</Label>
+              <Label htmlFor="ai-body">{t('aiModelForm.bodyType')} *</Label>
               <Select value={bodyType} onValueChange={setBodyType}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select body type" />
+                  <SelectValue placeholder={t('aiModelForm.selectBodyType')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="petite">Petite</SelectItem>
-                  <SelectItem value="slim">Slim</SelectItem>
-                  <SelectItem value="athletic">Athletic</SelectItem>
-                  <SelectItem value="average">Average</SelectItem>
-                  <SelectItem value="curvy">Curvy</SelectItem>
-                  <SelectItem value="muscular">Muscular</SelectItem>
-                  <SelectItem value="plus">Plus</SelectItem>
-                  <SelectItem value="tall-slim">Tall & Slim</SelectItem>
+                  <SelectItem value="petite">{t('aiModelForm.bodyTypes.petite')}</SelectItem>
+                  <SelectItem value="slim">{t('aiModelForm.bodyTypes.slim')}</SelectItem>
+                  <SelectItem value="athletic">{t('aiModelForm.bodyTypes.athletic')}</SelectItem>
+                  <SelectItem value="average">{t('aiModelForm.bodyTypes.average')}</SelectItem>
+                  <SelectItem value="curvy">{t('aiModelForm.bodyTypes.curvy')}</SelectItem>
+                  <SelectItem value="muscular">{t('aiModelForm.bodyTypes.muscular')}</SelectItem>
+                  <SelectItem value="plus">{t('aiModelForm.bodyTypes.plus')}</SelectItem>
+                  <SelectItem value="tall-slim">{t('aiModelForm.bodyTypes.tallSlim')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Height */}
             <div className="space-y-2">
-              <Label htmlFor="ai-height">Height (cm) *</Label>
+              <Label htmlFor="ai-height">{t('aiModelForm.height')} *</Label>
               <Input
                 id="ai-height"
                 type="number"
@@ -267,18 +269,18 @@ export const AIModelGenerationForm = ({
 
             {/* Skin Tone */}
             <div className="space-y-2">
-              <Label htmlFor="ai-skin">Skin Tone (Fitzpatrick Scale) *</Label>
+              <Label htmlFor="ai-skin">{t('aiModelForm.skinTone')} *</Label>
               <Select value={skinTone} onValueChange={setSkinTone}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select skin tone" />
+                  <SelectValue placeholder={t('aiModelForm.selectSkinTone')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="very-fair">Type I - Very Fair</SelectItem>
-                  <SelectItem value="fair">Type II - Fair</SelectItem>
-                  <SelectItem value="medium">Type III - Medium</SelectItem>
-                  <SelectItem value="olive">Type IV - Olive</SelectItem>
-                  <SelectItem value="brown">Type V - Brown</SelectItem>
-                  <SelectItem value="dark-brown">Type VI - Dark Brown to Black</SelectItem>
+                  <SelectItem value="very-fair">{t('aiModelForm.skinTones.veryFair')}</SelectItem>
+                  <SelectItem value="fair">{t('aiModelForm.skinTones.fair')}</SelectItem>
+                  <SelectItem value="medium">{t('aiModelForm.skinTones.medium')}</SelectItem>
+                  <SelectItem value="olive">{t('aiModelForm.skinTones.olive')}</SelectItem>
+                  <SelectItem value="brown">{t('aiModelForm.skinTones.brown')}</SelectItem>
+                  <SelectItem value="dark-brown">{t('aiModelForm.skinTones.darkBrown')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -286,63 +288,63 @@ export const AIModelGenerationForm = ({
 
           {/* Hair & Eyes Section */}
           <div className="space-y-4 pt-4 border-t">
-            <h3 className="text-sm font-semibold">Hair & Eyes</h3>
+            <h3 className="text-sm font-semibold">{t('aiModelForm.hairEyes')}</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Hair Length */}
               <div className="space-y-2">
-                <Label htmlFor="ai-hair-length">Hair Length *</Label>
+                <Label htmlFor="ai-hair-length">{t('aiModelForm.hairLength')} *</Label>
                 <Select value={hairLength} onValueChange={setHairLength}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Length" />
+                    <SelectValue placeholder={t('aiModelForm.hairLength')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="very-short">Very Short / Buzz</SelectItem>
-                    <SelectItem value="short">Short</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="long">Long</SelectItem>
-                    <SelectItem value="extra-long">Extra Long</SelectItem>
+                    <SelectItem value="very-short">{t('aiModelForm.hairLengths.veryShort')}</SelectItem>
+                    <SelectItem value="short">{t('aiModelForm.hairLengths.short')}</SelectItem>
+                    <SelectItem value="medium">{t('aiModelForm.hairLengths.medium')}</SelectItem>
+                    <SelectItem value="long">{t('aiModelForm.hairLengths.long')}</SelectItem>
+                    <SelectItem value="extra-long">{t('aiModelForm.hairLengths.extraLong')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Hair Texture */}
               <div className="space-y-2">
-                <Label htmlFor="ai-hair-texture">Hair Texture *</Label>
+                <Label htmlFor="ai-hair-texture">{t('aiModelForm.hairTexture')} *</Label>
                 <Select value={hairTexture} onValueChange={setHairTexture}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Texture" />
+                    <SelectValue placeholder={t('aiModelForm.hairTexture')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="straight">Straight</SelectItem>
-                    <SelectItem value="wavy">Wavy</SelectItem>
-                    <SelectItem value="curly">Curly</SelectItem>
-                    <SelectItem value="coily">Coily / Kinky</SelectItem>
-                    <SelectItem value="afro">Afro</SelectItem>
-                    <SelectItem value="braided">Braided</SelectItem>
-                    <SelectItem value="bald">Bald</SelectItem>
+                    <SelectItem value="straight">{t('aiModelForm.hairTextures.straight')}</SelectItem>
+                    <SelectItem value="wavy">{t('aiModelForm.hairTextures.wavy')}</SelectItem>
+                    <SelectItem value="curly">{t('aiModelForm.hairTextures.curly')}</SelectItem>
+                    <SelectItem value="coily">{t('aiModelForm.hairTextures.coily')}</SelectItem>
+                    <SelectItem value="afro">{t('aiModelForm.hairTextures.afro')}</SelectItem>
+                    <SelectItem value="braided">{t('aiModelForm.hairTextures.braided')}</SelectItem>
+                    <SelectItem value="bald">{t('aiModelForm.hairTextures.bald')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Hair Color */}
               <div className="space-y-2">
-                <Label htmlFor="ai-hair-color">Hair Color *</Label>
+                <Label htmlFor="ai-hair-color">{t('aiModelForm.hairColor')} *</Label>
                 <Select value={hairColor} onValueChange={setHairColor}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Color" />
+                    <SelectValue placeholder={t('aiModelForm.hairColor')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="black">Black</SelectItem>
-                    <SelectItem value="brown">Brown</SelectItem>
-                    <SelectItem value="chestnut">Chestnut</SelectItem>
-                    <SelectItem value="auburn">Auburn</SelectItem>
-                    <SelectItem value="blonde">Blonde</SelectItem>
-                    <SelectItem value="platinum">Platinum</SelectItem>
-                    <SelectItem value="red">Red</SelectItem>
-                    <SelectItem value="gray">Gray</SelectItem>
-                    <SelectItem value="salt-pepper">Salt & Pepper</SelectItem>
-                    <SelectItem value="white">White</SelectItem>
+                    <SelectItem value="black">{t('aiModelForm.hairColors.black')}</SelectItem>
+                    <SelectItem value="brown">{t('aiModelForm.hairColors.brown')}</SelectItem>
+                    <SelectItem value="chestnut">{t('aiModelForm.hairColors.chestnut')}</SelectItem>
+                    <SelectItem value="auburn">{t('aiModelForm.hairColors.auburn')}</SelectItem>
+                    <SelectItem value="blonde">{t('aiModelForm.hairColors.blonde')}</SelectItem>
+                    <SelectItem value="platinum">{t('aiModelForm.hairColors.platinum')}</SelectItem>
+                    <SelectItem value="red">{t('aiModelForm.hairColors.red')}</SelectItem>
+                    <SelectItem value="gray">{t('aiModelForm.hairColors.gray')}</SelectItem>
+                    <SelectItem value="salt-pepper">{t('aiModelForm.hairColors.saltPepper')}</SelectItem>
+                    <SelectItem value="white">{t('aiModelForm.hairColors.white')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -350,20 +352,20 @@ export const AIModelGenerationForm = ({
 
             {/* Eye Color */}
             <div className="space-y-2">
-              <Label htmlFor="ai-eyes">Eye Color *</Label>
+              <Label htmlFor="ai-eyes">{t('aiModelForm.eyeColor')} *</Label>
               <Select value={eyes} onValueChange={setEyes}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select eye color" />
+                  <SelectValue placeholder={t('aiModelForm.selectEyeColor')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="brown">Brown</SelectItem>
-                  <SelectItem value="blue">Blue</SelectItem>
-                  <SelectItem value="green">Green</SelectItem>
-                  <SelectItem value="hazel">Hazel</SelectItem>
-                  <SelectItem value="amber">Amber</SelectItem>
-                  <SelectItem value="gray">Gray</SelectItem>
-                  <SelectItem value="black">Black</SelectItem>
-                  <SelectItem value="heterochromia">Heterochromia</SelectItem>
+                  <SelectItem value="brown">{t('aiModelForm.eyeColors.brown')}</SelectItem>
+                  <SelectItem value="blue">{t('aiModelForm.eyeColors.blue')}</SelectItem>
+                  <SelectItem value="green">{t('aiModelForm.eyeColors.green')}</SelectItem>
+                  <SelectItem value="hazel">{t('aiModelForm.eyeColors.hazel')}</SelectItem>
+                  <SelectItem value="amber">{t('aiModelForm.eyeColors.amber')}</SelectItem>
+                  <SelectItem value="gray">{t('aiModelForm.eyeColors.gray')}</SelectItem>
+                  <SelectItem value="black">{t('aiModelForm.eyeColors.black')}</SelectItem>
+                  <SelectItem value="heterochromia">{t('aiModelForm.eyeColors.heterochromia')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -371,25 +373,25 @@ export const AIModelGenerationForm = ({
 
           {/* Pose Style Section */}
           <div className="space-y-4 pt-4 border-t">
-            <h3 className="text-sm font-semibold">Pose Style</h3>
+            <h3 className="text-sm font-semibold">{t('aiModelForm.poseStyle')}</h3>
             
             <div className="space-y-2">
-              <Label htmlFor="ai-pose">Pose *</Label>
+              <Label htmlFor="ai-pose">{t('aiModelForm.pose')} *</Label>
               <Select value={pose} onValueChange={setPose}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select pose" />
+                  <SelectValue placeholder={t('aiModelForm.selectPose')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="standing">Standing</SelectItem>
-                  <SelectItem value="sitting">Sitting</SelectItem>
-                  <SelectItem value="walking">Walking</SelectItem>
-                  <SelectItem value="leaning">Leaning</SelectItem>
-                  <SelectItem value="arms-crossed">Arms Crossed</SelectItem>
-                  <SelectItem value="hands-on-hips">Hands on Hips</SelectItem>
-                  <SelectItem value="casual">Casual</SelectItem>
-                  <SelectItem value="formal">Formal</SelectItem>
-                  <SelectItem value="fashion-runway">Fashion Runway</SelectItem>
-                  <SelectItem value="profile">Profile View</SelectItem>
+                  <SelectItem value="standing">{t('aiModelForm.poses.standing')}</SelectItem>
+                  <SelectItem value="sitting">{t('aiModelForm.poses.sitting')}</SelectItem>
+                  <SelectItem value="walking">{t('aiModelForm.poses.walking')}</SelectItem>
+                  <SelectItem value="leaning">{t('aiModelForm.poses.leaning')}</SelectItem>
+                  <SelectItem value="arms-crossed">{t('aiModelForm.poses.armsCrossed')}</SelectItem>
+                  <SelectItem value="hands-on-hips">{t('aiModelForm.poses.handsOnHips')}</SelectItem>
+                  <SelectItem value="casual">{t('aiModelForm.poses.casual')}</SelectItem>
+                  <SelectItem value="formal">{t('aiModelForm.poses.formal')}</SelectItem>
+                  <SelectItem value="fashion-runway">{t('aiModelForm.poses.fashionRunway')}</SelectItem>
+                  <SelectItem value="profile">{t('aiModelForm.poses.profile')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -397,8 +399,8 @@ export const AIModelGenerationForm = ({
             {/* Gentle Smile Toggle */}
             <div className="flex items-center justify-between p-3 border rounded-lg">
               <div className="space-y-0.5">
-                <Label htmlFor="ai-smile">Gentle Smile</Label>
-                <p className="text-xs text-muted-foreground">Add a subtle smile to the model</p>
+                <Label htmlFor="ai-smile">{t('aiModelForm.gentleSmile')}</Label>
+                <p className="text-xs text-muted-foreground">{t('aiModelForm.gentleSmileDesc')}</p>
               </div>
               <Switch
                 id="ai-smile"
@@ -411,18 +413,18 @@ export const AIModelGenerationForm = ({
           {/* Action Buttons */}
           <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={handleClose} disabled={isGenerating}>
-              Cancel
+              {t('aiModelForm.cancel')}
             </Button>
             <Button onClick={handleSubmit} disabled={isGenerating || !isFormValid}>
               {isGenerating ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Generating...
+                  {t('aiModelForm.generating')}
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Generate Model (6 credits)
+                  {t('aiModelForm.generate')}
                 </>
               )}
             </Button>

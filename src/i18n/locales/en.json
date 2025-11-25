@@ -1250,5 +1250,129 @@
       "reason3": "👥 Join an exclusive founders community with direct influence on product development"
     },
     "viewOtherPlans": "View Other Plans"
+  },
+  "aiModelForm": {
+    "title": "Create Model with AI",
+    "credits": "credits",
+    "modelName": "Model Name",
+    "modelNamePlaceholder": "e.g., AI Generated Model",
+    "genderIdentity": "Gender / Identity",
+    "selectGender": "Select gender",
+    "nationality": "Nationality / Ethnicity",
+    "selectNationality": "Select nationality",
+    "ageRange": "Age Range",
+    "selectAgeRange": "Select age range",
+    "bodyCharacteristics": "Body Characteristics",
+    "bodyType": "Body Type",
+    "selectBodyType": "Select body type",
+    "height": "Height (cm)",
+    "skinTone": "Skin Tone (Fitzpatrick Scale)",
+    "selectSkinTone": "Select skin tone",
+    "hairEyes": "Hair & Eyes",
+    "hairLength": "Hair Length",
+    "hairTexture": "Hair Texture",
+    "hairColor": "Hair Color",
+    "eyeColor": "Eye Color",
+    "selectEyeColor": "Select eye color",
+    "poseStyle": "Pose Style",
+    "pose": "Pose",
+    "selectPose": "Select pose",
+    "gentleSmile": "Gentle smile",
+    "gentleSmileDesc": "Add warm and inviting facial expression",
+    "cancel": "Cancel",
+    "generate": "Generate Model",
+    "generating": "Generating...",
+    "genders": {
+      "female": "Female",
+      "male": "Male",
+      "unisex": "Unisex",
+      "nonBinary": "Non-binary",
+      "genderFluid": "Gender-fluid"
+    },
+    "nationalities": {
+      "mixed": "Mixed Ethnicity",
+      "notSpecified": "Not Specified",
+      "africa": "Africa",
+      "asia": "Asia",
+      "europe": "Europe",
+      "middleEast": "Middle East",
+      "americas": "Americas",
+      "pacific": "Pacific"
+    },
+    "ageRanges": {
+      "baby": "0-12 months (baby)",
+      "toddler": "1-3 years (toddler)",
+      "youngChild": "4-7 years (young child)",
+      "child": "8-12 years (child)",
+      "teen": "13-17 (teen)"
+    },
+    "bodyTypes": {
+      "petite": "Petite",
+      "slim": "Slim",
+      "athletic": "Athletic",
+      "average": "Average",
+      "curvy": "Curvy",
+      "muscular": "Muscular",
+      "plus": "Plus",
+      "tallSlim": "Tall & Slim"
+    },
+    "skinTones": {
+      "veryFair": "Type I - Very Fair",
+      "fair": "Type II - Fair",
+      "medium": "Type III - Medium",
+      "olive": "Type IV - Olive",
+      "brown": "Type V - Brown",
+      "darkBrown": "Type VI - Dark Brown to Black"
+    },
+    "hairLengths": {
+      "veryShort": "Very Short / Buzz",
+      "short": "Short",
+      "medium": "Medium",
+      "long": "Long",
+      "extraLong": "Extra Long"
+    },
+    "hairTextures": {
+      "straight": "Straight",
+      "wavy": "Wavy",
+      "curly": "Curly",
+      "coily": "Coily / Kinky",
+      "afro": "Afro",
+      "braided": "Braided",
+      "bald": "Bald"
+    },
+    "hairColors": {
+      "black": "Black",
+      "brown": "Brown",
+      "chestnut": "Chestnut",
+      "auburn": "Auburn",
+      "blonde": "Blonde",
+      "platinum": "Platinum",
+      "red": "Red",
+      "gray": "Gray",
+      "saltPepper": "Salt & Pepper",
+      "white": "White"
+    },
+    "eyeColors": {
+      "brown": "Brown",
+      "blue": "Blue",
+      "green": "Green",
+      "hazel": "Hazel",
+      "amber": "Amber",
+      "gray": "Gray",
+      "black": "Black",
+      "heterochromia": "Heterochromia"
+    },
+    "poses": {
+      "standing": "Standing",
+      "sitting": "Sitting",
+      "walking": "Walking",
+      "leaning": "Leaning",
+      "armsCrossed": "Arms Crossed",
+      "handsOnHips": "Hands on Hips",
+      "casual": "Casual",
+      "formal": "Formal",
+      "fashionRunway": "Fashion Runway",
+      "profile": "Profile View"
+    }
   }
 }
