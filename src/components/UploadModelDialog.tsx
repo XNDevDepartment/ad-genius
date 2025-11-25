@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,7 @@ export const UploadModelDialog = ({
   onUpload,
   uploading,
 }: UploadModelDialogProps) => {
+  const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -48,8 +50,8 @@ export const UploadModelDialog = ({
     if (!file || !name.trim()) {
       toast({
         variant: "destructive",
-        title: "Missing information",
-        description: "Please provide a file and model name",
+        title: t('uploadModelDialog.missingInfo'),
+        description: t('uploadModelDialog.missingInfoDesc'),
       });
       return;
     }
@@ -84,13 +86,13 @@ export const UploadModelDialog = ({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Upload Your Model</DialogTitle>
+          <DialogTitle>{t('uploadModelDialog.title')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Image Upload */}
           <div className="space-y-2">
-            <Label>Model Image *</Label>
+            <Label>{t('uploadModelDialog.modelImage')} *</Label>
             {preview ? (
               <div className="relative">
                 <img src={preview} alt="Preview" className="w-full h-48 object-contain border rounded-lg" />
@@ -109,7 +111,7 @@ export const UploadModelDialog = ({
             ) : (
               <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary">
                 <Upload className="w-8 h-8 text-muted-foreground mb-2" />
-                <span className="text-sm text-muted-foreground">Click to upload image</span>
+                <span className="text-sm text-muted-foreground">{t('uploadModelDialog.clickToUpload')}</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -125,97 +127,97 @@ export const UploadModelDialog = ({
 
           {/* Model Name */}
           <div className="space-y-2">
-            <Label htmlFor="name">Model Name *</Label>
+            <Label htmlFor="name">{t('uploadModelDialog.modelName')} *</Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., My Custom Model"
+              placeholder={t('uploadModelDialog.modelNamePlaceholder')}
             />
           </div>
 
           {/* Gender */}
           <div className="space-y-2">
-            <Label htmlFor="gender">Gender</Label>
+            <Label htmlFor="gender">{t('uploadModelDialog.gender')}</Label>
             <Select value={gender} onValueChange={setGender}>
               <SelectTrigger>
-                <SelectValue placeholder="Select gender" />
+                <SelectValue placeholder={t('uploadModelDialog.selectGender')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
-                <SelectItem value="unisex">Unisex</SelectItem>
+                <SelectItem value="male">{t('uploadModelDialog.genders.male')}</SelectItem>
+                <SelectItem value="female">{t('uploadModelDialog.genders.female')}</SelectItem>
+                <SelectItem value="unisex">{t('uploadModelDialog.genders.unisex')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Age Range */}
           <div className="space-y-2">
-            <Label htmlFor="ageRange">Age Range</Label>
+            <Label htmlFor="ageRange">{t('uploadModelDialog.ageRange')}</Label>
             <Select value={ageRange} onValueChange={setAgeRange}>
               <SelectTrigger>
-                <SelectValue placeholder="Select age range" />
+                <SelectValue placeholder={t('uploadModelDialog.selectAgeRange')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0-12 months">0-12 months</SelectItem>
-                <SelectItem value="1-3 years">1-3 years</SelectItem>
-                <SelectItem value="4-7 years">4-7 years</SelectItem>
-                <SelectItem value="8-12 years">8-12 years</SelectItem>
-                <SelectItem value="13-17 years">13-17 years</SelectItem>
-                <SelectItem value="18-22 years">18-22 years</SelectItem>
-                <SelectItem value="23-35 years">23-35 years</SelectItem>
-                <SelectItem value="36-50 years">36-50 years</SelectItem>
-                <SelectItem value="51-65 years">51-65 years</SelectItem>
-                <SelectItem value="65+ years">65+ years</SelectItem>
+                <SelectItem value="0-12 months">{t('uploadModelDialog.ageRanges.baby')}</SelectItem>
+                <SelectItem value="1-3 years">{t('uploadModelDialog.ageRanges.toddler')}</SelectItem>
+                <SelectItem value="4-7 years">{t('uploadModelDialog.ageRanges.youngChild')}</SelectItem>
+                <SelectItem value="8-12 years">{t('uploadModelDialog.ageRanges.child')}</SelectItem>
+                <SelectItem value="13-17 years">{t('uploadModelDialog.ageRanges.teen')}</SelectItem>
+                <SelectItem value="18-22 years">{t('uploadModelDialog.ageRanges.youngAdult')}</SelectItem>
+                <SelectItem value="23-35 years">{t('uploadModelDialog.ageRanges.adult')}</SelectItem>
+                <SelectItem value="36-50 years">{t('uploadModelDialog.ageRanges.middleAge')}</SelectItem>
+                <SelectItem value="51-65 years">{t('uploadModelDialog.ageRanges.mature')}</SelectItem>
+                <SelectItem value="65+ years">{t('uploadModelDialog.ageRanges.senior')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Body Type */}
           <div className="space-y-2">
-            <Label htmlFor="bodyType">Body Type</Label>
+            <Label htmlFor="bodyType">{t('uploadModelDialog.bodyType')}</Label>
             <Select value={bodyType} onValueChange={setBodyType}>
               <SelectTrigger>
-                <SelectValue placeholder="Select body type" />
+                <SelectValue placeholder={t('uploadModelDialog.selectBodyType')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="slim">Slim</SelectItem>
-                <SelectItem value="athletic">Athletic</SelectItem>
-                <SelectItem value="average">Average</SelectItem>
-                <SelectItem value="plus">Plus</SelectItem>
+                <SelectItem value="slim">{t('uploadModelDialog.bodyTypes.slim')}</SelectItem>
+                <SelectItem value="athletic">{t('uploadModelDialog.bodyTypes.athletic')}</SelectItem>
+                <SelectItem value="average">{t('uploadModelDialog.bodyTypes.average')}</SelectItem>
+                <SelectItem value="plus">{t('uploadModelDialog.bodyTypes.plus')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Pose Type */}
           <div className="space-y-2">
-            <Label htmlFor="poseType">Pose Type</Label>
+            <Label htmlFor="poseType">{t('uploadModelDialog.poseType')}</Label>
             <Select value={poseType} onValueChange={setPoseType}>
               <SelectTrigger>
-                <SelectValue placeholder="Select pose type" />
+                <SelectValue placeholder={t('uploadModelDialog.selectPoseType')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="standing">Standing</SelectItem>
-                <SelectItem value="sitting">Sitting</SelectItem>
-                <SelectItem value="walking">Walking</SelectItem>
-                <SelectItem value="casual">Casual</SelectItem>
-                <SelectItem value="formal">Formal</SelectItem>
+                <SelectItem value="standing">{t('uploadModelDialog.poseTypes.standing')}</SelectItem>
+                <SelectItem value="sitting">{t('uploadModelDialog.poseTypes.sitting')}</SelectItem>
+                <SelectItem value="walking">{t('uploadModelDialog.poseTypes.walking')}</SelectItem>
+                <SelectItem value="casual">{t('uploadModelDialog.poseTypes.casual')}</SelectItem>
+                <SelectItem value="formal">{t('uploadModelDialog.poseTypes.formal')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Skin Tone */}
           <div className="space-y-2">
-            <Label htmlFor="skinTone">Skin Tone</Label>
+            <Label htmlFor="skinTone">{t('uploadModelDialog.skinTone')}</Label>
             <Select value={skinTone} onValueChange={setSkinTone}>
               <SelectTrigger>
-                <SelectValue placeholder="Select skin tone" />
+                <SelectValue placeholder={t('uploadModelDialog.selectSkinTone')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="light">Light</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="tan">Tan</SelectItem>
-                <SelectItem value="dark">Dark</SelectItem>
+                <SelectItem value="light">{t('uploadModelDialog.skinTones.light')}</SelectItem>
+                <SelectItem value="medium">{t('uploadModelDialog.skinTones.medium')}</SelectItem>
+                <SelectItem value="tan">{t('uploadModelDialog.skinTones.tan')}</SelectItem>
+                <SelectItem value="dark">{t('uploadModelDialog.skinTones.dark')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -223,16 +225,16 @@ export const UploadModelDialog = ({
           {/* Action Buttons */}
           <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={handleClose} disabled={uploading}>
-              Cancel
+              {t('uploadModelDialog.cancel')}
             </Button>
             <Button onClick={handleSubmit} disabled={uploading || !file || !name.trim()}>
               {uploading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Uploading...
+                  {t('uploadModelDialog.uploading')}
                 </>
               ) : (
-                "Upload Model"
+                t('uploadModelDialog.uploadModel')
               )}
             </Button>
           </div>

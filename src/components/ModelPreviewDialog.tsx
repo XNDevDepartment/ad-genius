@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,16 +32,18 @@ export const ModelPreviewDialog = ({
   isGeneratedWithAI = false,
   isSaving = false,
 }: ModelPreviewDialogProps) => {
+  const { t } = useTranslation();
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {isGeneratedWithAI && <Sparkles className="w-5 h-5 text-primary" />}
-            Preview Your Model
+            {t('modelPreviewDialog.title')}
           </DialogTitle>
           <DialogDescription>
-            Review your model before saving. Credits will be deducted when you save.
+            {t('modelPreviewDialog.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -57,7 +60,7 @@ export const ModelPreviewDialog = ({
           {/* Metadata */}
           <div className="space-y-3">
             <div>
-              <span className="font-semibold">Model Name: </span>
+              <span className="font-semibold">{t('modelPreviewDialog.modelName')}: </span>
               <span>{metadata.name}</span>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -87,18 +90,18 @@ export const ModelPreviewDialog = ({
               disabled={isSaving}
             >
               <X className="w-4 h-4 mr-2" />
-              Cancel
+              {t('modelPreviewDialog.cancel')}
             </Button>
             <Button
               onClick={onConfirm}
               disabled={isSaving}
             >
               {isSaving ? (
-                "Saving..."
+                t('modelPreviewDialog.saving')
               ) : (
                 <>
                   <Check className="w-4 h-4 mr-2" />
-                  Save Model
+                  {t('modelPreviewDialog.saveModel')}
                 </>
               )}
             </Button>

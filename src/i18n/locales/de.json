@@ -1369,5 +1369,71 @@
       "fashionRunway": "Mode-Laufsteg",
       "profile": "Profilansicht"
     }
+  },
+  "uploadModelDialog": {
+    "title": "Ihr Modell Hochladen",
+    "modelImage": "Modellbild",
+    "clickToUpload": "Klicken Sie zum Hochladen des Bildes",
+    "modelName": "Modellname",
+    "modelNamePlaceholder": "z.B., Mein Benutzerdefiniertes Modell",
+    "gender": "Geschlecht",
+    "selectGender": "Geschlecht auswählen",
+    "ageRange": "Altersbereich",
+    "selectAgeRange": "Altersbereich auswählen",
+    "bodyType": "Körpertyp",
+    "selectBodyType": "Körpertyp auswählen",
+    "poseType": "Posentyp",
+    "selectPoseType": "Posentyp auswählen",
+    "skinTone": "Hautton",
+    "selectSkinTone": "Hautton auswählen",
+    "cancel": "Abbrechen",
+    "uploading": "Hochladen...",
+    "uploadModel": "Modell Hochladen",
+    "missingInfo": "Fehlende Informationen",
+    "missingInfoDesc": "Bitte geben Sie eine Datei und einen Modellnamen an",
+    "genders": {
+      "male": "Männlich",
+      "female": "Weiblich",
+      "unisex": "Unisex"
+    },
+    "ageRanges": {
+      "baby": "0-12 Monate",
+      "toddler": "1-3 Jahre",
+      "youngChild": "4-7 Jahre",
+      "child": "8-12 Jahre",
+      "teen": "13-17 Jahre",
+      "youngAdult": "18-22 Jahre",
+      "adult": "23-35 Jahre",
+      "middleAge": "36-50 Jahre",
+      "mature": "51-65 Jahre",
+      "senior": "65+ Jahre"
+    },
+    "bodyTypes": {
+      "slim": "Schlank",
+      "athletic": "Athletisch",
+      "average": "Durchschnittlich",
+      "plus": "Plus Size"
+    },
+    "poseTypes": {
+      "standing": "Stehend",
+      "sitting": "Sitzend",
+      "walking": "Gehend",
+      "casual": "Lässig",
+      "formal": "Formal"
+    },
+    "skinTones": {
+      "light": "Hell",
+      "medium": "Mittel",
+      "tan": "Gebräunt",
+      "dark": "Dunkel"
+    }
+  },
+  "modelPreviewDialog": {
+    "title": "Vorschau Ihres Modells",
+    "description": "Überprüfen Sie Ihr Modell vor dem Speichern. Credits werden beim Speichern abgezogen.",
+    "modelName": "Modellname",
+    "cancel": "Abbrechen",
+    "saving": "Speichern...",
+    "saveModel": "Modell Speichern"
   }
 }
