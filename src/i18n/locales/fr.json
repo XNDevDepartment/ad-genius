@@ -1245,5 +1245,129 @@
       "reason3": "👥 Rejoignez une communauté exclusive de fondateurs avec une influence directe sur le développement du produit"
     },
     "viewOtherPlans": "Voir les Autres Plans"
+  },
+  "aiModelForm": {
+    "title": "Créer un Modèle avec l'IA",
+    "credits": "crédits",
+    "modelName": "Nom du Modèle",
+    "modelNamePlaceholder": "ex., Modèle Généré par IA",
+    "genderIdentity": "Genre / Identité",
+    "selectGender": "Sélectionner le genre",
+    "nationality": "Nationalité / Ethnicité",
+    "selectNationality": "Sélectionner la nationalité",
+    "ageRange": "Tranche d'Âge",
+    "selectAgeRange": "Sélectionner la tranche d'âge",
+    "bodyCharacteristics": "Caractéristiques Corporelles",
+    "bodyType": "Type de Corps",
+    "selectBodyType": "Sélectionner le type de corps",
+    "height": "Taille (cm)",
+    "skinTone": "Teint de Peau (Échelle Fitzpatrick)",
+    "selectSkinTone": "Sélectionner le teint",
+    "hairEyes": "Cheveux et Yeux",
+    "hairLength": "Longueur des Cheveux",
+    "hairTexture": "Texture des Cheveux",
+    "hairColor": "Couleur des Cheveux",
+    "eyeColor": "Couleur des Yeux",
+    "selectEyeColor": "Sélectionner la couleur des yeux",
+    "poseStyle": "Style de Pose",
+    "pose": "Pose",
+    "selectPose": "Sélectionner la pose",
+    "gentleSmile": "Sourire doux",
+    "gentleSmileDesc": "Ajouter une expression faciale chaleureuse et accueillante",
+    "cancel": "Annuler",
+    "generate": "Générer le Modèle",
+    "generating": "Génération...",
+    "genders": {
+      "female": "Féminin",
+      "male": "Masculin",
+      "unisex": "Unisexe",
+      "nonBinary": "Non-binaire",
+      "genderFluid": "Genre fluide"
+    },
+    "nationalities": {
+      "mixed": "Ethnicité Mixte",
+      "notSpecified": "Non Spécifié",
+      "africa": "Afrique",
+      "asia": "Asie",
+      "europe": "Europe",
+      "middleEast": "Moyen-Orient",
+      "americas": "Amériques",
+      "pacific": "Pacifique"
+    },
+    "ageRanges": {
+      "baby": "0-12 mois (bébé)",
+      "toddler": "1-3 ans (tout-petit)",
+      "youngChild": "4-7 ans (jeune enfant)",
+      "child": "8-12 ans (enfant)",
+      "teen": "13-17 (adolescent)"
+    },
+    "bodyTypes": {
+      "petite": "Petite",
+      "slim": "Mince",
+      "athletic": "Athlétique",
+      "average": "Moyenne",
+      "curvy": "Galbé",
+      "muscular": "Musclé",
+      "plus": "Grande taille",
+      "tallSlim": "Grand et Mince"
+    },
+    "skinTones": {
+      "veryFair": "Type I - Très Clair",
+      "fair": "Type II - Clair",
+      "medium": "Type III - Moyen",
+      "olive": "Type IV - Olive",
+      "brown": "Type V - Brun",
+      "darkBrown": "Type VI - Brun Foncé à Noir"
+    },
+    "hairLengths": {
+      "veryShort": "Très Court / Rasé",
+      "short": "Court",
+      "medium": "Moyen",
+      "long": "Long",
+      "extraLong": "Très Long"
+    },
+    "hairTextures": {
+      "straight": "Lisse",
+      "wavy": "Ondulé",
+      "curly": "Bouclé",
+      "coily": "Crépu / Frisé",
+      "afro": "Afro",
+      "braided": "Tressé",
+      "bald": "Chauve"
+    },
+    "hairColors": {
+      "black": "Noir",
+      "brown": "Brun",
+      "chestnut": "Châtain",
+      "auburn": "Auburn",
+      "blonde": "Blond",
+      "platinum": "Platine",
+      "red": "Roux",
+      "gray": "Gris",
+      "saltPepper": "Poivre et Sel",
+      "white": "Blanc"
+    },
+    "eyeColors": {
+      "brown": "Marron",
+      "blue": "Bleu",
+      "green": "Vert",
+      "hazel": "Noisette",
+      "amber": "Ambre",
+      "gray": "Gris",
+      "black": "Noir",
+      "heterochromia": "Hétérochromie"
+    },
+    "poses": {
+      "standing": "Debout",
+      "sitting": "Assis",
+      "walking": "Marchant",
+      "leaning": "Appuyé",
+      "armsCrossed": "Bras Croisés",
+      "handsOnHips": "Mains sur les Hanches",
+      "casual": "Décontracté",
+      "formal": "Formel",
+      "fashionRunway": "Défilé de Mode",
+      "profile": "Vue de Profil"
+    }
   }
 }

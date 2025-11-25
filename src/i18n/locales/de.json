@@ -1245,5 +1245,129 @@
       "reason3": "👥 Werden Sie Teil einer exklusiven Gründer-Community mit direktem Einfluss auf die Produktentwicklung"
     },
     "viewOtherPlans": "Andere Pläne Anzeigen"
+  },
+  "aiModelForm": {
+    "title": "Modell mit KI erstellen",
+    "credits": "Credits",
+    "modelName": "Modellname",
+    "modelNamePlaceholder": "z.B., KI-generiertes Modell",
+    "genderIdentity": "Geschlecht / Identität",
+    "selectGender": "Geschlecht auswählen",
+    "nationality": "Nationalität / Ethnizität",
+    "selectNationality": "Nationalität auswählen",
+    "ageRange": "Altersbereich",
+    "selectAgeRange": "Altersbereich auswählen",
+    "bodyCharacteristics": "Körpermerkmale",
+    "bodyType": "Körpertyp",
+    "selectBodyType": "Körpertyp auswählen",
+    "height": "Größe (cm)",
+    "skinTone": "Hautton (Fitzpatrick-Skala)",
+    "selectSkinTone": "Hautton auswählen",
+    "hairEyes": "Haare & Augen",
+    "hairLength": "Haarlänge",
+    "hairTexture": "Haarstruktur",
+    "hairColor": "Haarfarbe",
+    "eyeColor": "Augenfarbe",
+    "selectEyeColor": "Augenfarbe auswählen",
+    "poseStyle": "Posenstil",
+    "pose": "Pose",
+    "selectPose": "Pose auswählen",
+    "gentleSmile": "Sanftes Lächeln",
+    "gentleSmileDesc": "Warmen und einladenden Gesichtsausdruck hinzufügen",
+    "cancel": "Abbrechen",
+    "generate": "Modell Generieren",
+    "generating": "Generierung...",
+    "genders": {
+      "female": "Weiblich",
+      "male": "Männlich",
+      "unisex": "Unisex",
+      "nonBinary": "Nicht-binär",
+      "genderFluid": "Genderfluid"
+    },
+    "nationalities": {
+      "mixed": "Gemischte Ethnizität",
+      "notSpecified": "Nicht Angegeben",
+      "africa": "Afrika",
+      "asia": "Asien",
+      "europe": "Europa",
+      "middleEast": "Naher Osten",
+      "americas": "Amerika",
+      "pacific": "Pazifik"
+    },
+    "ageRanges": {
+      "baby": "0-12 Monate (Baby)",
+      "toddler": "1-3 Jahre (Kleinkind)",
+      "youngChild": "4-7 Jahre (junges Kind)",
+      "child": "8-12 Jahre (Kind)",
+      "teen": "13-17 (Teenager)"
+    },
+    "bodyTypes": {
+      "petite": "Zierlich",
+      "slim": "Schlank",
+      "athletic": "Athletisch",
+      "average": "Durchschnittlich",
+      "curvy": "Kurvig",
+      "muscular": "Muskulös",
+      "plus": "Plus Size",
+      "tallSlim": "Groß und Schlank"
+    },
+    "skinTones": {
+      "veryFair": "Typ I - Sehr Hell",
+      "fair": "Typ II - Hell",
+      "medium": "Typ III - Mittel",
+      "olive": "Typ IV - Oliv",
+      "brown": "Typ V - Braun",
+      "darkBrown": "Typ VI - Dunkelbraun bis Schwarz"
+    },
+    "hairLengths": {
+      "veryShort": "Sehr Kurz / Buzz",
+      "short": "Kurz",
+      "medium": "Mittel",
+      "long": "Lang",
+      "extraLong": "Extra Lang"
+    },
+    "hairTextures": {
+      "straight": "Glatt",
+      "wavy": "Wellig",
+      "curly": "Lockig",
+      "coily": "Kraus / Afro",
+      "afro": "Afro",
+      "braided": "Geflochten",
+      "bald": "Kahl"
+    },
+    "hairColors": {
+      "black": "Schwarz",
+      "brown": "Braun",
+      "chestnut": "Kastanienbraun",
+      "auburn": "Rotbraun",
+      "blonde": "Blond",
+      "platinum": "Platinblond",
+      "red": "Rot",
+      "gray": "Grau",
+      "saltPepper": "Salz und Pfeffer",
+      "white": "Weiß"
+    },
+    "eyeColors": {
+      "brown": "Braun",
+      "blue": "Blau",
+      "green": "Grün",
+      "hazel": "Haselnussbraun",
+      "amber": "Bernstein",
+      "gray": "Grau",
+      "black": "Schwarz",
+      "heterochromia": "Heterochromie"
+    },
+    "poses": {
+      "standing": "Stehend",
+      "sitting": "Sitzend",
+      "walking": "Gehend",
+      "leaning": "Angelehnt",
+      "armsCrossed": "Verschränkte Arme",
+      "handsOnHips": "Hände in die Hüften",
+      "casual": "Lässig",
+      "formal": "Formal",
+      "fashionRunway": "Mode-Laufsteg",
+      "profile": "Profilansicht"
+    }
   }
 }
