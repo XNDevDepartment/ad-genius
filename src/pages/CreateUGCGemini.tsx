@@ -67,7 +67,7 @@ const CreateUGCGemini = () => {
   let navigate = useNavigate();
   const location = useLocation();
 
-  const { user, subscriptionData, loading } = useAuth();
+  const { user, subscriptionData } = useAuth();
   const { credits, getTotalCredits } = useCredits();
   const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
@@ -147,12 +147,6 @@ const CreateUGCGemini = () => {
   const resultsRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
 
-  // Block access if not authenticated (wait for auth to load first)
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/account');
-    }
-  }, [user, loading, navigate]);
 
   // On every render where `desiredAudience` changed, shrink then grow to fit
   useLayoutEffect(() => {
@@ -196,12 +190,10 @@ const CreateUGCGemini = () => {
     }
   };
 
-  // Initialize thread only when user is authenticated
+  // Initialize thread on component mount
   useEffect(() => {
-    if (!loading && user) {
-      initializeThread();
-    }
-  }, [loading, user]);
+    initializeThread();
+  }, []);
 
   // Sync source IDs when productImages changes (prevent stale references)
   useEffect(() => {
@@ -216,10 +208,8 @@ const CreateUGCGemini = () => {
     }
   }, [productImages.length]);
 
-  // Handle replicate mode - pre-fill from location state (wait for auth)
+  // Handle replicate mode - pre-fill from location state
   useEffect(() => {
-    if (loading || !user) return;
-    
     const replicateState = location.state as any;
     if (replicateState?.replicateJobId) {
       console.log('[CreateUGCGemini] Replicate mode detected:', replicateState);
@@ -304,7 +294,7 @@ const CreateUGCGemini = () => {
       // Clear location state to prevent re-triggering
       window.history.replaceState({}, document.title);
     }
-  }, [loading, user]);
+  }, []);
 
   // Auto-scroll to scenarios when they appear
   useEffect(() => {
@@ -387,10 +377,8 @@ const CreateUGCGemini = () => {
     }
   }, [job?.status]);
 
-  // Restore job state from localStorage on mount (wait for auth)
+  // Restore job state from localStorage on mount
   useEffect(() => {
-    if (loading || !user) return;
-    
     const savedJobId = localStorage.getItem('currentGeminiJobId');
     const savedStage = localStorage.getItem('currentGeminiStage');
     const jobMetadata = localStorage.getItem('geminiJobMetadata');
@@ -465,7 +453,7 @@ const CreateUGCGemini = () => {
     if (job && savedStage === 'generating' && job.status !== 'completed') {
       setNumImages(job.total);
     }
-  }, [loading, user, job, activeJob, loadJob]);
+  }, [job, activeJob, loadJob]);
 
   // Monitor job status and handle completion/failures
   useEffect(() => {
@@ -1058,17 +1046,8 @@ const CreateUGCGemini = () => {
 
 
   return (
-    <>
-      {/* Auth loading spinner */}
-      {loading && (
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
-        </div>
-      )}
-
-      {!loading && (
-        <TooltipProvider delayDuration={120} skipDelayDuration={400}>
-          <div ref={topRef} className="min-h-screen bg-background relative">
+    <TooltipProvider delayDuration={120} skipDelayDuration={400}>
+      <div ref={topRef} className="min-h-screen bg-background relative">
       {/* Loading Overlay */}
       {!threadId && (
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-[30] flex items-center justify-center">
@@ -1831,9 +1810,7 @@ const CreateUGCGemini = () => {
         </DialogContent>
       </Dialog>
       </div>
-        </TooltipProvider>
-      )}
-    </>
+    </TooltipProvider>
   );
 };
 

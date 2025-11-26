@@ -16,6 +16,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LoadingFallback } from "./components/LoadingFallback";
 import { checkForCachedVersion } from "./utils/cacheCheck";
 import { lazyWithRetry } from "./utils/lazyWithRetry";
+import { AuthGuard } from "./components/AuthGuard";
 
 // Lazy load non-critical routes with automatic retry logic
 const CreateSelection = lazyWithRetry(() => import("./pages/ModuleSelection"));
@@ -93,14 +94,18 @@ const App = () => {
                 <Route path="create/ugc" element={
                   <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
-                      <CreateUGCGemini />
+                      <AuthGuard>
+                        <CreateUGCGemini />
+                      </AuthGuard>
                     </Suspense>
                   </ErrorBoundaryWithReset>
                 } />
                 <Route path="create/video" element={
                   <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
-                      <TestVideoGeneration />
+                      <AuthGuard>
+                        <TestVideoGeneration />
+                      </AuthGuard>
                     </Suspense>
                   </ErrorBoundaryWithReset>
                 } />
@@ -114,7 +119,9 @@ const App = () => {
                 <Route path="create/outfit-swap" element={
                   <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
-                      <OutfitSwap />
+                      <AuthGuard>
+                        <OutfitSwap />
+                      </AuthGuard>
                     </Suspense>
                   </ErrorBoundaryWithReset>
                 } />
