@@ -69,17 +69,9 @@ export default function VideoGenerator() {
     animationStyle: 'natural',
   });
 
-  // Check access on mount
+  // Check access on mount (AuthGuard handles authentication check)
   useEffect(() => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to access video generation.",
-        variant: "destructive",
-      });
-      navigate('/account');
-      return;
-    }
+    if (!user) return;
 
     // Skip access checks for admins
     if (isAdminLoading) return;

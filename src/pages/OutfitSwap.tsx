@@ -22,7 +22,7 @@ const OutfitSwap = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const { batch, jobs, loading: batchLoading, createBatch, cancelBatch, reset, refreshBatch, retryJob, retryingJobs } = useOutfitSwapBatch();
   const { calculateBatchCost, canAffordBatch, getSavings } = useOutfitSwapLimit();
@@ -40,17 +40,6 @@ const OutfitSwap = () => {
   const [replicatedJob, setReplicatedJob] = useState<OutfitSwapJob | null>(null);
   const [replicatedResult, setReplicatedResult] = useState<OutfitSwapResult | null>(null);
 
-  // Check authentication only - outfit-swap is available to all authenticated users
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/account");
-      toast({
-        variant: "destructive",
-        title: t('outfitSwap.errors.accessDenied'),
-        description: "Please sign in to access outfit-swap features.",
-      });
-    }
-  }, [user, loading, navigate, toast, t]);
 
   // Handle replicate mode from location state
   useEffect(() => {
@@ -140,22 +129,6 @@ const OutfitSwap = () => {
     setReplicatedResult(null);
     navigate('/outfit-swap', { replace: true });
   };
-
-  // Show loading spinner while auth initializes
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">{t('common.loading')}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
 
   const cost = calculateBatchCost(garmentFiles.length);
   const savings = getSavings(garmentFiles.length);
