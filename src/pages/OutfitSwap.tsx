@@ -127,7 +127,7 @@ const OutfitSwap = () => {
     setReplicateMode(false);
     setReplicatedJob(null);
     setReplicatedResult(null);
-    navigate('/outfit-swap', { replace: true });
+    navigate('/create/outfit-swap', { replace: true });
   };
 
   const cost = calculateBatchCost(garmentFiles.length);
