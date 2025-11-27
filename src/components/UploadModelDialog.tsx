@@ -39,7 +39,30 @@ export const UploadModelDialog = ({
   const [ageRange, setAgeRange] = useState<string>("");
   const { toast } = useToast();
 
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  const SUPPORTED_FORMATS = ['image/png', 'image/jpeg', 'image/jpg'];
+
   const handleFileSelect = (selectedFile: File) => {
+    // Validate file size
+    if (selectedFile.size > MAX_FILE_SIZE) {
+      toast({
+        variant: "destructive",
+        title: t('uploadModelDialog.fileTooLarge'),
+        description: t('uploadModelDialog.fileTooLargeDesc'),
+      });
+      return;
+    }
+
+    // Validate file format
+    if (!SUPPORTED_FORMATS.includes(selectedFile.type)) {
+      toast({
+        variant: "destructive",
+        title: t('uploadModelDialog.invalidFormat'),
+        description: t('uploadModelDialog.invalidFormatDesc'),
+      });
+      return;
+    }
+
     setFile(selectedFile);
     const reader = new FileReader();
     reader.onload = () => setPreview(reader.result as string);
@@ -112,9 +135,10 @@ export const UploadModelDialog = ({
               <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary">
                 <Upload className="w-8 h-8 text-muted-foreground mb-2" />
                 <span className="text-sm text-muted-foreground">{t('uploadModelDialog.clickToUpload')}</span>
+                <span className="text-xs text-muted-foreground mt-1">{t('uploadModelDialog.formatHint')}</span>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/png,image/jpeg,.png,.jpg,.jpeg"
                   className="hidden"
                   onChange={(e) => {
                     const selectedFile = e.target.files?.[0];

@@ -28,6 +28,27 @@ async function uploadAndProcessModel(supabaseClient: any, userId: string, params
   const { imageDataUrl, metadata, previewMode = false } = params;
   const creditCost = 5;
 
+  // Validate image format before proceeding
+  if (!imageDataUrl || typeof imageDataUrl !== 'string') {
+    throw new Error("Invalid image data");
+  }
+
+  // Extract MIME type from data URL
+  const mimeMatch = imageDataUrl.match(/^data:image\/([\w+]+);base64,/);
+  if (!mimeMatch) {
+    throw new Error("Invalid image format. Please upload a valid image file.");
+  }
+
+  const mimeType = mimeMatch[1].toLowerCase();
+  const supportedFormats = ['png', 'jpg', 'jpeg'];
+  
+  if (!supportedFormats.includes(mimeType)) {
+    console.error(`Unsupported format detected: ${mimeType}`);
+    throw new Error(`Unsupported image format: ${mimeType.toUpperCase()}. Please use PNG, JPG, or JPEG images only.`);
+  }
+
+  console.log(`Image format validated: ${mimeType.toUpperCase()}`);
+
   if (!previewMode) {
     const { data: creditCheck, error: creditError } = await supabaseClient.rpc("deduct_user_credits", {
       p_user_id: userId,
@@ -83,7 +104,7 @@ async function uploadAndProcessModel(supabaseClient: any, userId: string, params
       } else if (geminiResponse.status === 402) {
         throw new Error("AI service quota exceeded. Please contact support.");
       } else if (geminiResponse.status === 400) {
-        throw new Error("Image format not supported. Please try a different image.");
+        throw new Error("Unsupported image format. Please use PNG, JPG, or JPEG images only. Other formats like WEBP, GIF, or HEIC are not supported.");
       }
       
       throw new Error(`Background removal failed (${geminiResponse.status}). Please try a different image or contact support.`);
