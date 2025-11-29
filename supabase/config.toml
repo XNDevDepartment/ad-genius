@@ -95,6 +95,9 @@ verify_jwt = true
 [functions.stripe-webhook]
 verify_jwt = false
 
+[functions.redeem-promo-code]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 port = 54327
