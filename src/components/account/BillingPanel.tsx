@@ -13,6 +13,7 @@ import { useState } from "react";
 import { PaymentMethodCard } from "./PaymentMethodCard";
 import { InvoicesList } from "./InvoicesList";
 import { CreditTransactionsList } from "./CreditTransactionsList";
+import { PromoCodeRedemption } from "./PromoCodeRedemption";
 
 interface BillingPanelProps {
   onClose: () => void;
@@ -255,6 +256,8 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
           )}
         </CardContent>
       </Card>
+
+      <PromoCodeRedemption onSuccess={handleRefreshSubscription} />
 
       {isSubscribed() && (
         <>

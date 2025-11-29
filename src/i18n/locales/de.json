@@ -262,6 +262,23 @@
       "fullDetails": "Alle Preisdetails Anzeigen"
     }
   },
+  "promoCode": {
+    "title": "Aktionscode",
+    "description": "Haben Sie einen Aktionscode? Geben Sie ihn unten ein, um Bonus-Credits zu erhalten.",
+    "placeholder": "Aktionscode eingeben",
+    "redeem": "Einlösen",
+    "redeeming": "Einlösen...",
+    "success": "Code erfolgreich eingelöst!",
+    "creditsAdded": "{{credits}} Credits wurden Ihrem Konto hinzugefügt!",
+    "errors": {
+      "invalidCode": "Ungültiger Aktionscode. Bitte überprüfen Sie ihn und versuchen Sie es erneut.",
+      "codeExpired": "Dieser Aktionscode ist abgelaufen.",
+      "codeExhausted": "Dieser Aktionscode ist nicht mehr verfügbar.",
+      "alreadyRedeemed": "Sie haben diesen Code bereits eingelöst.",
+      "notAuthenticated": "Bitte melden Sie sich an, um einen Aktionscode einzulösen.",
+      "genericError": "Code konnte nicht eingelöst werden. Bitte versuchen Sie es erneut."
+    }
+  },
   "createSelection": {
     "title": "Wähle deinen Workflow",
     "description": "Wähle die Art von Inhalt, den du erstellen möchtest",
