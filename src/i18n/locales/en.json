@@ -267,6 +267,23 @@
       "fullDetails": "See Full Pricing Details"
     }
   },
+  "promoCode": {
+    "title": "Promo Code",
+    "description": "Have a promotion code? Enter it below to receive bonus credits.",
+    "placeholder": "Enter promo code",
+    "redeem": "Redeem",
+    "redeeming": "Redeeming...",
+    "success": "Code redeemed successfully!",
+    "creditsAdded": "{{credits}} credits added to your account!",
+    "errors": {
+      "invalidCode": "Invalid promo code. Please check and try again.",
+      "codeExpired": "This promo code has expired.",
+      "codeExhausted": "This promo code is no longer available.",
+      "alreadyRedeemed": "You have already redeemed this code.",
+      "notAuthenticated": "Please sign in to redeem a promo code.",
+      "genericError": "Failed to redeem code. Please try again."
+    }
+  },
   "createSelection": {
     "title": "Choose Your Workflow",
     "description": "Select the type of content you want to create",

@@ -262,6 +262,23 @@
       "fullDetails": "Voir Tous les Détails Tarifaires"
     }
   },
+  "promoCode": {
+    "title": "Code Promotionnel",
+    "description": "Vous avez un code promotionnel ? Saisissez-le ci-dessous pour recevoir des crédits bonus.",
+    "placeholder": "Entrez le code promotionnel",
+    "redeem": "Valider",
+    "redeeming": "Validation...",
+    "success": "Code validé avec succès !",
+    "creditsAdded": "{{credits}} crédits ajoutés à votre compte !",
+    "errors": {
+      "invalidCode": "Code promotionnel invalide. Veuillez vérifier et réessayer.",
+      "codeExpired": "Ce code promotionnel a expiré.",
+      "codeExhausted": "Ce code promotionnel n'est plus disponible.",
+      "alreadyRedeemed": "Vous avez déjà utilisé ce code.",
+      "notAuthenticated": "Veuillez vous connecter pour utiliser un code promotionnel.",
+      "genericError": "Échec de la validation du code. Veuillez réessayer."
+    }
+  },
   "createSelection": {
     "title": "Choisissez votre Flux de Travail",
     "description": "Sélectionnez le type de contenu que vous souhaitez créer",

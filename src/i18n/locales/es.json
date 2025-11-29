@@ -262,6 +262,23 @@
       "fullDetails": "Ver Detalles Completos de Precios"
     }
   },
+  "promoCode": {
+    "title": "Código Promocional",
+    "description": "¿Tienes un código promocional? Ingrésalo a continuación para recibir créditos adicionales.",
+    "placeholder": "Ingresa el código promocional",
+    "redeem": "Canjear",
+    "redeeming": "Canjeando...",
+    "success": "¡Código canjeado con éxito!",
+    "creditsAdded": "¡{{credits}} créditos añadidos a tu cuenta!",
+    "errors": {
+      "invalidCode": "Código promocional inválido. Por favor verifica e intenta de nuevo.",
+      "codeExpired": "Este código promocional ha expirado.",
+      "codeExhausted": "Este código promocional ya no está disponible.",
+      "alreadyRedeemed": "Ya has canjeado este código.",
+      "notAuthenticated": "Por favor inicia sesión para canjear un código promocional.",
+      "genericError": "Error al canjear el código. Por favor intenta de nuevo."
+    }
+  },
   "createSelection": {
     "title": "Elige tu Flujo de Trabajo",
     "description": "Selecciona el tipo de contenido que quieres crear",
