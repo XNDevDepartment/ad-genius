@@ -81,8 +81,8 @@ export const UserStatsPanel = () => {
           <Progress value={100 - creditUsagePercentage} className="h-2" />
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* Stats Grid - Hidden on mobile */}
+        <div className="hidden lg:grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <Image className="h-4 w-4 text-primary" />
