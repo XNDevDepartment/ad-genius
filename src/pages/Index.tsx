@@ -4,6 +4,7 @@ import SocialProofSection from "@/components/landing/SocialProofSection";
 import Footer from "@/components/landing/Footer";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Coins } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import PricingSection from "@/components/landing/PricingSection";
 import HeaderSection from "@/components/landing/HeaderSection";
@@ -60,6 +61,19 @@ const Index = () => {
           {/* User Stats Panel */}
           <div className="lg:col-span-5">
             <UserStatsPanel />
+            
+            {/* Mobile-only Get More Credits button */}
+            <div className="lg:hidden mt-4 text-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/pricing")}
+                className="text-muted-foreground hover:text-primary"
+              >
+                <Coins className="h-4 w-4 mr-2" />
+                {t("index.auth.getMoreCredits")}
+              </Button>
+            </div>
           </div>
         </div>
 
