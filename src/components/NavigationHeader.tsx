@@ -1,5 +1,4 @@
-import { useActionData, useNavigate } from 'react-router-dom';
-import symbol from '../assets/favicon2.png';
+import { useNavigate } from 'react-router-dom';
 import logo from '../assets/logos/logo_horizontal.png';
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
@@ -7,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from "react-i18next";
 import { LogIn, Sparkles } from "lucide-react";
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { LanguageSelector } from '@/components/LanguageSelector';
 
 const NavigationHeader = () => {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
@@ -69,6 +70,18 @@ const NavigationHeader = () => {
           <LogIn className="h-4 w-4" />
         </Button>
       </motion.div>}
+
+      {user && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="flex items-center gap-1"
+        >
+          <ThemeToggle variant="ghost" size="icon" />
+          <LanguageSelector variant="ghost" size="icon" />
+        </motion.div>
+      )}
     </header>
   );
 };
