@@ -68,7 +68,7 @@ const Index = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/pricing")}
-                className="text-muted-foreground hover:text-primary"
+                className="text-muted-foreground hover:bg-primary/10 hover:text-foreground"
               >
                 <Coins className="h-4 w-4 mr-2" />
                 {t("index.auth.getMoreCredits")}
