@@ -52,10 +52,19 @@ const VideoAds = lazyWithRetry(() => import("./pages/VideoAds"));
 
 const queryClient = new QueryClient();
 
-// Wrapper component to provide resetKey to ErrorBoundary
+// Wrapper component to provide resetKey and user context to ErrorBoundary
 const ErrorBoundaryWithReset = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  return <ErrorBoundary resetKey={location.pathname}>{children}</ErrorBoundary>;
+  const { user } = useAuth();
+  return (
+    <ErrorBoundary 
+      resetKey={location.pathname}
+      userId={user?.id}
+      userEmail={user?.email}
+    >
+      {children}
+    </ErrorBoundary>
+  );
 };
 
 const App = () => {

@@ -3,13 +3,51 @@ import { Button } from '@/components/ui/button';
 
 interface Props {
   children: ReactNode;
-  resetKey?: string; // Route key to trigger reset on navigation
+  resetKey?: string;
+  userId?: string;
+  userEmail?: string;
 }
 
 interface State {
   hasError: boolean;
   error?: Error;
 }
+
+// Report error to backend
+const reportError = async (
+  error: Error,
+  errorInfo: { componentStack?: string },
+  userId?: string,
+  userEmail?: string
+) => {
+  try {
+    const payload = {
+      user_id: userId || null,
+      user_email: userEmail || null,
+      error_message: error.message || 'Unknown error',
+      error_stack: error.stack || null,
+      page_url: window.location.href,
+      user_agent: navigator.userAgent,
+      metadata: {
+        componentStack: errorInfo?.componentStack || null,
+        timestamp: new Date().toISOString(),
+        pathname: window.location.pathname,
+        search: window.location.search
+      }
+    };
+
+    await fetch('https://dhqdamfisdbbcieqlpvt.supabase.co/functions/v1/report-error', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch (reportErr) {
+    // Silently fail - don't show errors about error reporting
+    console.warn('[ErrorBoundary] Failed to report error:', reportErr);
+  }
+};
 
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
@@ -30,6 +68,9 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: any) {
     console.error('[ErrorBoundary] Caught error:', error, errorInfo);
+    
+    // Report error to backend
+    reportError(error, errorInfo, this.props.userId, this.props.userEmail);
   }
 
   render() {
