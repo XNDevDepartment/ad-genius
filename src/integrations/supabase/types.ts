@@ -195,6 +195,42 @@ export type Database = {
         }
         Relationships: []
       }
+      error_reports: {
+        Row: {
+          created_at: string | null
+          error_message: string
+          error_stack: string | null
+          id: string
+          metadata: Json | null
+          page_url: string
+          user_agent: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message: string
+          error_stack?: string | null
+          id?: string
+          metadata?: Json | null
+          page_url: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string
+          error_stack?: string | null
+          id?: string
+          metadata?: Json | null
+          page_url?: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       generated_images: {
         Row: {
           created_at: string
