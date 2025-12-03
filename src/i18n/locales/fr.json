@@ -1,4 +1,11 @@
 {
+  "errorBoundary": {
+    "title": "Échec du chargement de la page",
+    "description": "Cela peut être dû à un problème de réseau ou à un cache obsolète. Veuillez essayer d'actualiser.",
+    "refreshPage": "Actualiser la Page",
+    "goBack": "Retour",
+    "supportText": "Si le problème persiste, contactez le support :"
+  },
   "navigation": {
     "home": "Accueil",
     "create": "Créer",
