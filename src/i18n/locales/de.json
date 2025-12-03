@@ -1,4 +1,11 @@
 {
+  "errorBoundary": {
+    "title": "Seite konnte nicht geladen werden",
+    "description": "Dies kann an einem Netzwerkproblem oder veraltetem Cache liegen. Bitte versuchen Sie, die Seite zu aktualisieren.",
+    "refreshPage": "Seite Aktualisieren",
+    "goBack": "Zurück",
+    "supportText": "Wenn das Problem weiterhin besteht, kontaktieren Sie den Support:"
+  },
   "navigation": {
     "home": "Startseite",
     "create": "Erstellen",

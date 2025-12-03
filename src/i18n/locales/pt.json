@@ -1,4 +1,11 @@
 {
+  "errorBoundary": {
+    "title": "Falha ao carregar página",
+    "description": "Isto pode ser devido a um problema de rede ou cache desatualizado. Por favor, tente atualizar.",
+    "refreshPage": "Atualizar Página",
+    "goBack": "Voltar",
+    "supportText": "Se o problema persistir, contacte o suporte:"
+  },
   "navigation": {
     "home": "Início",
     "create": "Criar",

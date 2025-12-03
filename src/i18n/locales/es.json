@@ -1,4 +1,11 @@
 {
+  "errorBoundary": {
+    "title": "Error al cargar la página",
+    "description": "Esto puede deberse a un problema de red o caché desactualizada. Por favor, intente actualizar.",
+    "refreshPage": "Actualizar Página",
+    "goBack": "Volver",
+    "supportText": "Si el problema persiste, contacte con soporte:"
+  },
   "navigation": {
     "home": "Inicio",
     "create": "Crear",

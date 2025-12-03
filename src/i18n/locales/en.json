@@ -1,4 +1,11 @@
 {
+  "errorBoundary": {
+    "title": "Failed to load page",
+    "description": "This might be due to a network issue or outdated cache. Please try refreshing.",
+    "refreshPage": "Refresh Page",
+    "goBack": "Go Back",
+    "supportText": "If the problem persists, contact support:"
+  },
   "navigation": {
     "home": "Home",
     "create": "Create",

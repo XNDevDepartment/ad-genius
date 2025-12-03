@@ -1,7 +1,8 @@
 import { Component, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
+import { withTranslation, WithTranslation } from 'react-i18next';
 
-interface Props {
+interface Props extends WithTranslation {
   children: ReactNode;
   resetKey?: string;
   userId?: string;
@@ -49,7 +50,7 @@ const reportError = async (
   }
 };
 
-export class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundaryClass extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false };
@@ -74,25 +75,29 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   render() {
+    const { t } = this.props;
+    
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-4">
           <div className="text-center max-w-md">
-            <h2 className="text-xl font-semibold mb-2">Failed to load page</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              {t('errorBoundary.title')}
+            </h2>
             <p className="text-sm text-muted-foreground mb-4">
-              This might be due to a network issue or outdated cache. Please try refreshing.
+              {t('errorBoundary.description')}
             </p>
             <div className="flex gap-2 justify-center mb-6">
               <Button onClick={() => window.location.reload()}>
-                Refresh Page
+                {t('errorBoundary.refreshPage')}
               </Button>
               <Button variant="outline" onClick={() => window.history.back()}>
-                Go Back
+                {t('errorBoundary.goBack')}
               </Button>
             </div>
             <div className="pt-4 border-t border-border">
               <p className="text-xs text-muted-foreground">
-                If the problem persists, contact support:
+                {t('errorBoundary.supportText')}
               </p>
               <a 
                 href="mailto:info@produktpix.com" 
@@ -109,3 +114,5 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+
+export const ErrorBoundary = withTranslation()(ErrorBoundaryClass);
