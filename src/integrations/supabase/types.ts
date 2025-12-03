@@ -947,41 +947,53 @@ export type Database = {
       profiles: {
         Row: {
           account_id: string
+          analytics_enabled: boolean | null
           created_at: string | null
           description: string | null
           email: string
           id: string
+          login_notifications_enabled: boolean | null
           mailerlite_subscriber_id: string | null
           name: string | null
           newsletter_subscribed: boolean | null
           profession: string | null
           profile_picture: string | null
+          public_gallery_enabled: boolean | null
+          show_generation_history: boolean | null
           updated_at: string | null
         }
         Insert: {
           account_id: string
+          analytics_enabled?: boolean | null
           created_at?: string | null
           description?: string | null
           email: string
           id: string
+          login_notifications_enabled?: boolean | null
           mailerlite_subscriber_id?: string | null
           name?: string | null
           newsletter_subscribed?: boolean | null
           profession?: string | null
           profile_picture?: string | null
+          public_gallery_enabled?: boolean | null
+          show_generation_history?: boolean | null
           updated_at?: string | null
         }
         Update: {
           account_id?: string
+          analytics_enabled?: boolean | null
           created_at?: string | null
           description?: string | null
           email?: string
           id?: string
+          login_notifications_enabled?: boolean | null
           mailerlite_subscriber_id?: string | null
           name?: string | null
           newsletter_subscribed?: boolean | null
           profession?: string | null
           profile_picture?: string | null
+          public_gallery_enabled?: boolean | null
+          show_generation_history?: boolean | null
           updated_at?: string | null
         }
         Relationships: []

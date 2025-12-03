@@ -101,6 +101,9 @@ verify_jwt = true
 [functions.report-error]
 verify_jwt = false
 
+[functions.delete-account]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 port = 54327
