@@ -76,6 +76,34 @@ serve(async (req) => {
           session.subscription as string
         );
         
+        // Retrieve session with discount details expanded to detect promo codes
+        let promoCodeUsed: string | null = null;
+        try {
+          const sessionWithDiscounts = await stripe.checkout.sessions.retrieve(
+            session.id,
+            { expand: ['total_details.breakdown'] }
+          );
+          
+          const breakdown = sessionWithDiscounts.total_details?.breakdown as any;
+          const discounts = breakdown?.discounts || [];
+          
+          for (const discount of discounts) {
+            if (discount.discount?.promotion_code) {
+              try {
+                const promoCode = await stripe.promotionCodes.retrieve(
+                  discount.discount.promotion_code as string
+                );
+                promoCodeUsed = promoCode.code;
+                console.log(`[WEBHOOK] Promo code detected: ${promoCodeUsed}`);
+              } catch (e) {
+                console.error('[WEBHOOK] Failed to retrieve promo code details:', e);
+              }
+            }
+          }
+        } catch (e) {
+          console.error('[WEBHOOK] Failed to retrieve session discounts:', e);
+        }
+        
         // Map plan_id to tier
         const tierMap: Record<string, string> = {
           founders: "Founders",
@@ -86,7 +114,7 @@ serve(async (req) => {
         
         const tier = tierMap[planId as string] || "Free";
         
-        // Credit allocation map
+        // Credit allocation map (base credits)
         const creditMap: Record<string, number> = {
           Founders: 80,
           Starter: 80,
@@ -95,9 +123,16 @@ serve(async (req) => {
           Free: 10
         };
         
-        const credits = creditMap[tier];
+        let credits = creditMap[tier];
         
-        console.log(`[WEBHOOK] Activating ${tier} subscription with ${credits} credits`);
+        // PROV15 promo code gives 10% bonus credits on Plus and Pro plans only
+        if (promoCodeUsed === 'PROV15' && (tier === 'Plus' || tier === 'Pro')) {
+          const bonusCredits = Math.floor(credits * 0.10);
+          credits += bonusCredits;
+          console.log(`[WEBHOOK] PROV15 bonus applied: +${bonusCredits} credits (total: ${credits})`);
+        }
+        
+        console.log(`[WEBHOOK] Activating ${tier} subscription with ${credits} credits${promoCodeUsed ? ` (promo: ${promoCodeUsed})` : ''}`);
         
         // Update subscriber in database
         const { error: updateError } = await supabase
