@@ -89,24 +89,24 @@ const ModuleSelection = () => {
     //   path: "/create/product-studio",
     //   isAdmin: true
     // }] : []),
-    ...(isAdmin ? [{
-      id: "product-studio-bulk",
-      title: "Product Studio Bulk",
-      description: "Process multiple products at once with batch background replacement",
-      icon: Images,
-      path: "/create/product-studio-bulk",
-      isAdmin: true,
-      isBeta: false
-    }] : []),
-    ...(isAdmin ? [{
-      id: "magazine-photoshoot",
-      title: "Magazine Photoshoot",
-      description: "Transform photos into high-fashion editorial magazine spreads",
-      icon: Camera,
-      path: "/create/magazine-photoshoot",
-      isAdmin: true,
-      isBeta: false
-    }] : []),
+    // ...(isAdmin ? [{
+    //   id: "product-studio-bulk",
+    //   title: "Product Studio Bulk",
+    //   description: "Process multiple products at once with batch background replacement",
+    //   icon: Images,
+    //   path: "/create/product-studio-bulk",
+    //   isAdmin: true,
+    //   isBeta: false
+    // }] : []),
+    // ...(isAdmin ? [{
+    //   id: "magazine-photoshoot",
+    //   title: "Magazine Photoshoot",
+    //   description: "Transform photos into high-fashion editorial magazine spreads",
+    //   icon: Camera,
+    //   path: "/create/magazine-photoshoot",
+    //   isAdmin: true,
+    //   isBeta: false
+    // }] : []),
     // ...(isAdmin ? [{
     //   id: "custom-model",
     //   title: "Create Your Own Model",
