@@ -139,6 +139,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Sync Google OAuth users to MailerLite on first login
+        if (event === 'SIGNED_IN' && session?.user) {
+          const syncKey = `mailerlite_synced_${session.user.id}`;
+          const alreadySynced = sessionStorage.getItem(syncKey);
+          
+          if (!alreadySynced) {
+            sessionStorage.setItem(syncKey, 'true');
+            
+            // Check if user is already synced in database
+            setTimeout(async () => {
+              try {
+                const { data: profile } = await supabase
+                  .from('profiles')
+                  .select('mailerlite_subscriber_id, name')
+                  .eq('id', session.user.id)
+                  .single();
+                
+                // Only sync if not already synced
+                if (!profile?.mailerlite_subscriber_id) {
+                  console.log('[AuthContext] Syncing new user to MailerLite:', session.user.email);
+                  
+                  await supabase.functions.invoke('sync-mailerlite', {
+                    body: {
+                      action: 'subscribe',
+                      email: session.user.email,
+                      name: profile?.name || session.user.user_metadata?.name || session.user.user_metadata?.full_name || '',
+                      subscription_tier: 'Free',
+                      newsletter_subscribed: true
+                    }
+                  });
+                  
+                  console.log('[AuthContext] MailerLite sync completed for new user');
+                }
+              } catch (syncError) {
+                console.error('[AuthContext] MailerLite sync error:', syncError);
+              }
+            }, 1000); // Small delay to ensure profile is created
+          }
+        }
       }
       setLoading(false);
     });

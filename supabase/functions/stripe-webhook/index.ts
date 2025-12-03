@@ -166,6 +166,43 @@ serve(async (req) => {
         
         console.log(`[WEBHOOK] ✓ Subscription activated for user ${userId}: ${tier} tier with ${credits} credits`);
         console.log(`[WEBHOOK] Credit allocation result:`, creditResult);
+        
+        // Sync tier change to MailerLite
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('email, name')
+            .eq('id', userId)
+            .single();
+          
+          if (profileData?.email) {
+            const syncResponse = await fetch(
+              `${Deno.env.get("SUPABASE_URL")}/functions/v1/sync-mailerlite`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`
+                },
+                body: JSON.stringify({
+                  action: 'update',
+                  email: profileData.email,
+                  name: profileData.name || '',
+                  subscription_tier: tier,
+                  newsletter_subscribed: true
+                })
+              }
+            );
+            
+            if (syncResponse.ok) {
+              console.log(`[WEBHOOK] ✓ MailerLite synced for ${profileData.email} -> ${tier}`);
+            } else {
+              console.error(`[WEBHOOK] MailerLite sync failed:`, await syncResponse.text());
+            }
+          }
+        } catch (mlError) {
+          console.error("[WEBHOOK] MailerLite sync error (non-fatal):", mlError);
+        }
         break;
       }
       
@@ -234,6 +271,13 @@ serve(async (req) => {
         
         console.log(`[WEBHOOK] Subscription cancelled for customer: ${customerId}`);
         
+        // Find user first to get their ID for MailerLite sync
+        const { data: cancelledSubscriber } = await supabase
+          .from("subscribers")
+          .select("user_id")
+          .eq("stripe_customer_id", customerId)
+          .single();
+        
         const { error: updateError } = await supabase
           .from("subscribers")
           .update({
@@ -250,6 +294,45 @@ serve(async (req) => {
         }
         
         console.log(`[WEBHOOK] ✓ Subscription cancelled for customer ${customerId}`);
+        
+        // Sync downgrade to MailerLite
+        if (cancelledSubscriber?.user_id) {
+          try {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('email, name')
+              .eq('id', cancelledSubscriber.user_id)
+              .single();
+            
+            if (profileData?.email) {
+              const syncResponse = await fetch(
+                `${Deno.env.get("SUPABASE_URL")}/functions/v1/sync-mailerlite`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`
+                  },
+                  body: JSON.stringify({
+                    action: 'update',
+                    email: profileData.email,
+                    name: profileData.name || '',
+                    subscription_tier: 'Free',
+                    newsletter_subscribed: true
+                  })
+                }
+              );
+              
+              if (syncResponse.ok) {
+                console.log(`[WEBHOOK] ✓ MailerLite synced for ${profileData.email} -> Free (cancelled)`);
+              } else {
+                console.error(`[WEBHOOK] MailerLite sync failed:`, await syncResponse.text());
+              }
+            }
+          } catch (mlError) {
+            console.error("[WEBHOOK] MailerLite sync error (non-fatal):", mlError);
+          }
+        }
         break;
       }
       
