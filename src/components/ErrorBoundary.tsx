@@ -82,13 +82,24 @@ export class ErrorBoundary extends Component<Props, State> {
             <p className="text-sm text-muted-foreground mb-4">
               This might be due to a network issue or outdated cache. Please try refreshing.
             </p>
-            <div className="flex gap-2 justify-center">
+            <div className="flex gap-2 justify-center mb-6">
               <Button onClick={() => window.location.reload()}>
                 Refresh Page
               </Button>
               <Button variant="outline" onClick={() => window.history.back()}>
                 Go Back
               </Button>
+            </div>
+            <div className="pt-4 border-t border-border">
+              <p className="text-xs text-muted-foreground">
+                If the problem persists, contact support:
+              </p>
+              <a 
+                href="mailto:info@produktpix.com" 
+                className="text-sm text-primary hover:underline font-medium"
+              >
+                info@produktpix.com
+              </a>
             </div>
           </div>
         </div>
