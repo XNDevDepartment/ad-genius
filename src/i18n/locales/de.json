@@ -20,6 +20,11 @@
     "foundersCTA": "Jetzt Sichern"
   },
   "auth": {
+    "errors": {
+      "domainBlocked": "Diese E-Mail-Domain ist für die Registrierung nicht erlaubt. Bitte verwenden Sie einen anderen E-Mail-Anbieter.",
+      "domainLimitReached": "Ein Konto mit dieser E-Mail-Domain existiert bereits. Für zusätzliche Konten kontaktieren Sie bitte info@produktpix.com",
+      "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein."
+    },
     "signIn": "Anmelden / Registrieren",
     "signOut": "Abmelden"
   },

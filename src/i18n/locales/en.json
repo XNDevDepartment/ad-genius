@@ -20,6 +20,11 @@
     "foundersCTA": "Claim Now"
   },
   "auth": {
+    "errors": {
+      "domainBlocked": "This email domain is not allowed for registration. Please use a different email provider.",
+      "domainLimitReached": "An account already exists with this email domain. For additional accounts, please contact info@produktpix.com",
+      "invalidEmail": "Please enter a valid email address."
+    },
     "signIn": "Sign in / Register",
     "signOut": "Sign out"
   },

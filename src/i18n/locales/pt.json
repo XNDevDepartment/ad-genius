@@ -20,6 +20,11 @@
     "foundersCTA": "Resgatar Agora"
   },
   "auth": {
+    "errors": {
+      "domainBlocked": "Este domínio de email não é permitido para registo. Por favor, use um fornecedor de email diferente.",
+      "domainLimitReached": "Já existe uma conta com este domínio de email. Para contas adicionais, contacte info@produktpix.com",
+      "invalidEmail": "Por favor, introduza um endereço de email válido."
+    },
     "signIn": "Iniciar sessão / Registar",
     "signOut": "Terminar sessão"
   },
