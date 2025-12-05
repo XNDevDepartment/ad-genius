@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { Loader, Eye, EyeOff } from 'lucide-react';
 import HeaderSection from '../landing/HeaderSection';
 import NavigationHeader from '../NavigationHeader';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthModalProps {
   onSuccess?: (email?: string) => void;
@@ -16,13 +17,31 @@ interface AuthModalProps {
   defaultMode?: 'signin' | 'signup';
 }
 
+// Domain validation helper
+const validateSignupDomain = async (email: string): Promise<{ allowed: boolean; reason?: string; message?: string }> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('validate-signup-domain', {
+      body: { email }
+    });
+    
+    if (error) {
+      console.error('[AuthModal] Domain validation error:', error);
+      return { allowed: true }; // Fail open on error
+    }
+    
+    return data;
+  } catch (err) {
+    console.error('[AuthModal] Domain validation exception:', err);
+    return { allowed: true }; // Fail open on error
+  }
+};
+
 export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }: AuthModalProps) => {
-  // ⬇️ Added resetPassword here
   const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
 
   const [isSignUp, setIsSignUp] = useState(defaultMode === 'signup');
   const [loading, setLoading] = useState(false);
-  const [resetLoading, setResetLoading] = useState(false); // ⬅️ new
+  const [resetLoading, setResetLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -43,6 +62,20 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
         // Validate password before submission
         if (formData.password.length < 6) {
           toast.error('Password must be at least 6 characters long');
+          setLoading(false);
+          return;
+        }
+
+        // Validate domain before signup
+        const domainValidation = await validateSignupDomain(formData.email);
+        if (!domainValidation.allowed) {
+          if (domainValidation.reason === 'domain_blocked') {
+            toast.error('This email domain is not allowed for registration. Please use a different email provider.');
+          } else if (domainValidation.reason === 'domain_limit_reached') {
+            toast.error('An account already exists with this email domain. For additional accounts, please contact info@produktpix.com');
+          } else {
+            toast.error(domainValidation.message || 'Unable to register with this email address.');
+          }
           setLoading(false);
           return;
         }

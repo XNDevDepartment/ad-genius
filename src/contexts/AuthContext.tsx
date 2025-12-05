@@ -140,8 +140,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Sync Google OAuth users to MailerLite on first login
+        // For Google OAuth SIGNED_IN, validate domain before allowing
         if (event === 'SIGNED_IN' && session?.user) {
+          const userEmail = session.user.email;
+          const isOAuthUser = session.user.app_metadata?.provider === 'google';
+          
+          // Only validate domain for new OAuth users
+          if (isOAuthUser && userEmail) {
+            const domainCheckKey = `domain_checked_${session.user.id}`;
+            const alreadyChecked = sessionStorage.getItem(domainCheckKey);
+            
+            if (!alreadyChecked) {
+              sessionStorage.setItem(domainCheckKey, 'true');
+              
+              // Check domain validity
+              setTimeout(async () => {
+                try {
+                  // First check if user already has a profile (existing user)
+                  const { data: existingProfile } = await supabase
+                    .from('profiles')
+                    .select('id')
+                    .eq('id', session.user.id)
+                    .single();
+                  
+                  // If user already exists, skip domain validation
+                  if (existingProfile) {
+                    console.log('[AuthContext] Existing user, skipping domain validation');
+                  } else {
+                    // New user - validate domain
+                    const { data: domainValidation, error: domainError } = await supabase.functions.invoke('validate-signup-domain', {
+                      body: { email: userEmail }
+                    });
+                    
+                    if (!domainError && domainValidation && !domainValidation.allowed) {
+                      console.log('[AuthContext] Domain validation failed for OAuth user:', domainValidation.reason);
+                      
+                      // Sign out the user
+                      await supabase.auth.signOut();
+                      
+                      // Show appropriate message
+                      if (domainValidation.reason === 'domain_blocked') {
+                        alert('This email domain is not allowed for registration. Please use a different email provider.');
+                      } else if (domainValidation.reason === 'domain_limit_reached') {
+                        alert('An account already exists with this email domain. For additional accounts, please contact info@produktpix.com');
+                      }
+                      return;
+                    }
+                  }
+                } catch (validationError) {
+                  console.error('[AuthContext] Domain validation error:', validationError);
+                  // Fail open - allow user to continue
+                }
+              }, 500);
+            }
+          }
+          
+          // Sync Google OAuth users to MailerLite on first login
           const syncKey = `mailerlite_synced_${session.user.id}`;
           const alreadySynced = sessionStorage.getItem(syncKey);
           
@@ -176,7 +230,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               } catch (syncError) {
                 console.error('[AuthContext] MailerLite sync error:', syncError);
               }
-            }, 1000); // Small delay to ensure profile is created
+            }, 1000);
           }
         }
       }

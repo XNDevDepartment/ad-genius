@@ -195,6 +195,33 @@ export type Database = {
         }
         Relationships: []
       }
+      domain_rules: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          domain: string
+          id: string
+          rule_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          domain: string
+          id?: string
+          rule_type: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          domain?: string
+          id?: string
+          rule_type?: string
+        }
+        Relationships: []
+      }
       error_reports: {
         Row: {
           created_at: string | null
