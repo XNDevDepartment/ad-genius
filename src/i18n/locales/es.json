@@ -325,6 +325,7 @@
     "upgradeForMore": "Mejora para más",
     "upgradeToUnlock": "Mejora para desbloquear",
     "of": "de",
+    "or": "o",
     "remove": "Quitar",
     "search": "Buscar",
     "sort": "Ordenar",
@@ -1182,8 +1183,10 @@
       "upload": {
         "title": "Subir Tu Modelo",
         "titleUploading": "Subiendo...",
-        "premiumFeature": "Función premium",
         "uploadOwn": "Subir el Tuyo",
+        "uploadCost": "5 créditos",
+        "aiGenerate": "Generar con IA",
+        "aiGenerateCost": "6 créditos",
         "createWithAI": "Crear con IA"
       },
       "badges": {

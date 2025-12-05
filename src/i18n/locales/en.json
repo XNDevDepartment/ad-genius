@@ -330,6 +330,7 @@
     "upgradeForMore": "Upgrade for more",
     "upgradeToUnlock": "Upgrade to unlock",
     "of": "of",
+    "or": "or",
     "remove": "Remove",
     "search": "Search",
     "sort": "Sort",
@@ -1195,8 +1196,10 @@
       "upload": {
         "title": "Upload Your Model",
         "titleUploading": "Uploading...",
-        "premiumFeature": "Premium feature",
         "uploadOwn": "Upload Yours",
+        "uploadCost": "5 credits",
+        "aiGenerate": "Generate with AI",
+        "aiGenerateCost": "6 credits",
         "createWithAI": "Create with AI"
       },
       "badges": {
