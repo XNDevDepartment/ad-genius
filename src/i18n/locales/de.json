@@ -325,6 +325,7 @@
     "upgradeForMore": "Für mehr upgraden",
     "upgradeToUnlock": "Zum Freischalten upgraden",
     "of": "von",
+    "or": "oder",
     "remove": "Entfernen",
     "search": "Suchen",
     "sort": "Sortieren",
@@ -1182,8 +1183,10 @@
       "upload": {
         "title": "Dein Modell Hochladen",
         "titleUploading": "Wird hochgeladen...",
-        "premiumFeature": "Premium-Funktion",
         "uploadOwn": "Eigenes Hochladen",
+        "uploadCost": "5 Credits",
+        "aiGenerate": "Mit KI Generieren",
+        "aiGenerateCost": "6 Credits",
         "createWithAI": "Mit KI Erstellen"
       },
       "badges": {

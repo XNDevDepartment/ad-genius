@@ -6,9 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useBaseModels, BaseModel, BaseModelFilters } from "@/hooks/useBaseModels";
-import { Upload, Check, User, Sparkles, Crown, AirVentIcon, WandSparkles } from "lucide-react";
+import { Upload, Check, User, Sparkles, Coins, WandSparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useCredits } from "@/hooks/useCredits";
+// useCredits import removed - model creation now open to all users
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { UploadModelDialog } from "./UploadModelDialog";
@@ -29,7 +29,7 @@ export const BaseModelSelector = ({
   showUpload = false,
 }: BaseModelSelectorProps) => {
   const { systemModels, userModels, loading, fetchSystemModels, uploadUserModel, uploading, fetchUserModels } = useBaseModels();
-  const { isFreeTier } = useCredits();
+  // Credits hook no longer needed for tier check - feature open to all
   const { t } = useTranslation();
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [uploadDialogAIOpen, setUploadDialogAIOpen] = useState(false);
@@ -54,18 +54,10 @@ export const BaseModelSelector = ({
   };
 
   const handleUploadClick = () => {
-    if (isFreeTier()) {
-      toast.error(t('outfitSwap.baseModelSelector.upload.premiumFeature'));
-      return;
-    }
     setUploadDialogOpen(true);
   };
 
   const handleUploadAIClick = () => {
-    if (isFreeTier()) {
-      toast.error(t('outfitSwap.baseModelSelector.upload.premiumFeature'));
-      return;
-    }
     setUploadDialogAIOpen(true);
   };
 
@@ -280,18 +272,18 @@ export const BaseModelSelector = ({
                 uploading && "opacity-50 pointer-events-none"
               )}
             >
-              <div className="aspect-[3/4] flex items-center justify-center flex-col gap-3 p-6 text-center">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Upload className="w-8 h-8 text-primary" />
+              <div className="aspect-[3/4] flex items-center justify-center flex-col gap-2 p-4 text-center">
+                <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Upload className="w-6 h-6 text-primary" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm">
                     {uploading ? t('outfitSwap.baseModelSelector.upload.titleUploading') : t('outfitSwap.baseModelSelector.upload.title')}
                   </h3>
                   <div className="flex items-center justify-center gap-1 mt-1">
-                    <Crown className="w-3 h-3 text-primary" />
+                    <Coins className="w-3 h-3 text-muted-foreground" />
                     <p className="text-xs text-muted-foreground">
-                      {t('outfitSwap.baseModelSelector.upload.premiumFeature')}
+                      {t('outfitSwap.baseModelSelector.upload.uploadCost', '5 credits')}
                     </p>
                   </div>
                 </div>
@@ -300,18 +292,18 @@ export const BaseModelSelector = ({
                     {t('outfitSwap.baseModelSelector.upload.uploadOwn')}
                   </Button>
                 )}
-                or
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <WandSparkles className="w-8 h-8 text-primary" />
+                <span className="text-xs text-muted-foreground">{t('common.or', 'or')}</span>
+                <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                  <WandSparkles className="w-6 h-6 text-primary" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm">
-                    {uploading ? t('outfitSwap.baseModelSelector.upload.titleUploading') : t('outfitSwap.baseModelSelector.upload.title')}
+                    {t('outfitSwap.baseModelSelector.upload.aiGenerate', 'Generate with AI')}
                   </h3>
                   <div className="flex items-center justify-center gap-1 mt-1">
-                    <Crown className="w-3 h-3 text-primary" />
+                    <Coins className="w-3 h-3 text-muted-foreground" />
                     <p className="text-xs text-muted-foreground">
-                      {t('outfitSwap.baseModelSelector.upload.premiumFeature')}
+                      {t('outfitSwap.baseModelSelector.upload.aiGenerateCost', '6 credits')}
                     </p>
                   </div>
                 </div>

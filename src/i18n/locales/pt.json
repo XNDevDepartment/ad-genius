@@ -325,6 +325,7 @@
     "upgradeForMore": "Fazer upgrade para mais",
     "upgradeToUnlock": "Fazer upgrade para desbloquear",
     "of": "de",
+    "or": "ou",
     "remove": "Remover",
     "search": "Pesquisar",
     "sort": "Ordenar",
@@ -1182,8 +1183,10 @@
       "upload": {
         "title": "Carregar o Seu Modelo",
         "titleUploading": "A carregar...",
-        "premiumFeature": "Funcionalidade premium",
         "uploadOwn": "Carregar o Seu",
+        "uploadCost": "5 créditos",
+        "aiGenerate": "Gerar com IA",
+        "aiGenerateCost": "6 créditos",
         "createWithAI": "Criar com IA"
       },
       "badges": {

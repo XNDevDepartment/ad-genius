@@ -325,6 +325,7 @@
     "upgradeForMore": "Mettre à niveau pour plus",
     "upgradeToUnlock": "Mettre à niveau pour débloquer",
     "of": "sur",
+    "or": "ou",
     "remove": "Retirer",
     "search": "Rechercher",
     "sort": "Trier",
@@ -1182,8 +1183,10 @@
       "upload": {
         "title": "Téléverser Votre Modèle",
         "titleUploading": "Téléversement...",
-        "premiumFeature": "Fonctionnalité premium",
         "uploadOwn": "Téléverser le Vôtre",
+        "uploadCost": "5 crédits",
+        "aiGenerate": "Générer avec l'IA",
+        "aiGenerateCost": "6 crédits",
         "createWithAI": "Créer avec l'IA"
       },
       "badges": {
