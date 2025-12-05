@@ -220,14 +220,6 @@ export const BatchSwapPreview = ({
   };
 
   const handleCreatePhotoshoot = async (result: OutfitSwapResult) => {
-    if (!isAdmin) {
-      toast({
-        variant: "destructive",
-        title: t('outfitSwap.toasts.adminAccessRequired'),
-        description: t('outfitSwap.toasts.onlyAdminsPhotoshoots'),
-      });
-      return;
-    }
 
     setPhotoshootModal({
       isOpen: true,
@@ -447,16 +439,14 @@ export const BatchSwapPreview = ({
                           <ShoppingBag className="w-3 h-3 mr-1" />
                           {t('outfitSwap.buttons.ecommerce')}
                         </Button>
-                        {isAdmin && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleCreatePhotoshoot(result)}
-                          >
-                            <Camera className="w-3 h-3 mr-1" />
-                            {t('outfitSwap.buttons.photoshoot')}
-                          </Button>
-                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleCreatePhotoshoot(result)}
+                        >
+                          <Camera className="w-3 h-3 mr-1" />
+                          {t('outfitSwap.buttons.photoshoot')}
+                        </Button>
                         <Button
                           size="sm"
                           variant="outline"
