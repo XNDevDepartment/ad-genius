@@ -107,6 +107,9 @@ verify_jwt = true
 [functions.validate-signup-domain]
 verify_jwt = false
 
+[functions.ugc-gemini-v3]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 port = 54327
