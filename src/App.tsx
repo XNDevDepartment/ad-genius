@@ -22,6 +22,7 @@ import { AuthGuard } from "./components/AuthGuard";
 const CreateSelection = lazyWithRetry(() => import("./pages/ModuleSelection"));
 const CreateUGC = lazyWithRetry(() => import("./pages/CreateGPT"));
 const CreateUGCGemini = lazyWithRetry(() => import("./pages/CreateUGCGemini"));
+const CreateUGCGeminiV3 = lazyWithRetry(() => import("./pages/CreateUGCGeminiV3"));
 const Library = lazyWithRetry(() => import("./pages/Library"));
 const Account = lazyWithRetry(() => import("./pages/Account"));
 const SignIn = lazyWithRetry(() => import("./pages/SignIn"));
@@ -105,6 +106,15 @@ const App = () => {
                     <Suspense fallback={<LoadingFallback />}>
                       <AuthGuard>
                         <CreateUGCGemini />
+                      </AuthGuard>
+                    </Suspense>
+                  </ErrorBoundaryWithReset>
+                } />
+                <Route path="create/ugc-v3" element={
+                  <ErrorBoundaryWithReset>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AuthGuard>
+                        <CreateUGCGeminiV3 />
                       </AuthGuard>
                     </Suspense>
                   </ErrorBoundaryWithReset>
