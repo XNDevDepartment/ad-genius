@@ -1,4 +1,10 @@
 {
+  "paymentFailed": {
+    "title": "Pagamento Falhado",
+    "message": "O seu último pagamento não pôde ser processado. Por favor, atualize o seu método de pagamento para continuar a usar o ProduktPix.",
+    "updatePayment": "Atualizar Método de Pagamento",
+    "dismiss": "Dispensar"
+  },
   "errorBoundary": {
     "title": "Falha ao carregar página",
     "description": "Isto pode ser devido a um problema de rede ou cache desatualizado. Por favor, tente atualizar.",

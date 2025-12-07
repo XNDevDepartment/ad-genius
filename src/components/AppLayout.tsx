@@ -5,12 +5,13 @@ import NavigationHeader from "./NavigationHeader";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { useAuth } from "@/contexts/AuthContext";
+import PaymentFailedBanner from "./PaymentFailedBanner";
 
 const AppLayout = () => {
   const location = useLocation();
   const showHeader = location.pathname === "/";
 
-  const { user, loading } = useAuth();
+  const { user, loading, subscriptionData } = useAuth();
   const shouldShowSidebar = !loading && user;
 
   // Desktop-specific debugging
@@ -26,6 +27,11 @@ const AppLayout = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Payment Failed Banner - shown on both mobile and desktop */}
+      {user && subscriptionData?.payment_failed_at && (
+        <PaymentFailedBanner paymentFailedAt={subscriptionData.payment_failed_at} />
+      )}
+      
       {/* Mobile Layout */}
       <div className="lg:hidden">
         {/* <AnnouncementBanner /> */}
