@@ -1142,6 +1142,7 @@ export type Database = {
           email: string | null
           id: string
           last_reset_at: string | null
+          payment_failed_at: string | null
           stripe_customer_id: string | null
           subscribed: boolean
           subscription_end: string | null
@@ -1155,6 +1156,7 @@ export type Database = {
           email?: string | null
           id?: string
           last_reset_at?: string | null
+          payment_failed_at?: string | null
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null
@@ -1168,6 +1170,7 @@ export type Database = {
           email?: string | null
           id?: string
           last_reset_at?: string | null
+          payment_failed_at?: string | null
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null

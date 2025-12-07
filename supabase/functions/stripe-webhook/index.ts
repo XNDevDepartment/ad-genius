@@ -225,6 +225,17 @@ serve(async (req) => {
           break;
         }
         
+        // Clear any payment failure status
+        await supabase
+          .from("subscribers")
+          .update({ 
+            payment_failed_at: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq("stripe_customer_id", customerId);
+        
+        console.log(`[WEBHOOK] ✓ Cleared payment_failed_at for customer ${customerId}`);
+        
         // Reset monthly credits
         const { data: resetResult, error: resetError } = await supabase.rpc("reset_user_monthly_credits", {
           p_user_id: subscriber.user_id
@@ -341,7 +352,120 @@ serve(async (req) => {
         const customerId = invoice.customer as string;
         
         console.log(`[WEBHOOK] ⚠️ Payment failed for customer: ${customerId}`);
-        // Could send notification to user here
+        
+        // Find user and update payment_failed_at
+        const { data: failedSubscriber, error: failedFetchError } = await supabase
+          .from("subscribers")
+          .select("user_id")
+          .eq("stripe_customer_id", customerId)
+          .single();
+        
+        if (failedFetchError || !failedSubscriber) {
+          console.error("[WEBHOOK] Could not find subscriber for failed payment:", customerId);
+          break;
+        }
+        
+        // Set payment_failed_at timestamp
+        const { error: updateFailedError } = await supabase
+          .from("subscribers")
+          .update({ 
+            payment_failed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq("stripe_customer_id", customerId);
+        
+        if (updateFailedError) {
+          console.error("[WEBHOOK] Failed to update payment_failed_at:", updateFailedError);
+        } else {
+          console.log(`[WEBHOOK] ✓ Set payment_failed_at for customer ${customerId}`);
+        }
+        
+        // Get user email and send notification email
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('email, name')
+            .eq('id', failedSubscriber.user_id)
+            .single();
+          
+          if (profileData?.email) {
+            // Send payment failed email via Resend
+            const resendApiKey = Deno.env.get("RESEND_API_KEY");
+            if (resendApiKey) {
+              const emailResponse = await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${resendApiKey}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  from: 'ProduktPix <noreply@produktpix.com>',
+                  to: [profileData.email],
+                  subject: 'Action Required: Payment Failed for Your ProduktPix Subscription',
+                  html: `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                      <meta charset="utf-8">
+                      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    </head>
+                    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+                      <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #7c3aed; margin: 0;">ProduktPix</h1>
+                      </div>
+                      
+                      <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                        <h2 style="color: #dc2626; margin-top: 0;">⚠️ Payment Failed</h2>
+                        <p>Hi${profileData.name ? ` ${profileData.name}` : ''},</p>
+                        <p>We were unable to process your payment for your ProduktPix subscription. This may be due to:</p>
+                        <ul>
+                          <li>Expired credit card</li>
+                          <li>Insufficient funds</li>
+                          <li>Card declined by your bank</li>
+                        </ul>
+                      </div>
+                      
+                      <div style="background: #f3f4f6; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                        <h3 style="margin-top: 0;">What to do next:</h3>
+                        <ol>
+                          <li>Log in to your ProduktPix account</li>
+                          <li>Go to Account → Billing</li>
+                          <li>Update your payment method</li>
+                        </ol>
+                        <p style="text-align: center; margin-top: 20px;">
+                          <a href="https://produktpix.com/account" style="display: inline-block; background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">Update Payment Method</a>
+                        </p>
+                      </div>
+                      
+                      <p style="color: #6b7280; font-size: 14px;">
+                        If you have any questions or need assistance, please contact us at <a href="mailto:info@produktpix.com" style="color: #7c3aed;">info@produktpix.com</a>
+                      </p>
+                      
+                      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+                      
+                      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+                        © ${new Date().getFullYear()} ProduktPix. All rights reserved.
+                      </p>
+                    </body>
+                    </html>
+                  `
+                })
+              });
+              
+              if (emailResponse.ok) {
+                console.log(`[WEBHOOK] ✓ Payment failed email sent to ${profileData.email}`);
+              } else {
+                const errorText = await emailResponse.text();
+                console.error(`[WEBHOOK] Failed to send payment failed email:`, errorText);
+              }
+            } else {
+              console.error("[WEBHOOK] RESEND_API_KEY not configured, skipping email notification");
+            }
+          }
+        } catch (emailError) {
+          console.error("[WEBHOOK] Error sending payment failed email (non-fatal):", emailError);
+        }
+        
         break;
       }
       

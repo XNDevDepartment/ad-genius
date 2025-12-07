@@ -7,6 +7,7 @@ interface SubscriptionData {
   subscription_tier: string;
   subscription_end: string | null;
   credits_balance: number;
+  payment_failed_at: string | null;
 }
 
 interface AuthContextType {
@@ -70,7 +71,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         subscribed: subscriberData.subscribed || false,
         subscription_tier: subscriberData.subscription_tier || 'Free',
         subscription_end: subscriberData.subscription_end || null,
-        credits_balance: subscriberData.credits_balance || 0
+        credits_balance: subscriberData.credits_balance || 0,
+        payment_failed_at: subscriberData.payment_failed_at || null
       };
 
       setSubscriptionData(newSubscriptionData);
@@ -108,7 +110,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         subscribed: false,
         subscription_tier: 'Free',
         subscription_end: null,
-        credits_balance: 0
+        credits_balance: 0,
+        payment_failed_at: null
       });
     } finally {
       setSubscriptionLoading(false);
