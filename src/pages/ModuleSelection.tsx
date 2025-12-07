@@ -13,9 +13,8 @@ const ModuleSelection = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { t } = useTranslation();
-  const { isAdmin } = useAdminAuth();
+  const { isAdmin, loading: adminLoading } = useAdminAuth();
   const { canAccessVideos, canAccessOutfitSwap } = useCredits();
-
 
   // Block access if not authenticated
   useEffect(() => {
@@ -24,8 +23,8 @@ const ModuleSelection = () => {
     }
   }, [user, loading, navigate]);
 
-  // Show loading state while auth is initializing
-  if (loading) {
+  // Show loading state while auth OR admin check is initializing
+  if (loading || adminLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full"></div>
