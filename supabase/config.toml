@@ -42,7 +42,7 @@ security_update_enabled = true
 verify_jwt = true
 
 [functions.test-gemini-direct]
-verify_jwt = false
+verify_jwt = true
 
 [functions.gemini-chat]
 verify_jwt = true
