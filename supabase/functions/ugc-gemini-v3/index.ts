@@ -14,7 +14,7 @@ const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_API_KEY") ?? "";
 // ---------- LOG ----------
-const log = (step, meta)=>console.log(`[UGC-GEMINI] ${step}${meta ? ` - ${JSON.stringify(meta)}` : ""}`);
+const log = (step, meta)=>console.log(`[UGC-GEMINI-V3] ${step}${meta ? ` - ${JSON.stringify(meta)}` : ""}`);
 // ---------- HELPERS ----------
 const json = (data, status = 200)=>new Response(JSON.stringify(data), {
     status,
@@ -254,7 +254,7 @@ async function createImageJob(userId, payload, supabase) {
   const contentHash = keyResult;
   // Check for existing job with same content hash (ANY status, ANY time)
   // This prevents constraint violations and enables smart idempotency
-  const { data: existing } = await supabase.from("image_jobs").select("*, ugc_images(*)").eq("user_id", userId).eq("content_hash", contentHash).eq("model_type", "gemini").order("created_at", {
+  const { data: existing } = await supabase.from("image_jobs").select("*, ugc_images(*)").eq("user_id", userId).eq("content_hash", contentHash).eq("model_type", "gemini-v3").order("created_at", {
     ascending: false
   }).limit(1).maybeSingle();
   
@@ -316,7 +316,7 @@ async function createImageJob(userId, payload, supabase) {
     const { data: deduct, error: deductErr } = await supabase.rpc("deduct_user_credits", {
       p_user_id: userId,
       p_amount: totalCost,
-      p_reason: "reserve:gemini_image_job"
+      p_reason: "reserve:gemini_v3_image_job"
     });
     if (deductErr || !deduct?.success) {
       return errorJson(deduct?.error ?? deductErr?.message ?? "Failed to reserve credits", 400);
@@ -335,7 +335,7 @@ async function createImageJob(userId, payload, supabase) {
     status: "queued",
     source_image_id: source_image_id ?? null,
     source_image_ids: finalSourceIds,
-    model_type: "gemini",
+    model_type: "gemini-v3",
     desiredAudience: desiredAudience ?? null,
     prodSpecs: prodSpecs ?? null // Store the user's product specs
   }).select().single();
@@ -357,7 +357,7 @@ async function createImageJob(userId, payload, supabase) {
       log("Duplicate key constraint hit, fetching conflicting job", { contentHash });
       
       // Try to fetch the conflicting job
-      const { data: conflicting } = await supabase.from("image_jobs").select("*, ugc_images(*)").eq("user_id", userId).eq("content_hash", contentHash).eq("model_type", "gemini").order("created_at", {
+      const { data: conflicting } = await supabase.from("image_jobs").select("*, ugc_images(*)").eq("user_id", userId).eq("content_hash", contentHash).eq("model_type", "gemini-v3").order("created_at", {
         ascending: false
       }).limit(1).maybeSingle();
       
@@ -390,7 +390,7 @@ async function createImageJob(userId, payload, supabase) {
   }
   // trigger worker (self-invoke with service auth)
   try {
-    await serviceClient().functions.invoke("ugc-gemini", {
+    await serviceClient().functions.invoke("ugc-gemini-v3", {
       body: {
         action: "generateImages",
         jobId: job.id
@@ -421,7 +421,7 @@ async function generateImages(jobId, supabase) {
     status: "processing",
     started_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
-  }).eq("id", jobId).eq("status", "queued").eq("model_type", "gemini") // Ensure we're processing a Gemini job
+  }).eq("id", jobId).eq("status", "queued").eq("model_type", "gemini-v3") // Ensure we're processing a Gemini V3 job
   .select().single();
   if (claimErr || !job) {
     const { data: existing } = await supabase.from("image_jobs").select("status").eq("id", jobId).maybeSingle();
@@ -522,7 +522,7 @@ async function generateImages(jobId, supabase) {
         await supabase.rpc("refund_user_credits", {
           p_user_id: job.user_id,
           p_amount: refundAmount,
-          p_reason: "failed_gemini_image_generation"
+          p_reason: "failed_gemini_v3_image_generation"
         });
       }
     }
@@ -551,7 +551,7 @@ async function generateImages(jobId, supabase) {
       await supabase.rpc("refund_user_credits", {
         p_user_id: job.user_id,
         p_amount: cost,
-        p_reason: "gemini_job_processing_failed"
+        p_reason: "gemini_v3_job_processing_failed"
       });
     }
   }
@@ -728,7 +728,7 @@ async function getSignedSourceUrl(source_image_id, supabase) {
 }
 // RLS-safe reads
 async function getJob(userId, jobId, supaUser) {
-  const { data: job, error } = await supaUser.from("image_jobs").select("*").eq("id", jobId).eq("user_id", userId).eq("model_type", "gemini") // Only return Gemini jobs
+  const { data: job, error } = await supaUser.from("image_jobs").select("*").eq("id", jobId).eq("user_id", userId).eq("model_type", "gemini-v3") // Only return Gemini V3 jobs
   .single();
   if (error) return errorJson("Job not found", 404);
   return json({
@@ -748,7 +748,7 @@ async function getJobImages(userId, jobId, supaUser) {
 async function cancelJob(userId, jobId, supabase) {
   const { data: job, error } = await supabase.from("image_jobs").update({
     status: "canceled"
-  }).eq("id", jobId).eq("user_id", userId).eq("model_type", "gemini") // Only cancel Gemini jobs
+  }).eq("id", jobId).eq("user_id", userId).eq("model_type", "gemini-v3") // Only cancel Gemini V3 jobs
   .in("status", [
     "queued",
     "processing"
@@ -765,7 +765,7 @@ async function cancelJob(userId, jobId, supabase) {
       await supabase.rpc("refund_user_credits", {
         p_user_id: userId,
         p_amount: refund,
-        p_reason: "gemini_job_canceled"
+        p_reason: "gemini_v3_job_canceled"
       });
     }
   }
@@ -776,7 +776,7 @@ async function cancelJob(userId, jobId, supabase) {
 // Resume a stuck job (re-triggers worker)
 async function resumeJob(userId, jobId, supabase) {
   // ensure ownership and that it's a Gemini job
-  const { data: job, error } = await supabase.from("image_jobs").select("id,user_id,status,completed,total").eq("id", jobId).eq("model_type", "gemini").single();
+  const { data: job, error } = await supabase.from("image_jobs").select("id,user_id,status,completed,total").eq("id", jobId).eq("model_type", "gemini-v3").single();
   if (error || !job) return errorJson("Job not found", 404);
   if (job.user_id !== userId) return errorJson("Forbidden", 403);
   const resumable = job.status === "queued" || job.status === "processing" || job.status === "failed" && (job.completed ?? 0) === 0;
@@ -788,7 +788,7 @@ async function resumeJob(userId, jobId, supabase) {
   }
   // re-trigger
   try {
-    await serviceClient().functions.invoke("ugc-gemini", {
+    await serviceClient().functions.invoke("ugc-gemini-v3", {
       body: {
         action: "generateImages",
         jobId
@@ -811,7 +811,7 @@ async function resumeJob(userId, jobId, supabase) {
 }
 // Return the latest queued/processing Gemini job for the user
 async function getActiveJob(userId, supabase) {
-  const { data: job, error } = await supabase.from("image_jobs").select("*").eq("user_id", userId).eq("model_type", "gemini") // Only get Gemini jobs
+  const { data: job, error } = await supabase.from("image_jobs").select("*").eq("user_id", userId).eq("model_type", "gemini-v3") // Only get Gemini V3 jobs
   .in("status", [
     "queued",
     "processing"
@@ -828,12 +828,12 @@ async function getActiveJob(userId, supabase) {
 // Sweep queued Gemini jobs that never got picked up
 async function recoverQueued(supabase) {
   const cutoff = new Date(Date.now() - 3 * 60 * 1000).toISOString(); // older than 3m
-  const { data: jobs, error } = await supabase.from("image_jobs").select("id,status").eq("status", "queued").eq("model_type", "gemini") // Only recover Gemini jobs
+  const { data: jobs, error } = await supabase.from("image_jobs").select("id,status").eq("status", "queued").eq("model_type", "gemini-v3") // Only recover Gemini V3 jobs
   .lte("created_at", cutoff).limit(20);
   if (error) return errorJson("Failed to list queued jobs", 400);
   for (const j of jobs ?? []){
     try {
-      await serviceClient().functions.invoke("ugc-gemini", {
+      await serviceClient().functions.invoke("ugc-gemini-v3", {
         body: {
           action: "generateImages",
           jobId: j.id
