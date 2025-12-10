@@ -94,12 +94,41 @@ export const useCredits = () => {
     return subscriptionData?.subscription_tier === 'Free' || !subscriptionData?.subscribed;
   };
 
+  // Check if user is in grace period (past_due but within 21 days)
+  const isInGracePeriod = (): boolean => {
+    if (!subscriptionData?.payment_failed_at) return false;
+    const daysSinceFailure = Math.floor(
+      (Date.now() - new Date(subscriptionData.payment_failed_at).getTime()) / (1000 * 60 * 60 * 24)
+    );
+    return daysSinceFailure < 21 && subscriptionData.subscription_tier !== 'Free';
+  };
+
+  // Users in grace period keep full access to their paid tier features
+  const hasFullPaidAccess = (): boolean => {
+    return (subscriptionData?.subscribed && subscriptionData?.subscription_status === 'active') || isInGracePeriod();
+  };
+
+  const getDaysRemainingInGracePeriod = (): number | null => {
+    if (!subscriptionData?.payment_failed_at) return null;
+    const daysSinceFailure = Math.floor(
+      (Date.now() - new Date(subscriptionData.payment_failed_at).getTime()) / (1000 * 60 * 60 * 24)
+    );
+    return Math.max(0, 21 - daysSinceFailure);
+  };
+
   const getMaxImagesPerGeneration = (): number => {
+    // Users in grace period keep their paid tier limits
+    if (isInGracePeriod()) return 3;
     return isFreeTier() ? 1 : 3;
   };
 
   const canAccessVideos = (): boolean => {
     if (!subscriptionData) return false;
+    // Users in grace period keep video access
+    if (isInGracePeriod()) {
+      const tier = subscriptionData.subscription_tier;
+      return tier !== 'Starter';
+    }
     const tier = subscriptionData.subscription_tier;
     // All tiers except Starter can access videos
     return tier !== 'Starter';
@@ -137,6 +166,7 @@ export const useCredits = () => {
     remainingCredits: getRemainingCredits(),
     usedCredits: getUsedCredits(),
     tier: subscriptionData?.subscription_tier || 'Free',
+    subscriptionStatus: subscriptionData?.subscription_status || 'active',
     loading,
     canAfford,
     deductCredits,
@@ -148,6 +178,9 @@ export const useCredits = () => {
     refreshCredits,
     calculateImageCost,
     isFreeTier,
+    isInGracePeriod,
+    hasFullPaidAccess,
+    getDaysRemainingInGracePeriod,
     getMaxImagesPerGeneration,
     canAccessVideos,
     getVideoAccessMessage,

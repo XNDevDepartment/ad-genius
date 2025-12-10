@@ -225,16 +225,25 @@ serve(async (req) => {
           break;
         }
         
-        // Clear any payment failure status
+        // Clear any payment failure status and reset to active
         await supabase
           .from("subscribers")
           .update({ 
             payment_failed_at: null,
+            subscription_status: 'active',
             updated_at: new Date().toISOString()
           })
           .eq("stripe_customer_id", customerId);
         
-        console.log(`[WEBHOOK] ✓ Cleared payment_failed_at for customer ${customerId}`);
+        console.log(`[WEBHOOK] ✓ Cleared payment_failed_at and set status to active for customer ${customerId}`);
+        
+        // Clear dunning notifications for this user
+        await supabase
+          .from("dunning_notifications")
+          .delete()
+          .eq("user_id", subscriber.user_id);
+        
+        console.log(`[WEBHOOK] ✓ Cleared dunning notifications for ${subscriber.user_id}`);
         
         // Reset monthly credits
         const { data: resetResult, error: resetError } = await supabase.rpc("reset_user_monthly_credits", {
@@ -294,7 +303,9 @@ serve(async (req) => {
           .update({
             subscribed: false,
             subscription_tier: "Free",
+            subscription_status: "canceled",
             subscription_end: null,
+            payment_failed_at: null,
             updated_at: new Date().toISOString()
           })
           .eq("stripe_customer_id", customerId);
@@ -302,6 +313,14 @@ serve(async (req) => {
         if (updateError) {
           console.error("[WEBHOOK] Failed to cancel subscription:", updateError);
           throw updateError;
+        }
+        
+        // Clear dunning notifications
+        if (cancelledSubscriber?.user_id) {
+          await supabase
+            .from("dunning_notifications")
+            .delete()
+            .eq("user_id", cancelledSubscriber.user_id);
         }
         
         console.log(`[WEBHOOK] ✓ Subscription cancelled for customer ${customerId}`);
@@ -455,20 +474,41 @@ serve(async (req) => {
           break;
         }
         
-        // Set payment_failed_at timestamp
+        // Set payment_failed_at timestamp and subscription_status
+        // Only set payment_failed_at if not already set (first failure)
+        const { data: currentSubscriber } = await supabase
+          .from("subscribers")
+          .select("payment_failed_at")
+          .eq("stripe_customer_id", customerId)
+          .single();
+        
+        const updates: Record<string, any> = {
+          subscription_status: 'past_due',
+          updated_at: new Date().toISOString()
+        };
+        
+        // Only set payment_failed_at on first failure
+        if (!currentSubscriber?.payment_failed_at) {
+          updates.payment_failed_at = new Date().toISOString();
+        }
+        
         const { error: updateFailedError } = await supabase
           .from("subscribers")
-          .update({ 
-            payment_failed_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
+          .update(updates)
           .eq("stripe_customer_id", customerId);
         
         if (updateFailedError) {
-          console.error("[WEBHOOK] Failed to update payment_failed_at:", updateFailedError);
+          console.error("[WEBHOOK] Failed to update payment status:", updateFailedError);
         } else {
-          console.log(`[WEBHOOK] ✓ Set payment_failed_at for customer ${customerId}`);
+          console.log(`[WEBHOOK] ✓ Set subscription_status to past_due for customer ${customerId}`);
         }
+        
+        // Record day_0 notification
+        await supabase.from("dunning_notifications").upsert({
+          user_id: failedSubscriber.user_id,
+          notification_type: 'day_0',
+          sent_at: new Date().toISOString()
+        }, { onConflict: 'user_id,notification_type' });
         
         // Get user email and send notification email
         try {

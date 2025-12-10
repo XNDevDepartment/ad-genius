@@ -222,6 +222,27 @@ export type Database = {
         }
         Relationships: []
       }
+      dunning_notifications: {
+        Row: {
+          id: string
+          notification_type: string
+          sent_at: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          notification_type: string
+          sent_at?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          notification_type?: string
+          sent_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       error_reports: {
         Row: {
           created_at: string | null
@@ -1146,6 +1167,7 @@ export type Database = {
           stripe_customer_id: string | null
           subscribed: boolean
           subscription_end: string | null
+          subscription_status: string | null
           subscription_tier: string
           updated_at: string
           user_id: string
@@ -1160,6 +1182,7 @@ export type Database = {
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null
+          subscription_status?: string | null
           subscription_tier?: string
           updated_at?: string
           user_id: string
@@ -1174,6 +1197,7 @@ export type Database = {
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null
+          subscription_status?: string | null
           subscription_tier?: string
           updated_at?: string
           user_id?: string

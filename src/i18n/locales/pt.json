@@ -1,9 +1,11 @@
 {
   "paymentFailed": {
     "title": "Pagamento Falhado",
-    "message": "O seu último pagamento não pôde ser processado. Por favor, atualize o seu método de pagamento para continuar a usar o ProduktPix.",
-    "updatePayment": "Atualizar Método de Pagamento",
-    "dismiss": "Dispensar"
+    "message": "Atualize o seu método de pagamento para continuar a usar o ProduktPix.",
+    "urgentMessage": "Atualize imediatamente para evitar perder acesso às funcionalidades premium.",
+    "updatePayment": "Atualizar Pagamento",
+    "dismiss": "Dispensar",
+    "daysRemaining": "{{days}} dias restantes"
   },
   "errorBoundary": {
     "title": "Falha ao carregar página",

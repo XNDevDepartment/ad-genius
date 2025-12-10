@@ -1,9 +1,11 @@
 {
   "paymentFailed": {
     "title": "Payment Failed",
-    "message": "Your last payment could not be processed. Please update your payment method to continue using ProduktPix.",
-    "updatePayment": "Update Payment Method",
-    "dismiss": "Dismiss"
+    "message": "Update your payment method to continue using ProduktPix.",
+    "urgentMessage": "Update immediately to avoid losing access to premium features.",
+    "updatePayment": "Update Payment",
+    "dismiss": "Dismiss",
+    "daysRemaining": "{{days}} days left"
   },
   "errorBoundary": {
     "title": "Failed to load page",

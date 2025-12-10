@@ -1,9 +1,11 @@
 {
   "paymentFailed": {
     "title": "Zahlung Fehlgeschlagen",
-    "message": "Ihre letzte Zahlung konnte nicht verarbeitet werden. Bitte aktualisieren Sie Ihre Zahlungsmethode, um ProduktPix weiter nutzen zu können.",
-    "updatePayment": "Zahlungsmethode Aktualisieren",
-    "dismiss": "Schließen"
+    "message": "Bitte aktualisieren Sie Ihre Zahlungsmethode, um ProduktPix weiter nutzen zu können.",
+    "urgentMessage": "Aktualisieren Sie sofort, um den Zugang zu Premium-Funktionen nicht zu verlieren.",
+    "updatePayment": "Zahlung Aktualisieren",
+    "dismiss": "Schließen",
+    "daysRemaining": "{{days}} Tage übrig"
   },
   "errorBoundary": {
     "title": "Seite konnte nicht geladen werden",

@@ -5,6 +5,7 @@ import { User, Session } from '@supabase/supabase-js';
 interface SubscriptionData {
   subscribed: boolean;
   subscription_tier: string;
+  subscription_status: string;
   subscription_end: string | null;
   credits_balance: number;
   payment_failed_at: string | null;
@@ -70,6 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const newSubscriptionData = {
         subscribed: subscriberData.subscribed || false,
         subscription_tier: subscriberData.subscription_tier || 'Free',
+        subscription_status: (subscriberData as any).subscription_status || 'active',
         subscription_end: subscriberData.subscription_end || null,
         credits_balance: subscriberData.credits_balance || 0,
         payment_failed_at: subscriberData.payment_failed_at || null
@@ -109,6 +111,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSubscriptionData({
         subscribed: false,
         subscription_tier: 'Free',
+        subscription_status: 'active',
         subscription_end: null,
         credits_balance: 0,
         payment_failed_at: null
