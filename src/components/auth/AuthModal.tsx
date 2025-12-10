@@ -5,10 +5,11 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Loader, Eye, EyeOff } from 'lucide-react';
+import { Loader, Eye, EyeOff, ShieldAlert } from 'lucide-react';
 import HeaderSection from '../landing/HeaderSection';
 import NavigationHeader from '../NavigationHeader';
 import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface AuthModalProps {
   onSuccess?: (email?: string) => void;
@@ -59,43 +60,10 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
 
     try {
       if (isSignUp) {
-        // Validate password before submission
-        if (formData.password.length < 6) {
-          toast.error('Password must be at least 6 characters long');
-          setLoading(false);
-          return;
-        }
-
-        // Validate domain before signup
-        const domainValidation = await validateSignupDomain(formData.email);
-        if (!domainValidation.allowed) {
-          if (domainValidation.reason === 'domain_blocked') {
-            toast.error('This email domain is not allowed for registration. Please use a different email provider.');
-          } else if (domainValidation.reason === 'domain_limit_reached') {
-            toast.error('An account already exists with this email domain. For additional accounts, please contact info@produktpix.com');
-          } else {
-            toast.error(domainValidation.message || 'Unable to register with this email address.');
-          }
-          setLoading(false);
-          return;
-        }
-
-        const { error } = await signUp(formData.email, formData.password, {
-          name: formData.name,
-          profession: formData.profession,
-        });
-
-        if (error) {
-          if (error.message.includes('already registered')) {
-            toast.error('This email is already registered. Please try signing in.');
-          } else {
-            toast.error(error.message);
-          }
-        } else {
-          toast.success('Account created successfully! Please check your email to confirm your account.');
-          onSuccess?.(formData.email);
-          onClose?.();
-        }
+        // Block email/password signups - only Google allowed
+        toast.info('We are currently only accepting new accounts via Google Sign-In while we reinforce our security. Please use the Google button below.');
+        setLoading(false);
+        return;
       } else {
         const { error } = await signIn(formData.email, formData.password);
 
@@ -174,79 +142,51 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {isSignUp && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required={isSignUp}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="profession">Profession</Label>
-                  <Input
-                    id="profession"
-                    type="text"
-                    value={formData.profession}
-                    onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
-                    placeholder="e.g., Designer, Developer, Marketer"
-                  />
-                </div>
-              </>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
+          {/* Security notice for signup mode */}
+          {isSignUp && (
+            <Alert className="mb-4 border-amber-500/50 bg-amber-500/10">
+              <ShieldAlert className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              <AlertDescription className="text-sm text-amber-700 dark:text-amber-300">
+                We are currently only accepting new accounts via Google Sign-In while we reinforce our security. Please use the Google button below.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Only show email/password form for sign-in */}
+          {!isSignUp && (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
                 />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-0 top-0 h-full px-3"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
               </div>
-
-              {/* Password requirements for signup */}
-              {isSignUp && (
-                <div className="text-xs space-y-1 mt-2 p-2 rounded-md bg-muted/50">
-                  <p className="font-medium text-muted-foreground">Password requirements:</p>
-                  <div className="flex items-center gap-1">
-                    <span className={formData.password.length >= 6 ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}>
-                      {formData.password.length >= 6 ? "✓" : "✗"}
-                    </span>
-                    <span className={formData.password.length >= 6 ? "text-green-600 dark:text-green-500" : "text-muted-foreground"}>
-                      At least 6 characters
-                    </span>
-                  </div>
+              <div className="space-y-1">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full px-3"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
                 </div>
-              )}
 
-              {/* Reset password link (under the password field) */}
-              {!isSignUp && (
+                {/* Reset password link (under the password field) */}
                 <div className="mt-1">
                   <Button
                     type="button"
@@ -262,14 +202,26 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
                     Insert your email above and we will send you the reset link
                   </p>
                 </div>
-              )}
-            </div>
+              </div>
 
-            <Button type="submit" disabled={loading} className="w-full">
-              {loading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-              {isSignUp ? 'Create Account' : 'Sign In'}
-            </Button>
-          </form>
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                Sign In
+              </Button>
+            </form>
+          )}
+
+          {/* Divider - only show for sign-in */}
+          {!isSignUp && (
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
+          )}
 
           {/* Divider */}
           <div className="relative my-6">
@@ -281,11 +233,11 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
             </div>
           </div>
 
-          {/* Google Sign-In Button */}
+          {/* Google Sign-In Button - Prominent for signup */}
           <Button
             type="button"
-            variant="outline"
-            className="w-full"
+            variant={isSignUp ? "default" : "outline"}
+            className={`w-full ${isSignUp ? 'mt-2' : ''}`}
             onClick={async () => {
               try {
                 setLoading(true);
@@ -293,7 +245,6 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
                 if (error) {
                   toast.error(error.message || 'Failed to sign in with Google');
                 }
-                // Note: User will be redirected to Google, then back to your app
               } catch (err: any) {
                 toast.error(err?.message || 'An error occurred with Google sign-in');
               } finally {
