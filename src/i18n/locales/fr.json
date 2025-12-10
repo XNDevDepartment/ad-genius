@@ -1,9 +1,11 @@
 {
   "paymentFailed": {
     "title": "Paiement Échoué",
-    "message": "Votre dernier paiement n'a pas pu être traité. Veuillez mettre à jour votre mode de paiement pour continuer à utiliser ProduktPix.",
-    "updatePayment": "Mettre à Jour le Moyen de Paiement",
-    "dismiss": "Fermer"
+    "message": "Mettez à jour votre mode de paiement pour continuer à utiliser ProduktPix.",
+    "urgentMessage": "Mettez à jour immédiatement pour éviter de perdre l'accès aux fonctionnalités premium.",
+    "updatePayment": "Mettre à Jour",
+    "dismiss": "Fermer",
+    "daysRemaining": "{{days}} jours restants"
   },
   "errorBoundary": {
     "title": "Échec du chargement de la page",
