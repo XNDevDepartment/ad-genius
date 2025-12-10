@@ -306,7 +306,18 @@ serve(async (req) => {
         
         console.log(`[WEBHOOK] ✓ Subscription cancelled for customer ${customerId}`);
         
-        // Sync downgrade to MailerLite
+        // Get user credits before sending email
+        let remainingCredits = 0;
+        if (cancelledSubscriber?.user_id) {
+          const { data: subscriberData } = await supabase
+            .from("subscribers")
+            .select("credits_balance")
+            .eq("user_id", cancelledSubscriber.user_id)
+            .single();
+          remainingCredits = subscriberData?.credits_balance || 0;
+        }
+        
+        // Sync downgrade to MailerLite and send cancellation email
         if (cancelledSubscriber?.user_id) {
           try {
             const { data: profileData } = await supabase
@@ -316,6 +327,7 @@ serve(async (req) => {
               .single();
             
             if (profileData?.email) {
+              // Sync to MailerLite
               const syncResponse = await fetch(
                 `${Deno.env.get("SUPABASE_URL")}/functions/v1/sync-mailerlite`,
                 {
@@ -339,9 +351,87 @@ serve(async (req) => {
               } else {
                 console.error(`[WEBHOOK] MailerLite sync failed:`, await syncResponse.text());
               }
+              
+              // Send cancellation email via Resend
+              const resendApiKey = Deno.env.get("RESEND_API_KEY");
+              if (resendApiKey) {
+                const userName = profileData.name || 'there';
+                const emailResponse = await fetch('https://api.resend.com/emails', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${resendApiKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    from: 'ProduktPix <noreply@produktpix.com>',
+                    to: [profileData.email],
+                    subject: `We're sorry to see you go, ${userName}!`,
+                    html: `
+                      <!DOCTYPE html>
+                      <html>
+                      <head>
+                        <meta charset="utf-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                      </head>
+                      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+                        <div style="text-align: center; margin-bottom: 30px;">
+                          <h1 style="color: #7c3aed; margin: 0;">ProduktPix</h1>
+                        </div>
+                        
+                        <div style="background: #f8fafc; border-radius: 12px; padding: 30px; margin-bottom: 20px;">
+                          <h2 style="color: #1e293b; margin-top: 0;">Thank you for being a customer! 💜</h2>
+                          <p>Hi ${userName},</p>
+                          <p>We're sad to see you go, but we understand. Your subscription has been cancelled and you've been moved to our Free plan.</p>
+                        </div>
+                        
+                        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                          <h3 style="color: #166534; margin-top: 0;">✨ Good news!</h3>
+                          <p style="margin-bottom: 0;">You still have <strong>${remainingCredits} credits</strong> remaining in your account. These credits won't expire, so you can use them anytime!</p>
+                        </div>
+                        
+                        <div style="background: #f3f4f6; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                          <h3 style="margin-top: 0;">What happens now:</h3>
+                          <ul style="margin-bottom: 0;">
+                            <li>Your account is now on the <strong>Free plan</strong> (10 credits/month)</li>
+                            <li>You keep all your previously generated images</li>
+                            <li>Your remaining ${remainingCredits} credits are still available</li>
+                          </ul>
+                        </div>
+                        
+                        <div style="text-align: center; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); border-radius: 12px; padding: 30px; margin-bottom: 20px;">
+                          <h3 style="color: white; margin-top: 0;">Miss us? Come back anytime!</h3>
+                          <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px;">Resubscribe and get instant access to all premium features.</p>
+                          <a href="https://produktpix.com/pricing" style="display: inline-block; background: white; color: #7c3aed; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">Resubscribe Now</a>
+                        </div>
+                        
+                        <p style="color: #6b7280; font-size: 14px;">
+                          If you have any feedback or questions, we'd love to hear from you at <a href="mailto:info@produktpix.com" style="color: #7c3aed;">info@produktpix.com</a>
+                        </p>
+                        
+                        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+                        
+                        <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+                          © ${new Date().getFullYear()} ProduktPix. All rights reserved.<br>
+                          <a href="https://produktpix.com" style="color: #7c3aed;">produktpix.com</a>
+                        </p>
+                      </body>
+                      </html>
+                    `
+                  })
+                });
+                
+                if (emailResponse.ok) {
+                  console.log(`[WEBHOOK] ✓ Cancellation email sent to ${profileData.email}`);
+                } else {
+                  const errorText = await emailResponse.text();
+                  console.error(`[WEBHOOK] Failed to send cancellation email:`, errorText);
+                }
+              } else {
+                console.log("[WEBHOOK] No RESEND_API_KEY configured, skipping cancellation email");
+              }
             }
           } catch (mlError) {
-            console.error("[WEBHOOK] MailerLite sync error (non-fatal):", mlError);
+            console.error("[WEBHOOK] MailerLite/email sync error (non-fatal):", mlError);
           }
         }
         break;
