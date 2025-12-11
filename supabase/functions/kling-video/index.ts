@@ -1,53 +1,106 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
 };
-serve(async (req)=>{
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: corsHeaders
-    });
+
+// Input validation for createVideoJob
+function validateCreateJobInput(payload: any): { valid: boolean; error?: string } {
+  const { prompt, duration, model } = payload;
+  
+  if (!prompt || typeof prompt !== 'string') {
+    return { valid: false, error: 'Prompt is required' };
   }
+  
+  if (prompt.length < 1 || prompt.length > 2000) {
+    return { valid: false, error: 'Prompt must be between 1 and 2000 characters' };
+  }
+  
+  if (duration !== undefined) {
+    const durationNum = Number(duration);
+    if (isNaN(durationNum) || (durationNum !== 5 && durationNum !== 10)) {
+      return { valid: false, error: 'Duration must be 5 or 10 seconds' };
+    }
+  }
+  
+  if (model !== undefined && typeof model !== 'string') {
+    return { valid: false, error: 'Model must be a string' };
+  }
+  
+  return { valid: true };
+}
+
+// Validate UUID format
+function isValidUUID(id: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+  
   try {
-    const supabaseClient = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+    
     const authHeader = req.headers.get("Authorization");
     const token = authHeader?.replace("Bearer ", "");
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token || "");
+    
     if (authError || !user) {
-      return json({
-        error: "Unauthorized"
-      }, 401);
+      return json({ error: "Unauthorized" }, 401);
     }
+    
     const { action, ...payload } = await req.json();
     console.log(`[KLING-VIDEO] Action: ${action}, User: ${user.id}`);
+    
     let result;
-    switch(action){
-      case "createVideoJob":
+    switch (action) {
+      case "createVideoJob": {
+        const validation = validateCreateJobInput(payload);
+        if (!validation.valid) {
+          return json({ error: validation.error }, 400);
+        }
         result = await createVideoJob(supabaseClient, user.id, payload);
         break;
-      case "getVideoJob":
+      }
+      case "getVideoJob": {
+        if (!payload.jobId || !isValidUUID(payload.jobId)) {
+          return json({ error: "Invalid job ID" }, 400);
+        }
         result = await getVideoJob(supabaseClient, user.id, payload.jobId);
         break;
-      case "cancelVideoJob":
+      }
+      case "cancelVideoJob": {
+        if (!payload.jobId || !isValidUUID(payload.jobId)) {
+          return json({ error: "Invalid job ID" }, 400);
+        }
         result = await cancelVideoJob(supabaseClient, user.id, payload.jobId);
         break;
-      case "retryVideoJob":
+      }
+      case "retryVideoJob": {
+        if (!payload.jobId || !isValidUUID(payload.jobId)) {
+          return json({ error: "Invalid job ID" }, 400);
+        }
         result = await retryVideoJob(supabaseClient, user.id, payload.jobId);
         break;
+      }
       default:
-        return json({
-          error: "Invalid action"
-        }, 400);
+        return json({ error: "Invalid action" }, 400);
     }
+    
     return json(result);
   } catch (error: any) {
     console.error("[KLING-VIDEO] Error:", error);
-    return json({
-      error: error?.message || "Unknown error"
-    }, 500);
+    // Return generic error to client
+    return json({ error: "An unexpected error occurred. Please try again." }, 500);
   }
 });
 function json(body: any, status = 200) {

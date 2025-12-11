@@ -27,6 +27,50 @@ interface MailerLiteSubscriber {
   status?: string;
 }
 
+// Input validation
+function validateSyncRequest(data: any): { valid: boolean; error?: string; request?: SyncRequest } {
+  if (!data || typeof data !== 'object') {
+    return { valid: false, error: 'Invalid request body' };
+  }
+  
+  const { email, name, subscription_tier, action, newsletter_subscribed } = data;
+  
+  // Validate email
+  if (!email || typeof email !== 'string') {
+    return { valid: false, error: 'Email is required' };
+  }
+  
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email) || email.length > 255) {
+    return { valid: false, error: 'Invalid email format' };
+  }
+  
+  // Validate action
+  const validActions = ['subscribe', 'unsubscribe', 'update'];
+  if (!action || !validActions.includes(action)) {
+    return { valid: false, error: 'Invalid action' };
+  }
+  
+  // Validate optional fields
+  if (name !== undefined && (typeof name !== 'string' || name.length > 255)) {
+    return { valid: false, error: 'Invalid name' };
+  }
+  
+  const validTiers = ['Free', 'Starter', 'Plus', 'Pro', 'Founders'];
+  if (subscription_tier !== undefined && !validTiers.includes(subscription_tier)) {
+    return { valid: false, error: 'Invalid subscription tier' };
+  }
+  
+  if (newsletter_subscribed !== undefined && typeof newsletter_subscribed !== 'boolean') {
+    return { valid: false, error: 'Invalid newsletter_subscribed value' };
+  }
+  
+  return {
+    valid: true,
+    request: { email, name, subscription_tier, action, newsletter_subscribed }
+  };
+}
+
 const tierToGroupMap: Record<string, string> = {
   'Free': 'produktpix-free',
   'Starter': 'produktpix-starter',
@@ -183,25 +227,35 @@ serve(async (req) => {
     console.log('[SYNC-MAILERLITE] Function started');
 
     if (!MAILERLITE_API_KEY) {
-      throw new Error('MAILERLITE_API_KEY not configured');
+      console.error('[SYNC-MAILERLITE] Missing API key');
+      return new Response(
+        JSON.stringify({ error: 'Service configuration error' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const requestData: SyncRequest = await req.json();
-    console.log('[SYNC-MAILERLITE] Request data:', { 
-      email: requestData.email, 
-      action: requestData.action,
-      tier: requestData.subscription_tier 
-    });
-
-    const { email, name, subscription_tier, action, newsletter_subscribed } = requestData;
-
-    if (!email) {
-      throw new Error('Email is required');
+    const rawData = await req.json();
+    
+    // Validate input
+    const validation = validateSyncRequest(rawData);
+    if (!validation.valid) {
+      return new Response(
+        JSON.stringify({ error: validation.error }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+    
+    const { email, name, subscription_tier, action, newsletter_subscribed } = validation.request!;
+    
+    console.log('[SYNC-MAILERLITE] Request data:', { 
+      email: email.substring(0, 3) + '***', 
+      action,
+      tier: subscription_tier 
+    });
 
     // Check if subscriber exists in MailerLite
     const existingSubscriber = await getMailerLiteSubscriber(email);
@@ -273,8 +327,9 @@ serve(async (req) => {
 
   } catch (error: any) {
     console.error('[SYNC-MAILERLITE] Error:', error);
+    // Return generic error message to client
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'An unexpected error occurred. Please try again.' }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
