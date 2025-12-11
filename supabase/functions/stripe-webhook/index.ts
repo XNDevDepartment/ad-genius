@@ -225,17 +225,37 @@ serve(async (req) => {
           break;
         }
         
-        // Clear any payment failure status and reset to active
+        // Get subscription details from Stripe to update subscription_end
+        let newSubscriptionEnd: string | null = null;
+        if (invoice.subscription) {
+          try {
+            const subscription = await stripe.subscriptions.retrieve(
+              invoice.subscription as string
+            );
+            newSubscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+            console.log(`[WEBHOOK] Retrieved subscription end date: ${newSubscriptionEnd}`);
+          } catch (subError) {
+            console.error("[WEBHOOK] Failed to retrieve subscription details:", subError);
+          }
+        }
+        
+        // Clear any payment failure status, reset to active, and update subscription_end
+        const updateData: Record<string, any> = { 
+          payment_failed_at: null,
+          subscription_status: 'active',
+          updated_at: new Date().toISOString()
+        };
+        
+        if (newSubscriptionEnd) {
+          updateData.subscription_end = newSubscriptionEnd;
+        }
+        
         await supabase
           .from("subscribers")
-          .update({ 
-            payment_failed_at: null,
-            subscription_status: 'active',
-            updated_at: new Date().toISOString()
-          })
+          .update(updateData)
           .eq("stripe_customer_id", customerId);
         
-        console.log(`[WEBHOOK] ✓ Cleared payment_failed_at and set status to active for customer ${customerId}`);
+        console.log(`[WEBHOOK] ✓ Updated subscriber: status=active, subscription_end=${newSubscriptionEnd || 'unchanged'}`);
         
         // Clear dunning notifications for this user
         await supabase

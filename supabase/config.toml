@@ -113,6 +113,9 @@ verify_jwt = true
 [functions.dunning-downgrade]
 verify_jwt = false
 
+[functions.reconcile-subscriptions]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 port = 54327
