@@ -151,7 +151,7 @@ async function createVideoJob(supabase: any, userId: string, payload: any): Prom
     };
   }
   // Create job record
-  const modelId = model || 'fal-ai/kling-video/v2.5-turbo/pro/image-to-video';
+  const modelId = model || 'fal-ai/kling-video/v2.6/pro/image-to-video';
   const { data: job, error: jobError } = await supabase.from("kling_jobs").insert({
     user_id: userId,
     prompt,
