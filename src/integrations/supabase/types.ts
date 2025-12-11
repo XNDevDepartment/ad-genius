@@ -992,6 +992,42 @@ export type Database = {
           },
         ]
       }
+      phone_verifications: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          otp_id: string | null
+          phone_number: string
+          updated_at: string | null
+          user_id: string
+          verified: boolean | null
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          otp_id?: string | null
+          phone_number: string
+          updated_at?: string | null
+          user_id: string
+          verified?: boolean | null
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          otp_id?: string | null
+          phone_number?: string
+          updated_at?: string | null
+          user_id?: string
+          verified?: boolean | null
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_id: string
@@ -1004,6 +1040,8 @@ export type Database = {
           mailerlite_subscriber_id: string | null
           name: string | null
           newsletter_subscribed: boolean | null
+          phone_number: string | null
+          phone_verified: boolean | null
           profession: string | null
           profile_picture: string | null
           public_gallery_enabled: boolean | null
@@ -1021,6 +1059,8 @@ export type Database = {
           mailerlite_subscriber_id?: string | null
           name?: string | null
           newsletter_subscribed?: boolean | null
+          phone_number?: string | null
+          phone_verified?: boolean | null
           profession?: string | null
           profile_picture?: string | null
           public_gallery_enabled?: boolean | null
@@ -1038,6 +1078,8 @@ export type Database = {
           mailerlite_subscriber_id?: string | null
           name?: string | null
           newsletter_subscribed?: boolean | null
+          phone_number?: string | null
+          phone_verified?: boolean | null
           profession?: string | null
           profile_picture?: string | null
           public_gallery_enabled?: boolean | null

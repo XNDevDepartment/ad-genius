@@ -1526,5 +1526,32 @@
       "accountDeletedDesc": "Your account has been permanently deleted",
       "errorDeletingAccount": "Failed to delete account. Please contact support."
     }
+  },
+  "phoneVerification": {
+    "phoneNumber": "Phone Number",
+    "includeCountryCode": "Include country code (e.g., +351 for Portugal)",
+    "sendCode": "Send Verification Code",
+    "sending": "Sending...",
+    "otpSent": "Code sent",
+    "checkPhone": "Check your phone for the verification code",
+    "codeSentTo": "Code sent to",
+    "changeNumber": "Change number",
+    "verify": "Verify Code",
+    "verifying": "Verifying...",
+    "verified": "Phone verified",
+    "verifiedDesc": "Your phone number has been verified successfully",
+    "phoneVerified": "Phone number verified",
+    "resendIn": "Resend code in",
+    "resendCode": "Resend Code",
+    "errors": {
+      "phoneRequired": "Phone number required",
+      "enterPhone": "Please enter your phone number",
+      "sendFailed": "Failed to send code",
+      "tryAgain": "Please try again",
+      "invalidCode": "Invalid code",
+      "enterFullCode": "Please enter the 6-digit code",
+      "verifyFailed": "Verification failed",
+      "invalidOrExpired": "Invalid or expired code"
+    }
   }
 }

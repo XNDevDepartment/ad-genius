@@ -1521,5 +1521,32 @@
       "accountDeletedDesc": "Ihr Konto wurde dauerhaft gelöscht",
       "errorDeletingAccount": "Konto konnte nicht gelöscht werden. Bitte kontaktieren Sie den Support."
     }
+  },
+  "phoneVerification": {
+    "phoneNumber": "Telefonnummer",
+    "includeCountryCode": "Landesvorwahl eingeben (z.B. +49 für Deutschland)",
+    "sendCode": "Verifizierungscode Senden",
+    "sending": "Wird gesendet...",
+    "otpSent": "Code gesendet",
+    "checkPhone": "Überprüfen Sie Ihr Telefon auf den Verifizierungscode",
+    "codeSentTo": "Code gesendet an",
+    "changeNumber": "Nummer ändern",
+    "verify": "Code Verifizieren",
+    "verifying": "Verifizierung...",
+    "verified": "Telefon verifiziert",
+    "verifiedDesc": "Ihre Telefonnummer wurde erfolgreich verifiziert",
+    "phoneVerified": "Telefonnummer verifiziert",
+    "resendIn": "Code erneut senden in",
+    "resendCode": "Code Erneut Senden",
+    "errors": {
+      "phoneRequired": "Telefonnummer erforderlich",
+      "enterPhone": "Bitte geben Sie Ihre Telefonnummer ein",
+      "sendFailed": "Code konnte nicht gesendet werden",
+      "tryAgain": "Bitte versuchen Sie es erneut",
+      "invalidCode": "Ungültiger Code",
+      "enterFullCode": "Bitte geben Sie den 6-stelligen Code ein",
+      "verifyFailed": "Verifizierung fehlgeschlagen",
+      "invalidOrExpired": "Ungültiger oder abgelaufener Code"
+    }
   }
 }
