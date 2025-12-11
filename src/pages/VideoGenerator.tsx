@@ -403,6 +403,7 @@ export default function VideoGenerator() {
         prompt: enhancedPrompt,
         duration: safeDuration,
         model: "fal-ai/kling-video/v2.6/pro/image-to-video",
+        generate_audio: false
       };
 
       // Detect if selectedImage is a UGC image (has prompt field) or source image
