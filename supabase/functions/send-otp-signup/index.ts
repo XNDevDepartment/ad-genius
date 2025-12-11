@@ -83,6 +83,7 @@ serve(async (req) => {
         expiration: 600, // 10 minutes
         sender_id: 'gText',
         sender_id_value: 'ProduktPix',
+        request_quota_identification: cleanPhone,
       }),
     });
 
