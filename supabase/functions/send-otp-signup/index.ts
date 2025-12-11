@@ -90,7 +90,7 @@ serve(async (req) => {
     const bulkgateData = await bulkgateResponse.json();
     console.log('[send-otp-signup] Bulkgate response:', JSON.stringify(bulkgateData));
 
-    if (bulkgateData.data?.status !== 'accepted') {
+    if (bulkgateData.data?.message?.status !== 'accepted') {
       console.error('[send-otp-signup] Bulkgate error:', bulkgateData);
       return new Response(
         JSON.stringify({ error: 'Failed to send verification code' }),
