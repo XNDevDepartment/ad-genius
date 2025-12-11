@@ -1,4 +1,4 @@
-import { ArrowLeft, Settings, CreditCard, HelpCircle, LogOut, Bell, Shield } from "lucide-react";
+import { ArrowLeft, Settings, CreditCard, HelpCircle, LogOut, Bell, Shield, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -90,6 +90,12 @@ const Account = () => {
                   {user.user_metadata?.name || "User"}
                 </h2>
                 <p className="text-muted-foreground">{user.email}</p>
+                {!user.email_confirmed_at && (
+                  <Badge variant="outline" className="text-amber-600 border-amber-400 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-600">
+                    <AlertTriangle className="w-3 h-3 mr-1" />
+                    {t('account.emailNotVerified', 'Email not verified')}
+                  </Badge>
+                )}
                 <Badge variant={subscriptionData?.subscribed ? "default" : "secondary"}>
                   {tier} {t('account.member')}
                 </Badge>

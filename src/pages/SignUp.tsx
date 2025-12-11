@@ -14,15 +14,11 @@ const SignUp = () => {
     }
   }, [user, navigate]);
 
-  const handleSuccess = (email?: string) => {
+  const handleSuccess = () => {
     // Track the sign-up event in Meta Pixel
     trackSignUp();
-    
-    if (email) {
-      navigate('/email-confirmation', { state: { email } });
-    } else {
-      navigate('/');
-    }
+    // Always redirect to home after signup (auto-login)
+    navigate('/');
   };
 
   return (

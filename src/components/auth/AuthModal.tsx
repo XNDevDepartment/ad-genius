@@ -174,7 +174,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
     }
   };
 
-  // Create account after phone verification
+  // Create account after phone verification - auto-login without email confirmation
   const handleCreateAccount = async (phoneNumber: string) => {
     setSignupStep('creating');
     try {
@@ -194,8 +194,18 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
         return;
       }
 
-      toast.success(t('auth.signup.accountCreated', 'Account created! Please check your email to confirm.'));
-      onSuccess?.(formData.email);
+      // Auto-login after signup (skip email confirmation)
+      const { error: signInError } = await signIn(formData.email, formData.password);
+      if (signInError) {
+        console.warn('[AuthModal] Auto-login failed:', signInError);
+        toast.success(t('auth.signup.accountCreatedPleaseLogin', 'Account created! Please sign in.'));
+        setIsSignUp(false);
+        setSignupStep('form');
+        return;
+      }
+
+      toast.success(t('auth.signup.welcomeMessage', 'Welcome! Your account is ready.'));
+      onSuccess?.(); // No email = redirect to home, not email confirmation
       onClose?.();
     } catch (err: any) {
       console.error('[AuthModal] Create account error:', err);
