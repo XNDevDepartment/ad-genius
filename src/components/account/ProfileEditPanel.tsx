@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Save, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Camera, Save, X, CheckCircle, AlertTriangle, Mail } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
@@ -16,10 +17,11 @@ interface ProfileEditPanelProps {
 }
 
 export const ProfileEditPanel = ({ onClose }: ProfileEditPanelProps) => {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, resendConfirmationEmail } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
+  const [sendingVerification, setSendingVerification] = useState(false);
   const [profileData, setProfileData] = useState({
     first_name: '',
     last_name: '',
@@ -134,6 +136,29 @@ export const ProfileEditPanel = ({ onClose }: ProfileEditPanelProps) => {
     }
   };
 
+  const handleSendVerificationEmail = async () => {
+    if (!user?.email) return;
+    
+    setSendingVerification(true);
+    try {
+      const { error } = await resendConfirmationEmail(user.email);
+      if (error) throw error;
+      
+      toast({
+        title: t('account.verificationEmailSent', 'Verification email sent!'),
+        description: t('account.verificationEmailSentDesc', 'Check your inbox for a link to verify your email.'),
+      });
+    } catch (error: any) {
+      toast({
+        title: t('account.error', 'Error'),
+        description: error?.message || t('account.errorSendingVerification', 'Failed to send verification email'),
+        variant: "destructive",
+      });
+    } finally {
+      setSendingVerification(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* <div className="flex items-center justify-between">
@@ -192,8 +217,36 @@ export const ProfileEditPanel = ({ onClose }: ProfileEditPanelProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={user?.email || ""} disabled />
+            <Label htmlFor="email">{t('account.profile.email', 'Email')}</Label>
+            <div className="flex items-center gap-2">
+              <Input id="email" type="email" value={user?.email || ""} disabled className="flex-1" />
+              {user?.email_confirmed_at ? (
+                <Badge variant="secondary" className="text-green-600 bg-green-50 dark:bg-green-950/30 border-green-300 dark:border-green-700 whitespace-nowrap">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  {t('account.emailVerified', 'Verified')}
+                </Badge>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleSendVerificationEmail}
+                  disabled={sendingVerification}
+                  className="whitespace-nowrap"
+                >
+                  <Mail className="w-3 h-3 mr-1" />
+                  {sendingVerification 
+                    ? t('account.sending', 'Sending...') 
+                    : t('account.verifyEmail', 'Verify Email')
+                  }
+                </Button>
+              )}
+            </div>
+            {!user?.email_confirmed_at && (
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                <AlertTriangle className="w-3 h-3 inline mr-1" />
+                {t('account.emailNotVerifiedHint', 'Your email is not verified. Click to send a verification link.')}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
