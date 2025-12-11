@@ -1,0 +1,144 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+// Simple token generation for verification
+function generateVerificationToken(phoneNumber: string, sessionId: string): string {
+  const timestamp = Date.now();
+  const payload = `${phoneNumber}:${sessionId}:${timestamp}`;
+  // Simple base64 encoding - in production you'd use proper JWT
+  return btoa(payload);
+}
+
+serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { code, session_id } = await req.json();
+
+    if (!code || !session_id) {
+      return new Response(
+        JSON.stringify({ error: 'Code and session_id are required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Initialize Supabase admin client
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Find the verification record by session_id
+    const { data: verification, error: fetchError } = await supabaseAdmin
+      .from('phone_verifications')
+      .select('*')
+      .eq('session_id', session_id)
+      .eq('verified', false)
+      .is('user_id', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (fetchError || !verification) {
+      console.error('[verify-otp-signup] Verification not found:', fetchError);
+      return new Response(
+        JSON.stringify({ error: 'Verification session not found or expired' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check if expired
+    if (new Date(verification.expires_at) < new Date()) {
+      return new Response(
+        JSON.stringify({ error: 'Verification code has expired' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify with Bulkgate
+    const applicationId = Deno.env.get('BULKGATE_APPLICATION_ID');
+    const applicationToken = Deno.env.get('BULKGATE_APPLICATION_TOKEN');
+
+    if (!applicationId || !applicationToken) {
+      console.error('[verify-otp-signup] Missing Bulkgate credentials');
+      return new Response(
+        JSON.stringify({ error: 'SMS service not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`[verify-otp-signup] Verifying OTP for session: ${session_id}`);
+
+    const bulkgateResponse = await fetch('https://portal.bulkgate.com/api/1.0/otp/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        application_id: applicationId,
+        application_token: applicationToken,
+        id: verification.otp_id,
+        code: code,
+      }),
+    });
+
+    const bulkgateData = await bulkgateResponse.json();
+    console.log('[verify-otp-signup] Bulkgate verify response:', JSON.stringify(bulkgateData));
+
+    if (bulkgateData.data?.verified !== true) {
+      console.error('[verify-otp-signup] Verification failed:', bulkgateData);
+      return new Response(
+        JSON.stringify({ error: 'Invalid verification code' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Generate verification token
+    const verificationToken = generateVerificationToken(verification.phone_number, session_id);
+
+    // Update the verification record
+    const { error: updateError } = await supabaseAdmin
+      .from('phone_verifications')
+      .update({
+        verified: true,
+        verified_at: new Date().toISOString(),
+        verification_token: verificationToken,
+      })
+      .eq('id', verification.id);
+
+    if (updateError) {
+      console.error('[verify-otp-signup] Update error:', updateError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to update verification status' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`[verify-otp-signup] Phone verified successfully: ${verification.phone_number.substring(0, 6)}***`);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        verified: true,
+        phone_number: verification.phone_number,
+        verification_token: verificationToken,
+      }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('[verify-otp-signup] Error:', error);
+    return new Response(
+      JSON.stringify({ error: 'Internal server error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+});

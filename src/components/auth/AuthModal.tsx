@@ -1,15 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Loader, Eye, EyeOff, ShieldAlert } from 'lucide-react';
+import { Loader, Eye, EyeOff, Phone, ArrowLeft } from 'lucide-react';
 import HeaderSection from '../landing/HeaderSection';
 import NavigationHeader from '../NavigationHeader';
 import { supabase } from '@/integrations/supabase/client';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { useTranslation } from 'react-i18next';
 
 interface AuthModalProps {
   onSuccess?: (email?: string) => void;
@@ -27,69 +28,243 @@ const validateSignupDomain = async (email: string): Promise<{ allowed: boolean; 
     
     if (error) {
       console.error('[AuthModal] Domain validation error:', error);
-      return { allowed: true }; // Fail open on error
+      return { allowed: true };
     }
     
     return data;
   } catch (err) {
     console.error('[AuthModal] Domain validation exception:', err);
-    return { allowed: true }; // Fail open on error
+    return { allowed: true };
   }
 };
 
+// Generate unique session ID
+const generateSessionId = () => {
+  return `signup_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+};
+
 export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }: AuthModalProps) => {
+  const { t } = useTranslation();
   const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
 
   const [isSignUp, setIsSignUp] = useState(defaultMode === 'signup');
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  
+  // Multi-step signup state
+  const [signupStep, setSignupStep] = useState<'form' | 'otp' | 'creating'>('form');
+  const [sessionId, setSessionId] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [verifiedPhone, setVerifiedPhone] = useState('');
+  const [verificationToken, setVerificationToken] = useState('');
+  const [resendCountdown, setResendCountdown] = useState(0);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
 
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     name: '',
-    profession: '',
+    phone: '',
   });
 
   const { user } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Countdown timer for resend
+  useEffect(() => {
+    if (resendCountdown > 0) {
+      const timer = setTimeout(() => setResendCountdown(resendCountdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCountdown]);
+
+  // Send OTP
+  const handleSendOtp = async () => {
+    if (!formData.email || !formData.password || !formData.phone) {
+      toast.error(t('auth.signup.fillAllFields', 'Please fill in all fields'));
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error(t('auth.invalidEmail', 'Please enter a valid email address'));
+      return;
+    }
+
+    // Validate password length
+    if (formData.password.length < 6) {
+      toast.error(t('auth.signup.passwordTooShort', 'Password must be at least 6 characters'));
+      return;
+    }
+
+    // Validate phone format
+    const cleanPhone = formData.phone.replace(/\s+/g, '');
+    if (!/^\+?\d{9,15}$/.test(cleanPhone)) {
+      toast.error(t('auth.signup.invalidPhone', 'Please enter a valid phone number with country code'));
+      return;
+    }
+
+    // Validate email domain
+    setSendingOtp(true);
+    const domainCheck = await validateSignupDomain(formData.email);
+    if (!domainCheck.allowed) {
+      toast.error(domainCheck.message || t('auth.signup.domainNotAllowed', 'This email domain is not allowed'));
+      setSendingOtp(false);
+      return;
+    }
+
+    try {
+      const newSessionId = generateSessionId();
+      setSessionId(newSessionId);
+
+      const { data, error } = await supabase.functions.invoke('send-otp-signup', {
+        body: {
+          phone_number: cleanPhone,
+          session_id: newSessionId,
+        }
+      });
+
+      if (error || !data?.success) {
+        throw new Error(data?.error || error?.message || 'Failed to send code');
+      }
+
+      toast.success(t('auth.signup.codeSent', 'Verification code sent!'));
+      setSignupStep('otp');
+      setResendCountdown(60);
+    } catch (err: any) {
+      console.error('[AuthModal] Send OTP error:', err);
+      toast.error(err.message || t('auth.signup.sendCodeError', 'Failed to send verification code'));
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
+  // Verify OTP
+  const handleVerifyOtp = async () => {
+    if (otpCode.length !== 6) {
+      toast.error(t('auth.signup.enterFullCode', 'Please enter the 6-digit code'));
+      return;
+    }
+
+    setVerifyingOtp(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-otp-signup', {
+        body: {
+          code: otpCode,
+          session_id: sessionId,
+        }
+      });
+
+      if (error || !data?.verified) {
+        throw new Error(data?.error || error?.message || 'Invalid code');
+      }
+
+      setVerifiedPhone(data.phone_number);
+      setVerificationToken(data.verification_token);
+      
+      // Now create the account
+      await handleCreateAccount(data.phone_number);
+    } catch (err: any) {
+      console.error('[AuthModal] Verify OTP error:', err);
+      toast.error(err.message || t('auth.signup.invalidCode', 'Invalid verification code'));
+    } finally {
+      setVerifyingOtp(false);
+    }
+  };
+
+  // Create account after phone verification
+  const handleCreateAccount = async (phoneNumber: string) => {
+    setSignupStep('creating');
+    try {
+      const { error } = await signUp(formData.email, formData.password, {
+        name: formData.name,
+        phone_number: phoneNumber,
+        phone_verified: true,
+      });
+
+      if (error) {
+        if (error.message.includes('already registered')) {
+          toast.error(t('auth.signup.emailExists', 'This email is already registered'));
+        } else {
+          toast.error(error.message);
+        }
+        setSignupStep('form');
+        return;
+      }
+
+      toast.success(t('auth.signup.accountCreated', 'Account created! Please check your email to confirm.'));
+      onSuccess?.(formData.email);
+      onClose?.();
+    } catch (err: any) {
+      console.error('[AuthModal] Create account error:', err);
+      toast.error(err.message || t('auth.signup.createError', 'Failed to create account'));
+      setSignupStep('form');
+    }
+  };
+
+  // Resend OTP
+  const handleResendOtp = async () => {
+    if (resendCountdown > 0) return;
+    
+    setSendingOtp(true);
+    try {
+      const newSessionId = generateSessionId();
+      setSessionId(newSessionId);
+      setOtpCode('');
+
+      const cleanPhone = formData.phone.replace(/\s+/g, '');
+      const { data, error } = await supabase.functions.invoke('send-otp-signup', {
+        body: {
+          phone_number: cleanPhone,
+          session_id: newSessionId,
+        }
+      });
+
+      if (error || !data?.success) {
+        throw new Error(data?.error || error?.message || 'Failed to resend code');
+      }
+
+      toast.success(t('auth.signup.codeResent', 'New code sent!'));
+      setResendCountdown(60);
+    } catch (err: any) {
+      toast.error(err.message || t('auth.signup.resendError', 'Failed to resend code'));
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
+  // Sign in handler
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isSignUp) {
-        // Block email/password signups - only Google allowed
-        toast.info('We are currently only accepting new accounts via Google Sign-In while we reinforce our security. Please use the Google button below.');
-        setLoading(false);
-        return;
-      } else {
-        const { error } = await signIn(formData.email, formData.password);
+      const { error } = await signIn(formData.email, formData.password);
 
-        if (error) {
-          if (error.message.includes('Invalid login credentials')) {
-            toast.error('Incorrect email or password.');
-          } else {
-            toast.error(error.message);
-          }
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error(t('auth.invalidCredentials', 'Incorrect email or password.'));
         } else {
-          toast.success('Login successful!');
-          onSuccess?.();
-          onClose?.();
+          toast.error(error.message);
         }
+      } else {
+        toast.success(t('auth.loginSuccess', 'Login successful!'));
+        onSuccess?.();
+        onClose?.();
       }
     } catch (error) {
-      toast.error('An unexpected error occurred.');
+      toast.error(t('auth.unexpectedError', 'An unexpected error occurred.'));
     } finally {
       setLoading(false);
     }
   };
 
-  // ⬇️ New: reset password handler
+  // Reset password handler
   const handleResetPassword = async () => {
     if (!formData.email) {
-      toast.error('Please enter your email above to reset your password.');
+      toast.error(t('auth.enterEmailForReset', 'Please enter your email above to reset your password.'));
       return;
     }
     try {
@@ -97,25 +272,38 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
       if (typeof resetPassword === 'function') {
         const { error } = await resetPassword(formData.email);
         if (error) throw error;
-        toast.success('If an account exists with this email, we have sent reset instructions.');
+        toast.success(t('auth.resetEmailSent', 'If an account exists with this email, we have sent reset instructions.'));
       } else {
-        // If your AuthContext uses a different method name,
-        // replace the call above and remove this toast.
         throw new Error('Password reset function is not configured.');
       }
     } catch (err: any) {
-      toast.error(err?.message || 'Unable to send reset email.');
+      toast.error(err?.message || t('auth.resetError', 'Unable to send reset email.'));
     } finally {
       setResetLoading(false);
     }
   };
 
-  // If using as modal, check isOpen
+  // Go back from OTP step
+  const handleBackFromOtp = () => {
+    setSignupStep('form');
+    setOtpCode('');
+    setSessionId('');
+  };
+
+  // Reset form when switching modes
+  const handleModeSwitch = () => {
+    setIsSignUp(!isSignUp);
+    setSignupStep('form');
+    setOtpCode('');
+    setSessionId('');
+    setVerifiedPhone('');
+    setVerificationToken('');
+  };
+
   if (isOpen === false) return null;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Header Navigation */}
       {!user && (
         <div className="hidden lg:block">
           <HeaderSection />
@@ -127,166 +315,338 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
         </div>
       )}
       
-      {/* Centered Auth Card */}
       <div className="flex-1 flex items-center justify-center p-4 lg:p-8">
         <Card className="w-full max-w-md bg-card shadow-lg border-border">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">
-            {isSignUp ? 'Create Account' : 'Sign In'}
-          </CardTitle>
-          <CardDescription>
-            {isSignUp 
-              ? 'Create your account to access the system' 
-              : 'Enter your credentials to continue'
-            }
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Security notice for signup mode */}
-          {isSignUp && (
-            <Alert className="mb-4 border-amber-500/50 bg-amber-500/10">
-              <ShieldAlert className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              <AlertDescription className="text-sm text-amber-700 dark:text-amber-300">
-                We are currently only accepting new accounts via Google Sign-In while we reinforce our security. Please use the Google button below.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Only show email/password form for sign-in */}
-          {!isSignUp && (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    required
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-
-                {/* Reset password link (under the password field) */}
-                <div className="mt-1">
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="px-0 text-xs"
-                    onClick={handleResetPassword}
-                    disabled={resetLoading}
-                  >
-                    {resetLoading && <Loader className="mr-1 h-3 w-3 animate-spin" />}
-                    Reset my password
-                  </Button>
-                  <p className="text-[11px] text-muted-foreground">
-                    Insert your email above and we will send you the reset link
-                  </p>
-                </div>
-              </div>
-
-              <Button type="submit" disabled={loading} className="w-full">
-                {loading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-                Sign In
-              </Button>
-            </form>
-          )}
-
-          {/* Divider - only show for sign-in */}
-          {!isSignUp && (
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-              </div>
-            </div>
-          )}
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-            </div>
-          </div>
-
-          {/* Google Sign-In Button - Prominent for signup */}
-          <Button
-            type="button"
-            variant={isSignUp ? "default" : "outline"}
-            className={`w-full ${isSignUp ? 'mt-2' : ''}`}
-            onClick={async () => {
-              try {
-                setLoading(true);
-                const { error } = await signInWithGoogle();
-                if (error) {
-                  toast.error(error.message || 'Failed to sign in with Google');
-                }
-              } catch (err: any) {
-                toast.error(err?.message || 'An error occurred with Google sign-in');
-              } finally {
-                setLoading(false);
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">
+              {isSignUp 
+                ? signupStep === 'otp' 
+                  ? t('auth.signup.verifyPhone', 'Verify Your Phone')
+                  : signupStep === 'creating'
+                    ? t('auth.signup.creatingAccount', 'Creating Account...')
+                    : t('auth.createAccount', 'Create Account')
+                : t('auth.signIn', 'Sign In')
               }
-            }}
-            disabled={loading}
-          >
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-              <path
-                fill="currentColor"
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              />
-              <path
-                fill="currentColor"
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              />
-              <path
-                fill="currentColor"
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-              />
-              <path
-                fill="currentColor"
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-              />
-            </svg>
-            {isSignUp ? 'Sign up with Google' : 'Sign in with Google'}
-          </Button>
+            </CardTitle>
+            <CardDescription>
+              {isSignUp 
+                ? signupStep === 'otp'
+                  ? t('auth.signup.enterCode', 'Enter the 6-digit code sent to your phone')
+                  : signupStep === 'creating'
+                    ? t('auth.signup.pleaseWait', 'Please wait...')
+                    : t('auth.signup.fillDetails', 'Create your account to get started')
+                : t('auth.enterCredentials', 'Enter your credentials to continue')
+              }
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent>
+            {/* SIGNUP FLOW */}
+            {isSignUp && (
+              <>
+                {/* Step 1: Form */}
+                {signupStep === 'form' && (
+                  <form onSubmit={(e) => { e.preventDefault(); handleSendOtp(); }} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">{t('auth.name', 'Name')}</Label>
+                      <Input
+                        id="name"
+                        type="text"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        placeholder={t('auth.namePlaceholder', 'Your name')}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="email">{t('auth.email', 'Email')}</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        placeholder="you@example.com"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="password">{t('auth.password', 'Password')}</Label>
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          type={showPassword ? 'text' : 'password'}
+                          value={formData.password}
+                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                          placeholder={t('auth.passwordPlaceholder', 'Min 6 characters')}
+                          required
+                          minLength={6}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-0 top-0 h-full px-3"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">{t('auth.phone', 'Phone Number')}</Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="phone"
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          placeholder="+351 912 345 678"
+                          className="pl-10"
+                          required
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {t('auth.signup.phoneHint', 'Include country code (e.g., +351)')}
+                      </p>
+                    </div>
 
-          <div className="mt-4 text-center">
-            <p className="text-sm text-muted-foreground">
-              {isSignUp ? 'Already have an account?' : "Don't have an account?"}
-            </p>
-            <Button
-              variant="link"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm"
-            >
-              {isSignUp ? 'Sign In' : 'Create Account'}
-            </Button>
-          </div>
-        </CardContent>
+                    <Button type="submit" disabled={sendingOtp} className="w-full">
+                      {sendingOtp && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                      {t('auth.signup.sendCode', 'Send Verification Code')}
+                    </Button>
+                  </form>
+                )}
+
+                {/* Step 2: OTP Verification */}
+                {signupStep === 'otp' && (
+                  <div className="space-y-6">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleBackFromOtp}
+                      className="mb-2 -ml-2"
+                    >
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      {t('auth.back', 'Back')}
+                    </Button>
+                    
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {t('auth.signup.codeSentTo', 'Code sent to')} <span className="font-medium text-foreground">{formData.phone}</span>
+                      </p>
+                      
+                      <div className="flex justify-center">
+                        <InputOTP
+                          maxLength={6}
+                          value={otpCode}
+                          onChange={(value) => setOtpCode(value)}
+                        >
+                          <InputOTPGroup>
+                            <InputOTPSlot index={0} />
+                            <InputOTPSlot index={1} />
+                            <InputOTPSlot index={2} />
+                            <InputOTPSlot index={3} />
+                            <InputOTPSlot index={4} />
+                            <InputOTPSlot index={5} />
+                          </InputOTPGroup>
+                        </InputOTP>
+                      </div>
+                    </div>
+
+                    <Button 
+                      onClick={handleVerifyOtp} 
+                      disabled={verifyingOtp || otpCode.length !== 6} 
+                      className="w-full"
+                    >
+                      {verifyingOtp && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                      {t('auth.signup.verifyAndCreate', 'Verify & Create Account')}
+                    </Button>
+
+                    <div className="text-center">
+                      <Button
+                        variant="link"
+                        onClick={handleResendOtp}
+                        disabled={resendCountdown > 0 || sendingOtp}
+                        className="text-sm"
+                      >
+                        {resendCountdown > 0 
+                          ? `${t('auth.signup.resendIn', 'Resend in')} ${resendCountdown}s`
+                          : t('auth.signup.resendCode', 'Resend Code')
+                        }
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 3: Creating Account */}
+                {signupStep === 'creating' && (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <Loader className="h-8 w-8 animate-spin text-primary mb-4" />
+                    <p className="text-muted-foreground">{t('auth.signup.creatingAccount', 'Creating your account...')}</p>
+                  </div>
+                )}
+
+                {/* Google signup option - only show on form step */}
+                {signupStep === 'form' && (
+                  <>
+                    <div className="relative my-6">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t border-border" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-card px-2 text-muted-foreground">{t('auth.orContinueWith', 'Or continue with')}</span>
+                      </div>
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={async () => {
+                        try {
+                          setLoading(true);
+                          const { error } = await signInWithGoogle();
+                          if (error) {
+                            toast.error(error.message || t('auth.googleError', 'Failed to sign in with Google'));
+                          }
+                        } catch (err: any) {
+                          toast.error(err?.message || t('auth.googleError', 'An error occurred with Google sign-in'));
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                      disabled={loading}
+                    >
+                      <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                        <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                        <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                        <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                      </svg>
+                      {t('auth.signUpWithGoogle', 'Sign up with Google')}
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
+
+            {/* SIGN IN FLOW */}
+            {!isSignUp && (
+              <>
+                <form onSubmit={handleSignIn} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">{t('auth.email', 'Email')}</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="password">{t('auth.password', 'Password')}</Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+
+                    <div className="mt-1">
+                      <Button
+                        type="button"
+                        variant="link"
+                        className="px-0 text-xs"
+                        onClick={handleResetPassword}
+                        disabled={resetLoading}
+                      >
+                        {resetLoading && <Loader className="mr-1 h-3 w-3 animate-spin" />}
+                        {t('auth.resetPassword', 'Reset my password')}
+                      </Button>
+                      <p className="text-[11px] text-muted-foreground">
+                        {t('auth.resetHint', 'Insert your email above and we will send you the reset link')}
+                      </p>
+                    </div>
+                  </div>
+
+                  <Button type="submit" disabled={loading} className="w-full">
+                    {loading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                    {t('auth.signIn', 'Sign In')}
+                  </Button>
+                </form>
+
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">{t('auth.orContinueWith', 'Or continue with')}</span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={async () => {
+                    try {
+                      setLoading(true);
+                      const { error } = await signInWithGoogle();
+                      if (error) {
+                        toast.error(error.message || t('auth.googleError', 'Failed to sign in with Google'));
+                      }
+                    } catch (err: any) {
+                      toast.error(err?.message || t('auth.googleError', 'An error occurred with Google sign-in'));
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  disabled={loading}
+                >
+                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                  </svg>
+                  {t('auth.signInWithGoogle', 'Sign in with Google')}
+                </Button>
+              </>
+            )}
+
+            {/* Mode switch - hide during OTP/creating steps */}
+            {signupStep === 'form' && (
+              <div className="mt-4 text-center">
+                <p className="text-sm text-muted-foreground">
+                  {isSignUp ? t('auth.hasAccount', 'Already have an account?') : t('auth.noAccount', "Don't have an account?")}
+                </p>
+                <Button
+                  variant="link"
+                  onClick={handleModeSwitch}
+                  className="text-sm"
+                >
+                  {isSignUp ? t('auth.signIn', 'Sign In') : t('auth.createAccount', 'Create Account')}
+                </Button>
+              </div>
+            )}
+          </CardContent>
         </Card>
       </div>
     </div>

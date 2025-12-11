@@ -999,8 +999,10 @@ export type Database = {
           id: string
           otp_id: string | null
           phone_number: string
+          session_id: string | null
           updated_at: string | null
-          user_id: string
+          user_id: string | null
+          verification_token: string | null
           verified: boolean | null
           verified_at: string | null
         }
@@ -1010,8 +1012,10 @@ export type Database = {
           id?: string
           otp_id?: string | null
           phone_number: string
+          session_id?: string | null
           updated_at?: string | null
-          user_id: string
+          user_id?: string | null
+          verification_token?: string | null
           verified?: boolean | null
           verified_at?: string | null
         }
@@ -1021,8 +1025,10 @@ export type Database = {
           id?: string
           otp_id?: string | null
           phone_number?: string
+          session_id?: string | null
           updated_at?: string | null
-          user_id?: string
+          user_id?: string | null
+          verification_token?: string | null
           verified?: boolean | null
           verified_at?: string | null
         }
