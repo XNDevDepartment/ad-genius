@@ -6,12 +6,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Simple token generation for verification
-function generateVerificationToken(phoneNumber: string, sessionId: string): string {
-  const timestamp = Date.now();
-  const payload = `${phoneNumber}:${sessionId}:${timestamp}`;
-  // Simple base64 encoding - in production you'd use proper JWT
-  return btoa(payload);
+// Cryptographically secure token generation
+function generateVerificationToken(): string {
+  // Generate secure random token using crypto API
+  return crypto.randomUUID() + '-' + crypto.randomUUID();
 }
 
 serve(async (req) => {
@@ -101,8 +99,8 @@ serve(async (req) => {
       );
     }
 
-    // Generate verification token
-    const verificationToken = generateVerificationToken(verification.phone_number, session_id);
+    // Generate cryptographically secure verification token
+    const verificationToken = generateVerificationToken();
 
     // Update the verification record
     const { error: updateError } = await supabaseAdmin
