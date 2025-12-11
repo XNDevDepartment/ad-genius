@@ -114,7 +114,7 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.reconcile-subscriptions]
-verify_jwt = true
+verify_jwt = false
 
 [edge_runtime]
 enabled = true
