@@ -116,6 +116,12 @@ verify_jwt = false
 [functions.reconcile-subscriptions]
 verify_jwt = false
 
+[functions.send-otp]
+verify_jwt = true
+
+[functions.verify-otp]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 port = 54327

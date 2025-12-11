@@ -1521,5 +1521,32 @@
       "accountDeletedDesc": "Tu cuenta ha sido eliminada permanentemente",
       "errorDeletingAccount": "Error al eliminar cuenta. Por favor, contacta con soporte."
     }
+  },
+  "phoneVerification": {
+    "phoneNumber": "Número de Teléfono",
+    "includeCountryCode": "Incluye el código de país (ej: +34 para España)",
+    "sendCode": "Enviar Código de Verificación",
+    "sending": "Enviando...",
+    "otpSent": "Código enviado",
+    "checkPhone": "Revisa tu teléfono para el código de verificación",
+    "codeSentTo": "Código enviado a",
+    "changeNumber": "Cambiar número",
+    "verify": "Verificar Código",
+    "verifying": "Verificando...",
+    "verified": "Teléfono verificado",
+    "verifiedDesc": "Tu número de teléfono ha sido verificado con éxito",
+    "phoneVerified": "Número de teléfono verificado",
+    "resendIn": "Reenviar código en",
+    "resendCode": "Reenviar Código",
+    "errors": {
+      "phoneRequired": "Número de teléfono requerido",
+      "enterPhone": "Por favor, introduce tu número de teléfono",
+      "sendFailed": "Error al enviar código",
+      "tryAgain": "Por favor, inténtalo de nuevo",
+      "invalidCode": "Código inválido",
+      "enterFullCode": "Por favor, introduce el código de 6 dígitos",
+      "verifyFailed": "Verificación fallida",
+      "invalidOrExpired": "Código inválido o expirado"
+    }
   }
 }
