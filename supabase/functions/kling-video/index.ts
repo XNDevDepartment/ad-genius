@@ -274,7 +274,8 @@ async function processVideoJobAsync(supabase: any, jobId: string, webhookUrl?: s
   const inputPayload = {
     prompt: job.prompt,
     image_url: job.image_url,
-    duration: Number(job.duration) === 10 ? 10 : 5
+    duration: Number(job.duration) === 10 ? 10 : 5,
+    generate_audio: false,
   };
   // carry optional knobs from metadata if present
   const md = job.metadata || {};
