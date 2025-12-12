@@ -672,35 +672,23 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       const commonNeg = `--negative "AI artifacts, text overlays, watermark, extreme bokeh, macro close-up, center-composed product, invented branding, extra limbs, low resolution, duplicated faces, similar persons"`;
 
       const highlightYes = `
-        Create an ultra-realistic user-generated (UGC) photo to advertise this product.
+        Generate an authentic UGC-style photograph for a product marketing campaign.
 
-        ###CONTEXT:
-        - You receive a real product image as reference. Use that image as the base.
-        - Keep the exact product design, shape, label, colors and materials from the reference image.
-        - Do NOT invent new branding, packaging, flavors or text.
-        - Product details to keep in mind: ${prodSpecs}
-        - Target audience this image must resonate with: ${desiredAudience}
-        - Scenario to follow (take this literally): ${selectedScenario.description}
+        Product context:
+        {user_prompt}
 
-        ###VISUAL STYLE:
-        - Look and feel: authentic ${style} UGC photo, as if taken by a real customer on a modern smartphone for social media.
-        - Pure realism: natural skin, natural textures, believable surfaces and reflections.
-        - Lighting: ${timeOfDay} natural light, with realistic shadows and highlights that match the environment.
+        Target audience: {audience_context}
+        Product details: {product_specs}
 
-        ###COMPOSITION:
-        - Product is the clear hero: around 60–70% of the frame, in sharp focus.
-        - Place the product slightly off-center using rule of thirds, not perfectly centered.
-        - Background reinforces the scenario and is softly out of focus but still recognizable.
+        CREATIVE DIRECTION:
+        Create a fresh, original photo that captures the essence of authentic social media content:
+        - Natural iPhone-quality photography with subtle imperfections
+        - Real home or outdoor environments (not studio)
+        - Genuine, unposed moments with natural lighting
+        - Casual, slightly off-center framing
+        - The feeling of a real person sharing a product they love
 
-        ###QUALITY & CONSTRAINTS:
-        - Realistic anatomy, hands and faces.
-        - No text, no UI, no watermarks, no fake logos.
-        - Avoid AI artifacts, warped anatomy, duplicated elements, extreme blur or oversaturation.
-
-        ${commonNeg}
-
-        ###OUTPUT:
-        Generate a single, polished UGC-style photo that feels like a real customer photo and can be used directly as an ad creative.
+        Visual reference is provided for style inspiration only - create an entirely new, original image.
         `;
 
       const highlightNo = `
