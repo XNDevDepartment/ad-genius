@@ -5,9 +5,9 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_API_KEY") || "";
 const serviceClient = ()=>createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 // Fallback prompts (used if database is unavailable)
 const FALLBACK_GARMENT_ANALYSIS_PROMPT = `Analyze this garment image in detail. Describe:
@@ -62,7 +62,7 @@ VALIDATION: Before generating, confirm that:
 
 Generate a high-quality outfit swap that clearly shows the NEW garment on the person. ###NO SEXUALISE CONTENT ###RULES - Image must not infringe any System Safety margins and rules.`;
 // Helper: Get prompt from database with fallback
-async function getPrompt(promptKey, variables = {}, fallback) {
+async function getPrompt(promptKey: string, variables: Record<string, string> = {}, fallback: string): Promise<string> {
   try {
     const supabase = serviceClient();
     const { data, error } = await supabase.from('ai_prompts').select('prompt_template').eq('prompt_key', promptKey).eq('is_active', true).single();
@@ -85,7 +85,7 @@ async function getPrompt(promptKey, variables = {}, fallback) {
   }
 }
 // Helper: Check if user is admin
-async function checkIsAdmin(userId) {
+async function checkIsAdmin(userId: string): Promise<boolean> {
   const supabase = serviceClient();
   const { data, error } = await supabase.rpc('is_user_admin', {
     check_user_id: userId
@@ -97,7 +97,7 @@ async function checkIsAdmin(userId) {
   return data || false;
 }
 // Helper: Deduct credits from user
-async function deductCredits(userId, amount) {
+async function deductCredits(userId: string, amount: number) {
   const supabase = serviceClient();
   const { data, error } = await supabase.rpc('deduct_user_credits', {
     p_user_id: userId,
@@ -122,7 +122,7 @@ async function deductCredits(userId, amount) {
   };
 }
 // Helper: Refund credits to user
-async function refundCredits(userId, amount, reason = 'ecommerce_photo_failed_or_cancelled') {
+async function refundCredits(userId: string, amount: number, reason = 'ecommerce_photo_failed_or_cancelled') {
   const supabase = serviceClient();
   const { error } = await supabase.rpc('refund_user_credits', {
     p_user_id: userId,
@@ -134,7 +134,7 @@ async function refundCredits(userId, amount, reason = 'ecommerce_photo_failed_or
   }
 }
 // Helper: Extract base64 image from Gemini response
-function extractBase64Image(jsonResp) {
+function extractBase64Image(jsonResp: any): string | null {
   console.log('[extractBase64Image] Parsing response structure...');
   if (!jsonResp?.candidates) {
     console.error('[extractBase64Image] No candidates in response');
@@ -142,9 +142,9 @@ function extractBase64Image(jsonResp) {
   }
   const parts = jsonResp.candidates?.[0]?.content?.parts ?? [];
   console.log(`[extractBase64Image] Found ${parts.length} parts in response`);
-  const imgPart = parts.find((p)=>p?.inlineData?.mimeType?.startsWith('image/'));
+  const imgPart = parts.find((p: any)=>p?.inlineData?.mimeType?.startsWith('image/'));
   if (!imgPart) {
-    console.error('[extractBase64Image] No image part found. Parts structure:', JSON.stringify(parts.map((p)=>Object.keys(p))));
+    console.error('[extractBase64Image] No image part found. Parts structure:', JSON.stringify(parts.map((p: any)=>Object.keys(p))));
     return null;
   }
   const imageData = imgPart.inlineData?.data;
@@ -156,7 +156,7 @@ function extractBase64Image(jsonResp) {
   return imageData;
 }
 // Helper: Generate image with retry logic and exponential backoff
-async function generateImageWithRetry(prompt, base64Image, mimeType, additionalImages = [], maxRetries = 3) {
+async function generateImageWithRetry(prompt: string, base64Image: string, mimeType: string, additionalImages: Array<{mimeType: string, base64: string}> = [], maxRetries = 3): Promise<string | null> {
   for(let attempt = 1; attempt <= maxRetries; attempt++){
     try {
       console.log(`[Attempt ${attempt}/${maxRetries}] Calling Gemini API...`);
@@ -190,6 +190,7 @@ async function generateImageWithRetry(prompt, base64Image, mimeType, additionalI
           ],
           generationConfig: {
             responseModalities: [
+              'TEXT',
               'IMAGE'
             ]
           }
@@ -230,9 +231,9 @@ async function generateImageWithRetry(prompt, base64Image, mimeType, additionalI
       }
       console.log(`[Attempt ${attempt}] ✅ Image generated successfully`);
       return resultBase64;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(`[Attempt ${attempt}] Error:`, error);
-      if (error.message?.includes('REGION_BLOCKED')) {
+      if (error instanceof Error && error.message?.includes('REGION_BLOCKED')) {
         throw error;
       }
       if (attempt === maxRetries) {
@@ -246,7 +247,7 @@ async function generateImageWithRetry(prompt, base64Image, mimeType, additionalI
   return null;
 }
 // Helper: Convert ArrayBuffer to base64 in chunks to avoid stack overflow
-function bufferToBase64(uint8Array) {
+function bufferToBase64(uint8Array: Uint8Array): string {
   let binary = '';
   const chunkSize = 32768;
   for(let i = 0; i < uint8Array.length; i += chunkSize){
@@ -283,7 +284,7 @@ serve(async (req)=>{
       }, 401);
     }
     const token = authHeader.replace("Bearer ", "");
-    const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY"), {
+    const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY") || "", {
       global: {
         headers: {
           Authorization: authHeader
@@ -336,11 +337,11 @@ serve(async (req)=>{
   } catch (error) {
     console.error("Outfit swap error:", error);
     return jsonResponse({
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     }, 500);
   }
 });
-async function createOutfitSwapJob(userId1, params) {
+async function createOutfitSwapJob(userId1: string, params: any) {
   const { sourcePersonId, sourceGarmentId, settings } = params;
   const supabase = serviceClient();
   // Create job
@@ -375,7 +376,7 @@ async function createOutfitSwapJob(userId1, params) {
     job
   }, 200);
 }
-async function analyzeGarment(garmentUrl) {
+async function analyzeGarment(garmentUrl: string): Promise<string> {
   console.log("[analyzeGarment] Analyzing garment image...");
   try {
     // Fetch the garment image
@@ -434,7 +435,7 @@ async function analyzeGarment(garmentUrl) {
     return "clothing garment"; // Fallback
   }
 }
-async function processOutfitSwap(jobId) {
+async function processOutfitSwap(jobId: string) {
   const supabase = serviceClient();
   console.log("Processing outfit swap job:", jobId);
   try {
@@ -602,6 +603,7 @@ async function processOutfitSwap(jobId) {
         ],
         generationConfig: {
           responseModalities: [
+            'TEXT',
             'IMAGE'
           ]
         }
@@ -711,11 +713,12 @@ async function processOutfitSwap(jobId) {
     return jsonResponse({
       success: true
     }, 200);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Processing error:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     await supabase.from("outfit_swap_jobs").update({
       status: "failed",
-      error: error.message,
+      error: errorMessage,
       finished_at: new Date().toISOString()
     }).eq("id", jobId);
     // If this job is part of a batch, update batch progress
@@ -724,11 +727,11 @@ async function processOutfitSwap(jobId) {
       await updateBatchProgress(failedJobData.batch_id);
     }
     return jsonResponse({
-      error: error.message
+      error: errorMessage
     }, 500);
   }
 }
-async function updateBatchProgress(batchId) {
+async function updateBatchProgress(batchId: string) {
   const supabase = serviceClient();
   // Get all jobs in batch
   const { data: jobs } = await supabase.from("outfit_swap_jobs").select("status").eq("batch_id", batchId);
@@ -751,7 +754,7 @@ async function updateBatchProgress(batchId) {
     finished_at: batchStatus === "completed" || batchStatus === "failed" ? new Date().toISOString() : null
   }).eq("id", batchId);
 }
-async function getJob(userId1, jobId) {
+async function getJob(userId1: string, jobId: string) {
   const supabase = serviceClient();
   const { data: job, error } = await supabase.from("outfit_swap_jobs").select("*").eq("id", jobId).eq("user_id", userId1).single();
   if (error) {
@@ -763,7 +766,7 @@ async function getJob(userId1, jobId) {
     job
   }, 200);
 }
-async function getJobResults(userId1, jobId) {
+async function getJobResults(userId1: string, jobId: string) {
   const supabase = serviceClient();
   const { data: results, error } = await supabase.from("outfit_swap_results").select("*").eq("job_id", jobId).eq("user_id", userId1).single();
   if (error) {
@@ -775,7 +778,7 @@ async function getJobResults(userId1, jobId) {
     results
   }, 200);
 }
-async function cancelJob(userId1, jobId) {
+async function cancelJob(userId1: string, jobId: string) {
   const supabase = serviceClient();
   const { error } = await supabase.from("outfit_swap_jobs").update({
     status: "canceled",
@@ -793,7 +796,7 @@ async function cancelJob(userId1, jobId) {
     success: true
   }, 200);
 }
-async function retryJob(userId1, jobId) {
+async function retryJob(userId1: string, jobId: string) {
   const supabase = serviceClient();
   // Fetch the failed job details
   const { data: originalJob, error: fetchError } = await supabase.from("outfit_swap_jobs").select("*").eq("id", jobId).eq("user_id", userId1).eq("status", "failed").single();
@@ -853,7 +856,7 @@ async function retryJob(userId1, jobId) {
     job: newJob
   }, 200);
 }
-async function createBatchJob(userId1, params) {
+async function createBatchJob(userId1: string, params: any) {
   const { baseModelId, garmentIds, settings } = params;
   const supabase = serviceClient();
   // Validate max 10 garments
@@ -998,7 +1001,7 @@ async function createBatchJob(userId1, params) {
     jobs
   }, 200);
 }
-async function getBatch(userId1, batchId) {
+async function getBatch(userId1: string, batchId: string) {
   const supabase = serviceClient();
   const { data: batch, error } = await supabase.from("outfit_swap_batches").select("*").eq("id", batchId).eq("user_id", userId1).single();
   if (error) {
@@ -1010,7 +1013,7 @@ async function getBatch(userId1, batchId) {
     batch
   }, 200);
 }
-async function cancelBatch(userId1, batchId) {
+async function cancelBatch(userId1: string, batchId: string) {
   const supabase = serviceClient();
   // Update batch status
   const { error: batchError } = await supabase.from("outfit_swap_batches").update({
@@ -1054,7 +1057,7 @@ REFERENCE IMAGES PROVIDED:
 OUTPUT: A cohesive back view photograph where the model from Image 1 is wearing the garment whose back is shown in Image 2.
 Create a high-quality e-commerce product photo: On-body back view, shoulders level, arms relaxed, straight posture. Seamless light-grey background, balanced key/fill to avoid hotspots, faint floor shadow. 50–70mm lens look, f/8, ISO 100. Capture yoke/neck ribbing, back drape, and hem alignment. Centered, color-accurate, luxury e-commerce finish. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.
 `;
-async function createPhotoshootJob(userId1, params) {
+async function createPhotoshootJob(userId1: string, params: any) {
   const { resultId, backImageUrl, selectedAngles = [
     'front',
     'three_quarter',
@@ -1178,7 +1181,7 @@ async function createPhotoshootJob(userId1, params) {
     photoshoot
   }, 200);
 }
-async function processPhotoshoot(photoshootId) {
+async function processPhotoshoot(photoshootId: string) {
   const supabase = serviceClient();
   console.log(`[processPhotoshoot] Starting photoshoot ${photoshootId}`);
   try {
@@ -1349,14 +1352,15 @@ async function processPhotoshoot(photoshootId) {
       successfulImages,
       failedImages
     }, 200);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("[processPhotoshoot] Error:", error);
-    let userMessage = error.message || "Failed to generate photoshoot";
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    let userMessage = errorMessage || "Failed to generate photoshoot";
     let errorType = 'UNKNOWN_ERROR';
-    if (error.message?.includes('REGION_BLOCKED')) {
+    if (errorMessage?.includes('REGION_BLOCKED')) {
       userMessage = 'Image generation is not available in your region';
       errorType = 'REGION_BLOCKED';
-    } else if (error.message?.includes('429')) {
+    } else if (errorMessage?.includes('429')) {
       userMessage = 'Too many requests. Please try again in a few minutes';
       errorType = 'RATE_LIMIT';
     }
@@ -1366,7 +1370,7 @@ async function processPhotoshoot(photoshootId) {
       finished_at: new Date().toISOString(),
       metadata: {
         error_type: errorType,
-        error_details: error.message
+        error_details: errorMessage
       }
     }).eq("id", photoshootId);
     // Refund all credits on complete failure
@@ -1380,11 +1384,11 @@ async function processPhotoshoot(photoshootId) {
       }
     }
     return jsonResponse({
-      error: error.message
+      error: errorMessage
     }, 500);
   }
 }
-async function getPhotoshoot(userId1, photoshootId) {
+async function getPhotoshoot(userId1: string, photoshootId: string) {
   const supabase = serviceClient();
   const { data: photoshoot, error } = await supabase.from("outfit_swap_photoshoots").select("*").eq("id", photoshootId).eq("user_id", userId1).single();
   if (error) {
@@ -1396,7 +1400,7 @@ async function getPhotoshoot(userId1, photoshootId) {
     photoshoot
   }, 200);
 }
-async function cancelPhotoshoot(userId1, photoshootId) {
+async function cancelPhotoshoot(userId1: string, photoshootId: string) {
   const supabase = serviceClient();
   const { error } = await supabase.from("outfit_swap_photoshoots").update({
     status: "canceled",
@@ -1415,7 +1419,7 @@ async function cancelPhotoshoot(userId1, photoshootId) {
   }, 200);
 }
 // E-commerce Photo Generation
-async function generateEcommerceIdeas(userId1, params) {
+async function generateEcommerceIdeas(userId1: string, params: any) {
   const { imageUrl, language } = params;
   const supabase = serviceClient();
   if (!imageUrl) {
@@ -1493,15 +1497,16 @@ async function generateEcommerceIdeas(userId1, params) {
     return jsonResponse({
       ideas
     }, 200);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('[generateEcommerceIdeas] Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return jsonResponse({
       error: "Failed to generate ideas",
-      message: error.message
+      message: errorMessage
     }, 500);
   }
 }
-async function createEcommercePhotoJob(userId1, params) {
+async function createEcommercePhotoJob(userId1: string, params: any) {
   const { resultId, stylePrompt } = params;
   const supabase = serviceClient();
   // Quick region availability check
@@ -1578,7 +1583,7 @@ async function createEcommercePhotoJob(userId1, params) {
     ecommercePhoto
   }, 200);
 }
-async function processEcommercePhoto(photoId) {
+async function processEcommercePhoto(photoId: string) {
   const supabase = serviceClient();
   console.log(`[processEcommercePhoto] Starting photo ${photoId}`);
   const { data: photo } = await supabase.from("outfit_swap_ecommerce_photos").select("*, outfit_swap_results(*)").eq("id", photoId).single();
@@ -1659,23 +1664,24 @@ async function processEcommercePhoto(photoId) {
     return jsonResponse({
       success: true
     }, 200);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(`[processEcommercePhoto] Error:`, error);
-    let userMessage = error.message;
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    let userMessage = errorMessage;
     let errorType = 'UNKNOWN_ERROR';
-    if (error.message?.includes('REGION_BLOCKED')) {
+    if (errorMessage?.includes('REGION_BLOCKED')) {
       userMessage = 'Image generation is not available in your region';
       errorType = 'REGION_BLOCKED';
-    } else if (error.message?.includes('Image generation refused')) {
+    } else if (errorMessage?.includes('Image generation refused')) {
       userMessage = 'Unable to generate this style. Please try a different approach or contact support.';
       errorType = 'AI_REFUSED';
-    } else if (error.message?.includes('429')) {
+    } else if (errorMessage?.includes('429')) {
       userMessage = 'Too many requests. Please try again in a few minutes';
       errorType = 'RATE_LIMIT';
-    } else if (error.message?.includes('timeout')) {
+    } else if (errorMessage?.includes('timeout')) {
       userMessage = 'Request timed out. Please try again';
       errorType = 'TIMEOUT';
-    } else if (error.message?.includes('Failed to generate image after')) {
+    } else if (errorMessage?.includes('Failed to generate image after')) {
       userMessage = 'Image generation timed out. Please try again.';
       errorType = 'GENERATION_FAILED';
     }
@@ -1686,7 +1692,7 @@ async function processEcommercePhoto(photoId) {
       metadata: {
         ...photo.metadata,
         error_type: errorType,
-        error_details: error.message
+        error_details: errorMessage
       }
     }).eq("id", photoId);
     // Check admin status
@@ -1698,11 +1704,11 @@ async function processEcommercePhoto(photoId) {
       await refundCredits(photo.user_id, 1, 'ecommerce_photo_failed');
     }
     return jsonResponse({
-      error: error.message
+      error: errorMessage
     }, 500);
   }
 }
-async function getEcommercePhoto(userId1, photoId) {
+async function getEcommercePhoto(userId1: string, photoId: string) {
   const supabase = serviceClient();
   const { data, error } = await supabase.from("outfit_swap_ecommerce_photos").select("*").eq("id", photoId).eq("user_id", userId1).single();
   if (error) return jsonResponse({
@@ -1712,7 +1718,7 @@ async function getEcommercePhoto(userId1, photoId) {
     ecommercePhoto: data
   }, 200);
 }
-async function cancelEcommercePhoto(userId1, photoId) {
+async function cancelEcommercePhoto(userId1: string, photoId: string) {
   const supabase = serviceClient();
   const { error } = await supabase.from("outfit_swap_ecommerce_photos").update({
     status: "canceled",
@@ -1728,7 +1734,7 @@ async function cancelEcommercePhoto(userId1, photoId) {
     success: true
   }, 200);
 }
-function jsonResponse(data, status) {
+function jsonResponse(data: any, status: number) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {

@@ -609,6 +609,7 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
             ],
             generationConfig: {
               responseModalities: [
+                'TEXT',
                 'IMAGE'
               ]
             }

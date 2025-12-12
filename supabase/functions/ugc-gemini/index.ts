@@ -610,8 +610,8 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
               },
             ],
             generationConfig: {
-              // For image preview models, request image output
-              responseModalities: ["IMAGE"],
+              // For Gemini image models, request both text and image output
+              responseModalities: ["TEXT", "IMAGE"],
             },
           }),
           signal: controller.signal,
