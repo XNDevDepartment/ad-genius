@@ -586,7 +586,7 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
         }
         const base64Image = btoa(binary);
         // Gemini 3 Pro Image Preview
-      const res = await fetch(
+      res = await fetch(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent",
         {
           method: "POST",
