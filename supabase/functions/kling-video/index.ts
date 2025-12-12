@@ -241,7 +241,7 @@ async function createVideoJob(supabase: any, userId: string, payload: any): Prom
   console.log("[CREATE-JOB] Job created:", job.id);
   // Kick off processing in background with error handling
   (globalThis as any).EdgeRuntime?.waitUntil(
-    processVideoJobAsync(supabase, job.id, null).catch(async (e) => {
+    processVideoJobAsync(supabase, job.id, undefined).catch(async (e) => {
       console.error("[PROCESS-JOB] Background task error:", e);
       // Mark job as failed so it can be retried
       await supabase.from("kling_jobs").update({
@@ -512,7 +512,7 @@ async function retryVideoJob(supabase: any, userId: string, jobId: string): Prom
   } else if (status.status === "IN_PROGRESS" || status.status === "IN_QUEUE") {
     // Still processing - restart background polling
     (globalThis as any).EdgeRuntime?.waitUntil(
-      processVideoJobAsync(supabase, jobId, null).catch(async (e) => {
+      processVideoJobAsync(supabase, jobId, undefined).catch(async (e) => {
         console.error("[RETRY-JOB] Polling error:", e);
         await supabase.from("kling_jobs").update({
           status: "failed",

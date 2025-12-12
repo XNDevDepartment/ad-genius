@@ -48,6 +48,20 @@ Deno.serve(async (req) => {
     const userEmail = user.email;
     console.log(`Starting account deletion for user: ${userId}`);
 
+    // First, get all conversation IDs for this user
+    const { data: conversations } = await supabaseAdmin
+      .from('conversations')
+      .select('id')
+      .eq('user_id', userId);
+    
+    const conversationIds = conversations?.map(c => c.id) || [];
+    
+    // Delete conversation messages first
+    if (conversationIds.length > 0) {
+      await supabaseAdmin.from('conversation_messages').delete().in('conversation_id', conversationIds);
+      await supabaseAdmin.from('conversations').delete().eq('user_id', userId);
+    }
+
     // Delete user data from all related tables
     const deletionTasks = [
       // Image-related
@@ -66,12 +80,6 @@ Deno.serve(async (req) => {
       
       // Video related
       supabaseAdmin.from('kling_jobs').delete().eq('user_id', userId),
-      
-      // Conversations
-      supabaseAdmin.from('conversation_messages').delete().in('conversation_id', 
-        supabaseAdmin.from('conversations').select('id').eq('user_id', userId)
-      ),
-      supabaseAdmin.from('conversations').delete().eq('user_id', userId),
       
       // Account data
       supabaseAdmin.from('credits_transactions').delete().eq('user_id', userId),
