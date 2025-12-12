@@ -585,37 +585,39 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
           binary += String.fromCharCode.apply(null, Array.from(chunk));
         }
         const base64Image = btoa(binary);
-        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent`, {
+        // Gemini 3 Pro Image Preview
+      const res = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent",
+        {
           method: "POST",
           headers: {
             "x-goog-api-key": GOOGLE_AI_KEY,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             contents: [
               {
+                role: "user",
                 parts: [
-                  {
-                    text: prompt
-                  },
+                  { text: prompt },
                   {
                     inlineData: {
-                      mimeType: mimeType,
-                      data: base64Image
-                    }
-                  }
-                ]
-              }
+                      mimeType,        // e.g. "image/png" | "image/jpeg"
+                      data: base64Image // base64 *without* data:image/...;base64, prefix
+                    },
+                  },
+                ],
+              },
             ],
             generationConfig: {
-              responseModalities: [
-                'TEXT',
-                'IMAGE'
-              ]
-            }
+              // For image preview models, request image output
+              responseModalities: ["IMAGE"],
+            },
           }),
-          signal: controller.signal
-        });
+          signal: controller.signal,
+        }
+      );
+
       }
       try {
         if (!res.ok) {
