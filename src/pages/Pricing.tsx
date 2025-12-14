@@ -9,7 +9,7 @@ import { Check, X, Star, Zap, Shield, Crown, Video as VideoIcon } from "lucide-r
 import { useAuth } from "@/contexts/AuthContext";
 import HeaderSection from "@/components/landing/HeaderSection";
 import { useEffect, useState } from "react";
-import { trackInitiateCheckout } from "@/lib/metaPixel";
+import { trackInitiateCheckout, trackViewContent } from "@/lib/metaPixel";
 import { useTranslation } from "react-i18next";
 
 // Features will be translated dynamically using t() in the component
@@ -120,8 +120,9 @@ const Pricing = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    localStorage.removeItem("billing")
-  }, [localStorage])
+    localStorage.removeItem("billing");
+    trackViewContent('Pricing');
+  }, [])
 
   const handlePlanSelect = async (planId: string) => {
     if (planId === "free") {
@@ -142,8 +143,10 @@ const Pricing = () => {
       return;
     }
 
-    // Track checkout initiation in Meta Pixel
-    trackInitiateCheckout();
+    // Track checkout initiation in Meta Pixel with plan details
+    const selectedPlan = plans.find(p => p.id === planId);
+    const checkoutValue = selectedPlan ? (isYearly ? selectedPlan.yearlyPrice * 12 : selectedPlan.monthlyPrice) : undefined;
+    trackInitiateCheckout(planId, checkoutValue, 'EUR');
 
     try {
       // For paid plans, create checkout session
