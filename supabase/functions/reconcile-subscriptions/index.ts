@@ -127,7 +127,7 @@ serve(async (req) => {
 
       } catch (stripeError) {
         console.error(`[RECONCILE] Error processing ${subscriber.user_id}:`, stripeError);
-        results.errors.push(`Stripe error for ${subscriber.user_id}: ${stripeError.message}`);
+        results.errors.push(`Stripe error for ${subscriber.user_id}: ${stripeError instanceof Error ? stripeError.message : String(stripeError)}`);
       }
     }
 
@@ -151,7 +151,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("[RECONCILE] Fatal error:", error);
     return new Response(JSON.stringify({ 
-      error: error.message 
+      error: error instanceof Error ? error.message : String(error)
     }), { 
       status: 500, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }

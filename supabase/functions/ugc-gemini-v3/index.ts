@@ -14,33 +14,33 @@ const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_API_KEY") ?? "";
 // ---------- LOG ----------
-const log = (step, meta)=>console.log(`[UGC-GEMINI-V3] ${step}${meta ? ` - ${JSON.stringify(meta)}` : ""}`);
+const log = (step: string, meta?: unknown): void => console.log(`[UGC-GEMINI-V3] ${step}${meta ? ` - ${JSON.stringify(meta)}` : ""}`);
 // ---------- HELPERS ----------
-const json = (data, status = 200)=>new Response(JSON.stringify(data), {
+const json = (data: unknown, status = 200): Response => new Response(JSON.stringify(data), {
     status,
     headers: {
       ...corsHeaders,
       "Content-Type": "application/json"
     }
   });
-const errorJson = (message, status = 400, meta)=>{
+const errorJson = (message: string, status = 400, meta?: unknown): Response => {
   log(`ERROR: ${message}`, meta);
   return json({
     error: message
   }, status);
 };
-function sleep(ms) {
-  return new Promise((r)=>setTimeout(r, ms));
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
 }
-function backoffMs(attempt) {
+function backoffMs(attempt: number): number {
   return 900 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 250);
 }
 // Fixed credit cost: 1 credit per image
-function calculateImageCost(settings) {
+function calculateImageCost(_settings: unknown): number {
   return 1;
 }
 // Crop base64 image to exact aspect ratio
-async function cropBase64ToAspect(base64Data, aspectRatio) {
+async function cropBase64ToAspect(base64Data: string, aspectRatio: string): Promise<string> {
   // Parse aspect ratio (e.g., "16:9" -> { w: 16, h: 9 })
   const parts = aspectRatio.split(':');
   if (parts.length !== 2) {
@@ -116,14 +116,14 @@ async function cropBase64ToAspect(base64Data, aspectRatio) {
       aspectRatio
     });
     return croppedBuffer;
-  } catch (error) {
+  } catch (error: unknown) {
     log("Error cropping image, returning original", {
-      error: error?.message ?? String(error),
+      error: error instanceof Error ? error.message : String(error),
       aspectRatio
     });
     // Return original data if cropping fails
     const base64Content = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
-    return Uint8Array.from(atob(base64Content), (c)=>c.charCodeAt(0));
+    return Uint8Array.from(atob(base64Content), (c) => c.charCodeAt(0));
   }
 }
 // ---------- AUTH / CLIENTS ----------
@@ -134,7 +134,7 @@ function serviceClient() {
     }
   });
 }
-function userClient(authorization) {
+function userClient(authorization: string) {
   return createClient(SUPABASE_URL, ANON_KEY, {
     global: {
       headers: {
@@ -147,24 +147,39 @@ function userClient(authorization) {
   });
 }
 // ---------- EXTRACT DATA FROM IMAGE ---------- //
-function extractBase64Image(jsonResp) {
+interface GeminiResponse {
+  predictions?: Array<{ image?: { imageBytes?: string }; bytesBase64Encoded?: string }>;
+  candidates?: Array<{ content?: { parts?: Array<{ inlineData?: { mimeType?: string; data?: string } }> } }>;
+}
+
+function extractBase64Image(jsonResp: GeminiResponse): string | null {
   if (jsonResp?.predictions?.length) {
     const p0 = jsonResp.predictions[0];
     if (p0?.image?.imageBytes) return p0.image.imageBytes;
     if (p0?.bytesBase64Encoded) return p0.bytesBase64Encoded;
   }
   const parts = jsonResp?.candidates?.[0]?.content?.parts ?? [];
-  const imgPart = parts.find((p)=>p?.inlineData?.mimeType?.startsWith('image/'));
+  const imgPart = parts.find((p) => p?.inlineData?.mimeType?.startsWith('image/'));
   return imgPart?.inlineData?.data ?? null;
 }
-async function getUserIdFromAuth(authHeader) {
+
+async function getUserIdFromAuth(authHeader: string): Promise<string> {
   const supa = userClient(authHeader);
   const { data, error } = await supa.auth.getUser();
   if (error || !data.user) throw new Error("Invalid authentication token");
   return data.user.id;
 }
+
+interface RequestBody {
+  action?: string;
+  jobId?: string;
+  sourceImageId?: string;
+  settings?: unknown;
+  [key: string]: unknown;
+}
+
 // ---------- ROUTER ----------
-serve(async (req)=>{
+serve(async (req) => {
   // CORS preflight
   if (req.method === "OPTIONS") return new Response(null, {
     headers: corsHeaders
@@ -173,42 +188,42 @@ serve(async (req)=>{
     const authHeader = req.headers.get("Authorization") ?? "";
     const isServiceCall = authHeader === `Bearer ${SERVICE_KEY}`;
     // parse body once (may be empty)
-    let body = {};
+    let body: RequestBody = {};
     try {
       body = await req.json();
-    } catch  {
+    } catch {
       body = {};
     }
     const action = body?.action ?? new URL(req.url).searchParams.get("action");
     // clients
     const svc = serviceClient();
     const isInternalAction = action === "generateImages" || action === "recoverQueued";
-    let userId = null;
+    let userId: string | null = null;
     if (isInternalAction && isServiceCall) {
     // ok, internal worker call
     } else {
       if (!authHeader) return errorJson("Missing authorization header", 401);
       userId = await getUserIdFromAuth(authHeader);
     }
-    switch(action){
+    switch (action) {
       case "createImageJob":
         if (!userId) return errorJson("Auth required", 401);
         return await createImageJob(userId, body, svc);
       case "generateImages":
         if (!(isInternalAction && isServiceCall)) return errorJson("Forbidden", 403);
-        return await generateImages(body.jobId, svc);
+        return await generateImages(body.jobId!, svc);
       case "getJob":
         if (!userId) return errorJson("Auth required", 401);
-        return await getJob(userId, body.jobId, userClient(authHeader));
+        return await getJob(userId, body.jobId!, userClient(authHeader));
       case "getJobImages":
         if (!userId) return errorJson("Auth required", 401);
-        return await getJobImages(userId, body.jobId, userClient(authHeader));
+        return await getJobImages(userId, body.jobId!, userClient(authHeader));
       case "cancelJob":
         if (!userId) return errorJson("Auth required", 401);
-        return await cancelJob(userId, body.jobId, svc);
+        return await cancelJob(userId, body.jobId!, svc);
       case "resumeJob":
         if (!userId) return errorJson("Auth required", 401);
-        return await resumeJob(userId, body.jobId, svc);
+        return await resumeJob(userId, body.jobId!, svc);
       case "getActiveJob":
         if (!userId) return errorJson("Auth required", 401);
         return await getActiveJob(userId, svc);

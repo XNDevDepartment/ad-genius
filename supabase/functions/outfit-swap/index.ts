@@ -1073,7 +1073,7 @@ async function createPhotoshootJob(userId1: string, params: any) {
     'side',
     'detail'
   ];
-  const angles = selectedAngles.filter((angle)=>validAngles.includes(angle));
+  const angles = selectedAngles.filter((angle: string) => validAngles.includes(angle));
   if (angles.length === 0) {
     return jsonResponse({
       error: "At least one angle must be selected"
@@ -1238,10 +1238,10 @@ async function processPhotoshoot(photoshootId: string) {
     }
     // Generate images for selected angles with staggered requests to avoid rate limiting
     console.log(`[processPhotoshoot] Starting staggered generation of ${angleCount} images`);
-    const imageGenerationPromises = selectedAngles.map(async (angleId, index)=>{
+    const imageGenerationPromises = selectedAngles.map(async (angleId: string, index: number) => {
       const imageNum = index + 1;
       // Stagger requests by 500ms to avoid rate limiting
-      await new Promise((resolve)=>setTimeout(resolve, index * 500));
+      await new Promise((resolve) => setTimeout(resolve, index * 500));
       console.log(`[processPhotoshoot] Starting angle ${angleId} (${imageNum}/${angleCount})`);
       try {
         // Update progress based on number of selected angles
@@ -1250,8 +1250,9 @@ async function processPhotoshoot(photoshootId: string) {
           progress: Math.round(20 + (imageNum - 1) * progressIncrement)
         }).eq("id", photoshootId);
         // Determine prompt and additional images based on angle
-        let prompt = ANGLE_PROMPTS[angleId] || ANGLE_PROMPTS['front'];
-        let additionalImages = [];
+        const angleKey = angleId as keyof typeof ANGLE_PROMPTS;
+        let prompt = ANGLE_PROMPTS[angleKey] || ANGLE_PROMPTS['three_quarter'];
+        let additionalImages: Array<{ base64: string; mimeType: string }> = [];
         // Special handling for back angle with custom back image
         if (angleId === 'back' && backGarmentBase64 && backGarmentMimeType) {
           console.log(`[processPhotoshoot] Using custom back garment image for back angle`);
