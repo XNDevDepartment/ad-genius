@@ -28,14 +28,30 @@ export const trackAddToCart = (contentName: string, value?: number) => {
   trackMetaPixelEvent('AddToCart', { content_name: contentName, value });
 };
 
-export const trackInitiateCheckout = () => {
-  trackMetaPixelEvent('InitiateCheckout');
+export const trackInitiateCheckout = (planName?: string, value?: number, currency = 'EUR') => {
+  trackMetaPixelEvent('InitiateCheckout', { 
+    content_name: planName,
+    value,
+    currency
+  });
 };
 
-export const trackPurchase = (value: number, currency = 'EUR') => {
-  trackMetaPixelEvent('Purchase', { value, currency, content_type: 'product' });
+export const trackPurchase = (value: number, currency = 'EUR', planName?: string) => {
+  trackMetaPixelEvent('Purchase', { 
+    value, 
+    currency, 
+    content_type: 'product',
+    content_name: planName
+  });
 };
 
 export const trackLead = () => {
   trackMetaPixelEvent('Lead');
+};
+
+export const trackCheckoutAbandoned = (planName?: string) => {
+  trackMetaPixelEvent('CustomEvent', { 
+    event_name: 'CheckoutAbandoned',
+    content_name: planName || 'subscription'
+  });
 };

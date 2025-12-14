@@ -2,9 +2,16 @@ import { useNavigate } from 'react-router-dom';
 import { XCircle, ArrowLeft, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect } from 'react';
+import { trackCheckoutAbandoned } from '@/lib/metaPixel';
 
 export default function Cancel() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Track checkout abandonment
+    trackCheckoutAbandoned();
+  }, []);
 
   const handleRetryPayment = () => {
     navigate('/pricing');

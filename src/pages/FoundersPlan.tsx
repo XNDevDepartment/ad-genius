@@ -6,8 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Check, Crown, Star, Video, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import HeaderSection from "@/components/landing/HeaderSection";
-import { useState } from "react";
-import { trackInitiateCheckout } from "@/lib/metaPixel";
+import { useState, useEffect } from "react";
+import { trackInitiateCheckout, trackViewContent } from "@/lib/metaPixel";
 import { useTranslation } from "react-i18next";
 
 const FoundersPlan = () => {
@@ -21,6 +21,10 @@ const FoundersPlan = () => {
   const yearlyPrice = 239.88;
   const yearlyMonthlyEquivalent = (yearlyPrice / 12).toFixed(2);
 
+  useEffect(() => {
+    trackViewContent('Founders Plan');
+  }, []);
+
   const handleSubscribe = async () => {
     if (loading) {
       console.log('[FoundersPlan] Authentication still loading, please wait...');
@@ -32,7 +36,8 @@ const FoundersPlan = () => {
       return;
     }
 
-    trackInitiateCheckout();
+    const checkoutValue = isYearly ? yearlyPrice : monthlyPrice;
+    trackInitiateCheckout('founders', checkoutValue, 'EUR');
     setIsProcessing(true);
 
     try {

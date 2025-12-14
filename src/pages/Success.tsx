@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,11 +7,21 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { trackPurchase } from '@/lib/metaPixel';
 
+// Plan prices for tracking
+const PLAN_PRICES: Record<string, { monthly: number; yearly: number }> = {
+  starter: { monthly: 29, yearly: 290 },
+  plus: { monthly: 49, yearly: 490 },
+  pro: { monthly: 99, yearly: 990 },
+  founders: { monthly: 19.99, yearly: 239.88 }
+};
+
 export default function Success() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { refreshSubscription, subscriptionData } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [purchaseTracked, setPurchaseTracked] = useState(false);
 
   useEffect(() => {
     // Webhook has already processed the payment and updated the database
@@ -19,7 +29,6 @@ export default function Success() {
     const loadSubscription = async () => {
       try {
         await refreshSubscription();
-        trackPurchase(29.99); // Track conversion
         setLoading(false);
       } catch (error) {
         console.error('Error loading subscription:', error);
@@ -29,6 +38,24 @@ export default function Success() {
 
     loadSubscription();
   }, [refreshSubscription]);
+
+  // Track purchase after subscription data is loaded
+  useEffect(() => {
+    if (!loading && subscriptionData && !purchaseTracked) {
+      const tier = subscriptionData.subscription_tier?.toLowerCase() || 'starter';
+      const planPrices = PLAN_PRICES[tier] || PLAN_PRICES.starter;
+      
+      // Determine if yearly based on subscription_end (yearly plans have end date ~1 year out)
+      const subscriptionEnd = subscriptionData.subscription_end ? new Date(subscriptionData.subscription_end) : null;
+      const now = new Date();
+      const monthsUntilEnd = subscriptionEnd ? (subscriptionEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30) : 1;
+      const isYearly = monthsUntilEnd > 6;
+      
+      const purchaseValue = isYearly ? planPrices.yearly : planPrices.monthly;
+      trackPurchase(purchaseValue, 'EUR', tier);
+      setPurchaseTracked(true);
+    }
+  }, [loading, subscriptionData, purchaseTracked]);
 
   useEffect(() => {
     // Auto-redirect after 5 seconds
