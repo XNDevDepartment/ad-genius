@@ -27,9 +27,15 @@ const LandingPageV2 = () => {
         <ImageMarquee />
         <StatsGrid />
         <BeforeAfterShowcase />
-        <HowItWorksMinimal />
-        <PricingComparison />
-        <FAQAccordion />
+        <section id="how-it-works">
+          <HowItWorksMinimal />
+        </section>
+        <section id="pricing">
+          <PricingComparison />
+        </section>
+        <section id="faq">
+          <FAQAccordion />
+        </section>
       </main>
 
       <MinimalFooter />

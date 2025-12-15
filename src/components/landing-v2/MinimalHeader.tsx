@@ -7,6 +7,13 @@ export const MinimalHeader = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -19,22 +26,35 @@ export const MinimalHeader = () => {
           />
         </button>
 
-        {/* CTA Buttons */}
-        <div className="flex items-center gap-3">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => navigate('/signin')}
+        {/* Center Navigation */}
+        <nav className="hidden md:flex items-center gap-8">
+          <button 
+            onClick={() => scrollToSection('how-it-works')}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            {t('landingV2.header.signIn', 'Sign In')}
-          </Button>
-          <Button 
-            size="sm"
-            onClick={() => navigate('/signup')}
+            {t('landingV2.header.howItWorks', 'How It Works')}
+          </button>
+          <button 
+            onClick={() => scrollToSection('pricing')}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            {t('landingV2.header.getStarted', 'Get Started')}
-          </Button>
-        </div>
+            {t('landingV2.header.pricing', 'Pricing')}
+          </button>
+          <button 
+            onClick={() => scrollToSection('faq')}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {t('landingV2.header.faq', 'FAQ')}
+          </button>
+        </nav>
+
+        {/* CTA Button */}
+        <Button 
+          size="sm"
+          onClick={() => navigate('/signup')}
+        >
+          {t('landingV2.header.getStarted', 'Get Started')}
+        </Button>
       </div>
     </header>
   );
