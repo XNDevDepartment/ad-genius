@@ -24,12 +24,12 @@ export const PricingComparison = () => {
     },
     {
       name: t('landingV2.pricing.plus.name', 'Plus'),
-      price: "€29",
+      price: "€49",
       period: t('landingV2.pricing.period', '/month'),
       description: t('landingV2.pricing.plus.description', 'For growing businesses'),
       features: [
         t('landingV2.pricing.plus.feature1', '200 credits/month'),
-        t('landingV2.pricing.plus.feature2', 'All AI models'),
+        t('landingV2.pricing.plus.feature2', 'Advanced Models'),
         t('landingV2.pricing.plus.feature3', 'High resolution'),
         t('landingV2.pricing.plus.feature4', 'Priority support'),
         t('landingV2.pricing.plus.feature5', 'Video generation'),

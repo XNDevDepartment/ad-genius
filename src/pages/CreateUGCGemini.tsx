@@ -1678,8 +1678,8 @@ const CreateUGCGemini = () => {
 
               {/* Bottom row: Generate button */}
               <Button 
-                     variant={productImages.length === 0 || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
-                    size="lg" 
+                    variant={productImages.length === 0 || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages) ? "secondary" : "alternative"}
+                    size="lg"
                     className={`w-full ${isGenerating ? 'animate-pulse' : ''}`}
                     onClick={handleGenerate}
                     disabled={productImages.length === 0 || !hasSelectedScenario || isGenerating || !canGenerateImages(numImages)}
