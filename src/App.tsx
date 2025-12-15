@@ -49,6 +49,7 @@ const ProductStudioBackgroundBulk = lazyWithRetry(() => import("./pages/ProductS
 const MagazinePhotoshoot = lazyWithRetry(() => import("./pages/MagazinePhotoshoot"));
 const CreateCustomModel = lazyWithRetry(() => import("./pages/CreateCustomModel"));
 const VideoAds = lazyWithRetry(() => import("./pages/VideoAds"));
+const LandingPageV2 = lazyWithRetry(() => import("./pages/LandingPageV2"));
 
 
 const queryClient = new QueryClient();
@@ -303,6 +304,13 @@ const App = () => {
                 <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
                     <SubscriptionAudit />
+                  </Suspense>
+                </ErrorBoundaryWithReset>
+              } />
+              <Route path="/lp" element={
+                <ErrorBoundaryWithReset>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <LandingPageV2 />
                   </Suspense>
                 </ErrorBoundaryWithReset>
               } />
