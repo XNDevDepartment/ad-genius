@@ -68,6 +68,7 @@
       "enterFullCode": "Bitte geben Sie den 6-stelligen Code ein",
       "invalidCode": "Ungültiger Bestätigungscode",
       "emailExists": "Diese E-Mail ist bereits registriert",
+      "phoneAlreadyUsed": "Diese Telefonnummer ist bereits mit einem anderen Konto verknüpft.",
       "accountCreated": "Konto erstellt! Bitte überprüfen Sie Ihre E-Mail zur Bestätigung.",
       "createError": "Fehler beim Erstellen des Kontos",
       "codeResent": "Neuer Code gesendet!",
