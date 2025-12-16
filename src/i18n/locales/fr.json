@@ -68,6 +68,7 @@
       "enterFullCode": "Veuillez entrer le code à 6 chiffres",
       "invalidCode": "Code de vérification invalide",
       "emailExists": "Cet email est déjà enregistré",
+      "phoneAlreadyUsed": "Ce numéro de téléphone est déjà associé à un autre compte.",
       "accountCreated": "Compte créé ! Veuillez vérifier votre email pour confirmer.",
       "createError": "Échec de la création du compte",
       "codeResent": "Nouveau code envoyé !",

@@ -174,27 +174,36 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
     }
   };
 
-  // Create account after phone verification - auto-login without email confirmation
+  // Create account after phone verification - server-side validated signup
   const handleCreateAccount = async (phoneNumber: string) => {
     setSignupStep('creating');
     try {
-      const { error } = await signUp(formData.email, formData.password, {
-        name: formData.name,
-        phone_number: phoneNumber,
-        phone_verified: true,
+      // Use secure edge function that validates verification token server-side
+      const { data, error } = await supabase.functions.invoke('signup-with-phone', {
+        body: {
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+          phone_number: phoneNumber,
+          verification_token: verificationToken,
+        }
       });
 
-      if (error) {
-        if (error.message.includes('already registered')) {
+      if (error || !data?.success) {
+        const errorMessage = data?.error || error?.message || 'Failed to create account';
+        
+        if (data?.code === 'PHONE_ALREADY_USED') {
+          toast.error(t('auth.signup.phoneAlreadyUsed', 'This phone number is already associated with another account.'));
+        } else if (data?.code === 'EMAIL_ALREADY_USED' || errorMessage.includes('already registered')) {
           toast.error(t('auth.signup.emailExists', 'This email is already registered'));
         } else {
-          toast.error(error.message);
+          toast.error(errorMessage);
         }
         setSignupStep('form');
         return;
       }
 
-      // Auto-login after signup (skip email confirmation)
+      // Auto-login after successful signup
       const { error: signInError } = await signIn(formData.email, formData.password);
       if (signInError) {
         console.warn('[AuthModal] Auto-login failed:', signInError);
@@ -205,7 +214,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
       }
 
       toast.success(t('auth.signup.welcomeMessage', 'Welcome! Your account is ready.'));
-      onSuccess?.(); // No email = redirect to home, not email confirmation
+      onSuccess?.();
       onClose?.();
     } catch (err: any) {
       console.error('[AuthModal] Create account error:', err);
