@@ -146,7 +146,7 @@ export const AIModelGenerationForm = ({
               <SelectContent className="max-h-[300px]">
                 <SelectItem value="mixed">{t('aiModelForm.nationalities.mixed')}</SelectItem>
                 <SelectItem value="not-specified">{t('aiModelForm.nationalities.notSpecified')}</SelectItem>
-                
+
                 <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t('aiModelForm.nationalities.africa')}</div>
                 <SelectItem value="nigerian">Nigerian</SelectItem>
                 <SelectItem value="ethiopian">Ethiopian</SelectItem>
