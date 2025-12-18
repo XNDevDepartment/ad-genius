@@ -90,7 +90,7 @@ serve(async (req) => {
       tax_id_collection: { enabled: true },
       billing_address_collection: 'required',
       custom_fields: [
-        { key: 'nif', label: { type: 'custom', custom: 'NIF (optional)' }, type: 'text' }
+        { key: 'nif', label: { type: 'custom', custom: 'NIF (optional)' }, type: 'text', optional: true }
       ],
       line_items: [
         {
