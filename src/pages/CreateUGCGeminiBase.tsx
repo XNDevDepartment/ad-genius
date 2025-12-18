@@ -96,6 +96,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [prodSpecs, setProdSpecs] = useState("");
   const [aiScenarios, setAiScenarios] = useState<AIScenario[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<AIScenario | null>({ 'idea': "", "small-description": "", "description": "" });
+  const [customScenarioMode, setCustomScenarioMode] = useState(false);
   const [uploadedSourceIds, setUploadedSourceIds] = useState<string[]>([]);
 
   const hasSelectedScenario = selectedScenario && selectedScenario.idea && selectedScenario.idea.trim().length > 0;
@@ -672,56 +673,72 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       const commonNeg = `--negative "AI artifacts, text overlays, watermark, extreme bokeh, macro close-up, center-composed product, invented branding, extra limbs, low resolution, duplicated faces, similar persons"`;
 
       const highlightYes = `
-        Generate an authentic UGC-style photograph for a product marketing campaign.
+TASK: Create authentic UGC photo featuring this product.
 
-        Product context:
-        {user_prompt}
+SCENARIO: ${selectedScenario?.description || 'Natural lifestyle moment'}
+AUDIENCE: ${desiredAudience}
+SPECS: ${prodSpecs}
 
-        Target audience: {audience_context}
-        Product details: {product_specs}
+MANDATORY RULES:
 
-        CREATIVE DIRECTION:
-        Create a fresh, original photo that captures the essence of authentic social media content:
-        - Natural iPhone-quality photography with subtle imperfections
-        - Real home or outdoor environments (not studio)
-        - Genuine, unposed moments with natural lighting
-        - Casual, slightly off-center framing
-        - The feeling of a real person sharing a product they love
+1. PRODUCT INTEGRITY:
+   - Use EXACT product from reference image
+   - Keep all labels, colors, shapes, branding unchanged
+   - Product is hero - 40-60% of frame
 
-        Visual reference is provided for style inspiration only - create an entirely new, original image.
-        `;
+2. AUTHENTICITY:
+   - iPhone-quality photography
+   - Natural lighting, real environments
+   - Slight imperfections (soft focus, natural shadows)
+   - Casual, off-center framing
+
+3. STYLE:
+   - ${style} photography aesthetic
+   - ${timeOfDay} lighting
+
+4. QUALITY:
+   - No AI artifacts, watermarks, text
+   - Natural human anatomy if people appear
+   - No invented branding
+
+${commonNeg}
+
+OUTPUT: Single authentic UGC photo ready for social media.
+`;
 
       const highlightNo = `
-        Create an ultra-realistic lifestyle photo where the environment is the hero and the product feels naturally integrated.
+TASK: Create lifestyle photo where environment is hero, product is subtle.
 
-        ###CONTEXT:
-        - You receive a real product image as reference. Use that image as the base.
-        - Preserve the exact product design, shape, label, colors and materials from the reference image.
-        - Do NOT invent new branding, packaging, flavors or text.
-        - Product details to keep in mind: ${prodSpecs}
-        - Target audience this image must resonate with: ${desiredAudience}
-        - Scenario to follow (take this literally): ${selectedScenario.description}
+SCENARIO: ${selectedScenario?.description || 'Natural lifestyle setting'}
+AUDIENCE: ${desiredAudience}
+SPECS: ${prodSpecs}
 
-        ###COMPOSITION:
-        - Environment-first framing: the scene tells a story and the product appears naturally within it.
-        - Product occupies roughly 20–35% of the frame — visible but not dominant.
-        - Use leading lines, depth layers, and natural props to guide the eye subtly toward the product.
+MANDATORY RULES:
 
-        ###VISUAL STYLE:
-        - Look and feel: authentic ${style} lifestyle photography — natural, relaxed, aspirational.
-        - Lighting: ${timeOfDay} natural light, with soft shadows and believable ambient tones.
-        - Atmosphere: warm, inviting, lived-in — no staged perfection.
+1. PRODUCT INTEGRITY:
+   - Use EXACT product from reference image
+   - Keep all labels, colors, shapes, branding unchanged
+   - Product occupies 20-35% of frame (visible but not dominant)
 
-        ###QUALITY & CONSTRAINTS:
-        - Realistic textures, materials, and human anatomy (if present).
-        - No text, UI, watermarks, or fake logos.
-        - Avoid AI artifacts, warped anatomy, duplicated elements, extreme blur or oversaturation.
+2. ENVIRONMENT FIRST:
+   - Scene tells a story
+   - Product appears naturally within environment
+   - Use leading lines and depth to guide eye to product
 
-        ${commonNeg}
+3. STYLE:
+   - ${style} lifestyle photography
+   - ${timeOfDay} natural lighting
+   - Warm, inviting, lived-in atmosphere
 
-        ###OUTPUT:
-        Generate a single, polished lifestyle photo that feels authentic and can be used directly as an ad creative.
-        `;
+4. QUALITY:
+   - No AI artifacts, watermarks, text
+   - Natural human anatomy if people appear
+   - No invented branding
+
+${commonNeg}
+
+OUTPUT: Single polished lifestyle photo usable as ad creative.
+`;
 
       const prompt = (highlight === 'yes' ? highlightYes : highlightNo).trim();
 
@@ -1068,18 +1085,58 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                       </TooltipProvider>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">{t('ugc.scenarios.subtitle')}</p>
+                    
+                    {/* Custom Scenario Option */}
+                    <div className="mb-4">
+                      <div 
+                        className={`p-3 border rounded-apple-sm cursor-pointer transition-all ${
+                          customScenarioMode
+                            ? 'border-primary bg-primary/5'
+                            : 'border-dashed border-border hover:border-primary/50'
+                        }`}
+                        onClick={() => {
+                          if (!customScenarioMode) {
+                            setCustomScenarioMode(true);
+                            setSelectedScenario({ idea: t('ugc.scenarios.customScenario'), "small-description": t('ugc.scenarios.customScenarioDesc'), description: "" });
+                          }
+                        }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Pencil className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-medium">{t('ugc.scenarios.customScenario')}</span>
+                          {customScenarioMode && <Badge variant="secondary" className="ml-auto">{t('ugc.scenarios.active')}</Badge>}
+                        </div>
+                        
+                        {customScenarioMode && (
+                          <Textarea
+                            className="mt-3 min-h-[100px] text-base md:text-sm"
+                            placeholder={t('ugc.scenarios.customPlaceholder')}
+                            value={selectedScenario?.description || ''}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => setSelectedScenario({
+                              idea: t('ugc.scenarios.customScenario'),
+                              "small-description": t('ugc.scenarios.customScenarioDesc'),
+                              description: e.target.value
+                            })}
+                          />
+                        )}
+                      </div>
+                    </div>
+
                     {!isLoadingScenarios && aiScenarios.length > 0 && (
                       <div className="space-y-4">
                         <div className="grid gap-2">
                           {aiScenarios.map((scenario, index) => (
                             <div
                               key={index}
-                              className={`p-3 border rounded-apple-sm cursor-pointer transition-all ${selectedScenario?.idea === scenario.idea
-                                ? 'border-primary bg-primary/5'
-                                : 'border-border hover:border-primary/50'
-                                }`}
+                              className={`p-3 border rounded-apple-sm cursor-pointer transition-all ${
+                                !customScenarioMode && selectedScenario?.idea === scenario.idea
+                                  ? 'border-primary bg-primary/5'
+                                  : 'border-border hover:border-primary/50'
+                              }`}
                               onClick={() => {
                                 console.log('Scenario selected:', scenario);
+                                setCustomScenarioMode(false);
                                 setSelectedScenario(scenario);
                               }}
                             >
@@ -1100,15 +1157,17 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                           {t('ugc.scenarios.generateMoreButton')}
                         </Button>
 
-                        <Textarea
-                          ref={scnRef}
-                          id="scenarioDescription"
-                          value={selectedScenario?.description || ''}
-                          onChange={(e) => setSelectedScenario(prev => prev ? { ...prev, description: e.target.value } : null)}
-                          placeholder={t('ugc.scenarios.editPlaceholder')}
-                          className="min-h-[80px] rounded-apple-sm text-base md:text-sm"
-                          disabled={!hasSelectedScenario}
-                        />
+                        {!customScenarioMode && (
+                          <Textarea
+                            ref={scnRef}
+                            id="scenarioDescription"
+                            value={selectedScenario?.description || ''}
+                            onChange={(e) => setSelectedScenario(prev => prev ? { ...prev, description: e.target.value } : null)}
+                            placeholder={t('ugc.scenarios.editPlaceholder')}
+                            className="min-h-[80px] rounded-apple-sm text-base md:text-sm"
+                            disabled={!hasSelectedScenario}
+                          />
+                        )}
                       </div>
                     )}
                     {!isLoadingScenarios && aiScenarios.length === 0 && (

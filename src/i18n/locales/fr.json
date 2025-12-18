@@ -449,7 +449,13 @@
       "generateButton": "Obtenir des Idées de Scénarios",
       "generateMoreButton": "Générer Plus d'Idées",
       "loading": "Génération des scénarios...",
-      "tooltip": "Choisissez parmi des scénarios générés par l'IA montrant votre produit dans des situations réalistes et engageantes."
+      "tooltip": "Choisissez parmi des scénarios générés par l'IA montrant votre produit dans des situations réalistes et engageantes.",
+      "customScenario": "Écrivez Votre Propre Scénario",
+      "customScenarioDesc": "Scénario personnalisé écrit par l'utilisateur",
+      "customPlaceholder": "Décrivez votre scénario UGC personnalisé... ex., 'Une personne en course matinale s'arrête pour boire à la bouteille, la montrant bien en évidence avec un parc urbain en arrière-plan'",
+      "active": "Actif",
+      "emptyState": "Téléversez l'image de votre produit et décrivez votre audience pour générer des scénarios.",
+      "editPlaceholder": "Modifiez ou affinez la description du scénario sélectionné..."
     },
     "generationSettings": {
       "title": "Paramètres d'Image",

@@ -449,7 +449,13 @@
       "generateButton": "Szenario-Ideen holen",
       "generateMoreButton": "Mehr Ideen generieren",
       "loading": "Szenarien werden generiert...",
-      "tooltip": "Wähle aus KI-Szenarien, die dein Produkt in realistischen, ansprechenden Situationen zeigen."
+      "tooltip": "Wähle aus KI-Szenarien, die dein Produkt in realistischen, ansprechenden Situationen zeigen.",
+      "customScenario": "Eigenes Szenario schreiben",
+      "customScenarioDesc": "Vom Benutzer erstelltes individuelles Szenario",
+      "customPlaceholder": "Beschreibe dein eigenes UGC-Szenario... z.B., 'Eine Person beim Morgenlauf hält an, um aus der Flasche zu trinken, zeigt sie prominent mit einem Stadtpark im Hintergrund'",
+      "active": "Aktiv",
+      "emptyState": "Lade dein Produktbild hoch und beschreibe deine Zielgruppe, um Szenarien zu generieren.",
+      "editPlaceholder": "Bearbeite oder verfeinere die Beschreibung des ausgewählten Szenarios..."
     },
     "generationSettings": {
       "title": "Bildeinstellungen",
