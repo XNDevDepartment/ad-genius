@@ -454,7 +454,13 @@
       "generateButton": "Get Scenario Ideas",
       "generateMoreButton": "Generate More Ideas",
       "loading": "Generating scenarios...",
-      "tooltip": "Choose from AI-generated scenarios showing your product in realistic, engaging situations."
+      "tooltip": "Choose from AI-generated scenarios showing your product in realistic, engaging situations.",
+      "customScenario": "Write Your Own Scenario",
+      "customScenarioDesc": "User-written custom scenario",
+      "customPlaceholder": "Describe your custom UGC scenario... e.g., 'A person on a morning jog stops to drink from the bottle, showing it prominently with a city park in the background'",
+      "active": "Active",
+      "emptyState": "Upload your product image and describe your audience to generate scenarios.",
+      "editPlaceholder": "Edit or refine the selected scenario description..."
     },
     "generationSettings": {
       "title": "Image Settings",

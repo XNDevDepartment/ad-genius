@@ -449,7 +449,13 @@
       "generateButton": "Obter Ideias de Cenários",
       "generateMoreButton": "Gerar Mais Ideias",
       "loading": "A gerar cenários...",
-      "tooltip": "Escolha entre cenários gerados por IA que mostram o seu produto em situações realistas e envolventes."
+      "tooltip": "Escolha entre cenários gerados por IA que mostram o seu produto em situações realistas e envolventes.",
+      "customScenario": "Escreva o Seu Próprio Cenário",
+      "customScenarioDesc": "Cenário personalizado escrito pelo utilizador",
+      "customPlaceholder": "Descreva o seu cenário UGC personalizado... p.ex., 'Uma pessoa numa corrida matinal para para beber da garrafa, mostrando-a em destaque com um parque da cidade ao fundo'",
+      "active": "Ativo",
+      "emptyState": "Carregue a imagem do seu produto e descreva o seu público para gerar cenários.",
+      "editPlaceholder": "Edite ou refine a descrição do cenário selecionado..."
     },
     "generationSettings": {
       "title": "Definições de Imagem",
