@@ -154,7 +154,7 @@ async function generateImageWithRetry(prompt: string, base64Image: string, mimeT
   for(let attempt = 1; attempt <= maxRetries; attempt++){
     try {
       console.log(`[Attempt ${attempt}/${maxRetries}] Calling Gemini API...`);
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent', {
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent', {
         method: 'POST',
         headers: {
           'x-goog-api-key': GOOGLE_AI_KEY,
@@ -567,7 +567,7 @@ async function processOutfitSwap(jobId: string) {
     const personMimeType = personResponse.headers.get('content-type') ?? 'image/jpeg';
     const garmentMimeType = garmentResponse.headers.get('content-type') ?? 'image/jpeg';
     // Call Gemini API with multimodal input
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent', {
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent', {
       method: 'POST',
       headers: {
         'x-goog-api-key': GOOGLE_AI_KEY,
@@ -680,7 +680,7 @@ async function processOutfitSwap(jobId: string) {
       jpg_url: jpgPublicUrl.publicUrl,
       png_url: pngPublicUrl.publicUrl,
       metadata: {
-        model_used: "gemini-2.5-flash-image",
+        model_used: "gemini-3-pro-imagem-preview",
         processing_time_ms: processingTime,
         dimensions: "1024x1024",
         exif_stripped: true
@@ -695,7 +695,7 @@ async function processOutfitSwap(jobId: string) {
       progress: 100,
       finished_at: new Date().toISOString(),
       metadata: {
-        model_used: "gemini-2.5-flash-image",
+        model_used: "gemini-3-pro-imagem-preview",
         processing_time_ms: processingTime
       }
     }).eq("id", jobId);
@@ -1075,7 +1075,7 @@ async function createPhotoshootJob(userId1: string, params: any) {
   }
   // Quick region availability check
   try {
-    const testResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image', {
+    const testResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-imagem-preview', {
       headers: {
         'x-goog-api-key': GOOGLE_AI_KEY
       }
@@ -1506,7 +1506,7 @@ async function createEcommercePhotoJob(userId1: string, params: any) {
   const supabase = serviceClient();
   // Quick region availability check
   try {
-    const testResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image', {
+    const testResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-imagem-preview', {
       headers: {
         'x-goog-api-key': GOOGLE_AI_KEY
       }
