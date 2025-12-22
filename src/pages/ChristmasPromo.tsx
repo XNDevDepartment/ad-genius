@@ -134,7 +134,7 @@ const ChristmasPromo = () => {
                   Plano de Natal 🎅
                 </CardTitle>
                 <CardDescription className="text-white/90">
-                  Compromisso de 12 meses a preço especial
+                  12 meses a preço especial
                 </CardDescription>
               </div>
               <TreePine className="h-12 w-12" />
@@ -207,7 +207,7 @@ const ChristmasPromo = () => {
             </Button>
 
             <p className="text-xs text-center text-muted-foreground mt-4">
-              ✓ Compromisso de 12 meses · ✓ Preço fixo garantido · ✓ Satisfação garantida
+              ✓ Promoção de 12 meses · ✓ Preço fixo garantido · ✓ Satisfação garantida
             </p>
           </CardContent>
         </Card>
@@ -223,7 +223,7 @@ const ChristmasPromo = () => {
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <p>🎄 <strong>Preço especial de Natal:</strong> €19.99/mês em vez de €29/mês - poupa 31%!</p>
-              <p>🎁 <strong>Compromisso de 12 meses:</strong> Preço fixo garantido durante todo o período.</p>
+              <p>🎁 <strong>Promoção de 12 meses:</strong> Preço fixo garantido durante todo o período.</p>
               <p>⭐ <strong>Oferta limitada:</strong> Válida apenas até 31 de Dezembro de 2025.</p>
             </CardContent>
           </Card>
