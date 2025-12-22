@@ -1611,5 +1611,115 @@
       "verifyFailed": "Échec de la vérification",
       "invalidOrExpired": "Code invalide ou expiré"
     }
+  },
+  "landingV2": {
+    "header": {
+      "howItWorks": "Comment Ça Marche",
+      "pricing": "Tarifs",
+      "faq": "FAQ",
+      "getStarted": "Commencer"
+    },
+    "hero": {
+      "badge": "Photographie de Produit par IA",
+      "title1": "Créez des Images de Produit",
+      "title2": "Qui Vendent Vraiment",
+      "description": "Transformez de simples photos de produits en visuels e-commerce professionnels avec l'IA. Sans photographe.",
+      "cta": "Commencez Gratuitement",
+      "noCreditCard": "Sans carte de crédit"
+    },
+    "logos": {
+      "title": "Utilisé par les vendeurs sur les principales plateformes"
+    },
+    "stats": {
+      "imagesGenerated": "Images Générées",
+      "avgTime": "Temps Moyen de Génération",
+      "satisfaction": "Satisfaction Utilisateur",
+      "activeUsers": "Vendeurs Actifs",
+      "uptime": "Disponibilité",
+      "conversionBoost": "Augmentation Moyenne de Conversion"
+    },
+    "beforeAfter": {
+      "badge": "Magie IA",
+      "title": "De Photo Simple à Photo Pro",
+      "description": "Téléchargez n'importe quelle photo de produit et regardez l'IA la transformer en image e-commerce professionnelle en quelques secondes.",
+      "alt": "Transformation du produit"
+    },
+    "howItWorks": {
+      "badge": "Processus Simple",
+      "title": "Comment Ça Marche",
+      "subtitle": "Trois étapes simples pour des photos de produit professionnelles",
+      "step1": {
+        "title": "Téléchargez Votre Produit",
+        "description": "Prenez une photo simple de votre produit avec n'importe quel appareil photo ou smartphone."
+      },
+      "step2": {
+        "title": "Choisissez Votre Style",
+        "description": "Sélectionnez parmi des dizaines de scénarios et arrière-plans professionnels."
+      },
+      "step3": {
+        "title": "Téléchargez et Vendez",
+        "description": "Obtenez des images de qualité studio prêtes pour votre boutique en quelques secondes."
+      }
+    },
+    "pricing": {
+      "title": "Tarifs Simples et Transparents",
+      "subtitle": "Commencez gratuitement, passez à la vitesse supérieure quand vous en avez besoin",
+      "free": {
+        "name": "Gratuit",
+        "price": "€0",
+        "period": "/mois",
+        "description": "Parfait pour essayer",
+        "cta": "Commencer"
+      },
+      "plus": {
+        "name": "Plus",
+        "price": "€49",
+        "period": "/mois",
+        "description": "Pour les entreprises en croissance",
+        "cta": "Choisir Plus",
+        "popular": "Le Plus Populaire"
+      },
+      "features": {
+        "credits": "{{count}} crédits/mois",
+        "scenarios": "Tous les scénarios",
+        "quality": "Qualité HD",
+        "support": "Support prioritaire",
+        "commercial": "Licence commerciale"
+      },
+      "viewAll": "Voir toutes les options tarifaires"
+    },
+    "faq": {
+      "title": "Questions Fréquemment Posées",
+      "subtitle": "Tout ce que vous devez savoir sur ProduktPix",
+      "questions": {
+        "q1": {
+          "question": "Qu'est-ce que ProduktPix ?",
+          "answer": "ProduktPix est une plateforme alimentée par l'IA qui transforme de simples photos de produits en images e-commerce professionnelles. Téléchargez simplement une photo et notre IA crée des visuels époustouflants en quelques secondes."
+        },
+        "q2": {
+          "question": "Ai-je besoin de compétences en photographie ?",
+          "answer": "Non ! Prenez simplement une photo basique avec votre smartphone. Notre IA gère automatiquement l'éclairage, les arrière-plans et le style professionnel."
+        },
+        "q3": {
+          "question": "Combien d'images puis-je créer ?",
+          "answer": "Les utilisateurs gratuits reçoivent 10 crédits pour commencer. Les forfaits payants offrent 80-400+ crédits par mois. Chaque image coûte 1 crédit quelle que soit la qualité."
+        },
+        "q4": {
+          "question": "Puis-je utiliser les images commercialement ?",
+          "answer": "Oui ! Tous les forfaits payants incluent les droits d'utilisation commerciale complets. Utilisez vos images sur n'importe quelle marketplace, site web ou plateforme publicitaire."
+        },
+        "q5": {
+          "question": "Quelle est la rapidité de génération ?",
+          "answer": "La plupart des images sont générées en moins de 30 secondes. Les scénarios complexes peuvent prendre un peu plus de temps."
+        }
+      },
+      "contact": "Vous avez encore des questions ?",
+      "contactLink": "Contactez-nous"
+    },
+    "footer": {
+      "pricing": "Tarifs",
+      "contact": "Contact",
+      "faq": "FAQ"
+    }
   }
 }

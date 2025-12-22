@@ -1616,5 +1616,115 @@
       "verifyFailed": "Verification failed",
       "invalidOrExpired": "Invalid or expired code"
     }
+  },
+  "landingV2": {
+    "header": {
+      "howItWorks": "How It Works",
+      "pricing": "Pricing",
+      "faq": "FAQ",
+      "getStarted": "Get Started"
+    },
+    "hero": {
+      "badge": "AI-Powered Product Photography",
+      "title1": "Create Product Images",
+      "title2": "That Actually Sell",
+      "description": "Transform simple product photos into professional e-commerce visuals with AI. No photographer needed.",
+      "cta": "Start Creating Free",
+      "noCreditCard": "No credit card required"
+    },
+    "logos": {
+      "title": "Trusted by sellers on leading platforms"
+    },
+    "stats": {
+      "imagesGenerated": "Images Generated",
+      "avgTime": "Average Generation Time",
+      "satisfaction": "User Satisfaction",
+      "activeUsers": "Active Sellers",
+      "uptime": "Platform Uptime",
+      "conversionBoost": "Avg. Conversion Boost"
+    },
+    "beforeAfter": {
+      "badge": "AI Magic",
+      "title": "From Simple Photo to Pro Shot",
+      "description": "Upload any product photo and watch AI transform it into a professional e-commerce image in seconds.",
+      "alt": "Product transformation"
+    },
+    "howItWorks": {
+      "badge": "Simple Process",
+      "title": "How It Works",
+      "subtitle": "Three simple steps to professional product photos",
+      "step1": {
+        "title": "Upload Your Product",
+        "description": "Take a simple photo of your product with any camera or smartphone."
+      },
+      "step2": {
+        "title": "Choose Your Style",
+        "description": "Select from dozens of professional scenarios and backgrounds."
+      },
+      "step3": {
+        "title": "Download & Sell",
+        "description": "Get studio-quality images ready for your store in seconds."
+      }
+    },
+    "pricing": {
+      "title": "Simple, Transparent Pricing",
+      "subtitle": "Start free, upgrade when you need more",
+      "free": {
+        "name": "Free",
+        "price": "€0",
+        "period": "/month",
+        "description": "Perfect for trying out",
+        "cta": "Get Started"
+      },
+      "plus": {
+        "name": "Plus",
+        "price": "€49",
+        "period": "/month",
+        "description": "For growing businesses",
+        "cta": "Go Plus",
+        "popular": "Most Popular"
+      },
+      "features": {
+        "credits": "{{count}} credits/month",
+        "scenarios": "All scenarios",
+        "quality": "HD quality",
+        "support": "Priority support",
+        "commercial": "Commercial license"
+      },
+      "viewAll": "View all pricing options"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Everything you need to know about ProduktPix",
+      "questions": {
+        "q1": {
+          "question": "What is ProduktPix?",
+          "answer": "ProduktPix is an AI-powered platform that transforms simple product photos into professional e-commerce images. Just upload a photo and our AI creates stunning visuals in seconds."
+        },
+        "q2": {
+          "question": "Do I need photography skills?",
+          "answer": "No! Just take a basic photo with your smartphone. Our AI handles lighting, backgrounds, and professional styling automatically."
+        },
+        "q3": {
+          "question": "How many images can I create?",
+          "answer": "Free users get 10 credits to start. Paid plans offer 80-400+ credits per month. Each image costs 1 credit regardless of quality."
+        },
+        "q4": {
+          "question": "Can I use images commercially?",
+          "answer": "Yes! All paid plans include full commercial usage rights. Use your images on any marketplace, website, or advertising platform."
+        },
+        "q5": {
+          "question": "How fast is the generation?",
+          "answer": "Most images are generated in under 30 seconds. Complex scenarios may take slightly longer."
+        }
+      },
+      "contact": "Still have questions?",
+      "contactLink": "Contact us"
+    },
+    "footer": {
+      "pricing": "Pricing",
+      "contact": "Contact",
+      "faq": "FAQ"
+    }
   }
 }

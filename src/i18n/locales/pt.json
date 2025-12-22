@@ -1611,5 +1611,115 @@
       "verifyFailed": "Verificação falhou",
       "invalidOrExpired": "Código inválido ou expirado"
     }
+  },
+  "landingV2": {
+    "header": {
+      "howItWorks": "Como Funciona",
+      "pricing": "Preços",
+      "faq": "FAQ",
+      "getStarted": "Começar"
+    },
+    "hero": {
+      "badge": "Fotografia de Produto com IA",
+      "title1": "Crie Imagens de Produto",
+      "title2": "Que Realmente Vendem",
+      "description": "Transforme fotos simples de produtos em visuais profissionais de e-commerce com IA. Sem fotógrafo.",
+      "cta": "Comece a Criar Grátis",
+      "noCreditCard": "Sem cartão de crédito"
+    },
+    "logos": {
+      "title": "Utilizado por vendedores nas principais plataformas"
+    },
+    "stats": {
+      "imagesGenerated": "Imagens Geradas",
+      "avgTime": "Tempo Médio de Geração",
+      "satisfaction": "Satisfação do Utilizador",
+      "activeUsers": "Vendedores Ativos",
+      "uptime": "Disponibilidade",
+      "conversionBoost": "Aumento Médio de Conversão"
+    },
+    "beforeAfter": {
+      "badge": "Magia IA",
+      "title": "De Foto Simples a Foto Profissional",
+      "description": "Carregue qualquer foto de produto e veja a IA transformá-la numa imagem profissional de e-commerce em segundos.",
+      "alt": "Transformação do produto"
+    },
+    "howItWorks": {
+      "badge": "Processo Simples",
+      "title": "Como Funciona",
+      "subtitle": "Três passos simples para fotos de produto profissionais",
+      "step1": {
+        "title": "Carregue o Seu Produto",
+        "description": "Tire uma foto simples do seu produto com qualquer câmara ou smartphone."
+      },
+      "step2": {
+        "title": "Escolha o Seu Estilo",
+        "description": "Selecione entre dezenas de cenários e fundos profissionais."
+      },
+      "step3": {
+        "title": "Descarregue e Venda",
+        "description": "Obtenha imagens de qualidade de estúdio prontas para a sua loja em segundos."
+      }
+    },
+    "pricing": {
+      "title": "Preços Simples e Transparentes",
+      "subtitle": "Comece grátis, faça upgrade quando precisar de mais",
+      "free": {
+        "name": "Grátis",
+        "price": "€0",
+        "period": "/mês",
+        "description": "Perfeito para experimentar",
+        "cta": "Começar"
+      },
+      "plus": {
+        "name": "Plus",
+        "price": "€49",
+        "period": "/mês",
+        "description": "Para negócios em crescimento",
+        "cta": "Escolher Plus",
+        "popular": "Mais Popular"
+      },
+      "features": {
+        "credits": "{{count}} créditos/mês",
+        "scenarios": "Todos os cenários",
+        "quality": "Qualidade HD",
+        "support": "Suporte prioritário",
+        "commercial": "Licença comercial"
+      },
+      "viewAll": "Ver todas as opções de preços"
+    },
+    "faq": {
+      "title": "Perguntas Frequentes",
+      "subtitle": "Tudo o que precisa de saber sobre o ProduktPix",
+      "questions": {
+        "q1": {
+          "question": "O que é o ProduktPix?",
+          "answer": "O ProduktPix é uma plataforma alimentada por IA que transforma fotos simples de produtos em imagens profissionais de e-commerce. Basta carregar uma foto e a nossa IA cria visuais impressionantes em segundos."
+        },
+        "q2": {
+          "question": "Preciso de conhecimentos de fotografia?",
+          "answer": "Não! Basta tirar uma foto básica com o seu smartphone. A nossa IA trata da iluminação, fundos e estilo profissional automaticamente."
+        },
+        "q3": {
+          "question": "Quantas imagens posso criar?",
+          "answer": "Utilizadores gratuitos recebem 10 créditos para começar. Os planos pagos oferecem 80-400+ créditos por mês. Cada imagem custa 1 crédito independentemente da qualidade."
+        },
+        "q4": {
+          "question": "Posso usar as imagens comercialmente?",
+          "answer": "Sim! Todos os planos pagos incluem direitos de uso comercial completos. Use as suas imagens em qualquer marketplace, website ou plataforma de publicidade."
+        },
+        "q5": {
+          "question": "Quão rápida é a geração?",
+          "answer": "A maioria das imagens são geradas em menos de 30 segundos. Cenários complexos podem demorar um pouco mais."
+        }
+      },
+      "contact": "Ainda tem dúvidas?",
+      "contactLink": "Contacte-nos"
+    },
+    "footer": {
+      "pricing": "Preços",
+      "contact": "Contacto",
+      "faq": "FAQ"
+    }
   }
 }

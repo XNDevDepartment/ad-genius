@@ -1611,5 +1611,115 @@
       "verifyFailed": "Verifizierung fehlgeschlagen",
       "invalidOrExpired": "Ungültiger oder abgelaufener Code"
     }
+  },
+  "landingV2": {
+    "header": {
+      "howItWorks": "So Funktioniert's",
+      "pricing": "Preise",
+      "faq": "FAQ",
+      "getStarted": "Loslegen"
+    },
+    "hero": {
+      "badge": "KI-gestützte Produktfotografie",
+      "title1": "Erstellen Sie Produktbilder",
+      "title2": "Die Wirklich Verkaufen",
+      "description": "Verwandeln Sie einfache Produktfotos in professionelle E-Commerce-Bilder mit KI. Kein Fotograf nötig.",
+      "cta": "Kostenlos Starten",
+      "noCreditCard": "Keine Kreditkarte erforderlich"
+    },
+    "logos": {
+      "title": "Vertraut von Verkäufern auf führenden Plattformen"
+    },
+    "stats": {
+      "imagesGenerated": "Generierte Bilder",
+      "avgTime": "Durchschnittliche Generierungszeit",
+      "satisfaction": "Nutzerzufriedenheit",
+      "activeUsers": "Aktive Verkäufer",
+      "uptime": "Plattform-Verfügbarkeit",
+      "conversionBoost": "Durchschn. Conversion-Steigerung"
+    },
+    "beforeAfter": {
+      "badge": "KI-Magie",
+      "title": "Vom Einfachen Foto zum Profi-Bild",
+      "description": "Laden Sie ein beliebiges Produktfoto hoch und sehen Sie, wie KI es in Sekunden in ein professionelles E-Commerce-Bild verwandelt.",
+      "alt": "Produkttransformation"
+    },
+    "howItWorks": {
+      "badge": "Einfacher Prozess",
+      "title": "So Funktioniert's",
+      "subtitle": "Drei einfache Schritte zu professionellen Produktfotos",
+      "step1": {
+        "title": "Laden Sie Ihr Produkt Hoch",
+        "description": "Machen Sie ein einfaches Foto Ihres Produkts mit einer beliebigen Kamera oder einem Smartphone."
+      },
+      "step2": {
+        "title": "Wählen Sie Ihren Stil",
+        "description": "Wählen Sie aus Dutzenden professioneller Szenarien und Hintergründe."
+      },
+      "step3": {
+        "title": "Herunterladen und Verkaufen",
+        "description": "Erhalten Sie studioqualitätsbilder, die in Sekunden für Ihren Shop bereit sind."
+      }
+    },
+    "pricing": {
+      "title": "Einfache, Transparente Preise",
+      "subtitle": "Starten Sie kostenlos, upgraden Sie bei Bedarf",
+      "free": {
+        "name": "Kostenlos",
+        "price": "€0",
+        "period": "/Monat",
+        "description": "Perfekt zum Ausprobieren",
+        "cta": "Loslegen"
+      },
+      "plus": {
+        "name": "Plus",
+        "price": "€49",
+        "period": "/Monat",
+        "description": "Für wachsende Unternehmen",
+        "cta": "Plus Wählen",
+        "popular": "Am Beliebtesten"
+      },
+      "features": {
+        "credits": "{{count}} Credits/Monat",
+        "scenarios": "Alle Szenarien",
+        "quality": "HD-Qualität",
+        "support": "Prioritäts-Support",
+        "commercial": "Kommerzielle Lizenz"
+      },
+      "viewAll": "Alle Preisoptionen anzeigen"
+    },
+    "faq": {
+      "title": "Häufig Gestellte Fragen",
+      "subtitle": "Alles, was Sie über ProduktPix wissen müssen",
+      "questions": {
+        "q1": {
+          "question": "Was ist ProduktPix?",
+          "answer": "ProduktPix ist eine KI-gestützte Plattform, die einfache Produktfotos in professionelle E-Commerce-Bilder verwandelt. Laden Sie einfach ein Foto hoch und unsere KI erstellt in Sekunden beeindruckende Bilder."
+        },
+        "q2": {
+          "question": "Brauche ich Fotografiekenntnisse?",
+          "answer": "Nein! Machen Sie einfach ein einfaches Foto mit Ihrem Smartphone. Unsere KI kümmert sich automatisch um Beleuchtung, Hintergründe und professionelles Styling."
+        },
+        "q3": {
+          "question": "Wie viele Bilder kann ich erstellen?",
+          "answer": "Kostenlose Nutzer erhalten 10 Credits zum Start. Bezahlte Pläne bieten 80-400+ Credits pro Monat. Jedes Bild kostet 1 Credit unabhängig von der Qualität."
+        },
+        "q4": {
+          "question": "Kann ich die Bilder kommerziell nutzen?",
+          "answer": "Ja! Alle bezahlten Pläne beinhalten vollständige kommerzielle Nutzungsrechte. Verwenden Sie Ihre Bilder auf jedem Marktplatz, jeder Website oder Werbeplattform."
+        },
+        "q5": {
+          "question": "Wie schnell ist die Generierung?",
+          "answer": "Die meisten Bilder werden in unter 30 Sekunden generiert. Komplexe Szenarien können etwas länger dauern."
+        }
+      },
+      "contact": "Haben Sie noch Fragen?",
+      "contactLink": "Kontaktieren Sie uns"
+    },
+    "footer": {
+      "pricing": "Preise",
+      "contact": "Kontakt",
+      "faq": "FAQ"
+    }
   }
 }
