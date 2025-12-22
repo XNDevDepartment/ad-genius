@@ -167,7 +167,8 @@ serve(async (req) => {
           founders: "Founders",
           starter: "Starter",
           plus: "Plus",
-          pro: "Pro"
+          pro: "Pro",
+          christmas: "Starter" // Christmas promo gives Starter tier benefits
         };
         
         const tier = tierMap[planId as string] || "Free";

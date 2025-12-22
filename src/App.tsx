@@ -50,6 +50,7 @@ const MagazinePhotoshoot = lazyWithRetry(() => import("./pages/MagazinePhotoshoo
 const CreateCustomModel = lazyWithRetry(() => import("./pages/CreateCustomModel"));
 const VideoAds = lazyWithRetry(() => import("./pages/VideoAds"));
 const LandingPageV2 = lazyWithRetry(() => import("./pages/LandingPageV2"));
+const ChristmasPromo = lazyWithRetry(() => import("./pages/ChristmasPromo"));
 
 
 const queryClient = new QueryClient();
@@ -311,6 +312,13 @@ const App = () => {
                 <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
                     <LandingPageV2 />
+                  </Suspense>
+                </ErrorBoundaryWithReset>
+              } />
+              <Route path="/natal" element={
+                <ErrorBoundaryWithReset>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <ChristmasPromo />
                   </Suspense>
                 </ErrorBoundaryWithReset>
               } />
