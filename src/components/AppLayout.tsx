@@ -6,6 +6,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import PaymentFailedBanner from "./PaymentFailedBanner";
+import ChristmasBanner from "./ChristmasBanner";
 
 const AppLayout = () => {
   const location = useLocation();
@@ -27,6 +28,9 @@ const AppLayout = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Christmas Promo Banner */}
+      <ChristmasBanner />
+      
       {/* Payment Failed Banner - shown on both mobile and desktop */}
       {user && subscriptionData?.payment_failed_at && (
         <PaymentFailedBanner paymentFailedAt={subscriptionData.payment_failed_at} />
