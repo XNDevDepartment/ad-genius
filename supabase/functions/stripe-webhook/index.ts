@@ -7,6 +7,64 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
 };
 
+// Meta Conversions API helper functions
+async function hashEmail(email: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(email.toLowerCase().trim());
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function sendMetaConversionEvent(eventData: {
+  event_name: string;
+  event_time: number;
+  event_id: string;
+  user_data: {
+    em?: string;  // hashed email
+    client_ip_address?: string;
+    client_user_agent?: string;
+  };
+  custom_data?: {
+    value?: number;
+    currency?: string;
+    content_name?: string;
+    content_type?: string;
+  };
+}) {
+  const PIXEL_ID = '3052150201636830';
+  const ACCESS_TOKEN = Deno.env.get('META_CAPI_ACCESS_TOKEN');
+  
+  if (!ACCESS_TOKEN) {
+    console.log('[META CAPI] No access token configured, skipping');
+    return;
+  }
+
+  const payload = {
+    data: [{
+      ...eventData,
+      action_source: 'website',
+      event_source_url: 'https://produktpix.com/success'
+    }]
+  };
+
+  try {
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }
+    );
+    
+    const result = await response.json();
+    console.log('[META CAPI] Event sent:', eventData.event_name, result);
+  } catch (error) {
+    console.error('[META CAPI] Failed to send event:', error);
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -202,6 +260,54 @@ serve(async (req) => {
           }
         } catch (mlError) {
           console.error("[WEBHOOK] MailerLite sync error (non-fatal):", mlError);
+        }
+        
+        // Track purchase with Meta Conversions API (server-side)
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', userId)
+            .single();
+          
+          if (profileData?.email) {
+            const planPrices: Record<string, { monthly: number; yearly: number }> = {
+              Founders: { monthly: 19.99, yearly: 239.88 },
+              Starter: { monthly: 29, yearly: 290 },
+              Plus: { monthly: 49, yearly: 490 },
+              Pro: { monthly: 99, yearly: 990 }
+            };
+            
+            const prices = planPrices[tier] || planPrices.Starter;
+            
+            // Determine if yearly based on subscription period
+            const periodEnd = subscription.current_period_end;
+            const periodStart = subscription.current_period_start;
+            const daysInPeriod = (periodEnd - periodStart) / (60 * 60 * 24);
+            const isYearly = daysInPeriod > 60; // Yearly subscriptions have 365 days
+            
+            const purchaseValue = isYearly ? prices.yearly : prices.monthly;
+            const hashedEmail = await hashEmail(profileData.email);
+            
+            await sendMetaConversionEvent({
+              event_name: 'Purchase',
+              event_time: Math.floor(Date.now() / 1000),
+              event_id: `purchase_${session.id}`, // Unique ID for deduplication with client-side
+              user_data: {
+                em: hashedEmail
+              },
+              custom_data: {
+                value: purchaseValue,
+                currency: 'EUR',
+                content_name: `${tier}${isYearly ? ' Yearly' : ' Monthly'}`,
+                content_type: 'product'
+              }
+            });
+            
+            console.log(`[WEBHOOK] ✓ Meta CAPI Purchase tracked: ${tier} ${isYearly ? 'Yearly' : 'Monthly'} - €${purchaseValue}`);
+          }
+        } catch (capiError) {
+          console.error('[WEBHOOK] Meta CAPI tracking failed (non-fatal):', capiError);
         }
         break;
       }
