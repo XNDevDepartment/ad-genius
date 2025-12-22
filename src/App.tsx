@@ -17,6 +17,7 @@ import { LoadingFallback } from "./components/LoadingFallback";
 import { checkForCachedVersion } from "./utils/cacheCheck";
 import { lazyWithRetry } from "./utils/lazyWithRetry";
 import { AuthGuard } from "./components/AuthGuard";
+import ChristmasBanner from "./components/ChristmasBanner";
 
 // Lazy load non-critical routes with automatic retry logic
 const CreateSelection = lazyWithRetry(() => import("./pages/ModuleSelection"));
