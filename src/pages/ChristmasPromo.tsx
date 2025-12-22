@@ -76,7 +76,7 @@ const ChristmasPromo = () => {
 
       <HeaderSection />
       
-      <div className="container mx-auto px-4 py-12 max-w-6xl relative z-10">
+      <div className="container mx-auto px-4 pt-24 pb-12 max-w-6xl relative z-10">
         {/* Hero Section */}
         <div className="text-center mb-12 space-y-4">
           <Badge className="mb-4 text-lg px-4 py-2 bg-gradient-to-r from-red-500 to-green-600 text-white border-0">
@@ -134,7 +134,7 @@ const ChristmasPromo = () => {
                   Plano de Natal 🎅
                 </CardTitle>
                 <CardDescription className="text-white/90">
-                  Preço especial garantido durante toda a subscrição
+                  Compromisso de 12 meses a preço especial
                 </CardDescription>
               </div>
               <TreePine className="h-12 w-12" />
@@ -183,7 +183,7 @@ const ChristmasPromo = () => {
                 { icon: Check, title: "Todas as qualidades", description: "HD e Ultra HD incluídos" },
                 { icon: Check, title: "Uso comercial", description: "Usa em qualquer projeto" },
                 { icon: Check, title: "Suporte prioritário", description: "Resposta rápida garantida" },
-                { icon: Gift, title: "Preço garantido", description: "€19.99/mês enquanto mantiveres a subscrição" },
+                { icon: Gift, title: "Preço garantido", description: "€19.99/mês fixo durante os 12 meses" },
               ].map((feature, index) => (
                 <div key={index} className="flex items-start gap-3">
                   <div className="rounded-full bg-gradient-to-r from-red-500/10 to-green-500/10 p-1.5 mt-0.5">
@@ -207,7 +207,7 @@ const ChristmasPromo = () => {
             </Button>
 
             <p className="text-xs text-center text-muted-foreground mt-4">
-              ✓ Cancela a qualquer momento · ✓ Sem compromisso · ✓ Satisfação garantida
+              ✓ Compromisso de 12 meses · ✓ Preço fixo garantido · ✓ Satisfação garantida
             </p>
           </CardContent>
         </Card>
@@ -223,7 +223,7 @@ const ChristmasPromo = () => {
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <p>🎄 <strong>Preço especial de Natal:</strong> €19.99/mês em vez de €29/mês - poupa 31%!</p>
-              <p>🎁 <strong>Garantia de preço:</strong> Mantém este preço enquanto a subscrição estiver ativa.</p>
+              <p>🎁 <strong>Compromisso de 12 meses:</strong> Preço fixo garantido durante todo o período.</p>
               <p>⭐ <strong>Oferta limitada:</strong> Válida apenas até 31 de Dezembro de 2025.</p>
             </CardContent>
           </Card>
