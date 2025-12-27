@@ -10,14 +10,51 @@ import ImageUploader from "@/components/ImageUploader";
 import { Label } from "@/components/ui/label";
 import { useTranslation } from "react-i18next";
 
+type GarmentCategory = 'TOP' | 'BOTTOM' | 'FOOTWEAR' | 'FULL_OUTFIT' | 'ACCESSORY';
+
 interface PhotoshootModalProps {
   isOpen: boolean;
   onClose: () => void;
   resultId: string;
   originalImageUrl: string;
+  garmentCategory?: GarmentCategory;
 }
 
-export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }: PhotoshootModalProps) => {
+// Category-specific angle configurations
+const CATEGORY_ANGLES: Record<GarmentCategory, { id: string; labelKey: string; descKey: string }[]> = {
+  TOP: [
+    { id: 'three_quarter', labelKey: 'photoshootModal.angles.threeQuarter.label', descKey: 'photoshootModal.angles.threeQuarter.description' },
+    { id: 'back', labelKey: 'photoshootModal.angles.back.label', descKey: 'photoshootModal.angles.back.description' },
+    { id: 'side', labelKey: 'photoshootModal.angles.side.label', descKey: 'photoshootModal.angles.side.description' },
+    { id: 'detail', labelKey: 'photoshootModal.angles.detail.label', descKey: 'photoshootModal.angles.detail.description' },
+  ],
+  BOTTOM: [
+    { id: 'lower_body_front', labelKey: 'photoshootModal.angles.lowerBodyFront.label', descKey: 'photoshootModal.angles.lowerBodyFront.description' },
+    { id: 'lower_body_back', labelKey: 'photoshootModal.angles.lowerBodyBack.label', descKey: 'photoshootModal.angles.lowerBodyBack.description' },
+    { id: 'lower_body_side', labelKey: 'photoshootModal.angles.lowerBodySide.label', descKey: 'photoshootModal.angles.lowerBodySide.description' },
+    { id: 'walking_pose', labelKey: 'photoshootModal.angles.walkingPose.label', descKey: 'photoshootModal.angles.walkingPose.description' },
+  ],
+  FOOTWEAR: [
+    { id: 'shoe_front', labelKey: 'photoshootModal.angles.shoeFront.label', descKey: 'photoshootModal.angles.shoeFront.description' },
+    { id: 'shoe_side', labelKey: 'photoshootModal.angles.shoeSide.label', descKey: 'photoshootModal.angles.shoeSide.description' },
+    { id: 'shoe_back', labelKey: 'photoshootModal.angles.shoeBack.label', descKey: 'photoshootModal.angles.shoeBack.description' },
+    { id: 'walking_pose', labelKey: 'photoshootModal.angles.walkingPose.label', descKey: 'photoshootModal.angles.walkingPose.description' },
+  ],
+  FULL_OUTFIT: [
+    { id: 'three_quarter', labelKey: 'photoshootModal.angles.threeQuarter.label', descKey: 'photoshootModal.angles.threeQuarter.description' },
+    { id: 'back', labelKey: 'photoshootModal.angles.back.label', descKey: 'photoshootModal.angles.back.description' },
+    { id: 'side', labelKey: 'photoshootModal.angles.side.label', descKey: 'photoshootModal.angles.side.description' },
+    { id: 'detail', labelKey: 'photoshootModal.angles.detail.label', descKey: 'photoshootModal.angles.detail.description' },
+  ],
+  ACCESSORY: [
+    { id: 'detail', labelKey: 'photoshootModal.angles.detail.label', descKey: 'photoshootModal.angles.detail.description' },
+    { id: 'three_quarter', labelKey: 'photoshootModal.angles.threeQuarter.label', descKey: 'photoshootModal.angles.threeQuarter.description' },
+    { id: 'side', labelKey: 'photoshootModal.angles.side.label', descKey: 'photoshootModal.angles.side.description' },
+    { id: 'back', labelKey: 'photoshootModal.angles.back.label', descKey: 'photoshootModal.angles.back.description' },
+  ],
+};
+
+export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, garmentCategory = 'FULL_OUTFIT' }: PhotoshootModalProps) => {
   const { t } = useTranslation();
   const [stage, setStage] = useState<'setup' | 'angle-selection' | 'processing'>('setup');
   const [photoshoot, setPhotoshoot] = useState<PhotoshootJob | null>(null);
@@ -25,14 +62,16 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
   const [backImageFile, setBackImageFile] = useState<File | null>(null);
   const [backImageUrl, setBackImageUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [selectedAngles, setSelectedAngles] = useState<string[]>(['three_quarter', 'back', 'side', 'detail']);
-
-  const AVAILABLE_ANGLES = [
-    { id: 'three_quarter', label: t('photoshootModal.angles.threeQuarter.label'), description: t('photoshootModal.angles.threeQuarter.description') },
-    { id: 'back', label: t('photoshootModal.angles.back.label'), description: t('photoshootModal.angles.back.description') },
-    { id: 'side', label: t('photoshootModal.angles.side.label'), description: t('photoshootModal.angles.side.description') },
-    { id: 'detail', label: t('photoshootModal.angles.detail.label'), description: t('photoshootModal.angles.detail.description') },
-  ];
+  
+  // Get angles based on garment category
+  const categoryAnglesConfig = CATEGORY_ANGLES[garmentCategory] || CATEGORY_ANGLES.FULL_OUTFIT;
+  const AVAILABLE_ANGLES = categoryAnglesConfig.map(angle => ({
+    id: angle.id,
+    label: t(angle.labelKey, angle.id.replace(/_/g, ' ')),
+    description: t(angle.descKey, `${angle.id} view`)
+  }));
+  
+  const [selectedAngles, setSelectedAngles] = useState<string[]>(categoryAnglesConfig.map(a => a.id));
 
   const handleBackImageUpload = async (file: File | null) => {
     if (!file) {
@@ -122,9 +161,10 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
       setPhotoshoot(null);
       setBackImageFile(null);
       setBackImageUrl(null);
-      setSelectedAngles(['front', 'three_quarter', 'back', 'side']);
+      // Reset to category-specific angles
+      setSelectedAngles(categoryAnglesConfig.map(a => a.id));
     }
-  }, [isOpen]);
+  }, [isOpen, categoryAnglesConfig]);
 
   const toggleAngle = (angleId: string) => {
     setSelectedAngles(prev => {

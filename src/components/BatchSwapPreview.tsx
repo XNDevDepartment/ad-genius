@@ -53,6 +53,7 @@ export const BatchSwapPreview = ({
     isOpen: boolean;
     resultId: string | null;
     originalImageUrl: string | null;
+    garmentCategory?: string;
   }>({ isOpen: false, resultId: null, originalImageUrl: null });
   const [ecommerceIdeasModal, setEcommerceIdeasModal] = useState<{
     isOpen: boolean;
@@ -220,11 +221,12 @@ export const BatchSwapPreview = ({
   };
 
   const handleCreatePhotoshoot = async (result: OutfitSwapResult) => {
-
+    const garmentCategory = (result.metadata as any)?.garment_category || 'FULL_OUTFIT';
     setPhotoshootModal({
       isOpen: true,
       resultId: result.id,
       originalImageUrl: result.public_url,
+      garmentCategory,
     });
   };
 
@@ -480,6 +482,7 @@ export const BatchSwapPreview = ({
           onClose={() => setPhotoshootModal({ isOpen: false, resultId: null, originalImageUrl: null })}
           resultId={photoshootModal.resultId}
           originalImageUrl={photoshootModal.originalImageUrl || ""}
+          garmentCategory={(photoshootModal.garmentCategory as any) || 'FULL_OUTFIT'}
         />
       )}
 
