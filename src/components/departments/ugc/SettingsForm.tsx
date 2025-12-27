@@ -15,6 +15,7 @@ export interface GenerationSettings {
   imageOrientation: string;
   imageQuality: 'low' | 'medium' | 'high';
   aspectRatio?: AspectRatio;
+  outputFormat?: 'png' | 'webp';
 }
 
 interface SettingsFormProps {
@@ -165,6 +166,20 @@ export const SettingsForm = ({
           value={currentAspectRatio as AspectRatio}
           onChange={(value) => onSettingsChange({ aspectRatio: value, imageOrientation: value })}
         />
+      </div>
+
+      {/* Output Format */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">{t('ugc.outputFormat.title', 'Output Format')}</Label>
+        <ToggleGroup 
+          type="single" 
+          value={settings.outputFormat || 'png'} 
+          onValueChange={(value) => value && onSettingsChange({ outputFormat: value as 'png' | 'webp' })}
+          className="justify-start"
+        >
+          <ToggleGroupItem value="png" size="sm" className="flex-1 bg-muted">PNG</ToggleGroupItem>
+          <ToggleGroupItem value="webp" size="sm" className="flex-1 bg-muted">WebP</ToggleGroupItem>
+        </ToggleGroup>
       </div>
     </div>
   );
