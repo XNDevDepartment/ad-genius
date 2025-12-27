@@ -9,7 +9,7 @@ export interface BaseModel {
   gender: "male" | "female" | "unisex" | null;
   body_type: "slim" | "athletic" | "average" | "plus" | null;
   pose_type: "standing" | "sitting" | "walking" | "casual" | "formal" | "leaning" | "arms-crossed" | "hands-on-hips" | "fashion-runway" | "profile" | null;
-  skin_tone: "light" | "medium" | "tan" | "dark" | null;
+  skin_tone: "light" | "medium" | "tan" | "dark" | "very-fair" | "fair" | "olive" | "brown" | "dark-brown" | null;
   age_range: string | null;
   storage_path: string;
   public_url: string;
