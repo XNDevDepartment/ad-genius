@@ -586,37 +586,48 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
         }
         const base64Image = btoa(binary);
         // Gemini 3 Pro Image Preview
-      res = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent",
-        {
-          method: "POST",
-          headers: {
-            "x-goog-api-key": GOOGLE_AI_KEY,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                role: "user",
-                parts: [
-                  { text: prompt },
-                  {
-                    inlineData: {
-                      mimeType,        // e.g. "image/png" | "image/jpeg"
-                      data: base64Image // base64 *without* data:image/...;base64, prefix
-                    },
-                  },
-                ],
-              },
-            ],
-            generationConfig: {
-              // For Gemini image models, request both text and image output
-              responseModalities: ["TEXT", "IMAGE"],
+        // Native aspect ratio support for Gemini 3 Pro
+        const aspectRatio = job?.settings?.aspectRatio;
+        const NATIVE_ASPECT_RATIOS = ['1:1', '3:4', '4:3', '9:16', '16:9'];
+        const useNativeAspect = aspectRatio && aspectRatio !== 'source' && NATIVE_ASPECT_RATIOS.includes(aspectRatio);
+        
+        log("Generating image with Gemini 3 Pro", {
+          jobId: job.id,
+          aspectRatio: aspectRatio || 'none',
+          useNativeAspect
+        });
+
+        res = await fetch(
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent",
+          {
+            method: "POST",
+            headers: {
+              "x-goog-api-key": GOOGLE_AI_KEY,
+              "Content-Type": "application/json",
             },
-          }),
-          signal: controller.signal,
-        }
-      );
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: "user",
+                  parts: [
+                    { text: prompt },
+                    {
+                      inlineData: {
+                        mimeType,
+                        data: base64Image
+                      },
+                    },
+                  ],
+                },
+              ],
+              generationConfig: {
+                responseModalities: ["TEXT", "IMAGE"],
+                ...(useNativeAspect && { imageConfig: { aspectRatio } })
+              },
+            }),
+            signal: controller.signal,
+          }
+        );
 
       }
       try {
@@ -642,23 +653,34 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
           }
           throw new Error(`Missing image data in Imagen response`);
         }
-        // Crop image to selected aspect ratio if specified
-        const aspectRatio = job?.settings?.aspectRatio;
+        // Check if native aspect ratio was used (no cropping needed)
+        const aspectRatioSetting = job?.settings?.aspectRatio;
+        const NATIVE_ASPECT_RATIOS_CHECK = ['1:1', '3:4', '4:3', '9:16', '16:9'];
+        const usedNativeAspect = aspectRatioSetting && aspectRatioSetting !== 'source' && NATIVE_ASPECT_RATIOS_CHECK.includes(aspectRatioSetting);
+        
         let fileBytes;
-        if (aspectRatio && aspectRatio !== 'source') {
-          // Apply cropping for specific aspect ratios
-          log("Cropping generated image to aspect ratio", {
+        if (usedNativeAspect) {
+          // Native aspect ratio was used - no cropping needed, image already has correct dimensions
+          log("Image generated with native aspect ratio, no crop needed", {
             jobId: job.id,
             index,
-            aspectRatio
+            aspectRatio: aspectRatioSetting
           });
-          fileBytes = await cropBase64ToAspect(b64, aspectRatio);
+          fileBytes = Uint8Array.from(atob(b64), (c)=>c.charCodeAt(0));
+        } else if (aspectRatioSetting && aspectRatioSetting !== 'source') {
+          // Non-native aspect ratio - fallback to cropping
+          log("Cropping generated image to non-native aspect ratio", {
+            jobId: job.id,
+            index,
+            aspectRatio: aspectRatioSetting
+          });
+          fileBytes = await cropBase64ToAspect(b64, aspectRatioSetting);
         } else {
           // No aspect ratio specified OR 'source' selected - preserve original dimensions
           log("Using original image dimensions (no crop)", {
             jobId: job.id,
             index,
-            aspectRatio: aspectRatio || 'none'
+            aspectRatio: aspectRatioSetting || 'none'
           });
           fileBytes = Uint8Array.from(atob(b64), (c)=>c.charCodeAt(0));
         }
@@ -684,8 +706,9 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
         quality,
         format: storedFormat,
         provider: "gemini",
-        model: "2.5-image-flash-preview",
-        aspectRatio: aspectRatio || 'none'
+        model: "gemini-3-pro-image-preview",
+        aspectRatio: aspectRatioSetting || 'none',
+        nativeAspectRatio: usedNativeAspect
       },
           prompt: prompt,
           source_image_id: job.source_image_id
