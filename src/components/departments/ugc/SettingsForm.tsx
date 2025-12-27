@@ -1,12 +1,9 @@
-
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Progress } from "@/components/ui/progress";
-import OrientationSelector from "@/components/OrientationSelector";
-import { HelpCircle, Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import AspectRatioSelector, { AspectRatio } from "@/components/AspectRatioSelector";
+import { Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useCredits } from "@/hooks/useCredits";
 
@@ -17,6 +14,7 @@ export interface GenerationSettings {
   highlight: string;
   imageOrientation: string;
   imageQuality: 'low' | 'medium' | 'high';
+  aspectRatio?: AspectRatio;
 }
 
 interface SettingsFormProps {
@@ -26,10 +24,6 @@ interface SettingsFormProps {
   totalCredits: number;
   calculateImageCost: (quality: 'low' | 'medium' | 'high', count: number) => number;
   compact?: boolean;
-}
-
-function capitalize(s: string) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 export const SettingsForm = ({
@@ -45,11 +39,13 @@ export const SettingsForm = ({
 
   const usagePercentage = (remainingCredits / totalCredits) * 100;
   const creditsNeeded = calculateImageCost(settings.imageQuality, settings.numImages);
-  // const maxImages = getMaxImagesPerGeneration();
   const maxImages = 3;
 
   const freeScenarios = ['lifestyle', 'minimal', 'vibrant', 'professional'];
   const premiumScenarios = ['cinematic', 'natural'];
+
+  // Default aspect ratio to 1:1 if not set
+  const currentAspectRatio = settings.aspectRatio || '1:1';
 
   return (
     <div className="space-y-4">
@@ -99,18 +95,6 @@ export const SettingsForm = ({
             3 {maxImages < 3 && <Lock className="h-3 w-3 ml-1" />}
           </ToggleGroupItem>
         </ToggleGroup>
-        {/* {isFreeTier() && (
-          <div className="text-xs text-muted-foreground">
-            {t('ugc.freePlanLimited')}
-            <Button
-              variant="link"
-              className="h-auto p-0 text-xs text-primary"
-              onClick={() => window.location.href = '/pricing'}
-            >
-              {t('common.upgradeForMore')}
-            </Button>
-          </div>
-        )} */}
       </div>
 
       {/* Highlight Product */}
@@ -135,10 +119,6 @@ export const SettingsForm = ({
           value={settings.style} 
           onValueChange={(value) => {
             if (value) {
-              // Check if it's a premium scenario and user is on free tier
-              // if (isFreeTier() && premiumScenarios.includes(value)) {
-              //   return; // Don't allow selection
-              // }
               onSettingsChange({ style: value as GenerationSettings['style'] });
             }
           }}
@@ -154,27 +134,12 @@ export const SettingsForm = ({
               key={s}
               value={s}
               size="sm"
-              // className={`text-xs px-2 py-1 bg-muted relative ${isFreeTier() ? 'opacity-50' : ''}`}
               className='text-xs px-2 py-1 bg-muted relative'
-              // disabled={isFreeTier()}
             >
               {t(`ugc.style.${s}`)}
-              {/* {isFreeTier() && <Lock className="h-3 w-3 ml-1" />} */}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-        {/* {isFreeTier() && (
-          <div className="text-xs text-muted-foreground">
-            2 premium scenarios available with paid plans. 
-            <Button 
-              variant="link" 
-              className="h-auto p-0 text-xs text-primary"
-              onClick={() => window.location.href = '/pricing'}
-            >
-              Upgrade to unlock
-            </Button>
-          </div>
-        )} */}
       </div>
 
       {/* Time of Day */}
@@ -193,46 +158,14 @@ export const SettingsForm = ({
         </ToggleGroup>
       </div>
 
-      {/* Orientation */}
+      {/* Aspect Ratio - Using consistent AspectRatioSelector component */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">{t('ugc.orientation.title')}</Label>
-        <ToggleGroup 
-          type="single" 
-          value={settings.imageOrientation} 
-          onValueChange={(value) => value && onSettingsChange({ imageOrientation: value })}
-          className="justify-start grid grid-cols-3 gap-1"
-        >
-          {[
-            {
-              value: '3:2',
-              label: t('ugc.orientation.landscape'),
-              description: t('ugc.orientation.landscapeDesc'),
-              iconWidth: 'w-7',
-              iconHeight: 'h-5'
-            },
-            {
-              value: '1:1',
-              label: t('ugc.orientation.square'),
-              description: t('ugc.orientation.squareDesc'),
-              iconWidth: 'w-5',
-              iconHeight: 'h-5'
-            },
-            {
-              value: '2:3',
-              label: t('ugc.orientation.portrait'),
-              description: t('ugc.orientation.portraitDesc'),
-              iconWidth: 'w-5',
-              iconHeight: 'h-7'
-            }
-          ].map((o) => (
-            <ToggleGroupItem key={o.value} value={o.value} size="sm" className="text-xs px-2 py-1 bg-muted">
-              <div className={`bg-transparent border ${o.value === settings.imageOrientation ? 'border-white-500' : 'border-gray-500' } ${o.iconWidth} ${o.iconHeight}`} />
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+        <AspectRatioSelector
+          value={currentAspectRatio as AspectRatio}
+          onChange={(value) => onSettingsChange({ aspectRatio: value, imageOrientation: value })}
+        />
       </div>
-
-      {/* Quality selector removed - fixed at 1 credit per image */}
     </div>
   );
 };
