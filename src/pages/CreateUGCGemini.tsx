@@ -305,77 +305,83 @@ const CreateUGCGemini = () => {
     }
   }, [aiScenarios.length]);
 
-  // Replace current batch with job images when ready (Tower behavior)
+  // Combined effect: Handle job images and completion (fixes race condition)
   useEffect(() => {
-    console.log('[CreateUGCGemini] Job images changed:', { 
+    // Only process when job exists
+    if (!job?.id) return;
+
+    console.log('[CreateUGCGemini] Job/images state:', { 
       jobImagesLength: jobImages.length, 
       jobStatus: job?.status,
       jobImagesWithUrls: jobImages.filter(img => Boolean(img.public_url)).length 
     });
-    
-    if (jobImages.length === 0) return;
-  
 
+    // Get images that have valid URLs
     const readyImages = jobImages.filter(img => Boolean(img.public_url));
-    console.log('[CreateUGCGemini] Ready images:', readyImages.length, 'out of', jobImages.length);
     
-    if (readyImages.length === 0) return;
-
-    // For tower effect: completely replace current batch with new images
-    setCurrentBatchImages(prev => {
-      const previousSelections = new Map(prev.map(image => [image.id, image.selected]));
-
-      const newImages = readyImages.map((img) => ({
-        id: img.id,
-        url: img.public_url,
-        prompt: job?.prompt || img.prompt || "",
-        format: (img.meta as any)?.format || job?.settings?.output_format || "png",
-        selected: previousSelections.get(img.id) ?? false,
-        orientation:
-          (img.meta as any)?.orientation ||
-          (img.meta as any)?.aspect_ratio ||
-          job?.settings?.orientation || // saved when creating the job
-          imageOrientation,              // final fallback to current UI
-      }));
-
-      console.log('[CreateUGCGemini] Replacing current batch with', newImages.length, 'ready images');
-      return newImages; // Complete replacement, not append
-    });
-  }, [jobImages, job?.prompt, job?.settings?.output_format]);
-
-  // Handle job completion separately (Tower behavior)
-  useEffect(() => {
-    if (job?.status === 'completed') {
-      console.log('[CreateUGCGemini] Job completed, transitioning to results stage');
-      
-      // Move current batch to previous images when job completes (newest at top)
-      setCurrentBatchImages(current => {
-        if (current.length > 0) {
-          console.log('[CreateUGCGemini] Moving', current.length, 'images from current to previous');
-          console.log('[CreateUGCGemini] Current batch IDs:', current.map(img => img.id));
-          
-          setPreviousImages(prev => {
-            console.log('[CreateUGCGemini] Previous images count before merge:', prev.length);
-            // Improved deduplication: only add images with valid URLs that aren't placeholders
-            const existingIds = new Set(prev.map(img => img.id));
-            const validNewImages = current.filter(img => 
-              img.url && // Only real images, not placeholders
-              !img.id.startsWith('recovery-placeholder-') && // Skip recovery placeholders
-              !existingIds.has(img.id) // Skip duplicates
-            );
-            console.log('[CreateUGCGemini] Adding', validNewImages.length, 'new images to previous');
-            return [...validNewImages, ...prev];
-          });
-        }
-        return []; // Clear current batch
-      });
-      
-      setPendingSlots(0);
-      setStage('results');
-      localStorage.removeItem('currentGeminiJobId');
-      localStorage.removeItem('currentGeminiStage');
+    // If job is still processing, update currentBatchImages with ready images
+    if (job.status !== 'completed') {
+      if (readyImages.length > 0) {
+        setCurrentBatchImages(prev => {
+          const previousSelections = new Map(prev.map(image => [image.id, image.selected]));
+          return readyImages.map((img) => ({
+            id: img.id,
+            url: img.public_url,
+            prompt: job?.prompt || img.prompt || "",
+            format: (img.meta as any)?.format || job?.settings?.output_format || "png",
+            selected: previousSelections.get(img.id) ?? false,
+            orientation:
+              (img.meta as any)?.orientation ||
+              (img.meta as any)?.aspect_ratio ||
+              job?.settings?.orientation ||
+              imageOrientation,
+          }));
+        });
+      }
+      return;
     }
-  }, [job?.status]);
+
+    // Job is completed - only proceed if we have valid images with URLs
+    if (readyImages.length === 0) {
+      console.log('[CreateUGCGemini] Job completed but no ready images yet, waiting...');
+      return;
+    }
+
+    console.log('[CreateUGCGemini] Job completed with', readyImages.length, 'ready images');
+
+    // Build the final images array
+    const finalImages = readyImages.map((img) => ({
+      id: img.id,
+      url: img.public_url,
+      prompt: job?.prompt || img.prompt || "",
+      format: (img.meta as any)?.format || job?.settings?.output_format || "png",
+      selected: false,
+      orientation:
+        (img.meta as any)?.orientation ||
+        (img.meta as any)?.aspect_ratio ||
+        job?.settings?.orientation ||
+        imageOrientation,
+    }));
+
+    // Move to previousImages (newest at top)
+    setPreviousImages(prev => {
+      const existingIds = new Set(prev.map(img => img.id));
+      const newImages = finalImages.filter(img => 
+        img.url && 
+        !img.id.startsWith('recovery-placeholder-') && 
+        !existingIds.has(img.id)
+      );
+      console.log('[CreateUGCGemini] Adding', newImages.length, 'new images to previous');
+      return [...newImages, ...prev];
+    });
+
+    // Clear current batch and finalize
+    setCurrentBatchImages([]);
+    setPendingSlots(0);
+    setStage('results');
+    localStorage.removeItem('currentGeminiJobId');
+    localStorage.removeItem('currentGeminiStage');
+  }, [job?.id, job?.status, jobImages, job?.prompt, job?.settings?.output_format, job?.settings?.orientation, imageOrientation]);
 
   // Restore job state from localStorage on mount
   useEffect(() => {
