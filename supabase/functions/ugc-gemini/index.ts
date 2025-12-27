@@ -684,10 +684,21 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
           });
           fileBytes = Uint8Array.from(atob(b64), (c)=>c.charCodeAt(0));
         }
-        // Store as PNG
-        let storedFormat = "png";
-        let contentType = "image/png";
-        let extension = "png";
+        // Determine output format from settings (default to PNG)
+        const requestedFormat = job?.settings?.output_format || "png";
+        let storedFormat = requestedFormat;
+        let contentType = requestedFormat === "webp" ? "image/webp" : "image/png";
+        let extension = requestedFormat;
+        
+        // If webp is requested but we have PNG bytes, convert or keep as PNG
+        // (Gemini returns PNG, so we keep as PNG for now - webp conversion could be added later)
+        if (requestedFormat === "webp") {
+          log("WebP requested but Gemini returns PNG, keeping as PNG for quality", { jobId: job.id });
+          storedFormat = "png";
+          contentType = "image/png";
+          extension = "png";
+        }
+        
         const storagePath = `${job.user_id}/${job.id}/${index}.${extension}`;
         const { error: upErr } = await supabase.storage.from("ugc").upload(storagePath, fileBytes, {
           contentType,

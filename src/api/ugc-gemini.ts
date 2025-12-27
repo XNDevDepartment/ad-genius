@@ -53,9 +53,27 @@ export type UgcImageRow = {
 };
 
 async function callUgcGeminiFunction(action: string, payload: any = {}, maxRetries = 3) {
-  const { data: { session } } = await supabase.auth.getSession();
+  let { data: { session } } = await supabase.auth.getSession();
   if (!session) {
     throw new Error('Not authenticated');
+  }
+
+  // Check if token is about to expire (within 60 seconds) and refresh if needed
+  const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
+  const now = Date.now();
+  const tokenExpiresSoon = expiresAt - now < 60000; // 60 seconds
+
+  if (tokenExpiresSoon) {
+    console.log('[UGC-GEMINI API] Token expiring soon, refreshing...');
+    const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+    
+    if (refreshError || !refreshData.session) {
+      console.error('[UGC-GEMINI API] Failed to refresh session:', refreshError);
+      throw new Error('Session expired. Please log in again.');
+    }
+    
+    session = refreshData.session;
+    console.log('[UGC-GEMINI API] Session refreshed successfully');
   }
 
   // Set timeout based on action type - no timeout for job creation
