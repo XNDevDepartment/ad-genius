@@ -275,10 +275,53 @@ async function generateModelWithAI(supabaseClient: SupabaseClient, userId: strin
   }
 
   try {
-    // Build the generation prompt
-    const nationalityText = nationality && nationality !== 'not-specified' ? `, ${nationality} features and appearance` : '';
-    const smileText = gentleSmile ? ", gentle smile" : "";
-    const prompt = `Create an image of Photorealistic full-body studio ${gender} model${nationalityText}, age bracket ${ageRange}, height ${height} cm, body type ${bodyType}, skin tone ${skinTone}, hair ${hair.length} ${hair.texture} ${hair.color}, eyes ${eyes}. Pose: ${pose}${smileText}. Wardrobe baseline: seamless neutral-tone fitted bodysuit (no logos/patterns), barefoot. Background: seamless light gray studio but without lights, cameras or any object inside the picture. Camera 50mm f/4 ISO200 1/125. Lighting: softbox 45° key + reflector fill, even exposure. Neutral expression, hands relaxed, fingers natural, head to toe visible, clean silhouette. One subject only. Output 2048x3072, sRGB, 300dpi. What is forbidden: only produce model and no more elements in the picture, lowres, blurry, jpeg artifacts, extra limbs, extra fingers, fused fingers, disfigured, distorted proportions, wet/oily skin, cleavage emphasis, lingerie, underwear straps, see-through fabric, strong face shadows, color cast, watermark, logo, text, border.`;
+    // Build the structured generation prompt
+    const nationalityText = nationality && nationality !== 'not-specified' ? nationality : 'diverse';
+    const expressionText = gentleSmile ? 'gentle, warm smile' : 'neutral, confident expression';
+    
+    const prompt = `TASK: Generate a photorealistic full-body fashion model photo for clothing try-on.
+
+SUBJECT:
+- Gender: ${gender}
+- Ethnicity: ${nationalityText}
+- Age: ${ageRange}
+- Height: ${height}cm
+- Body type: ${bodyType}
+- Skin tone: ${skinTone}
+- Hair: ${hair.length}, ${hair.texture}, ${hair.color}
+- Eyes: ${eyes}
+
+POSE & EXPRESSION:
+- Body pose: ${pose} (natural, relaxed stance)
+- Expression: ${expressionText}
+- Hands: relaxed and natural at sides, fingers clearly defined and separated
+- Arms: slightly away from body for clean silhouette
+
+WARDROBE:
+- Form-fitting seamless neutral-tone bodysuit (beige, gray, or nude tone)
+- No logos, patterns, or visible seams
+- Barefoot
+
+ENVIRONMENT:
+- Background: clean seamless solid light gray studio backdrop (#E8E8E8)
+- Empty studio with no visible equipment, lights, tripods, cameras, or reflectors
+- No shadows on background, no floor lines
+
+CAMERA & LIGHTING:
+- Full-body framing, entire figure from head to toe visible with margin
+- Camera: 85mm portrait lens, f/4, ISO 200
+- Soft diffused key light at 45 degrees
+- Fill reflector for even skin tones, no harsh shadows on face or body
+- Catch light in eyes
+
+OUTPUT REQUIREMENTS:
+- Single model only, centered in frame
+- Professional fashion photography quality
+- Clean silhouette suitable for virtual try-on
+- High detail on hands and face
+- 2048x3072 portrait orientation
+
+STRICTLY AVOID: multiple people, studio equipment in frame, props, accessories, jewelry, makeup emphasis, blurry areas, distorted anatomy, extra limbs, merged fingers, watermarks, text, logos, sexualized poses, lingerie, see-through fabric, wet/oily skin appearance`;
     
     console.log("Generating AI model with prompt:", prompt);
 
