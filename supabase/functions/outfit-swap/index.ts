@@ -48,140 +48,161 @@ Be concise. One line per category.`;
 
 // Category-specific outfit swap prompts
 const CATEGORY_SWAP_PROMPTS: Record<GarmentCategory, string> = {
-  TOP: `TASK: Replace the person's TOP/UPPER BODY garment with this item while keeping their identity.
+  TOP: `TASK: Replace ONLY the person's top/upper garment with this item.
 
-GARMENT:
+GARMENT TO WEAR:
 {garment_description}
 
-MANDATORY RULES:
+CRITICAL REQUIREMENTS:
 
-1. FRAMING - CRITICAL:
-   - Model MUST be perfectly centered in frame
-   - UPPER BODY FOCUS: Head to hips framing preferred
-   - Show the top garment clearly with good detail
+1. MODEL PRESERVATION - ABSOLUTE PRIORITY:
+   - You MUST use the EXACT person from the reference photo
+   - DO NOT create a new person or modify their appearance
+   - Keep the EXACT same face, hair color, hairstyle, skin tone, body shape, proportions
+   - The output must be recognizably the SAME individual
 
-2. COMPLETE THE OUTFIT:
-   - Replace ONLY the upper body garment
-   - Keep or add appropriate pants/bottoms
-   - Keep or add appropriate footwear
+2. THE MODEL MUST WEAR A COMPLETE OUTFIT:
+   - UPPER BODY: Wear the provided garment
+   - LOWER BODY: MUST wear stylish pants, jeans, or a skirt - NEVER bare legs or underwear
+   - FEET: MUST wear appropriate shoes - NEVER barefoot
 
-3. IDENTITY:
-   - Keep face, hair, skin tone, hands IDENTICAL
-   - Maintain exact body pose
+3. FRAMING:
+   - Upper body focus (head to hips)
+   - Model centered in frame
 
-4. BACKGROUND & QUALITY:
-   - Clean, minimal, professional e-commerce style
-   - Natural lighting and shadows
+4. PROFESSIONAL QUALITY:
+   - Clean studio background
+   - E-commerce product photography style
+   - Natural lighting
 
-OUTPUT: Professional upper-body focused photo showcasing the TOP garment.`,
+FORBIDDEN: Creating a new model, changing face/identity, underwear visible, bare legs, barefoot, bodysuit as outfit, bikini-like appearance, nude or semi-nude appearance
 
-  BOTTOM: `TASK: Replace the person's BOTTOM/LOWER BODY garment with this item while keeping their identity.
+OUTPUT: The SAME model wearing the TOP with complete styled outfit.`,
 
-GARMENT:
+  BOTTOM: `TASK: Replace ONLY the person's bottom garment with this item.
+
+GARMENT TO WEAR:
 {garment_description}
 
-MANDATORY RULES:
+CRITICAL REQUIREMENTS:
 
-1. FRAMING - CRITICAL:
-   - Model MUST be perfectly centered in frame
-   - LOWER BODY FOCUS: Waist to feet framing
-   - Show full pant/skirt length, leg line, and hem fall
+1. MODEL PRESERVATION - ABSOLUTE PRIORITY:
+   - You MUST use the EXACT person from the reference photo
+   - DO NOT create a new person or modify their appearance
+   - Keep the EXACT same face, hair color, hairstyle, skin tone, body shape, proportions
+   - The output must be recognizably the SAME individual
 
-2. COMPLETE THE OUTFIT:
-   - Replace ONLY the lower body garment
-   - Keep the current top/shirt
-   - Keep or add appropriate footwear that complements the bottom
+2. THE MODEL MUST WEAR A COMPLETE OUTFIT:
+   - UPPER BODY: MUST wear a stylish top, shirt, or blouse - NEVER bare or in bodysuit only
+   - LOWER BODY: Wear the provided garment
+   - FEET: MUST wear appropriate shoes - NEVER barefoot
 
-3. IDENTITY:
-   - Keep face, hair, skin tone IDENTICAL
-   - Maintain body pose
+3. FRAMING:
+   - Lower body focus (waist to feet)
+   - Model centered in frame
 
-4. BACKGROUND & QUALITY:
-   - Clean, minimal, professional e-commerce style
-   - Natural lighting showing fabric drape and fit
+4. PROFESSIONAL QUALITY:
+   - Clean studio background
+   - E-commerce product photography style
 
-OUTPUT: Professional photo with waist-to-feet framing showcasing the BOTTOM garment.`,
+FORBIDDEN: Creating a new model, changing face/identity, underwear visible, bare torso, bodysuit as top, barefoot, nude or semi-nude appearance
 
-  FOOTWEAR: `TASK: Replace the person's FOOTWEAR with these shoes while keeping their identity.
+OUTPUT: The SAME model wearing the BOTTOM with complete styled outfit.`,
 
-GARMENT:
+  FOOTWEAR: `TASK: Replace ONLY the person's footwear with these shoes.
+
+FOOTWEAR TO WEAR:
 {garment_description}
 
-MANDATORY RULES:
+CRITICAL REQUIREMENTS:
 
-1. FRAMING - CRITICAL:
-   - Model MUST be perfectly centered in frame
-   - FEET FOCUS: Knee to feet framing
-   - Show both shoes clearly with design details visible
-   - Natural stance with feet at comfortable angle
+1. MODEL PRESERVATION - ABSOLUTE PRIORITY:
+   - You MUST use the EXACT person from the reference photo
+   - DO NOT create a new person or modify their appearance
+   - Keep the EXACT same face, hair color, hairstyle, skin tone, body shape, proportions
+   - The output must be recognizably the SAME individual
 
-2. COMPLETE THE OUTFIT:
-   - Replace ONLY the footwear
-   - Keep the current outfit (top and bottom)
-   - Ensure pants/skirt length works well with the new footwear
+2. THE MODEL MUST WEAR A COMPLETE OUTFIT:
+   - UPPER BODY: MUST wear a stylish top or shirt - NEVER bare or in bodysuit only
+   - LOWER BODY: MUST wear stylish pants, jeans, or skirt - NEVER underwear or bare legs
+   - FEET: Wear the provided footwear
 
-3. IDENTITY:
-   - Keep face, body, skin tone IDENTICAL
-   - Natural standing pose
+3. FRAMING:
+   - Full body or knee-to-feet framing
+   - Show the complete outfit with focus on footwear
+   - Model centered in frame
 
-4. BACKGROUND & QUALITY:
-   - Clean, minimal floor and background
+4. PROFESSIONAL QUALITY:
+   - Clean studio background
    - Natural floor shadow under shoes
-   - Show shoe details: sole, heel, materials
+   - E-commerce style
 
-OUTPUT: Professional knee-to-feet photo showcasing the FOOTWEAR clearly.`,
+FORBIDDEN: Creating a new model, changing face/identity, underwear, bare legs, bare torso, bodysuit visible, model in undergarments, nude or semi-nude appearance
 
-  FULL_OUTFIT: `TASK: Replace the person's entire outfit with this garment while keeping their identity.
+OUTPUT: The SAME model in COMPLETE OUTFIT showing the footwear clearly.`,
 
-GARMENT:
+  FULL_OUTFIT: `TASK: Replace the person's entire outfit with this garment.
+
+GARMENT TO WEAR:
 {garment_description}
 
-MANDATORY RULES:
+CRITICAL REQUIREMENTS:
 
-1. FRAMING - CRITICAL:
-   - Model MUST be perfectly centered in frame
-   - FULL BODY: Head to feet visible
-   - Equal space on left and right sides
+1. MODEL PRESERVATION - ABSOLUTE PRIORITY:
+   - You MUST use the EXACT person from the reference photo
+   - DO NOT create a new person or modify their appearance
+   - Keep the EXACT same face, hair color, hairstyle, skin tone, body shape, proportions
+   - The output must be recognizably the SAME individual
 
-2. COMPLETE THE OUTFIT:
-   - This is a full outfit (dress/jumpsuit/suit)
-   - ADD appropriate footwear (heels for elegant, sneakers for casual)
-   - Ensure the full garment is visible
+2. OUTFIT INTERPRETATION:
+   - If the garment is a dress, jumpsuit, or romper: Wear it as the main outfit
+   - If the garment is a bodysuit or shapewear: LAYER it under a stylish outfit (blazer, cardigan, or jacket over it, plus pants/skirt if needed)
+   - The model must NEVER appear to be in underwear
 
-3. IDENTITY:
-   - Keep face, hair, skin tone, hands IDENTICAL
-   - Maintain body pose
+3. THE MODEL MUST LOOK FULLY DRESSED:
+   - MUST look like a fashion model ready for a professional photoshoot
+   - Add appropriate footwear (heels for elegant, sneakers for casual)
+   - NEVER look like wearing just underwear or shapewear alone
 
-4. BACKGROUND & QUALITY:
-   - Clean, minimal, professional
-   - E-commerce product photo standard
-   - Natural lighting and shadows
+4. FRAMING:
+   - Full body framing (head to toe)
+   - Model centered in frame
 
-OUTPUT: Professional full-body photo with COMPLETE outfit visible head to toe.`,
+5. PROFESSIONAL QUALITY:
+   - Clean studio background
+   - Professional e-commerce style
 
-  ACCESSORY: `TASK: Add this accessory to the person's current outfit while keeping their identity.
+FORBIDDEN: Creating a new model, changing face/identity, model appearing in underwear, shapewear worn alone without layers, bikini-like appearance, bare minimum coverage, nude or semi-nude appearance
 
-GARMENT:
+OUTPUT: The SAME model fully dressed showcasing the garment in a complete, styled look.`,
+
+  ACCESSORY: `TASK: Add this accessory to the person's current outfit.
+
+ACCESSORY TO ADD:
 {garment_description}
 
-MANDATORY RULES:
+CRITICAL REQUIREMENTS:
 
-1. FRAMING - CRITICAL:
-   - Model MUST be perfectly centered
-   - Frame based on accessory type (upper body for bags/scarves, detail for jewelry)
+1. MODEL PRESERVATION - ABSOLUTE PRIORITY:
+   - You MUST use the EXACT person from the reference photo
+   - DO NOT create a new person or modify their appearance
+   - Keep the EXACT same face, hair color, hairstyle, skin tone, body shape, proportions
+   - The output must be recognizably the SAME individual
 
-2. STYLING:
-   - ADD the accessory naturally to current outfit
-   - Position appropriately (bag on shoulder, scarf around neck, etc.)
+2. THE MODEL MUST WEAR A COMPLETE OUTFIT:
+   - MUST be wearing full clothing (top, bottom, shoes) BEFORE adding accessory
+   - NEVER add accessory to someone in underwear or bodysuit only
 
-3. IDENTITY:
-   - Keep everything IDENTICAL except adding the accessory
+3. ACCESSORY PLACEMENT:
+   - Position naturally (bag on shoulder, scarf around neck, etc.)
+   - Show accessory clearly
 
-4. QUALITY:
-   - Clean, professional
-   - Show accessory details clearly
+4. PROFESSIONAL QUALITY:
+   - Clean professional background
 
-OUTPUT: Professional photo showcasing the ACCESSORY on the model.`
+FORBIDDEN: Creating a new model, changing face/identity, model in underwear, bodysuit alone, bare minimum clothing, nude or semi-nude appearance
+
+OUTPUT: The SAME model fully dressed with the accessory styled naturally.`
 };
 
 const FALLBACK_OUTFIT_SWAP_PROMPT = CATEGORY_SWAP_PROMPTS.FULL_OUTFIT;
