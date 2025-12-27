@@ -9,52 +9,182 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_API_KEY") || "";
 const serviceClient = ()=>createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-// Fallback prompts (used if database is unavailable)
-const FALLBACK_GARMENT_ANALYSIS_PROMPT = `ANALYZE THIS GARMENT:
+// Garment category types
+type GarmentCategory = 'TOP' | 'BOTTOM' | 'FOOTWEAR' | 'FULL_OUTFIT' | 'ACCESSORY';
+type SuggestedFraming = 'upper_body' | 'lower_body' | 'feet' | 'full_body' | 'detail';
 
-1. TYPE: (t-shirt/hoodie/jacket/dress/pants/shorts/skirt/full-outfit/other)
-2. COVERAGE: (TOP ONLY / BOTTOM ONLY / FULL BODY / OUTERWEAR)
-3. STYLE: (casual/formal/athletic/streetwear/elegant)
-4. COLOR: Primary and secondary colors
-5. FIT: (fitted/regular/oversized/slim)
-6. MATERIAL: (cotton/denim/leather/knit/synthetic)
-7. DETAILS: Key features (hood, zipper, buttons, collar type, pockets)
+interface GarmentAnalysisResult {
+  category: GarmentCategory;
+  description: string;
+  suggestedFraming: SuggestedFraming;
+  rawAnalysis: string;
+}
+
+// Fallback prompts (used if database is unavailable)
+const FALLBACK_GARMENT_ANALYSIS_PROMPT = `ANALYZE THIS GARMENT AND RESPOND IN THIS EXACT FORMAT:
+
+CATEGORY: (TOP / BOTTOM / FOOTWEAR / FULL_OUTFIT / ACCESSORY)
+- TOP = t-shirts, shirts, blouses, hoodies, jackets, sweaters, coats (anything worn on upper body only)
+- BOTTOM = pants, jeans, shorts, skirts, trousers (anything worn on lower body only)
+- FOOTWEAR = shoes, sneakers, boots, sandals, heels
+- FULL_OUTFIT = dresses, jumpsuits, rompers, full suits (covers both upper and lower body)
+- ACCESSORY = bags, hats, scarves, jewelry, belts
+
+FRAMING: (upper_body / lower_body / feet / full_body / detail)
+- upper_body = for tops, jackets, shirts
+- lower_body = for pants, skirts, shorts
+- feet = for footwear
+- full_body = for dresses, full outfits
+- detail = for accessories
+
+TYPE: (specific type like t-shirt, jeans, sneakers, etc.)
+STYLE: (casual/formal/athletic/streetwear/elegant)
+COLOR: Primary and secondary colors
+FIT: (fitted/regular/oversized/slim)
+MATERIAL: (cotton/denim/leather/knit/synthetic/canvas/suede)
+DETAILS: Key features (hood, zipper, buttons, collar type, pockets, sole type, heel height)
 
 Be concise. One line per category.`;
 
-const FALLBACK_OUTFIT_SWAP_PROMPT = `TASK: Replace the person's outfit with this garment while keeping their identity.
+// Category-specific outfit swap prompts
+const CATEGORY_SWAP_PROMPTS: Record<GarmentCategory, string> = {
+  TOP: `TASK: Replace the person's TOP/UPPER BODY garment with this item while keeping their identity.
 
 GARMENT:
 {garment_description}
 
 MANDATORY RULES:
 
-1. CENTERING - CRITICAL:
+1. FRAMING - CRITICAL:
    - Model MUST be perfectly centered in frame
-   - Equal space on left and right sides
-   - Full body visible from head to feet
+   - UPPER BODY FOCUS: Head to hips framing preferred
+   - Show the top garment clearly with good detail
 
-2. COMPLETE THE OUTFIT - CRITICAL:
-   - NEVER leave body parts undressed
-   - If garment is TOP ONLY: ADD matching pants/jeans/shorts
-   - If garment is BOTTOM ONLY: ADD matching top/shirt
-   - If garment is OUTERWEAR: ADD complete outfit underneath
-   - ALWAYS ADD footwear (sneakers for casual, heels for formal, boots for edgy)
+2. COMPLETE THE OUTFIT:
+   - Replace ONLY the upper body garment
+   - Keep or add appropriate pants/bottoms
+   - Keep or add appropriate footwear
 
 3. IDENTITY:
    - Keep face, hair, skin tone, hands IDENTICAL
    - Maintain exact body pose
 
-4. BACKGROUND:
-   - Clean, minimal, professional
-   - Remove clutter and distracting elements
-
-5. QUALITY:
-   - E-commerce product photo standard
-   - No AI artifacts or blending errors
+4. BACKGROUND & QUALITY:
+   - Clean, minimal, professional e-commerce style
    - Natural lighting and shadows
 
-OUTPUT: Professional centered full-body photo with COMPLETE styled outfit.`;
+OUTPUT: Professional upper-body focused photo showcasing the TOP garment.`,
+
+  BOTTOM: `TASK: Replace the person's BOTTOM/LOWER BODY garment with this item while keeping their identity.
+
+GARMENT:
+{garment_description}
+
+MANDATORY RULES:
+
+1. FRAMING - CRITICAL:
+   - Model MUST be perfectly centered in frame
+   - LOWER BODY FOCUS: Waist to feet framing
+   - Show full pant/skirt length, leg line, and hem fall
+
+2. COMPLETE THE OUTFIT:
+   - Replace ONLY the lower body garment
+   - Keep the current top/shirt
+   - Keep or add appropriate footwear that complements the bottom
+
+3. IDENTITY:
+   - Keep face, hair, skin tone IDENTICAL
+   - Maintain body pose
+
+4. BACKGROUND & QUALITY:
+   - Clean, minimal, professional e-commerce style
+   - Natural lighting showing fabric drape and fit
+
+OUTPUT: Professional photo with waist-to-feet framing showcasing the BOTTOM garment.`,
+
+  FOOTWEAR: `TASK: Replace the person's FOOTWEAR with these shoes while keeping their identity.
+
+GARMENT:
+{garment_description}
+
+MANDATORY RULES:
+
+1. FRAMING - CRITICAL:
+   - Model MUST be perfectly centered in frame
+   - FEET FOCUS: Knee to feet framing
+   - Show both shoes clearly with design details visible
+   - Natural stance with feet at comfortable angle
+
+2. COMPLETE THE OUTFIT:
+   - Replace ONLY the footwear
+   - Keep the current outfit (top and bottom)
+   - Ensure pants/skirt length works well with the new footwear
+
+3. IDENTITY:
+   - Keep face, body, skin tone IDENTICAL
+   - Natural standing pose
+
+4. BACKGROUND & QUALITY:
+   - Clean, minimal floor and background
+   - Natural floor shadow under shoes
+   - Show shoe details: sole, heel, materials
+
+OUTPUT: Professional knee-to-feet photo showcasing the FOOTWEAR clearly.`,
+
+  FULL_OUTFIT: `TASK: Replace the person's entire outfit with this garment while keeping their identity.
+
+GARMENT:
+{garment_description}
+
+MANDATORY RULES:
+
+1. FRAMING - CRITICAL:
+   - Model MUST be perfectly centered in frame
+   - FULL BODY: Head to feet visible
+   - Equal space on left and right sides
+
+2. COMPLETE THE OUTFIT:
+   - This is a full outfit (dress/jumpsuit/suit)
+   - ADD appropriate footwear (heels for elegant, sneakers for casual)
+   - Ensure the full garment is visible
+
+3. IDENTITY:
+   - Keep face, hair, skin tone, hands IDENTICAL
+   - Maintain body pose
+
+4. BACKGROUND & QUALITY:
+   - Clean, minimal, professional
+   - E-commerce product photo standard
+   - Natural lighting and shadows
+
+OUTPUT: Professional full-body photo with COMPLETE outfit visible head to toe.`,
+
+  ACCESSORY: `TASK: Add this accessory to the person's current outfit while keeping their identity.
+
+GARMENT:
+{garment_description}
+
+MANDATORY RULES:
+
+1. FRAMING - CRITICAL:
+   - Model MUST be perfectly centered
+   - Frame based on accessory type (upper body for bags/scarves, detail for jewelry)
+
+2. STYLING:
+   - ADD the accessory naturally to current outfit
+   - Position appropriately (bag on shoulder, scarf around neck, etc.)
+
+3. IDENTITY:
+   - Keep everything IDENTICAL except adding the accessory
+
+4. QUALITY:
+   - Clean, professional
+   - Show accessory details clearly
+
+OUTPUT: Professional photo showcasing the ACCESSORY on the model.`
+};
+
+const FALLBACK_OUTFIT_SWAP_PROMPT = CATEGORY_SWAP_PROMPTS.FULL_OUTFIT;
 // Helper: Get prompt from database with fallback
 async function getPrompt(promptKey: string, variables: Record<string, string> = {}, fallback: string): Promise<string> {
   try {
@@ -370,7 +500,51 @@ async function createOutfitSwapJob(userId1: string, params: any) {
     job
   }, 200);
 }
-async function analyzeGarment(garmentUrl: string): Promise<string> {
+// Parse garment analysis to extract category
+function parseGarmentCategory(analysis: string): { category: GarmentCategory; framing: SuggestedFraming } {
+  const upperAnalysis = analysis.toUpperCase();
+  
+  // Try to extract CATEGORY line
+  const categoryMatch = upperAnalysis.match(/CATEGORY:\s*(TOP|BOTTOM|FOOTWEAR|FULL_OUTFIT|ACCESSORY)/);
+  const framingMatch = upperAnalysis.match(/FRAMING:\s*(UPPER_BODY|LOWER_BODY|FEET|FULL_BODY|DETAIL)/);
+  
+  let category: GarmentCategory = 'FULL_OUTFIT';
+  let framing: SuggestedFraming = 'full_body';
+  
+  if (categoryMatch) {
+    category = categoryMatch[1] as GarmentCategory;
+  } else {
+    // Fallback: infer from keywords
+    if (/\b(SHOES?|SNEAKERS?|BOOTS?|SANDALS?|HEELS?|LOAFERS?|FOOTWEAR)\b/.test(upperAnalysis)) {
+      category = 'FOOTWEAR';
+    } else if (/\b(PANTS?|JEANS?|SHORTS?|SKIRTS?|TROUSERS?|LEGGINGS?)\b/.test(upperAnalysis)) {
+      category = 'BOTTOM';
+    } else if (/\b(T-?SHIRTS?|SHIRTS?|BLOUSES?|HOODIES?|JACKETS?|SWEATERS?|COATS?|TOPS?)\b/.test(upperAnalysis)) {
+      category = 'TOP';
+    } else if (/\b(DRESS|JUMPSUIT|ROMPER|SUIT)\b/.test(upperAnalysis)) {
+      category = 'FULL_OUTFIT';
+    } else if (/\b(BAGS?|HATS?|SCARVES?|JEWELRY|BELTS?|WATCH|SUNGLASSES)\b/.test(upperAnalysis)) {
+      category = 'ACCESSORY';
+    }
+  }
+  
+  if (framingMatch) {
+    framing = framingMatch[1].toLowerCase().replace('_', '_') as SuggestedFraming;
+  } else {
+    // Infer framing from category
+    switch (category) {
+      case 'TOP': framing = 'upper_body'; break;
+      case 'BOTTOM': framing = 'lower_body'; break;
+      case 'FOOTWEAR': framing = 'feet'; break;
+      case 'ACCESSORY': framing = 'detail'; break;
+      default: framing = 'full_body';
+    }
+  }
+  
+  return { category, framing };
+}
+
+async function analyzeGarment(garmentUrl: string): Promise<GarmentAnalysisResult> {
   console.log("[analyzeGarment] Analyzing garment image...");
   try {
     // Fetch the garment image
@@ -418,15 +592,35 @@ async function analyzeGarment(garmentUrl: string): Promise<string> {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("[analyzeGarment] API error:", response.status, errorText);
-      return "clothing garment"; // Fallback
+      return {
+        category: 'FULL_OUTFIT',
+        description: "clothing garment",
+        suggestedFraming: 'full_body',
+        rawAnalysis: "clothing garment"
+      };
     }
     const data = await response.json();
-    const analysis = data.candidates?.[0]?.content?.parts?.[0]?.text || "clothing garment";
-    console.log("[analyzeGarment] Analysis result:", analysis);
-    return analysis;
+    const rawAnalysis = data.candidates?.[0]?.content?.parts?.[0]?.text || "clothing garment";
+    console.log("[analyzeGarment] Raw analysis:", rawAnalysis);
+    
+    // Parse category and framing
+    const { category, framing } = parseGarmentCategory(rawAnalysis);
+    console.log("[analyzeGarment] Detected category:", category, "framing:", framing);
+    
+    return {
+      category,
+      description: rawAnalysis,
+      suggestedFraming: framing,
+      rawAnalysis
+    };
   } catch (error) {
     console.error("[analyzeGarment] Error:", error);
-    return "clothing garment"; // Fallback
+    return {
+      category: 'FULL_OUTFIT',
+      description: "clothing garment",
+      suggestedFraming: 'full_body',
+      rawAnalysis: "clothing garment"
+    };
   }
 }
 async function processOutfitSwap(jobId: string) {
@@ -541,15 +735,27 @@ async function processOutfitSwap(jobId: string) {
     }).eq("id", jobId);
     // STEP 1: Analyze the garment first
     console.log(`[processOutfitSwap] Job ${jobId}: Analyzing garment...`);
-    const garmentDescription = await analyzeGarment(garmentUrl.signedUrl);
+    const garmentAnalysis = await analyzeGarment(garmentUrl.signedUrl);
+    console.log(`[processOutfitSwap] Job ${jobId}: Garment category: ${garmentAnalysis.category}, framing: ${garmentAnalysis.suggestedFraming}`);
+    
+    // Store garment analysis in job metadata for later use (e.g., by photoshoot)
     await supabase.from("outfit_swap_jobs").update({
-      progress: 50
+      progress: 50,
+      metadata: {
+        ...job.metadata,
+        garment_category: garmentAnalysis.category,
+        garment_framing: garmentAnalysis.suggestedFraming,
+        garment_description: garmentAnalysis.description
+      }
     }).eq("id", jobId);
-    // STEP 2: Generate improved prompt with garment analysis
+    
+    // STEP 2: Generate category-specific prompt with garment analysis
     const startTime = Date.now();
-    const prompt = await getPrompt('outfit_swap_main', {
-      garment_description: garmentDescription
-    }, FALLBACK_OUTFIT_SWAP_PROMPT);
+    // Use category-specific prompt
+    const categoryPrompt = CATEGORY_SWAP_PROMPTS[garmentAnalysis.category] || CATEGORY_SWAP_PROMPTS.FULL_OUTFIT;
+    const prompt = categoryPrompt.replace('{garment_description}', garmentAnalysis.description);
+    console.log(`[processOutfitSwap] Job ${jobId}: Using ${garmentAnalysis.category} prompt template`);
+    
     await supabase.from("outfit_swap_jobs").update({
       progress: 70
     }).eq("id", jobId);
@@ -670,8 +876,7 @@ async function processOutfitSwap(jobId: string) {
     // Get public URLs
     const { data: jpgPublicUrl } = supabase.storage.from("outfit-user-models").getPublicUrl(jpgPath);
     const { data: pngPublicUrl } = supabase.storage.from("outfit-user-models").getPublicUrl(pngPath);
-    // Note: generated_images table has been removed - only storing in outfit_swap_results
-    // Save results to outfit_swap_results
+    // Save results to outfit_swap_results (include garment category for photoshoot)
     const { error: resultError } = await supabase.from("outfit_swap_results").insert({
       job_id: jobId,
       user_id: job.user_id,
@@ -683,20 +888,25 @@ async function processOutfitSwap(jobId: string) {
         model_used: "gemini-3-pro-imagem-preview",
         processing_time_ms: processingTime,
         dimensions: "1024x1024",
-        exif_stripped: true
+        exif_stripped: true,
+        garment_category: garmentAnalysis.category,
+        garment_framing: garmentAnalysis.suggestedFraming
       }
     });
     if (resultError) {
       console.error("Error saving results:", resultError);
     }
-    // Update job as completed
+    // Update job as completed (preserve garment metadata)
     await supabase.from("outfit_swap_jobs").update({
       status: "completed",
       progress: 100,
       finished_at: new Date().toISOString(),
       metadata: {
+        ...job.metadata,
         model_used: "gemini-3-pro-imagem-preview",
-        processing_time_ms: processingTime
+        processing_time_ms: processingTime,
+        garment_category: garmentAnalysis.category,
+        garment_framing: garmentAnalysis.suggestedFraming
       }
     }).eq("id", jobId);
     // If this job is part of a batch, update batch progress
@@ -1030,13 +1240,35 @@ async function cancelBatch(userId1: string, batchId: string) {
     success: true
   }, 200);
 }
-// Angle-specific prompts for photoshoot
-const ANGLE_PROMPTS = {
+// Category-specific angle definitions
+const CATEGORY_ANGLES: Record<GarmentCategory, string[]> = {
+  TOP: ['three_quarter', 'back', 'side', 'detail'],
+  BOTTOM: ['lower_body_front', 'lower_body_back', 'lower_body_side', 'walking_pose'],
+  FOOTWEAR: ['shoe_front', 'shoe_side', 'shoe_back', 'walking_pose'],
+  FULL_OUTFIT: ['three_quarter', 'back', 'side', 'detail'],
+  ACCESSORY: ['detail', 'three_quarter', 'side', 'back']
+};
+
+// Angle-specific prompts for photoshoot - organized by category
+const ANGLE_PROMPTS: Record<string, string> = {
+  // TOP / FULL_OUTFIT angles (upper body focus)
   'three_quarter': `Create a high-quality e-commerce product photo: On-body three-quarter view (45° turn), head to mid-thigh framing, one foot slightly forward to show torso depth and shoulder line. Seamless light-grey background, soft key, subtle rim light to separate from background, controlled specularity on knit. 50mm lens look, f/8, ISO 100. Emphasize side seam, sleeve length, and hem fall. Clean, editorial retail lighting. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
   'back': `Create a high-quality e-commerce product photo: On-body back view, shoulders level, arms relaxed, straight posture. Seamless light-grey background, balanced key/fill to avoid hotspots, faint floor shadow. 50–70mm lens look, f/8, ISO 100. Capture yoke/neck ribbing, back drape, and hem alignment. Centered, color-accurate, luxury e-commerce finish. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is. ###RULES - Image must not infringe any System Safety margins and rules.`,
   'side': `Create a high-quality e-commerce product photo: On-body true side profile, chin parallel to floor, arms relaxed (small air gap at elbow), head to mid-thigh framing. Seamless light-grey background, soft key from camera front, gentle fill to preserve knit detail, micro-shadow under hem. 70mm equivalent look, f/8, ISO 100. Prioritize silhouette, shoulder slope, sleeve taper, and ribbed cuff definition. Premium catalog style. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is. ###RULES - Image must not infringe any System Safety margins and rules.`,
-  'detail': `Create a high-quality e-commerce product photo: Upper-torso close-up crop from shoulders to mid-torso, camera perpendicular to garment. Soft, even light to reveal rib-knit texture and stitching. 85–100mm look, f/8. High sharpness, no moiré, color-accurate wool tone. Background remains seamless light grey. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is. ###RULES - Image must not infringe any System Safety margins and rules.`
+  'detail': `Create a high-quality e-commerce product photo: Upper-torso close-up crop from shoulders to mid-torso, camera perpendicular to garment. Soft, even light to reveal rib-knit texture and stitching. 85–100mm look, f/8. High sharpness, no moiré, color-accurate wool tone. Background remains seamless light grey. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is. ###RULES - Image must not infringe any System Safety margins and rules.`,
+  
+  // BOTTOM angles (lower body focus)
+  'lower_body_front': `Create a high-quality e-commerce product photo: WAIST TO FEET FRAMING. Front view of model from waist down to feet, showing full pant/skirt length. Natural stance with weight balanced. Seamless light-grey background, soft even lighting to show fabric drape and texture. 50mm lens look, f/8. Emphasize leg line, hem fall, and fit through hips and thighs. Show how the garment fits the body. Natural floor shadow. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
+  'lower_body_back': `Create a high-quality e-commerce product photo: WAIST TO FEET FRAMING from behind. Back view of model from waist down to feet. Standing straight, shoulders level. Seamless light-grey background, balanced lighting. 50-70mm lens look, f/8. Capture back pocket details, seat fit, back seam, and hem alignment. Show how fabric drapes from behind. Natural floor shadow. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
+  'lower_body_side': `Create a high-quality e-commerce product photo: WAIST TO FEET side profile. True side view from waist to feet showing silhouette. Natural pose with one leg slightly forward. Seamless light-grey background, soft lighting. 70mm lens look, f/8. Emphasize thigh fit, knee break, and leg taper. Show fabric flow and movement. Natural shadow. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
+  'walking_pose': `Create a high-quality e-commerce product photo: FULL BODY in natural walking pose. Model mid-stride showing movement and fabric drape. One leg forward, one back. Seamless light-grey background. 50mm lens look, f/8. Capture how garment moves with the body, fabric swing, and natural creasing. Dynamic but controlled pose. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
+  
+  // FOOTWEAR angles (feet focus)
+  'shoe_front': `Create a high-quality e-commerce product photo: KNEE TO FEET framing. Front view of model's feet and lower legs showing both shoes clearly. Natural standing pose, feet shoulder-width apart. Seamless light-grey background, soft even lighting. 85mm lens look, f/8. Show full shoe design, toe box, upper construction. Natural floor shadow under shoes. Shoe details must be crisp and clear. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
+  'shoe_side': `Create a high-quality e-commerce product photo: KNEE TO FEET framing from side. Side profile showing one shoe clearly with full silhouette. Model in natural stance. Seamless light-grey background. 85-100mm lens look, f/8. Emphasize sole, heel height, arch, and shoe profile. Show materials and construction details. Natural shadow on floor. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
+  'shoe_back': `Create a high-quality e-commerce product photo: KNEE TO FEET framing from behind. Back view showing both shoe heels and back construction. Natural stance. Seamless light-grey background. 70mm lens look, f/8. Capture heel design, back tab, Achilles notch, and sole edge. Show how shoes look from behind when walking away. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`
 };
+
 // Special prompt for back view when a custom back garment image is provided
 const BACK_WITH_REFERENCE_PROMPT = `
 REFERENCE IMAGES PROVIDED:
@@ -1052,22 +1284,29 @@ OUTPUT: A cohesive back view photograph where the model from Image 1 is wearing 
 Create a high-quality e-commerce product photo: On-body back view, shoulders level, arms relaxed, straight posture. Seamless light-grey background, balanced key/fill to avoid hotspots, faint floor shadow. 50–70mm lens look, f/8, ISO 100. Capture yoke/neck ribbing, back drape, and hem alignment. Centered, color-accurate, luxury e-commerce finish. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.
 `;
 async function createPhotoshootJob(userId1: string, params: any) {
-  const { resultId, backImageUrl, selectedAngles = [
-    'front',
-    'three_quarter',
-    'back',
-    'side'
-  ] } = params;
+  const { resultId, backImageUrl, selectedAngles } = params;
   const supabase = serviceClient();
-  // Validate selectedAngles
+  
+  // First, get the result to check garment category
+  const { data: resultData } = await supabase
+    .from("outfit_swap_results")
+    .select("metadata")
+    .eq("id", resultId)
+    .single();
+  
+  const garmentCategory = (resultData?.metadata?.garment_category || 'FULL_OUTFIT') as GarmentCategory;
+  const categoryAngles = CATEGORY_ANGLES[garmentCategory] || CATEGORY_ANGLES.FULL_OUTFIT;
+  
+  // Use provided angles or default to category-specific angles
+  const defaultAngles = selectedAngles || categoryAngles;
+  
+  // Validate selectedAngles - allow all valid angle types
   const validAngles = [
-    'front',
-    'three_quarter',
-    'back',
-    'side',
-    'detail'
+    'front', 'three_quarter', 'back', 'side', 'detail',
+    'lower_body_front', 'lower_body_back', 'lower_body_side', 'walking_pose',
+    'shoe_front', 'shoe_side', 'shoe_back'
   ];
-  const angles = selectedAngles.filter((angle: string) => validAngles.includes(angle));
+  const angles = defaultAngles.filter((angle: string) => validAngles.includes(angle));
   if (angles.length === 0) {
     return jsonResponse({
       error: "At least one angle must be selected"
@@ -1094,7 +1333,7 @@ async function createPhotoshootJob(userId1: string, params: any) {
     console.warn('[Region check] Failed:', error);
   }
   const creditsNeeded = angles.length;
-  console.log(`[createPhotoshoot] Creating photoshoot for result ${resultId} with ${angles.length} angles:`, angles);
+  console.log(`[createPhotoshoot] Creating photoshoot for result ${resultId} with ${angles.length} angles (category: ${garmentCategory}):`, angles);
   // Check admin status
   const { data: isAdmin } = await supabase.rpc("is_user_admin", {
     check_user_id: userId1
@@ -1130,7 +1369,7 @@ async function createPhotoshootJob(userId1: string, params: any) {
       error: "Result not found"
     }, 404);
   }
-  // Create photoshoot record
+  // Create photoshoot record with garment category
   const { data: photoshoot, error: photoshootError } = await supabase.from("outfit_swap_photoshoots").insert({
     user_id: userId1,
     result_id: resultId,
@@ -1141,7 +1380,9 @@ async function createPhotoshootJob(userId1: string, params: any) {
       original_result_url: result.public_url,
       credits_deducted: creditsNeeded,
       has_custom_back_image: !!backImageUrl,
-      selected_angle_count: angles.length
+      selected_angle_count: angles.length,
+      garment_category: garmentCategory,
+      category_angles: categoryAngles
     }
   }).select().single();
   if (photoshootError) {
