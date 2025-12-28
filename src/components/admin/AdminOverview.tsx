@@ -11,6 +11,7 @@ import { EnhancedMetrics } from './EnhancedMetrics';
 import { FinancialDashboard } from './FinancialDashboard';
 import { PromptManagement } from './PromptManagement';
 import { PromoCodesManagement } from './PromoCodesManagement';
+import { AdminErrorReports } from './AdminErrorReports';
 import { Image, AlertTriangle } from 'lucide-react';
 
 export const AdminOverview = () => {
@@ -30,7 +31,7 @@ export const AdminOverview = () => {
         </Button>
       </div>
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-9 lg:grid-cols-9">
+        <TabsList className="grid w-full grid-cols-10 lg:grid-cols-10">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="financial">Financial</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
@@ -39,6 +40,7 @@ export const AdminOverview = () => {
           <TabsTrigger value="outfit-swaps">Outfit Swaps</TabsTrigger>
           <TabsTrigger value="prompts">AI Prompts</TabsTrigger>
           <TabsTrigger value="promo-codes">Promo Codes</TabsTrigger>
+          <TabsTrigger value="errors">Errors</TabsTrigger>
           <TabsTrigger value="admins">Admins</TabsTrigger>
         </TabsList>
 
@@ -72,6 +74,10 @@ export const AdminOverview = () => {
 
         <TabsContent value="promo-codes" className="space-y-6">
           <PromoCodesManagement />
+        </TabsContent>
+
+        <TabsContent value="errors" className="space-y-6">
+          <AdminErrorReports />
         </TabsContent>
 
         <TabsContent value="admins" className="space-y-6">
