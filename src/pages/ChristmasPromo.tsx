@@ -65,13 +65,13 @@ const ChristmasPromo = () => {
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Festive background decorations */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-20 left-10 text-6xl opacity-20 animate-pulse">🎄</div>
-        <div className="absolute top-40 right-20 text-4xl opacity-20 animate-pulse" style={{ animationDelay: '0.5s' }}>❄️</div>
-        <div className="absolute bottom-40 left-20 text-5xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}>🎁</div>
-        <div className="absolute bottom-20 right-10 text-4xl opacity-20 animate-pulse" style={{ animationDelay: '1.5s' }}>⭐</div>
-        <div className="absolute top-60 left-1/3 text-3xl opacity-10 animate-pulse" style={{ animationDelay: '0.3s' }}>❄️</div>
-        <div className="absolute bottom-60 right-1/3 text-3xl opacity-10 animate-pulse" style={{ animationDelay: '0.8s' }}>❄️</div>
+      <div className="absolute inset-0 pointer-events-none" suppressHydrationWarning>
+        <div className="absolute top-20 left-10 text-6xl opacity-20 animate-pulse" suppressHydrationWarning>🎄</div>
+        <div className="absolute top-40 right-20 text-4xl opacity-20 animate-pulse" style={{ animationDelay: '0.5s' }} suppressHydrationWarning>❄️</div>
+        <div className="absolute bottom-40 left-20 text-5xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} suppressHydrationWarning>🎁</div>
+        <div className="absolute bottom-20 right-10 text-4xl opacity-20 animate-pulse" style={{ animationDelay: '1.5s' }} suppressHydrationWarning>⭐</div>
+        <div className="absolute top-60 left-1/3 text-3xl opacity-10 animate-pulse" style={{ animationDelay: '0.3s' }} suppressHydrationWarning>❄️</div>
+        <div className="absolute bottom-60 right-1/3 text-3xl opacity-10 animate-pulse" style={{ animationDelay: '0.8s' }} suppressHydrationWarning>❄️</div>
       </div>
 
       <HeaderSection />

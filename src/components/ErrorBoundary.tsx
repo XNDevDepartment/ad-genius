@@ -14,6 +14,11 @@ interface State {
   error?: Error;
 }
 
+// Throttle state to prevent DB flooding
+let lastReportTime = 0;
+const THROTTLE_MS = 5000; // Max 1 report per 5 seconds
+const reportedErrors = new Set<string>(); // Track unique errors per session
+
 // Report error to backend
 const reportError = async (
   error: Error,
@@ -21,11 +26,39 @@ const reportError = async (
   userId?: string,
   userEmail?: string
 ) => {
+  // Skip DOM manipulation errors from browser extensions
+  const errorMessage = error.message || 'Unknown error';
+  if (
+    errorMessage.includes('removeChild') ||
+    errorMessage.includes('insertBefore') ||
+    errorMessage.includes('appendChild')
+  ) {
+    console.warn('[ErrorBoundary] Skipping DOM manipulation error (likely browser extension)');
+    return;
+  }
+
+  // Create unique error key for deduplication
+  const errorKey = `${errorMessage}:${window.location.pathname}`;
+  if (reportedErrors.has(errorKey)) {
+    console.warn('[ErrorBoundary] Skipping duplicate error report');
+    return;
+  }
+
+  // Throttle error reports
+  const now = Date.now();
+  if (now - lastReportTime < THROTTLE_MS) {
+    console.warn('[ErrorBoundary] Throttling error report');
+    return;
+  }
+
+  lastReportTime = now;
+  reportedErrors.add(errorKey);
+
   try {
     const payload = {
       user_id: userId || null,
       user_email: userEmail || null,
-      error_message: error.message || 'Unknown error',
+      error_message: errorMessage,
       error_stack: error.stack || null,
       page_url: window.location.href,
       user_agent: navigator.userAgent,
