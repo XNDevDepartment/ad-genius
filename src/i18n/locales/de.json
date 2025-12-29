@@ -1831,5 +1831,13 @@
         "submitError": "Fehler beim Senden der Bewerbung. Bitte versuchen Sie es erneut."
       }
     }
+  },
+  "cookies": {
+    "banner": {
+      "message": "Wir verwenden Cookies, um Ihre Erfahrung zu verbessern. Wenn Sie diese Website weiterhin besuchen, stimmen Sie unserer Verwendung von Cookies zu.",
+      "learnMore": "Mehr über unsere Cookie-Richtlinie erfahren",
+      "accept": "Akzeptieren",
+      "decline": "Ablehnen"
+    }
   }
 }

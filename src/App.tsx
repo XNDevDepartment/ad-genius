@@ -18,6 +18,7 @@ import { checkForCachedVersion } from "./utils/cacheCheck";
 import { lazyWithRetry } from "./utils/lazyWithRetry";
 import { AuthGuard } from "./components/AuthGuard";
 import ChristmasBanner from "./components/ChristmasBanner";
+import { CookieConsent } from "./components/CookieConsent";
 
 // Lazy load non-critical routes with automatic retry logic
 const CreateSelection = lazyWithRetry(() => import("./pages/ModuleSelection"));
@@ -91,6 +92,7 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <CookieConsent />
             <Routes>
               <Route path="/" element={<AppLayout />}>
                 <Route index element={<Index />} />

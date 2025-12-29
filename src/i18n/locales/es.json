@@ -1831,5 +1831,13 @@
         "submitError": "Error al enviar solicitud. Por favor, inténtalo de nuevo."
       }
     }
+  },
+  "cookies": {
+    "banner": {
+      "message": "Utilizamos cookies para mejorar tu experiencia. Al continuar visitando este sitio, aceptas nuestro uso de cookies.",
+      "learnMore": "Más información sobre nuestra Política de Cookies",
+      "accept": "Aceptar",
+      "decline": "Rechazar"
+    }
   }
 }
