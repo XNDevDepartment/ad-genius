@@ -16,8 +16,8 @@
 //   Note: JSZip buffers entries in memory to finalize, so we flush early and avoid large buffers.
 //   For very large buckets, prefer prefix-based batching to reduce memory.
 
-import { createClient } from "npm:@supabase/supabase-js@2.46.1";
-import JSZip from "npm:jszip@3.10.1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.46.1";
+import JSZip from "https://esm.sh/jszip@3.10.1";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");

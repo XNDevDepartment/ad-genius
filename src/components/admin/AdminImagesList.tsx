@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, ExternalLink, User, Image as ImageIcon } from 'lucide-react';
+import { Download, ExternalLink, User, Image as ImageIcon, Archive } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { AdminDataTable } from './AdminDataTable';
@@ -35,6 +35,7 @@ export const AdminImagesList = () => {
   const [images, setImages] = useState<GeneratedImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'generated_images' | 'ugc_images'>('all');
+  const [downloadingAll, setDownloadingAll] = useState(false);
 
   useEffect(() => {
     fetchImages();
@@ -124,6 +125,59 @@ export const AdminImagesList = () => {
         description: "Failed to download image",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleDownloadAllUgc = async () => {
+    setDownloadingAll(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
+      toast({
+        title: "Starting Download",
+        description: "Preparing UGC images for download. This may take a while...",
+      });
+
+      const response = await fetch(
+        'https://dhqdamfisdbbcieqlpvt.supabase.co/functions/v1/download_all_ugc_images',
+        {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Download failed');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ugc_images.zip';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "Download Complete",
+        description: "UGC images have been downloaded",
+      });
+    } catch (error: any) {
+      console.error('Download error:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to download images",
+        variant: "destructive",
+      });
+    } finally {
+      setDownloadingAll(false);
     }
   };
 
@@ -233,6 +287,15 @@ export const AdminImagesList = () => {
             </Select>
             <Button onClick={fetchImages} variant="outline" size="sm">
               Refresh
+            </Button>
+            <Button
+              onClick={handleDownloadAllUgc}
+              variant="outline"
+              size="sm"
+              disabled={downloadingAll}
+            >
+              <Archive className="w-4 h-4 mr-2" />
+              {downloadingAll ? 'Downloading...' : 'Download All UGC'}
             </Button>
           </div>
         </div>

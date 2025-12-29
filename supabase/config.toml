@@ -130,6 +130,9 @@ verify_jwt = false
 [functions.signup-with-phone]
 verify_jwt = false
 
+[functions.download_all_ugc_images]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 port = 54327
