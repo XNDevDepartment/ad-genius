@@ -1836,5 +1836,13 @@
         "submitError": "Error submitting application. Please try again."
       }
     }
+  },
+  "cookies": {
+    "banner": {
+      "message": "We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies.",
+      "learnMore": "Learn more about our Cookie Policy",
+      "accept": "Accept",
+      "decline": "Decline"
+    }
   }
 }

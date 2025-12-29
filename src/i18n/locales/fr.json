@@ -1831,5 +1831,13 @@
         "submitError": "Erreur lors de la soumission. Veuillez réessayer."
       }
     }
+  },
+  "cookies": {
+    "banner": {
+      "message": "Nous utilisons des cookies pour améliorer votre expérience. En continuant à visiter ce site, vous acceptez notre utilisation des cookies.",
+      "learnMore": "En savoir plus sur notre Politique de Cookies",
+      "accept": "Accepter",
+      "decline": "Refuser"
+    }
   }
 }

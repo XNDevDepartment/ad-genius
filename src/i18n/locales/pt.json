@@ -1831,5 +1831,13 @@
         "submitError": "Erro ao submeter candidatura. Tenta novamente."
       }
     }
+  },
+  "cookies": {
+    "banner": {
+      "message": "Utilizamos cookies para melhorar a sua experiência. Ao continuar a visitar este site, concorda com a nossa utilização de cookies.",
+      "learnMore": "Saiba mais sobre a nossa Política de Cookies",
+      "accept": "Aceitar",
+      "decline": "Recusar"
+    }
   }
 }
