@@ -1719,7 +1719,117 @@
     "footer": {
       "pricing": "Preços",
       "contact": "Contacto",
-      "faq": "FAQ"
+      "faq": "FAQ",
+      "affiliate": "Programa de Afiliados"
+    }
+  },
+  "affiliate": {
+    "badge": "Programa de Afiliados",
+    "hero": {
+      "headline": "Ganha comissões recorrentes ao recomendar o",
+      "subheadline": "Recebe <strong class=\"text-foreground\">25% de comissão recorrente</strong> por cada cliente ativo que indiques — durante 12 meses.",
+      "cta": "Candidatar-me ao programa",
+      "ctaSecondary": "Ver como funciona",
+      "trustMonthly": "Pagamentos mensais",
+      "trustFree": "Sem custos de adesão",
+      "trustDashboard": "Dashboard completo"
+    },
+    "howItWorks": {
+      "title": "Como funciona",
+      "subtitle": "Três passos simples para começares a ganhar comissões recorrentes",
+      "step1Title": "Partilha",
+      "step1Desc": "Partilha o teu link ou código exclusivo com a tua audiência.",
+      "step2Title": "Conversão",
+      "step2Desc": "Quando alguém cria conta e subscreve um plano pago, a conversão fica associada a ti.",
+      "step3Title": "Comissão",
+      "step3Desc": "Recebes 25% de comissão mensal enquanto o cliente se mantiver ativo (até 12 meses).",
+      "automated": "Processo totalmente automatizado"
+    },
+    "commission": {
+      "title": "Detalhes da Comissão",
+      "subtitle": "Transparência total sobre como funcionam os pagamentos",
+      "percentage": "25%",
+      "percentageLabel": "Comissão recorrente mensal",
+      "bullet1": "25% de comissão recorrente (valor sem IVA)",
+      "bullet2": "Comissão válida por até 12 meses",
+      "bullet3": "Pagamentos mensais por transferência bancária",
+      "bullet4": "Mínimo de payout: €100",
+      "bullet5": "Apenas clientes ativos e válidos",
+      "exampleTitle": "Exemplo de ganhos:",
+      "example": "Se indicares 10 clientes no plano Plus (€49/mês), podes ganhar até <strong class=\"text-foreground\">€147/mês</strong> em comissões recorrentes."
+    },
+    "audience": {
+      "title": "Para quem é este programa?",
+      "subtitle": "O programa de afiliados é ideal para profissionais que trabalham com e-commerce e marketing digital",
+      "creator": "Criadores de conteúdo",
+      "creatorDesc": "YouTubers, instagrammers, bloggers e criadores de conteúdo digital",
+      "freelancer": "Freelancers e agências",
+      "freelancerDesc": "Profissionais de marketing, design e desenvolvimento web",
+      "ecommerce": "Profissionais de e-commerce",
+      "ecommerceDesc": "Gestores de lojas online, consultores e especialistas em vendas",
+      "user": "Utilizadores ativos do ProduktPix",
+      "userDesc": "Clientes satisfeitos que queiram partilhar a sua experiência"
+    },
+    "rules": {
+      "title": "Regras e Transparência",
+      "subtitle": "Valorizamos a honestidade e a qualidade das indicações",
+      "alertTitle": "Compromisso com a qualidade",
+      "alertDesc": "Reservamo-nos o direito de recusar candidaturas ou suspender afiliados que não cumpram as regras do programa.",
+      "rule1": "Programa sujeito a aprovação",
+      "rule2": "Sem auto-referências",
+      "rule3": "Sem spam ou promessas enganosas",
+      "rule4": "Tracking via link e/ou código promocional",
+      "rule5": "Janela de atribuição: 30 dias (last-touch)",
+      "termsLink": "Ao candidatares-te, aceitas os Termos e Condições do Programa de Afiliados"
+    },
+    "ctaSection": {
+      "title": "Pronto para começar a ganhar?",
+      "cta": "Candidatar-me ao programa"
+    },
+    "form": {
+      "title": "Candidatura ao Programa de Afiliados",
+      "subtitle": "Preenche o formulário abaixo para te candidatares",
+      "name": "Nome Completo / Nome da Empresa",
+      "namePlaceholder": "João Silva ou Empresa Lda",
+      "email": "Email",
+      "emailPlaceholder": "joao@exemplo.com",
+      "country": "País",
+      "countryPlaceholder": "Seleciona o teu país",
+      "website": "Website / Perfil Social",
+      "websitePlaceholder": "https://exemplo.com ou instagram.com/perfil",
+      "promotion": "Como pretendes promover o ProduktPix?",
+      "promotionPlaceholder": "Descreve os canais e estratégias que vais utilizar...",
+      "audienceSize": "Dimensão estimada da audiência",
+      "audiencePlaceholder": "Seleciona a dimensão",
+      "audienceOptions": {
+        "small": "Menos de 1.000",
+        "medium": "1.000 - 10.000",
+        "large": "10.000 - 50.000",
+        "xlarge": "50.000 - 100.000",
+        "huge": "Mais de 100.000"
+      },
+      "termsAccept": "Aceito os Termos do Programa de Afiliados",
+      "taxAccept": "Confirmo que sou responsável pelas minhas obrigações fiscais",
+      "submit": "Submeter candidatura",
+      "submitting": "A submeter...",
+      "successTitle": "Obrigado pela candidatura!",
+      "successMessage": "A nossa equipa irá analisar e responder em breve. Receberás um email com os próximos passos.",
+      "saveDashboardLink": "Guarda este link para aceder ao teu dashboard:",
+      "successToast": "Candidatura submetida com sucesso!",
+      "validation": {
+        "nameRequired": "Nome é obrigatório",
+        "emailInvalid": "Email inválido",
+        "countryRequired": "País é obrigatório",
+        "urlInvalid": "URL inválido",
+        "promotionMin": "Descreve como pretendes promover (mínimo 20 caracteres)",
+        "audienceRequired": "Seleciona a dimensão da audiência",
+        "termsRequired": "Deves aceitar os termos",
+        "taxRequired": "Deves confirmar a responsabilidade fiscal"
+      },
+      "errors": {
+        "emailExists": "Este email já está registado no programa de afiliados.",
+        "submitError": "Erro ao submeter candidatura. Tenta novamente."
+      }
     }
   }
 }

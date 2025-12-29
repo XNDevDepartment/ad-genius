@@ -15,7 +15,7 @@ const Footer = () => {
           {/* Footer Links */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-muted-foreground">
             <span>© 2025 ProduktPix Genius. All rights reserved.</span>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap justify-center gap-4">
               <button 
                 onClick={() => navigate("/privacy")}
                 className="hover:text-foreground transition-colors"
@@ -33,6 +33,12 @@ const Footer = () => {
                 className="hover:text-foreground transition-colors"
               >
                 Cookie Policy
+              </button>
+              <button 
+                onClick={() => navigate("/afiliados")}
+                className="hover:text-foreground transition-colors"
+              >
+                Affiliate Program
               </button>
             </div>
           </div>

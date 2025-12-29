@@ -1724,7 +1724,117 @@
     "footer": {
       "pricing": "Pricing",
       "contact": "Contact",
-      "faq": "FAQ"
+      "faq": "FAQ",
+      "affiliate": "Affiliate Program"
+    }
+  },
+  "affiliate": {
+    "badge": "Affiliate Program",
+    "hero": {
+      "headline": "Earn recurring commissions by recommending",
+      "subheadline": "Get <strong class=\"text-foreground\">25% recurring commission</strong> for each active customer you refer — for 12 months.",
+      "cta": "Apply to the program",
+      "ctaSecondary": "See how it works",
+      "trustMonthly": "Monthly payments",
+      "trustFree": "No sign-up costs",
+      "trustDashboard": "Complete dashboard"
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "subtitle": "Three simple steps to start earning recurring commissions",
+      "step1Title": "Share",
+      "step1Desc": "Share your exclusive link or code with your audience.",
+      "step2Title": "Conversion",
+      "step2Desc": "When someone creates an account and subscribes to a paid plan, the conversion is linked to you.",
+      "step3Title": "Commission",
+      "step3Desc": "You receive 25% monthly commission while the customer stays active (up to 12 months).",
+      "automated": "Fully automated process"
+    },
+    "commission": {
+      "title": "Commission Details",
+      "subtitle": "Full transparency on how payments work",
+      "percentage": "25%",
+      "percentageLabel": "Monthly recurring commission",
+      "bullet1": "25% recurring commission (VAT excluded)",
+      "bullet2": "Commission valid for up to 12 months",
+      "bullet3": "Monthly bank transfer payments",
+      "bullet4": "Minimum payout: €100",
+      "bullet5": "Only active and valid customers",
+      "exampleTitle": "Example earnings:",
+      "example": "If you refer 10 customers on the Plus plan (€49/month), you can earn up to <strong class=\"text-foreground\">€147/month</strong> in recurring commissions."
+    },
+    "audience": {
+      "title": "Who is this program for?",
+      "subtitle": "The affiliate program is ideal for professionals working in e-commerce and digital marketing",
+      "creator": "Content Creators",
+      "creatorDesc": "YouTubers, instagrammers, bloggers and digital content creators",
+      "freelancer": "Freelancers & Agencies",
+      "freelancerDesc": "Marketing, design and web development professionals",
+      "ecommerce": "E-commerce Professionals",
+      "ecommerceDesc": "Online store managers, consultants and sales specialists",
+      "user": "Active ProduktPix Users",
+      "userDesc": "Satisfied customers who want to share their experience"
+    },
+    "rules": {
+      "title": "Rules & Transparency",
+      "subtitle": "We value honesty and quality referrals",
+      "alertTitle": "Commitment to quality",
+      "alertDesc": "We reserve the right to refuse applications or suspend affiliates who do not comply with program rules.",
+      "rule1": "Program subject to approval",
+      "rule2": "No self-referrals",
+      "rule3": "No spam or misleading promises",
+      "rule4": "Tracking via link and/or promo code",
+      "rule5": "Attribution window: 30 days (last-touch)",
+      "termsLink": "By applying, you accept the Affiliate Program Terms and Conditions"
+    },
+    "ctaSection": {
+      "title": "Ready to start earning?",
+      "cta": "Apply to the program"
+    },
+    "form": {
+      "title": "Affiliate Program Application",
+      "subtitle": "Fill out the form below to apply",
+      "name": "Full Name / Company Name",
+      "namePlaceholder": "John Smith or Company Ltd",
+      "email": "Email",
+      "emailPlaceholder": "john@example.com",
+      "country": "Country",
+      "countryPlaceholder": "Select your country",
+      "website": "Website / Social Profile",
+      "websitePlaceholder": "https://example.com or instagram.com/profile",
+      "promotion": "How do you plan to promote ProduktPix?",
+      "promotionPlaceholder": "Describe the channels and strategies you will use...",
+      "audienceSize": "Estimated audience size",
+      "audiencePlaceholder": "Select the size",
+      "audienceOptions": {
+        "small": "Less than 1,000",
+        "medium": "1,000 - 10,000",
+        "large": "10,000 - 50,000",
+        "xlarge": "50,000 - 100,000",
+        "huge": "More than 100,000"
+      },
+      "termsAccept": "I accept the Affiliate Program Terms",
+      "taxAccept": "I confirm that I am responsible for my tax obligations",
+      "submit": "Submit application",
+      "submitting": "Submitting...",
+      "successTitle": "Thank you for applying!",
+      "successMessage": "Our team will review and respond soon. You will receive an email with the next steps.",
+      "saveDashboardLink": "Save this link to access your dashboard:",
+      "successToast": "Application submitted successfully!",
+      "validation": {
+        "nameRequired": "Name is required",
+        "emailInvalid": "Invalid email",
+        "countryRequired": "Country is required",
+        "urlInvalid": "Invalid URL",
+        "promotionMin": "Describe how you plan to promote (minimum 20 characters)",
+        "audienceRequired": "Select audience size",
+        "termsRequired": "You must accept the terms",
+        "taxRequired": "You must confirm tax responsibility"
+      },
+      "errors": {
+        "emailExists": "This email is already registered in the affiliate program.",
+        "submitError": "Error submitting application. Please try again."
+      }
     }
   }
 }

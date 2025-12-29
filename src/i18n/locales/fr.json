@@ -1719,7 +1719,117 @@
     "footer": {
       "pricing": "Tarifs",
       "contact": "Contact",
-      "faq": "FAQ"
+      "faq": "FAQ",
+      "affiliate": "Programme d'affiliation"
+    }
+  },
+  "affiliate": {
+    "badge": "Programme d'affiliation",
+    "hero": {
+      "headline": "Gagnez des commissions récurrentes en recommandant",
+      "subheadline": "Recevez <strong class=\"text-foreground\">25% de commission récurrente</strong> pour chaque client actif que vous parrainez — pendant 12 mois.",
+      "cta": "Postuler au programme",
+      "ctaSecondary": "Voir comment ça marche",
+      "trustMonthly": "Paiements mensuels",
+      "trustFree": "Sans frais d'inscription",
+      "trustDashboard": "Tableau de bord complet"
+    },
+    "howItWorks": {
+      "title": "Comment ça marche",
+      "subtitle": "Trois étapes simples pour commencer à gagner des commissions récurrentes",
+      "step1Title": "Partagez",
+      "step1Desc": "Partagez votre lien ou code exclusif avec votre audience.",
+      "step2Title": "Conversion",
+      "step2Desc": "Quand quelqu'un crée un compte et s'abonne à un forfait payant, la conversion vous est attribuée.",
+      "step3Title": "Commission",
+      "step3Desc": "Vous recevez 25% de commission mensuelle tant que le client reste actif (jusqu'à 12 mois).",
+      "automated": "Processus entièrement automatisé"
+    },
+    "commission": {
+      "title": "Détails des Commissions",
+      "subtitle": "Transparence totale sur le fonctionnement des paiements",
+      "percentage": "25%",
+      "percentageLabel": "Commission mensuelle récurrente",
+      "bullet1": "25% de commission récurrente (hors TVA)",
+      "bullet2": "Commission valable jusqu'à 12 mois",
+      "bullet3": "Paiements mensuels par virement bancaire",
+      "bullet4": "Paiement minimum : 100€",
+      "bullet5": "Uniquement clients actifs et valides",
+      "exampleTitle": "Exemple de gains :",
+      "example": "Si vous parrainez 10 clients sur le plan Plus (49€/mois), vous pouvez gagner jusqu'à <strong class=\"text-foreground\">147€/mois</strong> en commissions récurrentes."
+    },
+    "audience": {
+      "title": "À qui s'adresse ce programme ?",
+      "subtitle": "Le programme d'affiliation est idéal pour les professionnels du e-commerce et du marketing digital",
+      "creator": "Créateurs de contenu",
+      "creatorDesc": "YouTubeurs, instagrammers, blogueurs et créateurs de contenu digital",
+      "freelancer": "Freelances et agences",
+      "freelancerDesc": "Professionnels du marketing, design et développement web",
+      "ecommerce": "Professionnels e-commerce",
+      "ecommerceDesc": "Gestionnaires de boutiques en ligne, consultants et spécialistes des ventes",
+      "user": "Utilisateurs actifs de ProduktPix",
+      "userDesc": "Clients satisfaits qui souhaitent partager leur expérience"
+    },
+    "rules": {
+      "title": "Règles et Transparence",
+      "subtitle": "Nous valorisons l'honnêteté et la qualité des parrainages",
+      "alertTitle": "Engagement qualité",
+      "alertDesc": "Nous nous réservons le droit de refuser les candidatures ou de suspendre les affiliés qui ne respectent pas les règles du programme.",
+      "rule1": "Programme soumis à approbation",
+      "rule2": "Pas d'auto-parrainage",
+      "rule3": "Pas de spam ni de promesses trompeuses",
+      "rule4": "Suivi via lien et/ou code promo",
+      "rule5": "Fenêtre d'attribution : 30 jours (last-touch)",
+      "termsLink": "En postulant, vous acceptez les Conditions Générales du Programme d'Affiliation"
+    },
+    "ctaSection": {
+      "title": "Prêt à commencer à gagner ?",
+      "cta": "Postuler au programme"
+    },
+    "form": {
+      "title": "Candidature au Programme d'Affiliation",
+      "subtitle": "Remplissez le formulaire ci-dessous pour postuler",
+      "name": "Nom Complet / Nom de l'Entreprise",
+      "namePlaceholder": "Jean Dupont ou Entreprise SARL",
+      "email": "Email",
+      "emailPlaceholder": "jean@exemple.com",
+      "country": "Pays",
+      "countryPlaceholder": "Sélectionnez votre pays",
+      "website": "Site web / Profil Social",
+      "websitePlaceholder": "https://exemple.com ou instagram.com/profil",
+      "promotion": "Comment comptez-vous promouvoir ProduktPix ?",
+      "promotionPlaceholder": "Décrivez les canaux et stratégies que vous utiliserez...",
+      "audienceSize": "Taille estimée de l'audience",
+      "audiencePlaceholder": "Sélectionnez la taille",
+      "audienceOptions": {
+        "small": "Moins de 1 000",
+        "medium": "1 000 - 10 000",
+        "large": "10 000 - 50 000",
+        "xlarge": "50 000 - 100 000",
+        "huge": "Plus de 100 000"
+      },
+      "termsAccept": "J'accepte les Conditions du Programme d'Affiliation",
+      "taxAccept": "Je confirme être responsable de mes obligations fiscales",
+      "submit": "Soumettre la candidature",
+      "submitting": "Envoi en cours...",
+      "successTitle": "Merci pour votre candidature !",
+      "successMessage": "Notre équipe examinera et répondra bientôt. Vous recevrez un email avec les prochaines étapes.",
+      "saveDashboardLink": "Conservez ce lien pour accéder à votre tableau de bord :",
+      "successToast": "Candidature soumise avec succès !",
+      "validation": {
+        "nameRequired": "Le nom est obligatoire",
+        "emailInvalid": "Email invalide",
+        "countryRequired": "Le pays est obligatoire",
+        "urlInvalid": "URL invalide",
+        "promotionMin": "Décrivez comment vous comptez promouvoir (minimum 20 caractères)",
+        "audienceRequired": "Sélectionnez la taille de l'audience",
+        "termsRequired": "Vous devez accepter les conditions",
+        "taxRequired": "Vous devez confirmer la responsabilité fiscale"
+      },
+      "errors": {
+        "emailExists": "Cet email est déjà inscrit au programme d'affiliation.",
+        "submitError": "Erreur lors de la soumission. Veuillez réessayer."
+      }
     }
   }
 }

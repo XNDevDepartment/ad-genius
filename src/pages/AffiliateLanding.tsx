@@ -8,8 +8,10 @@ import { AffiliateRules } from '@/components/affiliate/AffiliateRules';
 import { AffiliateApplicationForm } from '@/components/affiliate/AffiliateApplicationForm';
 import { MinimalHeader } from '@/components/landing-v2/MinimalHeader';
 import { MinimalFooter } from '@/components/landing-v2/MinimalFooter';
+import { useTranslation } from 'react-i18next';
 
 const AffiliateLanding = () => {
+  const { t } = useTranslation();
   const formRef = useRef<HTMLDivElement>(null);
   const howItWorksRef = useRef<HTMLDivElement>(null);
 
@@ -45,14 +47,14 @@ const AffiliateLanding = () => {
         <section className="py-16 bg-muted/30">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-6">
-              Pronto para começar a ganhar?
+              {t('affiliate.ctaSection.title')}
             </h2>
             <Button 
               size="lg" 
               onClick={scrollToForm}
               className="bg-gradient-button text-primary-foreground"
             >
-              Candidatar-me ao programa
+              {t('affiliate.ctaSection.cta')}
             </Button>
           </div>
         </section>

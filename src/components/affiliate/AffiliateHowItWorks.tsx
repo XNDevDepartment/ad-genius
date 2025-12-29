@@ -1,37 +1,40 @@
 import { Share2, Users, Wallet } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-
-const steps = [
-  {
-    icon: Share2,
-    title: 'Partilha',
-    description: 'Partilha o teu link ou código exclusivo com a tua audiência.',
-    step: '01'
-  },
-  {
-    icon: Users,
-    title: 'Conversão',
-    description: 'Quando alguém cria conta e subscreve um plano pago, a conversão fica associada a ti.',
-    step: '02'
-  },
-  {
-    icon: Wallet,
-    title: 'Comissão',
-    description: 'Recebes 25% de comissão mensal enquanto o cliente se mantiver ativo (até 12 meses).',
-    step: '03'
-  }
-];
+import { useTranslation } from 'react-i18next';
 
 export const AffiliateHowItWorks = () => {
+  const { t } = useTranslation();
+  
+  const steps = [
+    {
+      icon: Share2,
+      title: t('affiliate.howItWorks.step1Title'),
+      description: t('affiliate.howItWorks.step1Desc'),
+      step: '01'
+    },
+    {
+      icon: Users,
+      title: t('affiliate.howItWorks.step2Title'),
+      description: t('affiliate.howItWorks.step2Desc'),
+      step: '02'
+    },
+    {
+      icon: Wallet,
+      title: t('affiliate.howItWorks.step3Title'),
+      description: t('affiliate.howItWorks.step3Desc'),
+      step: '03'
+    }
+  ];
+
   return (
     <section className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Como funciona
+            {t('affiliate.howItWorks.title')}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Três passos simples para começares a ganhar comissões recorrentes
+            {t('affiliate.howItWorks.subtitle')}
           </p>
         </div>
         
@@ -61,7 +64,7 @@ export const AffiliateHowItWorks = () => {
         <div className="hidden md:flex justify-center mt-8">
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="w-16 h-px bg-border" />
-            <span>Processo totalmente automatizado</span>
+            <span>{t('affiliate.howItWorks.automated')}</span>
             <div className="w-16 h-px bg-border" />
           </div>
         </div>

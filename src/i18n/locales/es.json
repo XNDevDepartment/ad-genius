@@ -1719,7 +1719,117 @@
     "footer": {
       "pricing": "Precios",
       "contact": "Contacto",
-      "faq": "FAQ"
+      "faq": "FAQ",
+      "affiliate": "Programa de Afiliados"
+    }
+  },
+  "affiliate": {
+    "badge": "Programa de Afiliados",
+    "hero": {
+      "headline": "Gana comisiones recurrentes recomendando",
+      "subheadline": "Recibe <strong class=\"text-foreground\">25% de comisión recurrente</strong> por cada cliente activo que refieras — durante 12 meses.",
+      "cta": "Aplicar al programa",
+      "ctaSecondary": "Ver cómo funciona",
+      "trustMonthly": "Pagos mensuales",
+      "trustFree": "Sin costos de inscripción",
+      "trustDashboard": "Dashboard completo"
+    },
+    "howItWorks": {
+      "title": "Cómo funciona",
+      "subtitle": "Tres pasos simples para empezar a ganar comisiones recurrentes",
+      "step1Title": "Comparte",
+      "step1Desc": "Comparte tu enlace o código exclusivo con tu audiencia.",
+      "step2Title": "Conversión",
+      "step2Desc": "Cuando alguien crea una cuenta y se suscribe a un plan de pago, la conversión se vincula a ti.",
+      "step3Title": "Comisión",
+      "step3Desc": "Recibes 25% de comisión mensual mientras el cliente permanezca activo (hasta 12 meses).",
+      "automated": "Proceso totalmente automatizado"
+    },
+    "commission": {
+      "title": "Detalles de la Comisión",
+      "subtitle": "Total transparencia sobre cómo funcionan los pagos",
+      "percentage": "25%",
+      "percentageLabel": "Comisión recurrente mensual",
+      "bullet1": "25% de comisión recurrente (IVA excluido)",
+      "bullet2": "Comisión válida por hasta 12 meses",
+      "bullet3": "Pagos mensuales por transferencia bancaria",
+      "bullet4": "Pago mínimo: €100",
+      "bullet5": "Solo clientes activos y válidos",
+      "exampleTitle": "Ejemplo de ganancias:",
+      "example": "Si refieres 10 clientes en el plan Plus (€49/mes), puedes ganar hasta <strong class=\"text-foreground\">€147/mes</strong> en comisiones recurrentes."
+    },
+    "audience": {
+      "title": "¿Para quién es este programa?",
+      "subtitle": "El programa de afiliados es ideal para profesionales que trabajan en e-commerce y marketing digital",
+      "creator": "Creadores de contenido",
+      "creatorDesc": "YouTubers, instagrammers, bloggers y creadores de contenido digital",
+      "freelancer": "Freelancers y agencias",
+      "freelancerDesc": "Profesionales de marketing, diseño y desarrollo web",
+      "ecommerce": "Profesionales de e-commerce",
+      "ecommerceDesc": "Gerentes de tiendas online, consultores y especialistas en ventas",
+      "user": "Usuarios activos de ProduktPix",
+      "userDesc": "Clientes satisfechos que quieran compartir su experiencia"
+    },
+    "rules": {
+      "title": "Reglas y Transparencia",
+      "subtitle": "Valoramos la honestidad y la calidad de las referencias",
+      "alertTitle": "Compromiso con la calidad",
+      "alertDesc": "Nos reservamos el derecho de rechazar solicitudes o suspender afiliados que no cumplan con las reglas del programa.",
+      "rule1": "Programa sujeto a aprobación",
+      "rule2": "Sin auto-referencias",
+      "rule3": "Sin spam ni promesas engañosas",
+      "rule4": "Seguimiento vía enlace y/o código promocional",
+      "rule5": "Ventana de atribución: 30 días (last-touch)",
+      "termsLink": "Al aplicar, aceptas los Términos y Condiciones del Programa de Afiliados"
+    },
+    "ctaSection": {
+      "title": "¿Listo para empezar a ganar?",
+      "cta": "Aplicar al programa"
+    },
+    "form": {
+      "title": "Solicitud del Programa de Afiliados",
+      "subtitle": "Completa el formulario a continuación para aplicar",
+      "name": "Nombre Completo / Nombre de la Empresa",
+      "namePlaceholder": "Juan García o Empresa S.L.",
+      "email": "Correo electrónico",
+      "emailPlaceholder": "juan@ejemplo.com",
+      "country": "País",
+      "countryPlaceholder": "Selecciona tu país",
+      "website": "Sitio web / Perfil Social",
+      "websitePlaceholder": "https://ejemplo.com o instagram.com/perfil",
+      "promotion": "¿Cómo planeas promocionar ProduktPix?",
+      "promotionPlaceholder": "Describe los canales y estrategias que utilizarás...",
+      "audienceSize": "Tamaño estimado de audiencia",
+      "audiencePlaceholder": "Selecciona el tamaño",
+      "audienceOptions": {
+        "small": "Menos de 1.000",
+        "medium": "1.000 - 10.000",
+        "large": "10.000 - 50.000",
+        "xlarge": "50.000 - 100.000",
+        "huge": "Más de 100.000"
+      },
+      "termsAccept": "Acepto los Términos del Programa de Afiliados",
+      "taxAccept": "Confirmo que soy responsable de mis obligaciones fiscales",
+      "submit": "Enviar solicitud",
+      "submitting": "Enviando...",
+      "successTitle": "¡Gracias por tu solicitud!",
+      "successMessage": "Nuestro equipo revisará y responderá pronto. Recibirás un correo con los próximos pasos.",
+      "saveDashboardLink": "Guarda este enlace para acceder a tu dashboard:",
+      "successToast": "¡Solicitud enviada con éxito!",
+      "validation": {
+        "nameRequired": "El nombre es obligatorio",
+        "emailInvalid": "Correo inválido",
+        "countryRequired": "El país es obligatorio",
+        "urlInvalid": "URL inválida",
+        "promotionMin": "Describe cómo planeas promocionar (mínimo 20 caracteres)",
+        "audienceRequired": "Selecciona el tamaño de audiencia",
+        "termsRequired": "Debes aceptar los términos",
+        "taxRequired": "Debes confirmar la responsabilidad fiscal"
+      },
+      "errors": {
+        "emailExists": "Este correo ya está registrado en el programa de afiliados.",
+        "submitError": "Error al enviar solicitud. Por favor, inténtalo de nuevo."
+      }
     }
   }
 }
