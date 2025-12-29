@@ -54,6 +54,9 @@ const LandingPageV2 = lazyWithRetry(() => import("./pages/LandingPageV2"));
 const ChristmasPromo = lazyWithRetry(() => import("./pages/ChristmasPromo"));
 const AffiliateLanding = lazyWithRetry(() => import("./pages/AffiliateLanding"));
 const AffiliateDashboard = lazyWithRetry(() => import("./pages/AffiliateDashboard"));
+const PrivacyPolicy = lazyWithRetry(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazyWithRetry(() => import("./pages/TermsOfService"));
+const CookiePolicy = lazyWithRetry(() => import("./pages/CookiePolicy"));
 
 const queryClient = new QueryClient();
 
@@ -335,6 +338,27 @@ const App = () => {
                 <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
                     <AffiliateDashboard />
+              </Suspense>
+                </ErrorBoundaryWithReset>
+              } />
+              <Route path="/privacy" element={
+                <ErrorBoundaryWithReset>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <PrivacyPolicy />
+                  </Suspense>
+                </ErrorBoundaryWithReset>
+              } />
+              <Route path="/terms" element={
+                <ErrorBoundaryWithReset>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <TermsOfService />
+                  </Suspense>
+                </ErrorBoundaryWithReset>
+              } />
+              <Route path="/cookies" element={
+                <ErrorBoundaryWithReset>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <CookiePolicy />
                   </Suspense>
                 </ErrorBoundaryWithReset>
               } />
