@@ -137,10 +137,11 @@ export const AdminImagesList = () => {
       }
 
       toast({
-        title: "Starting Download",
-        description: "Preparing UGC images for download. This may take a while...",
+        title: "Fetching file list",
+        description: "Retrieving UGC images from storage...",
       });
 
+      // Fetch signed URLs from the edge function
       const response = await fetch(
         'https://dhqdamfisdbbcieqlpvt.supabase.co/functions/v1/download_all_ugc_images',
         {
@@ -152,22 +153,70 @@ export const AdminImagesList = () => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Download failed');
+        throw new Error(errorData.error || 'Failed to fetch file list');
       }
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'ugc_images.zip';
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      const data = await response.json();
+      const files: Array<{ path: string; url: string; size: number }> = data.files || [];
+
+      if (files.length === 0) {
+        toast({
+          title: "No files found",
+          description: "There are no UGC images to download",
+        });
+        return;
+      }
+
+      toast({
+        title: "Starting downloads",
+        description: `Downloading ${files.length} files...`,
+      });
+
+      // Download files in batches of 3 to avoid overwhelming the browser
+      let downloaded = 0;
+      let failed = 0;
+      const batchSize = 3;
+
+      for (let i = 0; i < files.length; i += batchSize) {
+        const batch = files.slice(i, i + batchSize);
+        
+        await Promise.all(
+          batch.map(async (file) => {
+            try {
+              const fileResponse = await fetch(file.url);
+              if (!fileResponse.ok) {
+                failed++;
+                return;
+              }
+              
+              const blob = await fileResponse.blob();
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              // Extract filename from path
+              const filename = file.path.split('/').pop() || `ugc_${Date.now()}.jpg`;
+              a.download = filename;
+              document.body.appendChild(a);
+              a.click();
+              window.URL.revokeObjectURL(url);
+              document.body.removeChild(a);
+              downloaded++;
+            } catch (err) {
+              console.error(`Failed to download ${file.path}:`, err);
+              failed++;
+            }
+          })
+        );
+
+        // Small delay between batches to prevent browser issues
+        if (i + batchSize < files.length) {
+          await new Promise((r) => setTimeout(r, 300));
+        }
+      }
 
       toast({
         title: "Download Complete",
-        description: "UGC images have been downloaded",
+        description: `Downloaded ${downloaded} files${failed > 0 ? `, ${failed} failed` : ''}`,
       });
     } catch (error: any) {
       console.error('Download error:', error);
