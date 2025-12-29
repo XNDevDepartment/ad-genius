@@ -1,24 +1,27 @@
 import { Check, AlertCircle } from 'lucide-react';
-
-const rules = [
-  'Programa sujeito a aprovação',
-  'Sem auto-referências',
-  'Sem spam ou promessas enganosas',
-  'Tracking via link e/ou código promocional',
-  'Janela de atribuição: 30 dias (last-touch)'
-];
+import { useTranslation } from 'react-i18next';
 
 export const AffiliateRules = () => {
+  const { t } = useTranslation();
+
+  const rules = [
+    t('affiliate.rules.rule1'),
+    t('affiliate.rules.rule2'),
+    t('affiliate.rules.rule3'),
+    t('affiliate.rules.rule4'),
+    t('affiliate.rules.rule5')
+  ];
+
   return (
     <section className="py-20">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Regras e Transparência
+              {t('affiliate.rules.title')}
             </h2>
             <p className="text-lg text-muted-foreground">
-              Valorizamos a honestidade e a qualidade das indicações
+              {t('affiliate.rules.subtitle')}
             </p>
           </div>
           
@@ -26,9 +29,9 @@ export const AffiliateRules = () => {
             <div className="flex items-start gap-4 mb-8 p-4 bg-primary/5 rounded-xl">
               <AlertCircle className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <h4 className="font-semibold mb-1">Compromisso com a qualidade</h4>
+                <h4 className="font-semibold mb-1">{t('affiliate.rules.alertTitle')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Reservamo-nos o direito de recusar candidaturas ou suspender afiliados que não cumpram as regras do programa.
+                  {t('affiliate.rules.alertDesc')}
                 </p>
               </div>
             </div>
@@ -46,10 +49,7 @@ export const AffiliateRules = () => {
             
             <div className="mt-8 pt-8 border-t border-border">
               <p className="text-sm text-muted-foreground text-center">
-                Ao candidatares-te, aceitas os{' '}
-                <a href="#" className="text-primary hover:underline">
-                  Termos e Condições do Programa de Afiliados
-                </a>
+                {t('affiliate.rules.termsLink')}
               </p>
             </div>
           </div>

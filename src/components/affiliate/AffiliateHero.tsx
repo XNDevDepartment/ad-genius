@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ArrowDown, Gift } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface AffiliateHeroProps {
   onApplyClick: () => void;
@@ -7,6 +8,8 @@ interface AffiliateHeroProps {
 }
 
 export const AffiliateHero = ({ onApplyClick, onHowItWorksClick }: AffiliateHeroProps) => {
+  const { t } = useTranslation();
+  
   return (
     <section className="relative py-24 lg:py-32 overflow-hidden">
       {/* Background gradient */}
@@ -17,21 +20,22 @@ export const AffiliateHero = ({ onApplyClick, onHowItWorksClick }: AffiliateHero
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-8">
             <Gift className="w-4 h-4" />
-            <span className="text-sm font-medium">Programa de Afiliados</span>
+            <span className="text-sm font-medium">{t('affiliate.badge')}</span>
           </div>
           
           {/* Headline */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-            Ganha comissões recorrentes ao recomendar o{' '}
-            <span className="bg-gradient-hero bg-clip-text text-transparent">
+            {t('affiliate.hero.headline')}{' '}
+            <span 
+              className="bg-clip-text text-transparent"
+              style={{ backgroundImage: 'linear-gradient(135deg, hsl(225 86% 60%), hsl(248 95% 70%))' }}
+            >
               ProduktPix
             </span>
           </h1>
           
           {/* Subheadline */}
-          <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto">
-            Recebe <strong className="text-foreground">25% de comissão recorrente</strong> por cada cliente ativo que indiques — durante 12 meses.
-          </p>
+          <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto" dangerouslySetInnerHTML={{ __html: t('affiliate.hero.subheadline') }} />
           
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -40,7 +44,7 @@ export const AffiliateHero = ({ onApplyClick, onHowItWorksClick }: AffiliateHero
               onClick={onApplyClick}
               className="bg-gradient-button text-primary-foreground text-lg px-8 py-6"
             >
-              Candidatar-me ao programa
+              {t('affiliate.hero.cta')}
             </Button>
             <Button 
               size="lg" 
@@ -48,7 +52,7 @@ export const AffiliateHero = ({ onApplyClick, onHowItWorksClick }: AffiliateHero
               onClick={onHowItWorksClick}
               className="text-lg px-8 py-6"
             >
-              Ver como funciona
+              {t('affiliate.hero.ctaSecondary')}
               <ArrowDown className="ml-2 w-4 h-4" />
             </Button>
           </div>
@@ -57,15 +61,15 @@ export const AffiliateHero = ({ onApplyClick, onHowItWorksClick }: AffiliateHero
           <div className="mt-12 flex flex-wrap justify-center gap-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-green-500" />
-              <span>Pagamentos mensais</span>
+              <span>{t('affiliate.hero.trustMonthly')}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-green-500" />
-              <span>Sem custos de adesão</span>
+              <span>{t('affiliate.hero.trustFree')}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-green-500" />
-              <span>Dashboard completo</span>
+              <span>{t('affiliate.hero.trustDashboard')}</span>
             </div>
           </div>
         </div>

@@ -25,37 +25,39 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2, CheckCircle2 } from 'lucide-react';
-
-const formSchema = z.object({
-  name: z.string().min(2, 'Nome é obrigatório'),
-  email: z.string().email('Email inválido'),
-  country: z.string().min(1, 'País é obrigatório'),
-  website_url: z.string().url('URL inválido'),
-  promotion_description: z.string().min(20, 'Descreve como pretendes promover (mínimo 20 caracteres)'),
-  audience_size: z.string().min(1, 'Seleciona a dimensão da audiência'),
-  terms_accepted: z.boolean().refine(val => val === true, 'Deves aceitar os termos'),
-  tax_responsibility_accepted: z.boolean().refine(val => val === true, 'Deves confirmar a responsabilidade fiscal'),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { useTranslation } from 'react-i18next';
 
 const countries = [
   'Portugal', 'Brasil', 'Espanha', 'França', 'Alemanha', 'Reino Unido', 
   'Estados Unidos', 'Canadá', 'Angola', 'Moçambique', 'Outro'
 ];
 
-const audienceSizes = [
-  { value: '<1k', label: 'Menos de 1.000' },
-  { value: '1k-10k', label: '1.000 - 10.000' },
-  { value: '10k-50k', label: '10.000 - 50.000' },
-  { value: '50k-100k', label: '50.000 - 100.000' },
-  { value: '100k+', label: 'Mais de 100.000' },
-];
-
 export const AffiliateApplicationForm = () => {
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [dashboardLink, setDashboardLink] = useState<string | null>(null);
+
+  const formSchema = z.object({
+    name: z.string().min(2, t('affiliate.form.validation.nameRequired')),
+    email: z.string().email(t('affiliate.form.validation.emailInvalid')),
+    country: z.string().min(1, t('affiliate.form.validation.countryRequired')),
+    website_url: z.string().url(t('affiliate.form.validation.urlInvalid')),
+    promotion_description: z.string().min(20, t('affiliate.form.validation.promotionMin')),
+    audience_size: z.string().min(1, t('affiliate.form.validation.audienceRequired')),
+    terms_accepted: z.boolean().refine(val => val === true, t('affiliate.form.validation.termsRequired')),
+    tax_responsibility_accepted: z.boolean().refine(val => val === true, t('affiliate.form.validation.taxRequired')),
+  });
+
+  type FormValues = z.infer<typeof formSchema>;
+
+  const audienceSizes = [
+    { value: '<1k', label: t('affiliate.form.audienceOptions.small') },
+    { value: '1k-10k', label: t('affiliate.form.audienceOptions.medium') },
+    { value: '10k-50k', label: t('affiliate.form.audienceOptions.large') },
+    { value: '50k-100k', label: t('affiliate.form.audienceOptions.xlarge') },
+    { value: '100k+', label: t('affiliate.form.audienceOptions.huge') },
+  ];
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -118,7 +120,7 @@ export const AffiliateApplicationForm = () => {
 
       if (error) {
         if (error.code === '23505') {
-          toast.error('Este email já está registado no programa de afiliados.');
+          toast.error(t('affiliate.form.errors.emailExists'));
         } else {
           throw error;
         }
@@ -127,10 +129,10 @@ export const AffiliateApplicationForm = () => {
 
       setIsSuccess(true);
       setDashboardLink(`${window.location.origin}/afiliados/dashboard/${accessToken}`);
-      toast.success('Candidatura submetida com sucesso!');
+      toast.success(t('affiliate.form.successToast'));
     } catch (error) {
       console.error('Error submitting application:', error);
-      toast.error('Erro ao submeter candidatura. Tenta novamente.');
+      toast.error(t('affiliate.form.errors.submitError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -146,15 +148,15 @@ export const AffiliateApplicationForm = () => {
                 <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
               </div>
               <h2 className="text-2xl font-bold mb-4">
-                Obrigado pela candidatura!
+                {t('affiliate.form.successTitle')}
               </h2>
               <p className="text-muted-foreground mb-6">
-                A nossa equipa irá analisar e responder em breve. Receberás um email com os próximos passos.
+                {t('affiliate.form.successMessage')}
               </p>
               {dashboardLink && (
                 <div className="p-4 bg-muted rounded-xl">
                   <p className="text-sm text-muted-foreground mb-2">
-                    Guarda este link para aceder ao teu dashboard:
+                    {t('affiliate.form.saveDashboardLink')}
                   </p>
                   <code className="text-xs bg-background p-2 rounded block break-all">
                     {dashboardLink}
@@ -173,9 +175,9 @@ export const AffiliateApplicationForm = () => {
       <div className="container mx-auto px-4">
         <Card className="max-w-2xl mx-auto border-0 shadow-apple">
           <CardHeader className="text-center pb-2">
-            <CardTitle className="text-2xl">Candidatura ao Programa de Afiliados</CardTitle>
+            <CardTitle className="text-2xl">{t('affiliate.form.title')}</CardTitle>
             <p className="text-muted-foreground">
-              Preenche o formulário abaixo para te candidatares
+              {t('affiliate.form.subtitle')}
             </p>
           </CardHeader>
           <CardContent className="p-8">
@@ -186,9 +188,9 @@ export const AffiliateApplicationForm = () => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome Completo / Nome da Empresa</FormLabel>
+                      <FormLabel>{t('affiliate.form.name')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="João Silva ou Empresa Lda" {...field} />
+                        <Input placeholder={t('affiliate.form.namePlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -200,9 +202,9 @@ export const AffiliateApplicationForm = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t('affiliate.form.email')}</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="joao@exemplo.com" {...field} />
+                        <Input type="email" placeholder={t('affiliate.form.emailPlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -214,11 +216,11 @@ export const AffiliateApplicationForm = () => {
                   name="country"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>País</FormLabel>
+                      <FormLabel>{t('affiliate.form.country')}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Seleciona o teu país" />
+                            <SelectValue placeholder={t('affiliate.form.countryPlaceholder')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -239,9 +241,9 @@ export const AffiliateApplicationForm = () => {
                   name="website_url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Website / Perfil Social</FormLabel>
+                      <FormLabel>{t('affiliate.form.website')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://exemplo.com ou instagram.com/perfil" {...field} />
+                        <Input placeholder={t('affiliate.form.websitePlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -253,10 +255,10 @@ export const AffiliateApplicationForm = () => {
                   name="promotion_description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Como pretendes promover o ProduktPix?</FormLabel>
+                      <FormLabel>{t('affiliate.form.promotion')}</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Descreve os canais e estratégias que vais utilizar..."
+                          placeholder={t('affiliate.form.promotionPlaceholder')}
                           className="min-h-[100px]"
                           {...field} 
                         />
@@ -271,11 +273,11 @@ export const AffiliateApplicationForm = () => {
                   name="audience_size"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Dimensão estimada da audiência</FormLabel>
+                      <FormLabel>{t('affiliate.form.audienceSize')}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Seleciona a dimensão" />
+                            <SelectValue placeholder={t('affiliate.form.audiencePlaceholder')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -305,7 +307,7 @@ export const AffiliateApplicationForm = () => {
                         </FormControl>
                         <div className="space-y-1 leading-none">
                           <FormLabel className="font-normal">
-                            Aceito os Termos do Programa de Afiliados
+                            {t('affiliate.form.termsAccept')}
                           </FormLabel>
                           <FormMessage />
                         </div>
@@ -326,7 +328,7 @@ export const AffiliateApplicationForm = () => {
                         </FormControl>
                         <div className="space-y-1 leading-none">
                           <FormLabel className="font-normal">
-                            Confirmo que sou responsável pelas minhas obrigações fiscais
+                            {t('affiliate.form.taxAccept')}
                           </FormLabel>
                           <FormMessage />
                         </div>
@@ -344,10 +346,10 @@ export const AffiliateApplicationForm = () => {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      A submeter...
+                      {t('affiliate.form.submitting')}
                     </>
                   ) : (
-                    'Submeter candidatura'
+                    t('affiliate.form.submit')
                   )}
                 </Button>
               </form>

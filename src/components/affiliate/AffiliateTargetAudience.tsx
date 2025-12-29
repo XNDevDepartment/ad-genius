@@ -1,39 +1,42 @@
 import { Video, Briefcase, ShoppingBag, Star } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-
-const audiences = [
-  {
-    icon: Video,
-    title: 'Criadores de conteúdo',
-    description: 'YouTubers, instagrammers, bloggers e criadores de conteúdo digital'
-  },
-  {
-    icon: Briefcase,
-    title: 'Freelancers e agências',
-    description: 'Profissionais de marketing, design e desenvolvimento web'
-  },
-  {
-    icon: ShoppingBag,
-    title: 'Profissionais de e-commerce',
-    description: 'Gestores de lojas online, consultores e especialistas em vendas'
-  },
-  {
-    icon: Star,
-    title: 'Utilizadores ativos do ProduktPix',
-    description: 'Clientes satisfeitos que queiram partilhar a sua experiência'
-  }
-];
+import { useTranslation } from 'react-i18next';
 
 export const AffiliateTargetAudience = () => {
+  const { t } = useTranslation();
+
+  const audiences = [
+    {
+      icon: Video,
+      title: t('affiliate.audience.creator'),
+      description: t('affiliate.audience.creatorDesc')
+    },
+    {
+      icon: Briefcase,
+      title: t('affiliate.audience.freelancer'),
+      description: t('affiliate.audience.freelancerDesc')
+    },
+    {
+      icon: ShoppingBag,
+      title: t('affiliate.audience.ecommerce'),
+      description: t('affiliate.audience.ecommerceDesc')
+    },
+    {
+      icon: Star,
+      title: t('affiliate.audience.user'),
+      description: t('affiliate.audience.userDesc')
+    }
+  ];
+
   return (
     <section className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Para quem é este programa?
+            {t('affiliate.audience.title')}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            O programa de afiliados é ideal para profissionais que trabalham com e-commerce e marketing digital
+            {t('affiliate.audience.subtitle')}
           </p>
         </div>
         

@@ -30,6 +30,9 @@ export const MinimalFooter = () => {
             <button onClick={() => navigate('/help/faq')} className="hover:text-foreground transition-colors">
               {t('landingV2.footer.faq', 'FAQ')}
             </button>
+            <button onClick={() => navigate('/afiliados')} className="hover:text-foreground transition-colors">
+              {t('landingV2.footer.affiliate', 'Affiliate Program')}
+            </button>
           </nav>
 
           {/* Copyright */}

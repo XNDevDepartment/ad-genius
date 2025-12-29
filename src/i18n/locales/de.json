@@ -1719,7 +1719,117 @@
     "footer": {
       "pricing": "Preise",
       "contact": "Kontakt",
-      "faq": "FAQ"
+      "faq": "FAQ",
+      "affiliate": "Partnerprogramm"
+    }
+  },
+  "affiliate": {
+    "badge": "Partnerprogramm",
+    "hero": {
+      "headline": "Verdienen Sie wiederkehrende Provisionen durch Empfehlung von",
+      "subheadline": "Erhalten Sie <strong class=\"text-foreground\">25% wiederkehrende Provision</strong> für jeden aktiven Kunden, den Sie werben — 12 Monate lang.",
+      "cta": "Zum Programm bewerben",
+      "ctaSecondary": "So funktioniert es",
+      "trustMonthly": "Monatliche Auszahlungen",
+      "trustFree": "Keine Anmeldekosten",
+      "trustDashboard": "Vollständiges Dashboard"
+    },
+    "howItWorks": {
+      "title": "So funktioniert es",
+      "subtitle": "Drei einfache Schritte, um wiederkehrende Provisionen zu verdienen",
+      "step1Title": "Teilen",
+      "step1Desc": "Teilen Sie Ihren exklusiven Link oder Code mit Ihrem Publikum.",
+      "step2Title": "Konversion",
+      "step2Desc": "Wenn jemand ein Konto erstellt und ein bezahltes Abo abschließt, wird die Konversion Ihnen zugeordnet.",
+      "step3Title": "Provision",
+      "step3Desc": "Sie erhalten 25% monatliche Provision, solange der Kunde aktiv bleibt (bis zu 12 Monate).",
+      "automated": "Vollständig automatisierter Prozess"
+    },
+    "commission": {
+      "title": "Provisionsdetails",
+      "subtitle": "Volle Transparenz über die Funktionsweise der Zahlungen",
+      "percentage": "25%",
+      "percentageLabel": "Monatliche wiederkehrende Provision",
+      "bullet1": "25% wiederkehrende Provision (ohne MwSt.)",
+      "bullet2": "Provision gültig für bis zu 12 Monate",
+      "bullet3": "Monatliche Banküberweisung",
+      "bullet4": "Mindestauszahlung: 100€",
+      "bullet5": "Nur aktive und gültige Kunden",
+      "exampleTitle": "Beispielverdienst:",
+      "example": "Wenn Sie 10 Kunden im Plus-Plan (49€/Monat) werben, können Sie bis zu <strong class=\"text-foreground\">147€/Monat</strong> an wiederkehrenden Provisionen verdienen."
+    },
+    "audience": {
+      "title": "Für wen ist dieses Programm?",
+      "subtitle": "Das Partnerprogramm ist ideal für Fachleute im E-Commerce und digitalen Marketing",
+      "creator": "Content Creator",
+      "creatorDesc": "YouTuber, Instagrammer, Blogger und digitale Content-Ersteller",
+      "freelancer": "Freelancer & Agenturen",
+      "freelancerDesc": "Marketing-, Design- und Webentwicklungs-Profis",
+      "ecommerce": "E-Commerce-Profis",
+      "ecommerceDesc": "Online-Shop-Manager, Berater und Verkaufsspezialisten",
+      "user": "Aktive ProduktPix-Nutzer",
+      "userDesc": "Zufriedene Kunden, die ihre Erfahrung teilen möchten"
+    },
+    "rules": {
+      "title": "Regeln & Transparenz",
+      "subtitle": "Wir schätzen Ehrlichkeit und Qualität bei Empfehlungen",
+      "alertTitle": "Qualitätsverpflichtung",
+      "alertDesc": "Wir behalten uns das Recht vor, Bewerbungen abzulehnen oder Partner zu suspendieren, die sich nicht an die Programmregeln halten.",
+      "rule1": "Programm vorbehaltlich Genehmigung",
+      "rule2": "Keine Selbstempfehlungen",
+      "rule3": "Kein Spam oder irreführende Versprechen",
+      "rule4": "Tracking über Link und/oder Promo-Code",
+      "rule5": "Attributionsfenster: 30 Tage (Last-Touch)",
+      "termsLink": "Mit der Bewerbung akzeptieren Sie die Allgemeinen Geschäftsbedingungen des Partnerprogramms"
+    },
+    "ctaSection": {
+      "title": "Bereit zu verdienen?",
+      "cta": "Zum Programm bewerben"
+    },
+    "form": {
+      "title": "Partnerprogramm-Bewerbung",
+      "subtitle": "Füllen Sie das Formular unten aus, um sich zu bewerben",
+      "name": "Vollständiger Name / Firmenname",
+      "namePlaceholder": "Max Mustermann oder Firma GmbH",
+      "email": "E-Mail",
+      "emailPlaceholder": "max@beispiel.com",
+      "country": "Land",
+      "countryPlaceholder": "Wählen Sie Ihr Land",
+      "website": "Website / Social-Profil",
+      "websitePlaceholder": "https://beispiel.com oder instagram.com/profil",
+      "promotion": "Wie planen Sie, ProduktPix zu bewerben?",
+      "promotionPlaceholder": "Beschreiben Sie die Kanäle und Strategien, die Sie verwenden werden...",
+      "audienceSize": "Geschätzte Zielgruppengröße",
+      "audiencePlaceholder": "Wählen Sie die Größe",
+      "audienceOptions": {
+        "small": "Weniger als 1.000",
+        "medium": "1.000 - 10.000",
+        "large": "10.000 - 50.000",
+        "xlarge": "50.000 - 100.000",
+        "huge": "Mehr als 100.000"
+      },
+      "termsAccept": "Ich akzeptiere die Bedingungen des Partnerprogramms",
+      "taxAccept": "Ich bestätige, dass ich für meine Steuerpflichten verantwortlich bin",
+      "submit": "Bewerbung absenden",
+      "submitting": "Wird gesendet...",
+      "successTitle": "Danke für Ihre Bewerbung!",
+      "successMessage": "Unser Team wird prüfen und sich bald melden. Sie erhalten eine E-Mail mit den nächsten Schritten.",
+      "saveDashboardLink": "Speichern Sie diesen Link für den Zugang zu Ihrem Dashboard:",
+      "successToast": "Bewerbung erfolgreich eingereicht!",
+      "validation": {
+        "nameRequired": "Name ist erforderlich",
+        "emailInvalid": "Ungültige E-Mail",
+        "countryRequired": "Land ist erforderlich",
+        "urlInvalid": "Ungültige URL",
+        "promotionMin": "Beschreiben Sie, wie Sie werben möchten (mindestens 20 Zeichen)",
+        "audienceRequired": "Wählen Sie die Zielgruppengröße",
+        "termsRequired": "Sie müssen die Bedingungen akzeptieren",
+        "taxRequired": "Sie müssen die Steuerverantwortung bestätigen"
+      },
+      "errors": {
+        "emailExists": "Diese E-Mail ist bereits im Partnerprogramm registriert.",
+        "submitError": "Fehler beim Senden der Bewerbung. Bitte versuchen Sie es erneut."
+      }
     }
   }
 }
