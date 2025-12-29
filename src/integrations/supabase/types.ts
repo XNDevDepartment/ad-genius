@@ -14,6 +14,176 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_commissions: {
+        Row: {
+          affiliate_id: string
+          amount: number
+          created_at: string
+          currency: string
+          eligible_at: string
+          id: string
+          month: string
+          paid_at: string | null
+          payout_batch_id: string | null
+          plan_value: number
+          referral_id: string
+          status: string
+        }
+        Insert: {
+          affiliate_id: string
+          amount: number
+          created_at?: string
+          currency?: string
+          eligible_at: string
+          id?: string
+          month: string
+          paid_at?: string | null
+          payout_batch_id?: string | null
+          plan_value: number
+          referral_id: string
+          status?: string
+        }
+        Update: {
+          affiliate_id?: string
+          amount?: number
+          created_at?: string
+          currency?: string
+          eligible_at?: string
+          id?: string
+          month?: string
+          paid_at?: string | null
+          payout_batch_id?: string | null
+          plan_value?: number
+          referral_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_commissions_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_commissions_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "affiliate_referrals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_referrals: {
+        Row: {
+          affiliate_id: string
+          attribution_expires_at: string
+          conversion_date: string | null
+          created_at: string
+          current_plan: string | null
+          id: string
+          referral_code_used: string
+          signup_date: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          affiliate_id: string
+          attribution_expires_at: string
+          conversion_date?: string | null
+          created_at?: string
+          current_plan?: string | null
+          id?: string
+          referral_code_used: string
+          signup_date?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          affiliate_id?: string
+          attribution_expires_at?: string
+          conversion_date?: string | null
+          created_at?: string
+          current_plan?: string | null
+          id?: string
+          referral_code_used?: string
+          signup_date?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_referrals_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliates: {
+        Row: {
+          access_token: string
+          approved_at: string | null
+          audience_size: string
+          country: string
+          created_at: string
+          email: string
+          iban: string | null
+          id: string
+          name: string
+          notes: string | null
+          promotion_description: string
+          referral_code: string
+          referral_link: string
+          status: string
+          tax_responsibility_accepted: boolean
+          terms_accepted: boolean
+          updated_at: string
+          website_url: string
+        }
+        Insert: {
+          access_token: string
+          approved_at?: string | null
+          audience_size: string
+          country: string
+          created_at?: string
+          email: string
+          iban?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          promotion_description: string
+          referral_code: string
+          referral_link: string
+          status?: string
+          tax_responsibility_accepted?: boolean
+          terms_accepted?: boolean
+          updated_at?: string
+          website_url: string
+        }
+        Update: {
+          access_token?: string
+          approved_at?: string | null
+          audience_size?: string
+          country?: string
+          created_at?: string
+          email?: string
+          iban?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          promotion_description?: string
+          referral_code?: string
+          referral_link?: string
+          status?: string
+          tax_responsibility_accepted?: boolean
+          terms_accepted?: boolean
+          updated_at?: string
+          website_url?: string
+        }
+        Relationships: []
+      }
       ai_prompt_history: {
         Row: {
           change_notes: string | null
