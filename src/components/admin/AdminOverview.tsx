@@ -12,7 +12,8 @@ import { FinancialDashboard } from './FinancialDashboard';
 import { PromptManagement } from './PromptManagement';
 import { PromoCodesManagement } from './PromoCodesManagement';
 import { AdminErrorReports } from './AdminErrorReports';
-import { Image, AlertTriangle } from 'lucide-react';
+import { AdminAffiliates } from './AdminAffiliates';
+import { Image, AlertTriangle, Users } from 'lucide-react';
 
 export const AdminOverview = () => {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
@@ -31,13 +32,14 @@ export const AdminOverview = () => {
         </Button>
       </div>
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-10 lg:grid-cols-10">
+        <TabsList className="grid w-full grid-cols-11 lg:grid-cols-11">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="financial">Financial</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="images">Images</TabsTrigger>
           <TabsTrigger value="videos">Videos</TabsTrigger>
           <TabsTrigger value="outfit-swaps">Outfit Swaps</TabsTrigger>
+          <TabsTrigger value="affiliates">Affiliates</TabsTrigger>
           <TabsTrigger value="prompts">AI Prompts</TabsTrigger>
           <TabsTrigger value="promo-codes">Promo Codes</TabsTrigger>
           <TabsTrigger value="errors">Errors</TabsTrigger>
@@ -66,6 +68,10 @@ export const AdminOverview = () => {
 
         <TabsContent value="outfit-swaps" className="space-y-6">
           <AdminOutfitSwapsList />
+        </TabsContent>
+
+        <TabsContent value="affiliates" className="space-y-6">
+          <AdminAffiliates />
         </TabsContent>
 
         <TabsContent value="prompts" className="space-y-6">

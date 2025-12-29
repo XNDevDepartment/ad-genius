@@ -52,7 +52,8 @@ const CreateCustomModel = lazyWithRetry(() => import("./pages/CreateCustomModel"
 const VideoAds = lazyWithRetry(() => import("./pages/VideoAds"));
 const LandingPageV2 = lazyWithRetry(() => import("./pages/LandingPageV2"));
 const ChristmasPromo = lazyWithRetry(() => import("./pages/ChristmasPromo"));
-
+const AffiliateLanding = lazyWithRetry(() => import("./pages/AffiliateLanding"));
+const AffiliateDashboard = lazyWithRetry(() => import("./pages/AffiliateDashboard"));
 
 const queryClient = new QueryClient();
 
@@ -320,6 +321,20 @@ const App = () => {
                 <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
                     <ChristmasPromo />
+                  </Suspense>
+                </ErrorBoundaryWithReset>
+              } />
+              <Route path="/afiliados" element={
+                <ErrorBoundaryWithReset>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <AffiliateLanding />
+                  </Suspense>
+                </ErrorBoundaryWithReset>
+              } />
+              <Route path="/afiliados/dashboard/:token" element={
+                <ErrorBoundaryWithReset>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <AffiliateDashboard />
                   </Suspense>
                 </ErrorBoundaryWithReset>
               } />
