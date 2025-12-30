@@ -128,6 +128,21 @@
       "description": "Gere conteúdo UGC para aparecer aqui",
       "searchDescription": "Tente ajustar os seus termos de pesquisa"
     },
+    "bulkUpload": {
+      "title": "Carregar Imagens de Origem",
+      "uploadButton": "Carregar Imagens",
+      "dropzone": "Arraste e solte imagens aqui ou clique para selecionar",
+      "selectedFiles": "Ficheiros Selecionados",
+      "supportedFormats": "PNG, JPG, JPEG, WEBP",
+      "maxSize": "Máx 10MB por ficheiro",
+      "maxFiles": "Máximo 20 ficheiros por lote",
+      "pending": "Pendente",
+      "uploading": "A carregar...",
+      "complete": "Carregamento Completo",
+      "success": "sucesso",
+      "error": "falhou",
+      "uploadAll": "Carregar Todos"
+    },
     "actions": {
       "downloadStarted": "Transferência iniciada",
       "downloading": "A transferir a imagem...",

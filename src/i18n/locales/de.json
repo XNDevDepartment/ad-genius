@@ -128,6 +128,21 @@
       "description": "Erzeuge UGC-Inhalte, um sie hier zu sehen",
       "searchDescription": "Passe deine Suchbegriffe an"
     },
+    "bulkUpload": {
+      "title": "Quellbilder Hochladen",
+      "uploadButton": "Bilder Hochladen",
+      "dropzone": "Bilder hierher ziehen oder klicken zum Auswählen",
+      "selectedFiles": "Ausgewählte Dateien",
+      "supportedFormats": "PNG, JPG, JPEG, WEBP",
+      "maxSize": "Max 10MB pro Datei",
+      "maxFiles": "Maximum 20 Dateien pro Stapel",
+      "pending": "Ausstehend",
+      "uploading": "Wird hochgeladen...",
+      "complete": "Upload Abgeschlossen",
+      "success": "erfolgreich",
+      "error": "fehlgeschlagen",
+      "uploadAll": "Alle Hochladen"
+    },
     "actions": {
       "downloadStarted": "Download gestartet",
       "downloading": "Bild wird heruntergeladen...",
