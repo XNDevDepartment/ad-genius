@@ -447,6 +447,31 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
     fetchImages(1, false);
   }, [user, limit, filter]);
 
+  // Bulk delete images
+  const deleteImages = async (imageIds: string[]): Promise<{ success: number; failed: number }> => {
+    let success = 0;
+    let failed = 0;
+
+    // Get images to delete with their types
+    const imagesToDelete = images.filter(img => imageIds.includes(img.id));
+    
+    // Process in batches of 5
+    const batchSize = 5;
+    for (let i = 0; i < imagesToDelete.length; i += batchSize) {
+      const batch = imagesToDelete.slice(i, i + batchSize);
+      const results = await Promise.allSettled(
+        batch.map(img => deleteImage(img.id))
+      );
+      
+      results.forEach(result => {
+        if (result.status === 'fulfilled') success++;
+        else failed++;
+      });
+    }
+
+    return { success, failed };
+  };
+
   return {
     images,
     loading,
@@ -458,6 +483,7 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       setCurrentPage(1);
       fetchImages(1, false);
     },
-    deleteImage
+    deleteImage,
+    deleteImages
   };
 };

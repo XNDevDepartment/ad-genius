@@ -87,6 +87,68 @@ export const useSourceImages = () => {
     }
   };
 
+  const deleteSourceImage = async (imageId: string): Promise<boolean> => {
+    try {
+      const image = sourceImages.find(img => img.id === imageId);
+      if (!image) throw new Error('Image not found');
+
+      // Delete from storage
+      const { error: storageError } = await supabase.storage
+        .from('ugc-inputs')
+        .remove([image.storage_path]);
+
+      if (storageError) console.warn('Storage delete warning:', storageError);
+
+      // Delete from database
+      const { error: dbError } = await supabase
+        .from('source_images')
+        .delete()
+        .eq('id', imageId);
+
+      if (dbError) throw dbError;
+
+      // Update local state
+      setSourceImages(prev => prev.filter(img => img.id !== imageId));
+      return true;
+    } catch (err) {
+      console.error('Error deleting source image:', err);
+      throw err;
+    }
+  };
+
+  const deleteSourceImages = async (imageIds: string[]): Promise<{ success: number; failed: number }> => {
+    let success = 0;
+    let failed = 0;
+
+    // Process in batches of 5
+    const batchSize = 5;
+    for (let i = 0; i < imageIds.length; i += batchSize) {
+      const batch = imageIds.slice(i, i + batchSize);
+      const results = await Promise.allSettled(
+        batch.map(async (imageId) => {
+          const image = sourceImages.find(img => img.id === imageId);
+          if (image) {
+            await supabase.storage.from('ugc-inputs').remove([image.storage_path]);
+          }
+          const { error } = await supabase
+            .from('source_images')
+            .delete()
+            .eq('id', imageId);
+          if (error) throw error;
+        })
+      );
+      
+      results.forEach(result => {
+        if (result.status === 'fulfilled') success++;
+        else failed++;
+      });
+    }
+
+    // Update local state
+    setSourceImages(prev => prev.filter(img => !imageIds.includes(img.id)));
+    return { success, failed };
+  };
+
   useEffect(() => {
     fetchSourceImages();
   }, [user]);
@@ -96,5 +158,7 @@ export const useSourceImages = () => {
     loading,
     error,
     refetch: fetchSourceImages,
+    deleteSourceImage,
+    deleteSourceImages,
   };
 };
