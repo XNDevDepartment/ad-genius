@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { FileImage } from "lucide-react";
+import { FileImage, Upload } from "lucide-react";
+import { BulkImageUploadModal } from "@/components/BulkImageUploadModal";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLibraryImages } from "@/hooks/useLibraryImages";
@@ -35,6 +37,7 @@ export const Library = ({ onBack }: LibraryProps) => {
   const [showSourceThumbnails, setShowSourceThumbnails] = useState(false);
   const [viewMode, setViewMode] = useState<"ai" | "source">("ai");
   const [filter, setFilter] = useState<"all" | "ugc" | "outfit_swap">("all");
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   const { toast } = useToast();
   const { user } = useAuth();
@@ -43,8 +46,12 @@ export const Library = ({ onBack }: LibraryProps) => {
     limit: 20, 
     filter: viewMode === "ai" ? filter : undefined 
   });
-  const { sourceImages, loading: sourceLoading } = useSourceImages();
+  const { sourceImages, loading: sourceLoading, refetch: refetchSourceImages } = useSourceImages();
   const { activeJob, activeImages } = useActiveJob();
+
+  const handleUploadComplete = () => {
+    refetchSourceImages();
+  };
 
   const handleDownload = async (image: LibraryImage) => {
     toast({
@@ -149,6 +156,12 @@ export const Library = ({ onBack }: LibraryProps) => {
               {viewMode === "ai" ? t('library.aiGenerated') : t('library.sourceImages')} ({displayImages.length})
             </CardTitle>
           </CardHeader>
+          {viewMode === "source" && (
+            <Button onClick={() => setShowUploadModal(true)} size="sm">
+              <Upload className="w-4 h-4 mr-2" />
+              {t('library.bulkUpload.uploadButton', 'Upload Images')}
+            </Button>
+          )}
         </div>
         <CardContent>
           <div className="flex items-start lg:items-center gap-4 mb-6 lg:justify-between flex-col lg:flex-row">
@@ -197,6 +210,13 @@ export const Library = ({ onBack }: LibraryProps) => {
           )}
         </CardContent>
       </Card>
+
+      {/* Bulk Upload Modal */}
+      <BulkImageUploadModal
+        open={showUploadModal}
+        onOpenChange={setShowUploadModal}
+        onUploadComplete={handleUploadComplete}
+      />
     </div>
   );
 };

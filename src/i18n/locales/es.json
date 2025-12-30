@@ -128,6 +128,21 @@
       "description": "Genera contenido UGC para verlo aquí",
       "searchDescription": "Prueba a ajustar tus términos de búsqueda"
     },
+    "bulkUpload": {
+      "title": "Subir Imágenes de Origen",
+      "uploadButton": "Subir Imágenes",
+      "dropzone": "Arrastra y suelta imágenes aquí o haz clic para seleccionar",
+      "selectedFiles": "Archivos Seleccionados",
+      "supportedFormats": "PNG, JPG, JPEG, WEBP",
+      "maxSize": "Máx 10MB por archivo",
+      "maxFiles": "Máximo 20 archivos por lote",
+      "pending": "Pendiente",
+      "uploading": "Subiendo...",
+      "complete": "Subida Completa",
+      "success": "exitoso",
+      "error": "fallido",
+      "uploadAll": "Subir Todos"
+    },
     "actions": {
       "downloadStarted": "Descarga iniciada",
       "downloading": "Descargando imagen...",

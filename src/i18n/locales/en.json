@@ -128,6 +128,21 @@
       "description": "Generate UGC to display it here",
       "searchDescription": "Try adjusting your search terms"
     },
+    "bulkUpload": {
+      "title": "Upload Source Images",
+      "uploadButton": "Upload Images",
+      "dropzone": "Drag & drop images here or click to select",
+      "selectedFiles": "Selected Files",
+      "supportedFormats": "PNG, JPG, JPEG, WEBP",
+      "maxSize": "Max 10MB per file",
+      "maxFiles": "Maximum 20 files per batch",
+      "pending": "Pending",
+      "uploading": "Uploading...",
+      "complete": "Upload Complete",
+      "success": "succeeded",
+      "error": "failed",
+      "uploadAll": "Upload All"
+    },
     "actions": {
       "downloadStarted": "Download started",
       "downloading": "Downloading image...",
