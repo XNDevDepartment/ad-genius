@@ -84,13 +84,9 @@ export function useVideoLibrary(options: UseVideoLibraryOptions = {}) {
       console.log('[useVideoLibrary] Attempting to delete video:', jobId);
       
       const job = videos.find((v) => v.id === jobId);
-      if (!job) {
-        console.warn('[useVideoLibrary] Video not found in local state:', jobId);
-        return;
-      }
-
+      
       // Delete from storage if exists
-      if (job.video_path) {
+      if (job?.video_path) {
         const { error: storageError } = await supabase.storage
           .from("videos")
           .remove([job.video_path]);
@@ -103,38 +99,60 @@ export function useVideoLibrary(options: UseVideoLibraryOptions = {}) {
       }
 
       // Delete from database
-      const { error: dbError, count } = await supabase
+      const { error: dbError } = await supabase
         .from("kling_jobs")
         .delete()
-        .eq("id", jobId)
-        .select();
+        .eq("id", jobId);
 
-      console.log('[useVideoLibrary] Database delete result:', { 
-        error: dbError, 
-        count,
-        jobId 
-      });
-
-      // Check if deletion actually succeeded
       if (dbError) {
         console.error('[useVideoLibrary] Database deletion failed:', dbError);
         throw new Error(`Failed to delete video: ${dbError.message}`);
       }
 
-      if (!count || count === 0) {
-        console.error('[useVideoLibrary] No rows deleted from database');
-        throw new Error('Video record not found or deletion denied');
-      }
-
       console.log('[useVideoLibrary] Video deleted successfully from database');
 
-      // Only update UI state if database deletion succeeded
+      // Update UI state
       setVideos((prev) => prev.filter((v) => v.id !== jobId));
       toast.success("Video deleted");
     } catch (err: any) {
       console.error('[useVideoLibrary] Failed to delete video:', err);
       toast.error(err.message || "Failed to delete video");
+      throw err;
     }
+  };
+
+  // Bulk delete videos
+  const deleteVideos = async (jobIds: string[]): Promise<{ success: number; failed: number }> => {
+    let success = 0;
+    let failed = 0;
+
+    // Process in batches of 5
+    const batchSize = 5;
+    for (let i = 0; i < jobIds.length; i += batchSize) {
+      const batch = jobIds.slice(i, i + batchSize);
+      const results = await Promise.allSettled(
+        batch.map(async (jobId) => {
+          const job = videos.find(v => v.id === jobId);
+          if (job?.video_path) {
+            await supabase.storage.from("videos").remove([job.video_path]);
+          }
+          const { error } = await supabase
+            .from("kling_jobs")
+            .delete()
+            .eq("id", jobId);
+          if (error) throw error;
+        })
+      );
+      
+      results.forEach(result => {
+        if (result.status === 'fulfilled') success++;
+        else failed++;
+      });
+    }
+
+    // Update local state
+    setVideos(prev => prev.filter(v => !jobIds.includes(v.id)));
+    return { success, failed };
   };
 
   // Download video
@@ -262,6 +280,7 @@ export function useVideoLibrary(options: UseVideoLibraryOptions = {}) {
     loadMore,
     refetch,
     deleteVideo,
+    deleteVideos,
     downloadVideo,
     retryVideo,
   };

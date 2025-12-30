@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useVideoLibrary } from "@/hooks/useVideoLibrary";
 import { VideoCard } from "@/components/VideoCard";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, CheckSquare, Square, X } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -10,17 +10,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, RefreshCw, Film, X } from "lucide-react";
+import { Loader2, RefreshCw, Film } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { KlingJobRow } from "@/api/kling";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { format } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 export default function VideoLibrary() {
   const {
@@ -35,11 +44,18 @@ export default function VideoLibrary() {
     loadMore,
     refetch,
     deleteVideo,
+    deleteVideos,
     downloadVideo,
     retryVideo,
   } = useVideoLibrary();
 
   const [viewingVideo, setViewingVideo] = useState<KlingJobRow | null>(null);
+  
+  // Selection mode state
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const videoUrl = viewingVideo
     ? viewingVideo.video_url || (viewingVideo.video_path 
@@ -47,18 +63,96 @@ export default function VideoLibrary() {
         : null)
     : null;
 
+  const toggleSelection = (jobId: string) => {
+    const newSelection = new Set(selectedIds);
+    if (newSelection.has(jobId)) {
+      newSelection.delete(jobId);
+    } else {
+      newSelection.add(jobId);
+    }
+    setSelectedIds(newSelection);
+  };
+
+  const selectAll = () => {
+    setSelectedIds(new Set(videos.map(v => v.id)));
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    
+    setBulkDeleting(true);
+    try {
+      const result = await deleteVideos(Array.from(selectedIds));
+      if (result.failed === 0) {
+        toast.success(`Deleted ${result.success} videos`);
+      } else {
+        toast.warning(`Deleted ${result.success}, failed ${result.failed}`);
+      }
+      setSelectedIds(new Set());
+      setSelectionMode(false);
+    } catch (err) {
+      toast.error("Failed to delete videos");
+    } finally {
+      setBulkDeleting(false);
+      setShowBulkDeleteDialog(false);
+    }
+  };
+
   return (
     <div className="container mx-auto py-8 px-4 max-w-7xl">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <Film className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold">Video Library</h1>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 mb-2">
+            <Film className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold">Video Library</h1>
+          </div>
+          {!selectionMode && (
+            <Button variant="outline" onClick={() => setSelectionMode(true)}>
+              <CheckSquare className="h-4 w-4 mr-2" />
+              Select
+            </Button>
+          )}
         </div>
         <p className="text-muted-foreground">
           Browse and manage your generated videos
         </p>
       </div>
+
+      {/* Selection Mode Header */}
+      {selectionMode && (
+        <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg mb-6">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium">{selectedIds.size} selected</span>
+            <Button variant="ghost" size="sm" onClick={selectAll}>
+              Select All
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="destructive"
+              size="sm"
+              disabled={selectedIds.size === 0 || bulkDeleting}
+              onClick={() => setShowBulkDeleteDialog(true)}
+            >
+              {bulkDeleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Selected
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSelectedIds(new Set());
+                setSelectionMode(false);
+              }}
+            >
+              <X className="h-4 w-4 mr-2" />
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Filters & Actions */}
       <div className="flex flex-wrap items-center gap-4 mb-6">
@@ -141,13 +235,32 @@ export default function VideoLibrary() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {videos.map((job) => (
-              <VideoCard
-                key={job.id}
-                job={job}
-                onDelete={deleteVideo}
-                onDownload={downloadVideo}
-                onView={setViewingVideo}
-              />
+              <div key={job.id} className={`relative ${selectionMode && selectedIds.has(job.id) ? 'ring-2 ring-primary rounded-lg' : ''}`}>
+                {selectionMode && (
+                  <div 
+                    className="absolute top-2 left-2 z-10 cursor-pointer"
+                    onClick={() => toggleSelection(job.id)}
+                  >
+                    <div className={`w-6 h-6 rounded flex items-center justify-center ${
+                      selectedIds.has(job.id) 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-background/80 border border-border'
+                    }`}>
+                      {selectedIds.has(job.id) ? (
+                        <CheckSquare className="h-4 w-4" />
+                      ) : (
+                        <Square className="h-4 w-4" />
+                      )}
+                    </div>
+                  </div>
+                )}
+                <VideoCard
+                  job={job}
+                  onDelete={deleteVideo}
+                  onDownload={downloadVideo}
+                  onView={setViewingVideo}
+                />
+              </div>
             ))}
           </div>
 
@@ -176,17 +289,16 @@ export default function VideoLibrary() {
       {/* Video Viewer Modal */}
       <Dialog open={!!viewingVideo} onOpenChange={() => setViewingVideo(null)}>
         <DialogContent className="max-w-[95vw] md:max-w-5xl max-h-[92vh] overflow-y-auto">
-
-            <DialogTitle className="flex items-center justify-between">
-              <span>Video Details</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setViewingVideo(null)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </DialogTitle>
+          <DialogTitle className="flex items-center justify-between">
+            <span>Video Details</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setViewingVideo(null)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogTitle>
 
           {viewingVideo && (
             <div className="grid md:grid-cols-3 gap-6">
@@ -249,6 +361,29 @@ export default function VideoLibrary() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedIds.size} videos?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the selected videos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {bulkDeleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
