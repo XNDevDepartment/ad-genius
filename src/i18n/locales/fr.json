@@ -1135,6 +1135,34 @@
       "detail": {
         "label": "Gros Plan Détaillé",
         "description": "Gros plan des caractéristiques clés"
+      },
+      "lowerBodyFront": {
+        "label": "Avant du Bas du Corps",
+        "description": "Vue de face centrée sur pantalons/bas"
+      },
+      "lowerBodyBack": {
+        "label": "Arrière du Bas du Corps",
+        "description": "Vue arrière des pantalons/bas"
+      },
+      "lowerBodySide": {
+        "label": "Côté du Bas du Corps",
+        "description": "Profil latéral des pantalons/bas"
+      },
+      "walkingPose": {
+        "label": "Pose en Marche",
+        "description": "Mouvement de marche dynamique"
+      },
+      "shoeFront": {
+        "label": "Avant de la Chaussure",
+        "description": "Vue de face de la chaussure"
+      },
+      "shoeSide": {
+        "label": "Côté de la Chaussure",
+        "description": "Profil latéral de la chaussure"
+      },
+      "shoeBack": {
+        "label": "Arrière de la Chaussure",
+        "description": "Vue arrière/talon de la chaussure"
       }
     }
   },

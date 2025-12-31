@@ -1135,6 +1135,34 @@
       "detail": {
         "label": "Detailnahaufnahme",
         "description": "Nahaufnahme wichtiger Merkmale"
+      },
+      "lowerBodyFront": {
+        "label": "Unterkörper Vorderseite",
+        "description": "Frontansicht mit Fokus auf Hosen/Unterteile"
+      },
+      "lowerBodyBack": {
+        "label": "Unterkörper Rückseite",
+        "description": "Rückansicht von Hosen/Unterteilen"
+      },
+      "lowerBodySide": {
+        "label": "Unterkörper Seite",
+        "description": "Seitenprofil von Hosen/Unterteilen"
+      },
+      "walkingPose": {
+        "label": "Gehende Pose",
+        "description": "Dynamische Gehbewegung"
+      },
+      "shoeFront": {
+        "label": "Schuh Vorderseite",
+        "description": "Frontansicht des Schuhs"
+      },
+      "shoeSide": {
+        "label": "Schuh Seite",
+        "description": "Seitenprofil des Schuhs"
+      },
+      "shoeBack": {
+        "label": "Schuh Rückseite",
+        "description": "Rückansicht/Absatz des Schuhs"
       }
     }
   },
