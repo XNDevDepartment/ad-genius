@@ -1135,6 +1135,34 @@
       "detail": {
         "label": "Primer Plano Detallado",
         "description": "Primer plano de características clave"
+      },
+      "lowerBodyFront": {
+        "label": "Frente Parte Inferior",
+        "description": "Vista frontal enfocada en pantalones/partes inferiores"
+      },
+      "lowerBodyBack": {
+        "label": "Trasera Parte Inferior",
+        "description": "Vista trasera de pantalones/partes inferiores"
+      },
+      "lowerBodySide": {
+        "label": "Lateral Parte Inferior",
+        "description": "Perfil lateral de pantalones/partes inferiores"
+      },
+      "walkingPose": {
+        "label": "Pose Caminando",
+        "description": "Movimiento dinámico caminando"
+      },
+      "shoeFront": {
+        "label": "Frente del Calzado",
+        "description": "Vista frontal del calzado"
+      },
+      "shoeSide": {
+        "label": "Lateral del Calzado",
+        "description": "Perfil lateral del calzado"
+      },
+      "shoeBack": {
+        "label": "Trasera del Calzado",
+        "description": "Vista trasera/tacón del calzado"
       }
     }
   },

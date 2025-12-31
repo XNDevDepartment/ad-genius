@@ -1140,6 +1140,34 @@
       "detail": {
         "label": "Detail Close-Up",
         "description": "Close-up of key features"
+      },
+      "lowerBodyFront": {
+        "label": "Lower Body Front",
+        "description": "Front view focusing on pants/bottoms"
+      },
+      "lowerBodyBack": {
+        "label": "Lower Body Back",
+        "description": "Back view of pants/bottoms"
+      },
+      "lowerBodySide": {
+        "label": "Lower Body Side",
+        "description": "Side profile of pants/bottoms"
+      },
+      "walkingPose": {
+        "label": "Walking Pose",
+        "description": "Dynamic walking movement"
+      },
+      "shoeFront": {
+        "label": "Shoe Front",
+        "description": "Front view of footwear"
+      },
+      "shoeSide": {
+        "label": "Shoe Side",
+        "description": "Side profile of footwear"
+      },
+      "shoeBack": {
+        "label": "Shoe Back",
+        "description": "Back/heel view of footwear"
       }
     }
   },
