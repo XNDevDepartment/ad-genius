@@ -3,7 +3,19 @@
     "progress": "Step {{current}} of {{total}}",
     "continue": "Continue",
     "finish": "Start Creating",
+    "skip": "Skip",
     "skipVideo": "Skip for now",
+    "skipConfirmTitle": "Skip Onboarding?",
+    "skipConfirm": "You can restart the onboarding anytime from Settings.",
+    "welcome": {
+      "title": "Welcome to ProduktPix!",
+      "subtitle": "Let's set up your first AI-powered content in just 2 minutes",
+      "benefit1": "Upload your product and define your audience",
+      "benefit2": "Get 2 FREE AI-generated images",
+      "benefit3": "Create 1 FREE product video",
+      "getStarted": "Get Started",
+      "skip": "Skip for now"
+    },
     "step1": {
       "title": "Upload Your Product",
       "subtitle": "Start by uploading an image of your product",
@@ -50,7 +62,9 @@
       "generating": "We're generating 2 free images just for you...",
       "complete": "Your images are ready!",
       "freeNote": "These images are free - they don't use your credits!",
-      "continueToVideo": "Continue to Video"
+      "continueToVideo": "Continue to Video",
+      "error": "Generation failed. Try again.",
+      "retry": "Retry"
     },
     "step5": {
       "title": "Bring Your Image to Life",
@@ -60,7 +74,9 @@
       "animating": "Creating your video...",
       "generatingVideo": "This may take a minute...",
       "complete": "Your video is ready!",
-      "freeNote": "This video is free - it doesn't use your credits!"
+      "freeNote": "This video is free - it doesn't use your credits!",
+      "error": "Video creation failed. Try again.",
+      "retry": "Retry"
     }
   },
   "paymentFailed": {
@@ -729,7 +745,13 @@
       "autoSave": "Auto-save",
       "autoSaveDesc": "Automatically save settings",
       "saveChanges": "Save Changes",
-      "saving": "Saving..."
+      "saving": "Saving...",
+      "onboarding": "Product Tour",
+      "onboardingDesc": "Restart the product tour to learn the basics",
+      "restartOnboarding": "Restart Tour",
+      "restartConfirm": "This will restart the product tour from the beginning. Continue?",
+      "restartSuccess": "Tour restarted!",
+      "restartSuccessDesc": "Redirecting to the product tour..."
     },
     "notifications": {
       "title": "Notifications",

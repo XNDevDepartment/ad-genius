@@ -1,5 +1,21 @@
 {
   "onboarding": {
+    "progress": "Passo {{current}} de {{total}}",
+    "continue": "Continuar",
+    "finish": "Começar a Criar",
+    "skip": "Saltar",
+    "skipVideo": "Saltar por agora",
+    "skipConfirmTitle": "Saltar Onboarding?",
+    "skipConfirm": "Pode reiniciar o onboarding a qualquer momento nas Definições.",
+    "welcome": {
+      "title": "Bem-vindo ao ProduktPix!",
+      "subtitle": "Vamos configurar o seu primeiro conteúdo IA em apenas 2 minutos",
+      "benefit1": "Carregue o seu produto e defina o seu público",
+      "benefit2": "Obtenha 2 imagens geradas por IA GRÁTIS",
+      "benefit3": "Crie 1 vídeo de produto GRÁTIS",
+      "getStarted": "Começar",
+      "skip": "Saltar por agora"
+    },
     "step1": {
       "title": "Carregue o Seu Produto",
       "subtitle": "Arraste e solte uma imagem ou cole um URL",
@@ -29,7 +45,7 @@
     "step3": {
       "title": "Escolha o Seu Estilo de Conteúdo",
       "subtitle": "Selecione o tipo de conteúdo que quer criar",
-      "productShowcase": {
+      "product_showcase": {
         "title": "Vitrine de Produto",
         "description": "Imagens limpas e profissionais focadas no produto"
       },
@@ -37,11 +53,11 @@
         "title": "Estilo de Vida",
         "description": "Produto em contexto real"
       },
-      "socialProof": {
+      "social_proof": {
         "title": "Prova Social",
         "description": "Estilo UGC com modelos/influenciadores"
       },
-      "adCreative": {
+      "ad_creative": {
         "title": "Criativo para Anúncios",
         "description": "Visuais prontos para marketing"
       }
@@ -60,15 +76,14 @@
       "title": "Dê Vida à Sua Imagem",
       "subtitle": "Crie um vídeo grátis a partir da sua imagem",
       "selectImage": "Selecione uma imagem para animar",
+      "animate": "Animar Esta Imagem",
       "animating": "A criar vídeo...",
+      "generatingVideo": "Isto pode demorar um minuto...",
       "complete": "O seu vídeo está pronto!",
+      "freeNote": "Este vídeo é grátis - não usa os seus créditos!",
       "error": "Falha na criação do vídeo. Tente novamente.",
       "retry": "Tentar Novamente"
-    },
-    "progress": "Passo {{current}} de {{total}}",
-    "continue": "Continuar",
-    "finish": "Começar a Criar",
-    "skip": "Saltar"
+    }
   },
   "paymentFailed": {
     "title": "Pagamento Falhado",
