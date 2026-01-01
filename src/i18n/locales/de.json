@@ -1,4 +1,64 @@
 {
+  "onboarding": {
+    "step1": {
+      "title": "Laden Sie Ihr Produkt Hoch",
+      "subtitle": "Ziehen Sie ein Bild hierher oder fügen Sie eine URL ein",
+      "uploadTab": "Datei Hochladen",
+      "urlTab": "URL Einfügen",
+      "placeholder": "https://beispiel.com/produkt.jpg",
+      "uploading": "Wird hochgeladen...",
+      "fetchingUrl": "Bild wird abgerufen...",
+      "invalidUrl": "Bitte geben Sie eine gültige URL ein",
+      "uploadFailed": "Bild-Upload fehlgeschlagen",
+      "urlFailed": "Bild konnte nicht von URL abgerufen werden"
+    },
+    "step2": {
+      "title": "Wer ist Ihre Zielgruppe?",
+      "subtitle": "Beschreiben Sie Ihre Zielkunden",
+      "placeholder": "Z.B.: Junge Berufstätige zwischen 25-35 Jahren, die sich für nachhaltige Mode interessieren"
+    },
+    "step3": {
+      "title": "Wählen Sie Ihren Content-Stil",
+      "subtitle": "Wählen Sie die Art von Inhalten, die Sie erstellen möchten",
+      "productShowcase": {
+        "title": "Produktpräsentation",
+        "description": "Klare, professionelle produktfokussierte Bilder"
+      },
+      "lifestyle": {
+        "title": "Lifestyle",
+        "description": "Produkt im realen Kontext"
+      },
+      "socialProof": {
+        "title": "Social Proof",
+        "description": "UGC-Stil mit Models/Influencern"
+      },
+      "adCreative": {
+        "title": "Werbe-Kreativ",
+        "description": "Marketing-fertige Visuals"
+      }
+    },
+    "step4": {
+      "title": "Ihre Ersten Bilder Werden Erstellt",
+      "subtitle": "Wir generieren 2 kostenlose Bilder nur für Sie",
+      "generating": "Wird generiert...",
+      "complete": "Ihre Bilder sind fertig!",
+      "error": "Generierung fehlgeschlagen. Versuchen Sie es erneut.",
+      "retry": "Erneut Versuchen"
+    },
+    "step5": {
+      "title": "Erwecken Sie Ihr Bild zum Leben",
+      "subtitle": "Erstellen Sie ein kostenloses Video aus Ihrem Bild",
+      "selectImage": "Wählen Sie ein Bild zum Animieren",
+      "animating": "Video wird erstellt...",
+      "complete": "Ihr Video ist fertig!",
+      "error": "Video-Erstellung fehlgeschlagen. Versuchen Sie es erneut.",
+      "retry": "Erneut Versuchen"
+    },
+    "progress": "Schritt {{current}} von {{total}}",
+    "continue": "Weiter",
+    "finish": "Mit Erstellen Beginnen",
+    "skip": "Überspringen"
+  },
   "paymentFailed": {
     "title": "Zahlung Fehlgeschlagen",
     "message": "Bitte aktualisieren Sie Ihre Zahlungsmethode, um ProduktPix weiter nutzen zu können.",
