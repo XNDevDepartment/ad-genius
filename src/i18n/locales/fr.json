@@ -1,4 +1,64 @@
 {
+  "onboarding": {
+    "step1": {
+      "title": "Téléchargez Votre Produit",
+      "subtitle": "Glissez-déposez une image ou collez une URL",
+      "uploadTab": "Télécharger un Fichier",
+      "urlTab": "Coller l'URL",
+      "placeholder": "https://exemple.com/produit.jpg",
+      "uploading": "Téléchargement...",
+      "fetchingUrl": "Récupération de l'image...",
+      "invalidUrl": "Veuillez entrer une URL valide",
+      "uploadFailed": "Échec du téléchargement de l'image",
+      "urlFailed": "Échec de la récupération de l'image depuis l'URL"
+    },
+    "step2": {
+      "title": "Qui est Votre Public ?",
+      "subtitle": "Décrivez vos clients cibles",
+      "placeholder": "Ex : Jeunes professionnels de 25-35 ans intéressés par la mode durable"
+    },
+    "step3": {
+      "title": "Choisissez Votre Style de Contenu",
+      "subtitle": "Sélectionnez le type de contenu que vous souhaitez créer",
+      "productShowcase": {
+        "title": "Vitrine Produit",
+        "description": "Images épurées et professionnelles axées sur le produit"
+      },
+      "lifestyle": {
+        "title": "Style de Vie",
+        "description": "Produit en contexte réel"
+      },
+      "socialProof": {
+        "title": "Preuve Sociale",
+        "description": "Style UGC avec mannequins/influenceurs"
+      },
+      "adCreative": {
+        "title": "Créatif Publicitaire",
+        "description": "Visuels prêts pour le marketing"
+      }
+    },
+    "step4": {
+      "title": "Création de Vos Premières Images",
+      "subtitle": "Nous générons 2 images gratuites rien que pour vous",
+      "generating": "Génération en cours...",
+      "complete": "Vos images sont prêtes !",
+      "error": "Échec de la génération. Réessayez.",
+      "retry": "Réessayer"
+    },
+    "step5": {
+      "title": "Donnez Vie à Votre Image",
+      "subtitle": "Créez une vidéo gratuite à partir de votre image",
+      "selectImage": "Sélectionnez une image à animer",
+      "animating": "Création de la vidéo...",
+      "complete": "Votre vidéo est prête !",
+      "error": "Échec de la création vidéo. Réessayez.",
+      "retry": "Réessayer"
+    },
+    "progress": "Étape {{current}} sur {{total}}",
+    "continue": "Continuer",
+    "finish": "Commencer à Créer",
+    "skip": "Passer"
+  },
   "paymentFailed": {
     "title": "Paiement Échoué",
     "message": "Mettez à jour votre mode de paiement pour continuer à utiliser ProduktPix.",

@@ -1,4 +1,64 @@
 {
+  "onboarding": {
+    "step1": {
+      "title": "Carregue o Seu Produto",
+      "subtitle": "Arraste e solte uma imagem ou cole um URL",
+      "uploadTab": "Carregar Ficheiro",
+      "urlTab": "Colar URL",
+      "placeholder": "https://exemplo.com/produto.jpg",
+      "uploading": "A carregar...",
+      "fetchingUrl": "A obter imagem...",
+      "invalidUrl": "Por favor, introduza um URL válido",
+      "uploadFailed": "Falha ao carregar imagem",
+      "urlFailed": "Falha ao obter imagem do URL"
+    },
+    "step2": {
+      "title": "Quem é o Seu Público?",
+      "subtitle": "Descreva os seus clientes-alvo",
+      "placeholder": "Ex: Jovens profissionais entre 25-35 anos interessados em moda sustentável"
+    },
+    "step3": {
+      "title": "Escolha o Seu Estilo de Conteúdo",
+      "subtitle": "Selecione o tipo de conteúdo que quer criar",
+      "productShowcase": {
+        "title": "Vitrine de Produto",
+        "description": "Imagens limpas e profissionais focadas no produto"
+      },
+      "lifestyle": {
+        "title": "Estilo de Vida",
+        "description": "Produto em contexto real"
+      },
+      "socialProof": {
+        "title": "Prova Social",
+        "description": "Estilo UGC com modelos/influenciadores"
+      },
+      "adCreative": {
+        "title": "Criativo para Anúncios",
+        "description": "Visuais prontos para marketing"
+      }
+    },
+    "step4": {
+      "title": "A Criar as Suas Primeiras Imagens",
+      "subtitle": "Estamos a gerar 2 imagens grátis só para si",
+      "generating": "A gerar...",
+      "complete": "As suas imagens estão prontas!",
+      "error": "Falha na geração. Tente novamente.",
+      "retry": "Tentar Novamente"
+    },
+    "step5": {
+      "title": "Dê Vida à Sua Imagem",
+      "subtitle": "Crie um vídeo grátis a partir da sua imagem",
+      "selectImage": "Selecione uma imagem para animar",
+      "animating": "A criar vídeo...",
+      "complete": "O seu vídeo está pronto!",
+      "error": "Falha na criação do vídeo. Tente novamente.",
+      "retry": "Tentar Novamente"
+    },
+    "progress": "Passo {{current}} de {{total}}",
+    "continue": "Continuar",
+    "finish": "Começar a Criar",
+    "skip": "Saltar"
+  },
   "paymentFailed": {
     "title": "Pagamento Falhado",
     "message": "Atualize o seu método de pagamento para continuar a usar o ProduktPix.",
