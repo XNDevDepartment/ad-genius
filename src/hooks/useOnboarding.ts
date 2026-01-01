@@ -48,7 +48,7 @@ export const useOnboarding = () => {
       } else {
         setState({
           completed: profile.onboarding_completed ?? false,
-          step: profile.onboarding_step ?? 1,
+          step: (profile.onboarding_step && profile.onboarding_step > 0) ? profile.onboarding_step : 1,
           data: (profile.onboarding_data as OnboardingData) ?? {}
         });
       }
