@@ -16,6 +16,7 @@ import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import UseCasesSection from "@/components/landing/UseCasesSection";
 import VideoShowcaseSection from "@/components/landing/VideoShowcaseSection";
 import FeatureShowcase from "@/components/landing/FeatureShowcase";
+import { OnboardingGuard } from "@/components/OnboardingGuard";
 
 const Index = () => {
   const { user } = useAuth();
@@ -32,7 +33,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
     {user ?
-      <>
+      <OnboardingGuard>
       {/* Home Page */}
       <div className="container-responsive px-4 py-8">
         <div className="lg:grid lg:grid-cols-12 lg:gap-8 lg:items-start">
@@ -82,7 +83,7 @@ const Index = () => {
           <RecentImagesSection />
         </div>
       </div>
-      </>
+      </OnboardingGuard>
     :
     <>
     {/* Landing Page */}
