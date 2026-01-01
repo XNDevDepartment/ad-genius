@@ -17,6 +17,7 @@ export const OnboardingWizard = () => {
 
   const renderStep = () => {
     switch (step) {
+      case 0:
       case 1:
         return (
           <OnboardingStep1
