@@ -57,7 +57,9 @@ export const OnboardingStep1 = ({ onNext }: OnboardingStep1Props) => {
 
       if (dbError) throw dbError;
 
-      setPreviewUrl(publicUrl);
+      // Create a local blob URL for immediate preview
+      const localPreviewUrl = URL.createObjectURL(file);
+      setPreviewUrl(localPreviewUrl);
       setSourceImageId(sourceImage.id);
       toast.success(t('onboarding.step1.uploadSuccess'));
     } catch (error: any) {
