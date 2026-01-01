@@ -1,4 +1,68 @@
 {
+  "onboarding": {
+    "progress": "Step {{current}} of {{total}}",
+    "continue": "Continue",
+    "finish": "Start Creating",
+    "skipVideo": "Skip for now",
+    "step1": {
+      "title": "Upload Your Product",
+      "subtitle": "Start by uploading an image of your product",
+      "uploadTab": "Upload File",
+      "urlTab": "Paste URL",
+      "placeholder": "https://example.com/product.jpg",
+      "dropzone": "Drag & drop or click to upload",
+      "fetch": "Fetch",
+      "uploadSuccess": "Image uploaded!",
+      "uploadError": "Failed to upload image",
+      "urlError": "Failed to fetch image from URL"
+    },
+    "step2": {
+      "title": "Who is Your Audience?",
+      "subtitle": "Describe your target customers to create better content",
+      "placeholder": "e.g., Young professionals aged 25-35 interested in sustainable fashion",
+      "examples": "Try these examples:",
+      "example1": "Health-conscious millennials",
+      "example2": "Tech enthusiasts and early adopters",
+      "example3": "Fashion-forward Gen Z shoppers"
+    },
+    "step3": {
+      "title": "Choose Your Content Style",
+      "subtitle": "Select the type of content you want to create",
+      "product_showcase": {
+        "title": "Product Showcase",
+        "description": "Clean, professional product-focused images"
+      },
+      "lifestyle": {
+        "title": "Lifestyle",
+        "description": "Product in real-life context and settings"
+      },
+      "social_proof": {
+        "title": "Social Proof",
+        "description": "UGC-style with models and influencers"
+      },
+      "ad_creative": {
+        "title": "Ad Creative",
+        "description": "Marketing-ready visuals for ads"
+      }
+    },
+    "step4": {
+      "title": "Creating Your First Images",
+      "generating": "We're generating 2 free images just for you...",
+      "complete": "Your images are ready!",
+      "freeNote": "These images are free - they don't use your credits!",
+      "continueToVideo": "Continue to Video"
+    },
+    "step5": {
+      "title": "Bring Your Image to Life",
+      "subtitle": "Create a free video from your image",
+      "selectImage": "Select an image to animate",
+      "animate": "Animate This Image",
+      "animating": "Creating your video...",
+      "generatingVideo": "This may take a minute...",
+      "complete": "Your video is ready!",
+      "freeNote": "This video is free - it doesn't use your credits!"
+    }
+  },
   "paymentFailed": {
     "title": "Payment Failed",
     "message": "Update your payment method to continue using ProduktPix.",

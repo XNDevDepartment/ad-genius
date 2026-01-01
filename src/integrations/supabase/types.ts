@@ -775,6 +775,33 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_bonus_credits: {
+        Row: {
+          created_at: string
+          id: string
+          images_used: number
+          updated_at: string
+          user_id: string
+          video_used: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          images_used?: number
+          updated_at?: string
+          user_id: string
+          video_used?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          images_used?: number
+          updated_at?: string
+          user_id?: string
+          video_used?: boolean
+        }
+        Relationships: []
+      }
       outfit_swap_base_models: {
         Row: {
           age_range: string | null
@@ -1216,6 +1243,9 @@ export type Database = {
           mailerlite_subscriber_id: string | null
           name: string | null
           newsletter_subscribed: boolean | null
+          onboarding_completed: boolean | null
+          onboarding_data: Json | null
+          onboarding_step: number | null
           phone_number: string | null
           phone_verified: boolean | null
           profession: string | null
@@ -1235,6 +1265,9 @@ export type Database = {
           mailerlite_subscriber_id?: string | null
           name?: string | null
           newsletter_subscribed?: boolean | null
+          onboarding_completed?: boolean | null
+          onboarding_data?: Json | null
+          onboarding_step?: number | null
           phone_number?: string | null
           phone_verified?: boolean | null
           profession?: string | null
@@ -1254,6 +1287,9 @@ export type Database = {
           mailerlite_subscriber_id?: string | null
           name?: string | null
           newsletter_subscribed?: boolean | null
+          onboarding_completed?: boolean | null
+          onboarding_data?: Json | null
+          onboarding_step?: number | null
           phone_number?: string | null
           phone_verified?: boolean | null
           profession?: string | null
