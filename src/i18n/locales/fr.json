@@ -1,5 +1,21 @@
 {
   "onboarding": {
+    "progress": "Étape {{current}} sur {{total}}",
+    "continue": "Continuer",
+    "finish": "Commencer à Créer",
+    "skip": "Passer",
+    "skipVideo": "Passer pour l'instant",
+    "skipConfirmTitle": "Passer l'Onboarding ?",
+    "skipConfirm": "Vous pouvez redémarrer l'onboarding à tout moment depuis les Paramètres.",
+    "welcome": {
+      "title": "Bienvenue sur ProduktPix !",
+      "subtitle": "Configurons votre premier contenu IA en seulement 2 minutes",
+      "benefit1": "Téléchargez votre produit et définissez votre audience",
+      "benefit2": "Obtenez 2 images générées par IA GRATUITES",
+      "benefit3": "Créez 1 vidéo de produit GRATUITE",
+      "getStarted": "Commencer",
+      "skip": "Passer pour l'instant"
+    },
     "step1": {
       "title": "Téléchargez Votre Produit",
       "subtitle": "Glissez-déposez une image ou collez une URL",
@@ -29,7 +45,7 @@
     "step3": {
       "title": "Choisissez Votre Style de Contenu",
       "subtitle": "Sélectionnez le type de contenu que vous souhaitez créer",
-      "productShowcase": {
+      "product_showcase": {
         "title": "Vitrine Produit",
         "description": "Images épurées et professionnelles axées sur le produit"
       },
@@ -37,11 +53,11 @@
         "title": "Style de Vie",
         "description": "Produit en contexte réel"
       },
-      "socialProof": {
+      "social_proof": {
         "title": "Preuve Sociale",
         "description": "Style UGC avec mannequins/influenceurs"
       },
-      "adCreative": {
+      "ad_creative": {
         "title": "Créatif Publicitaire",
         "description": "Visuels prêts pour le marketing"
       }
@@ -60,15 +76,14 @@
       "title": "Donnez Vie à Votre Image",
       "subtitle": "Créez une vidéo gratuite à partir de votre image",
       "selectImage": "Sélectionnez une image à animer",
+      "animate": "Animer Cette Image",
       "animating": "Création de la vidéo...",
+      "generatingVideo": "Cela peut prendre une minute...",
       "complete": "Votre vidéo est prête !",
+      "freeNote": "Cette vidéo est gratuite - elle n'utilise pas vos crédits !",
       "error": "Échec de la création vidéo. Réessayez.",
       "retry": "Réessayer"
-    },
-    "progress": "Étape {{current}} sur {{total}}",
-    "continue": "Continuer",
-    "finish": "Commencer à Créer",
-    "skip": "Passer"
+    }
   },
   "paymentFailed": {
     "title": "Paiement Échoué",

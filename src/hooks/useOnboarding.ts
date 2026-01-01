@@ -48,7 +48,7 @@ export const useOnboarding = () => {
       } else {
         setState({
           completed: profile.onboarding_completed ?? false,
-          step: (profile.onboarding_step && profile.onboarding_step > 0) ? profile.onboarding_step : 1,
+          step: profile.onboarding_step ?? 0,
           data: (profile.onboarding_data as OnboardingData) ?? {}
         });
       }
@@ -129,6 +129,34 @@ export const useOnboarding = () => {
     }
   }, [user]);
 
+  // Restart onboarding from scratch
+  const restartOnboarding = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          onboarding_completed: false,
+          onboarding_step: 0,
+          onboarding_data: {},
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('[useOnboarding] Error restarting onboarding:', error);
+        return false;
+      } else {
+        setState({ completed: false, step: 0, data: {} });
+        return true;
+      }
+    } catch (err) {
+      console.error('[useOnboarding] Restart onboarding error:', err);
+      return false;
+    }
+  }, [user]);
+
   // Generate images using bonus credits
   const generateBonusImages = useCallback(async () => {
     if (!user || bonusCredits.imagesUsed >= 2) {
@@ -182,6 +210,7 @@ export const useOnboarding = () => {
     nextStep,
     saveProgress,
     completeOnboarding,
+    restartOnboarding,
     generateBonusImages,
     generateBonusVideo,
     refetch: fetchOnboardingStatus

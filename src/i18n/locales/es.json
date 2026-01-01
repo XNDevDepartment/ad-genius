@@ -1,5 +1,21 @@
 {
   "onboarding": {
+    "progress": "Paso {{current}} de {{total}}",
+    "continue": "Continuar",
+    "finish": "Empezar a Crear",
+    "skip": "Saltar",
+    "skipVideo": "Saltar por ahora",
+    "skipConfirmTitle": "¿Saltar Onboarding?",
+    "skipConfirm": "Puedes reiniciar el onboarding en cualquier momento desde Configuración.",
+    "welcome": {
+      "title": "¡Bienvenido a ProduktPix!",
+      "subtitle": "Vamos a configurar tu primer contenido IA en solo 2 minutos",
+      "benefit1": "Sube tu producto y define tu audiencia",
+      "benefit2": "Obtén 2 imágenes generadas por IA GRATIS",
+      "benefit3": "Crea 1 video de producto GRATIS",
+      "getStarted": "Empezar",
+      "skip": "Saltar por ahora"
+    },
     "step1": {
       "title": "Sube Tu Producto",
       "subtitle": "Arrastra y suelta una imagen o pega una URL",
@@ -29,7 +45,7 @@
     "step3": {
       "title": "Elige Tu Estilo de Contenido",
       "subtitle": "Selecciona el tipo de contenido que quieres crear",
-      "productShowcase": {
+      "product_showcase": {
         "title": "Escaparate de Producto",
         "description": "Imágenes limpias y profesionales enfocadas en el producto"
       },
@@ -37,11 +53,11 @@
         "title": "Estilo de Vida",
         "description": "Producto en contexto real"
       },
-      "socialProof": {
+      "social_proof": {
         "title": "Prueba Social",
         "description": "Estilo UGC con modelos/influencers"
       },
-      "adCreative": {
+      "ad_creative": {
         "title": "Creativo Publicitario",
         "description": "Visuales listos para marketing"
       }
@@ -60,15 +76,14 @@
       "title": "Da Vida a Tu Imagen",
       "subtitle": "Crea un video gratis a partir de tu imagen",
       "selectImage": "Selecciona una imagen para animar",
+      "animate": "Animar Esta Imagen",
       "animating": "Creando video...",
+      "generatingVideo": "Esto puede tardar un minuto...",
       "complete": "¡Tu video está listo!",
+      "freeNote": "¡Este video es gratis - no usa tus créditos!",
       "error": "Error al crear video. Intenta de nuevo.",
       "retry": "Reintentar"
-    },
-    "progress": "Paso {{current}} de {{total}}",
-    "continue": "Continuar",
-    "finish": "Empezar a Crear",
-    "skip": "Saltar"
+    }
   },
   "paymentFailed": {
     "title": "Pago Fallido",

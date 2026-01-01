@@ -1,5 +1,21 @@
 {
   "onboarding": {
+    "progress": "Schritt {{current}} von {{total}}",
+    "continue": "Weiter",
+    "finish": "Mit Erstellen Beginnen",
+    "skip": "Überspringen",
+    "skipVideo": "Vorerst überspringen",
+    "skipConfirmTitle": "Onboarding überspringen?",
+    "skipConfirm": "Sie können das Onboarding jederzeit in den Einstellungen neu starten.",
+    "welcome": {
+      "title": "Willkommen bei ProduktPix!",
+      "subtitle": "Lassen Sie uns Ihre ersten KI-Inhalte in nur 2 Minuten erstellen",
+      "benefit1": "Laden Sie Ihr Produkt hoch und definieren Sie Ihre Zielgruppe",
+      "benefit2": "Erhalten Sie 2 KOSTENLOSE KI-generierte Bilder",
+      "benefit3": "Erstellen Sie 1 KOSTENLOSES Produktvideo",
+      "getStarted": "Los geht's",
+      "skip": "Vorerst überspringen"
+    },
     "step1": {
       "title": "Laden Sie Ihr Produkt Hoch",
       "subtitle": "Ziehen Sie ein Bild hierher oder fügen Sie eine URL ein",
@@ -29,7 +45,7 @@
     "step3": {
       "title": "Wählen Sie Ihren Content-Stil",
       "subtitle": "Wählen Sie die Art von Inhalten, die Sie erstellen möchten",
-      "productShowcase": {
+      "product_showcase": {
         "title": "Produktpräsentation",
         "description": "Klare, professionelle produktfokussierte Bilder"
       },
@@ -37,11 +53,11 @@
         "title": "Lifestyle",
         "description": "Produkt im realen Kontext"
       },
-      "socialProof": {
+      "social_proof": {
         "title": "Social Proof",
         "description": "UGC-Stil mit Models/Influencern"
       },
-      "adCreative": {
+      "ad_creative": {
         "title": "Werbe-Kreativ",
         "description": "Marketing-fertige Visuals"
       }
@@ -60,15 +76,14 @@
       "title": "Erwecken Sie Ihr Bild zum Leben",
       "subtitle": "Erstellen Sie ein kostenloses Video aus Ihrem Bild",
       "selectImage": "Wählen Sie ein Bild zum Animieren",
+      "animate": "Dieses Bild Animieren",
       "animating": "Video wird erstellt...",
+      "generatingVideo": "Das kann eine Minute dauern...",
       "complete": "Ihr Video ist fertig!",
+      "freeNote": "Dieses Video ist kostenlos - es verbraucht keine Credits!",
       "error": "Video-Erstellung fehlgeschlagen. Versuchen Sie es erneut.",
       "retry": "Erneut Versuchen"
-    },
-    "progress": "Schritt {{current}} von {{total}}",
-    "continue": "Weiter",
-    "finish": "Mit Erstellen Beginnen",
-    "skip": "Überspringen"
+    }
   },
   "paymentFailed": {
     "title": "Zahlung Fehlgeschlagen",

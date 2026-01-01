@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Eye, RefreshCw, X } from "lucide-react";
+import { Eye, RefreshCw, X, RotateCcw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/lib/supabase";
@@ -12,6 +12,19 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import { LanguageSelector } from "../LanguageSelector";
 import { useTranslation } from "react-i18next";
+import { useOnboarding } from "@/hooks/useOnboarding";
+import { useNavigate } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface SettingsPanelProps {
   layout: string;
@@ -32,6 +45,8 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const { restartOnboarding } = useOnboarding();
+  const navigate = useNavigate();
   const [preferences, setPreferences] = useState<UserPreferences>({
     default_aspect_ratio: '1:1',
     auto_save_images: true,
@@ -40,6 +55,31 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
     timezone: 'utc'
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isRestartingOnboarding, setIsRestartingOnboarding] = useState(false);
+
+  const handleRestartOnboarding = async () => {
+    setIsRestartingOnboarding(true);
+    try {
+      const success = await restartOnboarding();
+      if (success) {
+        toast({
+          title: t("account.settings.restartSuccess"),
+          description: t("account.settings.restartSuccessDesc"),
+        });
+        navigate('/create-ugc');
+      } else {
+        toast({
+          title: t("common.error"),
+          description: t("account.errorSaving"),
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error restarting onboarding:', error);
+    } finally {
+      setIsRestartingOnboarding(false);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -260,6 +300,38 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
               {isLoading ? t("account.settings.saving") : t("account.settings.saveChanges")}
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Restart Onboarding */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("account.settings.onboarding")}</CardTitle>
+          <CardDescription>{t("account.settings.onboardingDesc")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="gap-2" disabled={isRestartingOnboarding}>
+                <RotateCcw className="h-4 w-4" />
+                {t("account.settings.restartOnboarding")}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t("account.settings.restartOnboarding")}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t("account.settings.restartConfirm")}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                <AlertDialogAction onClick={handleRestartOnboarding}>
+                  {t("account.settings.restartOnboarding")}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </CardContent>
       </Card>
     </div>
