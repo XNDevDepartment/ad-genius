@@ -20,7 +20,11 @@
     "step2": {
       "title": "Quem é o Seu Público?",
       "subtitle": "Descreva os seus clientes-alvo",
-      "placeholder": "Ex: Jovens profissionais entre 25-35 anos interessados em moda sustentável"
+      "placeholder": "Ex: Jovens profissionais entre 25-35 anos interessados em moda sustentável",
+      "examples": "Experimente estes exemplos:",
+      "example1": "Millennials preocupados com saúde",
+      "example2": "Entusiastas de tecnologia e early adopters",
+      "example3": "Jovens da Geração Z interessados em moda"
     },
     "step3": {
       "title": "Escolha o Seu Estilo de Conteúdo",
@@ -48,7 +52,9 @@
       "generating": "A gerar...",
       "complete": "As suas imagens estão prontas!",
       "error": "Falha na geração. Tente novamente.",
-      "retry": "Tentar Novamente"
+      "retry": "Tentar Novamente",
+      "freeNote": "Estas imagens são grátis - não usam os seus créditos!",
+      "continueToVideo": "Continuar para Vídeo"
     },
     "step5": {
       "title": "Dê Vida à Sua Imagem",

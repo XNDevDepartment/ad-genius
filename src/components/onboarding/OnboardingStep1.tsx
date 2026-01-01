@@ -131,7 +131,7 @@ export const OnboardingStep1 = ({ onNext }: OnboardingStep1Props) => {
 
         <TabsContent value="upload">
           {previewUrl ? (
-            <div className="relative rounded-lg overflow-hidden border border-border">
+            <div className="relative rounded-lg overflow-hidden border border-border min-h-[300px]">
               <img 
                 src={previewUrl} 
                 alt="Preview" 
