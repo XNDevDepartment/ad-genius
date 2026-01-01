@@ -38,14 +38,15 @@ serve(async (req) => {
     const { sourceImageId, audience, contentType } = await req.json();
     console.log('[onboarding-generate] Request:', { userId: user.id, sourceImageId, audience, contentType });
 
-    // Check/create bonus credits record
-    let { data: bonusCredits } = await supabase
+    // Check/create bonus credits record with race condition handling
+    let { data: bonusCredits, error: selectError } = await supabase
       .from('onboarding_bonus_credits')
       .select('*')
       .eq('user_id', user.id)
       .single();
 
-    if (!bonusCredits) {
+    if (!bonusCredits && (!selectError || selectError.code === 'PGRST116')) {
+      // No record exists, try to create one
       const { data: newCredits, error: insertError } = await supabase
         .from('onboarding_bonus_credits')
         .insert({ user_id: user.id })
@@ -53,10 +54,22 @@ serve(async (req) => {
         .single();
 
       if (insertError) {
-        console.error('[onboarding-generate] Error creating bonus credits:', insertError);
-        throw new Error('Failed to initialize bonus credits');
+        // Handle race condition - another request may have created it
+        if (insertError.code === '23505') {
+          console.log('[onboarding-generate] Race condition detected, fetching existing record');
+          const { data: existingCredits } = await supabase
+            .from('onboarding_bonus_credits')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+          bonusCredits = existingCredits;
+        } else {
+          console.error('[onboarding-generate] Error creating bonus credits:', insertError);
+          throw new Error('Failed to initialize bonus credits');
+        }
+      } else {
+        bonusCredits = newCredits;
       }
-      bonusCredits = newCredits;
     }
 
     // Check if user has remaining bonus images

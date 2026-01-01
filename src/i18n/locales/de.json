@@ -20,7 +20,11 @@
     "step2": {
       "title": "Wer ist Ihre Zielgruppe?",
       "subtitle": "Beschreiben Sie Ihre Zielkunden",
-      "placeholder": "Z.B.: Junge Berufstätige zwischen 25-35 Jahren, die sich für nachhaltige Mode interessieren"
+      "placeholder": "Z.B.: Junge Berufstätige zwischen 25-35 Jahren, die sich für nachhaltige Mode interessieren",
+      "examples": "Probiere diese Beispiele:",
+      "example1": "Gesundheitsbewusste Millennials",
+      "example2": "Technik-Enthusiasten und Early Adopters",
+      "example3": "Modeinteressierte Gen Z Shopper"
     },
     "step3": {
       "title": "Wählen Sie Ihren Content-Stil",
@@ -48,7 +52,9 @@
       "generating": "Wird generiert...",
       "complete": "Ihre Bilder sind fertig!",
       "error": "Generierung fehlgeschlagen. Versuchen Sie es erneut.",
-      "retry": "Erneut Versuchen"
+      "retry": "Erneut Versuchen",
+      "freeNote": "Diese Bilder sind kostenlos - sie verbrauchen keine Credits!",
+      "continueToVideo": "Weiter zum Video"
     },
     "step5": {
       "title": "Erwecken Sie Ihr Bild zum Leben",
