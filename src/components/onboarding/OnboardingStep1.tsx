@@ -130,52 +130,54 @@ export const OnboardingStep1 = ({ onNext }: OnboardingStep1Props) => {
         </TabsList>
 
         <TabsContent value="upload">
-          {previewUrl ? (
-            <div className="relative rounded-lg overflow-hidden border border-border min-h-[300px]">
-              <img 
-                src={previewUrl} 
-                alt="Preview" 
-                className="w-full aspect-square object-contain bg-muted"
-              />
-              <Button
-                variant="secondary"
-                size="sm"
-                className="absolute top-2 right-2"
-                onClick={() => {
-                  setPreviewUrl(null);
-                  setSourceImageId(null);
-                }}
+          <div key={previewUrl ? 'preview' : 'upload'}>
+            {previewUrl ? (
+              <div className="relative rounded-lg overflow-hidden border border-border min-h-[300px]">
+                <img 
+                  src={previewUrl} 
+                  alt="Preview" 
+                  className="w-full h-auto max-h-[400px] object-contain bg-muted"
+                />
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={() => {
+                    setPreviewUrl(null);
+                    setSourceImageId(null);
+                  }}
+                >
+                  {t('common.remove')}
+                </Button>
+              </div>
+            ) : (
+              <div
+                onDrop={handleDrop}
+                onDragOver={(e) => e.preventDefault()}
+                className="border-2 border-dashed border-border rounded-lg p-12 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                onClick={() => document.getElementById('file-input')?.click()}
               >
-                {t('common.remove')}
-              </Button>
-            </div>
-          ) : (
-            <div
-              onDrop={handleDrop}
-              onDragOver={(e) => e.preventDefault()}
-              className="border-2 border-dashed border-border rounded-lg p-12 text-center cursor-pointer hover:border-primary/50 transition-colors"
-              onClick={() => document.getElementById('file-input')?.click()}
-            >
-              {uploading ? (
-                <Loader2 className="w-12 h-12 mx-auto mb-4 text-primary animate-spin" />
-              ) : (
-                <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              )}
-              <p className="text-sm text-muted-foreground">
-                {t('onboarding.step1.dropzone')}
-              </p>
-              <input
-                id="file-input"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleFileUpload(file);
-                }}
-              />
-            </div>
-          )}
+                {uploading ? (
+                  <Loader2 className="w-12 h-12 mx-auto mb-4 text-primary animate-spin" />
+                ) : (
+                  <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                )}
+                <p className="text-sm text-muted-foreground">
+                  {t('onboarding.step1.dropzone')}
+                </p>
+                <input
+                  id="file-input"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileUpload(file);
+                  }}
+                />
+              </div>
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="url">
