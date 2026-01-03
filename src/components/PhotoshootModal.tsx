@@ -67,8 +67,8 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
   const categoryAnglesConfig = CATEGORY_ANGLES[garmentCategory] || CATEGORY_ANGLES.FULL_OUTFIT;
   const AVAILABLE_ANGLES = categoryAnglesConfig.map(angle => ({
     id: angle.id,
-    label: t(angle.labelKey, angle.id.replace(/_/g, ' ')),
-    description: t(angle.descKey, `${angle.id} view`)
+    label: t(angle.labelKey, { defaultValue: angle.id.replace(/_/g, ' ') }),
+    description: t(angle.descKey, { defaultValue: `${angle.id} view` })
   }));
   
   const [selectedAngles, setSelectedAngles] = useState<string[]>(categoryAnglesConfig.map(a => a.id));
