@@ -72,6 +72,15 @@ serve(async (req) => {
       }
     }
 
+    // Ensure bonusCredits was retrieved successfully
+    if (!bonusCredits) {
+      console.error('[onboarding-generate] Failed to get bonus credits after all attempts');
+      return new Response(JSON.stringify({ error: 'Failed to initialize bonus credits' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     // Check if user has remaining bonus images
     if (bonusCredits.images_used >= 2) {
       return new Response(JSON.stringify({ error: 'Bonus images already used' }), {
