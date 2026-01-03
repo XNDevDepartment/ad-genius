@@ -746,7 +746,13 @@
       "autoSave": "Guardar automáticamente",
       "autoSaveDesc": "Guardar ajustes automáticamente",
       "saveChanges": "Guardar Cambios",
-      "saving": "Guardando..."
+      "saving": "Guardando...",
+      "onboarding": "Tour del Producto",
+      "onboardingDesc": "Reiniciar el tour del producto para aprender lo basico",
+      "restartOnboarding": "Reiniciar Tour",
+      "restartConfirm": "Esto reiniciara el tour del producto desde el principio. Continuar?",
+      "restartSuccess": "Tour reiniciado!",
+      "restartSuccessDesc": "Redirigiendo al tour del producto..."
     },
     "notifications": {
       "title": "Notificaciones",

@@ -746,7 +746,13 @@
       "autoSave": "Automatisch speichern",
       "autoSaveDesc": "Einstellungen automatisch speichern",
       "saveChanges": "Änderungen speichern",
-      "saving": "Wird gespeichert..."
+      "saving": "Wird gespeichert...",
+      "onboarding": "Produkt-Tour",
+      "onboardingDesc": "Die Produkt-Tour neu starten, um die Grundlagen zu lernen",
+      "restartOnboarding": "Tour neu starten",
+      "restartConfirm": "Dies wird die Produkt-Tour von Anfang an neu starten. Fortfahren?",
+      "restartSuccess": "Tour neu gestartet!",
+      "restartSuccessDesc": "Weiterleitung zur Produkt-Tour..."
     },
     "notifications": {
       "title": "Benachrichtigungen",

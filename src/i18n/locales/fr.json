@@ -746,7 +746,13 @@
       "autoSave": "Enregistrement automatique",
       "autoSaveDesc": "Enregistrer automatiquement les paramètres",
       "saveChanges": "Enregistrer les Modifications",
-      "saving": "Enregistrement..."
+      "saving": "Enregistrement...",
+      "onboarding": "Visite du Produit",
+      "onboardingDesc": "Relancer la visite du produit pour apprendre les bases",
+      "restartOnboarding": "Relancer la Visite",
+      "restartConfirm": "Cela va relancer la visite du produit depuis le debut. Continuer?",
+      "restartSuccess": "Visite relancee!",
+      "restartSuccessDesc": "Redirection vers la visite du produit..."
     },
     "notifications": {
       "title": "Notifications",
