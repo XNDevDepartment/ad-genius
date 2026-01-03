@@ -114,7 +114,7 @@ export default function Success() {
           
           <div className="space-y-2">
             <Button 
-              onClick={() => navigate('/create-ugc')} 
+              onClick={() => navigate('/create/ugc')} 
               className="w-full"
               disabled={loading}
             >

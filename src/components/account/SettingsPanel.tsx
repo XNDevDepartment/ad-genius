@@ -66,7 +66,7 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
           title: t("account.settings.restartSuccess"),
           description: t("account.settings.restartSuccessDesc"),
         });
-        navigate('/create-ugc');
+        navigate('/create/ugc');
       } else {
         toast({
           title: t("common.error"),
