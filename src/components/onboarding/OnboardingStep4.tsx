@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, ImageIcon } from 'lucide-react';
+import { Loader2, Sparkles, ImageIcon, RefreshCw } from 'lucide-react';
 import { OnboardingData } from '@/hooks/useOnboarding';
 import { motion } from 'framer-motion';
 
@@ -16,22 +16,33 @@ export const OnboardingStep4 = ({ data, generateBonusImages, onNext }: Onboardin
   const [status, setStatus] = useState<'generating' | 'complete' | 'error'>('generating');
   const [images, setImages] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  const attemptGeneration = useCallback(async () => {
+    setStatus('generating');
+    setError(null);
+    
+    const result = await generateBonusImages();
+    
+    if (result.success && result.images) {
+      setImages(result.images);
+      setStatus('complete');
+    } else {
+      setError(result.error || 'Generation failed');
+      setStatus('error');
+    }
+  }, [generateBonusImages]);
 
   useEffect(() => {
-    const generate = async () => {
-      const result = await generateBonusImages();
-      
-      if (result.success && result.images) {
-        setImages(result.images);
-        setStatus('complete');
-      } else {
-        setError(result.error || 'Generation failed');
-        setStatus('error');
-      }
-    };
+    attemptGeneration();
+  }, [attemptGeneration]);
 
-    generate();
-  }, [generateBonusImages]);
+  const handleRetry = () => {
+    if (retryCount < 3) {
+      setRetryCount(prev => prev + 1);
+      attemptGeneration();
+    }
+  };
 
   const handleContinue = () => {
     onNext(images);
@@ -93,9 +104,15 @@ export const OnboardingStep4 = ({ data, generateBonusImages, onNext }: Onboardin
       )}
 
       {status === 'error' && (
-        <div className="text-center py-8">
-          <Button onClick={() => window.location.reload()}>
-            {t('common.retry')}
+        <div className="text-center py-8 space-y-4">
+          <p className="text-sm text-muted-foreground">{error}</p>
+          <Button 
+            onClick={handleRetry} 
+            disabled={retryCount >= 3}
+            variant="outline"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            {t('onboarding.step4.retry')} {retryCount > 0 && `(${3 - retryCount} left)`}
           </Button>
         </div>
       )}
