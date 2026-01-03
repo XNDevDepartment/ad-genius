@@ -113,17 +113,23 @@ serve(async (req) => {
 
     const prompt = promptMap[contentType] || promptMap.product_showcase;
 
+    console.log('[onboarding-generate] Calling ugc-gemini-v3 with:', {
+      source_image_id: sourceImageId,
+      source_image_url: sourceImage.public_url,
+      prompt: prompt.substring(0, 100) + '...'
+    });
+
     // Call the existing ugc-gemini-v3 function to generate images
     const { data: genResult, error: genError } = await supabase.functions.invoke('ugc-gemini-v3', {
       body: {
         action: 'createImageJob',
         prompt,
-        sourceImageId,
+        source_image_id: sourceImageId,
         settings: {
-          numImages: 2,
+          number: 2,
           aspectRatio: '1:1',
           style: 'natural',
-          outputFormat: 'webp'
+          output_format: 'webp'
         }
       },
       headers: {
