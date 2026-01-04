@@ -43,34 +43,26 @@
       "example3": "Jovens da Geração Z interessados em moda"
     },
     "step3": {
-      "title": "Escolha o Seu Estilo de Conteúdo",
-      "subtitle": "Selecione o tipo de conteúdo que quer criar",
-      "product_showcase": {
-        "title": "Vitrine de Produto",
-        "description": "Imagens limpas e profissionais focadas no produto"
-      },
-      "lifestyle": {
-        "title": "Estilo de Vida",
-        "description": "Produto em contexto real"
-      },
-      "social_proof": {
-        "title": "Prova Social",
-        "description": "Estilo UGC com modelos/influenciadores"
-      },
-      "ad_creative": {
-        "title": "Criativo para Anúncios",
-        "description": "Visuais prontos para marketing"
-      }
+      "title": "Escolha um Cenário",
+      "subtitle": "Selecione como quer que o seu produto apareça",
+      "generating": "A gerar cenários criativos...",
+      "regenerate": "Gerar Novas Ideias",
+      "customScenario": "Escreva o Seu",
+      "customDescription": "Descreva o seu próprio cenário para a imagem",
+      "customPlaceholder": "Ex: Uma jovem mulher a tomar café num café acolhedor com o meu produto na mesa...",
+      "error": "Falha ao gerar cenários. Tente novamente."
     },
     "step4": {
       "title": "A Criar as Suas Primeiras Imagens",
-      "subtitle": "Estamos a gerar 2 imagens grátis só para si",
-      "generating": "A gerar...",
+      "generating": "Estamos a gerar 2 imagens grátis só para si...",
+      "preparing": "A preparar geração...",
       "complete": "As suas imagens estão prontas!",
-      "error": "Falha na geração. Tente novamente.",
-      "retry": "Tentar Novamente",
+      "failed": "Falha na geração",
       "freeNote": "Estas imagens são grátis - não usam os seus créditos!",
-      "continueToVideo": "Continuar para Vídeo"
+      "continueToVideo": "Continuar para Vídeo",
+      "error": "Falha na geração. Tente novamente.",
+      "errorMessage": "Algo correu mal. Tente novamente.",
+      "retry": "Tentar Novamente"
     },
     "step5": {
       "title": "Dê Vida à Sua Imagem",

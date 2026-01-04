@@ -2,11 +2,17 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
+export interface AIScenario {
+  idea: string;
+  description: string;
+  'small-description': string;
+}
+
 export interface OnboardingData {
   imageUrl?: string;
   sourceImageId?: string;
   audience?: string;
-  contentType?: 'product_showcase' | 'lifestyle' | 'social_proof' | 'ad_creative';
+  selectedScenario?: AIScenario;
   generatedImages?: string[];
   generatedVideoUrl?: string;
 }
@@ -157,7 +163,7 @@ export const useOnboarding = () => {
     }
   }, [user]);
 
-  // Generate images using bonus credits
+  // Generate images using bonus credits (deprecated - now using ugc-gemini directly)
   const generateBonusImages = useCallback(async () => {
     if (!user || bonusCredits.imagesUsed >= 2) {
       return { success: false, error: 'No bonus images remaining' };
@@ -168,7 +174,7 @@ export const useOnboarding = () => {
         body: {
           sourceImageId: state.data.sourceImageId,
           audience: state.data.audience,
-          contentType: state.data.contentType
+          scenario: state.data.selectedScenario?.description
         }
       });
 

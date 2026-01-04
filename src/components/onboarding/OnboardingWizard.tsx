@@ -25,7 +25,7 @@ import logoHorizontal from '@/assets/logos/logo_horizontal.png';
 
 export const OnboardingWizard = () => {
   const { t } = useTranslation();
-  const { step, data, nextStep, completeOnboarding, generateBonusImages, generateBonusVideo } = useOnboarding();
+  const { step, data, nextStep, completeOnboarding, generateBonusVideo } = useOnboarding();
 
   const totalSteps = 5;
   const progressPercent = step === 0 ? 0 : (step / totalSteps) * 100;
@@ -58,14 +58,16 @@ export const OnboardingWizard = () => {
       case 3:
         return (
           <OnboardingStep3
-            onNext={(contentType) => nextStep({ contentType })}
+            imageUrl={data.imageUrl}
+            sourceImageId={data.sourceImageId}
+            audience={data.audience}
+            onNext={(selectedScenario) => nextStep({ selectedScenario })}
           />
         );
       case 4:
         return (
           <OnboardingStep4
             data={data}
-            generateBonusImages={generateBonusImages}
             onNext={(generatedImages) => nextStep({ generatedImages })}
           />
         );

@@ -43,34 +43,26 @@
       "example3": "Jóvenes de la Generación Z interesados en moda"
     },
     "step3": {
-      "title": "Elige Tu Estilo de Contenido",
-      "subtitle": "Selecciona el tipo de contenido que quieres crear",
-      "product_showcase": {
-        "title": "Escaparate de Producto",
-        "description": "Imágenes limpias y profesionales enfocadas en el producto"
-      },
-      "lifestyle": {
-        "title": "Estilo de Vida",
-        "description": "Producto en contexto real"
-      },
-      "social_proof": {
-        "title": "Prueba Social",
-        "description": "Estilo UGC con modelos/influencers"
-      },
-      "ad_creative": {
-        "title": "Creativo Publicitario",
-        "description": "Visuales listos para marketing"
-      }
+      "title": "Elige un Escenario",
+      "subtitle": "Selecciona cómo quieres que aparezca tu producto",
+      "generating": "Generando escenarios creativos...",
+      "regenerate": "Generar Nuevas Ideas",
+      "customScenario": "Escribe el Tuyo",
+      "customDescription": "Describe tu propio escenario para la imagen",
+      "customPlaceholder": "Ej: Una joven disfrutando de un café en una cafetería acogedora con mi producto en la mesa...",
+      "error": "Error al generar escenarios. Intenta de nuevo."
     },
     "step4": {
       "title": "Creando Tus Primeras Imágenes",
-      "subtitle": "Estamos generando 2 imágenes gratis solo para ti",
-      "generating": "Generando...",
+      "generating": "Estamos generando 2 imágenes gratis solo para ti...",
+      "preparing": "Preparando generación...",
       "complete": "¡Tus imágenes están listas!",
-      "error": "Error en la generación. Intenta de nuevo.",
-      "retry": "Reintentar",
+      "failed": "Error en la generación",
       "freeNote": "¡Estas imágenes son gratis - no usan tus créditos!",
-      "continueToVideo": "Continuar a Video"
+      "continueToVideo": "Continuar a Video",
+      "error": "Error en la generación. Intenta de nuevo.",
+      "errorMessage": "Algo salió mal. Intenta de nuevo.",
+      "retry": "Reintentar"
     },
     "step5": {
       "title": "Da Vida a Tu Imagen",

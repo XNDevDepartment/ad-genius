@@ -43,34 +43,26 @@
       "example3": "Jeunes de la Génération Z intéressés par la mode"
     },
     "step3": {
-      "title": "Choisissez Votre Style de Contenu",
-      "subtitle": "Sélectionnez le type de contenu que vous souhaitez créer",
-      "product_showcase": {
-        "title": "Vitrine Produit",
-        "description": "Images épurées et professionnelles axées sur le produit"
-      },
-      "lifestyle": {
-        "title": "Style de Vie",
-        "description": "Produit en contexte réel"
-      },
-      "social_proof": {
-        "title": "Preuve Sociale",
-        "description": "Style UGC avec mannequins/influenceurs"
-      },
-      "ad_creative": {
-        "title": "Créatif Publicitaire",
-        "description": "Visuels prêts pour le marketing"
-      }
+      "title": "Choisissez un Scénario",
+      "subtitle": "Sélectionnez comment vous voulez que votre produit apparaisse",
+      "generating": "Génération de scénarios créatifs...",
+      "regenerate": "Générer de Nouvelles Idées",
+      "customScenario": "Écrivez le Vôtre",
+      "customDescription": "Décrivez votre propre scénario pour l'image",
+      "customPlaceholder": "Ex : Une jeune femme savourant un café dans un café cosy avec mon produit sur la table...",
+      "error": "Échec de la génération des scénarios. Réessayez."
     },
     "step4": {
       "title": "Création de Vos Premières Images",
-      "subtitle": "Nous générons 2 images gratuites rien que pour vous",
-      "generating": "Génération en cours...",
+      "generating": "Nous générons 2 images gratuites rien que pour vous...",
+      "preparing": "Préparation de la génération...",
       "complete": "Vos images sont prêtes !",
-      "error": "Échec de la génération. Réessayez.",
-      "retry": "Réessayer",
+      "failed": "Échec de la génération",
       "freeNote": "Ces images sont gratuites - elles n'utilisent pas vos crédits !",
-      "continueToVideo": "Continuer vers la Vidéo"
+      "continueToVideo": "Continuer vers la Vidéo",
+      "error": "Échec de la génération. Réessayez.",
+      "errorMessage": "Une erreur s'est produite. Réessayez.",
+      "retry": "Réessayer"
     },
     "step5": {
       "title": "Donnez Vie à Votre Image",

@@ -39,32 +39,25 @@
       "example3": "Fashion-forward Gen Z shoppers"
     },
     "step3": {
-      "title": "Choose Your Content Style",
-      "subtitle": "Select the type of content you want to create",
-      "product_showcase": {
-        "title": "Product Showcase",
-        "description": "Clean, professional product-focused images"
-      },
-      "lifestyle": {
-        "title": "Lifestyle",
-        "description": "Product in real-life context and settings"
-      },
-      "social_proof": {
-        "title": "Social Proof",
-        "description": "UGC-style with models and influencers"
-      },
-      "ad_creative": {
-        "title": "Ad Creative",
-        "description": "Marketing-ready visuals for ads"
-      }
+      "title": "Choose a Scenario",
+      "subtitle": "Select how you want your product to appear",
+      "generating": "Generating creative scenarios...",
+      "regenerate": "Generate New Ideas",
+      "customScenario": "Write Your Own",
+      "customDescription": "Describe your own scenario for the image",
+      "customPlaceholder": "e.g., A young woman enjoying coffee at a cozy cafe with my product on the table...",
+      "error": "Failed to generate scenarios. Please try again."
     },
     "step4": {
       "title": "Creating Your First Images",
       "generating": "We're generating 2 free images just for you...",
+      "preparing": "Preparing generation...",
       "complete": "Your images are ready!",
+      "failed": "Generation failed",
       "freeNote": "These images are free - they don't use your credits!",
       "continueToVideo": "Continue to Video",
       "error": "Generation failed. Try again.",
+      "errorMessage": "Something went wrong. Please try again.",
       "retry": "Retry"
     },
     "step5": {
