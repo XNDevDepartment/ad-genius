@@ -26,7 +26,8 @@
       "fetch": "Fetch",
       "uploadSuccess": "Image uploaded!",
       "uploadError": "Failed to upload image",
-      "urlError": "Failed to fetch image from URL"
+      "urlError": "Failed to fetch image from URL",
+      "uploading": "Uploading..."
     },
     "step2": {
       "title": "Who is Your Audience?",

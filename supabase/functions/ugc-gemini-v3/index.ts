@@ -809,7 +809,7 @@ async function getSignedSourceUrls(source_image_ids: string[], supabase: Supabas
       
     if (src?.storage_path) {
       const { data: signed } = await supabase.storage
-        .from("ugc-inputs")
+        .from("source-images")
         .createSignedUrl(src.storage_path, 3600);
       if (signed?.signedUrl) {
         urls.push(signed.signedUrl);
@@ -831,7 +831,7 @@ async function getSignedSourceUrl(source_image_id: string | null, supabase: Supa
   if (!src?.storage_path) return null;
   
   const { data: signed } = await supabase.storage
-    .from("ugc-inputs")
+    .from("source-images")
     .createSignedUrl(src.storage_path, 3600);
     
   return signed?.signedUrl ?? null;
