@@ -145,7 +145,7 @@ OUTPUT: Single authentic UGC photo ready for social media.
       if (result.success) {
         await completeOnboarding();
         toast.success(t('onboarding.step4.videoStarted'));
-        navigate('/library/videos');
+        navigate('/videos');
       } else {
         throw new Error(result.error || 'Failed to create video job');
       }
