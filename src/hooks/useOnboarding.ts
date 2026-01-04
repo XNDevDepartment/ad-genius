@@ -188,27 +188,6 @@ export const useOnboarding = () => {
     }
   }, [user, bonusCredits.imagesUsed, state.data]);
 
-  // Generate video using bonus credit
-  const generateBonusVideo = useCallback(async (imageUrl: string) => {
-    if (!user || bonusCredits.videoUsed) {
-      return { success: false, error: 'Bonus video already used' };
-    }
-
-    try {
-      const { data, error } = await supabase.functions.invoke('onboarding-video', {
-        body: { imageUrl }
-      });
-
-      if (error) throw error;
-
-      setBonusCredits(prev => ({ ...prev, videoUsed: true }));
-      return { success: true, videoUrl: data.videoUrl, jobId: data.jobId };
-    } catch (err: any) {
-      console.error('[useOnboarding] Generate bonus video error:', err);
-      return { success: false, error: err.message };
-    }
-  }, [user, bonusCredits.videoUsed]);
-
   return {
     ...state,
     loading,
@@ -218,7 +197,6 @@ export const useOnboarding = () => {
     completeOnboarding,
     restartOnboarding,
     generateBonusImages,
-    generateBonusVideo,
     refetch: fetchOnboardingStatus
   };
 };

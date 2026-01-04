@@ -59,7 +59,11 @@
       "complete": "Ihre Bilder sind fertig!",
       "failed": "Generierung fehlgeschlagen",
       "freeNote": "Diese Bilder sind kostenlos - sie verbrauchen keine Credits!",
-      "continueToVideo": "Weiter zum Video",
+      "animateImage": "Bild Animieren",
+      "creatingVideo": "Video wird erstellt...",
+      "videoStarted": "Videoerstellung gestartet! Überprüfen Sie den Fortschritt in der Bibliothek.",
+      "videoError": "Video konnte nicht erstellt werden. Versuchen Sie es später erneut.",
+      "skipAndFinish": "Überspringen und beenden",
       "error": "Generierung fehlgeschlagen. Versuchen Sie es erneut.",
       "errorMessage": "Etwas ist schief gelaufen. Versuchen Sie es erneut.",
       "retry": "Erneut Versuchen"

@@ -1,20 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, ImageIcon, AlertCircle } from 'lucide-react';
-import { OnboardingData } from '@/hooks/useOnboarding';
+import { Loader2, Sparkles, ImageIcon, AlertCircle, Video } from 'lucide-react';
+import { OnboardingData, useOnboarding } from '@/hooks/useOnboarding';
 import { motion } from 'framer-motion';
 import { useGeminiImageJobUnified } from '@/hooks/useGeminiImageJobUnified';
+import { createVideoJob } from '@/api/kling';
 import { toast } from 'sonner';
 
 interface OnboardingStep4Props {
   data: OnboardingData;
-  onNext: (generatedImages: string[]) => void;
 }
 
-export const OnboardingStep4 = ({ data, onNext }: OnboardingStep4Props) => {
+export const OnboardingStep4 = ({ data }: OnboardingStep4Props) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { completeOnboarding } = useOnboarding();
   const [hasStarted, setHasStarted] = useState(false);
+  const [isCreatingVideo, setIsCreatingVideo] = useState(false);
   const startedRef = useRef(false);
   
   // Use the unified gemini hook (same as UGC panel)
@@ -123,11 +127,39 @@ OUTPUT: Single authentic UGC photo ready for social media.
     }
   }, [isComplete, jobImages]);
 
-  const handleContinue = () => {
-    const imageUrls = jobImages
-      .filter(img => img.public_url)
-      .map(img => img.public_url);
-    onNext(imageUrls);
+  const handleAnimate = async () => {
+    if (readyImages.length === 0) return;
+    
+    setIsCreatingVideo(true);
+    
+    try {
+      const firstImage = readyImages[0];
+      
+      const result = await createVideoJob({
+        ugc_image_id: firstImage.id,
+        prompt: "Give natural, subtle movement to this image. Make it feel alive with gentle motion while maintaining authenticity.",
+        duration: 5,
+        model: "fal-ai/kling-video/v2.6/pro/image-to-video"
+      });
+      
+      if (result.success) {
+        await completeOnboarding();
+        toast.success(t('onboarding.step4.videoStarted'));
+        navigate('/library/videos');
+      } else {
+        throw new Error(result.error || 'Failed to create video job');
+      }
+    } catch (error) {
+      console.error('[OnboardingStep4] Video creation error:', error);
+      toast.error(t('onboarding.step4.videoError'));
+    } finally {
+      setIsCreatingVideo(false);
+    }
+  };
+
+  const handleSkipVideo = async () => {
+    await completeOnboarding();
+    navigate('/create/ugc-gemini');
   };
 
   const readyImages = jobImages.filter(img => img.public_url);
@@ -217,10 +249,29 @@ OUTPUT: Single authentic UGC photo ready for social media.
       <Button
         className="w-full mt-8"
         size="lg"
-        disabled={!isComplete || readyImages.length === 0}
-        onClick={handleContinue}
+        disabled={!isComplete || readyImages.length === 0 || isCreatingVideo}
+        onClick={handleAnimate}
       >
-        {t('onboarding.step4.continueToVideo')}
+        {isCreatingVideo ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            {t('onboarding.step4.creatingVideo')}
+          </>
+        ) : (
+          <>
+            <Video className="w-4 h-4 mr-2" />
+            {t('onboarding.step4.animateImage')}
+          </>
+        )}
+      </Button>
+
+      <Button
+        variant="ghost"
+        className="w-full mt-2"
+        disabled={!isComplete || isCreatingVideo}
+        onClick={handleSkipVideo}
+      >
+        {t('onboarding.step4.skipAndFinish')}
       </Button>
     </div>
   );
