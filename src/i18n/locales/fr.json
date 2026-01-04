@@ -59,7 +59,11 @@
       "complete": "Vos images sont prêtes !",
       "failed": "Échec de la génération",
       "freeNote": "Ces images sont gratuites - elles n'utilisent pas vos crédits !",
-      "continueToVideo": "Continuer vers la Vidéo",
+      "animateImage": "Animer l'Image",
+      "creatingVideo": "Création de la vidéo...",
+      "videoStarted": "Création vidéo lancée ! Consultez la bibliothèque pour suivre la progression.",
+      "videoError": "Échec de la création vidéo. Réessayez plus tard.",
+      "skipAndFinish": "Passer et terminer",
       "error": "Échec de la génération. Réessayez.",
       "errorMessage": "Une erreur s'est produite. Réessayez.",
       "retry": "Réessayer"

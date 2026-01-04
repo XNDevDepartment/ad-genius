@@ -55,7 +55,11 @@
       "complete": "Your images are ready!",
       "failed": "Generation failed",
       "freeNote": "These images are free - they don't use your credits!",
-      "continueToVideo": "Continue to Video",
+      "animateImage": "Animate Image",
+      "creatingVideo": "Creating video...",
+      "videoStarted": "Video creation started! Check the library to see progress.",
+      "videoError": "Failed to create video. Please try again later.",
+      "skipAndFinish": "Skip and finish",
       "error": "Generation failed. Try again.",
       "errorMessage": "Something went wrong. Please try again.",
       "retry": "Retry"

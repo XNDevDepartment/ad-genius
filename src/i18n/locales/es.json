@@ -59,7 +59,11 @@
       "complete": "¡Tus imágenes están listas!",
       "failed": "Error en la generación",
       "freeNote": "¡Estas imágenes son gratis - no usan tus créditos!",
-      "continueToVideo": "Continuar a Video",
+      "animateImage": "Animar Imagen",
+      "creatingVideo": "Creando video...",
+      "videoStarted": "¡Creación de video iniciada! Revisa la biblioteca para ver el progreso.",
+      "videoError": "Error al crear video. Inténtalo más tarde.",
+      "skipAndFinish": "Saltar y terminar",
       "error": "Error en la generación. Intenta de nuevo.",
       "errorMessage": "Algo salió mal. Intenta de nuevo.",
       "retry": "Reintentar"

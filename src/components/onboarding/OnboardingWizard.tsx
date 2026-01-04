@@ -6,7 +6,6 @@ import { OnboardingStep1 } from './OnboardingStep1';
 import { OnboardingStep2 } from './OnboardingStep2';
 import { OnboardingStep3 } from './OnboardingStep3';
 import { OnboardingStep4 } from './OnboardingStep4';
-import { OnboardingStep5 } from './OnboardingStep5';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
@@ -25,9 +24,9 @@ import logoHorizontal from '@/assets/logos/logo_horizontal.png';
 
 export const OnboardingWizard = () => {
   const { t } = useTranslation();
-  const { step, data, nextStep, completeOnboarding, generateBonusVideo } = useOnboarding();
+  const { step, data, nextStep, completeOnboarding } = useOnboarding();
 
-  const totalSteps = 5;
+  const totalSteps = 4;
   const progressPercent = step === 0 ? 0 : (step / totalSteps) * 100;
 
   const handleSkipOnboarding = () => {
@@ -65,20 +64,7 @@ export const OnboardingWizard = () => {
           />
         );
       case 4:
-        return (
-          <OnboardingStep4
-            data={data}
-            onNext={(generatedImages) => nextStep({ generatedImages })}
-          />
-        );
-      case 5:
-        return (
-          <OnboardingStep5
-            generatedImages={data.generatedImages || []}
-            generateBonusVideo={generateBonusVideo}
-            onComplete={completeOnboarding}
-          />
-        );
+        return <OnboardingStep4 data={data} />;
       default:
         return null;
     }
