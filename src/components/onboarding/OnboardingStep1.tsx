@@ -7,6 +7,8 @@ import { Upload, Link, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import MultiImageUploader from '@/components/MultiImageUploader';
+import { useSourceImageUpload, SourceImage } from '@/hooks/useSourceImageUpload';
 
 interface OnboardingStep1Props {
   onNext: (imageUrl: string, sourceImageId: string) => void;
@@ -17,93 +19,66 @@ export const OnboardingStep1 = ({ onNext }: OnboardingStep1Props) => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'upload' | 'url'>('upload');
   const [imageUrl, setImageUrl] = useState('');
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [sourceImageId, setSourceImageId] = useState<string | null>(null);
+  const [productImages, setProductImages] = useState<File[]>([]);
+  const [sourceImage, setSourceImage] = useState<SourceImage | null>(null);
+  const [urlUploading, setUrlUploading] = useState(false);
+  
+  const { uploadSourceImage, uploading } = useSourceImageUpload();
 
-  const handleFileUpload = useCallback(async (file: File) => {
-    if (!user) return;
+  const handleImagesSelect = useCallback(async (files: File[]) => {
+    setProductImages(files);
     
-    setUploading(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-      
-      // Upload to storage
-      const { error: uploadError } = await supabase.storage
-        .from('source-images')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('source-images')
-        .getPublicUrl(fileName);
-
-      // Save to source_images table
-      const { data: sourceImage, error: dbError } = await supabase
-        .from('source_images')
-        .insert({
-          user_id: user.id,
-          storage_path: fileName,
-          public_url: publicUrl,
-          file_name: file.name,
-          file_size: file.size,
-          mime_type: file.type
-        })
-        .select()
-        .single();
-
-      if (dbError) throw dbError;
-
-      // Create a local blob URL for immediate preview
-      const localPreviewUrl = URL.createObjectURL(file);
-      setPreviewUrl(localPreviewUrl);
-      setSourceImageId(sourceImage.id);
-      toast.success(t('onboarding.step1.uploadSuccess'));
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      toast.error(t('onboarding.step1.uploadError'));
-    } finally {
-      setUploading(false);
+    // If a file is added and we don't have a source image yet, upload it
+    if (files.length > 0 && files[0] !== productImages[0]) {
+      try {
+        const uploaded = await uploadSourceImage(files[0]);
+        if (uploaded) {
+          setSourceImage(uploaded);
+          toast.success(t('onboarding.step1.uploadSuccess'));
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        setProductImages([]);
+      }
     }
-  }, [user, t]);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      handleFileUpload(file);
+    
+    // If file is removed, clear the source image
+    if (files.length === 0) {
+      setSourceImage(null);
     }
-  }, [handleFileUpload]);
+  }, [productImages, uploadSourceImage, t]);
 
   const handleUrlSubmit = useCallback(async () => {
     if (!imageUrl || !user) return;
     
-    setUploading(true);
+    setUrlUploading(true);
     try {
-      // Use the upload-source-image-from-url edge function
       const { data, error } = await supabase.functions.invoke('upload-source-image-from-url', {
-        body: { url: imageUrl }
+        body: { imageUrl }
       });
 
       if (error) throw error;
 
-      setPreviewUrl(data.public_url);
-      setSourceImageId(data.id);
+      setSourceImage({
+        id: data.sourceImage.id,
+        publicUrl: data.sourceImage.public_url,
+        fileName: data.sourceImage.file_name,
+        fileSize: data.sourceImage.file_size,
+        mimeType: data.sourceImage.mime_type,
+        createdAt: data.sourceImage.created_at
+      });
       toast.success(t('onboarding.step1.uploadSuccess'));
     } catch (error: any) {
       console.error('URL upload error:', error);
       toast.error(t('onboarding.step1.urlError'));
     } finally {
-      setUploading(false);
+      setUrlUploading(false);
     }
   }, [imageUrl, user, t]);
 
   const handleContinue = () => {
-    if (previewUrl && sourceImageId) {
-      onNext(previewUrl, sourceImageId);
+    if (sourceImage) {
+      onNext(sourceImage.publicUrl, sourceImage.id);
     }
   };
 
@@ -130,54 +105,13 @@ export const OnboardingStep1 = ({ onNext }: OnboardingStep1Props) => {
         </TabsList>
 
         <TabsContent value="upload">
-          <div key={previewUrl ? 'preview' : 'upload'}>
-            {previewUrl ? (
-              <div className="relative rounded-lg overflow-hidden border border-border min-h-[300px]">
-                <img 
-                  src={previewUrl} 
-                  alt="Preview" 
-                  className="w-full h-auto max-h-[400px] object-contain bg-muted"
-                />
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="absolute top-2 right-2"
-                  onClick={() => {
-                    setPreviewUrl(null);
-                    setSourceImageId(null);
-                  }}
-                >
-                  {t('common.remove')}
-                </Button>
-              </div>
-            ) : (
-              <div
-                onDrop={handleDrop}
-                onDragOver={(e) => e.preventDefault()}
-                className="border-2 border-dashed border-border rounded-lg p-12 text-center cursor-pointer hover:border-primary/50 transition-colors"
-                onClick={() => document.getElementById('file-input')?.click()}
-              >
-                {uploading ? (
-                  <Loader2 className="w-12 h-12 mx-auto mb-4 text-primary animate-spin" />
-                ) : (
-                  <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                )}
-                <p className="text-sm text-muted-foreground">
-                  {t('onboarding.step1.dropzone')}
-                </p>
-                <input
-                  id="file-input"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleFileUpload(file);
-                  }}
-                />
-              </div>
-            )}
-          </div>
+          <MultiImageUploader
+            onImagesSelect={handleImagesSelect}
+            selectedImages={productImages}
+            isAnalyzing={uploading ? [true] : []}
+            analyzingText={t('onboarding.step1.uploading')}
+            maxImages={1}
+          />
         </TabsContent>
 
         <TabsContent value="url">
@@ -188,14 +122,14 @@ export const OnboardingStep1 = ({ onNext }: OnboardingStep1Props) => {
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
               />
-              <Button onClick={handleUrlSubmit} disabled={!imageUrl || uploading}>
-                {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('onboarding.step1.fetch')}
+              <Button onClick={handleUrlSubmit} disabled={!imageUrl || urlUploading}>
+                {urlUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('onboarding.step1.fetch')}
               </Button>
             </div>
-            {previewUrl && (
+            {sourceImage && activeTab === 'url' && (
               <div className="relative rounded-lg overflow-hidden border border-border">
                 <img 
-                  src={previewUrl} 
+                  src={sourceImage.publicUrl} 
                   alt="Preview" 
                   className="w-full aspect-square object-contain bg-muted"
                 />
@@ -208,7 +142,7 @@ export const OnboardingStep1 = ({ onNext }: OnboardingStep1Props) => {
       <Button
         className="w-full mt-8"
         size="lg"
-        disabled={!previewUrl || !sourceImageId}
+        disabled={!sourceImage}
         onClick={handleContinue}
       >
         {t('onboarding.continue')}
