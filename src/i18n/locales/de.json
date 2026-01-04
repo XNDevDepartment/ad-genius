@@ -43,34 +43,26 @@
       "example3": "Modeinteressierte Gen Z Shopper"
     },
     "step3": {
-      "title": "Wählen Sie Ihren Content-Stil",
-      "subtitle": "Wählen Sie die Art von Inhalten, die Sie erstellen möchten",
-      "product_showcase": {
-        "title": "Produktpräsentation",
-        "description": "Klare, professionelle produktfokussierte Bilder"
-      },
-      "lifestyle": {
-        "title": "Lifestyle",
-        "description": "Produkt im realen Kontext"
-      },
-      "social_proof": {
-        "title": "Social Proof",
-        "description": "UGC-Stil mit Models/Influencern"
-      },
-      "ad_creative": {
-        "title": "Werbe-Kreativ",
-        "description": "Marketing-fertige Visuals"
-      }
+      "title": "Wählen Sie ein Szenario",
+      "subtitle": "Wählen Sie, wie Ihr Produkt erscheinen soll",
+      "generating": "Kreative Szenarien werden generiert...",
+      "regenerate": "Neue Ideen Generieren",
+      "customScenario": "Eigenes Schreiben",
+      "customDescription": "Beschreiben Sie Ihr eigenes Szenario für das Bild",
+      "customPlaceholder": "Z.B.: Eine junge Frau genießt Kaffee in einem gemütlichen Café mit meinem Produkt auf dem Tisch...",
+      "error": "Fehler bei der Generierung von Szenarien. Versuchen Sie es erneut."
     },
     "step4": {
       "title": "Ihre Ersten Bilder Werden Erstellt",
-      "subtitle": "Wir generieren 2 kostenlose Bilder nur für Sie",
-      "generating": "Wird generiert...",
+      "generating": "Wir generieren 2 kostenlose Bilder nur für Sie...",
+      "preparing": "Generierung wird vorbereitet...",
       "complete": "Ihre Bilder sind fertig!",
-      "error": "Generierung fehlgeschlagen. Versuchen Sie es erneut.",
-      "retry": "Erneut Versuchen",
+      "failed": "Generierung fehlgeschlagen",
       "freeNote": "Diese Bilder sind kostenlos - sie verbrauchen keine Credits!",
-      "continueToVideo": "Weiter zum Video"
+      "continueToVideo": "Weiter zum Video",
+      "error": "Generierung fehlgeschlagen. Versuchen Sie es erneut.",
+      "errorMessage": "Etwas ist schief gelaufen. Versuchen Sie es erneut.",
+      "retry": "Erneut Versuchen"
     },
     "step5": {
       "title": "Erwecken Sie Ihr Bild zum Leben",
