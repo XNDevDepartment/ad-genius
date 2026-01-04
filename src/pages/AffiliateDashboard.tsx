@@ -79,39 +79,22 @@ const AffiliateDashboard = () => {
 
   const fetchAffiliateData = async () => {
     try {
-      // Fetch affiliate by access token
-      const { data: affiliateData, error: affiliateError } = await supabase
-        .from('affiliates')
-        .select('*')
-        .eq('access_token', token)
-        .single();
+      // Use edge function for secure token-based access
+      const { data, error: fetchError } = await supabase.functions.invoke('affiliate-dashboard', {
+        body: { access_token: token }
+      });
 
-      if (affiliateError || !affiliateData) {
+      if (fetchError || data?.error) {
+        console.error('[AffiliateDashboard] Error:', fetchError || data?.error);
         setError('Dashboard não encontrado. Verifica se o link está correto.');
         setLoading(false);
         return;
       }
 
-      setAffiliate(affiliateData);
-      setIban(affiliateData.iban || '');
-
-      // Fetch referrals
-      const { data: referralsData } = await supabase
-        .from('affiliate_referrals')
-        .select('*')
-        .eq('affiliate_id', affiliateData.id)
-        .order('created_at', { ascending: false });
-
-      setReferrals(referralsData || []);
-
-      // Fetch commissions
-      const { data: commissionsData } = await supabase
-        .from('affiliate_commissions')
-        .select('*')
-        .eq('affiliate_id', affiliateData.id)
-        .order('month', { ascending: false });
-
-      setCommissions(commissionsData || []);
+      setAffiliate(data.affiliate);
+      setIban(data.affiliate.iban || '');
+      setReferrals(data.referrals || []);
+      setCommissions(data.commissions || []);
     } catch (err) {
       console.error('Error fetching affiliate data:', err);
       setError('Erro ao carregar dados. Tenta novamente mais tarde.');
@@ -130,12 +113,19 @@ const AffiliateDashboard = () => {
     
     setSavingIban(true);
     try {
-      const { error } = await supabase
-        .from('affiliates')
-        .update({ iban })
-        .eq('id', affiliate.id);
+      // Use edge function for secure IBAN update
+      const { data, error: updateError } = await supabase.functions.invoke('affiliate-dashboard', {
+        body: { 
+          access_token: token,
+          action: 'update_iban',
+          data: { iban }
+        }
+      });
 
-      if (error) throw error;
+      if (updateError || data?.error) {
+        throw new Error(data?.error || 'Failed to update IBAN');
+      }
+
       toast.success('IBAN guardado com sucesso!');
     } catch (err) {
       console.error('Error saving IBAN:', err);
@@ -460,13 +450,13 @@ const AffiliateDashboard = () => {
           {/* Referrals Table */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Referências</CardTitle>
+              <CardTitle className="text-lg">Os teus referidos</CardTitle>
             </CardHeader>
             <CardContent>
               {referrals.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Ainda não tens referências.</p>
+                <div className="text-center py-8 text-muted-foreground">
+                  <Users className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                  <p>Ainda não tens referidos.</p>
                   <p className="text-sm">Partilha o teu link para começar a ganhar!</p>
                 </div>
               ) : (
@@ -476,7 +466,7 @@ const AffiliateDashboard = () => {
                       <TableHead>Data de registo</TableHead>
                       <TableHead>Estado</TableHead>
                       <TableHead>Plano</TableHead>
-                      <TableHead>Data de conversão</TableHead>
+                      <TableHead>Conversão</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -486,19 +476,21 @@ const AffiliateDashboard = () => {
                           {new Date(referral.signup_date).toLocaleDateString('pt-PT')}
                         </TableCell>
                         <TableCell>
-                          {referral.status === 'converted' ? (
-                            <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                              Convertido
-                            </Badge>
-                          ) : referral.status === 'churned' ? (
-                            <Badge variant="secondary" className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-                              Cancelado
-                            </Badge>
-                          ) : (
+                          {referral.status === 'signup' && (
                             <Badge variant="secondary">Registo</Badge>
                           )}
+                          {referral.status === 'converted' && (
+                            <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                              Convertido
+                            </Badge>
+                          )}
+                          {referral.status === 'churned' && (
+                            <Badge variant="destructive">Cancelado</Badge>
+                          )}
                         </TableCell>
-                        <TableCell>{referral.current_plan || '-'}</TableCell>
+                        <TableCell>
+                          {referral.current_plan || '-'}
+                        </TableCell>
                         <TableCell>
                           {referral.conversion_date 
                             ? new Date(referral.conversion_date).toLocaleDateString('pt-PT')
