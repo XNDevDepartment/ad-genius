@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { shopifyImportApi, ShopifyProduct } from '@/lib/api/shopify-import';
+import { shopifyImportApi, ShopifyProduct, getProxiedImageUrl } from '@/lib/api/shopify-import';
 
 export default function ShopifyImport() {
   const { t } = useTranslation();
@@ -248,14 +248,12 @@ export default function ShopifyImport() {
                                   <Skeleton className="absolute inset-0" />
                                 )}
                                 <img
-                                  src={product.images[0].src}
+                                  src={getProxiedImageUrl(product.images[0].src)}
                                   alt={product.images[0].alt || product.title}
                                   className={`w-full h-full object-cover transition-opacity ${
                                     loadedImages.has(product.images[0].src) ? 'opacity-100' : 'opacity-0'
                                   }`}
                                   loading="lazy"
-                                  referrerPolicy="no-referrer"
-                                  crossOrigin="anonymous"
                                   onLoad={() => setLoadedImages(prev => new Set(prev).add(product.images[0].src))}
                                   onError={() => setFailedImages(prev => new Set(prev).add(product.images[0].src))}
                                 />
@@ -300,12 +298,10 @@ export default function ShopifyImport() {
                                 >
                                   {!failedImages.has(img.src) ? (
                                     <img
-                                      src={img.src}
+                                      src={getProxiedImageUrl(img.src)}
                                       alt={img.alt || `${product.title} ${idx + 2}`}
                                       className="w-full h-full object-cover"
                                       loading="lazy"
-                                      referrerPolicy="no-referrer"
-                                      crossOrigin="anonymous"
                                       onError={() => setFailedImages(prev => new Set(prev).add(img.src))}
                                     />
                                   ) : (

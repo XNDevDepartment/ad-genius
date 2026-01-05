@@ -1,5 +1,11 @@
 import { supabase } from '@/integrations/supabase/client';
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+export const getProxiedImageUrl = (originalUrl: string): string => {
+  return `${SUPABASE_URL}/functions/v1/image-proxy?url=${encodeURIComponent(originalUrl)}`;
+};
+
 export interface ShopifyProductImage {
   src: string;
   alt?: string;
