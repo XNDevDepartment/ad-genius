@@ -7,8 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { shopifyImportApi, ShopifyProduct } from '@/lib/api/shopify-import';
+
 export default function ShopifyImport() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -20,6 +22,8 @@ export default function ShopifyImport() {
   const [isImporting, setIsImporting] = useState(false);
   const [importProgress, setImportProgress] = useState({ completed: 0, total: 0 });
   const [hasFetched, setHasFetched] = useState(false);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
 
   const allImages = useMemo(() => {
     return products.flatMap(p => p.images.map(img => img.src));
@@ -238,12 +242,29 @@ export default function ShopifyImport() {
                             className="relative aspect-square bg-muted cursor-pointer group"
                             onClick={() => toggleImageSelection(product.images[0].src)}
                           >
-                            <img
-                              src={product.images[0].src}
-                              alt={product.images[0].alt || product.title}
-                              className="w-full h-full object-cover"
-                              loading="lazy"
-                            />
+                            {!failedImages.has(product.images[0].src) ? (
+                              <>
+                                {!loadedImages.has(product.images[0].src) && (
+                                  <Skeleton className="absolute inset-0" />
+                                )}
+                                <img
+                                  src={product.images[0].src}
+                                  alt={product.images[0].alt || product.title}
+                                  className={`w-full h-full object-cover transition-opacity ${
+                                    loadedImages.has(product.images[0].src) ? 'opacity-100' : 'opacity-0'
+                                  }`}
+                                  loading="lazy"
+                                  referrerPolicy="no-referrer"
+                                  crossOrigin="anonymous"
+                                  onLoad={() => setLoadedImages(prev => new Set(prev).add(product.images[0].src))}
+                                  onError={() => setFailedImages(prev => new Set(prev).add(product.images[0].src))}
+                                />
+                              </>
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <ImageIcon className="h-12 w-12 text-muted-foreground" />
+                              </div>
+                            )}
                             <div className={`absolute inset-0 flex items-center justify-center transition-opacity ${
                               selectedImages.has(product.images[0].src) 
                                 ? 'bg-primary/20' 
@@ -277,12 +298,21 @@ export default function ShopifyImport() {
                                   }`}
                                   onClick={() => toggleImageSelection(img.src)}
                                 >
-                                  <img
-                                    src={img.src}
-                                    alt={img.alt || `${product.title} ${idx + 2}`}
-                                    className="w-full h-full object-cover"
-                                    loading="lazy"
-                                  />
+                                  {!failedImages.has(img.src) ? (
+                                    <img
+                                      src={img.src}
+                                      alt={img.alt || `${product.title} ${idx + 2}`}
+                                      className="w-full h-full object-cover"
+                                      loading="lazy"
+                                      referrerPolicy="no-referrer"
+                                      crossOrigin="anonymous"
+                                      onError={() => setFailedImages(prev => new Set(prev).add(img.src))}
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-muted">
+                                      <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                               {product.images.length > 5 && (
