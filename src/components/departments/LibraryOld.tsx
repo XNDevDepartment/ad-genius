@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { FileImage, Upload, CheckSquare, Trash2, Loader2 } from "lucide-react";
+import { FileImage, Upload, CheckSquare, Trash2, Loader2, Store } from "lucide-react";
 import { BulkImageUploadModal } from "@/components/BulkImageUploadModal";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -44,6 +45,7 @@ interface LibraryProps {
 }
 
 export const Library = ({ onBack }: LibraryProps) => {
+  const navigate = useNavigate();
   const [showSourceThumbnails, setShowSourceThumbnails] = useState(false);
   const [viewMode, setViewMode] = useState<"ai" | "source">("ai");
   const [filter, setFilter] = useState<"all" | "ugc" | "outfit_swap">("all");
@@ -198,6 +200,10 @@ export const Library = ({ onBack }: LibraryProps) => {
                 <Button variant="outline" size="sm" onClick={() => setSourceSelectionMode(true)}>
                   <CheckSquare className="w-4 h-4 mr-2" />
                   Select
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => navigate('/import/shopify')}>
+                  <Store className="w-4 h-4 mr-2" />
+                  {t('library.importFromShopify', 'Import from Shopify')}
                 </Button>
                 <Button onClick={() => setShowUploadModal(true)} size="sm">
                   <Upload className="w-4 h-4 mr-2" />
