@@ -58,7 +58,7 @@ const AffiliateDashboard = lazyWithRetry(() => import("./pages/AffiliateDashboar
 const PrivacyPolicy = lazyWithRetry(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazyWithRetry(() => import("./pages/TermsOfService"));
 const CookiePolicy = lazyWithRetry(() => import("./pages/CookiePolicy"));
-
+const ShopifyImport = lazyWithRetry(() => import("./pages/ShopifyImport"));
 const queryClient = new QueryClient();
 
 // Wrapper component to provide resetKey and user context to ErrorBoundary
@@ -192,6 +192,15 @@ const App = () => {
                   <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <Library />
+                    </Suspense>
+                  </ErrorBoundaryWithReset>
+                } />
+                <Route path="import/shopify" element={
+                  <ErrorBoundaryWithReset>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AuthGuard>
+                        <ShopifyImport />
+                      </AuthGuard>
                     </Suspense>
                   </ErrorBoundaryWithReset>
                 } />

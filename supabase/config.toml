@@ -142,6 +142,9 @@ verify_jwt = true
 [functions.affiliate-dashboard]
 verify_jwt = false
 
+[functions.firecrawl-shopify]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 port = 54327
