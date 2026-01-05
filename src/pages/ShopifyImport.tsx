@@ -304,10 +304,7 @@ export default function ShopifyImport() {
                           <h3 className="font-medium text-sm line-clamp-2 mb-1">
                             {product.title}
                           </h3>
-                          {product.price && (
-                            <p className="text-sm text-muted-foreground">${product.price}</p>
-                          )}
-                          
+
                           {/* Additional Images */}
                           {product.images.length > 1 && (
                             <div className="mt-2 flex gap-1 flex-wrap">
