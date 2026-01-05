@@ -27,8 +27,9 @@ import GeneratedImagesRows from "@/components/GeneratedImagesRows";
 import { SourceImagePicker } from "@/components/SourceImagePicker";
 import type { SourceImage } from "@/hooks/useSourceImages";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Link as LinkIcon, Images } from "lucide-react";
+import { Link as LinkIcon, Images, Store } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { ShopifyImportModal } from "@/components/ShopifyImportModal";
 import { useLanguage } from "@/contexts/LanguageContext";
 import AspectRatioSelector, { AspectRatio } from "@/components/AspectRatioSelector";
 import { SIZE_MAP } from "@/lib/aspectSizes";
@@ -127,6 +128,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [importingFromUrl, setImportingFromUrl] = useState(false);
   const [pendingSlots, setPendingSlots] = useState(0);
   const [showScrollDown, setShowScrollDown] = useState(false);
+  const [shopifyImportOpen, setShopifyImportOpen] = useState(false);
 
   const taRef = useRef<HTMLTextAreaElement>(null);
   const scnRef = useRef<HTMLTextAreaElement>(null);
@@ -531,6 +533,55 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       });
     } finally {
       setImportingFromUrl(false);
+    }
+  };
+
+  const handleShopifyImportComplete = async (importedUrls: string[]) => {
+    if (importedUrls.length === 0) return;
+
+    try {
+      // Fetch the first imported image to use as the product image
+      const { data: sourceImages, error } = await supabase
+        .from('source_images')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error || !sourceImages?.length) {
+        throw new Error('Could not find imported image');
+      }
+
+      const sourceImage = sourceImages[0];
+      
+      const { data: signedUrlData } = await supabase.storage
+        .from('ugc-inputs')
+        .createSignedUrl(sourceImage.storage_path, 3600);
+
+      if (signedUrlData?.signedUrl) {
+        const response = await fetch(signedUrlData.signedUrl);
+        const blob = await response.blob();
+        const file = new File([blob], sourceImage.file_name, { type: blob.type });
+
+        setProductImages([file]);
+        setSourceImageIds([sourceImage.id]);
+        setUploadedSourceIds([sourceImage.id]);
+        setImagesAnalysed(true);
+        setIsAnalyzingImages([false]);
+        
+        toast({
+          title: t('ugc.shopifyImport.success', 'Image Imported'),
+          description: t('ugc.shopifyImport.successDesc', 'Successfully imported image from Shopify.')
+        });
+        document.getElementById("desiredAudience")?.focus();
+      }
+    } catch (error) {
+      console.error('Error loading imported Shopify image:', error);
+      toast({
+        title: t('ugc.shopifyImport.error', 'Import Error'),
+        description: t('ugc.shopifyImport.errorDesc', 'Failed to load the imported image.'),
+        variant: "destructive",
+      });
     }
   };
 
@@ -948,7 +999,7 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                         />
 
                         {/* Additional Image Options */}
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                           <Button
                             type="button"
                             variant="outline"
@@ -958,7 +1009,7 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                             disabled={!threadId}
                           >
                             <Images className="h-4 w-4 mr-2" />
-                            Choose from Library
+                            {t('ugc.importOptions.library', 'Library')}
                           </Button>
 
                           <Button
@@ -970,7 +1021,19 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                             disabled={!threadId}
                           >
                             <LinkIcon className="h-4 w-4 mr-2" />
-                            Import from URL
+                            {t('ugc.importOptions.url', 'URL')}
+                          </Button>
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShopifyImportOpen(true)}
+                            className="flex-1 flex-wrap p-2 overflow-hidden"
+                            disabled={!threadId}
+                          >
+                            <Store className="h-4 w-4 mr-2" />
+                            {t('ugc.importOptions.shopify', 'Shopify')}
                           </Button>
                         </div>
                       </div>
@@ -1513,6 +1576,13 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Shopify Import Modal */}
+        <ShopifyImportModal
+          open={shopifyImportOpen}
+          onOpenChange={setShopifyImportOpen}
+          onImportComplete={handleShopifyImportComplete}
+        />
       </div>
     </TooltipProvider>
   );

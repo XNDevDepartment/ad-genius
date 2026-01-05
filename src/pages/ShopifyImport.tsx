@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Store, Search, Download, Loader2, ExternalLink, ImageIcon } from 'lucide-react';
+import { Store, Search, Download, Loader2, ExternalLink, ImageIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -27,10 +27,22 @@ export default function ShopifyImport() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState('');
 
   const allImages = useMemo(() => {
     return products.flatMap(p => p.images.map(img => img.src));
   }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    if (!searchQuery.trim()) return products;
+    return products.filter(p => 
+      p.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [products, searchQuery]);
+
+  const filteredImages = useMemo(() => {
+    return filteredProducts.flatMap(p => p.images.map(img => img.src));
+  }, [filteredProducts]);
 
   const handleFetchProducts = async (page = 1) => {
     if (!storeUrl.trim()) {
@@ -45,6 +57,7 @@ export default function ShopifyImport() {
       setHasFetched(false);
       setFailedImages(new Set());
       setLoadedImages(new Set());
+      setSearchQuery('');
     } else {
       setIsLoadingMore(true);
     }
@@ -102,10 +115,10 @@ export default function ShopifyImport() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedImages.size === allImages.length) {
+    if (selectedImages.size === filteredImages.length) {
       setSelectedImages(new Set());
     } else {
-      setSelectedImages(new Set(allImages));
+      setSelectedImages(new Set(filteredImages));
     }
   };
 
@@ -201,19 +214,55 @@ export default function ShopifyImport() {
             {products.length > 0 ? (
               <>
                 {/* Actions Bar */}
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-sm text-muted-foreground">
-                    {t('shopifyImport.productsFound', '{{count}} products found', { count: products.length })}
-                    {' · '}
-                    {t('shopifyImport.imagesAvailable', '{{count}} images available', { count: allImages.length })}
-                  </p>
+                <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
+                  <div className="flex items-center gap-4 flex-wrap">
+                    <p className="text-sm text-muted-foreground">
+                      {searchQuery ? (
+                        <>
+                          {t('shopifyImport.showingFiltered', 'Showing {{filtered}} of {{total}} products', { 
+                            filtered: filteredProducts.length, 
+                            total: products.length 
+                          })}
+                        </>
+                      ) : (
+                        <>
+                          {t('shopifyImport.productsFound', '{{count}} products found', { count: products.length })}
+                          {' · '}
+                          {t('shopifyImport.imagesAvailable', '{{count}} images available', { count: allImages.length })}
+                        </>
+                      )}
+                    </p>
+                    
+                    {/* Search Filter */}
+                    <div className="relative w-56">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder={t('shopifyImport.searchProducts', 'Search products...')}
+                        className="pl-10"
+                      />
+                      {searchQuery && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                          onClick={() => setSearchQuery('')}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  
                   <div className="flex items-center gap-3">
                     <Button 
                       variant="outline" 
                       size="sm"
                       onClick={toggleSelectAll}
                     >
-                      {selectedImages.size === allImages.length 
+                      {selectedImages.size === filteredImages.length && filteredImages.length > 0
                         ? t('shopifyImport.deselectAll', 'Deselect All')
                         : t('shopifyImport.selectAll', 'Select All')}
                     </Button>
@@ -256,7 +305,7 @@ export default function ShopifyImport() {
 
                 {/* Products Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {products.map((product) => (
+                  {filteredProducts.map((product) => (
                     <Card key={product.id} className="overflow-hidden">
                       <CardContent className="p-0">
                         {/* Main Product Image */}
