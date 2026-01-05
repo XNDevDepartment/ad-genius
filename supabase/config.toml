@@ -145,6 +145,9 @@ verify_jwt = false
 [functions.firecrawl-shopify]
 verify_jwt = true
 
+[functions.image-proxy]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 port = 54327
