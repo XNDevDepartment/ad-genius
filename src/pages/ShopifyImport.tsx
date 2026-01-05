@@ -22,6 +22,9 @@ export default function ShopifyImport() {
   const [isImporting, setIsImporting] = useState(false);
   const [importProgress, setImportProgress] = useState({ completed: 0, total: 0 });
   const [hasFetched, setHasFetched] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
 
@@ -29,32 +32,51 @@ export default function ShopifyImport() {
     return products.flatMap(p => p.images.map(img => img.src));
   }, [products]);
 
-  const handleFetchProducts = async () => {
+  const handleFetchProducts = async (page = 1) => {
     if (!storeUrl.trim()) {
       toast.error(t('shopifyImport.invalidUrl', 'Please enter a valid Shopify store URL'));
       return;
     }
 
-    setIsFetching(true);
-    setProducts([]);
-    setSelectedImages(new Set());
-    setHasFetched(false);
+    if (page === 1) {
+      setIsFetching(true);
+      setProducts([]);
+      setSelectedImages(new Set());
+      setHasFetched(false);
+      setFailedImages(new Set());
+      setLoadedImages(new Set());
+    } else {
+      setIsLoadingMore(true);
+    }
 
     try {
-      const response = await shopifyImportApi.fetchProducts(storeUrl);
+      const response = await shopifyImportApi.fetchProducts(storeUrl, page);
       
       if (!response.success) {
         toast.error(response.error || t('shopifyImport.fetchError', 'Could not fetch products'));
         return;
       }
 
-      setProducts(response.products || []);
+      if (page === 1) {
+        setProducts(response.products || []);
+      } else {
+        setProducts(prev => [...prev, ...(response.products || [])]);
+      }
+      
+      setCurrentPage(page);
+      setHasMore(response.hasMore || false);
       setHasFetched(true);
 
-      if ((response.products?.length || 0) === 0) {
-        toast.info(t('shopifyImport.noProducts', 'No products found'));
+      if (page === 1) {
+        if ((response.products?.length || 0) === 0) {
+          toast.info(t('shopifyImport.noProducts', 'No products found'));
+        } else {
+          toast.success(t('shopifyImport.productsFound', '{{count}} products found', { 
+            count: response.products?.length 
+          }));
+        }
       } else {
-        toast.success(t('shopifyImport.productsFound', '{{count}} products found', { 
+        toast.success(t('shopifyImport.moreProductsLoaded', '{{count}} more products loaded', { 
           count: response.products?.length 
         }));
       }
@@ -63,6 +85,7 @@ export default function ShopifyImport() {
       toast.error(t('shopifyImport.fetchError', 'Could not fetch products'));
     } finally {
       setIsFetching(false);
+      setIsLoadingMore(false);
     }
   };
 
@@ -149,11 +172,11 @@ export default function ShopifyImport() {
                   placeholder={t('shopifyImport.urlPlaceholder', 'https://store.myshopify.com')}
                   className="pl-10"
                   disabled={isFetching}
-                  onKeyDown={(e) => e.key === 'Enter' && handleFetchProducts()}
+                  onKeyDown={(e) => e.key === 'Enter' && handleFetchProducts(1)}
                 />
               </div>
               <Button 
-                onClick={handleFetchProducts} 
+                onClick={() => handleFetchProducts(1)} 
                 disabled={isFetching || !storeUrl.trim()}
               >
                 {isFetching ? (
@@ -323,6 +346,26 @@ export default function ShopifyImport() {
                     </Card>
                   ))}
                 </div>
+
+                {/* Load More Button */}
+                {hasMore && (
+                  <div className="mt-6 text-center">
+                    <Button 
+                      variant="outline"
+                      onClick={() => handleFetchProducts(currentPage + 1)}
+                      disabled={isLoadingMore}
+                    >
+                      {isLoadingMore ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          {t('shopifyImport.loadingMore', 'Loading...')}
+                        </>
+                      ) : (
+                        t('shopifyImport.loadMore', 'Load More Products')
+                      )}
+                    </Button>
+                  </div>
+                )}
               </>
             ) : (
               <Card>
