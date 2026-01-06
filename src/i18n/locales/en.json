@@ -463,7 +463,7 @@
       "description": "Generate professional product photos"
     },
   "outfitSwap": {
-      "title": "Fitting Room",
+      "title": "Fashion Catalog",
       "description": "Dress our models with your clothes and get professional-quality photos"
     },
     "comingSoon": "Coming soon",
@@ -1304,7 +1304,7 @@
     }
   },
   "outfitSwap": {
-    "title": "Fitting Room",
+    "title": "Fashion Catalog",
     "subtitle": "Process up to 10 garments at once",
     "steps": {
       "step1Title": "Step 1: Select Base Model",

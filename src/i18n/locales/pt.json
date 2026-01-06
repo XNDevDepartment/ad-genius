@@ -458,7 +458,7 @@
       "description": "Transforme imagens UGC em vídeos realistas, destacando funcionalidades e utilizações"
     },
     "outfitSwap": {
-      "title": "Provador",
+      "title": "Catálogo Roupa",
       "description": "Veste a tua roupa nos nossos modelos e faz uma sessão fotográfica profissional"
     },
   "studioPhotos": {
@@ -1303,7 +1303,7 @@
     }
   },
   "outfitSwap": {
-    "title": "Provador",
+    "title": "Catálogo Roupa",
     "subtitle": "Trate até 10 peças de roupa de uma vez",
     "steps": {
       "step1Title": "Passo 1: Selecionar Modelo Base",
