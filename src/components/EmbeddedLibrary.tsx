@@ -115,34 +115,9 @@ export const EmbeddedLibrary = () => {
           <CardTitle className="flex items-center gap-2">
             {t('library.yourImages', 'Your images')}
           </CardTitle>
-          <div className="flex flex-wrap items-center gap-2">
-            {!selectionMode && (
-              <>
-                <Button variant="outline" size="sm" onClick={() => setSelectionMode(true)}>
-                  <CheckSquare className="w-4 h-4 mr-2" />
-                  {t('library.select', 'Select')}
-                </Button>
-                <Button size="sm" onClick={() => navigate('/create')}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  {t('index.auth.startCreating', 'Create New')}
-                </Button>
-              </>
-            )}
-          </div>
         </div>
         <CardContent className="pt-4">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex items-center text-center gap-2">
-              <Switch
-                id="source-thumbnails"
-                checked={showSourceThumbnails}
-                onCheckedChange={setShowSourceThumbnails}
-              />
-              <label htmlFor="source-thumbnails" className="text-sm text-muted-foreground">
-                {t('library.showSource')}
-              </label>
-            </div>
-          </div>
+
 
           {loading && images.length === 0 ? (
             <div className="text-center py-12">
