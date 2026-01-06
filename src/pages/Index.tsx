@@ -8,7 +8,7 @@ import { Coins } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import PricingSection from "@/components/landing/PricingSection";
 import HeaderSection from "@/components/landing/HeaderSection";
-import { RecentImagesSection } from "@/components/RecentImagesSection";
+import { EmbeddedLibrary } from "@/components/EmbeddedLibrary";
 import { UserStatsPanel } from "@/components/UserStatsPanel";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
@@ -78,9 +78,9 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Recent Images Section */}
+        {/* Full Library Section */}
         <div className="mt-8">
-          <RecentImagesSection />
+          <EmbeddedLibrary />
         </div>
       </div>
       </OnboardingGuard>
