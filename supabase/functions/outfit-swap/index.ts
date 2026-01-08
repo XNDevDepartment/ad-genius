@@ -940,6 +940,34 @@ async function processOutfitSwap(jobId: string) {
         garment_framing: garmentAnalysis.suggestedFraming
       }
     }).eq("id", jobId);
+
+    // Trigger webhook if job was created via API
+    if (job.metadata?.source === 'api' && job.metadata?.api_key_id) {
+      try {
+        await fetch(`${SUPABASE_URL}/functions/v1/api-webhook-dispatcher`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            apiKeyId: job.metadata.api_key_id,
+            jobId: jobId,
+            jobType: 'fashion',
+            eventType: 'job.completed',
+            userId: job.user_id,
+            data: { 
+              result_url: jpgPublicUrl.publicUrl,
+              png_url: pngPublicUrl.publicUrl 
+            }
+          })
+        });
+        console.log("[OUTFIT-SWAP] Webhook triggered for job:", jobId);
+      } catch (webhookErr) {
+        console.warn("[OUTFIT-SWAP] Webhook trigger failed (non-blocking):", webhookErr);
+      }
+    }
+
     // If this job is part of a batch, update batch progress
     const { data: jobData } = await supabase.from("outfit_swap_jobs").select("batch_id").eq("id", jobId).single();
     if (jobData?.batch_id) {

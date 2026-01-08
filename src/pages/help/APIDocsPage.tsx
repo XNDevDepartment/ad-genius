@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Code, Copy, ExternalLink, Key, Shield, Zap, Globe, CheckCircle, AlertTriangle } from "lucide-react";
+import { Code, Copy, Key, Zap, CheckCircle, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -143,6 +143,44 @@ curl -X POST "${BASE_URL}" \\
   -d '{"endpoint": "/v1/ugc/jobs/YOUR_JOB_ID"}'`
 };
 
+const webhookExample = `// Webhook handler example (Node.js/Express)
+const crypto = require('crypto');
+
+app.post('/webhook', (req, res) => {
+  const signature = req.headers['x-webhook-signature'];
+  const timestamp = req.headers['x-webhook-timestamp'];
+  const payload = JSON.stringify(req.body);
+  
+  // Verify signature
+  const signedPayload = \`\${timestamp}.\${payload}\`;
+  const expectedSig = crypto
+    .createHmac('sha256', WEBHOOK_SECRET)
+    .update(signedPayload)
+    .digest('hex');
+  
+  if (signature !== expectedSig) {
+    return res.status(401).send('Invalid signature');
+  }
+  
+  // Verify timestamp (reject if older than 5 minutes)
+  const age = Date.now() / 1000 - parseInt(timestamp);
+  if (age > 300) {
+    return res.status(401).send('Timestamp too old');
+  }
+  
+  // Process the webhook
+  const { event, job, data } = req.body;
+  
+  if (event === 'job.completed') {
+    console.log('Job completed:', job.id);
+    console.log('Results:', data);
+  } else if (event === 'job.failed') {
+    console.log('Job failed:', job.id);
+  }
+  
+  res.status(200).send('OK');
+});`;
+
 const rateLimits = [
   { plan: "Free", minute: "5", hour: "50", day: "200" },
   { plan: "Starter", minute: "20", hour: "200", day: "2,000" },
@@ -267,6 +305,89 @@ const APIDocsPage = () => {
               </TabsContent>
             ))}
           </Tabs>
+        </div>
+
+        {/* Webhooks */}
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold flex items-center gap-2">
+            <Globe className="h-5 w-5" />
+            Webhooks
+          </h3>
+          <Card>
+            <CardContent className="p-4 space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Configure webhooks to receive real-time notifications when your API jobs complete or fail, 
+                instead of polling for results.
+              </p>
+              
+              <div className="space-y-2">
+                <h4 className="font-medium">Webhook Events</h4>
+                <div className="grid gap-2 md:grid-cols-2">
+                  <div className="p-3 bg-muted rounded-md">
+                    <Badge className="bg-green-100 text-green-700 mb-2">job.completed</Badge>
+                    <p className="text-xs text-muted-foreground">Sent when a job finishes successfully with results</p>
+                  </div>
+                  <div className="p-3 bg-muted rounded-md">
+                    <Badge className="bg-red-100 text-red-700 mb-2">job.failed</Badge>
+                    <p className="text-xs text-muted-foreground">Sent when a job fails after all retry attempts</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <h4 className="font-medium">Payload Structure</h4>
+                <pre className="bg-muted p-3 rounded-md overflow-x-auto text-xs">
+{`{
+  "event": "job.completed",
+  "timestamp": "2026-01-08T13:45:00Z",
+  "job": {
+    "id": "uuid",
+    "type": "ugc",  // ugc | video | fashion
+    "status": "completed"
+  },
+  "data": {
+    // Job-specific results
+    "images": [...],     // for UGC
+    "video_url": "...",  // for video
+    "result_url": "..."  // for fashion
+  }
+}`}
+                </pre>
+              </div>
+              
+              <div className="space-y-2">
+                <h4 className="font-medium">Signature Verification</h4>
+                <p className="text-xs text-muted-foreground mb-2">
+                  All webhooks include HMAC-SHA256 signatures. Verify them to ensure authenticity.
+                </p>
+                <div className="text-xs space-y-1">
+                  <p><code className="bg-muted px-1 rounded">X-Webhook-Signature</code> - HMAC-SHA256 signature</p>
+                  <p><code className="bg-muted px-1 rounded">X-Webhook-Timestamp</code> - Unix timestamp (for replay protection)</p>
+                  <p><code className="bg-muted px-1 rounded">X-Webhook-Event-Id</code> - Unique event ID</p>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium">Verification Example</h4>
+                  <Button size="sm" variant="ghost" onClick={() => copyCode(webhookExample, 'webhook')}>
+                    {copiedCode === 'webhook' ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                </div>
+                <pre className="bg-muted p-3 rounded-md overflow-x-auto text-xs">
+                  <code>{webhookExample}</code>
+                </pre>
+              </div>
+              
+              <div className="space-y-2">
+                <h4 className="font-medium">Retry Policy</h4>
+                <p className="text-xs text-muted-foreground">
+                  Failed webhook deliveries are retried with exponential backoff: immediately, 1 min, 5 min, 30 min. 
+                  After 4 failed attempts, the event is marked as failed and can be viewed in your dashboard.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Rate Limits */}

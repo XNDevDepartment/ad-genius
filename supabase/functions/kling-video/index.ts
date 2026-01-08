@@ -373,6 +373,30 @@ async function persistVideoToStorage(supabase: any, job: any, jobId: string, vid
     video_duration: Number(job.duration) === 10 ? 10 : 5
   }).eq("id", jobId);
   console.log("[PROCESS-JOB] Job completed:", jobId, publicUrl);
+
+  // Trigger webhook if job was created via API
+  if (job.metadata?.source === 'api' && job.metadata?.api_key_id) {
+    try {
+      await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/api-webhook-dispatcher`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          apiKeyId: job.metadata.api_key_id,
+          jobId: jobId,
+          jobType: 'video',
+          eventType: 'job.completed',
+          userId: job.user_id,
+          data: { video_url: publicUrl, duration: job.duration }
+        })
+      });
+      console.log("[PROCESS-JOB] Webhook triggered for video job:", jobId);
+    } catch (webhookErr) {
+      console.warn("[PROCESS-JOB] Webhook trigger failed (non-blocking):", webhookErr);
+    }
+  }
 }
 async function getVideoJob(supabase: any, userId: string, jobId: string): Promise<any> {
   const { data: job, error } = await supabase.from("kling_jobs").select("*").eq("id", jobId).eq("user_id", userId).single();

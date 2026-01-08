@@ -548,6 +548,31 @@ async function generateImages(jobId: string, supabase: SupabaseClient): Promise<
     log("Job processing completed", { jobId, finalStatus, completed, failed });
     await supabase.from("image_jobs").update(update).eq("id", jobId);
 
+    // Trigger webhook if job was created via API
+    const settings = typedJob.settings as JobSettings;
+    if (settings?.source === 'api' && settings?.api_key_id) {
+      try {
+        await fetch(`${SUPABASE_URL}/functions/v1/api-webhook-dispatcher`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${SERVICE_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            apiKeyId: settings.api_key_id,
+            jobId: jobId,
+            jobType: 'ugc',
+            eventType: finalStatus === 'completed' ? 'job.completed' : 'job.failed',
+            userId: typedJob.user_id,
+            data: { completed, failed, total: typedJob.total }
+          })
+        });
+        log("Webhook triggered", { jobId, eventType: finalStatus });
+      } catch (webhookErr) {
+        log("Webhook trigger failed (non-blocking)", { jobId, error: String(webhookErr) });
+      }
+    }
+
     // partial refunds (skip admins)
     if (failed > 0) {
       const { data: isAdmin } = await supabase.rpc("is_user_admin", { check_user_id: typedJob.user_id });
