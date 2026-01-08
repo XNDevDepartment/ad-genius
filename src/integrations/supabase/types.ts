@@ -287,6 +287,8 @@ export type Database = {
           rate_limit_tier: string | null
           updated_at: string | null
           user_id: string
+          webhook_secret: string | null
+          webhook_url: string | null
         }
         Insert: {
           created_at?: string | null
@@ -301,6 +303,8 @@ export type Database = {
           rate_limit_tier?: string | null
           updated_at?: string | null
           user_id: string
+          webhook_secret?: string | null
+          webhook_url?: string | null
         }
         Update: {
           created_at?: string | null
@@ -315,6 +319,8 @@ export type Database = {
           rate_limit_tier?: string | null
           updated_at?: string | null
           user_id?: string
+          webhook_secret?: string | null
+          webhook_url?: string | null
         }
         Relationships: []
       }
@@ -393,6 +399,68 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "api_usage_logs_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_webhook_events: {
+        Row: {
+          api_key_id: string | null
+          attempts: number | null
+          created_at: string | null
+          delivered_at: string | null
+          event_type: string
+          id: string
+          job_id: string
+          job_type: string
+          last_attempt_at: string | null
+          last_error: string | null
+          next_retry_at: string | null
+          payload: Json
+          status: string | null
+          user_id: string
+          webhook_url: string
+        }
+        Insert: {
+          api_key_id?: string | null
+          attempts?: number | null
+          created_at?: string | null
+          delivered_at?: string | null
+          event_type: string
+          id?: string
+          job_id: string
+          job_type: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          next_retry_at?: string | null
+          payload: Json
+          status?: string | null
+          user_id: string
+          webhook_url: string
+        }
+        Update: {
+          api_key_id?: string | null
+          attempts?: number | null
+          created_at?: string | null
+          delivered_at?: string | null
+          event_type?: string
+          id?: string
+          job_id?: string
+          job_type?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          next_retry_at?: string | null
+          payload?: Json
+          status?: string | null
+          user_id?: string
+          webhook_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_webhook_events_api_key_id_fkey"
             columns: ["api_key_id"]
             isOneToOne: false
             referencedRelation: "api_keys"

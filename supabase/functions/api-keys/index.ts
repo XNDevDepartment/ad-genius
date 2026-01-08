@@ -128,7 +128,7 @@ Deno.serve(async (req) => {
       case 'list': {
         const { data: keys, error } = await supabaseClient
           .from('api_keys')
-          .select('id, key_prefix, name, permissions, is_active, rate_limit_tier, last_used_at, created_at, expires_at')
+          .select('id, key_prefix, name, permissions, is_active, rate_limit_tier, last_used_at, created_at, expires_at, webhook_url')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
 
@@ -306,6 +306,203 @@ Deno.serve(async (req) => {
 
         return new Response(
           JSON.stringify({ summary, recent_logs: usageLogs?.slice(0, 50) }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      case 'setWebhook': {
+        const { key_id, webhook_url } = body
+
+        if (!key_id) {
+          return new Response(
+            JSON.stringify({ error: 'key_id is required' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        if (!webhook_url) {
+          return new Response(
+            JSON.stringify({ error: 'webhook_url is required' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        // Validate HTTPS URL
+        try {
+          const url = new URL(webhook_url)
+          if (url.protocol !== 'https:') {
+            return new Response(
+              JSON.stringify({ error: 'Webhook URL must use HTTPS' }),
+              { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+          }
+        } catch {
+          return new Response(
+            JSON.stringify({ error: 'Invalid webhook URL' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        // Generate webhook secret
+        const webhookSecret = crypto.randomUUID() + crypto.randomUUID()
+
+        const { error } = await supabaseClient
+          .from('api_keys')
+          .update({ webhook_url, webhook_secret: webhookSecret })
+          .eq('id', key_id)
+          .eq('user_id', user.id)
+
+        if (error) throw error
+
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            webhook_secret: webhookSecret,
+            message: 'Webhook configured. Save the secret - it will not be shown again.' 
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      case 'removeWebhook': {
+        const { key_id } = body
+
+        if (!key_id) {
+          return new Response(
+            JSON.stringify({ error: 'key_id is required' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        const { error } = await supabaseClient
+          .from('api_keys')
+          .update({ webhook_url: null, webhook_secret: null })
+          .eq('id', key_id)
+          .eq('user_id', user.id)
+
+        if (error) throw error
+
+        return new Response(
+          JSON.stringify({ success: true, message: 'Webhook removed' }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      case 'testWebhook': {
+        const { key_id } = body
+
+        if (!key_id) {
+          return new Response(
+            JSON.stringify({ error: 'key_id is required' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        const { data: apiKey, error: keyError } = await supabaseClient
+          .from('api_keys')
+          .select('webhook_url, webhook_secret')
+          .eq('id', key_id)
+          .eq('user_id', user.id)
+          .single()
+
+        if (keyError || !apiKey?.webhook_url || !apiKey?.webhook_secret) {
+          return new Response(
+            JSON.stringify({ error: 'No webhook configured for this key' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        // Send test webhook
+        const timestamp = Math.floor(Date.now() / 1000).toString()
+        const testPayload = {
+          event: 'test',
+          timestamp: new Date().toISOString(),
+          message: 'This is a test webhook from Genius UGC'
+        }
+        const payloadString = JSON.stringify(testPayload)
+        const signedPayload = `${timestamp}.${payloadString}`
+        
+        // Sign payload
+        const encoder = new TextEncoder()
+        const key = await crypto.subtle.importKey(
+          'raw',
+          encoder.encode(apiKey.webhook_secret),
+          { name: 'HMAC', hash: 'SHA-256' },
+          false,
+          ['sign']
+        )
+        const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(signedPayload))
+        const signature = Array.from(new Uint8Array(signatureBuffer))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('')
+
+        try {
+          const response = await fetch(apiKey.webhook_url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Webhook-Signature': signature,
+              'X-Webhook-Timestamp': timestamp,
+              'X-Webhook-Event-Id': 'test-' + crypto.randomUUID(),
+            },
+            body: payloadString,
+          })
+
+          return new Response(
+            JSON.stringify({ 
+              success: response.ok, 
+              status_code: response.status,
+              message: response.ok ? 'Test webhook sent successfully' : `Webhook returned status ${response.status}`
+            }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        } catch (fetchError) {
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: fetchError instanceof Error ? fetchError.message : 'Failed to send test webhook'
+            }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+      }
+
+      case 'getWebhookEvents': {
+        const { key_id, limit = 20 } = body
+
+        if (!key_id) {
+          return new Response(
+            JSON.stringify({ error: 'key_id is required' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        // Verify key belongs to user
+        const { data: keyCheck } = await supabaseClient
+          .from('api_keys')
+          .select('id')
+          .eq('id', key_id)
+          .eq('user_id', user.id)
+          .single()
+
+        if (!keyCheck) {
+          return new Response(
+            JSON.stringify({ error: 'API key not found' }),
+            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        const { data: events, error } = await supabaseClient
+          .from('api_webhook_events')
+          .select('id, job_id, job_type, event_type, status, attempts, created_at, delivered_at, last_error')
+          .eq('api_key_id', key_id)
+          .order('created_at', { ascending: false })
+          .limit(limit)
+
+        if (error) throw error
+
+        return new Response(
+          JSON.stringify({ events }),
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }

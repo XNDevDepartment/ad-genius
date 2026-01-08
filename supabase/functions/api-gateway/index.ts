@@ -271,7 +271,9 @@ async function handleUgcGenerate(supabase: any, userId: string, body: any) {
       prompt: prompt || 'Professional product photography',
       settings: {
         ...settings,
-        source_url: source_image_url
+        source_url: source_image_url,
+        source: 'api',
+        api_key_id: apiKeyInfo.api_key_id
       },
       content_hash: contentHash,
       status: 'queued',
@@ -350,7 +352,7 @@ async function handleVideoCreate(supabase: any, userId: string, body: any) {
       image_url: source_image_url,
       duration: duration,
       status: 'queued',
-      metadata: { source: 'api' }
+      metadata: { source: 'api', api_key_id: apiKeyInfo.api_key_id }
     })
     .select()
     .single()
@@ -424,6 +426,7 @@ async function handleFashionSwap(supabase: any, userId: string, body: any) {
       status: 'queued',
       metadata: { 
         source: 'api',
+        api_key_id: apiKeyInfo.api_key_id,
         garment_url: garment_image_url 
       },
       settings: settings

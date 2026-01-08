@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Key, Plus, Copy, Trash2, RotateCcw, Eye, EyeOff, AlertTriangle, Check, Activity } from "lucide-react";
+import { Key, Plus, Copy, Trash2, Eye, EyeOff, AlertTriangle, Check, Globe, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +28,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useTranslation } from "react-i18next";
 
 interface ApiKey {
   id: string;
@@ -40,6 +39,7 @@ interface ApiKey {
   last_used_at: string | null;
   created_at: string;
   expires_at: string | null;
+  webhook_url: string | null;
 }
 
 interface ApiKeysPanelProps {
@@ -47,13 +47,13 @@ interface ApiKeysPanelProps {
 }
 
 export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
-  const { t } = useTranslation();
   const { toast } = useToast();
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
+  const [showWebhookDialog, setShowWebhookDialog] = useState<string | null>(null);
   const [newKeyName, setNewKeyName] = useState("");
   const [newKeyPermissions, setNewKeyPermissions] = useState({
     ugc: true,
@@ -62,6 +62,10 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
   });
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState(false);
+  const [webhookUrl, setWebhookUrl] = useState("");
+  const [webhookSecret, setWebhookSecret] = useState<string | null>(null);
+  const [savingWebhook, setSavingWebhook] = useState(false);
+  const [testingWebhook, setTestingWebhook] = useState(false);
 
   const fetchApiKeys = async () => {
     try {
@@ -183,13 +187,103 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
     }
   };
 
+  const handleSetWebhook = async (keyId: string) => {
+    if (!webhookUrl.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a webhook URL",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSavingWebhook(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('api-keys', {
+        body: { action: 'setWebhook', key_id: keyId, webhook_url: webhookUrl.trim() }
+      });
+
+      if (error) throw error;
+
+      setWebhookSecret(data.webhook_secret);
+      fetchApiKeys();
+      
+      toast({
+        title: "Webhook Configured",
+        description: "Copy the webhook secret now - it won't be shown again!"
+      });
+    } catch (error: any) {
+      console.error('Error setting webhook:', error);
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to set webhook",
+        variant: "destructive"
+      });
+    } finally {
+      setSavingWebhook(false);
+    }
+  };
+
+  const handleRemoveWebhook = async (keyId: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('api-keys', {
+        body: { action: 'removeWebhook', key_id: keyId }
+      });
+
+      if (error) throw error;
+
+      fetchApiKeys();
+      setShowWebhookDialog(null);
+      setWebhookUrl("");
+      setWebhookSecret(null);
+      
+      toast({
+        title: "Webhook Removed",
+        description: "The webhook has been removed"
+      });
+    } catch (error) {
+      console.error('Error removing webhook:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove webhook",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleTestWebhook = async (keyId: string) => {
+    setTestingWebhook(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('api-keys', {
+        body: { action: 'testWebhook', key_id: keyId }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: data.success ? "Test Successful" : "Test Failed",
+        description: data.message || data.error,
+        variant: data.success ? "default" : "destructive"
+      });
+    } catch (error) {
+      console.error('Error testing webhook:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send test webhook",
+        variant: "destructive"
+      });
+    } finally {
+      setTestingWebhook(false);
+    }
+  };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedKey(true);
     setTimeout(() => setCopiedKey(false), 2000);
     toast({
       title: "Copied!",
-      description: "API key copied to clipboard"
+      description: "Copied to clipboard"
     });
   };
 
@@ -210,6 +304,12 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
         {labels[p] || p}
       </Badge>
     ));
+  };
+
+  const openWebhookDialog = (key: ApiKey) => {
+    setWebhookUrl(key.webhook_url || "");
+    setWebhookSecret(null);
+    setShowWebhookDialog(key.id);
   };
 
   return (
@@ -362,6 +462,12 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
                       {!key.is_active && (
                         <Badge variant="destructive" className="text-xs">Revoked</Badge>
                       )}
+                      {key.webhook_url && (
+                        <Badge variant="outline" className="text-xs">
+                          <Globe className="h-3 w-3 mr-1" />
+                          Webhook
+                        </Badge>
+                      )}
                     </div>
                     <code className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded">
                       {key.key_prefix}
@@ -377,13 +483,24 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
                   
                   <div className="flex items-center gap-2">
                     {key.is_active && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleRevokeKey(key.id)}
-                      >
-                        <EyeOff className="h-4 w-4" />
-                      </Button>
+                      <>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => openWebhookDialog(key)}
+                          title="Configure Webhook"
+                        >
+                          <Globe className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleRevokeKey(key.id)}
+                          title="Revoke Key"
+                        >
+                          <EyeOff className="h-4 w-4" />
+                        </Button>
+                      </>
                     )}
                     <Button
                       size="sm"
@@ -428,6 +545,108 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Webhook Configuration Dialog */}
+      <Dialog open={!!showWebhookDialog} onOpenChange={() => {
+        setShowWebhookDialog(null);
+        setWebhookUrl("");
+        setWebhookSecret(null);
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Configure Webhook</DialogTitle>
+            <DialogDescription>
+              Receive notifications when your API jobs complete or fail.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {webhookSecret ? (
+            <div className="space-y-4">
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  This is your webhook secret for signature verification. Copy it now - it won't be shown again!
+                </AlertDescription>
+              </Alert>
+              <div className="flex items-center gap-2">
+                <Input 
+                  value={webhookSecret} 
+                  readOnly 
+                  className="font-mono text-xs"
+                />
+                <Button 
+                  size="icon" 
+                  variant="outline"
+                  onClick={() => copyToClipboard(webhookSecret)}
+                >
+                  {copiedKey ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              </div>
+              <DialogFooter>
+                <Button onClick={() => {
+                  setShowWebhookDialog(null);
+                  setWebhookUrl("");
+                  setWebhookSecret(null);
+                }}>
+                  Done
+                </Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="webhookUrl">Webhook URL (HTTPS required)</Label>
+                  <Input
+                    id="webhookUrl"
+                    placeholder="https://your-server.com/webhook"
+                    value={webhookUrl}
+                    onChange={(e) => setWebhookUrl(e.target.value)}
+                  />
+                </div>
+                
+                {apiKeys.find(k => k.id === showWebhookDialog)?.webhook_url && (
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => showWebhookDialog && handleTestWebhook(showWebhookDialog)}
+                      disabled={testingWebhook}
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      {testingWebhook ? "Sending..." : "Send Test"}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="text-destructive"
+                      onClick={() => showWebhookDialog && handleRemoveWebhook(showWebhookDialog)}
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Remove Webhook
+                    </Button>
+                  </div>
+                )}
+              </div>
+              
+              <DialogFooter>
+                <Button variant="outline" onClick={() => {
+                  setShowWebhookDialog(null);
+                  setWebhookUrl("");
+                }}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={() => showWebhookDialog && handleSetWebhook(showWebhookDialog)} 
+                  disabled={savingWebhook}
+                >
+                  {savingWebhook ? "Saving..." : "Save Webhook"}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
