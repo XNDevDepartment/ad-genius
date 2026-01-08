@@ -7,6 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { HelpLayout } from "@/components/help/HelpLayout";
 import { useNavigate } from "react-router-dom";
+import { SEO } from "@/components/SEO";
+import { buildTechArticleSchema, buildBreadcrumbSchema } from "@/lib/schema";
 
 const BASE_URL = "https://dhqdamfisdbbcieqlpvt.supabase.co/functions/v1/api-gateway";
 
