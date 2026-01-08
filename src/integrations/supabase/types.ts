@@ -273,6 +273,133 @@ export type Database = {
         }
         Relationships: []
       }
+      api_keys: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          permissions: string[] | null
+          rate_limit_tier: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          name: string
+          permissions?: string[] | null
+          rate_limit_tier?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          permissions?: string[] | null
+          rate_limit_tier?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      api_rate_limits: {
+        Row: {
+          api_key_id: string | null
+          id: string
+          request_count: number | null
+          window_start: string
+          window_type: string
+        }
+        Insert: {
+          api_key_id?: string | null
+          id?: string
+          request_count?: number | null
+          window_start: string
+          window_type: string
+        }
+        Update: {
+          api_key_id?: string | null
+          id?: string
+          request_count?: number | null
+          window_start?: string
+          window_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_rate_limits_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_usage_logs: {
+        Row: {
+          api_key_id: string | null
+          created_at: string | null
+          credits_used: number | null
+          endpoint: string
+          id: string
+          ip_address: string | null
+          method: string
+          request_metadata: Json | null
+          response_time_ms: number | null
+          status_code: number | null
+          user_id: string
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string | null
+          credits_used?: number | null
+          endpoint: string
+          id?: string
+          ip_address?: string | null
+          method: string
+          request_metadata?: Json | null
+          response_time_ms?: number | null
+          status_code?: number | null
+          user_id: string
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string | null
+          credits_used?: number | null
+          endpoint?: string
+          id?: string
+          ip_address?: string | null
+          method?: string
+          request_metadata?: Json | null
+          response_time_ms?: number | null
+          status_code?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_usage_logs_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversation_messages: {
         Row: {
           content: string
@@ -1641,6 +1768,10 @@ export type Database = {
         Args: { p_duration?: number; p_user_id: string }
         Returns: boolean
       }
+      check_rate_limit: {
+        Args: { p_api_key_id: string; p_rate_limit_tier: string }
+        Returns: Json
+      }
       check_recent_credit_allocation: {
         Args: {
           p_hours_threshold?: number
@@ -1653,6 +1784,7 @@ export type Database = {
         Args: { p_days_old?: number }
         Returns: number
       }
+      cleanup_old_rate_limits: { Args: never; Returns: number }
       cleanup_orphaned_base_models: {
         Args: never
         Returns: {
@@ -1730,6 +1862,20 @@ export type Database = {
       }
       is_admin: { Args: { check_user_id?: string }; Returns: boolean }
       is_user_admin: { Args: { check_user_id?: string }; Returns: boolean }
+      log_api_usage: {
+        Args: {
+          p_api_key_id: string
+          p_credits_used: number
+          p_endpoint: string
+          p_ip_address: string
+          p_method: string
+          p_request_metadata: Json
+          p_response_time_ms: number
+          p_status_code: number
+          p_user_id: string
+        }
+        Returns: string
+      }
       refund_user_credits: {
         Args: { p_amount: number; p_reason?: string; p_user_id: string }
         Returns: Json
@@ -1754,6 +1900,16 @@ export type Database = {
           niche: string
           relevance_score: number
           updated_at: string
+        }[]
+      }
+      validate_api_key: {
+        Args: { p_key_hash: string }
+        Returns: {
+          api_key_id: string
+          is_valid: boolean
+          permissions: string[]
+          rate_limit_tier: string
+          user_id: string
         }[]
       }
     }

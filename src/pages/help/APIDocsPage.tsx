@@ -4,138 +4,159 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { HelpLayout } from "@/components/help/HelpLayout";
+import { useNavigate } from "react-router-dom";
+
+const BASE_URL = "https://dhqdamfisdbbcieqlpvt.supabase.co/functions/v1/api-gateway";
 
 const endpoints = [
   {
     method: "POST",
-    path: "/api/v1/content/generate",
-    description: "Generate new UGC content",
-    parameters: ["prompt", "type", "style", "format"],
-    auth: true
+    endpoint: "/v1/ugc/generate",
+    description: "Generate AI-powered UGC product images",
+    parameters: ["source_image_url (required)", "prompt", "settings.number (1-4)", "settings.aspect_ratio"],
+    credits: "1 credit per image"
   },
   {
     method: "GET",
-    path: "/api/v1/content",
-    description: "Retrieve user's content library",
-    parameters: ["limit", "offset", "filter"],
-    auth: true
+    endpoint: "/v1/ugc/jobs/{job_id}",
+    description: "Get status and results of a UGC generation job",
+    parameters: ["job_id in endpoint path"],
+    credits: "Free"
+  },
+  {
+    method: "POST",
+    endpoint: "/v1/video/create",
+    description: "Create animated video from an image",
+    parameters: ["source_image_url (required)", "prompt", "duration (5 or 10)"],
+    credits: "5 credits (5s) / 10 credits (10s)"
   },
   {
     method: "GET",
-    path: "/api/v1/content/{id}",
-    description: "Get specific content by ID",
-    parameters: ["id"],
-    auth: true
+    endpoint: "/v1/video/jobs/{job_id}",
+    description: "Get status and video URL of a video job",
+    parameters: ["job_id in endpoint path"],
+    credits: "Free"
   },
   {
-    method: "DELETE",
-    path: "/api/v1/content/{id}",
-    description: "Delete content from library",
-    parameters: ["id"],
-    auth: true
+    method: "POST",
+    endpoint: "/v1/fashion/swap",
+    description: "Generate fashion catalog photos with outfit swap",
+    parameters: ["garment_image_url (required)", "base_model_id (required)", "settings"],
+    credits: "1 credit per swap"
   },
   {
     method: "GET",
-    path: "/api/v1/user/profile",
-    description: "Get user profile information",
+    endpoint: "/v1/fashion/jobs/{job_id}",
+    description: "Get status and results of a fashion swap job",
+    parameters: ["job_id in endpoint path"],
+    credits: "Free"
+  },
+  {
+    method: "GET",
+    endpoint: "/v1/credits/balance",
+    description: "Get current credit balance and subscription tier",
     parameters: [],
-    auth: true
-  },
-  {
-    method: "GET",
-    path: "/api/v1/usage",
-    description: "Get API usage statistics",
-    parameters: ["period"],
-    auth: true
+    credits: "Free"
   }
 ];
 
 const codeExamples = {
-  javascript: `// Generate content using fetch API
-const response = await fetch('https://api.geniusugc.com/v1/content/generate', {
+  javascript: `// Generate UGC images
+const response = await fetch('${BASE_URL}', {
   method: 'POST',
   headers: {
-    'Authorization': 'Bearer YOUR_API_KEY',
+    'X-API-Key': 'pk_live_YOUR_API_KEY',
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    prompt: 'Create a product review for wireless headphones',
-    type: 'review',
-    style: 'professional',
-    format: 'text'
+    endpoint: '/v1/ugc/generate',
+    source_image_url: 'https://example.com/product.jpg',
+    prompt: 'Professional lifestyle photo on marble background',
+    settings: { number: 2, aspect_ratio: '1:1' }
   })
 });
 
-const data = await response.json();
-console.log(data);`,
+const { job_id, status } = await response.json();
+console.log('Job created:', job_id);
+
+// Poll for results
+const checkJob = await fetch('${BASE_URL}', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': 'pk_live_YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ endpoint: \`/v1/ugc/jobs/\${job_id}\` })
+});
+
+const result = await checkJob.json();
+console.log('Images:', result.images);`,
 
   python: `import requests
+import time
 
-# Generate content using Python
-url = "https://api.geniusugc.com/v1/content/generate"
+BASE_URL = "${BASE_URL}"
 headers = {
-    "Authorization": "Bearer YOUR_API_KEY",
+    "X-API-Key": "pk_live_YOUR_API_KEY",
     "Content-Type": "application/json"
 }
-data = {
-    "prompt": "Create a product review for wireless headphones",
-    "type": "review", 
-    "style": "professional",
-    "format": "text"
-}
 
-response = requests.post(url, headers=headers, json=data)
-result = response.json()
-print(result)`,
+# Generate UGC images
+response = requests.post(BASE_URL, headers=headers, json={
+    "endpoint": "/v1/ugc/generate",
+    "source_image_url": "https://example.com/product.jpg",
+    "prompt": "Professional lifestyle photo on marble background",
+    "settings": {"number": 2, "aspect_ratio": "1:1"}
+})
 
-  curl: `# Generate content using cURL
-curl -X POST "https://api.geniusugc.com/v1/content/generate" \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
+job_id = response.json()["job_id"]
+print(f"Job created: {job_id}")
+
+# Poll for results
+while True:
+    result = requests.post(BASE_URL, headers=headers, json={
+        "endpoint": f"/v1/ugc/jobs/{job_id}"
+    }).json()
+    
+    if result["status"] == "completed":
+        print("Images:", result["images"])
+        break
+    time.sleep(5)`,
+
+  curl: `# Generate UGC images
+curl -X POST "${BASE_URL}" \\
+  -H "X-API-Key: pk_live_YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "prompt": "Create a product review for wireless headphones",
-    "type": "review",
-    "style": "professional", 
-    "format": "text"
-  }'`
+    "endpoint": "/v1/ugc/generate",
+    "source_image_url": "https://example.com/product.jpg",
+    "prompt": "Professional lifestyle photo",
+    "settings": {"number": 2}
+  }'
+
+# Check job status
+curl -X POST "${BASE_URL}" \\
+  -H "X-API-Key: pk_live_YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"endpoint": "/v1/ugc/jobs/YOUR_JOB_ID"}'`
 };
 
 const rateLimits = [
-  {
-    plan: "Free",
-    requests: "100 requests/hour",
-    daily: "1,000 requests/day",
-    burst: "10 requests/minute"
-  },
-  {
-    plan: "Pro",
-    requests: "1,000 requests/hour", 
-    daily: "10,000 requests/day",
-    burst: "50 requests/minute"
-  },
-  {
-    plan: "Enterprise",
-    requests: "10,000 requests/hour",
-    daily: "100,000 requests/day",
-    burst: "200 requests/minute"
-  }
+  { plan: "Free", minute: "5", hour: "50", day: "200" },
+  { plan: "Starter", minute: "20", hour: "200", day: "2,000" },
+  { plan: "Plus", minute: "50", hour: "500", day: "5,000" },
+  { plan: "Pro", minute: "100", hour: "1,000", day: "10,000" }
 ];
 
 const getMethodColor = (method: string) => {
-  switch (method) {
-    case "GET": return "bg-green-100 text-green-700";
-    case "POST": return "bg-blue-100 text-blue-700";
-    case "PUT": return "bg-yellow-100 text-yellow-700";
-    case "DELETE": return "bg-red-100 text-red-700";
-    default: return "bg-gray-100 text-gray-700";
-  }
+  return method === "GET" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700";
 };
 
 const APIDocsPage = () => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const copyCode = (code: string, type: string) => {
     navigator.clipboard.writeText(code);
@@ -146,18 +167,16 @@ const APIDocsPage = () => {
   return (
     <HelpLayout title="API Documentation" breadcrumbTitle="API Docs">
       <div className="space-y-8">
-        {/* Header */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-bold">Genius UGC API</h2>
             <Badge className="bg-green-100 text-green-700">
               <CheckCircle className="h-3 w-3 mr-1" />
-              v1.0 Stable
+              v1.0 Live
             </Badge>
           </div>
           <p className="text-muted-foreground">
-            Integrate Genius UGC's content generation capabilities into your applications. 
-            Our REST API provides programmatic access to all platform features.
+            Integrate UGC image generation, video creation, and fashion catalog features into your applications.
           </p>
         </div>
 
@@ -172,62 +191,47 @@ const APIDocsPage = () => {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <h4 className="font-medium">Base URL</h4>
-              <code className="block bg-muted p-3 rounded-md text-sm">
-                https://api.geniusugc.com/v1
-              </code>
+              <code className="block bg-muted p-3 rounded-md text-sm break-all">{BASE_URL}</code>
             </div>
             <div className="space-y-2">
               <h4 className="font-medium">Authentication</h4>
               <p className="text-sm text-muted-foreground">
-                All API requests require authentication using Bearer tokens in the Authorization header.
+                Include your API key in the <code className="bg-muted px-1 rounded">X-API-Key</code> header.
               </p>
-              <code className="block bg-muted p-3 rounded-md text-sm">
-                Authorization: Bearer YOUR_API_KEY
-              </code>
+              <code className="block bg-muted p-3 rounded-md text-sm">X-API-Key: pk_live_YOUR_API_KEY</code>
             </div>
             <Alert>
               <Key className="h-4 w-4" />
-              <AlertDescription>
-                Get your API key from your account settings. Keep it secure and never expose it in client-side code.
+              <AlertDescription className="flex items-center justify-between">
+                <span>Get your API key from Account Settings → API Keys</span>
+                <Button size="sm" variant="outline" onClick={() => navigate('/account')}>
+                  Get API Key
+                </Button>
               </AlertDescription>
             </Alert>
           </CardContent>
         </Card>
 
-        {/* API Endpoints */}
+        {/* Endpoints */}
         <div className="space-y-4">
           <h3 className="text-xl font-semibold">API Endpoints</h3>
-          <div className="space-y-4">
-            {endpoints.map((endpoint, index) => (
+          <div className="space-y-3">
+            {endpoints.map((ep, index) => (
               <Card key={index}>
                 <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <Badge className={getMethodColor(endpoint.method)}>
-                        {endpoint.method}
-                      </Badge>
-                      <code className="text-sm font-mono">{endpoint.path}</code>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Badge className={getMethodColor(ep.method)}>{ep.method}</Badge>
+                      <code className="text-sm font-mono">{ep.endpoint}</code>
                     </div>
-                    {endpoint.auth && (
-                      <Badge variant="outline" className="text-xs">
-                        <Shield className="h-3 w-3 mr-1" />
-                        Auth Required
-                      </Badge>
-                    )}
+                    <Badge variant="outline" className="text-xs">{ep.credits}</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    {endpoint.description}
-                  </p>
-                  {endpoint.parameters.length > 0 && (
-                    <div className="space-y-1">
-                      <h5 className="text-xs font-medium text-muted-foreground">Parameters:</h5>
-                      <div className="flex flex-wrap gap-1">
-                        {endpoint.parameters.map((param, i) => (
-                          <Badge key={i} variant="secondary" className="text-xs">
-                            {param}
-                          </Badge>
-                        ))}
-                      </div>
+                  <p className="text-sm text-muted-foreground mb-2">{ep.description}</p>
+                  {ep.parameters.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {ep.parameters.map((param, i) => (
+                        <Badge key={i} variant="secondary" className="text-xs">{param}</Badge>
+                      ))}
                     </div>
                   )}
                 </CardContent>
@@ -239,28 +243,19 @@ const APIDocsPage = () => {
         {/* Code Examples */}
         <div className="space-y-4">
           <h3 className="text-xl font-semibold">Code Examples</h3>
-          <Tabs defaultValue="javascript" className="w-full">
+          <Tabs defaultValue="javascript">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="javascript">JavaScript</TabsTrigger>
               <TabsTrigger value="python">Python</TabsTrigger>
               <TabsTrigger value="curl">cURL</TabsTrigger>
             </TabsList>
-
             {Object.entries(codeExamples).map(([lang, code]) => (
               <TabsContent key={lang} value={lang}>
                 <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-base">Generate Content - {lang}</CardTitle>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => copyCode(code, lang)}
-                    >
-                      {copiedCode === lang ? (
-                        <CheckCircle className="h-4 w-4" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
+                  <CardHeader className="flex flex-row items-center justify-between py-3">
+                    <CardTitle className="text-base">{lang.charAt(0).toUpperCase() + lang.slice(1)}</CardTitle>
+                    <Button size="sm" variant="ghost" onClick={() => copyCode(code, lang)}>
+                      {copiedCode === lang ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                     </Button>
                   </CardHeader>
                   <CardContent>
@@ -277,89 +272,54 @@ const APIDocsPage = () => {
         {/* Rate Limits */}
         <div className="space-y-4">
           <h3 className="text-xl font-semibold">Rate Limits</h3>
-          <div className="grid gap-4 md:grid-cols-3">
-            {rateLimits.map((limit, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <CardTitle className="text-base">{limit.plan} Plan</CardTitle>
+          <div className="grid gap-4 md:grid-cols-4">
+            {rateLimits.map((limit) => (
+              <Card key={limit.plan}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">{limit.plan}</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Hourly:</span>
-                      <span className="font-medium">{limit.requests}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Daily:</span>
-                      <span className="font-medium">{limit.daily}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Burst:</span>
-                      <span className="font-medium">{limit.burst}</span>
-                    </div>
+                <CardContent className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Per minute:</span>
+                    <span>{limit.minute}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Per hour:</span>
+                    <span>{limit.hour}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Per day:</span>
+                    <span>{limit.day}</span>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              Rate limits are enforced per API key. Exceeding limits will result in HTTP 429 responses.
-            </AlertDescription>
-          </Alert>
         </div>
 
-        {/* Error Handling */}
+        {/* Error Codes */}
         <Card>
           <CardHeader>
-            <CardTitle>Error Handling</CardTitle>
+            <CardTitle>Error Codes</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              The API uses conventional HTTP response codes to indicate success or failure.
-            </p>
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <Badge className="bg-green-100 text-green-700 mb-2">200 OK</Badge>
-                  <p className="text-muted-foreground">Request successful</p>
-                </div>
-                <div>
-                  <Badge className="bg-red-100 text-red-700 mb-2">400 Bad Request</Badge>
-                  <p className="text-muted-foreground">Invalid request parameters</p>
-                </div>
-                <div>
-                  <Badge className="bg-red-100 text-red-700 mb-2">401 Unauthorized</Badge>
-                  <p className="text-muted-foreground">Invalid or missing API key</p>
-                </div>
-                <div>
-                  <Badge className="bg-red-100 text-red-700 mb-2">429 Too Many Requests</Badge>
-                  <p className="text-muted-foreground">Rate limit exceeded</p>
-                </div>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <Badge className="bg-green-100 text-green-700 mb-1">200</Badge>
+                <p className="text-muted-foreground">Success</p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* SDKs and Tools */}
-        <Card className="bg-gradient-to-r from-primary/5 to-secondary/5">
-          <CardContent className="p-6 text-center space-y-4">
-            <Globe className="h-12 w-12 mx-auto text-primary" />
-            <div className="space-y-2">
-              <h3 className="text-xl font-semibold">SDKs Coming Soon</h3>
-              <p className="text-muted-foreground">
-                We're working on official SDKs for popular programming languages and frameworks.
-              </p>
-            </div>
-            <div className="flex gap-2 justify-center">
-              <Button variant="outline" size="sm">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Request SDK
-              </Button>
-              <Button variant="outline" size="sm">
-                Join Beta Program
-              </Button>
+              <div>
+                <Badge className="bg-red-100 text-red-700 mb-1">401</Badge>
+                <p className="text-muted-foreground">Invalid API key</p>
+              </div>
+              <div>
+                <Badge className="bg-red-100 text-red-700 mb-1">403</Badge>
+                <p className="text-muted-foreground">Permission denied</p>
+              </div>
+              <div>
+                <Badge className="bg-red-100 text-red-700 mb-1">429</Badge>
+                <p className="text-muted-foreground">Rate limit exceeded</p>
+              </div>
             </div>
           </CardContent>
         </Card>
