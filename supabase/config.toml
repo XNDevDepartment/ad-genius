@@ -148,6 +148,12 @@ verify_jwt = true
 [functions.image-proxy]
 verify_jwt = false
 
+[functions.api-gateway]
+verify_jwt = false
+
+[functions.api-keys]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 port = 54327

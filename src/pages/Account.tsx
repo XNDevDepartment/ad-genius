@@ -1,4 +1,4 @@
-import { ArrowLeft, Settings, CreditCard, HelpCircle, LogOut, Bell, Shield, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Settings, CreditCard, HelpCircle, LogOut, Bell, Shield, AlertTriangle, Key } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import { NotificationsPanel } from "@/components/account/NotificationsPanel";
 import { PrivacyPanel } from "@/components/account/PrivacyPanel";
 import { BillingPanel } from "@/components/account/BillingPanel";
 import { HelpSupportPanel } from "@/components/account/HelpSupportPanel";
+import { ApiKeysPanel } from "@/components/account/ApiKeysPanel";
 import { useTranslation } from "react-i18next";
 
 const Account = () => {
@@ -195,6 +196,22 @@ const Account = () => {
           </CardContent>
         </Card>
 
+        {/* API Keys */}
+        <Card 
+          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none bg-transparent"
+          onClick={() => handleMenuClick("api-keys")}
+        >
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Key className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium">{t('account.sections.apiKeys', 'API Keys')}</h3>
+              <p className="text-sm text-muted-foreground">{t('account.sections.apiKeysDescription', 'Manage API keys for programmatic access')}</p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Sign Out */}
         <Card 
           className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none mt-8 bg-transparent"
@@ -232,7 +249,8 @@ const Account = () => {
              section === "notifications" ? t('account.notifications.title') :
              section === "privacy" ? t('account.privacy.title') :
              section === "billing" ? t('account.billing.title') :
-             section === "help" ? t('account.helpSupport.title') : t('account.title')}
+             section === "help" ? t('account.helpSupport.title') :
+             section === "api-keys" ? t('account.sections.apiKeys', 'API Keys') : t('account.title')}
           </h1>
         </div>
       </div>
@@ -256,7 +274,8 @@ const Account = () => {
              section === "notifications" ? t('account.notifications.title') :
              section === "privacy" ? t('account.privacy.title') :
              section === "billing" ? t('account.billing.title') :
-             section === "help" ? t('account.helpSupport.title') : t('account.title')}
+             section === "help" ? t('account.helpSupport.title') :
+             section === "api-keys" ? t('account.sections.apiKeys', 'API Keys') : t('account.title')}
           </h1>
         </div>
 
@@ -266,6 +285,7 @@ const Account = () => {
         {section === "privacy" && <PrivacyPanel onClose={() => setSection("")} />}
         {section === "billing" && <BillingPanel onClose={() => setSection("")} />}
         {section === "help" && <HelpSupportPanel onClose={() => setSection("")} />}
+        {section === "api-keys" && <ApiKeysPanel onClose={() => setSection("")} />}
         {section === "" && AccountPanel}
       </div>
     </div>
