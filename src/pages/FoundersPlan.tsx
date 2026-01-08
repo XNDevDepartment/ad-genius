@@ -9,6 +9,8 @@ import HeaderSection from "@/components/landing/HeaderSection";
 import { useState, useEffect } from "react";
 import { trackInitiateCheckout, trackViewContent } from "@/lib/metaPixel";
 import { useTranslation } from "react-i18next";
+import SEO from "@/components/SEO";
+import { buildProductSchema } from "@/lib/schema";
 
 const FoundersPlan = () => {
   const navigate = useNavigate();
@@ -59,8 +61,23 @@ const FoundersPlan = () => {
     }
   };
 
+  const foundersPlanSchema = buildProductSchema({
+    name: 'ProduktPix Founders Plan',
+    description: 'Exclusive Founders pricing with lifetime access to premium AI product photography features',
+    price: isYearly ? yearlyPrice : monthlyPrice,
+    priceCurrency: 'EUR',
+    features: ['80 credits/month', 'AI Product Photos', 'Video Generation', 'Priority Support'],
+  });
+
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Founders Plan - Special Offer"
+        description="Exclusive Founders pricing at €19.99/month. Lock in lifetime access to premium AI product photography features with ProduktPix."
+        path="/founders"
+        type="product"
+        schema={foundersPlanSchema}
+      />
       <HeaderSection />
       
       <div className="container mx-auto px-4 py-12 max-w-6xl">

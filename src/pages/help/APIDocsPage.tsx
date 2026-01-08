@@ -196,6 +196,17 @@ const APIDocsPage = () => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  const techArticleSchema = buildTechArticleSchema(
+    'ProduktPix API Documentation',
+    'Integrate ProduktPix AI into your workflow with our REST API. Generate product images, videos, and fashion swaps programmatically.',
+    '/help/api-docs'
+  );
+
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: 'Help', url: 'https://produktpix.com/help' },
+    { name: 'API Docs', url: 'https://produktpix.com/help/api-docs' },
+  ]);
+
   const copyCode = (code: string, type: string) => {
     navigator.clipboard.writeText(code);
     setCopiedCode(type);
@@ -204,6 +215,12 @@ const APIDocsPage = () => {
 
   return (
     <HelpLayout title="API Documentation" breadcrumbTitle="API Docs">
+      <SEO
+        title="API Documentation"
+        description="Integrate ProduktPix AI into your workflow with our REST API. Generate product images, videos, and fashion catalog photos programmatically."
+        path="/help/api-docs"
+        schema={[techArticleSchema, breadcrumbSchema]}
+      />
       <div className="space-y-8">
         <div className="space-y-4">
           <div className="flex items-center gap-2">

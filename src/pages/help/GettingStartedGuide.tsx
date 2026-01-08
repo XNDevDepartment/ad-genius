@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { HelpLayout } from "@/components/help/HelpLayout";
 import { useTranslation } from "react-i18next";
+import SEO from "@/components/SEO";
+import { buildHowToSchema, buildBreadcrumbSchema } from "@/lib/schema";
 
 const GettingStartedGuide = () => {
   const { t } = useTranslation();
@@ -48,8 +50,25 @@ const GettingStartedGuide = () => {
     }
   ];
 
+  const howToSchema = buildHowToSchema(
+    t('help.gettingStarted.title'),
+    t('help.gettingStarted.welcome.description'),
+    steps.map(s => ({ name: s.title, text: s.description }))
+  );
+
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: 'Help', url: 'https://produktpix.com/help' },
+    { name: 'Getting Started', url: 'https://produktpix.com/help/getting-started' },
+  ]);
+
   return (
     <HelpLayout title={t('help.gettingStarted.title')} breadcrumbTitle={t('help.gettingStarted.title')}>
+      <SEO
+        title="Getting Started Guide"
+        description="Learn how to create your first AI product images with ProduktPix. Step-by-step guide for beginners to master AI product photography."
+        path="/help/getting-started"
+        schema={[howToSchema, breadcrumbSchema]}
+      />
       <div className="space-y-8">
         {/* Welcome Section */}
         <div className="text-center space-y-4">

@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HelpLayout } from "@/components/help/HelpLayout";
+import SEO from "@/components/SEO";
+import { buildBreadcrumbSchema } from "@/lib/schema";
 
 const tutorials = {
   beginner: [
@@ -122,8 +124,19 @@ const getDifficultyColor = (difficulty: string) => {
 };
 
 const VideoTutorialsPage = () => {
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: 'Help', url: 'https://produktpix.com/help' },
+    { name: 'Video Tutorials', url: 'https://produktpix.com/help/tutorials' },
+  ]);
+
   return (
     <HelpLayout title="Video Tutorials" breadcrumbTitle="Video Tutorials">
+      <SEO
+        title="Video Tutorials"
+        description="Watch video tutorials to master ProduktPix AI product photography. Learn tips, techniques, and best practices from beginner to advanced."
+        path="/help/tutorials"
+        schema={breadcrumbSchema}
+      />
       <div className="space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">

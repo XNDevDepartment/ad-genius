@@ -1,10 +1,18 @@
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import SEO from "@/components/SEO";
+import { buildWebPageSchema } from "@/lib/schema";
 
 const TermsOfService = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Terms of Service"
+        description="Read ProduktPix terms and conditions for using our AI product photography platform. Understand your rights and responsibilities."
+        path="/terms"
+        schema={buildWebPageSchema('Terms of Service', 'ProduktPix terms of service and usage conditions', '/terms')}
+      />
       <div className="max-w-4xl mx-auto px-4 py-12">
         <Link to="/">
           <Button variant="ghost" className="mb-8">

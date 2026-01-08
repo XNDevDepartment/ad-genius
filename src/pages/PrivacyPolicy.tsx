@@ -1,10 +1,18 @@
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import SEO from "@/components/SEO";
+import { buildWebPageSchema } from "@/lib/schema";
 
 const PrivacyPolicy = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Privacy Policy"
+        description="Learn how ProduktPix collects, uses, and protects your personal data. GDPR compliant privacy practices for AI product photography."
+        path="/privacy"
+        schema={buildWebPageSchema('Privacy Policy', 'ProduktPix privacy policy and data protection practices', '/privacy')}
+      />
       <div className="max-w-4xl mx-auto px-4 py-12">
         <Link to="/">
           <Button variant="ghost" className="mb-8">

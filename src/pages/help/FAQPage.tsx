@@ -8,6 +8,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Badge } from "@/components/ui/badge";
 import { HelpLayout } from "@/components/help/HelpLayout";
 import { useTranslation } from "react-i18next";
+import SEO from "@/components/SEO";
+import { buildFAQPageSchema, buildBreadcrumbSchema } from "@/lib/schema";
 
 const FAQPage = () => {
   const { t } = useTranslation();
