@@ -9,6 +9,8 @@ import { AffiliateApplicationForm } from '@/components/affiliate/AffiliateApplic
 import { MinimalHeader } from '@/components/landing-v2/MinimalHeader';
 import { MinimalFooter } from '@/components/landing-v2/MinimalFooter';
 import { useTranslation } from 'react-i18next';
+import SEO from '@/components/SEO';
+import { buildOrganizationSchema } from '@/lib/schema';
 
 const AffiliateLanding = () => {
   const { t } = useTranslation();
@@ -25,6 +27,12 @@ const AffiliateLanding = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Affiliate Program - Earn 25% Commission"
+        description="Join the ProduktPix affiliate program and earn 25% recurring commission for 12 months. Promote AI product photography to your audience and start earning passive income."
+        path="/afiliados"
+        schema={[buildOrganizationSchema()]}
+      />
       <MinimalHeader />
       
       <main className="pt-20">

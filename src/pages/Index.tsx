@@ -17,6 +17,8 @@ import UseCasesSection from "@/components/landing/UseCasesSection";
 import VideoShowcaseSection from "@/components/landing/VideoShowcaseSection";
 import FeatureShowcase from "@/components/landing/FeatureShowcase";
 import { OnboardingGuard } from "@/components/OnboardingGuard";
+import SEO from "@/components/SEO";
+import { buildOrganizationSchema, buildWebSiteSchema, buildWebApplicationSchema } from "@/lib/schema";
 
 const Index = () => {
   const { user } = useAuth();
@@ -32,6 +34,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {!user && (
+        <SEO
+          title="AI Product Image Generator"
+          description="Create high-converting AI product photos in seconds. Upload your packshot, pick a scene, and generate studio-quality images for Shopify, Amazon, and ads."
+          path="/"
+          schema={[buildOrganizationSchema(), buildWebSiteSchema(), buildWebApplicationSchema()]}
+        />
+      )}
     {user ?
       <OnboardingGuard>
       {/* Home Page */}

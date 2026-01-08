@@ -1,10 +1,18 @@
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import SEO from "@/components/SEO";
+import { buildWebPageSchema } from "@/lib/schema";
 
 const CookiePolicy = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Cookie Policy"
+        description="Understand how ProduktPix uses cookies and tracking technologies. Learn about essential, functional, analytics, and marketing cookies."
+        path="/cookies"
+        schema={buildWebPageSchema('Cookie Policy', 'ProduktPix cookie policy and tracking information', '/cookies')}
+      />
       <div className="max-w-4xl mx-auto px-4 py-12">
         <Link to="/">
           <Button variant="ghost" className="mb-8">

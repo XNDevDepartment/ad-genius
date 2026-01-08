@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,6 +10,8 @@ import HeaderSection from "@/components/landing/HeaderSection";
 import { useEffect, useState } from "react";
 import { trackInitiateCheckout, trackViewContent } from "@/lib/metaPixel";
 import { useTranslation } from "react-i18next";
+import SEO from "@/components/SEO";
+import { buildProductSchema } from "@/lib/schema";
 
 // Features will be translated dynamically using t() in the component
 const plans = [
@@ -181,6 +182,13 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background mt-10 lg:mt-0">
+      <SEO
+        title="Pricing Plans"
+        description="Choose the perfect plan for your business. From Starter to Pro, get AI-powered product photos and videos with flexible credits."
+        path="/pricing"
+        type="product"
+        schema={buildProductSchema({ name: 'ProduktPix Plans', description: 'AI Product Photography Plans', price: 29, features: ['AI Photos', 'Video Generation', 'Fashion Swaps'] })}
+      />
       {!user &&
         <div className="lg:block">
           <HeaderSection />
