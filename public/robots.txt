@@ -12,3 +12,15 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+# Block authenticated routes
+Disallow: /account
+Disallow: /admin
+Disallow: /create
+Disallow: /library
+Disallow: /videos
+Disallow: /import
+Disallow: /affiliate-dashboard
+
+# Sitemap
+Sitemap: https://produktpix.com/sitemap.xml

@@ -1990,5 +1990,31 @@
       "accept": "Akzeptieren",
       "decline": "Ablehnen"
     }
+  },
+  "seo": {
+    "home": {
+      "title": "KI-Produktbild-Generator",
+      "description": "Erstellen Sie hochkonvertierende KI-Produktfotos in Sekunden. Laden Sie Ihr Bild hoch, wählen Sie eine Szene und generieren Sie Studioqualität-Bilder."
+    },
+    "pricing": {
+      "title": "Pläne und Preise",
+      "description": "Wählen Sie den perfekten Plan für Ihr Unternehmen. Von Starter bis Pro, erhalten Sie KI-Produktfotos und Videos."
+    },
+    "faq": {
+      "title": "Häufig Gestellte Fragen",
+      "description": "Finden Sie Antworten auf häufige Fragen zur KI-Produktfotografie von ProduktPix."
+    },
+    "ugc": {
+      "title": "KI UGC-Creator",
+      "description": "Generieren Sie authentische Nutzerinhalte mit KI. Erstellen Sie Lifestyle-Produktfotos mit realistischen Models."
+    },
+    "virtualTryOn": {
+      "title": "Virtuelle Anprobe",
+      "description": "Sehen Sie, wie Kleidung an Models aussieht mit KI-virtueller Anprobe. Perfekt für Mode-E-Commerce."
+    },
+    "productStudio": {
+      "title": "KI-Produktstudio",
+      "description": "Transformieren Sie Produktfotos mit KI-Hintergründen. Erstellen Sie professionelle E-Commerce-Bilder in Sekunden."
+    }
   }
 }
