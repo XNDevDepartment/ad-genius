@@ -307,6 +307,13 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
     if (job?.status === 'completed') {
       console.log(`[CreateUGCGemini ${modelVersion}] Job completed, transitioning to results stage`);
 
+      // Force reset body scroll lock that might be left by Radix dialogs
+      document.body.style.overflow = '';
+      document.body.style.pointerEvents = '';
+      
+      // Close settings sheet to prevent scroll lock issues
+      setSettingsOpen(false);
+
       setCurrentBatchImages(current => {
         if (current.length > 0) {
           console.log(`[CreateUGCGemini ${modelVersion}] Moving`, current.length, 'images from current to previous');
@@ -331,6 +338,14 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       localStorage.removeItem(storageKeys.stage);
     }
   }, [job?.status, modelVersion, storageKeys]);
+
+  // Cleanup body scroll lock on unmount
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.pointerEvents = '';
+    };
+  }, []);
 
   // Restore job state from localStorage on mount
   useEffect(() => {
@@ -708,6 +723,9 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
     try {
       console.log(`[CreateUGCGemini ${modelVersion}] Multi-image path - NO CROPPING`);
 
+      // Close settings sheet before starting generation to prevent scroll lock
+      setSettingsOpen(false);
+      
       clearJob();
       setPreviousImages(prev => {
         if (currentBatchImages.length === 0) return prev;
@@ -1436,8 +1454,8 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
 
           {/* Mobile Floating Action Panel */}
           {(isMobile && !settingsOpen) && (
-            <div className="fixed left-0 right-0 bottom-[10px] sm:bottom-[50px] z-[20] px-4 pb-safe backdrop-blur supports-backdrop-blur:bg-background/60">
-              <div className="max-w-lg mx-auto bg-card/95 border border-border/50 rounded-2xl shadow-lg p-3 space-y-3">
+            <div className="fixed left-0 right-0 bottom-[10px] sm:bottom-[50px] z-[20] px-4 pb-safe pointer-events-none">
+              <div className="max-w-lg mx-auto bg-card/95 border border-border/50 rounded-2xl shadow-lg p-3 space-y-3 pointer-events-auto backdrop-blur supports-backdrop-blur:bg-background/60">
                 <div className="flex items-center gap-3">
                   <div className="flex-1 px-3 py-2 bg-muted/40 rounded-full text-xs text-muted-foreground truncate" onClick={() => setSettingsOpen(true)}>
                     <Button className="w-full" variant="ghost">
