@@ -41,7 +41,7 @@ export const SettingsSheet = ({
   const { t } = useTranslation();
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={setOpen} modal={false}>
       {!hideTrigger && (
         <SheetTrigger asChild>
           <Button 
