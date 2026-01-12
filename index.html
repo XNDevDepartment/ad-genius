@@ -5,16 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Product Image Generator | ProduktPix</title>
     <meta name="description" content="Create high-converting AI product photos in seconds. Upload your packshot, pick a scene, and generate studio-quality images for Shopify, Amazon, and ads." />
-    <meta name="author" content="Lovable" />
+    <meta name="author" content="ProduktPix" />
 
     <meta property="og:title" content="AI Product Image Generator | ProduktPix" />
     <meta property="og:description" content="Create high-converting AI product photos in seconds. Upload your packshot, pick a scene, and generate studio-quality images for Shopify, Amazon, and ads." />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:image" content="https://produktpix.com/og-image.png" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta name="twitter:image" content="https://produktpix.com/og-image.png" />
 
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
@@ -39,23 +38,60 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": ["WebApplication","SoftwareApplication"],
-        "name": "ProduktPix",
-        "url": "https://produktpix.com",
-        "applicationCategory": "PhotoEditorApplication",
-        "operatingSystem": "Web",
-        "description": "AI product image generator for ecommerce. Create studio-quality product photos and UGC scenes in seconds.",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "EUR"
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "ProduktPix"
-        }
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://produktpix.com/#organization",
+            "name": "ProduktPix",
+            "url": "https://produktpix.com",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://produktpix.com/og-image.png",
+              "width": 1200,
+              "height": 630
+            },
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "email": "info@produktpix.com",
+              "contactType": "customer service"
+            }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://produktpix.com/#website",
+            "url": "https://produktpix.com",
+            "name": "ProduktPix",
+            "description": "AI-powered product photography platform for e-commerce",
+            "publisher": { "@id": "https://produktpix.com/#organization" },
+            "inLanguage": ["pt", "en", "es", "fr", "de"]
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://produktpix.com/#app",
+            "name": "ProduktPix",
+            "description": "AI Product Image Generator for E-commerce. Create studio-quality product photos and UGC scenes in seconds.",
+            "applicationCategory": "PhotographyApplication",
+            "operatingSystem": "Web",
+            "browserRequirements": "Requires JavaScript. Requires HTML5.",
+            "offers": {
+              "@type": "AggregateOffer",
+              "lowPrice": "0",
+              "highPrice": "99",
+              "priceCurrency": "EUR",
+              "offerCount": 4
+            },
+            "featureList": [
+              "AI Product Photography",
+              "Virtual Try-On",
+              "Background Replacement",
+              "AI Video Generation",
+              "Batch Processing",
+              "UGC Scene Generation"
+            ]
+          }
+        ]
       }
-      </script>
+    </script>
 
 
     <!-- Meta Pixel Code -->

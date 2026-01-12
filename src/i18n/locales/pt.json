@@ -1990,5 +1990,31 @@
       "accept": "Aceitar",
       "decline": "Recusar"
     }
+  },
+  "seo": {
+    "home": {
+      "title": "Gerador de Imagens de Produto com IA",
+      "description": "Crie fotos de produto de alta conversão em segundos. Carregue a sua imagem, escolha um cenário e gere imagens de qualidade profissional."
+    },
+    "pricing": {
+      "title": "Planos e Preços",
+      "description": "Escolha o plano perfeito para o seu negócio. Do Starter ao Pro, obtenha fotos e vídeos de produto com IA."
+    },
+    "faq": {
+      "title": "Perguntas Frequentes",
+      "description": "Encontre respostas para perguntas comuns sobre fotografia de produto com IA ProduktPix."
+    },
+    "ugc": {
+      "title": "Criador de UGC com IA",
+      "description": "Gere conteúdo autêntico de utilizadores com IA. Crie fotos lifestyle de produtos com modelos realistas."
+    },
+    "virtualTryOn": {
+      "title": "Prova Virtual",
+      "description": "Veja como as roupas ficam em modelos com prova virtual IA. Perfeito para e-commerce de moda."
+    },
+    "productStudio": {
+      "title": "Estúdio de Produto IA",
+      "description": "Transforme fotos de produto com fundos IA. Crie imagens profissionais para e-commerce em segundos."
+    }
   }
 }

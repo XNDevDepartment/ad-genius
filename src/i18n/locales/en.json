@@ -1991,5 +1991,31 @@
       "accept": "Accept",
       "decline": "Decline"
     }
+  },
+  "seo": {
+    "home": {
+      "title": "AI Product Image Generator",
+      "description": "Create high-converting AI product photos in seconds. Upload your packshot, pick a scene, and generate studio-quality images."
+    },
+    "pricing": {
+      "title": "Pricing Plans",
+      "description": "Choose the perfect plan for your business. From Starter to Pro, get AI-powered product photos and videos."
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "description": "Find answers to common questions about ProduktPix AI product photography."
+    },
+    "ugc": {
+      "title": "AI UGC Creator",
+      "description": "Generate authentic user-generated content with AI. Create lifestyle product photos featuring real-looking models."
+    },
+    "virtualTryOn": {
+      "title": "Virtual Try-On",
+      "description": "See how clothes look on models with AI-powered virtual try-on. Perfect for fashion e-commerce."
+    },
+    "productStudio": {
+      "title": "AI Product Studio",
+      "description": "Transform product photos with AI backgrounds. Create professional e-commerce images in seconds."
+    }
   }
 }
