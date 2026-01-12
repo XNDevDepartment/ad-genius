@@ -678,7 +678,27 @@
       "downloadAll": "Descargar Todo",
       "downloadSelected": "Descargar Seleccionadas",
       "generateMore": "Generar Más",
-      "newCreation": "Nueva Creación"
+      "newCreation": "Nueva Creación",
+      "startFresh": "Empezar de Nuevo"
+    },
+    "loading": {
+      "preparing": "Preparando sistema...",
+      "moment": "Un momento"
+    },
+    "generatedImages": {
+      "title": "Imágenes Generadas",
+      "generating": "Generando {{count}} imagen(es)..."
+    },
+    "importOptions": {
+      "library": "Biblioteca",
+      "url": "URL",
+      "shopify": "Importar desde Shopify",
+      "urlTitle": "Importar Imagen desde URL",
+      "imageUrl": "URL de la Imagen",
+      "urlPlaceholder": "https://ejemplo.com/imagen.jpg",
+      "urlHint": "Introduce un enlace directo a una imagen (JPG, PNG, WEBP, GIF)",
+      "importing": "Importando...",
+      "import": "Importar Imagen"
     },
     "imageSize": {
       "title": "Tamaño"

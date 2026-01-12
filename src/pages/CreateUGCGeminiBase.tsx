@@ -927,7 +927,7 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
 
   return (
     <TooltipProvider delayDuration={120} skipDelayDuration={400}>
-      <div ref={topRef} className="min-h-screen bg-background relative">
+      <div ref={topRef} className="min-h-screen bg-background relative overflow-y-auto">
         {/* Loading Overlay */}
         {!threadId && (
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-[30] flex items-center justify-center">
@@ -935,8 +935,8 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
               <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
                 <Sparkles className="h-10 w-10 text-primary animate-pulse" />
               </div>
-              <h2 className="text-xl font-semibold">Preparing system...</h2>
-              <p className="text-muted-foreground">Just a moment</p>
+              <h2 className="text-xl font-semibold">{t('ugc.loading.preparing')}</h2>
+              <p className="text-muted-foreground">{t('ugc.loading.moment')}</p>
             </div>
           </div>
         )}
@@ -999,41 +999,43 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                         />
 
                         {/* Additional Image Options */}
-                        <div className="flex gap-2 flex-wrap">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSourceImagePickerOpen(true)}
-                            className="flex-1 flex-wrap p-2 overflow-hidden"
-                            disabled={!threadId}
-                          >
-                            <Images className="h-4 w-4 mr-2" />
-                            {t('ugc.importOptions.library', 'Library')}
-                          </Button>
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSourceImagePickerOpen(true)}
+                              className="flex-1 p-2"
+                              disabled={!threadId}
+                            >
+                              <Images className="h-4 w-4 mr-2" />
+                              {t('ugc.importOptions.library')}
+                            </Button>
+
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setUrlImportOpen(true)}
+                              className="flex-1 p-2"
+                              disabled={!threadId}
+                            >
+                              <LinkIcon className="h-4 w-4 mr-2" />
+                              {t('ugc.importOptions.url')}
+                            </Button>
+                          </div>
 
                           <Button
                             type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setUrlImportOpen(true)}
-                            className="flex-1 flex-wrap p-2 overflow-hidden"
-                            disabled={!threadId}
-                          >
-                            <LinkIcon className="h-4 w-4 mr-2" />
-                            {t('ugc.importOptions.url', 'URL')}
-                          </Button>
-
-                          <Button
-                            type="button"
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
                             onClick={() => setShopifyImportOpen(true)}
-                            className="flex-1 flex-wrap p-2 overflow-hidden"
+                            className="w-full text-muted-foreground hover:text-foreground"
                             disabled={!threadId}
                           >
                             <Store className="h-4 w-4 mr-2" />
-                            {t('ugc.importOptions.shopify', 'Shopify')}
+                            {t('ugc.importOptions.shopify')}
                           </Button>
                         </div>
                       </div>
@@ -1055,8 +1057,8 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                           </TooltipProvider>
                         </div>
                         <div className="flex justify-between text-sm text-muted-foreground">
-                          <p className="text-sm text-muted-foreground">{t('ugc.desireAudience.subtitle')}</p>
-                          {desiredAudience.length} / 500
+                          <p className="hidden md:block text-sm text-muted-foreground">{t('ugc.desireAudience.subtitle')}</p>
+                          <span className="ml-auto">{desiredAudience.length} / 500</span>
                         </div>
                         <Textarea
                           ref={taRef}
@@ -1088,8 +1090,8 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                           </TooltipProvider>
                         </div>
                         <div className="flex justify-between text-sm text-muted-foreground">
-                          <p className="text-sm text-muted-foreground">{t('ugc.productDetails.subtitle')}</p>
-                          {prodSpecs.length} / 500
+                          <p className="hidden md:block text-sm text-muted-foreground">{t('ugc.productDetails.subtitle')}</p>
+                          <span className="ml-auto">{prodSpecs.length} / 500</span>
                         </div>
                         <Textarea
                           id="prodSpecs"
@@ -1147,7 +1149,7 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                         </Tooltip>
                       </TooltipProvider>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-4">{t('ugc.scenarios.subtitle')}</p>
+                    <p className="hidden md:block text-sm text-muted-foreground mb-4">{t('ugc.scenarios.subtitle')}</p>
                     
                     {/* Custom Scenario Option */}
                     <div className="mb-4">
@@ -1257,7 +1259,7 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                         {stage === 'results' && allImages.length > 0 && (
                           <Button variant="ghost" size="sm" onClick={handleStartFromScratch}>
                             <RefreshCw className="h-4 w-4 mr-2" />
-                            Start Fresh
+                            {t('ugc.results.startFresh')}
                           </Button>
                         )}
                       </div>
@@ -1267,7 +1269,7 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                           <div className="flex items-center gap-2 mb-2">
                             <RefreshCw className="h-4 w-4 animate-spin text-primary" />
                             <span className="text-sm text-muted-foreground">
-                              Generating {numImages} image{numImages > 1 ? 's' : ''}...
+                              {t('ugc.generatedImages.generating', { count: numImages })}
                             </span>
                           </div>
                           <Progress value={(job?.progress || 0)} className="h-2" />
@@ -1542,34 +1544,34 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
         <Dialog open={urlImportOpen} onOpenChange={setUrlImportOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Import Image from URL</DialogTitle>
+              <DialogTitle>{t('ugc.importOptions.urlTitle')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="imageUrl">Image URL</Label>
+                <Label htmlFor="imageUrl">{t('ugc.importOptions.imageUrl')}</Label>
                 <Input
                   id="imageUrl"
-                  placeholder="https://example.com/image.jpg"
+                  placeholder={t('ugc.importOptions.urlPlaceholder')}
                   value={importUrl}
                   onChange={(e) => setImportUrl(e.target.value)}
                   disabled={importingFromUrl}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Enter a direct link to an image (JPG, PNG, WEBP, GIF)
+                  {t('ugc.importOptions.urlHint')}
                 </p>
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setUrlImportOpen(false)} disabled={importingFromUrl}>
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button onClick={handleImportFromUrl} disabled={!importUrl.trim() || importingFromUrl}>
                   {importingFromUrl ? (
                     <>
                       <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                      Importing...
+                      {t('ugc.importOptions.importing')}
                     </>
                   ) : (
-                    'Import Image'
+                    t('ugc.importOptions.import')
                   )}
                 </Button>
               </div>
