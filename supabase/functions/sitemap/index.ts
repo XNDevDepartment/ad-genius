@@ -23,6 +23,23 @@ const staticPages: SitemapEntry[] = [
   { path: '/privacy', priority: 0.3, changefreq: 'yearly' },
   { path: '/terms', priority: 0.3, changefreq: 'yearly' },
   { path: '/cookies', priority: 0.3, changefreq: 'yearly' },
+  // Use Case Pages
+  { path: '/use-cases/amazon-product-photos', priority: 0.8, changefreq: 'monthly' },
+  { path: '/use-cases/shopify-listing-images', priority: 0.8, changefreq: 'monthly' },
+  { path: '/use-cases/fashion-model-photography', priority: 0.8, changefreq: 'monthly' },
+  { path: '/use-cases/jewelry-product-photos', priority: 0.8, changefreq: 'monthly' },
+  { path: '/use-cases/cosmetics-packaging', priority: 0.8, changefreq: 'monthly' },
+  { path: '/use-cases/food-photography', priority: 0.8, changefreq: 'monthly' },
+  { path: '/use-cases/furniture-lifestyle', priority: 0.8, changefreq: 'monthly' },
+  { path: '/use-cases/electronics-tech', priority: 0.8, changefreq: 'monthly' },
+  { path: '/use-cases/etsy-handmade', priority: 0.8, changefreq: 'monthly' },
+  { path: '/use-cases/white-background-photos', priority: 0.8, changefreq: 'monthly' },
+  // Integration Pages
+  { path: '/integrations/shopify', priority: 0.8, changefreq: 'monthly' },
+  { path: '/integrations/amazon', priority: 0.8, changefreq: 'monthly' },
+  { path: '/integrations/etsy', priority: 0.8, changefreq: 'monthly' },
+  { path: '/integrations/woocommerce', priority: 0.8, changefreq: 'monthly' },
+  { path: '/integrations/bigcommerce', priority: 0.8, changefreq: 'monthly' },
 ];
 
 function generateHreflangTags(path: string): string {
