@@ -23,4 +23,4 @@ Disallow: /import
 Disallow: /affiliate-dashboard
 
 # Sitemap
-Sitemap: https://dhqdamfisdbbcieqlpvt.supabase.co/functions/v1/sitemap
+Sitemap: https://produktpix.com/sitemap.xml
