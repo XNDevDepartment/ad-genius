@@ -98,6 +98,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [aiScenarios, setAiScenarios] = useState<AIScenario[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<AIScenario | null>({ 'idea': "", "small-description": "", "description": "" });
   const [customScenarioMode, setCustomScenarioMode] = useState(false);
+  const hasScrolledForJobRef = useRef<string | null>(null);
   const [uploadedSourceIds, setUploadedSourceIds] = useState<string[]>([]);
 
   const hasSelectedScenario = selectedScenario && selectedScenario.idea && selectedScenario.idea.trim().length > 0;
@@ -421,19 +422,27 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
 
       if (job?.status === 'completed') {
         setStage('results');
-        setTimeout(() => {
-          resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
+        // Only scroll once per job completion
+        if (hasScrolledForJobRef.current !== `completed-${job.id}`) {
+          hasScrolledForJobRef.current = `completed-${job.id}`;
+          setTimeout(() => {
+            resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 100);
+        }
       } else if (job?.status === 'failed' || job?.status === 'canceled') {
         setStage('setup');
       }
     } else if ((job?.status === 'queued' || job?.status === 'processing') && stage !== 'generating') {
       setStage('generating');
-      setTimeout(() => {
-        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
+      // Only scroll once when entering generating stage
+      if (hasScrolledForJobRef.current !== `generating-${job?.id}`) {
+        hasScrolledForJobRef.current = `generating-${job?.id}`;
+        setTimeout(() => {
+          resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
     }
-  }, [job?.status, stage, storageKeys]);
+  }, [job?.status, job?.id, stage, storageKeys]);
 
   type AR = AspectRatio;
 
@@ -737,6 +746,8 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       setStage('generating');
       setPendingSlots(numImages);
       localStorage.setItem(storageKeys.stage, 'generating');
+      // Reset scroll tracker for new job and scroll once
+      hasScrolledForJobRef.current = 'generating-pending';
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
 
       const commonNeg = `--negative "AI artifacts, text overlays, watermark, extreme bokeh, macro close-up, center-composed product, invented branding, extra limbs, low resolution, duplicated faces, similar persons"`;
