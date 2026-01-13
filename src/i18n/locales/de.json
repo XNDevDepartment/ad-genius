@@ -1303,6 +1303,16 @@
     "generateWithStyle": "Mit Ausgewähltem Stil Generieren",
     "failedToGenerate": "Generierung von Ideen fehlgeschlagen",
     "pleaseTryAgain": "Bitte versuchen Sie es erneut",
+    "customScenario": "Schreiben Sie Ihr Eigenes Szenario",
+    "customScenarioDesc": "Beschreiben Sie Ihre eigene Vision für das E-Commerce-Foto",
+    "customPlaceholder": "Beschreiben Sie den Stil, die Umgebung und die Stimmung, die Sie für Ihr E-Commerce-Foto wünschen...",
+    "enhancePrompt": "Prompt Verbessern",
+    "enhancing": "Wird verbessert...",
+    "promptEnhanced": "Prompt Verbessert",
+    "promptEnhancedDesc": "Ihre Beschreibung wurde mit professionellen Details verbessert",
+    "enhanceFailed": "Verbesserung des Prompts fehlgeschlagen",
+    "active": "Aktiv",
+    "orChooseSuggestion": "Oder wählen Sie aus KI-Vorschlägen",
     "fallbackIdeas": {
       "cleanStudio": {
         "title": "Saubere Studioaufnahme",

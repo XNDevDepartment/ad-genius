@@ -478,6 +478,8 @@ serve(async (req)=>{
         return await createEcommercePhotoJob(user.id, params);
       case "generateEcommerceIdeas":
         return await generateEcommerceIdeas(user.id, params);
+      case "enhanceScenarioPrompt":
+        return await enhanceScenarioPrompt(user.id, params);
       case "getEcommercePhoto":
         return await getEcommercePhoto(user.id, params.photoId);
       case "cancelEcommercePhoto":
@@ -1801,6 +1803,111 @@ async function generateEcommerceIdeas(userId1: string, params: any) {
     }, 500);
   }
 }
+
+// Enhance user's scenario prompt with AI
+async function enhanceScenarioPrompt(userId1: string, params: any) {
+  const { userPrompt, imageUrl, language } = params;
+  
+  if (!userPrompt || !userPrompt.trim()) {
+    return jsonResponse({
+      error: "User prompt is required"
+    }, 400);
+  }
+  
+  try {
+    console.log(`[enhanceScenarioPrompt] Enhancing prompt for user ${userId1}`);
+    
+    // Build the enhancement prompt
+    let prompt = `You are an e-commerce photography expert. 
+The user wants to create a professional UGC (User Generated Content) product photo with this vision: "${userPrompt}"
+
+Enhance and expand this description into a detailed, professional e-commerce photography brief (2-3 sentences). Include:
+- Lighting style and mood
+- Background/setting details  
+- Composition and atmosphere
+- Camera angle or perspective suggestions
+
+Keep the user's core idea but make it more specific, visual, and actionable for image generation.
+Return ONLY the enhanced description text, no explanations or formatting.
+Language: ${language || 'en'}`;
+
+    const requestBody: any = {
+      contents: [
+        {
+          parts: [{ text: prompt }]
+        }
+      ],
+      generationConfig: {
+        responseModalities: ['TEXT'],
+        maxOutputTokens: 300
+      }
+    };
+
+    // If image URL is provided, include it for better context
+    if (imageUrl) {
+      try {
+        const imageResp = await fetch(imageUrl);
+        if (imageResp.ok) {
+          const imageBuffer = new Uint8Array(await imageResp.arrayBuffer());
+          const base64Image = bufferToBase64(imageBuffer);
+          requestBody.contents[0].parts.push({
+            inlineData: {
+              mimeType: 'image/jpeg',
+              data: base64Image
+            }
+          });
+        }
+      } catch (imgError) {
+        console.warn('[enhanceScenarioPrompt] Could not fetch image, proceeding without it:', imgError);
+      }
+    }
+
+    console.log(`[enhanceScenarioPrompt] Calling Gemini API...`);
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+      method: 'POST',
+      headers: {
+        'x-goog-api-key': GOOGLE_AI_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[enhanceScenarioPrompt] Gemini API error:', response.status, errorText);
+      throw new Error(`Gemini API error: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    const textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!textResponse) {
+      throw new Error("No response from Gemini");
+    }
+
+    // Clean up the response - remove quotes if wrapped
+    let enhancedPrompt = textResponse.trim();
+    if ((enhancedPrompt.startsWith('"') && enhancedPrompt.endsWith('"')) ||
+        (enhancedPrompt.startsWith("'") && enhancedPrompt.endsWith("'"))) {
+      enhancedPrompt = enhancedPrompt.slice(1, -1);
+    }
+
+    console.log(`[enhanceScenarioPrompt] Successfully enhanced prompt`);
+    return jsonResponse({
+      enhancedPrompt,
+      original: userPrompt
+    }, 200);
+
+  } catch (error: unknown) {
+    console.error('[enhanceScenarioPrompt] Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return jsonResponse({
+      error: "Failed to enhance prompt",
+      message: errorMessage
+    }, 500);
+  }
+}
+
 async function createEcommercePhotoJob(userId1: string, params: any) {
   const { resultId, stylePrompt } = params;
   const supabase = serviceClient();
