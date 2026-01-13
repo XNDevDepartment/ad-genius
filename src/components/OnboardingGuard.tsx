@@ -7,22 +7,23 @@ interface OnboardingGuardProps {
 }
 
 export const OnboardingGuard = ({ children }: OnboardingGuardProps) => {
-  const { completed, loading } = useOnboarding();
-
-  // Show loading spinner while checking onboarding status
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-      </div>
-    );
-  }
-
-  // Show onboarding wizard if not completed
-  if (!completed) {
-    return <OnboardingWizard />;
-  }
-
-  // User has completed onboarding, show normal content
+  // TEMPORARILY DISABLED - just render children directly
   return <>{children}</>;
+
+  // Original logic (commented out for future re-enabling):
+  // const { completed, loading } = useOnboarding();
+  //
+  // if (loading) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center bg-background">
+  //       <Loader2 className="w-8 h-8 text-primary animate-spin" />
+  //     </div>
+  //   );
+  // }
+  //
+  // if (!completed) {
+  //   return <OnboardingWizard />;
+  // }
+  //
+  // return <>{children}</>;
 };
