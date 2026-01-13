@@ -1304,6 +1304,16 @@
     "generateWithStyle": "Generate with Selected Style",
     "failedToGenerate": "Failed to generate ideas",
     "pleaseTryAgain": "Please try again",
+    "customScenario": "Write Your Own Scenario",
+    "customScenarioDesc": "Describe your own vision for the e-commerce photo",
+    "customPlaceholder": "Describe the style, setting, and mood you want for your e-commerce photo...",
+    "enhancePrompt": "Enhance Prompt",
+    "enhancing": "Enhancing...",
+    "promptEnhanced": "Prompt Enhanced",
+    "promptEnhancedDesc": "Your description has been improved with professional details",
+    "enhanceFailed": "Failed to enhance prompt",
+    "active": "Active",
+    "orChooseSuggestion": "Or choose from AI suggestions",
     "fallbackIdeas": {
       "cleanStudio": {
         "title": "Clean Studio Shot",
