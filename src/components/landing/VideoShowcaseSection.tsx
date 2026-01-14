@@ -58,17 +58,17 @@ const VideoShowcaseSection = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-apple-lg overflow-hidden group">
-              <CardContent className="p-0 relative aspect-video">
+              <CardContent className="p-0 relative ">
                 <video
                   autoPlay
                   loop
                   muted
                   playsInline
-                  className="w-full h-full object-cover"
-                  poster="https://dhqdamfisdbbcieqlpvt.supabase.co/storage/v1/object/public/ugc-inputs/579588c8-f63e-4ba8-84ec-4419303abf7c/1759429342226-eilko.webp"
+                  className="w-full h-full object-contain"
+                  poster="https://dhqdamfisdbbcieqlpvt.supabase.co/storage/v1/object/public/ugc/4e962775-cb55-4301-bc33-081eacb96c46/57cac2dc-f01e-4050-9dce-6ace12c80129/0.png"
                 >
                   <source 
-                    src="https://dhqdamfisdbbcieqlpvt.supabase.co/storage/v1/object/public/videos/kling/579588c8-f63e-4ba8-84ec-4419303abf7c/3e2a73c0-8ee2-439e-a7a4-7223cd5a62bd.mp4" 
+                    src="https://dhqdamfisdbbcieqlpvt.supabase.co/storage/v1/object/public/videos/kling/4e962775-cb55-4301-bc33-081eacb96c46/faaaccd0-36dd-4f31-8d34-78a56dac7536.mp4" 
                     type="video/mp4" 
                   />
                 </video>
