@@ -415,28 +415,38 @@ export const AdminImagesList = () => {
               </div>
               
               {/* Grid View */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {searchFilteredImages.map((image) => (
                   <div
                     key={image.id}
                     className="group cursor-pointer"
-                    onClick={() => setSelectedImage(image)}
                   >
-                    <div className="aspect-square overflow-hidden rounded-lg border bg-muted">
+                    <div 
+                      className="aspect-square overflow-hidden rounded-lg border bg-muted relative"
+                      onClick={() => setSelectedImage(image)}
+                    >
                       <img
                         src={image.public_url}
                         alt={image.prompt || 'Generated image'}
                         className="w-full h-full object-cover transition-transform group-hover:scale-105"
                         loading="lazy"
                       />
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownload(image.public_url, image.prompt || 'image');
+                        }}
+                      >
+                        <Download className="w-4 h-4" />
+                      </Button>
                     </div>
                     <div className="mt-2 text-center">
                       <p className="text-sm font-medium truncate">
                         {image.profiles?.name || image.profiles?.email?.split('@')[0] || 'Unknown'}
                       </p>
-                      <Badge variant="secondary" className="mt-1 text-xs">
-                        {image.source === 'generated_images' ? 'Generated' : 'UGC'}
-                      </Badge>
                     </div>
                   </div>
                 ))}
