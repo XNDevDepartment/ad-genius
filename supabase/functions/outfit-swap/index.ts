@@ -1838,15 +1838,19 @@ Language: ${language || 'en'}`;
         }
       ],
       generationConfig: {
-        responseModalities: ['TEXT'],
         maxOutputTokens: 300
       }
     };
 
-    // If image URL is provided, include it for better context
+    // If image URL is provided, include it for better context (with timeout)
     if (imageUrl) {
       try {
-        const imageResp = await fetch(imageUrl);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
+        const imageResp = await fetch(imageUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
         if (imageResp.ok) {
           const imageBuffer = new Uint8Array(await imageResp.arrayBuffer());
           const base64Image = bufferToBase64(imageBuffer);
@@ -1856,9 +1860,10 @@ Language: ${language || 'en'}`;
               data: base64Image
             }
           });
+          console.log('[enhanceScenarioPrompt] Image included for context');
         }
       } catch (imgError) {
-        console.warn('[enhanceScenarioPrompt] Could not fetch image, proceeding without it:', imgError);
+        console.warn('[enhanceScenarioPrompt] Could not fetch image (timeout or error), proceeding without it');
       }
     }
 
