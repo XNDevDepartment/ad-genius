@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Play, ArrowRight, Zap, Trophy, Image } from "lucide-react";
 import { BeforeAfterSlider } from "../ui/before-after";
 
-import sanjo_before from '@/assets/sanjo_origin.webp';
-import sanjo_afer from '@/assets/sanjo_finish.jpeg';
+import outfit_antes from '@/assets/outfit_square.jpg';
+import outfit_depois from '@/assets/outfit_square_final.png';
 import { DemoModal } from "../DemoModal";
 
 
@@ -172,8 +172,8 @@ const HeroSection = () => {
                 <div className="relative">
                   <div className="relative z-10 transform transition-smooth">
                       <BeforeAfterSlider
-                        beforeImage={sanjo_before}
-                        afterImage={sanjo_afer}
+                        beforeImage={outfit_antes}
+                        afterImage={outfit_depois}
                         alt='Demo Images'
                         className="w-full h-full"
                         initialX={15}
