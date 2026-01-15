@@ -16,6 +16,7 @@ import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import UseCasesSection from "@/components/landing/UseCasesSection";
 import VideoShowcaseSection from "@/components/landing/VideoShowcaseSection";
 import FeatureShowcase from "@/components/landing/FeatureShowcase";
+import FashionCatalogSection from "@/components/landing/FashionCatalogSection";
 import { OnboardingGuard } from "@/components/OnboardingGuard";
 import SEO from "@/components/SEO";
 import { buildOrganizationSchema, buildWebSiteSchema, buildWebApplicationSchema } from "@/lib/schema";
@@ -113,6 +114,9 @@ const Index = () => {
 
       {/* Feature Section */}
       {/* <FeatureShowcase /> */}
+
+      {/* Fashion Catalog Section */}
+      <FashionCatalogSection />
 
       {/* Public Gallery */}
       <SecurePublicGallery />
