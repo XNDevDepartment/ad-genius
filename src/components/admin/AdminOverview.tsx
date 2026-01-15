@@ -13,7 +13,8 @@ import { PromptManagement } from './PromptManagement';
 import { PromoCodesManagement } from './PromoCodesManagement';
 import { AdminErrorReports } from './AdminErrorReports';
 import { AdminAffiliates } from './AdminAffiliates';
-import { Image, AlertTriangle, Users } from 'lucide-react';
+import { UserGrowthMetrics } from './UserGrowthMetrics';
+import { Image, AlertTriangle } from 'lucide-react';
 
 export const AdminOverview = () => {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
@@ -46,8 +47,9 @@ export const AdminOverview = () => {
           <TabsTrigger value="admins">Admins</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6">
+        <TabsContent value="overview" className="space-y-8">
           <EnhancedMetrics />
+          <UserGrowthMetrics />
         </TabsContent>
 
         <TabsContent value="financial" className="space-y-6">
