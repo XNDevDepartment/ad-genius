@@ -44,7 +44,7 @@ const mainNavItems = [
 // Your Content navigation items
 const contentNavItems = [
   { id: "designs", icon: Image, path: "/library" },
-  { id: "models", icon: Users, path: "/create/custom-model" },
+  // { id: "models", icon: Users, path: "/create/custom-model" },
   { id: "videos", icon: Video, path: "/videos" },
 ];
 
