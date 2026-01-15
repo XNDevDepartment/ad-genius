@@ -1774,6 +1774,27 @@
       "invalidOrExpired": "Invalid or expired code"
     }
   },
+  "landing": {
+    "fashionCatalog": {
+      "badge": "Virtual Fashion Catalog",
+      "title": "Transform Your Fashion Business with AI Try-On",
+      "subtitle": "Upload any garment and see it on realistic AI models instantly. No photoshoots, no models, no studios.",
+      "benefits": {
+        "uploadGarments": "Upload any garment",
+        "chooseModels": "Choose from AI models",
+        "catalogShots": "Get catalog-ready shots",
+        "batchProcess": "Batch process 10+ items"
+      },
+      "useCases": {
+        "apparel": "Apparel Brands",
+        "fashion": "Fashion Retailers",
+        "footwear": "Footwear Stores",
+        "accessories": "Accessories Shops"
+      },
+      "cta": "Try Virtual Try-On",
+      "perfectFor": "Perfect for:"
+    }
+  },
   "landingV2": {
     "header": {
       "howItWorks": "How It Works",

@@ -1773,6 +1773,27 @@
       "invalidOrExpired": "Code invalide ou expiré"
     }
   },
+  "landing": {
+    "fashionCatalog": {
+      "badge": "Catalogue Virtuel de Mode",
+      "title": "Transformez Votre Business Mode avec l'Essayage Virtuel IA",
+      "subtitle": "Téléchargez n'importe quel vêtement et voyez-le sur des modèles IA réalistes instantanément. Sans séances photo, sans mannequins, sans studios.",
+      "benefits": {
+        "uploadGarments": "Téléchargez n'importe quel vêtement",
+        "chooseModels": "Choisissez parmi les modèles IA",
+        "catalogShots": "Obtenez des photos prêtes pour le catalogue",
+        "batchProcess": "Traitez plus de 10 articles en lot"
+      },
+      "useCases": {
+        "apparel": "Marques de Vêtements",
+        "fashion": "Détaillants de Mode",
+        "footwear": "Magasins de Chaussures",
+        "accessories": "Boutiques d'Accessoires"
+      },
+      "cta": "Essayez l'Essayage Virtuel",
+      "perfectFor": "Parfait pour :"
+    }
+  },
   "landingV2": {
     "header": {
       "howItWorks": "Comment Ça Marche",

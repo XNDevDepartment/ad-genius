@@ -1773,6 +1773,27 @@
       "invalidOrExpired": "Ungültiger oder abgelaufener Code"
     }
   },
+  "landing": {
+    "fashionCatalog": {
+      "badge": "Virtueller Modekatalog",
+      "title": "Transformieren Sie Ihr Modegeschäft mit KI-Anprobe",
+      "subtitle": "Laden Sie jedes Kleidungsstück hoch und sehen Sie es sofort an realistischen KI-Models. Keine Fotoshootings, keine Models, keine Studios.",
+      "benefits": {
+        "uploadGarments": "Laden Sie jedes Kleidungsstück hoch",
+        "chooseModels": "Wählen Sie aus KI-Models",
+        "catalogShots": "Erhalten Sie katalogfertige Aufnahmen",
+        "batchProcess": "Verarbeiten Sie über 10 Artikel im Batch"
+      },
+      "useCases": {
+        "apparel": "Bekleidungsmarken",
+        "fashion": "Modehändler",
+        "footwear": "Schuhgeschäfte",
+        "accessories": "Accessoire-Shops"
+      },
+      "cta": "Virtuelle Anprobe testen",
+      "perfectFor": "Perfekt für:"
+    }
+  },
   "landingV2": {
     "header": {
       "howItWorks": "So Funktioniert's",

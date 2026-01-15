@@ -1773,6 +1773,27 @@
       "invalidOrExpired": "Código inválido ou expirado"
     }
   },
+  "landing": {
+    "fashionCatalog": {
+      "badge": "Catálogo Virtual de Moda",
+      "title": "Transforme o Seu Negócio de Moda com Prova Virtual IA",
+      "subtitle": "Carregue qualquer peça e veja-a em modelos IA realistas instantaneamente. Sem sessões fotográficas, sem modelos, sem estúdios.",
+      "benefits": {
+        "uploadGarments": "Carregue qualquer peça",
+        "chooseModels": "Escolha entre modelos IA",
+        "catalogShots": "Obtenha fotos prontas para catálogo",
+        "batchProcess": "Processe mais de 10 itens em lote"
+      },
+      "useCases": {
+        "apparel": "Marcas de Vestuário",
+        "fashion": "Retalhistas de Moda",
+        "footwear": "Lojas de Calçado",
+        "accessories": "Lojas de Acessórios"
+      },
+      "cta": "Experimente a Prova Virtual",
+      "perfectFor": "Perfeito para:"
+    }
+  },
   "landingV2": {
     "header": {
       "howItWorks": "Como Funciona",
