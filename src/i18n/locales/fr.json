@@ -1789,13 +1789,16 @@
   "landing": {
     "fashionCatalog": {
       "badge": "Catalogue Virtuel de Mode",
-      "title": "Transformez Votre Business Mode avec l'Essayage Virtuel IA",
-      "subtitle": "Téléchargez n'importe quel vêtement et voyez-le sur des modèles IA réalistes instantanément. Sans séances photo, sans mannequins, sans studios.",
+      "title": "Un Vêtement. Catalogue Complet.",
+      "subtitle": "Téléchargez une seule photo de produit et générez un catalogue complet avec des modèles IA variés, des poses et des fonds professionnels.",
+      "sourceLabel": "Votre Vêtement",
+      "transformLabel": "L'IA Crée",
+      "resultsLabel": "6+ Photos Catalogue",
       "benefits": {
-        "uploadGarments": "Téléchargez n'importe quel vêtement",
-        "chooseModels": "Choisissez parmi les modèles IA",
-        "catalogShots": "Obtenez des photos prêtes pour le catalogue",
-        "batchProcess": "Traitez plus de 10 articles en lot"
+        "uploadGarments": "Téléchargez une photo flat-lay ou mannequin",
+        "chooseModels": "L'IA génère des variations de modèles variées",
+        "catalogShots": "Obtenez 6+ images prêtes pour le catalogue",
+        "batchProcess": "Traitez tout votre inventaire en lot"
       },
       "useCases": {
         "apparel": "Marques de Vêtements",
@@ -1803,7 +1806,7 @@
         "footwear": "Magasins de Chaussures",
         "accessories": "Boutiques d'Accessoires"
       },
-      "cta": "Essayez l'Essayage Virtuel",
+      "cta": "Créez Votre Catalogue",
       "perfectFor": "Parfait pour :"
     }
   },

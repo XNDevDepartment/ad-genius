@@ -1789,13 +1789,16 @@
   "landing": {
     "fashionCatalog": {
       "badge": "Catálogo Virtual de Moda",
-      "title": "Transforme o Seu Negócio de Moda com Prova Virtual IA",
-      "subtitle": "Carregue qualquer peça e veja-a em modelos IA realistas instantaneamente. Sem sessões fotográficas, sem modelos, sem estúdios.",
+      "title": "Uma Peça. Catálogo Completo.",
+      "subtitle": "Carregue uma única foto de produto e gere um catálogo completo com modelos IA diversos, poses e fundos profissionais.",
+      "sourceLabel": "A Sua Peça",
+      "transformLabel": "A IA Cria",
+      "resultsLabel": "6+ Fotos de Catálogo",
       "benefits": {
-        "uploadGarments": "Carregue qualquer peça",
-        "chooseModels": "Escolha entre modelos IA",
-        "catalogShots": "Obtenha fotos prontas para catálogo",
-        "batchProcess": "Processe mais de 10 itens em lote"
+        "uploadGarments": "Carregue uma foto flat-lay ou manequim",
+        "chooseModels": "A IA gera variações diversas de modelos",
+        "catalogShots": "Obtenha 6+ imagens prontas para catálogo",
+        "batchProcess": "Processe todo o seu inventário em lote"
       },
       "useCases": {
         "apparel": "Marcas de Vestuário",
@@ -1803,7 +1806,7 @@
         "footwear": "Lojas de Calçado",
         "accessories": "Lojas de Acessórios"
       },
-      "cta": "Experimente a Prova Virtual",
+      "cta": "Crie o Seu Catálogo",
       "perfectFor": "Perfeito para:"
     }
   },
