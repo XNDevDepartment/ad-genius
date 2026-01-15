@@ -262,9 +262,10 @@ export function AppSidebar() {
             <Button
               onClick={() => navigate("/pricing")}
               className={cn(
-                "w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg mb-4",
+                "w-full  from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg mb-4",
                 isCollapsed && "px-2"
               )}
+              variant="alternative"
             >
               {isCollapsed ? <Crown className="h-5 w-5" /> : t('navigation.upgradeToPro')}
             </Button>
