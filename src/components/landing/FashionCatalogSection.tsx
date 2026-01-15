@@ -82,7 +82,7 @@ export const FashionCatalogSection = () => {
                 beforeImage={outfit_antes}
                 afterImage={outfit_depois}
                 alt="Fashion Catalog Demo"
-                className="w-full aspect-square"
+                className="w-full"
                 initialX={30}
               />
             </div>
