@@ -17,7 +17,10 @@ serve(async (req) => {
 
     if (!phone_number || !session_id) {
       return new Response(
-        JSON.stringify({ error: 'Phone number and session_id are required' }),
+        JSON.stringify({ 
+          error: 'Phone number and session_id are required',
+          code: 'MISSING_FIELDS'
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -26,7 +29,10 @@ serve(async (req) => {
     const cleanPhone = phone_number.replace(/\s+/g, '');
     if (!/^\+?\d{9,15}$/.test(cleanPhone)) {
       return new Response(
-        JSON.stringify({ error: 'Invalid phone number format' }),
+        JSON.stringify({ 
+          error: 'Please enter a valid phone number with country code (e.g., +351912345678)',
+          code: 'INVALID_PHONE_FORMAT'
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -49,7 +55,11 @@ serve(async (req) => {
       console.error('[send-otp-signup] Rate limit check error:', countError);
     } else if (recentRequests && recentRequests.length >= 3) {
       return new Response(
-        JSON.stringify({ error: 'Too many OTP requests. Please try again later.' }),
+        JSON.stringify({ 
+          error: 'Too many verification attempts. Please wait before trying again.',
+          code: 'RATE_LIMIT_EXCEEDED',
+          retryAfter: 3600
+        }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -92,8 +102,25 @@ serve(async (req) => {
 
     if (bulkgateData.data?.message?.status !== 'accepted') {
       console.error('[send-otp-signup] Bulkgate error:', bulkgateData);
+      
+      // Check for specific Bulkgate error types
+      const bulkgateError = bulkgateData.error?.type || bulkgateData.data?.error;
+      let errorCode = 'SMS_FAILED';
+      let errorMessage = 'Failed to send verification code. Please try again.';
+      
+      if (bulkgateError === 'invalid_number' || bulkgateError === 'invalid_recipient') {
+        errorCode = 'INVALID_PHONE_FORMAT';
+        errorMessage = 'This phone number is invalid. Please check and try again.';
+      } else if (bulkgateError === 'quota_exceeded' || bulkgateError === 'rate_limit') {
+        errorCode = 'RATE_LIMIT_EXCEEDED';
+        errorMessage = 'Too many verification attempts. Please wait before trying again.';
+      }
+      
       return new Response(
-        JSON.stringify({ error: 'Failed to send verification code' }),
+        JSON.stringify({ 
+          error: errorMessage,
+          code: errorCode
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

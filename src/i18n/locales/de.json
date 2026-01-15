@@ -165,7 +165,20 @@
       "codeSentTo": "Code gesendet an",
       "verifyAndCreate": "Verifizieren & Konto Erstellen",
       "resendIn": "Erneut senden in",
-      "resendCode": "Code Erneut Senden"
+      "resendCode": "Code Erneut Senden",
+      "errors": {
+        "rateLimitExceeded": "Zu viele Versuche. Bitte warten Sie, bevor Sie es erneut versuchen.",
+        "invalidPhoneFormat": "Bitte geben Sie eine gültige Telefonnummer mit Ländervorwahl ein",
+        "smsFailed": "SMS konnte nicht gesendet werden. Überprüfen Sie Ihre Nummer und versuchen Sie es erneut.",
+        "codeExpired": "Ihr Code ist abgelaufen",
+        "codeExpiredHint": "Klicken Sie auf \"Code Erneut Senden\", um einen neuen zu erhalten.",
+        "wrongCode": "Falscher Code",
+        "wrongCodeHint": "Bitte überprüfen Sie Ihre SMS und versuchen Sie es erneut.",
+        "maxAttemptsExceeded": "Zu viele falsche Versuche",
+        "maxAttemptsHint": "Bitte fordern Sie einen neuen Bestätigungscode an.",
+        "sessionExpired": "Verifizierungssitzung abgelaufen",
+        "sessionExpiredHint": "Bitte starten Sie den Verifizierungsprozess erneut."
+      }
     }
   },
   "settings": {
