@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { BeforeAfterSlider } from "@/components/ui/before-after";
 import { Check, Shirt, ShoppingBag, Footprints, Watch, ArrowRight } from "lucide-react";
 
-import outfitBefore from "@/assets/outfit_square.jpg";
-import outfitAfter from "@/assets/outfit_square_final.png";
+import outfit_antes from '@/assets/demo_outfit_initial.jpeg';
+import outfit_depois from '@/assets/demo_outfit_final.jpg';
 
 const useCaseIcons = {
   apparel: Shirt,
@@ -79,8 +79,8 @@ export const FashionCatalogSection = () => {
           >
             <div className="rounded-2xl overflow-hidden shadow-apple-lg">
               <BeforeAfterSlider
-                beforeImage={outfitBefore}
-                afterImage={outfitAfter}
+                beforeImage={outfit_antes}
+                afterImage={outfit_depois}
                 alt="Fashion Catalog Demo"
                 className="w-full aspect-square"
                 initialX={30}
