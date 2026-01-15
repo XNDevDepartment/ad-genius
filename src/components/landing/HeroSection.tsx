@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Play, ArrowRight, Zap, Trophy, Image } from "lucide-react";
 import { BeforeAfterSlider } from "../ui/before-after";
 
-import outfit_antes from '@/assets/outfit_square.jpg';
-import outfit_depois from '@/assets/outfit_square_final.png';
+import outfit_antes from '@/assets/demo_outfit_initial.jpeg';
+import outfit_depois from '@/assets/demo_outfit_final.png';
 import { DemoModal } from "../DemoModal";
 
 
