@@ -275,7 +275,7 @@ export function AppSidebar() {
             <div className="space-y-1">
               {/* Usage */}
               <button
-                onClick={() => navigate("/account")}
+                onClick={() => navigate("/account#billing")}
                 className={cn(
                   "flex items-center gap-3 px-4 py-2 rounded-lg w-full transition-colors",
                   "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent",

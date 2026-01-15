@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Settings, CreditCard, HelpCircle, LogOut, Bell, Shield, AlertTriangle, Key } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,7 +9,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
 import { ProfileEditPanel } from "@/components/account/ProfileEditPanel";
 import { SettingsPanel } from "@/components/account/SettingsPanel";
 import { NotificationsPanel } from "@/components/account/NotificationsPanel";
@@ -20,9 +20,12 @@ import { useTranslation } from "react-i18next";
 
 const Account = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const { user, signOut, subscriptionData } = useAuth();
   const { tier } = useCredits();
-  const [section, setSection] = useState<string>("");
+
+  const [section, setSection] = useState<string>(""); // state que controla o UI
   const { t } = useTranslation();
 
   const [layout, setLayout] = useState("grid");
@@ -30,45 +33,54 @@ const Account = () => {
 
   const { toast } = useToast();
 
-  if (!user) {
-    return <AuthModal onSuccess={() => navigate("/")} />;
-  }
+  // 1) Sempre que o hash mudar, abre a secção certa
+  useEffect(() => {
+    const hashSection = location.hash.replace("#", ""); // "billing"
+
+    if (!hashSection) {
+      setSection("");
+      return;
+    }
+
+    // whitelist para evitar valores random no hash
+    const allowed = new Set([
+      "edit-profile",
+      "settings",
+      "notifications",
+      "privacy",
+      "billing",
+      "help",
+      "api-keys",
+    ]);
+
+    if (allowed.has(hashSection)) {
+      setSection(hashSection);
+    } else {
+      // se quiseres: limpar hash inválido
+      // navigate("/account", { replace: true });
+      setSection("");
+    }
+  }, [location.hash]);
+
+  // 2) Quando clicas no menu, atualizas state + URL hash
+  const handleMenuClick = (clickedSection: string) => {
+    const next = clickedSection === section ? "" : clickedSection;
+
+    setSection(next);
+
+    // atualiza o hash sem reload (React Router)
+    navigate(next ? `#${next}` : "", { replace: true });
+  };
 
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
   };
 
-  const handleSaveProfile = () => {
-    setIsEditingProfile(false);
-    toast({
-      title: t('account.toasts.profileUpdated.title'),
-      description: t('account.toasts.profileUpdated.description'),
-    });
+  const closeSection = () => {
+    setSection("");
+    navigate("", { replace: true }); // remove o hash
   };
-
-  const handleMenuClick = (clickedSection: string) => {
-    if(clickedSection  == section){
-      setSection("")
-    }else{
-      setSection(clickedSection)
-    }
-  };
-
-  // const handleDownloadData = () => {
-  //   toast({
-  //     title: t('account.toasts.dataExportRequested.title'),
-  //     description: t('account.toasts.dataExportRequested.description'),
-  //   });
-  // };
-
-  // const handleDeleteAccount = () => {
-  //   toast({
-  //     title: t('account.toasts.accountDeletionRequested.title'),
-  //     description: t('account.toasts.accountDeletionRequested.description'),
-  //     variant: "destructive",
-  //   });
-  // };
 
   const AccountPanel = (
     <div className="grid gap-8 lg:grid-cols-5">
@@ -237,7 +249,7 @@ const Account = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => {if(section === "") {navigate("/")} else {setSection("")} }}
+            onClick={() => {if(section === "") {navigate("/")} else {setSection(""); navigate("/account", { replace: true });} }}
             className="min-h-[44px] min-w-[44px] touch-manipulation active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -261,7 +273,7 @@ const Account = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setSection("")}
+              onClick={() => {setSection(""); navigate("/account", { replace: true });}}
               className="min-h-[44px] min-w-[44px]"
             >
               <ArrowLeft className="h-5 w-5" />
@@ -279,13 +291,13 @@ const Account = () => {
           </h1>
         </div>
 
-        {section === "edit-profile" && <ProfileEditPanel onClose={() => setSection("")} />}
-        {section === "settings" && <SettingsPanel layout={layout} setLayout={setLayout} onClose={() => setSection("")} />}
-        {section === "notifications" && <NotificationsPanel onClose={() => setSection("")} />}
-        {section === "privacy" && <PrivacyPanel onClose={() => setSection("")} />}
-        {section === "billing" && <BillingPanel onClose={() => setSection("")} />}
-        {section === "help" && <HelpSupportPanel onClose={() => setSection("")} />}
-        {section === "api-keys" && <ApiKeysPanel onClose={() => setSection("")} />}
+        {section === "edit-profile" && <ProfileEditPanel onClose={closeSection} />}
+        {section === "settings" && <SettingsPanel layout={layout} setLayout={setLayout} onClose={closeSection} />}
+        {section === "notifications" && <NotificationsPanel onClose={closeSection} />}
+        {section === "privacy" && <PrivacyPanel onClose={closeSection} />}
+        {section === "billing" && <BillingPanel onClose={closeSection} />}
+        {section === "help" && <HelpSupportPanel onClose={closeSection} />}
+        {section === "api-keys" && <ApiKeysPanel onClose={closeSection} />}
         {section === "" && AccountPanel}
       </div>
     </div>
