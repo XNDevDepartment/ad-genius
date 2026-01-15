@@ -89,14 +89,14 @@ export const FashionCatalogSection = () => {
             <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
               {/* Source Garment */}
               <div className="relative flex-shrink-0">
-                <div className="w-36 h-48 md:w-40 md:h-52 rounded-xl overflow-hidden border-2 border-primary/20 shadow-lg bg-card">
+                <div className="w-28 h-36 sm:w-32 sm:h-44 md:w-40 md:h-52 rounded-xl overflow-hidden border-2 border-primary/20 shadow-lg bg-card">
                   <img 
                     src={outfit_source} 
                     alt={t("landing.fashionCatalog.sourceLabel")} 
                     className="w-full h-full object-cover" 
                   />
                 </div>
-                <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-xs font-medium rounded-full whitespace-nowrap shadow-md">
+                <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-2 py-1 sm:px-3 bg-primary text-primary-foreground text-[10px] sm:text-xs font-medium rounded-full whitespace-nowrap shadow-md">
                   {t("landing.fashionCatalog.sourceLabel")}
                 </span>
               </div>
@@ -106,19 +106,19 @@ export const FashionCatalogSection = () => {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={inView ? { opacity: 1, scale: 1 } : {}}
                 transition={{ duration: 0.5, delay: 0.4 }}
-                className="flex flex-col items-center gap-2 text-primary py-4 md:py-0"
+                className="flex flex-col items-center gap-2 text-primary py-3 md:py-0"
               >
-                <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-primary/10">
-                  <Sparkles className="w-4 h-4" />
-                  <span className="text-sm font-medium hidden md:inline">{t("landing.fashionCatalog.transformLabel")}</span>
+                <div className="flex items-center gap-2 px-2 py-1.5 sm:px-3 sm:py-2 rounded-full bg-primary/10">
+                  <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="text-xs sm:text-sm font-medium hidden sm:inline">{t("landing.fashionCatalog.transformLabel")}</span>
                 </div>
-                <ArrowRight className="w-8 h-8 hidden md:block" />
-                <ArrowDown className="w-8 h-8 md:hidden" />
+                <ArrowRight className="w-6 h-6 sm:w-8 sm:h-8 hidden md:block" />
+                <ArrowDown className="w-6 h-6 sm:w-8 sm:h-8 md:hidden" />
               </motion.div>
               
               {/* Results Grid */}
               <div className="relative">
-                <div className="grid grid-cols-3 gap-2 md:gap-3">
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3">
                   {catalogResults.map((result, index) => (
                     <motion.div
                       key={index}
@@ -130,7 +130,7 @@ export const FashionCatalogSection = () => {
                         type: "spring",
                         stiffness: 100
                       }}
-                      className="w-44 h-60 md:w-32 md:h-52 sm:w-20 sm:h-24 rounded-lg overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 ring-1 ring-border"
+                      className="w-[72px] h-24 sm:w-20 sm:h-28 md:w-32 md:h-44 rounded-md sm:rounded-lg overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 ring-1 ring-border"
                     >
                       <img
                         src={result}
@@ -145,7 +145,7 @@ export const FashionCatalogSection = () => {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={inView ? { opacity: 1, scale: 1 } : {}}
                   transition={{ duration: 0.4, delay: 1.1 }}
-                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-accent text-accent-foreground text-xs font-medium rounded-full whitespace-nowrap shadow-md"
+                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-2 py-1 sm:px-3 bg-accent text-accent-foreground text-[10px] sm:text-xs font-medium rounded-full whitespace-nowrap shadow-md"
                 >
                   {t("landing.fashionCatalog.resultsLabel")}
                 </motion.span>
