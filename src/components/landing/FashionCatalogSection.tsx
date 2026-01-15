@@ -9,12 +9,12 @@ import { Check, Shirt, ShoppingBag, Footprints, Watch, ArrowRight, ArrowDown, Sp
 import outfit_source from '@/assets/demo_outfit_initial.jpeg';
 
 // Catalog results - diverse shots from landing gallery
-import result1 from '@/assets/landing_gallery/1.webp';
-import result2 from '@/assets/landing_gallery/2.webp';
-import result3 from '@/assets/landing_gallery/3.webp';
-import result4 from '@/assets/landing_gallery/4.webp';
-import result5 from '@/assets/landing_gallery/5.webp';
-import result6 from '@/assets/landing_gallery/6.webp';
+import result1 from '@/assets/catalog_showcase/1.png';
+import result2 from '@/assets/catalog_showcase/2.png';
+import result3 from '@/assets/catalog_showcase/3.png';
+import result4 from '@/assets/catalog_showcase/4.png';
+import result5 from '@/assets/catalog_showcase/5.png';
+import result6 from '@/assets/catalog_showcase/6.png';
 
 const catalogResults = [result1, result2, result3, result4, result5, result6];
 
@@ -78,7 +78,7 @@ export const FashionCatalogSection = () => {
         </motion.div>
 
         {/* Main Content - Source to Catalog Showcase */}
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-16">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-16 w-max">
           {/* Source → Results Visual */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -124,18 +124,18 @@ export const FashionCatalogSection = () => {
                       key={index}
                       initial={{ opacity: 0, scale: 0.8, y: 20 }}
                       animate={inView ? { opacity: 1, scale: 1, y: 0 } : {}}
-                      transition={{ 
-                        duration: 0.4, 
+                      transition={{
+                        duration: 0.4,
                         delay: 0.5 + index * 0.1,
                         type: "spring",
                         stiffness: 100
                       }}
-                      className="w-20 h-28 md:w-24 md:h-32 rounded-lg overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 ring-1 ring-border"
+                      className="w-44 h-60 md:w-32 md:h-52 sm:w-20 sm:h-24 rounded-lg overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 ring-1 ring-border"
                     >
-                      <img 
-                        src={result} 
+                      <img
+                        src={result}
                         alt={`${t("landing.fashionCatalog.resultsLabel")} ${index + 1}`} 
-                        className="w-full h-full object-cover" 
+                        className="w-full h-full object-cover"
                       />
                     </motion.div>
                   ))}
