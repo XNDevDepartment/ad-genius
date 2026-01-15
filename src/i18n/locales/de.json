@@ -1789,13 +1789,16 @@
   "landing": {
     "fashionCatalog": {
       "badge": "Virtueller Modekatalog",
-      "title": "Transformieren Sie Ihr Modegeschäft mit KI-Anprobe",
-      "subtitle": "Laden Sie jedes Kleidungsstück hoch und sehen Sie es sofort an realistischen KI-Models. Keine Fotoshootings, keine Models, keine Studios.",
+      "title": "Ein Kleidungsstück. Vollständiger Katalog.",
+      "subtitle": "Laden Sie ein einzelnes Produktfoto hoch und generieren Sie einen kompletten Katalog mit vielfältigen KI-Models, Posen und professionellen Hintergründen.",
+      "sourceLabel": "Ihr Kleidungsstück",
+      "transformLabel": "KI Erstellt",
+      "resultsLabel": "6+ Katalogfotos",
       "benefits": {
-        "uploadGarments": "Laden Sie jedes Kleidungsstück hoch",
-        "chooseModels": "Wählen Sie aus KI-Models",
-        "catalogShots": "Erhalten Sie katalogfertige Aufnahmen",
-        "batchProcess": "Verarbeiten Sie über 10 Artikel im Batch"
+        "uploadGarments": "Laden Sie ein Flat-Lay oder Mannequin-Foto hoch",
+        "chooseModels": "KI generiert vielfältige Model-Variationen",
+        "catalogShots": "Erhalten Sie 6+ katalogfertige Bilder sofort",
+        "batchProcess": "Verarbeiten Sie Ihr gesamtes Inventar im Batch"
       },
       "useCases": {
         "apparel": "Bekleidungsmarken",
@@ -1803,7 +1806,7 @@
         "footwear": "Schuhgeschäfte",
         "accessories": "Accessoire-Shops"
       },
-      "cta": "Virtuelle Anprobe testen",
+      "cta": "Katalog Erstellen",
       "perfectFor": "Perfekt für:"
     }
   },

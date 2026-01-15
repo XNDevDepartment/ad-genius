@@ -1790,13 +1790,16 @@
   "landing": {
     "fashionCatalog": {
       "badge": "Virtual Fashion Catalog",
-      "title": "Transform Your Fashion Business with AI Try-On",
-      "subtitle": "Upload any garment and see it on realistic AI models instantly. No photoshoots, no models, no studios.",
+      "title": "One Garment. Endless Catalog.",
+      "subtitle": "Upload a single product photo and generate a complete catalog with diverse AI models, poses, and professional backgrounds.",
+      "sourceLabel": "Your Garment",
+      "transformLabel": "AI Creates",
+      "resultsLabel": "6+ Catalog Shots",
       "benefits": {
-        "uploadGarments": "Upload any garment",
-        "chooseModels": "Choose from AI models",
-        "catalogShots": "Get catalog-ready shots",
-        "batchProcess": "Batch process 10+ items"
+        "uploadGarments": "Upload one flat-lay or mannequin shot",
+        "chooseModels": "AI generates diverse model variations",
+        "catalogShots": "Get 6+ catalog-ready images instantly",
+        "batchProcess": "Process your entire inventory in batch"
       },
       "useCases": {
         "apparel": "Apparel Brands",
@@ -1804,7 +1807,7 @@
         "footwear": "Footwear Stores",
         "accessories": "Accessories Shops"
       },
-      "cta": "Try Virtual Try-On",
+      "cta": "Create Your Catalog",
       "perfectFor": "Perfect for:"
     }
   },
