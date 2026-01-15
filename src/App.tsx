@@ -61,6 +61,7 @@ const CookiePolicy = lazyWithRetry(() => import("./pages/CookiePolicy"));
 const ShopifyImport = lazyWithRetry(() => import("./pages/ShopifyImport"));
 const UseCaseLanding = lazyWithRetry(() => import("./pages/UseCaseLanding"));
 const IntegrationLanding = lazyWithRetry(() => import("./pages/IntegrationLanding"));
+const Bulk = lazyWithRetry(() => import("./pages/Bulk"));
 const queryClient = new QueryClient();
 
 // Wrapper component to provide resetKey and user context to ErrorBoundary
@@ -187,6 +188,13 @@ const App = () => {
                   <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <VideoAds />
+                    </Suspense>
+                  </ErrorBoundaryWithReset>
+                } />
+                <Route path="bulk" element={
+                  <ErrorBoundaryWithReset>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Bulk />
                     </Suspense>
                   </ErrorBoundaryWithReset>
                 } />

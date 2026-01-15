@@ -98,7 +98,27 @@
     "library": "Library",
     "videos": "Videos",
     "pricing": "Pricing",
-    "account": "Account"
+    "account": "Account",
+    "grupo": "Bulk",
+    "designs": "Designs",
+    "models": "Models",
+    "yourContent": "Your Content",
+    "personalSpace": "Personal Space",
+    "upgradeToPro": "Upgrade to Pro",
+    "usage": "Usage",
+    "preferences": "Preferences",
+    "invitePeople": "Invite people"
+  },
+  "bulk": {
+    "title": "Bulk Processing",
+    "description": "Process multiple images at once with AI",
+    "uploadTitle": "Upload Images",
+    "uploadDescription": "Upload up to 250 images for batch processing",
+    "dragAndDrop": "Drag and drop images here, or click to browse",
+    "importImages": "Import Images",
+    "importFolder": "Import Folder",
+    "maxImages": "Maximum 250 images per batch",
+    "comingSoon": "Full bulk processing functionality coming soon!"
   },
   "announcement": {
     "foundersTitle": "🎉 Founders Pack Available!",

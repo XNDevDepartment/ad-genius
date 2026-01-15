@@ -102,7 +102,27 @@
     "library": "Biblioteca",
     "videos": "Vídeos",
     "pricing": "Precios",
-    "account": "Cuenta"
+    "account": "Cuenta",
+    "grupo": "Grupo",
+    "designs": "Diseños",
+    "models": "Modelos",
+    "yourContent": "Tu Contenido",
+    "personalSpace": "Espacio Personal",
+    "upgradeToPro": "Actualizar a Pro",
+    "usage": "Uso",
+    "preferences": "Preferencias",
+    "invitePeople": "Invitar personas"
+  },
+  "bulk": {
+    "title": "Procesamiento en Grupo",
+    "description": "Procesa múltiples imágenes a la vez con IA",
+    "uploadTitle": "Subir Imágenes",
+    "uploadDescription": "Sube hasta 250 imágenes para procesamiento por lotes",
+    "dragAndDrop": "Arrastra y suelta imágenes aquí, o haz clic para navegar",
+    "importImages": "Importar Imágenes",
+    "importFolder": "Importar Carpeta",
+    "maxImages": "Máximo 250 imágenes por lote",
+    "comingSoon": "¡Funcionalidad completa de procesamiento en grupo próximamente!"
   },
   "announcement": {
     "foundersTitle": "🎉 ¡Pack Fundadores Disponible!",
