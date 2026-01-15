@@ -9,7 +9,7 @@ import { Play, ArrowRight, Zap, Trophy, Image } from "lucide-react";
 import { BeforeAfterSlider } from "../ui/before-after";
 
 import outfit_antes from '@/assets/demo_outfit_initial.jpeg';
-import outfit_depois from '@/assets/demo_outfit_final.png';
+import outfit_depois from '@/assets/demo_outfit_final.jpg';
 import { DemoModal } from "../DemoModal";
 
 
