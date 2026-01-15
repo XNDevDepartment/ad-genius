@@ -102,7 +102,27 @@
     "library": "Bibliothèque",
     "videos": "Vidéos",
     "pricing": "Tarifs",
-    "account": "Compte"
+    "account": "Compte",
+    "grupo": "Groupe",
+    "designs": "Designs",
+    "models": "Modèles",
+    "yourContent": "Votre Contenu",
+    "personalSpace": "Espace Personnel",
+    "upgradeToPro": "Passer à Pro",
+    "usage": "Utilisation",
+    "preferences": "Préférences",
+    "invitePeople": "Inviter des personnes"
+  },
+  "bulk": {
+    "title": "Traitement en Groupe",
+    "description": "Traitez plusieurs images à la fois avec l'IA",
+    "uploadTitle": "Télécharger des Images",
+    "uploadDescription": "Téléchargez jusqu'à 250 images pour le traitement par lots",
+    "dragAndDrop": "Glissez-déposez des images ici, ou cliquez pour parcourir",
+    "importImages": "Importer des Images",
+    "importFolder": "Importer un Dossier",
+    "maxImages": "Maximum 250 images par lot",
+    "comingSoon": "Fonctionnalité complète de traitement en groupe bientôt disponible!"
   },
   "announcement": {
     "foundersTitle": "🎉 Pack Fondateurs Disponible!",

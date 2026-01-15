@@ -102,7 +102,27 @@
     "library": "Mediathek",
     "videos": "Videos",
     "pricing": "Preise",
-    "account": "Konto"
+    "account": "Konto",
+    "grupo": "Gruppe",
+    "designs": "Designs",
+    "models": "Modelle",
+    "yourContent": "Deine Inhalte",
+    "personalSpace": "Persönlicher Bereich",
+    "upgradeToPro": "Auf Pro upgraden",
+    "usage": "Nutzung",
+    "preferences": "Einstellungen",
+    "invitePeople": "Personen einladen"
+  },
+  "bulk": {
+    "title": "Gruppenverarbeitung",
+    "description": "Verarbeiten Sie mehrere Bilder gleichzeitig mit KI",
+    "uploadTitle": "Bilder hochladen",
+    "uploadDescription": "Laden Sie bis zu 250 Bilder für die Stapelverarbeitung hoch",
+    "dragAndDrop": "Bilder hierher ziehen oder klicken zum Durchsuchen",
+    "importImages": "Bilder importieren",
+    "importFolder": "Ordner importieren",
+    "maxImages": "Maximal 250 Bilder pro Stapel",
+    "comingSoon": "Vollständige Gruppenverarbeitungsfunktion kommt bald!"
   },
   "announcement": {
     "foundersTitle": "🎉 Gründerpaket Verfügbar!",
