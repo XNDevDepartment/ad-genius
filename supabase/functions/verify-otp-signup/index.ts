@@ -23,7 +23,10 @@ serve(async (req) => {
 
     if (!code || !session_id) {
       return new Response(
-        JSON.stringify({ error: 'Code and session_id are required' }),
+        JSON.stringify({ 
+          error: 'Code and session_id are required',
+          code: 'MISSING_FIELDS'
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -48,7 +51,10 @@ serve(async (req) => {
     if (fetchError || !verification) {
       console.error('[verify-otp-signup] Verification not found:', fetchError);
       return new Response(
-        JSON.stringify({ error: 'Verification session not found or expired' }),
+        JSON.stringify({ 
+          error: 'Verification session not found. Please start the verification process again.',
+          code: 'SESSION_NOT_FOUND'
+        }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -56,7 +62,10 @@ serve(async (req) => {
     // Check if expired
     if (new Date(verification.expires_at) < new Date()) {
       return new Response(
-        JSON.stringify({ error: 'Verification code has expired' }),
+        JSON.stringify({ 
+          error: 'Your verification code has expired. Please request a new one.',
+          code: 'CODE_EXPIRED'
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -93,8 +102,29 @@ serve(async (req) => {
 
     if (bulkgateData.data?.verified !== true) {
       console.error('[verify-otp-signup] Verification failed:', bulkgateData);
+      
+      // Parse Bulkgate error type for specific messaging
+      const bulkgateError = bulkgateData.error?.type || bulkgateData.data?.error;
+      let errorCode = 'INVALID_CODE';
+      let errorMessage = 'The code you entered is incorrect. Please check and try again.';
+      
+      if (bulkgateError === 'expired') {
+        errorCode = 'CODE_EXPIRED';
+        errorMessage = 'Your verification code has expired. Please request a new one.';
+      } else if (bulkgateError === 'attempts_exceeded' || bulkgateError === 'max_attempts') {
+        errorCode = 'MAX_ATTEMPTS_EXCEEDED';
+        errorMessage = 'Too many incorrect attempts. Please request a new verification code.';
+      } else if (bulkgateError === 'already_verified') {
+        errorCode = 'CODE_ALREADY_USED';
+        errorMessage = 'This code has already been used. Please request a new one.';
+      }
+      
       return new Response(
-        JSON.stringify({ error: 'Invalid verification code' }),
+        JSON.stringify({ 
+          error: errorMessage,
+          code: errorCode,
+          verified: false
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

@@ -63,13 +63,36 @@ export const PhoneVerification = ({ onVerified, initialPhone = '' }: PhoneVerifi
           description: t('phoneVerification.checkPhone', 'Check your phone for the verification code'),
         });
       } else {
-        throw new Error(data?.error || 'Failed to send OTP');
+        const errorCode = data?.code;
+        let errorTitle = t('phoneVerification.errors.sendFailed', 'Failed to send code');
+        let errorDesc = data?.error || t('phoneVerification.errors.tryAgain', 'Please try again');
+        
+        switch (errorCode) {
+          case 'RATE_LIMIT_EXCEEDED':
+            errorTitle = t('phoneVerification.errors.tooManyAttempts', 'Too many attempts');
+            errorDesc = t('phoneVerification.errors.tooManyAttemptsDesc', 'Please wait a few minutes before trying again.');
+            break;
+          case 'INVALID_PHONE_FORMAT':
+            errorTitle = t('phoneVerification.errors.invalidFormat', 'Invalid phone number');
+            errorDesc = t('phoneVerification.errors.invalidFormatDesc', 'Please enter a valid number with country code.');
+            break;
+          case 'SMS_FAILED':
+            errorTitle = t('phoneVerification.errors.smsFailed', 'SMS could not be delivered');
+            errorDesc = t('phoneVerification.errors.smsFailedDesc', 'Please check your phone number and try again.');
+            break;
+        }
+        
+        toast({
+          title: errorTitle,
+          description: errorDesc,
+          variant: 'destructive',
+        });
       }
     } catch (error: any) {
       console.error('Error sending OTP:', error);
       toast({
         title: t('phoneVerification.errors.sendFailed', 'Failed to send code'),
-        description: error.message || t('phoneVerification.errors.tryAgain', 'Please try again'),
+        description: t('phoneVerification.errors.tryAgain', 'Please try again'),
         variant: 'destructive',
       });
     } finally {
@@ -103,13 +126,42 @@ export const PhoneVerification = ({ onVerified, initialPhone = '' }: PhoneVerifi
         });
         onVerified?.();
       } else {
-        throw new Error(data?.error || 'Invalid code');
+        const errorCode = data?.code;
+        let errorTitle = t('phoneVerification.errors.verifyFailed', 'Verification failed');
+        let errorDesc = data?.error || t('phoneVerification.errors.invalidOrExpired', 'Invalid or expired code');
+        
+        switch (errorCode) {
+          case 'CODE_EXPIRED':
+            errorTitle = t('phoneVerification.errors.codeExpired', 'Code expired');
+            errorDesc = t('phoneVerification.errors.codeExpiredDesc', 'Your code has expired. Please request a new one.');
+            break;
+          case 'INVALID_CODE':
+            errorTitle = t('phoneVerification.errors.wrongCode', 'Wrong code');
+            errorDesc = t('phoneVerification.errors.wrongCodeDesc', "The code you entered doesn't match. Please try again.");
+            break;
+          case 'MAX_ATTEMPTS_EXCEEDED':
+            errorTitle = t('phoneVerification.errors.tooManyAttempts', 'Too many attempts');
+            errorDesc = t('phoneVerification.errors.tooManyAttemptsDesc', 'Please wait a few minutes before trying again.');
+            setStep('phone');
+            break;
+          case 'SESSION_NOT_FOUND':
+            errorTitle = t('phoneVerification.errors.sessionExpired', 'Session expired');
+            errorDesc = t('phoneVerification.errors.sessionExpiredDesc', 'Please start the verification process again.');
+            setStep('phone');
+            break;
+        }
+        
+        toast({
+          title: errorTitle,
+          description: errorDesc,
+          variant: 'destructive',
+        });
       }
     } catch (error: any) {
       console.error('Error verifying OTP:', error);
       toast({
         title: t('phoneVerification.errors.verifyFailed', 'Verification failed'),
-        description: error.message || t('phoneVerification.errors.invalidOrExpired', 'Invalid or expired code'),
+        description: t('phoneVerification.errors.invalidOrExpired', 'Invalid or expired code'),
         variant: 'destructive',
       });
     } finally {

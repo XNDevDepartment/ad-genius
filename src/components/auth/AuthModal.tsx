@@ -127,7 +127,24 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
       });
 
       if (error || !data?.success) {
-        throw new Error(data?.error || error?.message || 'Failed to send code');
+        const errorCode = data?.code;
+        let errorMessage = data?.error || error?.message || t('auth.signup.sendCodeError', 'Failed to send verification code');
+        
+        switch (errorCode) {
+          case 'RATE_LIMIT_EXCEEDED':
+            errorMessage = t('auth.signup.errors.rateLimitExceeded', 'Too many attempts. Please wait before trying again.');
+            break;
+          case 'INVALID_PHONE_FORMAT':
+            errorMessage = t('auth.signup.errors.invalidPhoneFormat', 'Please enter a valid phone number with country code');
+            break;
+          case 'SMS_FAILED':
+            errorMessage = t('auth.signup.errors.smsFailed', 'Could not send SMS. Please check your number and try again.');
+            break;
+        }
+        
+        toast.error(errorMessage);
+        setSendingOtp(false);
+        return;
       }
 
       toast.success(t('auth.signup.codeSent', 'Verification code sent!'));
@@ -135,7 +152,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
       setResendCountdown(60);
     } catch (err: any) {
       console.error('[AuthModal] Send OTP error:', err);
-      toast.error(err.message || t('auth.signup.sendCodeError', 'Failed to send verification code'));
+      toast.error(t('auth.signup.sendCodeError', 'Failed to send verification code'));
     } finally {
       setSendingOtp(false);
     }
@@ -158,7 +175,38 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
       });
 
       if (error || !data?.verified) {
-        throw new Error(data?.error || error?.message || 'Invalid code');
+        const errorCode = data?.code;
+        let errorMessage = data?.error || error?.message || t('auth.signup.invalidCode', 'Invalid verification code');
+        
+        switch (errorCode) {
+          case 'CODE_EXPIRED':
+            toast.error(t('auth.signup.errors.codeExpired', 'Your code has expired'), {
+              description: t('auth.signup.errors.codeExpiredHint', 'Click "Resend Code" to get a new one.')
+            });
+            break;
+          case 'INVALID_CODE':
+            toast.error(t('auth.signup.errors.wrongCode', 'Incorrect code'), {
+              description: t('auth.signup.errors.wrongCodeHint', 'Please check your SMS and try again.')
+            });
+            break;
+          case 'MAX_ATTEMPTS_EXCEEDED':
+            toast.error(t('auth.signup.errors.maxAttemptsExceeded', 'Too many incorrect attempts'), {
+              description: t('auth.signup.errors.maxAttemptsHint', 'Please request a new verification code.')
+            });
+            setSignupStep('form');
+            break;
+          case 'SESSION_NOT_FOUND':
+            toast.error(t('auth.signup.errors.sessionExpired', 'Verification session expired'), {
+              description: t('auth.signup.errors.sessionExpiredHint', 'Please start the verification process again.')
+            });
+            setSignupStep('form');
+            break;
+          default:
+            toast.error(errorMessage);
+        }
+        
+        setVerifyingOtp(false);
+        return;
       }
 
       setVerifiedPhone(data.phone_number);
@@ -168,7 +216,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
       await handleCreateAccount(data.phone_number);
     } catch (err: any) {
       console.error('[AuthModal] Verify OTP error:', err);
-      toast.error(err.message || t('auth.signup.invalidCode', 'Invalid verification code'));
+      toast.error(t('auth.signup.invalidCode', 'Invalid verification code'));
     } finally {
       setVerifyingOtp(false);
     }
@@ -242,13 +290,22 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
       });
 
       if (error || !data?.success) {
-        throw new Error(data?.error || error?.message || 'Failed to resend code');
+        const errorCode = data?.code;
+        let errorMessage = data?.error || error?.message || t('auth.signup.resendError', 'Failed to resend code');
+        
+        if (errorCode === 'RATE_LIMIT_EXCEEDED') {
+          errorMessage = t('auth.signup.errors.rateLimitExceeded', 'Too many attempts. Please wait before trying again.');
+        }
+        
+        toast.error(errorMessage);
+        setSendingOtp(false);
+        return;
       }
 
       toast.success(t('auth.signup.codeResent', 'New code sent!'));
       setResendCountdown(60);
     } catch (err: any) {
-      toast.error(err.message || t('auth.signup.resendError', 'Failed to resend code'));
+      toast.error(t('auth.signup.resendError', 'Failed to resend code'));
     } finally {
       setSendingOtp(false);
     }

@@ -165,7 +165,20 @@
       "codeSentTo": "Código enviado para",
       "verifyAndCreate": "Verificar e Criar Conta",
       "resendIn": "Reenviar em",
-      "resendCode": "Reenviar Código"
+      "resendCode": "Reenviar Código",
+      "errors": {
+        "rateLimitExceeded": "Demasiadas tentativas. Por favor, aguarde antes de tentar novamente.",
+        "invalidPhoneFormat": "Por favor, introduza um número de telefone válido com código do país",
+        "smsFailed": "Não foi possível enviar SMS. Verifique o seu número e tente novamente.",
+        "codeExpired": "O seu código expirou",
+        "codeExpiredHint": "Clique em \"Reenviar Código\" para obter um novo.",
+        "wrongCode": "Código incorreto",
+        "wrongCodeHint": "Por favor, verifique o seu SMS e tente novamente.",
+        "maxAttemptsExceeded": "Demasiadas tentativas incorretas",
+        "maxAttemptsHint": "Por favor, solicite um novo código de verificação.",
+        "sessionExpired": "Sessão de verificação expirada",
+        "sessionExpiredHint": "Por favor, inicie o processo de verificação novamente."
+      }
     }
   },
   "settings": {
