@@ -1,15 +1,12 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Upload, Link, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import MultiImageUploader from '@/components/MultiImageUploader';
 import { useSourceImageUpload, SourceImage } from '@/hooks/useSourceImageUpload';
 import { SAMPLE_PRODUCTS } from '@/data/onboarding-scenarios';
-import { motion } from 'framer-motion';
 
 interface OnboardingStep1Props {
   onNext: (imageUrl: string, sourceImageId: string) => void;
@@ -18,11 +15,8 @@ interface OnboardingStep1Props {
 export const OnboardingStep1 = ({ onNext }: OnboardingStep1Props) => {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [showUrlInput, setShowUrlInput] = useState(false);
-  const [imageUrl, setImageUrl] = useState('');
   const [productImages, setProductImages] = useState<File[]>([]);
   const [sourceImage, setSourceImage] = useState<SourceImage | null>(null);
-  const [urlUploading, setUrlUploading] = useState(false);
   const [loadingSampleId, setLoadingSampleId] = useState<string | null>(null);
   
   const { uploadSourceImage, uploading } = useSourceImageUpload();
@@ -49,37 +43,6 @@ export const OnboardingStep1 = ({ onNext }: OnboardingStep1Props) => {
       setSourceImage(null);
     }
   }, [productImages, uploadSourceImage, t, onNext]);
-
-  const handleUrlSubmit = useCallback(async () => {
-    if (!imageUrl || !user) return;
-    
-    setUrlUploading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('upload-source-image-from-url', {
-        body: { imageUrl }
-      });
-
-      if (error) throw error;
-
-      const uploaded = {
-        id: data.sourceImage.id,
-        publicUrl: data.sourceImage.public_url,
-        fileName: data.sourceImage.file_name,
-        fileSize: data.sourceImage.file_size,
-        mimeType: data.sourceImage.mime_type,
-        createdAt: data.sourceImage.created_at
-      };
-      setSourceImage(uploaded);
-      toast.success(t('onboarding.step1.uploadSuccess'));
-      // Auto-advance
-      setTimeout(() => onNext(uploaded.publicUrl, uploaded.id), 500);
-    } catch (error: any) {
-      console.error('URL upload error:', error);
-      toast.error(t('onboarding.step1.urlError'));
-    } finally {
-      setUrlUploading(false);
-    }
-  }, [imageUrl, user, t, onNext]);
 
   const handleSampleSelect = useCallback(async (sample: typeof SAMPLE_PRODUCTS[0]) => {
     if (!user) return;
@@ -133,41 +96,8 @@ export const OnboardingStep1 = ({ onNext }: OnboardingStep1Props) => {
           maxImages={1}
         />
 
-        {/* URL Input Toggle */}
-        {!showUrlInput ? (
-          <button
-            onClick={() => setShowUrlInput(true)}
-            className="flex items-center justify-center gap-2 w-full py-3 text-sm text-muted-foreground hover:text-foreground transition-colors mt-4"
-          >
-            <Link className="w-4 h-4" />
-            {t('onboarding.step1.urlTab')}
-          </button>
-        ) : (
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="mt-4 space-y-2"
-          >
-            <div className="flex gap-2">
-              <Input
-                placeholder={t('onboarding.step1.placeholder')}
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className="flex-1"
-              />
-              <Button 
-                onClick={handleUrlSubmit} 
-                disabled={!imageUrl || urlUploading}
-                size="sm"
-              >
-                {urlUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('onboarding.step1.fetch')}
-              </Button>
-            </div>
-          </motion.div>
-        )}
-
         {/* Sample Products */}
-        <div className="mt-8 pt-6 border-t border-border">
+        <div className="mt-6 pt-4 border-t border-border">
           <p className="text-sm text-muted-foreground text-center mb-4">
             {t('onboarding.samples.title')}
           </p>
