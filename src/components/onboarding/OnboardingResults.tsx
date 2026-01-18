@@ -147,14 +147,27 @@ OUTPUT: Single authentic UGC photo ready for social media.
     <div className="flex flex-col min-h-[calc(100vh-80px)] px-4 py-6">
       {/* Header */}
       <div className="text-center mb-4">
+        <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+          {isGenerating ? (
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            >
+              <Loader2 className="w-7 h-7 text-primary" />
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", bounce: 0.5 }}
+            >
+              <Sparkles className="w-7 h-7 text-primary" />
+            </motion.div>
+          )}
+        </div>
         <h1 className="text-xl font-bold">
           {isGenerating ? t('onboarding.loading.creating') : t('onboarding.results.title')}
         </h1>
-        {isGenerating && (
-          <p className="text-sm text-muted-foreground mt-1">
-            {t(LOADING_MESSAGES[loadingMessageIndex])}
-          </p>
-        )}
       </div>
 
       {/* Image Display */}
@@ -163,14 +176,72 @@ OUTPUT: Single authentic UGC photo ready for social media.
           {isGenerating ? (
             <motion.div
               key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
-              className="w-full max-w-sm aspect-square rounded-2xl bg-muted animate-pulse flex items-center justify-center"
+              className="w-full max-w-sm aspect-square rounded-2xl overflow-hidden relative"
             >
-              <div className="text-center">
-                <Loader2 className="w-8 h-8 text-muted-foreground animate-spin mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">{job?.progress || 0}%</p>
+              {/* Background with gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-muted to-primary/10" />
+              
+              {/* Animated glow sweep */}
+              <div className="absolute inset-0 gen-glow" />
+              
+              {/* Grain texture overlay */}
+              <div className="grain-analysed" />
+              
+              {/* Center content */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                {/* Pulsing rings animation */}
+                <div className="relative w-24 h-24 mb-6">
+                  <motion.div
+                    className="absolute inset-0 rounded-full border-2 border-primary/40"
+                    animate={{ scale: [1, 1.8], opacity: [0.6, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+                  />
+                  <motion.div
+                    className="absolute inset-0 rounded-full border-2 border-primary/40"
+                    animate={{ scale: [1, 1.8], opacity: [0.6, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 0.5 }}
+                  />
+                  <motion.div
+                    className="absolute inset-0 rounded-full border-2 border-primary/40"
+                    animate={{ scale: [1, 1.8], opacity: [0.6, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 1 }}
+                  />
+                  {/* Center icon */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      <Sparkles className="w-10 h-10 text-primary" />
+                    </motion.div>
+                  </div>
+                </div>
+                
+                {/* Progress percentage */}
+                <motion.p 
+                  key={job?.progress}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-3xl font-bold text-foreground mb-2"
+                >
+                  {job?.progress || 0}%
+                </motion.p>
+                
+                {/* Rotating message */}
+                <AnimatePresence mode="wait">
+                  <motion.p
+                    key={loadingMessageIndex}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="text-sm text-muted-foreground text-center px-4"
+                  >
+                    {t(LOADING_MESSAGES[loadingMessageIndex])}
+                  </motion.p>
+                </AnimatePresence>
               </div>
             </motion.div>
           ) : readyImages.length > 0 ? (
