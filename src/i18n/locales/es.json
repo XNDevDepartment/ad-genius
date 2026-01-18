@@ -9,12 +9,50 @@
     "skipConfirm": "Puedes reiniciar el onboarding en cualquier momento desde Configuración.",
     "welcome": {
       "title": "¡Bienvenido a ProduktPix!",
-      "subtitle": "Vamos a configurar tu primer contenido IA en solo 2 minutos",
-      "benefit1": "Sube tu producto y define tu audiencia",
-      "benefit2": "Obtén 2 imágenes generadas por IA GRATIS",
-      "benefit3": "Crea 1 video de producto GRATIS",
-      "getStarted": "Empezar",
+      "subtitle": "Crea fotos de producto en 60 segundos",
+      "benefit1": "Sube cualquier foto de producto",
+      "benefit2": "Obtén imágenes lifestyle con IA",
+      "benefit3": "Gana 20 créditos GRATIS",
+      "getStarted": "Subir Tu Primer Producto",
       "skip": "Saltar por ahora"
+    },
+    "samples": {
+      "title": "¿Sin producto listo?",
+      "subtitle": "Prueba con nuestras muestras de moda",
+      "sneakers": "Zapatillas",
+      "tshirt": "Camiseta",
+      "bag": "Bolso",
+      "sunglasses": "Gafas de Sol"
+    },
+    "scenarios": {
+      "title": "Elige un Escenario",
+      "subtitle": "¿Dónde debe aparecer tu producto?",
+      "streetStyle": { "name": "Street Style", "description": "Vibes urbanas" },
+      "coffeeShop": { "name": "Cafetería", "description": "Momento acogedor" },
+      "fashionStudio": { "name": "Estudio Fashion", "description": "Look editorial" },
+      "beachDay": { "name": "Día de Playa", "description": "Vacaciones de verano" },
+      "nightOut": { "name": "Noche en la Ciudad", "description": "Luces nocturnas" },
+      "fitnessActive": { "name": "Fitness & Activo", "description": "Vibes de entrenamiento" },
+      "custom": "Escribe el tuyo",
+      "customDescription": "Describe tu propio escenario",
+      "customPlaceholder": "Ej: Una joven en una cafetería trendy..."
+    },
+    "results": {
+      "title": "¡Tus Imágenes Están Listas!",
+      "creditsAwarded": "¡Ganaste 20 créditos GRATIS!"
+    },
+    "loading": {
+      "creating": "Creando tus imágenes...",
+      "addingLighting": "Añadiendo iluminación perfecta...",
+      "almostDone": "Casi listo..."
+    },
+    "offer": {
+      "bonusCredits": "Completa ahora → ¡Obtén 20 créditos GRATIS!",
+      "firstMonth": "Primer mes solo €19.99",
+      "saveAmount": "¡Ahorra €10!",
+      "expiresIn": "Oferta expira en {{hours}}h {{minutes}}m",
+      "getOffer": "Obtener Esta Oferta",
+      "startFree": "Empezar Gratis"
     },
     "step1": {
       "title": "Sube Tu Producto",

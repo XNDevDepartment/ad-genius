@@ -9,12 +9,50 @@
     "skipConfirm": "Sie können das Onboarding jederzeit in den Einstellungen neu starten.",
     "welcome": {
       "title": "Willkommen bei ProduktPix!",
-      "subtitle": "Lassen Sie uns Ihre ersten KI-Inhalte in nur 2 Minuten erstellen",
-      "benefit1": "Laden Sie Ihr Produkt hoch und definieren Sie Ihre Zielgruppe",
-      "benefit2": "Erhalten Sie 2 KOSTENLOSE KI-generierte Bilder",
-      "benefit3": "Erstellen Sie 1 KOSTENLOSES Produktvideo",
-      "getStarted": "Los geht's",
+      "subtitle": "Erstellen Sie Produktfotos in 60 Sekunden",
+      "benefit1": "Laden Sie ein beliebiges Produktfoto hoch",
+      "benefit2": "Erhalten Sie KI-generierte Lifestyle-Bilder",
+      "benefit3": "Verdienen Sie 20 KOSTENLOSE Credits",
+      "getStarted": "Laden Sie Ihr Erstes Produkt Hoch",
       "skip": "Vorerst überspringen"
+    },
+    "samples": {
+      "title": "Kein Produkt bereit?",
+      "subtitle": "Probieren Sie unsere Mode-Samples",
+      "sneakers": "Sneakers",
+      "tshirt": "T-Shirt",
+      "bag": "Tasche",
+      "sunglasses": "Sonnenbrille"
+    },
+    "scenarios": {
+      "title": "Wählen Sie ein Szenario",
+      "subtitle": "Wo soll Ihr Produkt erscheinen?",
+      "streetStyle": { "name": "Street Style", "description": "Urbane Vibes" },
+      "coffeeShop": { "name": "Café", "description": "Gemütlicher Moment" },
+      "fashionStudio": { "name": "Fashion Studio", "description": "Editorial Look" },
+      "beachDay": { "name": "Strandtag", "description": "Sommerurlaub" },
+      "nightOut": { "name": "Abend in der Stadt", "description": "Nachtlichter" },
+      "fitnessActive": { "name": "Fitness & Aktiv", "description": "Workout Vibes" },
+      "custom": "Eigenes schreiben",
+      "customDescription": "Beschreiben Sie Ihr eigenes Szenario",
+      "customPlaceholder": "Z.B.: Eine junge Frau in einem trendigen Café..."
+    },
+    "results": {
+      "title": "Ihre Bilder Sind Fertig!",
+      "creditsAwarded": "Sie haben 20 KOSTENLOSE Credits verdient!"
+    },
+    "loading": {
+      "creating": "Ihre Bilder werden erstellt...",
+      "addingLighting": "Perfekte Beleuchtung wird hinzugefügt...",
+      "almostDone": "Fast fertig..."
+    },
+    "offer": {
+      "bonusCredits": "Jetzt abschließen → 20 KOSTENLOSE Credits erhalten!",
+      "firstMonth": "Erster Monat nur €19.99",
+      "saveAmount": "Sparen Sie €10!",
+      "expiresIn": "Angebot läuft ab in {{hours}}h {{minutes}}m",
+      "getOffer": "Dieses Angebot Holen",
+      "startFree": "Kostenlos Starten"
     },
     "step1": {
       "title": "Laden Sie Ihr Produkt Hoch",
@@ -37,7 +75,7 @@
       "title": "Wer ist Ihre Zielgruppe?",
       "subtitle": "Beschreiben Sie Ihre Zielkunden",
       "placeholder": "Z.B.: Junge Berufstätige zwischen 25-35 Jahren, die sich für nachhaltige Mode interessieren",
-      "examples": "Probiere diese Beispiele:",
+      "examples": "Probieren Sie diese Beispiele:",
       "example1": "Gesundheitsbewusste Millennials",
       "example2": "Technik-Enthusiasten und Early Adopters",
       "example3": "Modeinteressierte Gen Z Shopper"
