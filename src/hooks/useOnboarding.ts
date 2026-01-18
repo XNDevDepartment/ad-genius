@@ -6,6 +6,7 @@ export interface AIScenario {
   idea: string;
   description: string;
   'small-description': string;
+  prompt?: string; // Added for custom scenarios from onboarding
 }
 
 export interface OnboardingData {
@@ -50,7 +51,7 @@ export const useOnboarding = () => {
       if (error) {
         console.error('[useOnboarding] Error fetching profile:', error);
         // If no profile exists yet, user needs onboarding
-        setState({ completed: false, step: 1, data: {} });
+        setState({ completed: false, step: 0, data: {} });
       } else {
         setState({
           completed: profile.onboarding_completed ?? false,
@@ -120,7 +121,7 @@ export const useOnboarding = () => {
         .from('profiles')
         .update({
           onboarding_completed: true,
-          onboarding_step: 5,
+          onboarding_step: 4,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
@@ -132,6 +133,27 @@ export const useOnboarding = () => {
       }
     } catch (err) {
       console.error('[useOnboarding] Complete onboarding error:', err);
+    }
+  }, [user]);
+
+  // Award 20 credits for completing onboarding
+  const awardCredits = useCallback(async (): Promise<boolean> => {
+    if (!user) return false;
+
+    try {
+      const { data, error } = await supabase.rpc('award_onboarding_credits', {
+        p_user_id: user.id
+      });
+
+      if (error) {
+        console.error('[useOnboarding] Error awarding credits:', error);
+        return false;
+      }
+
+      return data === true;
+    } catch (err) {
+      console.error('[useOnboarding] Award credits error:', err);
+      return false;
     }
   }, [user]);
 
@@ -197,6 +219,7 @@ export const useOnboarding = () => {
     completeOnboarding,
     restartOnboarding,
     generateBonusImages,
+    awardCredits,
     refetch: fetchOnboardingStatus
   };
 };

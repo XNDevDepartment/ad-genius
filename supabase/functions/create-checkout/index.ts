@@ -39,7 +39,8 @@ serve(async (req) => {
       starter: { monthly: 2900, yearly: 29004 }, // €29/month, €290.04/year (€24.17/month × 12)
       plus: { monthly: 4900, yearly: 48996 },   // €49/month, €489.96/year (€40.83/month × 12)
       pro: { monthly: 9900, yearly: 99000 },     // €99/month, €990/year (€82.50/month × 12)
-      christmas: { monthly: 1999, yearly: 19988 } // €19.99/month, €199.88/year (Christmas 2025 promo)
+      christmas: { monthly: 1999, yearly: 19988 }, // €19.99/month, €199.88/year (Christmas 2025 promo)
+      onboarding_first_month: { monthly: 1999, yearly: null } // €19.99 first month special (Starter tier)
     };
 
     // Validate pricing to prevent future bugs
@@ -58,7 +59,8 @@ serve(async (req) => {
       starter: 'Starter Plan',
       plus: 'Plus Plan', 
       pro: 'Pro Plan',
-      christmas: 'Promoção de Natal 2025'
+      christmas: 'Promoção de Natal 2025',
+      onboarding_first_month: 'First Month Special - Starter'
     };
 
     if (!planPricing[planId as keyof typeof planPricing]) {

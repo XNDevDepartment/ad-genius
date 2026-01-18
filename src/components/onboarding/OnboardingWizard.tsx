@@ -3,35 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { OnboardingWelcome } from './OnboardingWelcome';
 import { OnboardingStep1 } from './OnboardingStep1';
-import { OnboardingStep2 } from './OnboardingStep2';
-import { OnboardingStep3 } from './OnboardingStep3';
-import { OnboardingStep4 } from './OnboardingStep4';
+import { OnboardingScenarioSelect } from './OnboardingScenarioSelect';
+import { OnboardingResults } from './OnboardingResults';
 import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import logoHorizontal from '@/assets/logos/logo_horizontal.png';
 
 export const OnboardingWizard = () => {
   const { t } = useTranslation();
   const { step, data, nextStep, completeOnboarding } = useOnboarding();
 
-  const totalSteps = 4;
-  const progressPercent = step === 0 ? 0 : (step / totalSteps) * 100;
-
-  const handleSkipOnboarding = () => {
-    completeOnboarding();
-  };
+  const totalSteps = 2; // Simplified: Upload -> Scenario -> Results
+  const progressPercent = step === 0 ? 0 : (Math.min(step, totalSteps) / totalSteps) * 100;
 
   const renderStep = () => {
     switch (step) {
@@ -39,7 +21,7 @@ export const OnboardingWizard = () => {
         return (
           <OnboardingWelcome
             onStart={() => nextStep({})}
-            onSkip={handleSkipOnboarding}
+            onSkip={completeOnboarding}
           />
         );
       case 1:
@@ -50,90 +32,55 @@ export const OnboardingWizard = () => {
         );
       case 2:
         return (
-          <OnboardingStep2
-            onNext={(audience) => nextStep({ audience })}
+          <OnboardingScenarioSelect
+            onSelect={(scenario) => nextStep({ 
+              selectedScenario: {
+                idea: scenario.nameKey,
+                description: scenario.prompt,
+                'small-description': scenario.descriptionKey
+              }
+            })}
           />
         );
       case 3:
-        return (
-          <OnboardingStep3
-            imageUrl={data.imageUrl}
-            sourceImageId={data.sourceImageId}
-            audience={data.audience}
-            onNext={(selectedScenario) => nextStep({ selectedScenario })}
-          />
-        );
-      case 4:
-        return <OnboardingStep4 data={data} />;
+        return <OnboardingResults data={data} />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col">
-      {/* Header with logo, progress, and skip */}
-      <div className="px-6 py-4 border-b border-border">
-        <div className="max-w-2xl mx-auto">
-          {/* Logo and Skip row */}
-          <div className="flex items-center justify-between mb-4">
-            <img 
-              src={logoHorizontal} 
-              alt="ProduktPix" 
-              className="h-8 w-auto"
-            />
-            {step > 0 && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="ghost" size="sm" className="text-muted-foreground gap-1">
-                    <X className="w-4 h-4" />
-                    {t('onboarding.skip')}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>{t('onboarding.skipConfirmTitle')}</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {t('onboarding.skipConfirm')}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleSkipOnboarding}>
-                      {t('onboarding.skip')}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-          </div>
-
-          {/* Progress bar - only show after welcome */}
-          {step > 0 && (
-            <>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-muted-foreground">
-                  {t('onboarding.progress', { current: step, total: totalSteps })}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  {Math.round(progressPercent)}%
-                </span>
-              </div>
-              <Progress value={progressPercent} className="h-2" />
-            </>
+    <div className="fixed inset-0 z-50 bg-background flex flex-col safe-area-inset">
+      {/* Compact Mobile Header */}
+      <div className="px-4 py-3 border-b border-border">
+        <div className="flex items-center justify-between mb-2">
+          <img 
+            src={logoHorizontal} 
+            alt="ProduktPix" 
+            className="h-6 w-auto"
+          />
+          {step > 0 && step <= totalSteps && (
+            <span className="text-xs text-muted-foreground">
+              {t('onboarding.progress', { current: step, total: totalSteps })}
+            </span>
           )}
         </div>
+
+        {/* Progress bar - only show during steps */}
+        {step > 0 && step <= totalSteps && (
+          <Progress value={progressPercent} className="h-1" />
+        )}
       </div>
 
-      {/* Step content */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Step content - full height mobile optimized */}
+      <div className="flex-1 overflow-y-auto overscroll-contain">
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.25 }}
             className="h-full"
           >
             {renderStep()}
