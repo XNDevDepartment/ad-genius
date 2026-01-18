@@ -25,6 +25,15 @@ const Account = () => {
   const { user, signOut, subscriptionData } = useAuth();
   const { tier } = useCredits();
 
+  // Redirect to home if no user (prevents null user errors from bots/unauthenticated access)
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <AuthModal isOpen={true} onClose={() => navigate("/")} />
+      </div>
+    );
+  }
+
   const [section, setSection] = useState<string>(""); // state que controla o UI
   const { t } = useTranslation();
 
