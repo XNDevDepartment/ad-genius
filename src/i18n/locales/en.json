@@ -326,7 +326,7 @@
     "loadingAccount": "Loading your account information...",
     "includesVideo": "Includes Video Generation",
     "billedAnnually": "Billed annually (€{amount}/year)",
-    "creditsPerMonth": "Credits per month",
+    "creditsPerMonth": "Credits",
     "loading": "Loading...",
     "plans": {
       "starter": {

@@ -292,7 +292,7 @@
     "loadingAccount": "Lade deine Kontoinformationen...",
     "includesVideo": "Beinhaltet Videogenerierung",
     "billedAnnually": "Jährlich abgerechnet (€{amount}/Jahr)",
-    "creditsPerMonth": "Credits pro Monat",
+    "creditsPerMonth": "Credits",
     "loading": "Lädt...",
     "plans": {
       "starter": {

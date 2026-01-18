@@ -292,7 +292,7 @@
     "loadingAccount": "Chargement des informations de votre compte...",
     "includesVideo": "Inclut la Génération de Vidéo",
     "billedAnnually": "Facturé annuellement (€{amount}/an)",
-    "creditsPerMonth": "Crédits par mois",
+    "creditsPerMonth": "Crédits",
     "loading": "Chargement...",
     "plans": {
       "starter": {
