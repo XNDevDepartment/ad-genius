@@ -9,12 +9,50 @@
     "skipConfirm": "You can restart the onboarding anytime from Settings.",
     "welcome": {
       "title": "Welcome to ProduktPix!",
-      "subtitle": "Let's set up your first AI-powered content in just 2 minutes",
-      "benefit1": "Upload your product and define your audience",
-      "benefit2": "Get 2 FREE AI-generated images",
-      "benefit3": "Create 1 FREE product video",
-      "getStarted": "Get Started",
+      "subtitle": "Create stunning product photos in 60 seconds",
+      "benefit1": "Upload any product photo",
+      "benefit2": "Get AI-generated lifestyle images",
+      "benefit3": "Earn 20 FREE credits",
+      "getStarted": "Upload Your First Product",
       "skip": "Skip for now"
+    },
+    "samples": {
+      "title": "No product ready?",
+      "subtitle": "Try with our fashion samples",
+      "sneakers": "Sneakers",
+      "tshirt": "T-Shirt",
+      "bag": "Bag",
+      "sunglasses": "Sunglasses"
+    },
+    "scenarios": {
+      "title": "Pick a Scenario",
+      "subtitle": "Where should your product appear?",
+      "streetStyle": { "name": "Street Style", "description": "Urban city vibes" },
+      "coffeeShop": { "name": "Coffee Shop", "description": "Cozy café moment" },
+      "fashionStudio": { "name": "Fashion Studio", "description": "Editorial look" },
+      "beachDay": { "name": "Beach Day", "description": "Summer vacation" },
+      "nightOut": { "name": "Night Out", "description": "Evening city lights" },
+      "fitnessActive": { "name": "Fitness & Active", "description": "Workout vibes" },
+      "custom": "Write your own",
+      "customDescription": "Describe your own scenario",
+      "customPlaceholder": "e.g., A young woman at a trendy café..."
+    },
+    "results": {
+      "title": "Your Images Are Ready!",
+      "creditsAwarded": "You earned 20 FREE credits!"
+    },
+    "loading": {
+      "creating": "Creating your images...",
+      "addingLighting": "Adding perfect lighting...",
+      "almostDone": "Almost done..."
+    },
+    "offer": {
+      "bonusCredits": "Complete now → Get 20 FREE credits!",
+      "firstMonth": "First month only €19.99",
+      "saveAmount": "Save €10!",
+      "expiresIn": "Offer expires in {{hours}}h {{minutes}}m",
+      "getOffer": "Get This Offer",
+      "startFree": "Start Creating (Free)"
     },
     "step1": {
       "title": "Upload Your Product",

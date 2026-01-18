@@ -997,6 +997,45 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_rewards: {
+        Row: {
+          awarded_at: string | null
+          created_at: string | null
+          credits_awarded: number | null
+          first_month_offer_shown: boolean | null
+          id: string
+          offer_expires_at: string | null
+          offer_redeemed: boolean | null
+          offer_redeemed_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string | null
+          created_at?: string | null
+          credits_awarded?: number | null
+          first_month_offer_shown?: boolean | null
+          id?: string
+          offer_expires_at?: string | null
+          offer_redeemed?: boolean | null
+          offer_redeemed_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string | null
+          created_at?: string | null
+          credits_awarded?: number | null
+          first_month_offer_shown?: boolean | null
+          id?: string
+          offer_expires_at?: string | null
+          offer_redeemed?: boolean | null
+          offer_redeemed_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       outfit_swap_base_models: {
         Row: {
           age_range: string | null
@@ -1831,10 +1870,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_onboarding_credits: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
       calculate_image_cost: { Args: { p_settings: Json }; Returns: number }
       can_afford_video: {
         Args: { p_duration?: number; p_user_id: string }
         Returns: boolean
+      }
+      check_first_month_offer: {
+        Args: { p_user_id: string }
+        Returns: {
+          expires_at: string
+          is_valid: boolean
+        }[]
       }
       check_rate_limit: {
         Args: { p_api_key_id: string; p_rate_limit_tier: string }
@@ -1943,6 +1993,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: string
+      }
+      redeem_first_month_offer: {
+        Args: { p_user_id: string }
+        Returns: boolean
       }
       refund_user_credits: {
         Args: { p_amount: number; p_reason?: string; p_user_id: string }

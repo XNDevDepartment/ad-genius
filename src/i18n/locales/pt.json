@@ -9,12 +9,50 @@
     "skipConfirm": "Pode reiniciar o onboarding a qualquer momento nas Definições.",
     "welcome": {
       "title": "Bem-vindo ao ProduktPix!",
-      "subtitle": "Vamos configurar o seu primeiro conteúdo IA em apenas 2 minutos",
-      "benefit1": "Carregue o seu produto e defina o seu público",
-      "benefit2": "Obtenha 2 imagens geradas por IA GRÁTIS",
-      "benefit3": "Crie 1 vídeo de produto GRÁTIS",
-      "getStarted": "Começar",
+      "subtitle": "Crie fotos de produto impressionantes em 60 segundos",
+      "benefit1": "Carregue qualquer foto de produto",
+      "benefit2": "Obtenha imagens lifestyle com IA",
+      "benefit3": "Ganhe 20 créditos GRÁTIS",
+      "getStarted": "Carregar Primeiro Produto",
       "skip": "Saltar por agora"
+    },
+    "samples": {
+      "title": "Sem produto pronto?",
+      "subtitle": "Experimente com as nossas amostras de moda",
+      "sneakers": "Ténis",
+      "tshirt": "T-Shirt",
+      "bag": "Mala",
+      "sunglasses": "Óculos de Sol"
+    },
+    "scenarios": {
+      "title": "Escolha um Cenário",
+      "subtitle": "Onde deve aparecer o seu produto?",
+      "streetStyle": { "name": "Street Style", "description": "Vibes urbanas" },
+      "coffeeShop": { "name": "Café", "description": "Momento acolhedor" },
+      "fashionStudio": { "name": "Estúdio Fashion", "description": "Look editorial" },
+      "beachDay": { "name": "Dia de Praia", "description": "Férias de verão" },
+      "nightOut": { "name": "Noite na Cidade", "description": "Luzes noturnas" },
+      "fitnessActive": { "name": "Fitness & Ativo", "description": "Vibes de treino" },
+      "custom": "Escreva o seu",
+      "customDescription": "Descreva o seu próprio cenário",
+      "customPlaceholder": "Ex: Uma jovem num café trendy..."
+    },
+    "results": {
+      "title": "As Suas Imagens Estão Prontas!",
+      "creditsAwarded": "Ganhou 20 créditos GRÁTIS!"
+    },
+    "loading": {
+      "creating": "A criar as suas imagens...",
+      "addingLighting": "A adicionar iluminação perfeita...",
+      "almostDone": "Quase pronto..."
+    },
+    "offer": {
+      "bonusCredits": "Complete agora → Ganhe 20 créditos GRÁTIS!",
+      "firstMonth": "Primeiro mês apenas €19.99",
+      "saveAmount": "Poupe €10!",
+      "expiresIn": "Oferta expira em {{hours}}h {{minutes}}m",
+      "getOffer": "Obter Esta Oferta",
+      "startFree": "Começar Grátis"
     },
     "step1": {
       "title": "Carregue o Seu Produto",
