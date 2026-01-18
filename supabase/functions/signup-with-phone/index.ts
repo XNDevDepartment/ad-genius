@@ -15,11 +15,20 @@ serve(async (req) => {
   try {
     const { email, password, name, phone_number, verification_token } = await req.json();
 
-    // Validate required fields
-    if (!email || !password || !phone_number || !verification_token) {
-      console.error('[signup-with-phone] Missing required fields');
+    // Validate required fields with detailed logging
+    const missingFields: string[] = [];
+    if (!email) missingFields.push('email');
+    if (!password) missingFields.push('password');
+    if (!phone_number) missingFields.push('phone_number');
+    if (!verification_token) missingFields.push('verification_token');
+    
+    if (missingFields.length > 0) {
+      console.error(`[signup-with-phone] Missing required fields: ${missingFields.join(', ')}`);
       return new Response(
-        JSON.stringify({ error: 'Email, password, phone number, and verification token are required' }),
+        JSON.stringify({ 
+          error: 'Email, password, phone number, and verification token are required',
+          missing: missingFields 
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

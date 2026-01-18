@@ -212,8 +212,8 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
       setVerifiedPhone(data.phone_number);
       setVerificationToken(data.verification_token);
       
-      // Now create the account
-      await handleCreateAccount(data.phone_number);
+      // Now create the account - pass token directly since state update is async
+      await handleCreateAccount(data.phone_number, data.verification_token);
     } catch (err: any) {
       console.error('[AuthModal] Verify OTP error:', err);
       toast.error(t('auth.signup.invalidCode', 'Invalid verification code'));
@@ -223,8 +223,19 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
   };
 
   // Create account after phone verification - server-side validated signup
-  const handleCreateAccount = async (phoneNumber: string) => {
+  const handleCreateAccount = async (phoneNumber: string, token?: string) => {
     setSignupStep('creating');
+    
+    // Use passed token or fall back to state (passed token is more reliable)
+    const tokenToUse = token || verificationToken;
+    
+    console.log('[AuthModal] Creating account with:', {
+      hasEmail: !!formData.email,
+      hasPassword: !!formData.password,
+      hasPhone: !!phoneNumber,
+      hasToken: !!tokenToUse,
+    });
+    
     try {
       // Use secure edge function that validates verification token server-side
       const { data, error } = await supabase.functions.invoke('signup-with-phone', {
@@ -233,7 +244,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
           password: formData.password,
           name: formData.name,
           phone_number: phoneNumber,
-          verification_token: verificationToken,
+          verification_token: tokenToUse,
         }
       });
 
