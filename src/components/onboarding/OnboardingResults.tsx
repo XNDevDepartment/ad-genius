@@ -147,13 +147,6 @@ OUTPUT: Single authentic UGC photo ready for social media.
     <div className="flex flex-col min-h-[calc(100vh-80px)] px-4 py-6">
       {/* Header */}
       <div className="text-center mb-4">
-        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
-          {isGenerating ? (
-            <Loader2 className="w-6 h-6 text-primary animate-spin" />
-          ) : (
-            <Sparkles className="w-6 h-6 text-primary" />
-          )}
-        </div>
         <h1 className="text-xl font-bold">
           {isGenerating ? t('onboarding.loading.creating') : t('onboarding.results.title')}
         </h1>
