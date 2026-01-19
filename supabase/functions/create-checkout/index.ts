@@ -93,9 +93,9 @@ serve(async (req) => {
       allow_promotion_codes: true,
       tax_id_collection: { enabled: true },
       billing_address_collection: 'required',
-      custom_fields: [
-        { key: 'nif', label: { type: 'custom', custom: 'NIF (optional)' }, type: 'text', optional: true }
-      ],
+      // custom_fields: [
+      //   { key: 'nif', label: { type: 'custom', custom: 'NIF (optional)' }, type: 'text', optional: true }
+      // ],
       line_items: [
         {
           price_data: {
