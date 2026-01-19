@@ -156,7 +156,7 @@ export const AIModelGenerationForm = ({
                 <SelectItem value="moroccan">Moroccan</SelectItem>
                 <SelectItem value="ghanaian">Ghanaian</SelectItem>
                 <SelectItem value="senegalese">Senegalese</SelectItem>
-                
+
                 <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t('aiModelForm.nationalities.asia')}</div>
                 <SelectItem value="chinese">Chinese</SelectItem>
                 <SelectItem value="japanese">Japanese</SelectItem>
