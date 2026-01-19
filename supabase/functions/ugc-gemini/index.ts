@@ -14,33 +14,33 @@ const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_API_KEY") ?? "";
 // ---------- LOG ----------
-const log = (step, meta)=>console.log(`[UGC-GEMINI] ${step}${meta ? ` - ${JSON.stringify(meta)}` : ""}`);
+const log = (step: string, meta?: Record<string, unknown>): void => console.log(`[UGC-GEMINI] ${step}${meta ? ` - ${JSON.stringify(meta)}` : ""}`);
 // ---------- HELPERS ----------
-const json = (data, status = 200)=>new Response(JSON.stringify(data), {
+const json = (data: unknown, status = 200): Response => new Response(JSON.stringify(data), {
     status,
     headers: {
       ...corsHeaders,
       "Content-Type": "application/json"
     }
   });
-const errorJson = (message, status = 400, meta)=>{
+const errorJson = (message: string, status = 400, meta?: Record<string, unknown>): Response => {
   log(`ERROR: ${message}`, meta);
   return json({
     error: message
   }, status);
 };
-function sleep(ms) {
+function sleep(ms: number): Promise<void> {
   return new Promise((r)=>setTimeout(r, ms));
 }
-function backoffMs(attempt) {
+function backoffMs(attempt: number): number {
   return 900 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 250);
 }
 // Fixed credit cost: 1 credit per image
-function calculateImageCost(settings) {
+function calculateImageCost(_settings: Record<string, unknown>): number {
   return 1;
 }
 // Crop base64 image to exact aspect ratio
-async function cropBase64ToAspect(base64Data, aspectRatio) {
+async function cropBase64ToAspect(base64Data: string, aspectRatio: string): Promise<Uint8Array> {
   // Parse aspect ratio (e.g., "16:9" -> { w: 16, h: 9 })
   const parts = aspectRatio.split(':');
   if (parts.length !== 2) {
@@ -79,7 +79,7 @@ async function cropBase64ToAspect(base64Data, aspectRatio) {
       targetRatio: targetRatio.toFixed(3),
       aspectRatio
     });
-    let cropW, cropH, cropX, cropY;
+    let cropW: number, cropH: number, cropX: number, cropY: number;
     if (Math.abs(srcRatio - targetRatio) < 0.01) {
       // Already close enough to target ratio, no crop needed
       log("Image already at target aspect ratio", {
@@ -116,9 +116,10 @@ async function cropBase64ToAspect(base64Data, aspectRatio) {
       aspectRatio
     });
     return croppedBuffer;
-  } catch (error) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     log("Error cropping image, returning original", {
-      error: error?.message ?? String(error),
+      error: errorMessage,
       aspectRatio
     });
     // Return original data if cropping fails
@@ -134,7 +135,7 @@ function serviceClient() {
     }
   });
 }
-function userClient(authorization) {
+function userClient(authorization: string) {
   return createClient(SUPABASE_URL, ANON_KEY, {
     global: {
       headers: {
@@ -147,17 +148,17 @@ function userClient(authorization) {
   });
 }
 // ---------- EXTRACT DATA FROM IMAGE ---------- //
-function extractBase64Image(jsonResp) {
-  if (jsonResp?.predictions?.length) {
-    const p0 = jsonResp.predictions[0];
+function extractBase64Image(jsonResp: Record<string, unknown> | null): string | null {
+  if ((jsonResp as any)?.predictions?.length) {
+    const p0 = (jsonResp as any).predictions[0];
     if (p0?.image?.imageBytes) return p0.image.imageBytes;
     if (p0?.bytesBase64Encoded) return p0.bytesBase64Encoded;
   }
-  const parts = jsonResp?.candidates?.[0]?.content?.parts ?? [];
-  const imgPart = parts.find((p)=>p?.inlineData?.mimeType?.startsWith('image/'));
+  const parts = (jsonResp as any)?.candidates?.[0]?.content?.parts ?? [];
+  const imgPart = parts.find((p: any)=>p?.inlineData?.mimeType?.startsWith('image/'));
   return imgPart?.inlineData?.data ?? null;
 }
-async function getUserIdFromAuth(authHeader) {
+async function getUserIdFromAuth(authHeader: string): Promise<string> {
   const supa = userClient(authHeader);
   const { data, error } = await supa.auth.getUser();
   if (error || !data.user) throw new Error("Invalid authentication token");
@@ -173,17 +174,17 @@ serve(async (req)=>{
     const authHeader = req.headers.get("Authorization") ?? "";
     const isServiceCall = authHeader === `Bearer ${SERVICE_KEY}`;
     // parse body once (may be empty)
-    let body = {};
+    let body: Record<string, unknown> = {};
     try {
-      body = await req.json();
+      body = await req.json() as Record<string, unknown>;
     } catch  {
       body = {};
     }
-    const action = body?.action ?? new URL(req.url).searchParams.get("action");
+    const action = (body?.action as string) ?? new URL(req.url).searchParams.get("action");
     // clients
     const svc = serviceClient();
     const isInternalAction = action === "generateImages" || action === "recoverQueued";
-    let userId = null;
+    let userId: string | null = null;
     if (isInternalAction && isServiceCall) {
     // ok, internal worker call
     } else {
@@ -196,19 +197,19 @@ serve(async (req)=>{
         return await createImageJob(userId, body, svc);
       case "generateImages":
         if (!(isInternalAction && isServiceCall)) return errorJson("Forbidden", 403);
-        return await generateImages(body.jobId, svc);
+        return await generateImages(body.jobId as string, svc);
       case "getJob":
         if (!userId) return errorJson("Auth required", 401);
-        return await getJob(userId, body.jobId, userClient(authHeader));
+        return await getJob(userId, body.jobId as string, userClient(authHeader));
       case "getJobImages":
         if (!userId) return errorJson("Auth required", 401);
-        return await getJobImages(userId, body.jobId, userClient(authHeader));
+        return await getJobImages(userId, body.jobId as string, userClient(authHeader));
       case "cancelJob":
         if (!userId) return errorJson("Auth required", 401);
-        return await cancelJob(userId, body.jobId, svc);
+        return await cancelJob(userId, body.jobId as string, svc);
       case "resumeJob":
         if (!userId) return errorJson("Auth required", 401);
-        return await resumeJob(userId, body.jobId, svc);
+        return await resumeJob(userId, body.jobId as string, svc);
       case "getActiveJob":
         if (!userId) return errorJson("Auth required", 401);
         return await getActiveJob(userId, svc);
@@ -218,19 +219,28 @@ serve(async (req)=>{
       default:
         return errorJson(`Unknown action: ${action ?? "none"}`, 400);
     }
-  } catch (e) {
-    return errorJson(e?.message ?? String(e), 500);
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e);
+    return errorJson(message, 500);
   }
 });
 // ---------- ACTIONS ----------
 // Enqueue job, reserve credits, idempotent
-async function createImageJob(userId, payload, supabase) {
-  const { prompt, settings, source_image_id, source_image_ids, desiredAudience, prodSpecs } = payload;
-  const idempotency_window_minutes = payload.idempotency_window_minutes ?? 60;
+async function createImageJob(userId: string, payload: Record<string, unknown>, supabase: ReturnType<typeof createClient>): Promise<Response> {
+  const { prompt, settings, source_image_id, source_image_ids, desiredAudience, prodSpecs } = payload as {
+    prompt?: string;
+    settings?: Record<string, unknown>;
+    source_image_id?: string;
+    source_image_ids?: string[];
+    desiredAudience?: string;
+    prodSpecs?: string;
+    idempotency_window_minutes?: number;
+  };
+  const idempotency_window_minutes = (payload.idempotency_window_minutes as number) ?? 60;
   log("Create job", {
     userId,
-    quality: settings?.quality,
-    number: settings?.number,
+    quality: (settings as Record<string, unknown>)?.quality,
+    number: (settings as Record<string, unknown>)?.number,
     source_images: source_image_ids?.length || (source_image_id ? 1 : 0),
     desiredAudience: desiredAudience || 'not specified',
     prodSpecs: prodSpecs || 'not specified'
