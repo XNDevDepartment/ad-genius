@@ -42,7 +42,7 @@
       "creditsAwarded": "Vous avez gagné 20 crédits GRATUITS !"
     },
     "loading": {
-  "initializingWorkspace": "Mise en place de votre espace de travail.",
+  "creating": "Mise en place de votre espace de travail.",
   "analyzingProduct": "Analyse de votre produit.",
   "preparingScene": "Préparation de la scène.",
   "calibratingLighting": "Ajustement de l’éclairage pour un rendu premium.",

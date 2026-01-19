@@ -42,7 +42,7 @@
       "creditsAwarded": "You earned 20 FREE credits!"
     },
     "loading": {
-      "initializingWorkspace": "Setting up your workspace.",
+      "creating": "Setting up your workspace.",
       "analyzingProduct": "Analyzing your product.",
       "preparingScene": "Preparing the scene.",
       "calibratingLighting": "Adjusting lighting for a high-end look.",

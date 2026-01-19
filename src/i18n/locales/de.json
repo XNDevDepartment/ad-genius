@@ -42,7 +42,7 @@
       "creditsAwarded": "Sie haben 20 KOSTENLOSE Credits verdient!"
     },
     "loading": {
-  "initializingWorkspace": "Dein Workspace wird eingerichtet.",
+  "creating": "Dein Workspace wird eingerichtet.",
   "analyzingProduct": "Dein Produkt wird analysiert.",
   "preparingScene": "Die Szene wird vorbereitet.",
   "calibratingLighting": "Beleuchtung wird für einen Premium-Look angepasst.",

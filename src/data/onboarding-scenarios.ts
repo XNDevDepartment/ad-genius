@@ -1,6 +1,6 @@
 import sneakersImg from '@/assets/onboarding_samples/sneakers.png';
 import tshirtImg from '@/assets/onboarding_samples/tshirt.png';
-import bagImg from '@/assets/onboarding_samples/bag.png';
+import bagImg from '@/assets/onboarding_samples/handbag.png';
 import watchImg from '@/assets/onboarding_samples/watch.png';
 
 
