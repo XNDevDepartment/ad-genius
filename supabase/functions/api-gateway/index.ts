@@ -158,17 +158,17 @@ Deno.serve(async (req) => {
     try {
       switch (endpoint) {
         case '/v1/ugc/generate':
-          response = await handleUgcGenerate(supabase, apiKeyInfo.user_id, body)
+          response = await handleUgcGenerate(supabase, apiKeyInfo.user_id, body, apiKeyInfo.api_key_id)
           creditsUsed = body.settings?.number || 1
           break
 
         case '/v1/video/create':
-          response = await handleVideoCreate(supabase, apiKeyInfo.user_id, body)
+          response = await handleVideoCreate(supabase, apiKeyInfo.user_id, body, apiKeyInfo.api_key_id)
           creditsUsed = (body.duration === 5) ? 5 : 10
           break
 
         case '/v1/fashion/swap':
-          response = await handleFashionSwap(supabase, apiKeyInfo.user_id, body)
+          response = await handleFashionSwap(supabase, apiKeyInfo.user_id, body, apiKeyInfo.api_key_id)
           creditsUsed = 1
           break
 
@@ -238,7 +238,7 @@ Deno.serve(async (req) => {
 
 // Handler functions
 
-async function handleUgcGenerate(supabase: any, userId: string, body: any) {
+async function handleUgcGenerate(supabase: any, userId: string, body: any, apiKeyId?: string) {
   const { source_image_url, prompt, settings = {} } = body
 
   if (!source_image_url) {
@@ -273,7 +273,7 @@ async function handleUgcGenerate(supabase: any, userId: string, body: any) {
         ...settings,
         source_url: source_image_url,
         source: 'api',
-        api_key_id: apiKeyInfo.api_key_id
+        api_key_id: apiKeyId
       },
       content_hash: contentHash,
       status: 'queued',
@@ -319,7 +319,7 @@ async function handleUgcGenerate(supabase: any, userId: string, body: any) {
   }
 }
 
-async function handleVideoCreate(supabase: any, userId: string, body: any) {
+async function handleVideoCreate(supabase: any, userId: string, body: any, apiKeyId?: string) {
   const { source_image_url, prompt, duration = 5 } = body
 
   if (!source_image_url) {
@@ -352,7 +352,7 @@ async function handleVideoCreate(supabase: any, userId: string, body: any) {
       image_url: source_image_url,
       duration: duration,
       status: 'queued',
-      metadata: { source: 'api', api_key_id: apiKeyInfo.api_key_id }
+      metadata: { source: 'api', api_key_id: apiKeyId }
     })
     .select()
     .single()
@@ -391,7 +391,7 @@ async function handleVideoCreate(supabase: any, userId: string, body: any) {
   }
 }
 
-async function handleFashionSwap(supabase: any, userId: string, body: any) {
+async function handleFashionSwap(supabase: any, userId: string, body: any, apiKeyId?: string) {
   const { garment_image_url, base_model_id, settings = {} } = body
 
   if (!garment_image_url) {
@@ -426,7 +426,7 @@ async function handleFashionSwap(supabase: any, userId: string, body: any) {
       status: 'queued',
       metadata: { 
         source: 'api',
-        api_key_id: apiKeyInfo.api_key_id,
+        api_key_id: apiKeyId,
         garment_url: garment_image_url 
       },
       settings: settings

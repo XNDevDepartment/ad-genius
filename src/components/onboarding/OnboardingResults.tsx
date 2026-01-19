@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Sparkles, Gift, ChevronLeft, ChevronRight, Crown } from 'lucide-react';
+import { Loader2, Sparkles, Gift, ChevronLeft, ChevronRight, Crown, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useOnboarding, OnboardingData } from '@/hooks/useOnboarding';
@@ -10,6 +10,7 @@ import { useGeminiImageJobUnified } from '@/hooks/useGeminiImageJobUnified';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import '@/costumn.css';
 
 interface OnboardingResultsProps {
   data: OnboardingData;
@@ -20,6 +21,26 @@ const LOADING_MESSAGES = [
   'onboarding.loading.addingLighting',
   'onboarding.loading.almostDone'
 ];
+
+// Placeholder cell component matching UGC Gemini panel
+const PlaceholderCell = () => (
+  <div className="absolute inset-0">
+    <div className="absolute inset-0 bg-gradient-to-br from-muted/30 to-muted/60 animate-pulse" />
+    <div
+      className="absolute inset-0 opacity-30"
+      style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E")`,
+        backgroundSize: '100px 100px',
+      }}
+    />
+    <div className="absolute inset-0 gen-glow flex items-center justify-center">
+      <div className="text-center relative z-10">
+        <Image className="h-8 w-8 text-white/90 mx-auto mb-2 animate-pulse" />
+        <p className="text-xs text-white/90 font-medium">Generating...</p>
+      </div>
+    </div>
+  </div>
+);
 
 export const OnboardingResults = ({ data }: OnboardingResultsProps) => {
   const { t } = useTranslation();
@@ -176,51 +197,13 @@ OUTPUT: Single authentic UGC photo ready for social media.
           {isGenerating ? (
             <motion.div
               key="loading"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="w-full max-w-sm aspect-square rounded-2xl overflow-hidden relative"
+              className="flex flex-col items-center justify-center py-6 w-full max-w-md mx-auto"
             >
-              {/* Background with gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-muted to-primary/10" />
-              
-              {/* Animated glow sweep */}
-              <div className="absolute inset-0 gen-glow" />
-              
-              {/* Grain texture overlay */}
-              <div className="grain-analysed" />
-              
-              {/* Center content */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-                {/* Pulsing rings animation */}
-                <div className="relative w-24 h-24 mb-6">
-                  <motion.div
-                    className="absolute inset-0 rounded-full border-2 border-primary/40"
-                    animate={{ scale: [1, 1.8], opacity: [0.6, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
-                  />
-                  <motion.div
-                    className="absolute inset-0 rounded-full border-2 border-primary/40"
-                    animate={{ scale: [1, 1.8], opacity: [0.6, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 0.5 }}
-                  />
-                  <motion.div
-                    className="absolute inset-0 rounded-full border-2 border-primary/40"
-                    animate={{ scale: [1, 1.8], opacity: [0.6, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 1 }}
-                  />
-                  {/* Center icon */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <motion.div
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      <Sparkles className="w-10 h-10 text-primary" />
-                    </motion.div>
-                  </div>
-                </div>
-                
-                {/* Progress percentage */}
+              {/* Progress header */}
+              <div className="text-center mb-6">
                 <motion.p 
                   key={job?.progress}
                   initial={{ opacity: 0, y: 5 }}
@@ -230,18 +213,47 @@ OUTPUT: Single authentic UGC photo ready for social media.
                   {job?.progress || 0}%
                 </motion.p>
                 
-                {/* Rotating message */}
                 <AnimatePresence mode="wait">
                   <motion.p
                     key={loadingMessageIndex}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="text-sm text-muted-foreground text-center px-4"
+                    transition={{ duration: 0.3 }}
+                    className="text-sm text-muted-foreground"
                   >
                     {t(LOADING_MESSAGES[loadingMessageIndex])}
                   </motion.p>
                 </AnimatePresence>
+              </div>
+              
+              {/* Image grid with placeholders - matches UGC panel */}
+              <div className="grid grid-cols-2 gap-3 w-full">
+                {[0, 1].map((index) => {
+                  const image = readyImages[index];
+                  return (
+                    <motion.div 
+                      key={index} 
+                      className="relative aspect-square rounded-xl overflow-hidden bg-muted/20"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      {image ? (
+                        <motion.img
+                          src={image.public_url}
+                          alt="Generated"
+                          className="w-full h-full object-cover"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      ) : (
+                        <PlaceholderCell />
+                      )}
+                    </motion.div>
+                  );
+                })}
               </div>
             </motion.div>
           ) : readyImages.length > 0 ? (
