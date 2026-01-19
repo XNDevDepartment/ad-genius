@@ -42,10 +42,15 @@
       "creditsAwarded": "¡Ganaste 20 créditos GRATIS!"
     },
     "loading": {
-      "creating": "Creando tus imágenes...",
-      "addingLighting": "Añadiendo iluminación perfecta...",
-      "almostDone": "Casi listo..."
-    },
+  "initializingWorkspace": "Preparando tu espacio de trabajo.",
+  "analyzingProduct": "Analizando tu producto.",
+  "preparingScene": "Preparando la escena.",
+  "calibratingLighting": "Ajustando la iluminación para un look premium.",
+  "generatingVisuals": "Generando visuales.",
+  "optimizingDetails": "Afinando detalles para mejorar el realismo.",
+  "finalizingOutput": "Finalizando recursos para uso inmediato.",
+  "almostDone": "Casi listo."
+},
     "offer": {
       "bonusCredits": "Completa ahora → ¡Obtén 20 créditos GRATIS!",
       "firstMonth": "Primer mes solo €19.99",

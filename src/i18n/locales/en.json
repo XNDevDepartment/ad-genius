@@ -42,9 +42,14 @@
       "creditsAwarded": "You earned 20 FREE credits!"
     },
     "loading": {
-      "creating": "Creating your images...",
-      "addingLighting": "Adding perfect lighting...",
-      "almostDone": "Almost done..."
+      "initializingWorkspace": "Setting up your workspace.",
+      "analyzingProduct": "Analyzing your product.",
+      "preparingScene": "Preparing the scene.",
+      "calibratingLighting": "Adjusting lighting for a high-end look.",
+      "generatingVisuals": "Generating visuals.",
+      "optimizingDetails": "Refining details to improve realism.",
+      "finalizingOutput": "Finalizing assets for immediate use.",
+      "almostDone": "Almost done."
     },
     "offer": {
       "bonusCredits": "Complete now → Get 20 FREE credits!",
