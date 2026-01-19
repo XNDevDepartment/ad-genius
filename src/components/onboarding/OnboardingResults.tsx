@@ -52,11 +52,13 @@ export const OnboardingResults = ({ data }: OnboardingResultsProps) => {
   const [creditsAwarded, setCreditsAwarded] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [offerExpiry, setOfferExpiry] = useState<Date | null>(null);
+  const [isStartingGeneration, setIsStartingGeneration] = useState(true); // Start true to show loading immediately
   const startedRef = useRef(false);
 
   const { job, images: jobImages, createJob } = useGeminiImageJobUnified('gemini');
-  const isGenerating = job?.status === 'queued' || job?.status === 'processing';
-  const isComplete = job?.status === 'completed';
+  // Include isStartingGeneration to handle the time before job is created
+  const isGenerating = isStartingGeneration || job?.status === 'queued' || job?.status === 'processing';
+  const isComplete = job?.status === 'completed' && !isStartingGeneration;
   const readyImages = jobImages.filter(img => img.public_url);
 
   // Rotate loading messages
@@ -98,6 +100,8 @@ OUTPUT: Single authentic UGC photo ready for social media.
         aspectRatio: '1:1',
       },
       source_image_ids: [data.sourceImageId],
+    }).finally(() => {
+      setIsStartingGeneration(false);
     });
 
     // Set offer expiry (48 hours from now)
@@ -304,7 +308,12 @@ OUTPUT: Single authentic UGC photo ready for social media.
                 </div>
               )}
             </motion.div>
-          ) : null}
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
+              <p className="text-sm text-muted-foreground">Loading your images...</p>
+            </div>
+          )}
         </AnimatePresence>
       </div>
 
