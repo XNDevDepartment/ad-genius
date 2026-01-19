@@ -304,7 +304,7 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
       </Card>
 
       {/* Restart Onboarding */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>{t("account.settings.onboarding")}</CardTitle>
           <CardDescription>{t("account.settings.onboardingDesc")}</CardDescription>
@@ -333,7 +333,7 @@ export const SettingsPanel = ({ layout, setLayout, onClose }: SettingsPanelProps
             </AlertDialogContent>
           </AlertDialog>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 };
