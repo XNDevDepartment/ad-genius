@@ -19,7 +19,6 @@ interface OnboardingResultsProps {
 const LOADING_MESSAGES = [
   'onboarding.loading.creating',
   'onboarding.loading.analyzingProduct',
-  'onboarding.loading.addingLighting',
   'onboarding.loading.preparingScene',
   'onboarding.loading.calibratingLighting',
   'onboarding.loading.generatingVisuals',
@@ -197,7 +196,7 @@ export const OnboardingResults = ({ data }: OnboardingResultsProps) => {
           )}
         </div>
         <h1 className="text-xl font-bold">
-          {isGenerating ? t('onboarding.loading.creating') : t('onboarding.results.title')}
+          {isGenerating ? t('onboarding.loading.almostDone') : t('onboarding.results.title')}
         </h1>
       </div>
 

@@ -46,7 +46,7 @@ export const OnboardingStep1 = ({ onNext }: OnboardingStep1Props) => {
 
   const handleSampleSelect = useCallback(async (sample: typeof SAMPLE_PRODUCTS[0]) => {
     if (!user) return;
-    
+
     setLoadingSampleId(sample.id);
     try {
       const { data, error } = await supabase.functions.invoke('upload-source-image-from-url', {
