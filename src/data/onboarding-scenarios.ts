@@ -1,7 +1,7 @@
 import sneakersImg from '@/assets/onboarding_samples/sneakers.png';
 import tshirtImg from '@/assets/onboarding_samples/tshirt.png';
 import bagImg from '@/assets/onboarding_samples/bag.png';
-import sunglassesImg from '@/assets/onboarding_samples/sunglasses.png';
+import watchImg from '@/assets/onboarding_samples/watch.png';
 
 
 export interface OnboardingScenario {
@@ -76,8 +76,8 @@ export const SAMPLE_PRODUCTS = [
   },
   {
     id: 'accessories',
-    labelKey: 'onboarding.samples.sunglasses',
-    url: sunglassesImg
+    labelKey: 'onboarding.samples.watch',
+    url: watchImg
   }
 ];
 
