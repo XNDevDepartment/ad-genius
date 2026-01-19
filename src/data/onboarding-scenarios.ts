@@ -1,3 +1,9 @@
+import sneakersImg from '@/assets/onboarding_samples/sneakers.png';
+import tshirtImg from '@/assets/onboarding_samples/tshirt.png';
+import bagImg from '@/assets/onboarding_samples/bag.png';
+import sunglassesImg from '@/assets/onboarding_samples/sunglasses.png';
+
+
 export interface OnboardingScenario {
   id: string;
   icon: string;
@@ -56,22 +62,22 @@ export const SAMPLE_PRODUCTS = [
   {
     id: 'sneakers',
     labelKey: 'onboarding.samples.sneakers',
-    // Using a publicly available fashion product image placeholder
-    url: 'https://dhqdamfisdbbcieqlpvt.supabase.co/storage/v1/object/sign/ugc-inputs/4e962775-cb55-4301-bc33-081eacb96c46/1766073238358-h2af3g.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lZWNiNWY4Mi01ZDQyLTQ5YjEtYWFkOC1lZjNiZGQ0MWMwYWYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1Z2MtaW5wdXRzLzRlOTYyNzc1LWNiNTUtNDMwMS1iYzMzLTA4MWVhY2I5NmM0Ni8xNzY2MDczMjM4MzU4LWgyYWYzZy5qcGVnIiwiaWF0IjoxNzY4NzY2MzMwLCJleHAiOjE3Njg3Njk5MzB9.pU4He-Vi9GnNTE0dVU72QwuJRgFPv-eeA7_9krkCqZE'
+    url: sneakersImg
   },
   {
     id: 'tshirt',
     labelKey: 'onboarding.samples.tshirt',
-    url: 'https://dhqdamfisdbbcieqlpvt.supabase.co/storage/v1/object/sign/ugc-inputs/4e962775-cb55-4301-bc33-081eacb96c46/1761851266246-jo4opc.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lZWNiNWY4Mi01ZDQyLTQ5YjEtYWFkOC1lZjNiZGQ0MWMwYWYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1Z2MtaW5wdXRzLzRlOTYyNzc1LWNiNTUtNDMwMS1iYzMzLTA4MWVhY2I5NmM0Ni8xNzYxODUxMjY2MjQ2LWpvNG9wYy5qcGVnIiwiaWF0IjoxNzY4NzY2MzYzLCJleHAiOjE3Njg3Njk5NjN9.4FApDugCoRA90SaOiQhBQG2jQY10f0YS9Gf1d7XtAXQ'
+    url: tshirtImg
   },
   {
     id: 'bag',
     labelKey: 'onboarding.samples.bag',
-    url: 'https://dhqdamfisdbbcieqlpvt.supabase.co/storage/v1/object/sign/ugc-inputs/4e962775-cb55-4301-bc33-081eacb96c46/imported-1761733757119-1setv3vwlzr.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lZWNiNWY4Mi01ZDQyLTQ5YjEtYWFkOC1lZjNiZGQ0MWMwYWYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1Z2MtaW5wdXRzLzRlOTYyNzc1LWNiNTUtNDMwMS1iYzMzLTA4MWVhY2I5NmM0Ni9pbXBvcnRlZC0xNzYxNzMzNzU3MTE5LTFzZXR2M3Z3bHpyLmpwZyIsImlhdCI6MTc2ODc2NjQwNSwiZXhwIjoxNzY4NzcwMDA1fQ.8bcgq-LpqPhNbZR-W-sdDd177O1US-POTgB9lSy-ZF8'
+    url: bagImg
   },
   {
     id: 'accessories',
     labelKey: 'onboarding.samples.sunglasses',
-    url: 'https://dhqdamfisdbbcieqlpvt.supabase.co/storage/v1/object/sign/ugc-inputs/4e962775-cb55-4301-bc33-081eacb96c46/1768766225338-6f82nd.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9lZWNiNWY4Mi01ZDQyLTQ5YjEtYWFkOC1lZjNiZGQ0MWMwYWYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1Z2MtaW5wdXRzLzRlOTYyNzc1LWNiNTUtNDMwMS1iYzMzLTA4MWVhY2I5NmM0Ni8xNzY4NzY2MjI1MzM4LTZmODJuZC53ZWJwIiwiaWF0IjoxNzY4NzY2MjU5LCJleHAiOjE3Njg3Njk4NTl9.8qekfOtXETIhZalBZU0NjlbzhxLf4_VJpHNxdEnwVAo'
+    url: sunglassesImg
   }
 ];
+

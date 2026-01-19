@@ -18,7 +18,13 @@ interface OnboardingResultsProps {
 
 const LOADING_MESSAGES = [
   'onboarding.loading.creating',
+  'onboarding.loading.analyzingProduct',
   'onboarding.loading.addingLighting',
+  'onboarding.loading.preparingScene',
+  'onboarding.loading.calibratingLighting',
+  'onboarding.loading.generatingVisuals',
+  'onboarding.loading.optimizingDetails',
+  'onboarding.loading.finalizingOutput',
   'onboarding.loading.almostDone'
 ];
 
@@ -77,19 +83,19 @@ export const OnboardingResults = ({ data }: OnboardingResultsProps) => {
 
     // Get prompt from either custom prompt field or description
     const scenarioPrompt = data.selectedScenario.prompt || data.selectedScenario.description;
-    
+
     const prompt = `
-TASK: Create authentic UGC photo featuring this product.
+        TASK: Create authentic UGC photo featuring this product.
 
-SCENARIO: ${scenarioPrompt}
+        SCENARIO: ${scenarioPrompt}
 
-MANDATORY RULES:
-1. PRODUCT INTEGRITY: Use EXACT product from reference image. Keep all labels, colors, shapes, branding unchanged.
-2. AUTHENTICITY: iPhone-quality photography, natural lighting, real environments.
-3. QUALITY: No AI artifacts, watermarks, text. Natural human anatomy if people appear.
+        MANDATORY RULES:
+        1. PRODUCT INTEGRITY: Use EXACT product from reference image. Keep all labels, colors, shapes, branding unchanged.
+        2. AUTHENTICITY: iPhone-quality photography, natural lighting, real environments.
+        3. QUALITY: No AI artifacts, watermarks, text. Natural human anatomy if people appear.
 
-OUTPUT: Single authentic UGC photo ready for social media.
-`.trim();
+        OUTPUT: Single authentic UGC photo ready for social media.
+        `.trim();
 
     createJob({
       prompt,
@@ -208,15 +214,7 @@ OUTPUT: Single authentic UGC photo ready for social media.
             >
               {/* Progress header */}
               <div className="text-center mb-6">
-                <motion.p 
-                  key={job?.progress}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-3xl font-bold text-foreground mb-2"
-                >
-                  {job?.progress || 0}%
-                </motion.p>
-                
+
                 <AnimatePresence mode="wait">
                   <motion.p
                     key={loadingMessageIndex}
