@@ -24,11 +24,8 @@ export interface OnboardingState {
   data: OnboardingData;
 }
 
-// Admin emails that bypass onboarding
-const ADMIN_BYPASS_EMAILS = [
-  'administration@behedone.com',
-  'admin@produktpix.com'
-];
+// Admin emails that bypass onboarding (empty for testing)
+const ADMIN_BYPASS_EMAILS: string[] = [];
 
 // LocalStorage key for onboarding state backup
 const getStorageKey = (userId: string) => `onboarding_state_${userId}`;
@@ -113,21 +110,15 @@ export const useOnboarding = () => {
       return;
     }
 
-    // Check for admin bypass
+    // ALWAYS ensure profile exists first before any checks
+    await ensureProfileExists(user.id, user.email || '');
+
+    // Check for admin bypass AFTER profile is ensured
     if (user.email && ADMIN_BYPASS_EMAILS.includes(user.email)) {
       console.log('[useOnboarding] Admin bypass - skipping onboarding');
       const bypassState = { completed: true, step: 4, data: {} };
       setState(bypassState);
       saveToLocalStorage(user.id, bypassState);
-      setLoading(false);
-      return;
-    }
-
-    // Check localStorage first for quick restore
-    const cached = loadFromLocalStorage(user.id);
-    if (cached?.completed) {
-      console.log('[useOnboarding] Restored completed state from localStorage');
-      setState(cached);
       setLoading(false);
       return;
     }
@@ -245,7 +236,7 @@ export const useOnboarding = () => {
   const completeOnboarding = useCallback(async () => {
     if (!user) return;
 
-    // Optimistically update state immediately
+    // Optimistically update state immediately - NEVER revert to avoid blank screen
     const completedState = { ...state, completed: true, step: 4 };
     setState(completedState);
     saveToLocalStorage(user.id, completedState);
@@ -265,15 +256,13 @@ export const useOnboarding = () => {
 
       if (error) {
         console.error('[useOnboarding] Error completing onboarding:', error);
-        // Revert state if save failed
-        setState(state);
+        // DO NOT revert state - let user proceed regardless
       }
     } catch (err) {
       console.error('[useOnboarding] Complete onboarding error:', err);
-      // Revert state if save failed
-      setState(state);
+      // DO NOT revert state - let user proceed regardless
     }
-  }, [user, state, saveToLocalStorage]);
+  }, [user, state, saveToLocalStorage, ensureProfileExists]);
 
   // Award 20 credits for completing onboarding
   const awardCredits = useCallback(async (): Promise<boolean> => {
