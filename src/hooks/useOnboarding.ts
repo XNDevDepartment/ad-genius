@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -24,6 +24,15 @@ export interface OnboardingState {
   data: OnboardingData;
 }
 
+// Admin emails that bypass onboarding
+const ADMIN_BYPASS_EMAILS = [
+  'administration@behedone.com',
+  'admin@produktpix.com'
+];
+
+// LocalStorage key for onboarding state backup
+const getStorageKey = (userId: string) => `onboarding_state_${userId}`;
+
 export const useOnboarding = () => {
   const { user } = useAuth();
   const [state, setState] = useState<OnboardingState>({
@@ -33,10 +42,92 @@ export const useOnboarding = () => {
   });
   const [loading, setLoading] = useState(true);
   const [bonusCredits, setBonusCredits] = useState({ imagesUsed: 0, videoUsed: false });
+  
+  // Track if we've initialized to prevent multiple fetches
+  const initializedRef = useRef(false);
+  const userIdRef = useRef<string | null>(null);
+
+  // Save state to localStorage as backup
+  const saveToLocalStorage = useCallback((userId: string, newState: OnboardingState) => {
+    try {
+      localStorage.setItem(getStorageKey(userId), JSON.stringify(newState));
+    } catch (err) {
+      console.warn('[useOnboarding] Failed to save to localStorage:', err);
+    }
+  }, []);
+
+  // Load state from localStorage
+  const loadFromLocalStorage = useCallback((userId: string): OnboardingState | null => {
+    try {
+      const cached = localStorage.getItem(getStorageKey(userId));
+      if (cached) {
+        return JSON.parse(cached) as OnboardingState;
+      }
+    } catch (err) {
+      console.warn('[useOnboarding] Failed to load from localStorage:', err);
+    }
+    return null;
+  }, []);
+
+  // Create profile if it doesn't exist
+  const ensureProfileExists = useCallback(async (userId: string, email: string): Promise<boolean> => {
+    try {
+      // First check if profile exists
+      const { data: existing } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      if (existing) {
+        return true; // Profile already exists
+      }
+
+      // Create profile with required account_id field
+      const { error } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          email: email,
+          account_id: `ACC${Date.now()}`,
+          onboarding_completed: false,
+          onboarding_step: 0,
+          onboarding_data: {}
+        });
+
+      if (error && !error.message.includes('duplicate')) {
+        console.error('[useOnboarding] Error ensuring profile exists:', error);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.error('[useOnboarding] Unexpected error ensuring profile:', err);
+      return false;
+    }
+  }, []);
 
   // Fetch onboarding status from profiles
   const fetchOnboardingStatus = useCallback(async () => {
     if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    // Check for admin bypass
+    if (user.email && ADMIN_BYPASS_EMAILS.includes(user.email)) {
+      console.log('[useOnboarding] Admin bypass - skipping onboarding');
+      const bypassState = { completed: true, step: 4, data: {} };
+      setState(bypassState);
+      saveToLocalStorage(user.id, bypassState);
+      setLoading(false);
+      return;
+    }
+
+    // Check localStorage first for quick restore
+    const cached = loadFromLocalStorage(user.id);
+    if (cached?.completed) {
+      console.log('[useOnboarding] Restored completed state from localStorage');
+      setState(cached);
       setLoading(false);
       return;
     }
@@ -46,18 +137,30 @@ export const useOnboarding = () => {
         .from('profiles')
         .select('onboarding_completed, onboarding_step, onboarding_data')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('[useOnboarding] Error fetching profile:', error);
-        // If no profile exists yet, user needs onboarding
-        setState({ completed: false, step: 0, data: {} });
+        // If profile doesn't exist, create it
+        await ensureProfileExists(user.id, user.email || '');
+        const newState = { completed: false, step: 0, data: {} };
+        setState(newState);
+        saveToLocalStorage(user.id, newState);
+      } else if (!profile) {
+        // No profile exists - create one
+        console.log('[useOnboarding] No profile found, creating one');
+        await ensureProfileExists(user.id, user.email || '');
+        const newState = { completed: false, step: 0, data: {} };
+        setState(newState);
+        saveToLocalStorage(user.id, newState);
       } else {
-        setState({
+        const newState = {
           completed: profile.onboarding_completed ?? false,
           step: profile.onboarding_step ?? 0,
           data: (profile.onboarding_data as OnboardingData) ?? {}
-        });
+        };
+        setState(newState);
+        saveToLocalStorage(user.id, newState);
       }
 
       // Fetch bonus credits
@@ -65,7 +168,7 @@ export const useOnboarding = () => {
         .from('onboarding_bonus_credits')
         .select('images_used, video_used')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (bonus) {
         setBonusCredits({ imagesUsed: bonus.images_used, videoUsed: bonus.video_used });
@@ -75,15 +178,33 @@ export const useOnboarding = () => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, ensureProfileExists, loadFromLocalStorage, saveToLocalStorage]);
 
+  // Effect to handle user changes and prevent re-fetching on window focus
   useEffect(() => {
-    fetchOnboardingStatus();
-  }, [fetchOnboardingStatus]);
+    // Only fetch if user changed
+    if (user?.id !== userIdRef.current) {
+      userIdRef.current = user?.id || null;
+      initializedRef.current = false;
+    }
+
+    if (!initializedRef.current && user) {
+      initializedRef.current = true;
+      fetchOnboardingStatus();
+    } else if (!user) {
+      setLoading(false);
+    }
+  }, [user, fetchOnboardingStatus]);
 
   // Save current step and data to database
   const saveProgress = useCallback(async (step: number, data: OnboardingData) => {
     if (!user) return;
+
+    const newState = { ...state, step, data };
+    
+    // Optimistically update local state and localStorage
+    setState(newState);
+    saveToLocalStorage(user.id, newState);
 
     try {
       const { error } = await supabase
@@ -97,13 +218,21 @@ export const useOnboarding = () => {
 
       if (error) {
         console.error('[useOnboarding] Error saving progress:', error);
-      } else {
-        setState(prev => ({ ...prev, step, data }));
+        // Try upsert if update fails (profile might not exist)
+        await ensureProfileExists(user.id, user.email || '');
+        await supabase
+          .from('profiles')
+          .update({
+            onboarding_step: step,
+            onboarding_data: data as any,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id);
       }
     } catch (err) {
       console.error('[useOnboarding] Save progress error:', err);
     }
-  }, [user]);
+  }, [user, state, saveToLocalStorage, ensureProfileExists]);
 
   // Move to next step
   const nextStep = useCallback(async (additionalData?: Partial<OnboardingData>) => {
@@ -116,33 +245,35 @@ export const useOnboarding = () => {
   const completeOnboarding = useCallback(async () => {
     if (!user) return;
 
+    // Optimistically update state immediately
+    const completedState = { ...state, completed: true, step: 4 };
+    setState(completedState);
+    saveToLocalStorage(user.id, completedState);
+
     try {
-      // Request the updated row back so local state can be kept in sync.
-      const { data: updatedProfile, error } = await supabase
+      // Ensure profile exists first, then update
+      await ensureProfileExists(user.id, user.email || '');
+      
+      const { error } = await supabase
         .from('profiles')
         .update({
           onboarding_completed: true,
           onboarding_step: 4,
           updated_at: new Date().toISOString()
         })
-        .eq('id', user.id)
-        .select('onboarding_completed, onboarding_step, onboarding_data')
-        .single();
+        .eq('id', user.id);
 
       if (error) {
         console.error('[useOnboarding] Error completing onboarding:', error);
-      } else {
-        // Ensure any UI that keys off step AND completed closes correctly.
-        setState(prev => ({
-          ...prev,
-          completed: true,
-          step: updatedProfile?.onboarding_step ?? 4
-        }));
+        // Revert state if save failed
+        setState(state);
       }
     } catch (err) {
       console.error('[useOnboarding] Complete onboarding error:', err);
+      // Revert state if save failed
+      setState(state);
     }
-  }, [user]);
+  }, [user, state, saveToLocalStorage]);
 
   // Award 20 credits for completing onboarding
   const awardCredits = useCallback(async (): Promise<boolean> => {
@@ -169,6 +300,8 @@ export const useOnboarding = () => {
   const restartOnboarding = useCallback(async () => {
     if (!user) return;
 
+    const newState = { completed: false, step: 0, data: {} };
+
     try {
       const { error } = await supabase
         .from('profiles')
@@ -184,14 +317,15 @@ export const useOnboarding = () => {
         console.error('[useOnboarding] Error restarting onboarding:', error);
         return false;
       } else {
-        setState({ completed: false, step: 0, data: {} });
+        setState(newState);
+        saveToLocalStorage(user.id, newState);
         return true;
       }
     } catch (err) {
       console.error('[useOnboarding] Restart onboarding error:', err);
       return false;
     }
-  }, [user]);
+  }, [user, saveToLocalStorage]);
 
   // Generate images using bonus credits (deprecated - now using ugc-gemini directly)
   const generateBonusImages = useCallback(async () => {
