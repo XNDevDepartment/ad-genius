@@ -31,7 +31,7 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
     // Get request body
-    const { planId, interval = 'month' } = await req.json();
+    const { planId, interval = 'month', promoCode } = await req.json();
 
     // Define plan pricing
     const planPricing = {
@@ -76,13 +76,35 @@ serve(async (req) => {
     let customerId: string | undefined;
     if (customers.data.length > 0) customerId = customers.data[0].id;
 
+    // Look up promotion code ID if a code string was provided
+    let promotionCodeId: string | undefined;
+    if (promoCode) {
+      try {
+        const promoCodes = await stripe.promotionCodes.list({
+          code: promoCode,
+          active: true,
+          limit: 1
+        });
+        if (promoCodes.data.length > 0) {
+          promotionCodeId = promoCodes.data[0].id;
+          console.log('Found promotion code:', promoCode, '→', promotionCodeId);
+        } else {
+          console.warn('Promotion code not found or inactive:', promoCode);
+        }
+      } catch (err) {
+        console.error('Error looking up promotion code:', err);
+      }
+    }
+
     // Log checkout session creation for tracking
     console.log('Creating checkout session:', {
       planId,
       interval,
       unitAmount,
       customerId: customerId || 'new',
-      userEmail: user.email
+      userEmail: user.email,
+      promoCode: promoCode || null,
+      promotionCodeId: promotionCodeId || null
     });
 
     // Create checkout session
@@ -90,7 +112,11 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email!,
-      allow_promotion_codes: true,
+      // Use discounts if promo code found, otherwise allow manual entry
+      ...(promotionCodeId 
+        ? { discounts: [{ promotion_code: promotionCodeId }] }
+        : { allow_promotion_codes: true }
+      ),
       tax_id_collection: { enabled: true },
       billing_address_collection: 'required',
       // custom_fields: [
@@ -119,7 +145,8 @@ serve(async (req) => {
       cancel_url: `${origin}/cancel`,
       metadata: {
         plan_id: planId,
-        user_id: user.id
+        user_id: user.id,
+        promo_code: promoCode || null
       }
     });
 
