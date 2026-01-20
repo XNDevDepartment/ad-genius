@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Image as ImageIcon } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import MultiImageUploader from '@/components/MultiImageUploader';
@@ -49,31 +48,24 @@ export const OnboardingStep1 = ({ onNext }: OnboardingStep1Props) => {
 
     setLoadingSampleId(sample.id);
     try {
-      const { data, error } = await supabase.functions.invoke('upload-source-image-from-url', {
-        body: { imageUrl: sample.url }
-      });
-
-      if (error) throw error;
-
-      const uploaded = {
-        id: data.sourceImage.id,
-        publicUrl: data.sourceImage.public_url,
-        fileName: data.sourceImage.file_name,
-        fileSize: data.sourceImage.file_size,
-        mimeType: data.sourceImage.mime_type,
-        createdAt: data.sourceImage.created_at
-      };
-      setSourceImage(uploaded);
-      toast.success(t('onboarding.step1.uploadSuccess'));
-      // Auto-advance
-      setTimeout(() => onNext(uploaded.publicUrl, uploaded.id), 500);
+      // Convert local asset to File object and upload directly
+      const response = await fetch(sample.url);
+      const blob = await response.blob();
+      const file = new File([blob], `${sample.id}.png`, { type: 'image/png' });
+      
+      const uploaded = await uploadSourceImage(file);
+      if (uploaded) {
+        setSourceImage(uploaded);
+        toast.success(t('onboarding.step1.uploadSuccess'));
+        setTimeout(() => onNext(uploaded.publicUrl, uploaded.id), 500);
+      }
     } catch (error: any) {
       console.error('Sample upload error:', error);
       toast.error(t('onboarding.step1.uploadError'));
     } finally {
       setLoadingSampleId(null);
     }
-  }, [user, t, onNext]);
+  }, [user, uploadSourceImage, t, onNext]);
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-80px)] px-4 py-6">
