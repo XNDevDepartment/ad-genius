@@ -1,20 +1,54 @@
 // functions/ugc-gemini/index.ts
 // Supabase Edge Function (Deno) for Google Gemini image generation
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+// ---------- TYPES ----------
+interface ImageJob {
+  id: string;
+  user_id: string;
+  prompt: string;
+  settings: Record<string, unknown> | null;
+  content_hash: string;
+  total: number | null;
+  completed: number | null;
+  failed: number | null;
+  status: string;
+  source_image_id: string | null;
+  source_image_ids: string[] | null;
+  model_type: string | null;
+  desiredAudience: string | null;
+  prodSpecs: string | null;
+  created_at: string;
+  error?: string;
+}
+
+interface UgcImage {
+  id: string;
+  public_url: string;
+  meta: Record<string, unknown> | null;
+}
+
+interface ExistingJobResult extends ImageJob {
+  ugc_images: UgcImage[];
+}
+
 // ---------- CORS ----------
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "GET,POST,OPTIONS"
 };
+
 // ---------- ENV ----------
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_API_KEY") ?? "";
+
 // ---------- LOG ----------
 const log = (step: string, meta?: Record<string, unknown>): void => console.log(`[UGC-GEMINI] ${step}${meta ? ` - ${JSON.stringify(meta)}` : ""}`);
+
 // ---------- HELPERS ----------
 const json = (data: unknown, status = 200): Response => new Response(JSON.stringify(data), {
     status,
@@ -23,22 +57,27 @@ const json = (data: unknown, status = 200): Response => new Response(JSON.string
       "Content-Type": "application/json"
     }
   });
+
 const errorJson = (message: string, status = 400, meta?: Record<string, unknown>): Response => {
   log(`ERROR: ${message}`, meta);
   return json({
     error: message
   }, status);
 };
+
 function sleep(ms: number): Promise<void> {
   return new Promise((r)=>setTimeout(r, ms));
 }
+
 function backoffMs(attempt: number): number {
   return 900 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 250);
 }
+
 // Fixed credit cost: 1 credit per image
 function calculateImageCost(_settings: Record<string, unknown>): number {
   return 1;
 }
+
 // Crop base64 image to exact aspect ratio
 async function cropBase64ToAspect(base64Data: string, aspectRatio: string): Promise<Uint8Array> {
   // Parse aspect ratio (e.g., "16:9" -> { w: 16, h: 9 })
@@ -127,15 +166,19 @@ async function cropBase64ToAspect(base64Data: string, aspectRatio: string): Prom
     return Uint8Array.from(atob(base64Content), (c)=>c.charCodeAt(0));
   }
 }
+
 // ---------- AUTH / CLIENTS ----------
-function serviceClient() {
+// deno-lint-ignore no-explicit-any
+function serviceClient(): SupabaseClient<any> {
   return createClient(SUPABASE_URL, SERVICE_KEY, {
     auth: {
       persistSession: false
     }
   });
 }
-function userClient(authorization: string) {
+
+// deno-lint-ignore no-explicit-any
+function userClient(authorization: string): SupabaseClient<any> {
   return createClient(SUPABASE_URL, ANON_KEY, {
     global: {
       headers: {
@@ -147,23 +190,30 @@ function userClient(authorization: string) {
     }
   });
 }
+
 // ---------- EXTRACT DATA FROM IMAGE ---------- //
 function extractBase64Image(jsonResp: Record<string, unknown> | null): string | null {
+  // deno-lint-ignore no-explicit-any
   if ((jsonResp as any)?.predictions?.length) {
+    // deno-lint-ignore no-explicit-any
     const p0 = (jsonResp as any).predictions[0];
     if (p0?.image?.imageBytes) return p0.image.imageBytes;
     if (p0?.bytesBase64Encoded) return p0.bytesBase64Encoded;
   }
+  // deno-lint-ignore no-explicit-any
   const parts = (jsonResp as any)?.candidates?.[0]?.content?.parts ?? [];
+  // deno-lint-ignore no-explicit-any
   const imgPart = parts.find((p: any)=>p?.inlineData?.mimeType?.startsWith('image/'));
   return imgPart?.inlineData?.data ?? null;
 }
+
 async function getUserIdFromAuth(authHeader: string): Promise<string> {
   const supa = userClient(authHeader);
   const { data, error } = await supa.auth.getUser();
   if (error || !data.user) throw new Error("Invalid authentication token");
   return data.user.id;
 }
+
 // ---------- ROUTER ----------
 serve(async (req)=>{
   // CORS preflight
@@ -224,9 +274,10 @@ serve(async (req)=>{
     return errorJson(message, 500);
   }
 });
+
 // ---------- ACTIONS ----------
-// Enqueue job, reserve credits, idempotent
-async function createImageJob(userId: string, payload: Record<string, unknown>, supabase: ReturnType<typeof createClient>): Promise<Response> {
+// deno-lint-ignore no-explicit-any
+async function createImageJob(userId: string, payload: Record<string, unknown>, supabase: SupabaseClient<any>): Promise<Response> {
   const { prompt, settings, source_image_id, source_image_ids, desiredAudience, prodSpecs } = payload as {
     prompt?: string;
     settings?: Record<string, unknown>;
@@ -261,12 +312,12 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
     p_settings: settings
   });
   if (keyErr) return errorJson(`Idempotency error: ${keyErr.message}`, 400);
-  const contentHash = keyResult;
+  const contentHash = keyResult as string;
   // Check for existing job with same content hash (ANY status, ANY time)
   // This prevents constraint violations and enables smart idempotency
   const { data: existing } = await supabase.from("image_jobs").select("*, ugc_images(*)").eq("user_id", userId).eq("content_hash", contentHash).eq("model_type", "gemini").order("created_at", {
     ascending: false
-  }).limit(1).maybeSingle();
+  }).limit(1).maybeSingle() as { data: ExistingJobResult | null };
   
   if (existing) {
     const status = existing.status;
@@ -288,10 +339,10 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
       return json({
         jobId: existing.id,
         status: status,
-        existingImages: (existing.ugc_images ?? []).map((img)=>({
+        existingImages: (existing.ugc_images ?? []).map((img: UgcImage)=>({
             url: img.public_url,
             prompt: existing.prompt,
-            format: img.meta?.format ?? "webp"
+            format: (img.meta as Record<string, unknown>)?.format ?? "webp"
           }))
       }, 200);
     }
@@ -313,10 +364,10 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
   }
   // credits
   const costPerImage = calculateImageCost(settings ?? {});
-  const totalImages = settings?.number ?? 1;
+  const totalImages = (settings?.number as number) ?? 1;
   const totalCost = isAdmin ? 0 : costPerImage * totalImages;
   if (!isAdmin) {
-    const { data: subscriber } = await supabase.from("subscribers").select("credits_balance").eq("user_id", userId).single();
+    const { data: subscriber } = await supabase.from("subscribers").select("credits_balance").eq("user_id", userId).single() as { data: { credits_balance: number } | null };
     if (!subscriber || (subscriber.credits_balance ?? 0) < totalCost) {
       return errorJson("Insufficient credits", 400, {
         need: totalCost,
@@ -327,7 +378,7 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
       p_user_id: userId,
       p_amount: totalCost,
       p_reason: "reserve:gemini_image_job"
-    });
+    }) as { data: { success: boolean; error?: string } | null; error: Error | null };
     if (deductErr || !deduct?.success) {
       return errorJson(deduct?.error ?? deductErr?.message ?? "Failed to reserve credits", 400);
     }
@@ -348,8 +399,8 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
     model_type: "gemini",
     desiredAudience: desiredAudience ?? null,
     prodSpecs: prodSpecs ?? null // Store the user's product specs
-  }).select().single();
-  if (jobErr) {
+  }).select().single() as { data: ImageJob | null; error: Error | null };
+  if (jobErr || !job) {
     // Refund credits on failure
     if (!isAdmin && totalCost > 0) {
       await supabase.rpc("refund_user_credits", {
@@ -369,7 +420,7 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
       // Try to fetch the conflicting job
       const { data: conflicting } = await supabase.from("image_jobs").select("*, ugc_images(*)").eq("user_id", userId).eq("content_hash", contentHash).eq("model_type", "gemini").order("created_at", {
         ascending: false
-      }).limit(1).maybeSingle();
+      }).limit(1).maybeSingle() as { data: ExistingJobResult | null };
       
       if (conflicting) {
         log("Found conflicting job, returning it", { 
@@ -378,6 +429,7 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
         });
         
         // Return the existing job based on its status
+        // deno-lint-ignore no-explicit-any
         const response: any = {
           jobId: conflicting.id,
           status: conflicting.status
@@ -385,10 +437,10 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
         
         // If completed, include images
         if (conflicting.status === "completed") {
-          response.existingImages = (conflicting.ugc_images ?? []).map((img)=>({
+          response.existingImages = (conflicting.ugc_images ?? []).map((img: UgcImage)=>({
             url: img.public_url,
             prompt: conflicting.prompt,
-            format: img.meta?.format ?? "webp"
+            format: (img.meta as Record<string, unknown>)?.format ?? "webp"
           }));
         }
         
@@ -396,7 +448,7 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
       }
     }
     
-    return errorJson(`Job insert failed: ${jobErr.message}`, 400);
+    return errorJson(`Job insert failed: ${jobErr?.message ?? "Unknown error"}`, 400);
   }
   // trigger worker (self-invoke with service auth)
   try {
@@ -410,19 +462,25 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
         apikey: SERVICE_KEY
       }
     }).catch(()=>{});
-  } catch (_) {}
+  } catch (_) {
+    // Ignore errors
+  }
   // EdgeRuntime fallback for platforms that support it
   try {
     // @ts-ignore
     EdgeRuntime?.waitUntil?.(generateImages(job.id, supabase));
-  } catch (_) {}
+  } catch (_) {
+    // Ignore errors
+  }
   return json({
     jobId: job.id,
     status: "queued"
   }, 200);
 }
+
 // Worker: claim and generate using Google Gemini
-async function generateImages(jobId, supabase) {
+// deno-lint-ignore no-explicit-any
+async function generateImages(jobId: string, supabase: SupabaseClient<any>): Promise<Response> {
   log("Worker start", {
     jobId
   });
@@ -432,9 +490,9 @@ async function generateImages(jobId, supabase) {
     started_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   }).eq("id", jobId).eq("status", "queued").eq("model_type", "gemini") // Ensure we're processing a Gemini job
-  .select().single();
+  .select().single() as { data: ImageJob | null; error: Error | null };
   if (claimErr || !job) {
-    const { data: existing } = await supabase.from("image_jobs").select("status").eq("id", jobId).maybeSingle();
+    const { data: existing } = await supabase.from("image_jobs").select("status").eq("id", jobId).maybeSingle() as { data: { status: string } | null };
     if (existing?.status === "processing") {
       log("Job already processing", {
         jobId
@@ -451,7 +509,7 @@ async function generateImages(jobId, supabase) {
   }
   let completed = 0;
   let failed = 0;
-  const errors = [];
+  const errors: string[] = [];
   try {
     // Prepare source images (support multiple)
     const sourceImageIds = job.source_image_ids && Array.isArray(job.source_image_ids) && job.source_image_ids.length > 0 ? job.source_image_ids : job.source_image_id ? [
@@ -486,9 +544,9 @@ async function generateImages(jobId, supabase) {
           progress,
           updated_at: new Date().toISOString()
         }).eq("id", jobId);
-      } catch (e) {
+      } catch (e: unknown) {
         failed++;
-        const errorMsg = e?.message ?? String(e);
+        const errorMsg = e instanceof Error ? e.message : String(e);
         errors.push(errorMsg);
         log("Image generation failed", {
           jobId,
@@ -498,7 +556,7 @@ async function generateImages(jobId, supabase) {
       }
     }
     const finalStatus = completed > 0 ? "completed" : "failed";
-    const update = {
+    const update: Record<string, unknown> = {
       status: finalStatus,
       completed,
       failed,
@@ -521,7 +579,7 @@ async function generateImages(jobId, supabase) {
       });
       if (!isAdmin) {
         const refundAmount = failed * calculateImageCost({
-          ...job.settings ?? {},
+          ...(job.settings ?? {}),
           number: 1
         });
         log("Issuing partial refund", {
@@ -536,8 +594,8 @@ async function generateImages(jobId, supabase) {
         });
       }
     }
-  } catch (e) {
-    const errorMsg = e?.message ?? String(e);
+  } catch (e: unknown) {
+    const errorMsg = e instanceof Error ? e.message : String(e);
     log("Job processing catastrophic failure", {
       jobId,
       error: errorMsg
@@ -553,7 +611,8 @@ async function generateImages(jobId, supabase) {
       check_user_id: job.user_id
     });
     if (!isAdmin) {
-      const cost = calculateImageCost(job.settings ?? {}) * ((job.settings?.number ?? job.total) || 1);
+      const settingsNumber = (job.settings as Record<string, unknown>)?.number as number | undefined;
+      const cost = calculateImageCost(job.settings ?? {}) * (settingsNumber ?? job.total ?? 1);
       log("Issuing full refund", {
         jobId,
         cost
@@ -569,17 +628,20 @@ async function generateImages(jobId, supabase) {
     success: true
   });
 }
+
 // Generate 1 image using Google Gemini (with retries/backoff)
-async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabase) {
+// deno-lint-ignore no-explicit-any
+async function generateSingleImageWithGemini(job: ImageJob, index: number, sourceImageUrl: string | null, supabase: SupabaseClient<any>): Promise<void> {
   const MAX_ATTEMPTS = 3;
-  const size = job?.settings?.size ?? "1024x1024";
-  const quality = job?.settings?.quality ?? "high";
+  const settings = job?.settings as Record<string, unknown> | null;
+  const size = (settings?.size as string) ?? "1024x1024";
+  const quality = (settings?.quality as string) ?? "high";
   const prompt = String(job?.prompt ?? "");
   for(let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++){
     try {
       const controller = new AbortController();
       const timeout = setTimeout(()=>controller.abort(), 120000);
-      let res;
+      let res: Response | undefined;
       if (sourceImageUrl) {
         // ----- edits (using Gemini's image editing capabilities) -----
         const src = await fetch(sourceImageUrl);
@@ -597,7 +659,7 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
         const base64Image = btoa(binary);
         // Gemini 3 Pro Image Preview
         // Native aspect ratio support for Gemini 3 Pro
-        const aspectRatio = job?.settings?.aspectRatio;
+        const aspectRatio = settings?.aspectRatio as string | undefined;
         const NATIVE_ASPECT_RATIOS = ['1:1', '3:4', '4:3', '9:16', '16:9'];
         const useNativeAspect = aspectRatio && aspectRatio !== 'source' && NATIVE_ASPECT_RATIOS.includes(aspectRatio);
         
@@ -641,6 +703,9 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
 
       }
       try {
+        if (!res) {
+          throw new Error("No response from Gemini API - source image may be required");
+        }
         if (!res.ok) {
           const text = await res.text();
           const retryable = res.status >= 500 || res.status === 429;
@@ -664,11 +729,11 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
           throw new Error(`Missing image data in Imagen response`);
         }
         // Check if native aspect ratio was used (no cropping needed)
-        const aspectRatioSetting = job?.settings?.aspectRatio;
+        const aspectRatioSetting = settings?.aspectRatio as string | undefined;
         const NATIVE_ASPECT_RATIOS_CHECK = ['1:1', '3:4', '4:3', '9:16', '16:9'];
         const usedNativeAspect = aspectRatioSetting && aspectRatioSetting !== 'source' && NATIVE_ASPECT_RATIOS_CHECK.includes(aspectRatioSetting);
         
-        let fileBytes;
+        let fileBytes: Uint8Array;
         if (usedNativeAspect) {
           // Native aspect ratio was used - no cropping needed, image already has correct dimensions
           log("Image generated with native aspect ratio, no crop needed", {
@@ -695,7 +760,7 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
           fileBytes = Uint8Array.from(atob(b64), (c)=>c.charCodeAt(0));
         }
         // Determine output format from settings (default to PNG)
-        const requestedFormat = job?.settings?.output_format || "png";
+        const requestedFormat = (settings?.output_format as string) || "png";
         let storedFormat = requestedFormat;
         let contentType = requestedFormat === "webp" ? "image/webp" : "image/png";
         let extension = requestedFormat;
@@ -739,9 +804,10 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
       } finally{
         clearTimeout(timeout);
       }
-    } catch (e) {
-      const msg = e?.message ?? String(e);
-      const retryable = /AbortError/.test(e?.name) || /Gemini API error 5\d\d/.test(msg) || /429/.test(msg) || /Missing image data/.test(msg);
+    } catch (e: unknown) {
+      const err = e as Error;
+      const msg = err?.message ?? String(e);
+      const retryable = /AbortError/.test(err?.name ?? '') || /Gemini API error 5\d\d/.test(msg) || /429/.test(msg) || /Missing image data/.test(msg);
       if (retryable && attempt < MAX_ATTEMPTS) {
         await sleep(backoffMs(attempt));
         continue;
@@ -750,12 +816,14 @@ async function generateSingleImageWithGemini(job, index, sourceImageUrl, supabas
     }
   }
 }
+
 // Signed URLs for user-provided source images (supports multiple)
-async function getSignedSourceUrls(source_image_ids, supabase) {
+// deno-lint-ignore no-explicit-any
+async function getSignedSourceUrls(source_image_ids: string[], supabase: SupabaseClient<any>): Promise<string[]> {
   if (!source_image_ids || source_image_ids.length === 0) return [];
-  const urls = [];
+  const urls: string[] = [];
   for (const id of source_image_ids){
-    const { data: src } = await supabase.from("source_images").select("storage_path").eq("id", id).maybeSingle();
+    const { data: src } = await supabase.from("source_images").select("storage_path").eq("id", id).maybeSingle() as { data: { storage_path: string } | null };
     if (src?.storage_path) {
       const { data: signed } = await supabase.storage.from("ugc-inputs").createSignedUrl(src.storage_path, 3600);
       if (signed?.signedUrl) {
@@ -765,16 +833,20 @@ async function getSignedSourceUrls(source_image_ids, supabase) {
   }
   return urls;
 }
+
 // Legacy: Single source image URL (for backward compatibility)
-async function getSignedSourceUrl(source_image_id, supabase) {
+// deno-lint-ignore no-explicit-any
+async function getSignedSourceUrl(source_image_id: string | null, supabase: SupabaseClient<any>): Promise<string | null> {
   if (!source_image_id) return null;
-  const { data: src } = await supabase.from("source_images").select("storage_path").eq("id", source_image_id).single();
+  const { data: src } = await supabase.from("source_images").select("storage_path").eq("id", source_image_id).single() as { data: { storage_path: string } | null };
   if (!src?.storage_path) return null;
   const { data: signed } = await supabase.storage.from("ugc-inputs").createSignedUrl(src.storage_path, 3600);
   return signed?.signedUrl ?? null;
 }
+
 // RLS-safe reads
-async function getJob(userId, jobId, supaUser) {
+// deno-lint-ignore no-explicit-any
+async function getJob(userId: string, jobId: string, supaUser: SupabaseClient<any>): Promise<Response> {
   const { data: job, error } = await supaUser.from("image_jobs").select("*").eq("id", jobId).eq("user_id", userId).eq("model_type", "gemini") // Only return Gemini jobs
   .single();
   if (error) return errorJson("Job not found", 404);
@@ -782,7 +854,9 @@ async function getJob(userId, jobId, supaUser) {
     job
   });
 }
-async function getJobImages(userId, jobId, supaUser) {
+
+// deno-lint-ignore no-explicit-any
+async function getJobImages(userId: string, jobId: string, supaUser: SupabaseClient<any>): Promise<Response> {
   const { data: images, error } = await supaUser.from("ugc_images").select("*").eq("job_id", jobId).eq("user_id", userId).order("created_at", {
     ascending: true
   });
@@ -791,21 +865,24 @@ async function getJobImages(userId, jobId, supaUser) {
     images
   });
 }
+
 // Cancel job + refund unused credits
-async function cancelJob(userId, jobId, supabase) {
+// deno-lint-ignore no-explicit-any
+async function cancelJob(userId: string, jobId: string, supabase: SupabaseClient<any>): Promise<Response> {
   const { data: job, error } = await supabase.from("image_jobs").update({
     status: "canceled"
   }).eq("id", jobId).eq("user_id", userId).eq("model_type", "gemini") // Only cancel Gemini jobs
   .in("status", [
     "queued",
     "processing"
-  ]).select().single();
+  ]).select().single() as { data: ImageJob | null; error: Error | null };
   if (error || !job) return errorJson("Job not found or cannot be canceled", 400);
   const { data: isAdmin } = await supabase.rpc("is_user_admin", {
     check_user_id: userId
   });
   if (!isAdmin) {
-    const totalCost = calculateImageCost(job.settings ?? {}) * ((job.settings?.number ?? job.total) || 1);
+    const settingsNumber = (job.settings as Record<string, unknown>)?.number as number | undefined;
+    const totalCost = calculateImageCost(job.settings ?? {}) * (settingsNumber ?? job.total ?? 1);
     const usedCost = calculateImageCost(job.settings ?? {}) * (job.completed ?? 0);
     const refund = Math.max(0, totalCost - usedCost);
     if (refund > 0) {
@@ -820,10 +897,12 @@ async function cancelJob(userId, jobId, supabase) {
     success: true
   });
 }
+
 // Resume a stuck job (re-triggers worker)
-async function resumeJob(userId, jobId, supabase) {
+// deno-lint-ignore no-explicit-any
+async function resumeJob(userId: string, jobId: string, supabase: SupabaseClient<any>): Promise<Response> {
   // ensure ownership and that it's a Gemini job
-  const { data: job, error } = await supabase.from("image_jobs").select("id,user_id,status,completed,total").eq("id", jobId).eq("model_type", "gemini").single();
+  const { data: job, error } = await supabase.from("image_jobs").select("id,user_id,status,completed,total").eq("id", jobId).eq("model_type", "gemini").single() as { data: { id: string; user_id: string; status: string; completed: number | null; total: number | null } | null; error: Error | null };
   if (error || !job) return errorJson("Job not found", 404);
   if (job.user_id !== userId) return errorJson("Forbidden", 403);
   const resumable = job.status === "queued" || job.status === "processing" || job.status === "failed" && (job.completed ?? 0) === 0;
@@ -845,19 +924,23 @@ async function resumeJob(userId, jobId, supabase) {
         apikey: SERVICE_KEY
       }
     });
-  } catch (e) {
+  } catch (_) {
     // fallback
     try {
       // @ts-ignore
       EdgeRuntime?.waitUntil?.(generateImages(jobId, supabase));
-    } catch (_) {}
+    } catch (_) {
+      // Ignore
+    }
   }
   return json({
     resumed: true
   });
 }
+
 // Return the latest queued/processing Gemini job for the user
-async function getActiveJob(userId, supabase) {
+// deno-lint-ignore no-explicit-any
+async function getActiveJob(userId: string, supabase: SupabaseClient<any>): Promise<Response> {
   const { data: job, error } = await supabase.from("image_jobs").select("*").eq("user_id", userId).eq("model_type", "gemini") // Only get Gemini jobs
   .in("status", [
     "queued",
@@ -872,11 +955,13 @@ async function getActiveJob(userId, supabase) {
     job: job ?? null
   });
 }
+
 // Sweep queued Gemini jobs that never got picked up
-async function recoverQueued(supabase) {
+// deno-lint-ignore no-explicit-any
+async function recoverQueued(supabase: SupabaseClient<any>): Promise<Response> {
   const cutoff = new Date(Date.now() - 3 * 60 * 1000).toISOString(); // older than 3m
   const { data: jobs, error } = await supabase.from("image_jobs").select("id,status").eq("status", "queued").eq("model_type", "gemini") // Only recover Gemini jobs
-  .lte("created_at", cutoff).limit(20);
+  .lte("created_at", cutoff).limit(20) as { data: { id: string; status: string }[] | null; error: Error | null };
   if (error) return errorJson("Failed to list queued jobs", 400);
   for (const j of jobs ?? []){
     try {
@@ -890,7 +975,9 @@ async function recoverQueued(supabase) {
           apikey: SERVICE_KEY
         }
       });
-    } catch (_) {}
+    } catch (_) {
+      // Ignore
+    }
   }
   return json({
     recovered: jobs?.length ?? 0
