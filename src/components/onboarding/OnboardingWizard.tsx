@@ -61,20 +61,20 @@ export const OnboardingWizard = () => {
               alt="ProduktPix" 
               className="h-6 w-auto"
             />
-            {step > 0 && (
-              <button
-                onClick={completeOnboarding}
-                className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
-              >
-                <X className="w-4 h-4" />
-                {t('onboarding.skip')}
-              </button>
-            )}
           </div>
           {step > 0 && step <= totalSteps && (
             <span className="text-xs text-muted-foreground">
               {t('onboarding.progress', { current: step, total: totalSteps })}
             </span>
+          )}
+          {step > 0 && (
+            <button
+              onClick={completeOnboarding}
+              className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+            >
+              <X className="w-4 h-4" />
+              {t('onboarding.skip')}
+            </button>
           )}
         </div>
 
