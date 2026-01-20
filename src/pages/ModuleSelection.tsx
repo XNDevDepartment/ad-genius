@@ -57,7 +57,7 @@ const ModuleSelection = () => {
       description: t('createSelection.videoCreator.description'),
       icon: Video,
       path: "/create/video",
-      isAdmin: true,
+      isAdmin: false,
       isBeta: false,
       locked: !canAccessVideos()
     },

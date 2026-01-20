@@ -132,7 +132,7 @@ const App = () => {
                     </Suspense>
                   </ErrorBoundaryWithReset>
                 } />
-                {/* <Route path="create/video" element={
+                <Route path="create/video" element={
                   <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <AuthGuard>
@@ -140,7 +140,7 @@ const App = () => {
                       </AuthGuard>
                     </Suspense>
                   </ErrorBoundaryWithReset>
-                } /> */}
+                } />
                 <Route path="create/adgenius" element={
                   <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
