@@ -146,7 +146,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
         
-        // For Google OAuth SIGNED_IN, validate domain before allowing
+        // For Google OAuth SIGNED_IN, validate domain and trigger activation
         if (event === 'SIGNED_IN' && session?.user) {
           const userEmail = session.user.email;
           const isOAuthUser = session.user.app_metadata?.provider === 'google';
@@ -159,21 +159,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (!alreadyChecked) {
               sessionStorage.setItem(domainCheckKey, 'true');
               
-              // Check domain validity
+              // Check domain validity and handle new user activation
               setTimeout(async () => {
                 try {
                   // First check if user already has a profile (existing user)
                   const { data: existingProfile } = await supabase
                     .from('profiles')
-                    .select('id')
+                    .select('id, account_activated')
                     .eq('id', session.user.id)
                     .single();
                   
                   // If user already exists, skip domain validation
                   if (existingProfile) {
-                    console.log('[AuthContext] Existing user, skipping domain validation');
+                    console.log('[AuthContext] Existing OAuth user');
+                    // If account is not activated, don't re-send email (they already have one)
                   } else {
-                    // New user - validate domain
+                    // New user - validate domain first
                     const { data: domainValidation, error: domainError } = await supabase.functions.invoke('validate-signup-domain', {
                       body: { email: userEmail }
                     });
@@ -192,6 +193,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                       }
                       return;
                     }
+                    
+                    // NEW: For new OAuth users, set account_activated = false and send activation email
+                    console.log('[AuthContext] New OAuth user - will require activation');
+                    
+                    // Wait a bit for the profile trigger to create the profile, then update it
+                    setTimeout(async () => {
+                      try {
+                        // Update profile to set account_activated = false for OAuth users
+                        await supabase
+                          .from('profiles')
+                          .update({ account_activated: false })
+                          .eq('id', session.user.id);
+                        
+                        // Trigger activation email
+                        const { error: activationError } = await supabase.functions.invoke('generate-activation-token');
+                        if (activationError) {
+                          console.error('[AuthContext] Failed to send activation email:', activationError);
+                        } else {
+                          console.log('[AuthContext] Activation email sent to new OAuth user');
+                        }
+                      } catch (activationErr) {
+                        console.error('[AuthContext] Activation setup error:', activationErr);
+                      }
+                    }, 2000);
                   }
                 } catch (validationError) {
                   console.error('[AuthContext] Domain validation error:', validationError);
