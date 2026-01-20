@@ -244,7 +244,7 @@ export const useOnboarding = () => {
     try {
       // Ensure profile exists first, then update
       await ensureProfileExists(user.id, user.email || '');
-      
+
       const { error } = await supabase
         .from('profiles')
         .update({
