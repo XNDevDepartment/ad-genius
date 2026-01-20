@@ -240,6 +240,8 @@ export const useOnboarding = () => {
     const completedState = { ...state, completed: true, step: 4 };
     setState(completedState);
     saveToLocalStorage(user.id, completedState);
+    // inside completeOnboarding(), after setState/saveToLocalStorage
+    window.dispatchEvent(new CustomEvent("onboarding:completed"));
 
     try {
       // Ensure profile exists first, then update
