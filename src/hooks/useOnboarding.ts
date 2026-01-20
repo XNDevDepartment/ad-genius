@@ -117,19 +117,27 @@ export const useOnboarding = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
+      // Request the updated row back so local state can be kept in sync.
+      const { data: updatedProfile, error } = await supabase
         .from('profiles')
         .update({
           onboarding_completed: true,
           onboarding_step: 4,
           updated_at: new Date().toISOString()
         })
-        .eq('id', user.id);
+        .eq('id', user.id)
+        .select('onboarding_completed, onboarding_step, onboarding_data')
+        .single();
 
       if (error) {
         console.error('[useOnboarding] Error completing onboarding:', error);
       } else {
-        setState(prev => ({ ...prev, completed: true }));
+        // Ensure any UI that keys off step AND completed closes correctly.
+        setState(prev => ({
+          ...prev,
+          completed: true,
+          step: updatedProfile?.onboarding_step ?? 4
+        }));
       }
     } catch (err) {
       console.error('[useOnboarding] Complete onboarding error:', err);
