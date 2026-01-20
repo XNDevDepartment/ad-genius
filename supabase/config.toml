@@ -160,6 +160,12 @@ verify_jwt = false
 [functions.sitemap]
 verify_jwt = false
 
+[functions.generate-activation-token]
+verify_jwt = true
+
+[functions.activate-account]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 port = 54327

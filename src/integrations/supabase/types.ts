@@ -1467,7 +1467,10 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_activated: boolean | null
           account_id: string
+          activation_token: string | null
+          activation_token_expires_at: string | null
           analytics_enabled: boolean | null
           created_at: string | null
           description: string | null
@@ -1489,7 +1492,10 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          account_activated?: boolean | null
           account_id: string
+          activation_token?: string | null
+          activation_token_expires_at?: string | null
           analytics_enabled?: boolean | null
           created_at?: string | null
           description?: string | null
@@ -1511,7 +1517,10 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          account_activated?: boolean | null
           account_id?: string
+          activation_token?: string | null
+          activation_token_expires_at?: string | null
           analytics_enabled?: boolean | null
           created_at?: string | null
           description?: string | null

@@ -2,10 +2,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useAccountActivation } from '@/hooks/useAccountActivation';
 import type { CreditDeductionResponse } from '@/types/credits';
 
 export const useCredits = () => {
   const { user, subscriptionData, refreshSubscription } = useAuth();
+  const { isActivated, needsActivation, refreshActivationStatus, requestActivation } = useAccountActivation();
   const [loading, setLoading] = useState(false);
 
   const calculateImageCost = (quality: 'low' | 'medium' | 'high', numberOfImages: number = 1): number => {
@@ -124,6 +126,10 @@ export const useCredits = () => {
 
   const canAccessVideos = (): boolean => {
     if (!subscriptionData) return false;
+    
+    // NEW: Check if account is activated (required for video access)
+    if (!isActivated) return false;
+    
     // Users in grace period keep video access
     if (isInGracePeriod()) {
       const tier = subscriptionData.subscription_tier;
@@ -136,6 +142,12 @@ export const useCredits = () => {
 
   const getVideoAccessMessage = (): string => {
     if (!subscriptionData) return 'Please sign in to access video features.';
+    
+    // NEW: Check activation status first
+    if (!isActivated) {
+      return 'Please verify your email to access video features. Check your inbox for the activation link.';
+    }
+    
     const tier = subscriptionData.subscription_tier;
     
     switch (tier) {
@@ -186,5 +198,10 @@ export const useCredits = () => {
     getVideoAccessMessage,
     canAccessOutfitSwap,
     getOutfitSwapAccessMessage,
+    // NEW: Account activation
+    isAccountActivated: isActivated,
+    needsActivation,
+    refreshActivationStatus,
+    requestActivation,
   };
 };
