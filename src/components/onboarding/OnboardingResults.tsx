@@ -132,9 +132,9 @@ export const OnboardingResults = ({ data }: OnboardingResultsProps) => {
     try {
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
         body: { 
-          planId: 'onboarding_first_month',
+          planId: 'starter',
           interval: 'month',
-          is_onboarding_offer: true
+          promoCode: 'ONB1ST'
         }
       });
 
