@@ -1,6 +1,7 @@
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { X } from 'lucide-react';
 import { OnboardingWelcome } from './OnboardingWelcome';
 import { OnboardingStep1 } from './OnboardingStep1';
 import { OnboardingScenarioSelect } from './OnboardingScenarioSelect';
@@ -54,11 +55,22 @@ export const OnboardingWizard = () => {
       {/* Compact Mobile Header */}
       <div className="px-4 py-3 border-b border-border">
         <div className="flex items-center justify-between mb-2">
-          <img 
-            src={logoHorizontal} 
-            alt="ProduktPix" 
-            className="h-6 w-auto"
-          />
+          <div className="flex items-center gap-4">
+            <img 
+              src={logoHorizontal} 
+              alt="ProduktPix" 
+              className="h-6 w-auto"
+            />
+            {step > 0 && (
+              <button
+                onClick={completeOnboarding}
+                className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+              >
+                <X className="w-4 h-4" />
+                {t('onboarding.skip')}
+              </button>
+            )}
+          </div>
           {step > 0 && step <= totalSteps && (
             <span className="text-xs text-muted-foreground">
               {t('onboarding.progress', { current: step, total: totalSteps })}
