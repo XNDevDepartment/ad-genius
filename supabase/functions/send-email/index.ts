@@ -15,8 +15,10 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { subject, html, type } = await req.json();
     
+    console.log("[send-email] Function called, RESEND_API_KEY exists:", !!Deno.env.get("RESEND_API_KEY"));
+    
     const emailResponse = await resend.emails.send({
-      from: "Lovable <onboarding@resend.dev>",
+      from: "ProduktPix <onboarding@resend.dev>",
       to: [
         "info@produktpix.com"
       ],

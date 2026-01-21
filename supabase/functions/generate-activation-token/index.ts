@@ -12,6 +12,9 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 serve(async (req: Request): Promise<Response> => {
+  console.log("[generate-activation-token] Function invoked");
+  console.log("[generate-activation-token] RESEND_API_KEY exists:", !!Deno.env.get("RESEND_API_KEY"));
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -78,8 +81,9 @@ serve(async (req: Request): Promise<Response> => {
     const activationUrl = `https://produktpix.com/activate?token=${activationToken}`;
 
     // Send activation email
+    console.log("[generate-activation-token] Sending activation email to:", user.email);
     const emailResponse = await resend.emails.send({
-      from: "ProduktPix <noreply@produktpix.com>",
+      from: "ProduktPix <onboarding@resend.dev>",
       to: [user.email!],
       subject: "Activate Your ProduktPix Account",
       html: `
@@ -131,7 +135,7 @@ serve(async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Activation email sent successfully:", emailResponse);
+    console.log("[generate-activation-token] Email response:", JSON.stringify(emailResponse));
 
     return new Response(
       JSON.stringify({ 
