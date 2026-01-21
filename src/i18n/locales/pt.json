@@ -1988,7 +1988,7 @@
     "badge": "Programa de Afiliados",
     "hero": {
       "headline": "Ganha comissões recorrentes ao recomendar o",
-      "subheadline": "Recebe <strong class=\"text-foreground\">25% de comissão recorrente</strong> por cada cliente ativo que indiques — durante 12 meses.",
+      "subheadline": "Recebe <strong class=\"text-foreground\">15% de comissão recorrente</strong> por cada cliente ativo que indiques — durante 12 meses.",
       "cta": "Candidatar-me ao programa",
       "ctaSecondary": "Ver como funciona",
       "trustMonthly": "Pagamentos mensais",
@@ -2003,15 +2003,15 @@
       "step2Title": "Conversão",
       "step2Desc": "Quando alguém cria conta e subscreve um plano pago, a conversão fica associada a ti.",
       "step3Title": "Comissão",
-      "step3Desc": "Recebes 25% de comissão mensal enquanto o cliente se mantiver ativo (até 12 meses).",
+      "step3Desc": "Recebes 15% de comissão mensal enquanto o cliente se mantiver ativo (até 12 meses).",
       "automated": "Processo totalmente automatizado"
     },
     "commission": {
       "title": "Detalhes da Comissão",
       "subtitle": "Transparência total sobre como funcionam os pagamentos",
-      "percentage": "25%",
+      "percentage": "15%",
       "percentageLabel": "Comissão recorrente mensal",
-      "bullet1": "25% de comissão recorrente (valor sem IVA)",
+      "bullet1": "15% de comissão recorrente (valor sem IVA)",
       "bullet2": "Comissão válida por até 12 meses",
       "bullet3": "Pagamentos mensais por transferência bancária",
       "bullet4": "Mínimo de payout: €100",

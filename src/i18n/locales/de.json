@@ -1988,7 +1988,7 @@
     "badge": "Partnerprogramm",
     "hero": {
       "headline": "Verdienen Sie wiederkehrende Provisionen durch Empfehlung von",
-      "subheadline": "Erhalten Sie <strong class=\"text-foreground\">25% wiederkehrende Provision</strong> für jeden aktiven Kunden, den Sie werben — 12 Monate lang.",
+      "subheadline": "Erhalten Sie <strong class=\"text-foreground\">15% wiederkehrende Provision</strong> für jeden aktiven Kunden, den Sie werben — 12 Monate lang.",
       "cta": "Zum Programm bewerben",
       "ctaSecondary": "So funktioniert es",
       "trustMonthly": "Monatliche Auszahlungen",
@@ -2003,15 +2003,15 @@
       "step2Title": "Konversion",
       "step2Desc": "Wenn jemand ein Konto erstellt und ein bezahltes Abo abschließt, wird die Konversion Ihnen zugeordnet.",
       "step3Title": "Provision",
-      "step3Desc": "Sie erhalten 25% monatliche Provision, solange der Kunde aktiv bleibt (bis zu 12 Monate).",
+      "step3Desc": "Sie erhalten 15% monatliche Provision, solange der Kunde aktiv bleibt (bis zu 12 Monate).",
       "automated": "Vollständig automatisierter Prozess"
     },
     "commission": {
       "title": "Provisionsdetails",
       "subtitle": "Volle Transparenz über die Funktionsweise der Zahlungen",
-      "percentage": "25%",
+      "percentage": "15%",
       "percentageLabel": "Monatliche wiederkehrende Provision",
-      "bullet1": "25% wiederkehrende Provision (ohne MwSt.)",
+      "bullet1": "15% wiederkehrende Provision (ohne MwSt.)",
       "bullet2": "Provision gültig für bis zu 12 Monate",
       "bullet3": "Monatliche Banküberweisung",
       "bullet4": "Mindestauszahlung: 100€",

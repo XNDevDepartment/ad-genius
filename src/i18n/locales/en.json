@@ -1989,7 +1989,7 @@
     "badge": "Affiliate Program",
     "hero": {
       "headline": "Earn recurring commissions by recommending",
-      "subheadline": "Get <strong class=\"text-foreground\">25% recurring commission</strong> for each active customer you refer — for 12 months.",
+      "subheadline": "Get <strong class=\"text-foreground\">15% recurring commission</strong> for each active customer you refer — for 12 months.",
       "cta": "Apply to the program",
       "ctaSecondary": "See how it works",
       "trustMonthly": "Monthly payments",
@@ -2004,15 +2004,15 @@
       "step2Title": "Conversion",
       "step2Desc": "When someone creates an account and subscribes to a paid plan, the conversion is linked to you.",
       "step3Title": "Commission",
-      "step3Desc": "You receive 25% monthly commission while the customer stays active (up to 12 months).",
+      "step3Desc": "You receive 15% monthly commission while the customer stays active (up to 12 months).",
       "automated": "Fully automated process"
     },
     "commission": {
       "title": "Commission Details",
       "subtitle": "Full transparency on how payments work",
-      "percentage": "25%",
+      "percentage": "15%",
       "percentageLabel": "Monthly recurring commission",
-      "bullet1": "25% recurring commission (VAT excluded)",
+      "bullet1": "15% recurring commission (VAT excluded)",
       "bullet2": "Commission valid for up to 12 months",
       "bullet3": "Monthly bank transfer payments",
       "bullet4": "Minimum payout: €100",

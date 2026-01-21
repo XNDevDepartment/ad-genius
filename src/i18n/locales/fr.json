@@ -1988,7 +1988,7 @@
     "badge": "Programme d'affiliation",
     "hero": {
       "headline": "Gagnez des commissions récurrentes en recommandant",
-      "subheadline": "Recevez <strong class=\"text-foreground\">25% de commission récurrente</strong> pour chaque client actif que vous parrainez — pendant 12 mois.",
+      "subheadline": "Recevez <strong class=\"text-foreground\">15% de commission récurrente</strong> pour chaque client actif que vous parrainez — pendant 12 mois.",
       "cta": "Postuler au programme",
       "ctaSecondary": "Voir comment ça marche",
       "trustMonthly": "Paiements mensuels",
@@ -2003,15 +2003,15 @@
       "step2Title": "Conversion",
       "step2Desc": "Quand quelqu'un crée un compte et s'abonne à un forfait payant, la conversion vous est attribuée.",
       "step3Title": "Commission",
-      "step3Desc": "Vous recevez 25% de commission mensuelle tant que le client reste actif (jusqu'à 12 mois).",
+      "step3Desc": "Vous recevez 15% de commission mensuelle tant que le client reste actif (jusqu'à 12 mois).",
       "automated": "Processus entièrement automatisé"
     },
     "commission": {
       "title": "Détails des Commissions",
       "subtitle": "Transparence totale sur le fonctionnement des paiements",
-      "percentage": "25%",
+      "percentage": "15%",
       "percentageLabel": "Commission mensuelle récurrente",
-      "bullet1": "25% de commission récurrente (hors TVA)",
+      "bullet1": "15% de commission récurrente (hors TVA)",
       "bullet2": "Commission valable jusqu'à 12 mois",
       "bullet3": "Paiements mensuels par virement bancaire",
       "bullet4": "Paiement minimum : 100€",

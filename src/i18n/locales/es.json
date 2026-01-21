@@ -1988,7 +1988,7 @@
     "badge": "Programa de Afiliados",
     "hero": {
       "headline": "Gana comisiones recurrentes recomendando",
-      "subheadline": "Recibe <strong class=\"text-foreground\">25% de comisión recurrente</strong> por cada cliente activo que refieras — durante 12 meses.",
+      "subheadline": "Recibe <strong class=\"text-foreground\">15% de comisión recurrente</strong> por cada cliente activo que refieras — durante 12 meses.",
       "cta": "Aplicar al programa",
       "ctaSecondary": "Ver cómo funciona",
       "trustMonthly": "Pagos mensuales",
@@ -2003,15 +2003,15 @@
       "step2Title": "Conversión",
       "step2Desc": "Cuando alguien crea una cuenta y se suscribe a un plan de pago, la conversión se vincula a ti.",
       "step3Title": "Comisión",
-      "step3Desc": "Recibes 25% de comisión mensual mientras el cliente permanezca activo (hasta 12 meses).",
+      "step3Desc": "Recibes 15% de comisión mensual mientras el cliente permanezca activo (hasta 12 meses).",
       "automated": "Proceso totalmente automatizado"
     },
     "commission": {
       "title": "Detalles de la Comisión",
       "subtitle": "Total transparencia sobre cómo funcionan los pagos",
-      "percentage": "25%",
+      "percentage": "15%",
       "percentageLabel": "Comisión recurrente mensual",
-      "bullet1": "25% de comisión recurrente (IVA excluido)",
+      "bullet1": "15% de comisión recurrente (IVA excluido)",
       "bullet2": "Comisión válida por hasta 12 meses",
       "bullet3": "Pagos mensuales por transferencia bancaria",
       "bullet4": "Pago mínimo: €100",
