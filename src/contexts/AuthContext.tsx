@@ -162,61 +162,76 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               // Check domain validity and handle new user activation
               setTimeout(async () => {
                 try {
-                  // First check if user already has a profile (existing user)
+                  // First check if user already has a profile
                   const { data: existingProfile } = await supabase
                     .from('profiles')
-                    .select('id, account_activated')
+                    .select('id, account_activated, created_at')
                     .eq('id', session.user.id)
                     .single();
-                  
-                  // If user already exists, skip domain validation
-                  if (existingProfile) {
-                    console.log('[AuthContext] Existing OAuth user');
-                    // If account is not activated, don't re-send email (they already have one)
-                  } else {
-                    // New user - validate domain first
-                    const { data: domainValidation, error: domainError } = await supabase.functions.invoke('validate-signup-domain', {
-                      body: { email: userEmail }
-                    });
-                    
-                    if (!domainError && domainValidation && !domainValidation.allowed) {
-                      console.log('[AuthContext] Domain validation failed for OAuth user:', domainValidation.reason);
+
+                  // Determine if this is a truly NEW user by checking if profile was created recently (within 30 seconds)
+                  const profileCreatedAt = existingProfile?.created_at ? new Date(existingProfile.created_at).getTime() : 0;
+                  const now = Date.now();
+                  const isNewUser = (now - profileCreatedAt) < 30000; // Created within last 30 seconds
+
+                  console.log('[AuthContext] Profile check:', { 
+                    exists: !!existingProfile, 
+                    accountActivated: existingProfile?.account_activated,
+                    isNewUser,
+                    profileAge: now - profileCreatedAt 
+                  });
+
+                  // If this is a NEW OAuth user OR account is not activated
+                  if (isNewUser || (existingProfile && existingProfile.account_activated === false)) {
+                    // Validate domain for new users
+                    if (isNewUser) {
+                      const { data: domainValidation, error: domainError } = await supabase.functions.invoke('validate-signup-domain', {
+                        body: { email: userEmail }
+                      });
                       
-                      // Sign out the user
-                      await supabase.auth.signOut();
-                      
-                      // Show appropriate message
-                      if (domainValidation.reason === 'domain_blocked') {
-                        alert('This email domain is not allowed for registration. Please use a different email provider.');
-                      } else if (domainValidation.reason === 'domain_limit_reached') {
-                        alert('An account already exists with this email domain. For additional accounts, please contact info@produktpix.com');
+                      if (!domainError && domainValidation && !domainValidation.allowed) {
+                        console.log('[AuthContext] Domain validation failed for OAuth user:', domainValidation.reason);
+                        await supabase.auth.signOut();
+                        if (domainValidation.reason === 'domain_blocked') {
+                          alert('This email domain is not allowed for registration. Please use a different email provider.');
+                        } else if (domainValidation.reason === 'domain_limit_reached') {
+                          alert('An account already exists with this email domain. For additional accounts, please contact info@produktpix.com');
+                        }
+                        return;
                       }
-                      return;
                     }
                     
-                    // NEW: For new OAuth users, set account_activated = false and send activation email
-                    console.log('[AuthContext] New OAuth user - will require activation');
+                    // For new OAuth users, set account_activated = false and send activation email
+                    console.log('[AuthContext] New/unactivated OAuth user - triggering activation flow');
                     
-                    // Wait a bit for the profile trigger to create the profile, then update it
+                    // Wait for profile to be fully created, then update it
                     setTimeout(async () => {
                       try {
-                        // Update profile to set account_activated = false for OAuth users
-                        await supabase
+                        // Update profile to set account_activated = false
+                        const { error: updateError } = await supabase
                           .from('profiles')
                           .update({ account_activated: false })
                           .eq('id', session.user.id);
                         
+                        if (updateError) {
+                          console.error('[AuthContext] Failed to update profile:', updateError);
+                        }
+                        
                         // Trigger activation email
-                        const { error: activationError } = await supabase.functions.invoke('generate-activation-token');
+                        console.log('[AuthContext] Invoking generate-activation-token...');
+                        const { error: activationError, data: activationData } = await supabase.functions.invoke('generate-activation-token');
+                        
                         if (activationError) {
                           console.error('[AuthContext] Failed to send activation email:', activationError);
                         } else {
-                          console.log('[AuthContext] Activation email sent to new OAuth user');
+                          console.log('[AuthContext] Activation email sent:', activationData);
                         }
                       } catch (activationErr) {
                         console.error('[AuthContext] Activation setup error:', activationErr);
                       }
-                    }, 2000);
+                    }, 1000);
+                  } else {
+                    console.log('[AuthContext] Existing activated OAuth user - skipping activation');
                   }
                 } catch (validationError) {
                   console.error('[AuthContext] Domain validation error:', validationError);
