@@ -83,7 +83,7 @@ serve(async (req: Request): Promise<Response> => {
     // Send activation email
     console.log("[generate-activation-token] Sending activation email to:", user.email);
     const emailResponse = await resend.emails.send({
-      from: "ProduktPix <onboarding@resend.dev>",
+      from: "ProduktPix <onboarding@produktpix.com>",
       to: [user.email!],
       subject: "Activate Your ProduktPix Account",
       html: `

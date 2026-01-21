@@ -27,7 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("[auth-confirmation-email] Sending to:", email);
 
     const emailResponse = await resend.emails.send({
-      from: "ProduktPix <onboarding@resend.dev>",
+      from: "ProduktPix <onboarding@produktpix.com>",
       to: [email],
       subject: "Welcome to ProduktPix - Confirm Your Account",
       html: `
