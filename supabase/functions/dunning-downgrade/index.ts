@@ -217,7 +217,7 @@ async function sendReminderEmail(apiKey: string, email: string, name: string | n
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      from: 'ProduktPix <noreply@produktpix.com>',
+      from: 'ProduktPix <onboarding@resend.dev>',
       to: [email],
       subject,
       html: `
@@ -288,7 +288,7 @@ async function sendDowngradeEmail(apiKey: string, email: string, name: string | 
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      from: 'ProduktPix <noreply@produktpix.com>',
+      from: 'ProduktPix <onboarding@resend.dev>',
       to: [email],
       subject: 'Your ProduktPix account has been moved to the Free plan',
       html: `

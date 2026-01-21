@@ -21,7 +21,10 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log("[auth-confirmation-email] Function called, RESEND_API_KEY exists:", !!Deno.env.get("RESEND_API_KEY"));
+    
     const { email, confirmationUrl, name }: ConfirmationEmailRequest = await req.json();
+    console.log("[auth-confirmation-email] Sending to:", email);
 
     const emailResponse = await resend.emails.send({
       from: "ProduktPix <onboarding@resend.dev>",
