@@ -256,6 +256,8 @@ export const useOnboarding = () => {
         })
         .eq('id', user.id);
 
+        window.location.reload();
+
       if (error) {
         console.error('[useOnboarding] Error completing onboarding:', error);
         // DO NOT revert state - let user proceed regardless

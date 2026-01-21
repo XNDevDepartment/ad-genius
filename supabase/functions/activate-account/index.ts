@@ -75,7 +75,7 @@ serve(async (req: Request): Promise<Response> => {
     const { error: updateError } = await supabaseAdmin
       .from("profiles")
       .update({
-        account_activated: true,
+        account_activated: false,
         activation_token: null,
         activation_token_expires_at: null,
         updated_at: new Date().toISOString(),

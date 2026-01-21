@@ -159,7 +159,7 @@ OUTPUT: Single authentic UGC photo ready for social media.
 
   const handleSkipVideo = async () => {
     await completeOnboarding();
-    navigate('/create/ugc-gemini');
+    navigate('/');
   };
 
   const readyImages = jobImages.filter(img => img.public_url);
