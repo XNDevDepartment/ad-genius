@@ -107,8 +107,8 @@ export const SettingsForm = ({
           onValueChange={(value) => value && onSettingsChange({ highlight: value })}
           className="justify-start"
         >
-          <ToggleGroupItem value="yes" size="sm" className="flex-1 bg-muted">{t('ugc.highlight.yes')}</ToggleGroupItem>
-          <ToggleGroupItem value="no" size="sm" className="flex-1 bg-muted">{t('ugc.highlight.no')}</ToggleGroupItem>
+          <ToggleGroupItem value="no" size="sm" className="flex-1 bg-muted">{t('ugc.highlight.yes')}</ToggleGroupItem>
+          <ToggleGroupItem value="yes" size="sm" className="flex-1 bg-muted">{t('ugc.highlight.no')}</ToggleGroupItem>
         </ToggleGroup>
       </div>
 
