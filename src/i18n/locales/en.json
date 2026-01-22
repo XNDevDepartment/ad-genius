@@ -1425,7 +1425,22 @@
       "selected": "{{count}} of {{max}} garments selected",
       "discount": "Upload 5+ garments and save 10%!",
       "detailsLabel": "Clothing Details",
-      "detailsPlaceholder": "Ex: Long sleeve sweater. Oversize jacket. Knee-length dress. Stretch leggings"
+      "detailsPlaceholder": "Ex: Long sleeve sweater. Oversize jacket. Knee-length dress. Stretch leggings",
+      "importFromLibrary": "From Library",
+      "importFromUrl": "From URL",
+      "importFromShopify": "From Shopify",
+      "selectFromLibrary": "Select from Library",
+      "searchPlaceholder": "Search images...",
+      "selectedCount": "{{count}} of {{max}} selected",
+      "noImagesFound": "No images found",
+      "addSelected": "Add {{count}} Selected",
+      "urlDescription": "Paste image URLs (one per line). Maximum {{max}} images.",
+      "urlPlaceholder": "https://example.com/image1.jpg\nhttps://example.com/image2.jpg",
+      "validUrlsCount": "{{count}} valid URLs detected",
+      "noValidUrls": "No valid URLs detected",
+      "importUrls": "Import {{count}} URLs",
+      "importSuccess": "Import Complete",
+      "importSuccessDesc": "{{count}} images imported successfully"
     },
     "errors": {
       "accessDenied": "Access Denied",
