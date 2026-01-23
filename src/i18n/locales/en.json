@@ -57,7 +57,11 @@
       "saveAmount": "Save €10!",
       "expiresIn": "Offer expires in {{hours}}h {{minutes}}m",
       "getOffer": "Get This Offer",
-      "startFree": "Start Creating (Free)"
+      "startFree": "Start Creating (Free)",
+      "authRequired": "Please sign in to continue",
+      "sessionExpired": "Your session expired. Please refresh the page.",
+      "checkoutError": "Failed to start checkout. Please try again.",
+      "pleaseWait": "Please wait..."
     },
     "step1": {
       "title": "Upload Your Product",
@@ -571,7 +575,8 @@
     "oldest": "Oldest",
     "noResults": "No results",
     "currentlyGenerating": "Currently generating",
-    "credit": "Credits:"
+    "credit": "Credits:",
+    "error": "Something went wrong. Please try again."
   },
   "a11y": {
     "logoAlt": "Logo",

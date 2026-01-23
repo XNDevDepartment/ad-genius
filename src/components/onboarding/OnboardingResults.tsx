@@ -12,6 +12,25 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import '@/costumn.css';
 
+// Refresh session on mobile to handle background/foreground transitions
+const useSessionRefresh = () => {
+  useEffect(() => {
+    const refreshSession = async () => {
+      try {
+        const { error } = await supabase.auth.refreshSession();
+        if (error) {
+          console.warn('[OnboardingResults] Session refresh failed:', error.message);
+        } else {
+          console.log('[OnboardingResults] Session refreshed successfully');
+        }
+      } catch (err) {
+        console.warn('[OnboardingResults] Session refresh error:', err);
+      }
+    };
+    refreshSession();
+  }, []);
+};
+
 interface OnboardingResultsProps {
   data: OnboardingData;
 }
@@ -50,8 +69,11 @@ const PlaceholderCell = () => (
 export const OnboardingResults = ({ data }: OnboardingResultsProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { completeOnboarding, awardCredits } = useOnboarding();
+  
+  // Refresh session on mount to handle mobile background issues
+  useSessionRefresh();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const [creditsAwarded, setCreditsAwarded] = useState(false);
@@ -126,10 +148,30 @@ export const OnboardingResults = ({ data }: OnboardingResultsProps) => {
   }, [isComplete, creditsAwarded, user, awardCredits, t]);
 
   const handleGetOffer = async () => {
-    if (!user) return;
+    // Check if auth is still loading
+    if (authLoading) {
+      console.warn('[OnboardingResults] Auth still loading, cannot checkout yet');
+      toast.error(t('onboarding.offer.pleaseWait'));
+      return;
+    }
+    
+    // Check if user is authenticated
+    if (!user) {
+      console.error('[OnboardingResults] No user found - cannot checkout');
+      toast.error(t('onboarding.offer.authRequired'));
+      return;
+    }
     
     setIsCheckingOut(true);
     try {
+      console.log('[OnboardingResults] Starting checkout:', {
+        planId: 'starter',
+        interval: 'month',
+        promoCode: 'ONB1ST',
+        userId: user.id,
+        userEmail: user.email
+      });
+
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
         body: { 
           planId: 'starter',
@@ -138,13 +180,36 @@ export const OnboardingResults = ({ data }: OnboardingResultsProps) => {
         }
       });
 
-      if (error) throw error;
-      if (checkoutData?.url) {
-        window.location.href = checkoutData.url;
+      console.log('[OnboardingResults] Checkout response:', { 
+        hasData: !!checkoutData, 
+        hasUrl: !!checkoutData?.url, 
+        error: error?.message 
+      });
+
+      if (error) {
+        console.error('[OnboardingResults] Checkout function error:', error);
+        throw new Error(error.message || 'Checkout failed');
       }
-    } catch (error) {
-      console.error('Checkout error:', error);
-      toast.error(t('common.error'));
+      
+      if (!checkoutData?.url) {
+        console.error('[OnboardingResults] No checkout URL received:', checkoutData);
+        throw new Error('No checkout URL received');
+      }
+
+      // Redirect to Stripe checkout
+      window.location.href = checkoutData.url;
+    } catch (error: any) {
+      console.error('[OnboardingResults] Checkout error:', {
+        message: error?.message,
+        name: error?.name
+      });
+      
+      // Show specific error message based on error type
+      if (error?.message?.includes('not authenticated') || error?.message?.includes('User not')) {
+        toast.error(t('onboarding.offer.sessionExpired'));
+      } else {
+        toast.error(t('onboarding.offer.checkoutError'));
+      }
     } finally {
       setIsCheckingOut(false);
     }

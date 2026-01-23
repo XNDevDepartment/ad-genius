@@ -21,9 +21,23 @@ serve(async (req) => {
   try {
     const authHeader = req.headers.get("Authorization") ?? "";
     const token = authHeader.replace("Bearer ", "");
+    
+    console.log('[create-checkout] Request received, hasAuthHeader:', !!authHeader, 'tokenLength:', token.length);
+    
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError || !userData.user?.email) throw new Error("User not authenticated or email not available");
+    
+    if (userError) {
+      console.error('[create-checkout] Auth error:', userError.message);
+      throw new Error("User not authenticated: " + userError.message);
+    }
+    
+    if (!userData.user?.email) {
+      console.error('[create-checkout] No user email found');
+      throw new Error("User email not available");
+    }
+    
     const user = userData.user;
+    console.log('[create-checkout] User authenticated:', user.email);
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
@@ -32,6 +46,8 @@ serve(async (req) => {
 
     // Get request body
     const { planId, interval = 'month', promoCode } = await req.json();
+    
+    console.log('[create-checkout] Checkout params:', { planId, interval, promoCode: promoCode || 'none' });
 
     // Define plan pricing
     const planPricing = {
@@ -150,12 +166,18 @@ serve(async (req) => {
       }
     });
 
+    console.log('[create-checkout] Session created:', { 
+      sessionId: session.id, 
+      hasUrl: !!session.url 
+    });
+
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    console.error('[create-checkout] Error:', message);
     return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
