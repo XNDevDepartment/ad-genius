@@ -273,7 +273,7 @@ export const OnboardingChecklist = ({ onComplete }: OnboardingChecklistProps) =>
           title={t('onboarding.checklist.milestones.video.title', 'Animate your first image')}
           description={t('onboarding.checklist.milestones.video.description', 'Turn static images into video')}
           cta={t('onboarding.checklist.milestones.video.cta', 'Create')}
-          route="/video"
+          route="/create/video"
         />
 
         <MilestoneItem
@@ -282,7 +282,7 @@ export const OnboardingChecklist = ({ onComplete }: OnboardingChecklistProps) =>
           title={t('onboarding.checklist.milestones.outfitSwap.title', 'Create your first Outfit Swap')}
           description={t('onboarding.checklist.milestones.outfitSwap.description', 'Try clothes on models')}
           cta={t('onboarding.checklist.milestones.outfitSwap.cta', 'Try it')}
-          route="/outfit-swap"
+          route="/create/outfit-swap"
         />
 
         <MilestoneItem
