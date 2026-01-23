@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import confetti from 'canvas-confetti';
 
 export interface MilestoneState {
   completed: boolean;
@@ -21,11 +22,52 @@ const defaultMilestones: MilestonesData = {
   all_complete: { completed: false, credited: false }
 };
 
+// Confetti celebration function
+const triggerConfetti = () => {
+  const count = 200;
+  const defaults = {
+    origin: { y: 0.7 },
+    zIndex: 9999
+  };
+
+  function fire(particleRatio: number, opts: confetti.Options) {
+    confetti({
+      ...defaults,
+      ...opts,
+      particleCount: Math.floor(count * particleRatio)
+    });
+  }
+
+  fire(0.25, {
+    spread: 26,
+    startVelocity: 55,
+  });
+  fire(0.2, {
+    spread: 60,
+  });
+  fire(0.35, {
+    spread: 100,
+    decay: 0.91,
+    scalar: 0.8
+  });
+  fire(0.1, {
+    spread: 120,
+    startVelocity: 25,
+    decay: 0.92,
+    scalar: 1.2
+  });
+  fire(0.1, {
+    spread: 120,
+    startVelocity: 45,
+  });
+};
+
 export const useOnboardingMilestones = () => {
   const { user } = useAuth();
   const [milestones, setMilestones] = useState<MilestonesData>(defaultMilestones);
   const [loading, setLoading] = useState(true);
   const [totalCreditsEarned, setTotalCreditsEarned] = useState(0);
+  const previousMilestonesRef = useRef<MilestonesData>(defaultMilestones);
 
   // Fetch milestone completion status
   const fetchMilestones = useCallback(async () => {
@@ -98,9 +140,98 @@ export const useOnboardingMilestones = () => {
     }
   }, [user]);
 
+  // Initial fetch
   useEffect(() => {
     fetchMilestones();
   }, [fetchMilestones]);
+
+  // Real-time subscriptions for cross-tab updates
+  useEffect(() => {
+    if (!user) return;
+
+    // Subscribe to UGC images changes
+    const ugcChannel = supabase
+      .channel('ugc-milestone')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'ugc_images',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          console.log('[useOnboardingMilestones] UGC image detected');
+          fetchMilestones();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to video job completions
+    const videoChannel = supabase
+      .channel('video-milestone')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'kling_jobs',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          if (payload.new && (payload.new as any).status === 'completed') {
+            console.log('[useOnboardingMilestones] Video completion detected');
+            fetchMilestones();
+          }
+        }
+      )
+      .subscribe();
+
+    // Subscribe to outfit swap completions
+    const outfitChannel = supabase
+      .channel('outfit-milestone')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'outfit_swap_jobs',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          if (payload.new && (payload.new as any).status === 'completed') {
+            console.log('[useOnboardingMilestones] Outfit swap completion detected');
+            fetchMilestones();
+          }
+        }
+      )
+      .subscribe();
+
+    // Subscribe to onboarding rewards changes (for cross-tab credit updates)
+    const rewardsChannel = supabase
+      .channel('rewards-milestone')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'onboarding_rewards',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          console.log('[useOnboardingMilestones] Rewards update detected');
+          fetchMilestones();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(ugcChannel);
+      supabase.removeChannel(videoChannel);
+      supabase.removeChannel(outfitChannel);
+      supabase.removeChannel(rewardsChannel);
+    };
+  }, [user, fetchMilestones]);
 
   // Award credits for a specific milestone
   const awardMilestone = useCallback(async (milestone: 'ugc' | 'video' | 'outfit_swap' | 'all_complete'): Promise<boolean> => {
@@ -118,6 +249,9 @@ export const useOnboardingMilestones = () => {
       }
 
       if (data === true) {
+        // Trigger confetti celebration!
+        triggerConfetti();
+        
         // Update local state
         setMilestones(prev => ({
           ...prev,
@@ -188,6 +322,7 @@ export const useOnboardingMilestones = () => {
     allComplete,
     awardMilestone,
     checkAndAwardMilestones,
-    refetch: fetchMilestones
+    refetch: fetchMilestones,
+    triggerConfetti // Export for manual triggering if needed
   };
 };
