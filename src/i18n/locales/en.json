@@ -63,6 +63,37 @@
       "checkoutError": "Failed to start checkout. Please try again.",
       "pleaseWait": "Please wait..."
     },
+    "checklist": {
+      "title": "Getting Started",
+      "subtitle": "Earn 20 free credits",
+      "progress": "{{completed}} of {{total}} completed",
+      "skip": "Skip and explore freely",
+      "milestones": {
+        "ugc": {
+          "title": "Create your first UGC image",
+          "description": "Generate AI product photos",
+          "cta": "Create",
+          "credited": "+5 credits earned!"
+        },
+        "video": {
+          "title": "Animate your first image",
+          "description": "Turn static images into video",
+          "cta": "Create",
+          "credited": "+5 credits earned!"
+        },
+        "outfitSwap": {
+          "title": "Create your first Outfit Swap",
+          "description": "Try clothes on models",
+          "cta": "Try it",
+          "credited": "+5 credits earned!"
+        },
+        "allComplete": {
+          "title": "Bonus: All steps completed!",
+          "description": "Finish all tasks to unlock",
+          "credited": "+5 bonus credits earned!"
+        }
+      }
+    },
     "step1": {
       "title": "Upload Your Product",
       "subtitle": "Start by uploading an image of your product",

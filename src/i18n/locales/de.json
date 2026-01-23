@@ -63,6 +63,37 @@
       "checkoutError": "Checkout konnte nicht gestartet werden. Bitte versuchen Sie es erneut.",
       "pleaseWait": "Bitte warten..."
     },
+    "checklist": {
+      "title": "Erste Schritte",
+      "subtitle": "Verdienen Sie 20 kostenlose Credits",
+      "progress": "{{completed}} von {{total}} abgeschlossen",
+      "skip": "Überspringen und frei erkunden",
+      "milestones": {
+        "ugc": {
+          "title": "Erstellen Sie Ihr erstes UGC-Bild",
+          "description": "Generieren Sie KI-Produktfotos",
+          "cta": "Erstellen",
+          "credited": "+5 Credits verdient!"
+        },
+        "video": {
+          "title": "Animieren Sie Ihr erstes Bild",
+          "description": "Verwandeln Sie statische Bilder in Videos",
+          "cta": "Erstellen",
+          "credited": "+5 Credits verdient!"
+        },
+        "outfitSwap": {
+          "title": "Erstellen Sie Ihren ersten Outfit Swap",
+          "description": "Probieren Sie Kleidung an Models",
+          "cta": "Ausprobieren",
+          "credited": "+5 Credits verdient!"
+        },
+        "allComplete": {
+          "title": "Bonus: Alle Schritte abgeschlossen!",
+          "description": "Schließen Sie alle Aufgaben ab, um freizuschalten",
+          "credited": "+5 Bonus-Credits verdient!"
+        }
+      }
+    },
     "step1": {
       "title": "Laden Sie Ihr Produkt Hoch",
       "subtitle": "Ziehen Sie ein Bild hierher oder fügen Sie eine URL ein",
