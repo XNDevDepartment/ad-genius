@@ -63,6 +63,37 @@
       "checkoutError": "Falha ao iniciar checkout. Por favor tente novamente.",
       "pleaseWait": "Por favor aguarde..."
     },
+    "checklist": {
+      "title": "Primeiros Passos",
+      "subtitle": "Ganhe 20 créditos grátis",
+      "progress": "{{completed}} de {{total}} completados",
+      "skip": "Saltar e explorar livremente",
+      "milestones": {
+        "ugc": {
+          "title": "Crie a sua primeira imagem UGC",
+          "description": "Gere fotos de produto com IA",
+          "cta": "Criar",
+          "credited": "+5 créditos ganhos!"
+        },
+        "video": {
+          "title": "Anime a sua primeira imagem",
+          "description": "Transforme imagens estáticas em vídeo",
+          "cta": "Criar",
+          "credited": "+5 créditos ganhos!"
+        },
+        "outfitSwap": {
+          "title": "Crie o seu primeiro Outfit Swap",
+          "description": "Experimente roupas em modelos",
+          "cta": "Experimentar",
+          "credited": "+5 créditos ganhos!"
+        },
+        "allComplete": {
+          "title": "Bónus: Todos os passos completados!",
+          "description": "Complete todas as tarefas para desbloquear",
+          "credited": "+5 créditos bónus ganhos!"
+        }
+      }
+    },
     "step1": {
       "title": "Carregue o Seu Produto",
       "subtitle": "Arraste e solte uma imagem ou cole um URL",

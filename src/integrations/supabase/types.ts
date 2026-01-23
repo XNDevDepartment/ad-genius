@@ -999,6 +999,7 @@ export type Database = {
       }
       onboarding_rewards: {
         Row: {
+          all_complete_awarded: boolean | null
           awarded_at: string | null
           created_at: string | null
           credits_awarded: number | null
@@ -1007,10 +1008,14 @@ export type Database = {
           offer_expires_at: string | null
           offer_redeemed: boolean | null
           offer_redeemed_at: string | null
+          outfit_swap_milestone_awarded: boolean | null
+          ugc_milestone_awarded: boolean | null
           updated_at: string | null
           user_id: string
+          video_milestone_awarded: boolean | null
         }
         Insert: {
+          all_complete_awarded?: boolean | null
           awarded_at?: string | null
           created_at?: string | null
           credits_awarded?: number | null
@@ -1019,10 +1024,14 @@ export type Database = {
           offer_expires_at?: string | null
           offer_redeemed?: boolean | null
           offer_redeemed_at?: string | null
+          outfit_swap_milestone_awarded?: boolean | null
+          ugc_milestone_awarded?: boolean | null
           updated_at?: string | null
           user_id: string
+          video_milestone_awarded?: boolean | null
         }
         Update: {
+          all_complete_awarded?: boolean | null
           awarded_at?: string | null
           created_at?: string | null
           credits_awarded?: number | null
@@ -1031,8 +1040,11 @@ export type Database = {
           offer_expires_at?: string | null
           offer_redeemed?: boolean | null
           offer_redeemed_at?: string | null
+          outfit_swap_milestone_awarded?: boolean | null
+          ugc_milestone_awarded?: boolean | null
           updated_at?: string | null
           user_id?: string
+          video_milestone_awarded?: boolean | null
         }
         Relationships: []
       }
@@ -1879,6 +1891,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_milestone_credits: {
+        Args: { p_milestone: string; p_user_id: string }
+        Returns: boolean
+      }
       award_onboarding_credits: {
         Args: { p_user_id: string }
         Returns: boolean

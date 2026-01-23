@@ -20,11 +20,16 @@ import FashionCatalogSection from "@/components/landing/FashionCatalogSection";
 import { OnboardingGuard } from "@/components/OnboardingGuard";
 import SEO from "@/components/SEO";
 import { buildOrganizationSchema, buildWebSiteSchema, buildWebApplicationSchema } from "@/lib/schema";
+import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
+import { useOnboarding } from "@/hooks/useOnboarding";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
+  const { completed: onboardingCompleted, loading: onboardingLoading, refetch: refetchOnboarding } = useOnboarding();
 
   useEffect(() => {
     if(localStorage.getItem("billing") === 'true'){
@@ -70,9 +75,14 @@ const Index = () => {
             </div>
           </div>
 
-          {/* User Stats Panel */}
+          {/* User Stats Panel or Onboarding Checklist (Desktop only) */}
           <div className="lg:col-span-5">
-            <UserStatsPanel />
+            {/* On desktop: show checklist if onboarding not completed, otherwise show stats */}
+            {!isMobile && !onboardingLoading && !onboardingCompleted ? (
+              <OnboardingChecklist onComplete={refetchOnboarding} />
+            ) : (
+              <UserStatsPanel />
+            )}
             
             {/* Mobile-only Get More Credits button */}
             <div className="lg:hidden mt-4 text-center">

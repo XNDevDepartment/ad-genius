@@ -63,6 +63,37 @@
       "checkoutError": "Échec du démarrage du paiement. Veuillez réessayer.",
       "pleaseWait": "Veuillez patienter..."
     },
+    "checklist": {
+      "title": "Premiers Pas",
+      "subtitle": "Gagnez 20 crédits gratuits",
+      "progress": "{{completed}} sur {{total}} complétés",
+      "skip": "Passer et explorer librement",
+      "milestones": {
+        "ugc": {
+          "title": "Créez votre première image UGC",
+          "description": "Générez des photos produit avec l'IA",
+          "cta": "Créer",
+          "credited": "+5 crédits gagnés !"
+        },
+        "video": {
+          "title": "Animez votre première image",
+          "description": "Transformez des images statiques en vidéo",
+          "cta": "Créer",
+          "credited": "+5 crédits gagnés !"
+        },
+        "outfitSwap": {
+          "title": "Créez votre premier Outfit Swap",
+          "description": "Essayez des vêtements sur des modèles",
+          "cta": "Essayer",
+          "credited": "+5 crédits gagnés !"
+        },
+        "allComplete": {
+          "title": "Bonus : Toutes les étapes complétées !",
+          "description": "Terminez toutes les tâches pour débloquer",
+          "credited": "+5 crédits bonus gagnés !"
+        }
+      }
+    },
     "step1": {
       "title": "Téléchargez Votre Produit",
       "subtitle": "Glissez-déposez une image ou collez une URL",
