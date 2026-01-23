@@ -57,7 +57,11 @@
       "saveAmount": "Sparen Sie €10!",
       "expiresIn": "Angebot läuft ab in {{hours}}h {{minutes}}m",
       "getOffer": "Dieses Angebot Holen",
-      "startFree": "Kostenlos Starten"
+      "startFree": "Kostenlos Starten",
+      "authRequired": "Bitte melden Sie sich an, um fortzufahren",
+      "sessionExpired": "Ihre Sitzung ist abgelaufen. Bitte aktualisieren Sie die Seite.",
+      "checkoutError": "Checkout konnte nicht gestartet werden. Bitte versuchen Sie es erneut.",
+      "pleaseWait": "Bitte warten..."
     },
     "step1": {
       "title": "Laden Sie Ihr Produkt Hoch",

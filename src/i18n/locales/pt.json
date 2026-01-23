@@ -57,7 +57,11 @@
       "saveAmount": "Poupe €10!",
       "expiresIn": "Oferta expira em {{hours}}h {{minutes}}m",
       "getOffer": "Obter Esta Oferta",
-      "startFree": "Começar Grátis"
+      "startFree": "Começar Grátis",
+      "authRequired": "Por favor inicie sessão para continuar",
+      "sessionExpired": "A sua sessão expirou. Por favor atualize a página.",
+      "checkoutError": "Falha ao iniciar checkout. Por favor tente novamente.",
+      "pleaseWait": "Por favor aguarde..."
     },
     "step1": {
       "title": "Carregue o Seu Produto",
