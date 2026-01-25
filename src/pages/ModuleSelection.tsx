@@ -1,4 +1,4 @@
-import { ArrowLeft, Users, Sparkles, Zap, Video, Lock, Shirt, Image as ImageIcon, Images, Camera, UserPlus } from "lucide-react";
+import { ArrowLeft, Users, Sparkles, Zap, Video, Lock, Shirt, Image as ImageIcon, Images, Camera, UserPlus, Palette } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -84,6 +84,16 @@ const ModuleSelection = () => {
       description: t('createSelection.outfitSwap.description'),
       icon: Shirt,
       path: "/create/outfit-swap",
+      isAdmin: false,
+      isBeta: true,
+      locked: false
+    },
+    {
+      id: "outfit-creator",
+      title: t('createSelection.outfitCreator.title'),
+      description: t('createSelection.outfitCreator.description'),
+      icon: Palette,
+      path: "/create/outfit-creator",
       isAdmin: false,
       isBeta: true,
       locked: false
