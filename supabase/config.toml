@@ -167,7 +167,7 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.outfit-creator]
-verify_jwt = true
+verify_jwt = false
 
 [edge_runtime]
 enabled = true
