@@ -12,14 +12,17 @@ export function useOutfitCreator() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Subscribe to job updates
+  // Subscribe to job updates with polling fallback
   useEffect(() => {
     if (!job?.id || job.status === 'completed' || job.status === 'failed' || job.status === 'canceled') {
       return;
     }
 
-    const unsubscribeJob = outfitCreatorApi.subscribeToJob(job.id, (updatedJob) => {
-      console.log('[useOutfitCreator] Job updated:', updatedJob.status, updatedJob.progress);
+    const jobId = job.id;
+
+    // Real-time subscription
+    const unsubscribeJob = outfitCreatorApi.subscribeToJob(jobId, (updatedJob) => {
+      console.log('[useOutfitCreator] Job updated via realtime:', updatedJob.status, updatedJob.progress);
       setJob(updatedJob);
       
       if (updatedJob.status === 'failed') {
@@ -32,8 +35,8 @@ export function useOutfitCreator() {
       }
     });
 
-    const unsubscribeResult = outfitCreatorApi.subscribeToResult(job.id, (newResult) => {
-      console.log('[useOutfitCreator] Result received');
+    const unsubscribeResult = outfitCreatorApi.subscribeToResult(jobId, (newResult) => {
+      console.log('[useOutfitCreator] Result received via realtime');
       setResult(newResult);
       toast({
         title: "Outfit Created!",
@@ -41,11 +44,46 @@ export function useOutfitCreator() {
       });
     });
 
+    // Polling fallback every 5 seconds
+    const pollInterval = setInterval(async () => {
+      try {
+        console.log('[useOutfitCreator] Polling job status...');
+        const updatedJob = await outfitCreatorApi.getJob(jobId);
+        
+        // Only update if status or progress changed
+        if (updatedJob.status !== job.status || updatedJob.progress !== job.progress) {
+          console.log('[useOutfitCreator] Poll detected change:', updatedJob.status, updatedJob.progress);
+          setJob(updatedJob);
+          
+          if (updatedJob.status === 'completed') {
+            const jobResult = await outfitCreatorApi.getResult(jobId);
+            if (jobResult) {
+              setResult(jobResult);
+              toast({
+                title: "Outfit Created!",
+                description: "Your complete outfit has been generated.",
+              });
+            }
+          } else if (updatedJob.status === 'failed') {
+            setError(updatedJob.error || 'Generation failed');
+            toast({
+              variant: "destructive",
+              title: "Generation Failed",
+              description: updatedJob.error || "Something went wrong",
+            });
+          }
+        }
+      } catch (err) {
+        console.error('[useOutfitCreator] Poll failed:', err);
+      }
+    }, 5000);
+
     return () => {
       unsubscribeJob();
       unsubscribeResult();
+      clearInterval(pollInterval);
     };
-  }, [job?.id, job?.status, toast]);
+  }, [job?.id, job?.status, job?.progress, toast]);
 
   const createJob = useCallback(async (
     baseModelId: string,
