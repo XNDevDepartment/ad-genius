@@ -166,6 +166,9 @@ verify_jwt = true
 [functions.activate-account]
 verify_jwt = false
 
+[functions.outfit-creator]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 port = 54327

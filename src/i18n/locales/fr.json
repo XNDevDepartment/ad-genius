@@ -2161,5 +2161,60 @@
       "title": "Studio Produit IA",
       "description": "Transformez les photos de produits avec des fonds IA. Créez des images e-commerce professionnelles en secondes."
     }
+  },
+  "outfitCreator": {
+    "title": "Créateur de Tenues",
+    "subtitle": "Composez des tenues complètes avec plusieurs vêtements",
+    "step1Title": "Sélectionnez un Modèle",
+    "step2Title": "Ajoutez Vos Vêtements",
+    "changeModel": "Changer de Modèle",
+    "slotsTitle": "Emplacements Vêtements",
+    "mainClothing": "Vêtements Principaux",
+    "accessories": "Accessoires",
+    "garments": "vêtements",
+    "slots": {
+      "top": "Haut",
+      "bottom": "Bas",
+      "shoes": "Chaussures",
+      "accessory1": "Accessoire 1",
+      "accessory2": "Accessoire 2"
+    },
+    "clickToUpload": "Cliquez ou glissez pour télécharger",
+    "uploading": "Téléchargement...",
+    "analyzing": "Analyse...",
+    "recommended": "Recommandé",
+    "tip": "Conseil Pro",
+    "tipDescription": "Ajoutez des accessoires comme des sacs, chapeaux ou bijoux pour compléter le look",
+    "requiredSlots": "Ajoutez au moins un haut ou un bas pour continuer",
+    "totalCost": "Coût Total",
+    "garmentsSelected": "vêtements sélectionnés",
+    "credits": "crédits",
+    "generate": "Générer la Tenue Complète",
+    "generating": "Création de Votre Tenue...",
+    "pass": "Passe {current} sur {total}",
+    "cancel": "Annuler",
+    "resultTitle": "Votre Tenue Complète",
+    "resultSubtitle": "Prête à télécharger ou améliorer",
+    "download": "Télécharger",
+    "createVideo": "Créer une Vidéo",
+    "photoshoot": "Shooting Photo",
+    "ecommerce": "E-Commerce",
+    "createAnother": "Créer une Autre Tenue",
+    "failed": "Génération Échouée",
+    "failedDesc": "Une erreur s'est produite. Vos crédits ont été remboursés.",
+    "tryAgain": "Réessayer",
+    "slotSuggestion": "Suggestion d'Emplacement",
+    "slotSuggestionDesc": "Ceci ressemble à un {detected}, mais vous l'avez ajouté comme {selected}",
+    "errors": {
+      "invalidFile": "Fichier Invalide",
+      "imageOnly": "Veuillez télécharger un fichier image",
+      "uploadFailed": "Échec du Téléchargement"
+    }
+  },
+  "createSelection": {
+    "outfitCreator": {
+      "title": "Créateur de Tenues",
+      "description": "Composez des tenues complètes avec haut, bas, chaussures et accessoires"
+    }
   }
 }

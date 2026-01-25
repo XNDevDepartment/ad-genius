@@ -2161,5 +2161,60 @@
       "title": "KI-Produktstudio",
       "description": "Transformieren Sie Produktfotos mit KI-Hintergründen. Erstellen Sie professionelle E-Commerce-Bilder in Sekunden."
     }
+  },
+  "outfitCreator": {
+    "title": "Outfit-Creator",
+    "subtitle": "Stellen Sie komplette Outfits mit mehreren Kleidungsstücken zusammen",
+    "step1Title": "Wählen Sie ein Model",
+    "step2Title": "Fügen Sie Ihre Kleidung hinzu",
+    "changeModel": "Model wechseln",
+    "slotsTitle": "Kleidungs-Slots",
+    "mainClothing": "Hauptbekleidung",
+    "accessories": "Accessoires",
+    "garments": "Kleidungsstücke",
+    "slots": {
+      "top": "Oberteil",
+      "bottom": "Unterteil",
+      "shoes": "Schuhe",
+      "accessory1": "Accessoire 1",
+      "accessory2": "Accessoire 2"
+    },
+    "clickToUpload": "Klicken oder ziehen zum Hochladen",
+    "uploading": "Wird hochgeladen...",
+    "analyzing": "Wird analysiert...",
+    "recommended": "Empfohlen",
+    "tip": "Profi-Tipp",
+    "tipDescription": "Fügen Sie Accessoires wie Taschen, Hüte oder Schmuck hinzu, um den Look zu vervollständigen",
+    "requiredSlots": "Fügen Sie mindestens ein Ober- oder Unterteil hinzu, um fortzufahren",
+    "totalCost": "Gesamtkosten",
+    "garmentsSelected": "Kleidungsstücke ausgewählt",
+    "credits": "Credits",
+    "generate": "Komplettes Outfit Generieren",
+    "generating": "Ihr Outfit wird erstellt...",
+    "pass": "Durchgang {current} von {total}",
+    "cancel": "Abbrechen",
+    "resultTitle": "Ihr Komplettes Outfit",
+    "resultSubtitle": "Bereit zum Herunterladen oder Verbessern",
+    "download": "Herunterladen",
+    "createVideo": "Video Erstellen",
+    "photoshoot": "Fotoshooting",
+    "ecommerce": "E-Commerce",
+    "createAnother": "Weiteres Outfit Erstellen",
+    "failed": "Generierung Fehlgeschlagen",
+    "failedDesc": "Etwas ist schief gelaufen. Ihre Credits wurden erstattet.",
+    "tryAgain": "Erneut Versuchen",
+    "slotSuggestion": "Slot-Vorschlag",
+    "slotSuggestionDesc": "Dies sieht aus wie ein {detected}, aber Sie haben es als {selected} hinzugefügt",
+    "errors": {
+      "invalidFile": "Ungültige Datei",
+      "imageOnly": "Bitte laden Sie eine Bilddatei hoch",
+      "uploadFailed": "Upload Fehlgeschlagen"
+    }
+  },
+  "createSelection": {
+    "outfitCreator": {
+      "title": "Outfit-Creator",
+      "description": "Stellen Sie komplette Outfits mit Ober-, Unterteil, Schuhen und Accessoires zusammen"
+    }
   }
 }
