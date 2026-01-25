@@ -2161,5 +2161,60 @@
       "title": "Estudio de Producto IA",
       "description": "Transforma fotos de producto con fondos IA. Crea imágenes profesionales para e-commerce en segundos."
     }
+  },
+  "outfitCreator": {
+    "title": "Creador de Outfits",
+    "subtitle": "Compón outfits completos con múltiples prendas",
+    "step1Title": "Selecciona un Modelo",
+    "step2Title": "Añade Tus Prendas",
+    "changeModel": "Cambiar Modelo",
+    "slotsTitle": "Slots de Prendas",
+    "mainClothing": "Ropa Principal",
+    "accessories": "Accesorios",
+    "garments": "prendas",
+    "slots": {
+      "top": "Superior",
+      "bottom": "Inferior",
+      "shoes": "Zapatos",
+      "accessory1": "Accesorio 1",
+      "accessory2": "Accesorio 2"
+    },
+    "clickToUpload": "Clic o arrastra para subir",
+    "uploading": "Subiendo...",
+    "analyzing": "Analizando...",
+    "recommended": "Recomendado",
+    "tip": "Consejo Pro",
+    "tipDescription": "Añade accesorios como bolsos, sombreros o joyas para completar el look",
+    "requiredSlots": "Añade al menos una prenda superior o inferior para continuar",
+    "totalCost": "Coste Total",
+    "garmentsSelected": "prendas seleccionadas",
+    "credits": "créditos",
+    "generate": "Generar Outfit Completo",
+    "generating": "Creando Tu Outfit...",
+    "pass": "Pasada {current} de {total}",
+    "cancel": "Cancelar",
+    "resultTitle": "Tu Outfit Completo",
+    "resultSubtitle": "Listo para descargar o mejorar",
+    "download": "Descargar",
+    "createVideo": "Crear Vídeo",
+    "photoshoot": "Sesión de Fotos",
+    "ecommerce": "E-Commerce",
+    "createAnother": "Crear Otro Outfit",
+    "failed": "Generación Fallida",
+    "failedDesc": "Algo salió mal. Tus créditos han sido reembolsados.",
+    "tryAgain": "Intentar de Nuevo",
+    "slotSuggestion": "Sugerencia de Slot",
+    "slotSuggestionDesc": "Esto parece un {detected}, pero lo añadiste como {selected}",
+    "errors": {
+      "invalidFile": "Archivo Inválido",
+      "imageOnly": "Por favor sube un archivo de imagen",
+      "uploadFailed": "Error al Subir"
+    }
+  },
+  "createSelection": {
+    "outfitCreator": {
+      "title": "Creador de Outfits",
+      "description": "Compón outfits completos con superior, inferior, zapatos y accesorios"
+    }
   }
 }
