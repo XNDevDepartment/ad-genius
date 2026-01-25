@@ -572,6 +572,10 @@
       "title": "Catálogo Roupa",
       "description": "Veste a tua roupa nos nossos modelos e faz uma sessão fotográfica profissional"
     },
+    "outfitCreator": {
+      "title": "Outfit Creator",
+      "description": "Compõe looks completos com top, calças, sapatos e acessórios"
+    },
   "studioPhotos": {
       "title": "Fotos de Estúdio",
       "description": "Gere fotos de produto profissionais"
@@ -579,6 +583,53 @@
     "comingSoon": "Brevemente",
     "betaBadge": "BETA",
     "betaLockedDescription": "Faz upgrade para qualquer plano pago para aceder a esta funcionalidade beta. Ajuda-nos a aperfeiçoar o outfit-swap!"
+  },
+  "outfitCreator": {
+    "title": "Outfit Creator",
+    "subtitle": "Compõe looks completos com várias peças",
+    "slotsTitle": "Adiciona as Tuas Peças",
+    "mainClothing": "Roupa Principal",
+    "accessories": "Acessórios",
+    "garments": "peças",
+    "slots": {
+      "top": "Top",
+      "bottom": "Calças/Saia",
+      "shoes": "Sapatos",
+      "accessory1": "Acessório 1",
+      "accessory2": "Acessório 2"
+    },
+    "recommended": "Recomendado",
+    "clickToUpload": "Clica ou arrasta para carregar",
+    "uploading": "A carregar...",
+    "analyzing": "A analisar...",
+    "tip": "Dica Pro",
+    "tipDescription": "Adiciona pelo menos um top ou calças para melhores resultados. Acessórios são opcionais.",
+    "requiredSlots": "Adiciona pelo menos um top ou calças para continuar.",
+    "step1Title": "Seleciona um Modelo",
+    "step2Title": "Adiciona as Tuas Peças",
+    "changeModel": "Mudar Modelo",
+    "totalCost": "Custo Total",
+    "garmentsSelected": "peças selecionadas",
+    "credits": "créditos",
+    "generate": "Gerar Look Completo",
+    "generating": "A Criar o Teu Look...",
+    "pass": "Passo {{current}} de {{total}}",
+    "cancel": "Cancelar",
+    "failed": "Geração Falhou",
+    "failedDesc": "Algo correu mal ao criar o teu look.",
+    "tryAgain": "Tentar Novamente",
+    "resultTitle": "O Teu Look Está Pronto!",
+    "resultSubtitle": "Descarrega ou cria mais conteúdo a partir desta imagem",
+    "download": "Descarregar",
+    "createVideo": "Criar Vídeo",
+    "photoshoot": "Sessão Fotográfica",
+    "ecommerce": "E-commerce",
+    "createAnother": "Criar Outro Look",
+    "errors": {
+      "invalidFile": "Ficheiro Inválido",
+      "imageOnly": "Por favor carrega um ficheiro de imagem",
+      "uploadFailed": "Falha no Carregamento"
+    }
   },
   "common": {
     "getStarted": "Começar",

@@ -46,6 +46,7 @@ const TestVideoGeneration = lazyWithRetry(() => import("./pages/VideoGenerator")
 const VideoLibrary = lazyWithRetry(() => import("./pages/VideoLibrary"));
 const AdGenius = lazyWithRetry(() => import("./pages/AdGenius"));
 const OutfitSwap = lazyWithRetry(() => import("./pages/OutfitSwap"));
+const OutfitCreator = lazyWithRetry(() => import("./pages/OutfitCreator"));
 const ProductStudioBackground = lazyWithRetry(() => import("./pages/ProductStudioBackground"));
 const ProductStudioBackgroundBulk = lazyWithRetry(() => import("./pages/ProductStudioBackgroundBulk"));
 const MagazinePhotoshoot = lazyWithRetry(() => import("./pages/MagazinePhotoshoot"));
@@ -153,6 +154,15 @@ const App = () => {
                     <Suspense fallback={<LoadingFallback />}>
                       <AuthGuard>
                         <OutfitSwap />
+                      </AuthGuard>
+                    </Suspense>
+                  </ErrorBoundaryWithReset>
+                } />
+                <Route path="create/outfit-creator" element={
+                  <ErrorBoundaryWithReset>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AuthGuard>
+                        <OutfitCreator />
                       </AuthGuard>
                     </Suspense>
                   </ErrorBoundaryWithReset>

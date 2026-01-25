@@ -1048,6 +1048,115 @@ export type Database = {
         }
         Relationships: []
       }
+      outfit_creator_jobs: {
+        Row: {
+          base_model_id: string
+          created_at: string | null
+          current_pass: number | null
+          error: string | null
+          finished_at: string | null
+          garments: Json
+          id: string
+          intermediate_images: Json | null
+          metadata: Json | null
+          progress: number | null
+          settings: Json | null
+          started_at: string | null
+          status: string
+          total_passes: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          base_model_id: string
+          created_at?: string | null
+          current_pass?: number | null
+          error?: string | null
+          finished_at?: string | null
+          garments?: Json
+          id?: string
+          intermediate_images?: Json | null
+          metadata?: Json | null
+          progress?: number | null
+          settings?: Json | null
+          started_at?: string | null
+          status?: string
+          total_passes?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          base_model_id?: string
+          created_at?: string | null
+          current_pass?: number | null
+          error?: string | null
+          finished_at?: string | null
+          garments?: Json
+          id?: string
+          intermediate_images?: Json | null
+          metadata?: Json | null
+          progress?: number | null
+          settings?: Json | null
+          started_at?: string | null
+          status?: string
+          total_passes?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outfit_creator_jobs_base_model_id_fkey"
+            columns: ["base_model_id"]
+            isOneToOne: false
+            referencedRelation: "outfit_swap_base_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outfit_creator_results: {
+        Row: {
+          created_at: string | null
+          id: string
+          job_id: string
+          jpg_url: string | null
+          metadata: Json | null
+          png_url: string | null
+          public_url: string
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          job_id: string
+          jpg_url?: string | null
+          metadata?: Json | null
+          png_url?: string | null
+          public_url: string
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          job_id?: string
+          jpg_url?: string | null
+          metadata?: Json | null
+          png_url?: string | null
+          public_url?: string
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outfit_creator_results_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "outfit_creator_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outfit_swap_base_models: {
         Row: {
           age_range: string | null

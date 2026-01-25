@@ -577,9 +577,62 @@
       "title": "Fashion Catalog",
       "description": "Dress our models with your clothes and get professional-quality photos"
     },
+    "outfitCreator": {
+      "title": "Outfit Creator",
+      "description": "Compose complete outfits with top, bottom, shoes & accessories"
+    },
     "comingSoon": "Coming soon",
     "betaBadge": "BETA",
     "betaLockedDescription": "Upgrade to any paid plan to access this beta feature. Help us perfect outfit-swap!"
+  },
+  "outfitCreator": {
+    "title": "Outfit Creator",
+    "subtitle": "Compose complete outfits with multiple garments",
+    "slotsTitle": "Add Your Garments",
+    "mainClothing": "Main Clothing",
+    "accessories": "Accessories",
+    "garments": "garments",
+    "slots": {
+      "top": "Top",
+      "bottom": "Bottom",
+      "shoes": "Shoes",
+      "accessory1": "Accessory 1",
+      "accessory2": "Accessory 2"
+    },
+    "recommended": "Recommended",
+    "clickToUpload": "Click or drag to upload",
+    "uploading": "Uploading...",
+    "analyzing": "Analyzing...",
+    "tip": "Pro Tip",
+    "tipDescription": "Add at least a top or bottom for best results. Accessories are optional.",
+    "requiredSlots": "Please add at least a top or bottom garment to continue.",
+    "slotSuggestion": "Slot Suggestion",
+    "slotSuggestionDesc": "This looks like a {{detected}}, but you placed it in {{selected}}",
+    "step1Title": "Select a Model",
+    "step2Title": "Add Your Garments",
+    "changeModel": "Change Model",
+    "totalCost": "Total Cost",
+    "garmentsSelected": "garments selected",
+    "credits": "credits",
+    "generate": "Generate Complete Outfit",
+    "generating": "Creating Your Outfit...",
+    "pass": "Pass {{current}} of {{total}}",
+    "cancel": "Cancel",
+    "failed": "Generation Failed",
+    "failedDesc": "Something went wrong while creating your outfit.",
+    "tryAgain": "Try Again",
+    "resultTitle": "Your Outfit is Ready!",
+    "resultSubtitle": "Download or create more content from this image",
+    "download": "Download",
+    "createVideo": "Create Video",
+    "photoshoot": "Photoshoot",
+    "ecommerce": "E-commerce",
+    "createAnother": "Create Another Outfit",
+    "errors": {
+      "invalidFile": "Invalid File",
+      "imageOnly": "Please upload an image file",
+      "uploadFailed": "Upload Failed"
+    }
   },
   "common": {
     "getStarted": "Get Started",
