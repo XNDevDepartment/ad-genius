@@ -64,6 +64,8 @@ const UseCaseLanding = lazyWithRetry(() => import("./pages/UseCaseLanding"));
 const IntegrationLanding = lazyWithRetry(() => import("./pages/IntegrationLanding"));
 const Bulk = lazyWithRetry(() => import("./pages/Bulk"));
 const ActivateAccount = lazyWithRetry(() => import("./pages/ActivateAccount"));
+const GeniusAgent = lazyWithRetry(() => import("./pages/GeniusAgent"));
+const GeniusAgentAdmin = lazyWithRetry(() => import("./pages/admin/GeniusAgentAdmin"));
 const queryClient = new QueryClient();
 
 // Wrapper component to provide resetKey and user context to ErrorBoundary
@@ -342,6 +344,20 @@ const App = () => {
                 <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
                     <SubscriptionAudit />
+                  </Suspense>
+                </ErrorBoundaryWithReset>
+              } />
+              <Route path="/admin/genius-agent" element={
+                <ErrorBoundaryWithReset>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <GeniusAgentAdmin />
+                  </Suspense>
+                </ErrorBoundaryWithReset>
+              } />
+              <Route path="/genius-agent" element={
+                <ErrorBoundaryWithReset>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <GeniusAgent />
                   </Suspense>
                 </ErrorBoundaryWithReset>
               } />
