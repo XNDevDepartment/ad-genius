@@ -643,13 +643,33 @@ async function getAllConfigs(
     return errorJson("Admin access required", 403);
   }
 
+  // Fetch configs without automatic join
   const { data: configs, error } = await supabase
     .from("genius_agent_configs")
-    .select("*, profiles(email, name)")
+    .select("*")
     .order("updated_at", { ascending: false });
 
   if (error) {
     return errorJson(`Failed to fetch configs: ${error.message}`, 500);
+  }
+
+  // Fetch profiles for all users
+  const userIds = [...new Set((configs || []).map(c => c.user_id))];
+  
+  if (userIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, email, name")
+      .in("id", userIds);
+
+    // Map profiles to configs
+    const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+    const enrichedConfigs = (configs || []).map(config => ({
+      ...config,
+      profiles: profileMap.get(config.user_id) || null
+    }));
+
+    return json({ configs: enrichedConfigs });
   }
 
   return json({ configs: configs || [] });
@@ -672,14 +692,34 @@ async function getAllJobs(
 
   const limit = (body.limit as number) || 100;
 
+  // Fetch jobs with source_images only (no profiles join)
   const { data: jobs, error } = await supabase
     .from("genius_agent_jobs")
-    .select("*, source_images(file_name, public_url), profiles:user_id(email, name)")
+    .select("*, source_images(file_name, public_url)")
     .order("created_at", { ascending: false })
     .limit(limit);
 
   if (error) {
     return errorJson(`Failed to fetch jobs: ${error.message}`, 500);
+  }
+
+  // Fetch profiles for all users
+  const userIds = [...new Set((jobs || []).map(j => j.user_id))];
+  
+  if (userIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, email, name")
+      .in("id", userIds);
+
+    // Map profiles to jobs
+    const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+    const enrichedJobs = (jobs || []).map(job => ({
+      ...job,
+      profiles: profileMap.get(job.user_id) || null
+    }));
+
+    return json({ jobs: enrichedJobs });
   }
 
   return json({ jobs: jobs || [] });
