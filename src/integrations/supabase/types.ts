@@ -701,6 +701,115 @@ export type Database = {
           },
         ]
       }
+      genius_agent_configs: {
+        Row: {
+          audiences: Json
+          content_per_run: number
+          created_at: string
+          highlight_product: string
+          id: string
+          is_active: boolean
+          preferred_style: string
+          schedule_days: number[]
+          schedule_hours: number[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          audiences?: Json
+          content_per_run?: number
+          created_at?: string
+          highlight_product?: string
+          id?: string
+          is_active?: boolean
+          preferred_style?: string
+          schedule_days?: number[]
+          schedule_hours?: number[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          audiences?: Json
+          content_per_run?: number
+          created_at?: string
+          highlight_product?: string
+          id?: string
+          is_active?: boolean
+          preferred_style?: string
+          schedule_days?: number[]
+          schedule_hours?: number[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      genius_agent_jobs: {
+        Row: {
+          audience: string
+          completed_at: string | null
+          config_id: string | null
+          created_at: string
+          error: string | null
+          id: string
+          image_job_id: string | null
+          prompt: string
+          result_url: string | null
+          source_image_id: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          audience: string
+          completed_at?: string | null
+          config_id?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          image_job_id?: string | null
+          prompt: string
+          result_url?: string | null
+          source_image_id?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          audience?: string
+          completed_at?: string | null
+          config_id?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          image_job_id?: string | null
+          prompt?: string
+          result_url?: string | null
+          source_image_id?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genius_agent_jobs_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "genius_agent_configs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_agent_jobs_image_job_id_fkey"
+            columns: ["image_job_id"]
+            isOneToOne: false
+            referencedRelation: "image_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genius_agent_jobs_source_image_id_fkey"
+            columns: ["source_image_id"]
+            isOneToOne: false
+            referencedRelation: "source_images"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       image_favorites: {
         Row: {
           created_at: string | null

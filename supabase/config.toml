@@ -169,6 +169,9 @@ verify_jwt = false
 [functions.outfit-creator]
 verify_jwt = false
 
+[functions.genius-agent]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 port = 54327
