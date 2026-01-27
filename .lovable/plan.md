@@ -1,118 +1,157 @@
 
-## Fix: Mobile Image Settings Form in UGC-Gemini Module
 
-### Problems Identified
+## Move Onboarding Checklist to a Floating Card
 
-1. **Instant open/close behavior** - Sheet closes immediately after opening when an image has been generated
-2. **Missing aspect ratio selector** - The `aspectRatio` setting is not passed to the mobile SettingsSheet
-3. **Missing output format** - The `outputFormat` setting is not synced between mobile and parent state
-4. **Options mismatch** - Mobile settings don't receive all the same settings as desktop
+### Overview
+
+Transform the onboarding checklist from an inline component (that replaces "Your Activity") into a **floating, collapsible card** fixed in the **bottom-right corner** of the screen on desktop only.
 
 ---
 
-### Root Cause Analysis
+### Current Implementation
 
-| Issue | Cause |
-|-------|-------|
-| Instant close | Job completion handler calls `setSettingsOpen(false)` which conflicts with user opening the sheet; combined with `modal={false}` creating unstable state |
-| Missing aspect ratio | Parent component doesn't pass `aspectRatio` to SettingsSheet settings object |
-| Missing output format | Parent component doesn't have `outputFormat` state variable or pass it to mobile |
-| Non-modal sheet | Using `modal={false}` causes interaction issues on touch devices |
+| Aspect | Current State |
+|--------|---------------|
+| Location | Embedded inside `Index.tsx` at `lg:col-span-5`, replacing `UserStatsPanel` |
+| Visibility | Only on desktop, when onboarding not completed |
+| Behavior | Static, non-collapsible |
 
 ---
 
-### Solution
+### Proposed Changes
 
-#### 1. Fix the Sheet Modal Behavior
+#### 1. Create New Floating Component
 
-Change `modal={false}` to `modal={true}` in `SettingsSheet.tsx` to ensure proper modal behavior on mobile:
+Create a new wrapper component `FloatingOnboardingCard.tsx` that:
+- Wraps the `OnboardingChecklist` in a fixed position container
+- Adds collapse/expand functionality with smooth animation
+- Persists collapsed state to localStorage
+- Only renders on desktop (uses `useIsMobile()` hook)
+- Uses Radix Collapsible for toggle behavior
 
-```typescript
-// In src/components/departments/ugc/SettingsSheet.tsx
-<Sheet open={open} onOpenChange={setOpen} modal={true}>
+**Position**: `fixed bottom-6 right-6 z-50`
+
+**Features**:
+- Collapsible header showing "Getting Started" with progress indicator
+- When collapsed: shows only a small floating button/badge with progress
+- When expanded: shows the full checklist card
+- Smooth Framer Motion animations for open/close
+
+---
+
+#### 2. Update Index.tsx
+
+- Remove the conditional OnboardingChecklist rendering from the grid layout
+- Always show `UserStatsPanel` in the right column
+- The floating card will render independently via `AppLayout.tsx`
+
+---
+
+#### 3. Update AppLayout.tsx
+
+- Import and render `FloatingOnboardingCard` inside the desktop authenticated layout
+- This ensures the floating card appears on ALL pages (not just Index), which is better UX for onboarding
+
+---
+
+### Technical Implementation
+
+```text
+New File: src/components/onboarding/FloatingOnboardingCard.tsx
+
+Structure:
+- Fixed positioning: bottom-6 right-6 z-50
+- Collapsible wrapper with state persistence
+- Collapsed view: Small badge with rocket icon + "X/4 completed"
+- Expanded view: Full OnboardingChecklist card
+- Animation: Framer Motion scale/opacity transitions
+- Desktop only: Early return null if isMobile
 ```
 
-#### 2. Add Missing State Variables to Parent
-
-Add `outputFormat` state in `CreateUGCGeminiBase.tsx`:
-
-```typescript
-const [outputFormat, setOutputFormat] = useState<'png' | 'webp'>('png');
+**Collapsed State UI (when minimized):**
+```
++----------------------------+
+| 🚀 Getting Started   ⌄    |
+|    2/4 completed          |
++----------------------------+
 ```
 
-#### 3. Pass All Settings to Mobile SettingsSheet
-
-Update the settings object passed to SettingsSheet to include `aspectRatio` and `outputFormat`:
-
-```typescript
-<SettingsSheet
-  settings={{
-    numImages,
-    style,
-    timeOfDay,
-    highlight,
-    imageOrientation,
-    imageQuality,
-    aspectRatio,       // ADD THIS
-    outputFormat       // ADD THIS
-  }}
-  onSettingsChange={(newSettings) => {
-    if (newSettings.numImages !== undefined) setNumImages(newSettings.numImages);
-    if (newSettings.style !== undefined) setStyle(newSettings.style);
-    if (newSettings.timeOfDay !== undefined) setTimeOfDay(newSettings.timeOfDay);
-    if (newSettings.highlight !== undefined) setHighlight(newSettings.highlight);
-    if (newSettings.imageOrientation !== undefined) setImageOrientation(newSettings.imageOrientation);
-    if (newSettings.imageQuality !== undefined) setImageQuality(newSettings.imageQuality);
-    if (newSettings.aspectRatio !== undefined) setAspectRatio(newSettings.aspectRatio);  // ADD THIS
-    if (newSettings.outputFormat !== undefined) setOutputFormat(newSettings.outputFormat);  // ADD THIS
-  }}
-  // ... rest of props
-/>
+**Expanded State UI (full card):**
 ```
-
-#### 4. Prevent Race Condition on Job Completion
-
-Modify the job completion handler to not close the sheet if it was just opened by the user:
-
-```typescript
-// Instead of always closing
-// setSettingsOpen(false);
-
-// Only clean up body styles, don't force close the sheet
-document.body.style.overflow = '';
-document.body.style.pointerEvents = '';
-// Remove: setSettingsOpen(false);
++----------------------------+
+| 🚀 Getting Started    ×   |
+| Earn 20 free credits      |
+| [progress bar]            |
+|                           |
+| [ ] Create UGC image   →  |
+| [✓] Animate image      →  |
+| [ ] Outfit Swap        →  |
+| [ ] Bonus (locked)        |
+|                           |
+| Skip and explore freely   |
++----------------------------+
 ```
 
 ---
 
 ### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `src/components/departments/ugc/SettingsSheet.tsx` | Change `modal={false}` to `modal={true}` for proper mobile modal behavior |
-| `src/pages/CreateUGCGeminiBase.tsx` | 1. Add `outputFormat` state variable<br>2. Pass `aspectRatio` and `outputFormat` to SettingsSheet settings<br>3. Handle `aspectRatio` and `outputFormat` in onSettingsChange callback<br>4. Remove `setSettingsOpen(false)` from job completion handler |
+| File | Action |
+|------|--------|
+| `src/components/onboarding/FloatingOnboardingCard.tsx` | **CREATE** - New floating wrapper component |
+| `src/pages/Index.tsx` | **MODIFY** - Remove OnboardingChecklist from grid, always show UserStatsPanel |
+| `src/components/AppLayout.tsx` | **MODIFY** - Add FloatingOnboardingCard to desktop authenticated layout |
 
 ---
 
-### Technical Details
+### Component Structure
 
-```text
-File: src/components/departments/ugc/SettingsSheet.tsx
-Line 44: Change modal={false} to modal={true}
+```typescript
+// FloatingOnboardingCard.tsx
+export const FloatingOnboardingCard = () => {
+  const isMobile = useIsMobile();
+  const [isCollapsed, setIsCollapsed] = useState(() => 
+    localStorage.getItem('onboarding_card_collapsed') === 'true'
+  );
+  const { completed, loading } = useOnboarding();
+  const { completedCount } = useOnboardingMilestones();
 
-File: src/pages/CreateUGCGeminiBase.tsx
-Line ~114: Add state: const [outputFormat, setOutputFormat] = useState<'png' | 'webp'>('png');
-Lines 315-316: Remove setSettingsOpen(false)
-Lines 1503-1531: Update SettingsSheet props to include all settings and handlers
+  // Don't render on mobile or if onboarding is complete
+  if (isMobile || completed || loading) return null;
+
+  // Persist collapsed state
+  useEffect(() => {
+    localStorage.setItem('onboarding_card_collapsed', String(isCollapsed));
+  }, [isCollapsed]);
+
+  return (
+    <div className="fixed bottom-6 right-6 z-50 hidden lg:block">
+      <AnimatePresence mode="wait">
+        {isCollapsed ? (
+          <CollapsedView onClick={() => setIsCollapsed(false)} count={completedCount} />
+        ) : (
+          <ExpandedView onCollapse={() => setIsCollapsed(true)} onComplete={...} />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 ```
 
 ---
 
-### Expected Outcome
+### Key Features
 
-After these changes:
-- Mobile settings sheet will open and stay open reliably
-- All settings available on desktop will be available on mobile (including aspect ratio and output format)
-- Changing settings on mobile will properly update parent state
-- Sheet will behave as a proper modal with overlay preventing background interaction
+1. **Collapsible**: Users can minimize the card to a small badge
+2. **Persistent**: Collapsed state saved to localStorage
+3. **Global**: Appears on all pages (not just home)
+4. **Non-intrusive**: Floats in corner, doesn't push content
+5. **Animated**: Smooth open/close transitions with Framer Motion
+6. **Auto-hide**: Disappears completely when onboarding is finished
+
+---
+
+### Summary
+
+This transforms the onboarding checklist from a content-replacing panel into a helpful floating widget that follows users across the app, can be minimized when not needed, and provides persistent access to the onboarding milestones without taking up valuable screen real estate.
+
