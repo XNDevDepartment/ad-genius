@@ -1183,7 +1183,9 @@
       "processing": "Generating your video…",
       "completed": "Video generated successfully.",
       "failed": "Video generation failed.",
-      "canceled": "Video generation was canceled."
+      "canceled": "Video generation was canceled.",
+      "backgroundProcessing": "Your video is being created - you can leave this window and continue your work.",
+      "findInLibrary": "You'll find your completed video in the Video Library."
     },
     "actions": {
       "newVideo": "New Video",

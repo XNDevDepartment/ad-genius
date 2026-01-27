@@ -1128,7 +1128,9 @@
       "processing": "Ihr Video wird generiert…",
       "completed": "Video erfolgreich generiert.",
       "failed": "Videogenerierung fehlgeschlagen.",
-      "canceled": "Videogenerierung wurde abgebrochen."
+      "canceled": "Videogenerierung wurde abgebrochen.",
+      "backgroundProcessing": "Ihr Video wird erstellt - Sie können dieses Fenster verlassen und weiterarbeiten.",
+      "findInLibrary": "Sie finden Ihr fertiges Video in der Video-Bibliothek."
     },
     "actions": {
       "newVideo": "Neues Video",

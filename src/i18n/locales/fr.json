@@ -1128,7 +1128,9 @@
       "processing": "Génération de votre vidéo…",
       "completed": "Vidéo générée avec succès.",
       "failed": "La génération de la vidéo a échoué.",
-      "canceled": "La génération de la vidéo a été annulée."
+      "canceled": "La génération de la vidéo a été annulée.",
+      "backgroundProcessing": "Votre vidéo est en cours de création - vous pouvez quitter cette fenêtre et continuer votre travail.",
+      "findInLibrary": "Vous trouverez votre vidéo terminée dans la Bibliothèque Vidéo."
     },
     "actions": {
       "newVideo": "Nouvelle Vidéo",
