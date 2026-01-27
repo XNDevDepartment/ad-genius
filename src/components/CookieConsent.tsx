@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Cookie } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const COOKIE_CONSENT_KEY = 'cookie-consent-accepted';
 
@@ -10,15 +11,25 @@ export const CookieConsent = () => {
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
+    // Don't show for authenticated users - they accepted terms during signup
+    if (user) {
+      setIsVisible(false);
+      return;
+    }
+    
+    // Wait for auth to load before checking
+    if (loading) return;
+    
     const hasConsent = localStorage.getItem(COOKIE_CONSENT_KEY);
     if (!hasConsent) {
       // Small delay for better UX
       const timer = setTimeout(() => setIsVisible(true), 1000);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [user, loading]);
 
   const handleAccept = () => {
     localStorage.setItem(COOKIE_CONSENT_KEY, 'true');
