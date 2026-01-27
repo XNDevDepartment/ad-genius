@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
-import { Rocket, ChevronUp, ChevronDown } from "lucide-react";
+import { Rocket, ChevronUp } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useOnboardingMilestones } from "@/hooks/useOnboardingMilestones";
@@ -70,18 +70,10 @@ export const FloatingOnboardingCard = () => {
             transition={{ duration: 0.25, ease: "easeOut" }}
             className="w-[380px] max-h-[calc(100vh-120px)] overflow-auto"
           >
-            <div className="relative">
-              {/* Collapse button overlay */}
-              <button
-                onClick={() => setIsCollapsed(true)}
-                className="absolute top-3 right-12 z-10 p-1.5 rounded-lg text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10 transition-colors"
-                aria-label="Collapse"
-              >
-                <ChevronDown className="h-4 w-4" />
-              </button>
-              
-              <OnboardingChecklist onComplete={refetch} />
-            </div>
+            <OnboardingChecklist 
+              onComplete={refetch} 
+              onCollapse={() => setIsCollapsed(true)}
+            />
           </motion.div>
         )}
       </AnimatePresence>
