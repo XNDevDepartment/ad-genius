@@ -172,7 +172,7 @@ export const OnboardingChecklist = ({ onComplete, onCollapse }: OnboardingCheckl
   const handleStartFree = async () => {
     await completeOnboarding();
     onComplete?.();
-    navigate('/create/ugc-gemini');
+    navigate('/create');
   };
 
   const progressPercent = (completedCount / 4) * 100;
@@ -406,7 +406,7 @@ export const OnboardingChecklist = ({ onComplete, onCollapse }: OnboardingCheckl
                 t('onboarding.checklist.offerCard.cta', 'Get This Offer')
               )}
             </Button>
-            
+
             <Button
               onClick={handleStartFree}
               variant="ghost"
