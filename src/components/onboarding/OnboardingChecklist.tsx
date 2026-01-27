@@ -13,10 +13,14 @@ import {
   Lock, 
   ChevronRight,
   ChevronDown,
-  X
+  Crown,
+  Loader2,
+  Zap
 } from "lucide-react";
 import { useOnboardingMilestones } from "@/hooks/useOnboardingMilestones";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -38,7 +42,18 @@ export const OnboardingChecklist = ({ onComplete, onCollapse }: OnboardingCheckl
     refetch 
   } = useOnboardingMilestones();
   const { completeOnboarding } = useOnboarding();
+  const { user, subscriptionData, loading: authLoading } = useAuth();
   const [awarding, setAwarding] = useState<string | null>(null);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+
+  // Check if all credits have been awarded
+  const allCreditsAwarded = 
+    milestones.ugc.credited && 
+    milestones.video.credited && 
+    milestones.outfit_swap.credited && 
+    milestones.all_complete.credited;
+
+  const subscriptionTier = subscriptionData?.subscription_tier || 'Free';
 
   // Check and award milestones when component mounts or milestones change
   useEffect(() => {
@@ -93,22 +108,71 @@ export const OnboardingChecklist = ({ onComplete, onCollapse }: OnboardingCheckl
     }
   }, [milestones, loading, awardMilestone, refetch, awarding, t]);
 
-  // Auto-complete onboarding when all milestones are credited
+  // Auto-complete onboarding only when all milestones are credited AND user is NOT on Free tier
+  // (Free tier users should see the offer card first)
   useEffect(() => {
-    if (
-      milestones.ugc.credited && 
-      milestones.video.credited && 
-      milestones.outfit_swap.credited && 
-      milestones.all_complete.credited
-    ) {
+    if (allCreditsAwarded && subscriptionTier !== 'Free') {
       completeOnboarding();
       onComplete?.();
     }
-  }, [milestones, completeOnboarding, onComplete]);
+  }, [allCreditsAwarded, subscriptionTier, completeOnboarding, onComplete]);
 
   const handleSkip = async () => {
     await completeOnboarding();
     onComplete?.();
+  };
+
+  const handleGetOffer = async () => {
+    if (authLoading) {
+      toast.error(t('onboarding.offer.pleaseWait', 'Please wait...'));
+      return;
+    }
+    
+    if (!user) {
+      toast.error(t('onboarding.offer.authRequired', 'Please sign in to continue'));
+      return;
+    }
+    
+    setIsCheckingOut(true);
+    try {
+      console.log('[OnboardingChecklist] Starting checkout:', {
+        planId: 'starter',
+        interval: 'month',
+        promoCode: 'ONB1ST',
+        userId: user.id
+      });
+
+      const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
+        body: { 
+          planId: 'starter',
+          interval: 'month',
+          promoCode: 'ONB1ST'
+        }
+      });
+
+      if (error) {
+        console.error('[OnboardingChecklist] Checkout error:', error);
+        throw new Error(error.message || 'Checkout failed');
+      }
+      
+      if (!checkoutData?.url) {
+        throw new Error('No checkout URL received');
+      }
+
+      // Redirect to Stripe checkout
+      window.location.href = checkoutData.url;
+    } catch (error: any) {
+      console.error('[OnboardingChecklist] Checkout error:', error);
+      toast.error(t('onboarding.offer.checkoutError', 'Unable to start checkout. Please try again.'));
+    } finally {
+      setIsCheckingOut(false);
+    }
+  };
+
+  const handleStartFree = async () => {
+    await completeOnboarding();
+    onComplete?.();
+    navigate('/create/ugc-gemini');
   };
 
   const progressPercent = (completedCount / 4) * 100;
@@ -243,14 +307,6 @@ export const OnboardingChecklist = ({ onComplete, onCollapse }: OnboardingCheckl
                 <ChevronDown className="h-4 w-4" />
               </Button>
             )}
-            {/* <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={handleSkip}
-              className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10 -mr-2"
-            >
-              <X className="h-4 w-4" />
-            </Button> */}
           </div>
         </div>
         <p className="text-sm text-primary-foreground/80 mt-1">
@@ -307,15 +363,71 @@ export const OnboardingChecklist = ({ onComplete, onCollapse }: OnboardingCheckl
           isLocked={!milestones.all_complete.completed}
         />
 
-        {/* Skip link */}
-        <div className="pt-2 text-center">
-          <button 
-            onClick={handleSkip}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline"
-          >
-            {t('onboarding.checklist.skip', 'Skip and explore freely')}
-          </button>
-        </div>
+        {/* Offer Teaser - show when not all complete */}
+        {!allCreditsAwarded && (
+          <div className="flex items-center gap-2 px-4 py-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-lg">
+            <Zap className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+            <p className="text-sm text-amber-700 dark:text-amber-300">
+              {t('onboarding.checklist.offerTeaser', 'Complete all tasks to unlock a special first-month offer!')}
+            </p>
+          </div>
+        )}
+
+        {/* Promotional Offer - show when all complete and user is on Free tier */}
+        {allCreditsAwarded && subscriptionTier === 'Free' && (
+          <Card className="p-4 border-2 border-primary/50 bg-gradient-to-br from-primary/5 to-primary/10">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <Crown className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-lg">{t('onboarding.checklist.offerCard.title', 'First month only €19.99')}</h3>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-2xl font-bold">€19.99</span>
+                  <span className="text-sm text-muted-foreground line-through">
+                    {t('onboarding.checklist.offerCard.regularPrice', '€29')}
+                  </span>
+                  <span className="text-xs px-2 py-0.5 bg-primary/20 text-primary rounded-full font-medium">
+                    {t('onboarding.checklist.offerCard.badge', 'Save €10!')}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <Button
+              onClick={handleGetOffer}
+              disabled={isCheckingOut}
+              className="w-full mt-4"
+              size="lg"
+            >
+              {isCheckingOut ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                t('onboarding.checklist.offerCard.cta', 'Get This Offer')
+              )}
+            </Button>
+            
+            <Button
+              onClick={handleStartFree}
+              variant="ghost"
+              className="w-full mt-2 text-muted-foreground"
+            >
+              {t('onboarding.checklist.offerCard.skipCta', 'Start Creating (Free)')}
+            </Button>
+          </Card>
+        )}
+
+        {/* Skip link - only show when not all complete or not on free tier */}
+        {(!allCreditsAwarded || subscriptionTier !== 'Free') && (
+          <div className="pt-2 text-center">
+            <button 
+              onClick={handleSkip}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline"
+            >
+              {t('onboarding.checklist.skip', 'Skip and explore freely')}
+            </button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

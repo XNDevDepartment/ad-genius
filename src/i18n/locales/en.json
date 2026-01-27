@@ -68,6 +68,14 @@
       "subtitle": "Earn 20 free credits",
       "progress": "{{completed}} of {{total}} completed",
       "skip": "Skip and explore freely",
+      "offerTeaser": "Complete all tasks to unlock a special first-month offer!",
+      "offerCard": {
+        "title": "First month only €19.99",
+        "regularPrice": "€29",
+        "badge": "Save €10!",
+        "cta": "Get This Offer",
+        "skipCta": "Start Creating (Free)"
+      },
       "milestones": {
         "ugc": {
           "title": "Create your first UGC image",
