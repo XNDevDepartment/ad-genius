@@ -1,157 +1,104 @@
 
 
-## Move Onboarding Checklist to a Floating Card
+## Fix: Floating Onboarding Card Layout
 
-### Overview
+### Issues Identified from Screenshot
 
-Transform the onboarding checklist from an inline component (that replaces "Your Activity") into a **floating, collapsible card** fixed in the **bottom-right corner** of the screen on desktop only.
-
----
-
-### Current Implementation
-
-| Aspect | Current State |
-|--------|---------------|
-| Location | Embedded inside `Index.tsx` at `lg:col-span-5`, replacing `UserStatsPanel` |
-| Visibility | Only on desktop, when onboarding not completed |
-| Behavior | Static, non-collapsible |
+1. **Collapse button positioning**: The chevron (collapse) button is positioned independently in `FloatingOnboardingCard.tsx` at `right-12`, causing it to overlap awkwardly with the X (close) button in the header
+2. **Header button alignment**: Need to integrate collapse and close buttons into a single cohesive button group in the header
+3. **Visual hierarchy**: The header needs cleaner organization with the collapse chevron and close button properly aligned on the right side
 
 ---
 
-### Proposed Changes
+### Current vs Expected Layout
 
-#### 1. Create New Floating Component
-
-Create a new wrapper component `FloatingOnboardingCard.tsx` that:
-- Wraps the `OnboardingChecklist` in a fixed position container
-- Adds collapse/expand functionality with smooth animation
-- Persists collapsed state to localStorage
-- Only renders on desktop (uses `useIsMobile()` hook)
-- Uses Radix Collapsible for toggle behavior
-
-**Position**: `fixed bottom-6 right-6 z-50`
-
-**Features**:
-- Collapsible header showing "Getting Started" with progress indicator
-- When collapsed: shows only a small floating button/badge with progress
-- When expanded: shows the full checklist card
-- Smooth Framer Motion animations for open/close
-
----
-
-#### 2. Update Index.tsx
-
-- Remove the conditional OnboardingChecklist rendering from the grid layout
-- Always show `UserStatsPanel` in the right column
-- The floating card will render independently via `AppLayout.tsx`
-
----
-
-#### 3. Update AppLayout.tsx
-
-- Import and render `FloatingOnboardingCard` inside the desktop authenticated layout
-- This ensures the floating card appears on ALL pages (not just Index), which is better UX for onboarding
-
----
-
-### Technical Implementation
-
-```text
-New File: src/components/onboarding/FloatingOnboardingCard.tsx
-
-Structure:
-- Fixed positioning: bottom-6 right-6 z-50
-- Collapsible wrapper with state persistence
-- Collapsed view: Small badge with rocket icon + "X/4 completed"
-- Expanded view: Full OnboardingChecklist card
-- Animation: Framer Motion scale/opacity transitions
-- Desktop only: Early return null if isMobile
+**Current (broken):**
+```
+| Rocket + Getting Started          X |  <- X button in OnboardingChecklist
+|                           ⌄         |  <- Chevron overlay from FloatingCard (mispositioned)
 ```
 
-**Collapsed State UI (when minimized):**
+**Expected (fixed):**
 ```
-+----------------------------+
-| 🚀 Getting Started   ⌄    |
-|    2/4 completed          |
-+----------------------------+
+| Rocket + Getting Started    ⌄   X | <- Both buttons aligned together
 ```
 
-**Expanded State UI (full card):**
+---
+
+### Solution
+
+Move the collapse functionality **into** the `OnboardingChecklist` component header by passing an `onCollapse` prop, removing the absolute positioned overlay button from `FloatingOnboardingCard`.
+
+---
+
+### Technical Changes
+
+#### 1. Update `OnboardingChecklist.tsx`
+
+Add a new optional `onCollapse` prop that, when provided, renders a collapse (chevron down) button next to the X button in the header:
+
+```typescript
+interface OnboardingChecklistProps {
+  onComplete?: () => void;
+  onCollapse?: () => void;  // NEW: allows floating card to pass collapse handler
+}
+
+// In the CardHeader, modify the button group:
+<div className="flex items-center gap-1">
+  {onCollapse && (
+    <Button 
+      variant="ghost" 
+      size="sm"
+      onClick={onCollapse}
+      className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10"
+    >
+      <ChevronDown className="h-4 w-4" />
+    </Button>
+  )}
+  <Button 
+    variant="ghost" 
+    size="sm"
+    onClick={handleSkip}
+    className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10 -mr-2"
+  >
+    <X className="h-4 w-4" />
+  </Button>
+</div>
 ```
-+----------------------------+
-| 🚀 Getting Started    ×   |
-| Earn 20 free credits      |
-| [progress bar]            |
-|                           |
-| [ ] Create UGC image   →  |
-| [✓] Animate image      →  |
-| [ ] Outfit Swap        →  |
-| [ ] Bonus (locked)        |
-|                           |
-| Skip and explore freely   |
-+----------------------------+
+
+#### 2. Update `FloatingOnboardingCard.tsx`
+
+- Remove the absolute positioned collapse button overlay (lines 74-81)
+- Pass `onCollapse` prop to `OnboardingChecklist`
+
+```typescript
+// Remove this block:
+{/* <button
+  onClick={() => setIsCollapsed(true)}
+  className="absolute top-3 right-12 z-10 ..."
+>
+  <ChevronDown className="h-4 w-4" />
+</button> */}
+
+// Add onCollapse prop:
+<OnboardingChecklist 
+  onComplete={refetch} 
+  onCollapse={() => setIsCollapsed(true)}  // NEW
+/>
 ```
 
 ---
 
 ### Files to Modify
 
-| File | Action |
-|------|--------|
-| `src/components/onboarding/FloatingOnboardingCard.tsx` | **CREATE** - New floating wrapper component |
-| `src/pages/Index.tsx` | **MODIFY** - Remove OnboardingChecklist from grid, always show UserStatsPanel |
-| `src/components/AppLayout.tsx` | **MODIFY** - Add FloatingOnboardingCard to desktop authenticated layout |
-
----
-
-### Component Structure
-
-```typescript
-// FloatingOnboardingCard.tsx
-export const FloatingOnboardingCard = () => {
-  const isMobile = useIsMobile();
-  const [isCollapsed, setIsCollapsed] = useState(() => 
-    localStorage.getItem('onboarding_card_collapsed') === 'true'
-  );
-  const { completed, loading } = useOnboarding();
-  const { completedCount } = useOnboardingMilestones();
-
-  // Don't render on mobile or if onboarding is complete
-  if (isMobile || completed || loading) return null;
-
-  // Persist collapsed state
-  useEffect(() => {
-    localStorage.setItem('onboarding_card_collapsed', String(isCollapsed));
-  }, [isCollapsed]);
-
-  return (
-    <div className="fixed bottom-6 right-6 z-50 hidden lg:block">
-      <AnimatePresence mode="wait">
-        {isCollapsed ? (
-          <CollapsedView onClick={() => setIsCollapsed(false)} count={completedCount} />
-        ) : (
-          <ExpandedView onCollapse={() => setIsCollapsed(true)} onComplete={...} />
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
-```
-
----
-
-### Key Features
-
-1. **Collapsible**: Users can minimize the card to a small badge
-2. **Persistent**: Collapsed state saved to localStorage
-3. **Global**: Appears on all pages (not just home)
-4. **Non-intrusive**: Floats in corner, doesn't push content
-5. **Animated**: Smooth open/close transitions with Framer Motion
-6. **Auto-hide**: Disappears completely when onboarding is finished
+| File | Changes |
+|------|---------|
+| `src/components/onboarding/OnboardingChecklist.tsx` | Add `onCollapse` prop and render collapse button in header next to X |
+| `src/components/onboarding/FloatingOnboardingCard.tsx` | Remove absolute overlay button, pass `onCollapse` to checklist |
 
 ---
 
 ### Summary
 
-This transforms the onboarding checklist from a content-replacing panel into a helpful floating widget that follows users across the app, can be minimized when not needed, and provides persistent access to the onboarding milestones without taking up valuable screen real estate.
+This fix integrates the collapse button directly into the card's header alongside the close button, rather than positioning it as an absolute overlay. This ensures proper alignment and prevents the visual overlap issue shown in the screenshot.
 
