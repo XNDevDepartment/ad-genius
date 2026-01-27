@@ -227,24 +227,26 @@ export const OnboardingChecklist = ({ onComplete, onCollapse }: OnboardingCheckl
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <div className="flex items-start justify-between gap-2">
             <h4 className={cn(
-              "font-medium text-sm",
+              "font-medium text-sm line-clamp-2",
               state.credited ? "text-primary" : "text-foreground"
             )}>
               {title}
             </h4>
-            {state.credited && (
-              <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                +5 ✓
-              </span>
-            )}
-            {!state.credited && !isLocked && (
-              <span className="text-xs font-medium text-muted-foreground">
-                +5
-              </span>
-            )}
+            <div className="flex-shrink-0">
+              {state.credited && (
+                <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">
+                  +5 ✓
+                </span>
+              )}
+              {!state.credited && !isLocked && (
+                <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+                  +5
+                </span>
+              )}
+            </div>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5 truncate">
             {description}
