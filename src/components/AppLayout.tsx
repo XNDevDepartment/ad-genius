@@ -7,6 +7,7 @@ import { AppSidebar } from "./AppSidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import PaymentFailedBanner from "./PaymentFailedBanner";
 import ChristmasBanner from "./ChristmasBanner";
+import { FloatingOnboardingCard } from "./onboarding/FloatingOnboardingCard";
 
 const AppLayout = () => {
   const location = useLocation();
@@ -58,6 +59,7 @@ const AppLayout = () => {
                   <Outlet />
                 </main>
               </div>
+              <FloatingOnboardingCard />
             </div>
           </SidebarProvider>
         ) : (
