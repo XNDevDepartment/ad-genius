@@ -1179,7 +1179,9 @@
       "processing": "A gerar o seu vídeo…",
       "completed": "Vídeo gerado com sucesso.",
       "failed": "A geração do vídeo falhou.",
-      "canceled": "A geração do vídeo foi cancelada."
+      "canceled": "A geração do vídeo foi cancelada.",
+      "backgroundProcessing": "O seu vídeo está a ser criado - pode sair desta janela e continuar o seu trabalho.",
+      "findInLibrary": "Encontrará o vídeo concluído na Biblioteca de Vídeos."
     },
     "actions": {
       "newVideo": "Novo Vídeo",

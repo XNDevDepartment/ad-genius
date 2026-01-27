@@ -826,6 +826,17 @@ export default function VideoGenerator() {
                 </div>
               )}
 
+              {/* Background processing info */}
+              {(job.status === "queued" || job.status === "processing") && (
+                <Alert className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+                  <Info className="h-4 w-4 text-blue-600" />
+                  <AlertDescription>
+                    {t('videoGenerator.status.backgroundProcessing')}{' '}
+                    <span className="font-medium">{t('videoGenerator.status.findInLibrary')}</span>
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {/* Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                 <div className="flex justify-between">
