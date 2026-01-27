@@ -12,6 +12,7 @@ import {
   Check, 
   Lock, 
   ChevronRight,
+  ChevronDown,
   X
 } from "lucide-react";
 import { useOnboardingMilestones } from "@/hooks/useOnboardingMilestones";
@@ -22,9 +23,10 @@ import { cn } from "@/lib/utils";
 
 interface OnboardingChecklistProps {
   onComplete?: () => void;
+  onCollapse?: () => void;
 }
 
-export const OnboardingChecklist = ({ onComplete }: OnboardingChecklistProps) => {
+export const OnboardingChecklist = ({ onComplete, onCollapse }: OnboardingChecklistProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { 
@@ -230,14 +232,26 @@ export const OnboardingChecklist = ({ onComplete }: OnboardingChecklistProps) =>
               {t('onboarding.checklist.title', 'Getting Started')}
             </CardTitle>
           </div>
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={handleSkip}
-            className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10 -mr-2"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            {onCollapse && (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={onCollapse}
+                className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10"
+              >
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            )}
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={handleSkip}
+              className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10 -mr-2"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
         <p className="text-sm text-primary-foreground/80 mt-1">
           {t('onboarding.checklist.subtitle', 'Earn 20 free credits')}
