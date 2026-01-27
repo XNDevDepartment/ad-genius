@@ -80,7 +80,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.outfit-swap]
-verify_jwt = true
+verify_jwt = false
 
 [functions.create-base-model]
 verify_jwt = true
