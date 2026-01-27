@@ -243,14 +243,14 @@ export const OnboardingChecklist = ({ onComplete, onCollapse }: OnboardingCheckl
                 <ChevronDown className="h-4 w-4" />
               </Button>
             )}
-            <Button 
+            {/* <Button 
               variant="ghost" 
               size="sm"
               onClick={handleSkip}
               className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10 -mr-2"
             >
               <X className="h-4 w-4" />
-            </Button>
+            </Button> */}
           </div>
         </div>
         <p className="text-sm text-primary-foreground/80 mt-1">

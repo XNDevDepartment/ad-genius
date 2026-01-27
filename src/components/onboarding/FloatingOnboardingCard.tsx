@@ -70,8 +70,8 @@ export const FloatingOnboardingCard = () => {
             transition={{ duration: 0.25, ease: "easeOut" }}
             className="w-[380px] max-h-[calc(100vh-120px)] overflow-auto"
           >
-            <OnboardingChecklist 
-              onComplete={refetch} 
+            <OnboardingChecklist
+              onComplete={refetch}
               onCollapse={() => setIsCollapsed(true)}
             />
           </motion.div>
