@@ -181,33 +181,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     profileAge: now - profileCreatedAt 
                   });
 
-                  // If this is a NEW OAuth user OR account is not activated
-                  if (isNewUser || (existingProfile && existingProfile.account_activated === false)) {
+                  // Only trigger activation flow for truly NEW users who haven't set activation yet
+                  // account_activated === null means new user, false means pending, true means activated
+                  const needsActivationSetup = isNewUser && existingProfile?.account_activated === null;
+
+                  if (needsActivationSetup) {
                     // Validate domain for new users
-                    if (isNewUser) {
-                      const { data: domainValidation, error: domainError } = await supabase.functions.invoke('validate-signup-domain', {
-                        body: { email: userEmail }
-                      });
-                      
-                      if (!domainError && domainValidation && !domainValidation.allowed) {
-                        console.log('[AuthContext] Domain validation failed for OAuth user:', domainValidation.reason);
-                        await supabase.auth.signOut();
-                        if (domainValidation.reason === 'domain_blocked') {
-                          alert('This email domain is not allowed for registration. Please use a different email provider.');
-                        } else if (domainValidation.reason === 'domain_limit_reached') {
-                          alert('An account already exists with this email domain. For additional accounts, please contact info@produktpix.com');
-                        }
-                        return;
+                    const { data: domainValidation, error: domainError } = await supabase.functions.invoke('validate-signup-domain', {
+                      body: { email: userEmail }
+                    });
+                    
+                    if (!domainError && domainValidation && !domainValidation.allowed) {
+                      console.log('[AuthContext] Domain validation failed for OAuth user:', domainValidation.reason);
+                      await supabase.auth.signOut();
+                      if (domainValidation.reason === 'domain_blocked') {
+                        alert('This email domain is not allowed for registration. Please use a different email provider.');
+                      } else if (domainValidation.reason === 'domain_limit_reached') {
+                        alert('An account already exists with this email domain. For additional accounts, please contact info@produktpix.com');
                       }
+                      return;
                     }
                     
                     // For new OAuth users, set account_activated = false and send activation email
-                    console.log('[AuthContext] New/unactivated OAuth user - triggering activation flow');
+                    console.log('[AuthContext] New OAuth user - triggering activation flow');
                     
                     // Wait for profile to be fully created, then update it
                     setTimeout(async () => {
                       try {
-                        // Update profile to set account_activated = false
+                        // Update profile to set account_activated = false (only for new users)
                         const { error: updateError } = await supabase
                           .from('profiles')
                           .update({ account_activated: false })
@@ -231,7 +232,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                       }
                     }, 1000);
                   } else {
-                    console.log('[AuthContext] Existing activated OAuth user - skipping activation');
+                    console.log('[AuthContext] Existing user or already activated - skipping activation setup');
                   }
                 } catch (validationError) {
                   console.error('[AuthContext] Domain validation error:', validationError);
