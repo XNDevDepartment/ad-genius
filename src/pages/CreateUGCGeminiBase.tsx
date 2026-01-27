@@ -111,6 +111,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [highlight, setHighlight] = useState("yes");
   const [style, setStyle] = useState<'lifestyle' | 'studio' | 'cinematic' | 'natural' | 'minimal' | 'professional'>("lifestyle");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('source');
+  const [outputFormat, setOutputFormat] = useState<'png' | 'webp'>('png');
 
   // Use unified hook with model version
   const { job, images: jobImages, createJob, clearJob, loadJob, resumeCurrentJob, storageKeys } = useGeminiImageJobUnified(modelVersion);
@@ -311,9 +312,6 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       // Force reset body scroll lock that might be left by Radix dialogs
       document.body.style.overflow = '';
       document.body.style.pointerEvents = '';
-      
-      // Close settings sheet to prevent scroll lock issues
-      setSettingsOpen(false);
 
       setCurrentBatchImages(current => {
         if (current.length > 0) {
@@ -1508,7 +1506,9 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                 timeOfDay,
                 highlight,
                 imageOrientation,
-                imageQuality
+                imageQuality,
+                aspectRatio,
+                outputFormat
               }}
               onSettingsChange={(newSettings) => {
                 if (newSettings.numImages !== undefined) setNumImages(newSettings.numImages);
@@ -1517,6 +1517,8 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                 if (newSettings.highlight !== undefined) setHighlight(newSettings.highlight);
                 if (newSettings.imageOrientation !== undefined) setImageOrientation(newSettings.imageOrientation);
                 if (newSettings.imageQuality !== undefined) setImageQuality(newSettings.imageQuality);
+                if (newSettings.aspectRatio !== undefined) setAspectRatio(newSettings.aspectRatio);
+                if (newSettings.outputFormat !== undefined) setOutputFormat(newSettings.outputFormat);
               }}
               remainingCredits={remainingCredits}
               totalCredits={getTotalCredits()}
