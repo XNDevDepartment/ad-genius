@@ -26,14 +26,16 @@ const reportError = async (
   userId?: string,
   userEmail?: string
 ) => {
-  // Skip DOM manipulation errors from browser extensions
+  // Skip DOM manipulation errors from browser extensions and non-actionable browser errors
   const errorMessage = error.message || 'Unknown error';
   if (
     errorMessage.includes('removeChild') ||
     errorMessage.includes('insertBefore') ||
-    errorMessage.includes('appendChild')
+    errorMessage.includes('appendChild') ||
+    errorMessage.includes('The object can not be found here') ||  // iOS Safari browser extension error
+    errorMessage.includes('Minified React error #300')  // Hydration mismatch - usually browser extensions
   ) {
-    console.warn('[ErrorBoundary] Skipping DOM manipulation error (likely browser extension)');
+    console.warn('[ErrorBoundary] Skipping browser-specific error (likely browser extension)');
     return;
   }
 

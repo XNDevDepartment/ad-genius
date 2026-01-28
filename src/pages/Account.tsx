@@ -21,26 +21,14 @@ import { useTranslation } from "react-i18next";
 const Account = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
   const { user, signOut, subscriptionData } = useAuth();
   const { tier } = useCredits();
-
-  // Redirect to home if no user (prevents null user errors from bots/unauthenticated access)
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <AuthModal isOpen={true} onClose={() => navigate("/")} />
-      </div>
-    );
-  }
-
-  const [section, setSection] = useState<string>(""); // state que controla o UI
   const { t } = useTranslation();
+  const { toast } = useToast();
 
+  const [section, setSection] = useState<string>("");
   const [layout, setLayout] = useState("grid");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-
-  const { toast } = useToast();
 
   // 1) Sempre que o hash mudar, abre a secção certa
   useEffect(() => {
@@ -65,11 +53,19 @@ const Account = () => {
     if (allowed.has(hashSection)) {
       setSection(hashSection);
     } else {
-      // se quiseres: limpar hash inválido
-      // navigate("/account", { replace: true });
       setSection("");
     }
   }, [location.hash]);
+
+  // Redirect to home if no user OR missing user metadata
+  // (prevents null user errors from bots/unauthenticated access and auth race conditions)
+  if (!user || !user.user_metadata) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <AuthModal isOpen={true} onClose={() => navigate("/")} />
+      </div>
+    );
+  }
 
   // 2) Quando clicas no menu, atualizas state + URL hash
   const handleMenuClick = (clickedSection: string) => {
