@@ -1308,7 +1308,9 @@
       "viewLibrary": "Mediathek ansehen",
       "createContent": "Inhalt erstellen",
       "accountSettings": "Kontoeinstellungen",
-      "getMoreCredits": "Mehr Credits erhalten"
+      "getMoreCredits": "Mehr Credits erhalten",
+      "bookDemo": "Demo Buchen",
+      "bookDemoDescription": "Erhalten Sie eine geführte Tour, wie Sie das Beste aus Ihren Produkten herausholen"
     }
   },
   "photoshootModal": {
@@ -1895,6 +1897,9 @@
     }
   },
   "landing": {
+    "hero": {
+      "bookDemo": "Demo Buchen"
+    },
     "fashionCatalog": {
       "badge": "Virtueller Modekatalog",
       "title": "Ein Kleidungsstück. Vollständiger Katalog.",
