@@ -1309,7 +1309,7 @@
       "createContent": "Crear Contenido",
       "accountSettings": "Ajustes de la Cuenta",
       "getMoreCredits": "Obtener más créditos",
-      "bookDemo": "Reservar Demo",
+      "bookDemo": "Reservar Demo Gratis",
       "bookDemoDescription": "Obtenga un recorrido guiado sobre cómo sacar el máximo partido a sus productos"
     }
   },
@@ -1898,7 +1898,7 @@
   },
   "landing": {
     "hero": {
-      "bookDemo": "Reservar Demo"
+      "bookDemo": "Reservar Demo Gratis"
     },
     "fashionCatalog": {
       "badge": "Catálogo Virtual de Moda",

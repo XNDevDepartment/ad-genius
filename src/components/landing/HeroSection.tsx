@@ -122,7 +122,7 @@ const HeroSection = () => {
                 className="group bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-elegant text-lg px-8 py-4"
               >
                 <Play className="mr-2 h-5 w-5" />
-                {t('landing.hero.bookDemo', 'Book a Demo')}
+                {t('landing.hero.bookDemo', 'Book a Free Demo')}
               </Button>
 
               {/* Secondary CTA - Start Creating Free */}

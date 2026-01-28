@@ -1364,7 +1364,7 @@
       "createContent": "Create Content",
       "accountSettings": "Account Settings",
       "getMoreCredits": "Get more credits",
-      "bookDemo": "Book a Demo",
+      "bookDemo": "Book a Free Demo",
       "bookDemoDescription": "Get a guided tour on how to get the best out of your products"
     }
   },
@@ -1968,7 +1968,7 @@
   },
   "landing": {
     "hero": {
-      "bookDemo": "Book a Demo"
+      "bookDemo": "Book a Free Demo"
     },
     "fashionCatalog": {
       "badge": "Virtual Fashion Catalog",
