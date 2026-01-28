@@ -4,7 +4,7 @@ import SocialProofSection from "@/components/landing/SocialProofSection";
 import Footer from "@/components/landing/Footer";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Coins, Play } from "lucide-react";
+import { Coins } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import PricingSection from "@/components/landing/PricingSection";
 import HeaderSection from "@/components/landing/HeaderSection";
@@ -58,33 +58,14 @@ const Index = () => {
                 <p className="text-lg lg:text-xl opacity-90 leading-relaxed max-w-2xl">
                   {t("index.auth.subtitle")}
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 mt-6">
-                  {/* Primary CTA - Book a Demo */}
-                  <Button 
-                    variant="default" 
-                    size="lg"
-                    onClick={() => window.open('https://cal.com/genius-clklot/demonstracao-privada', '_blank')}
-                    className="lg:text-lg lg:px-8 lg:py-4 bg-white text-primary hover:bg-white/90"
-                  >
-                    <Play className="mr-2 h-5 w-5" />
-                    {t("index.auth.bookDemo", "Book a Demo")}
-                  </Button>
-                  
-                  {/* Secondary CTA - Start Creating */}
-                  <Button 
-                    variant="outline" 
-                    size="lg"
-                    onClick={() => navigate("/create/ugc")}
-                    className="lg:text-lg lg:px-8 lg:py-4 bg-white/10 border-white/50 text-white hover:bg-white/20"
-                  >
-                    {t("index.auth.startCreating")}
-                  </Button>
-                </div>
-                
-                {/* Description below buttons */}
-                <p className="text-sm text-white/80 mt-2">
-                  {t("index.auth.bookDemoDescription", "Get a guided tour on how to get the best out of your products")}
-                </p>
+                <Button 
+                  variant="default" 
+                  size="lg"
+                  onClick={() => navigate("/create/ugc")}
+                  className="lg:text-lg lg:px-8 lg:py-4 bg-white text-primary hover:bg-white/90"
+                >
+                  {t("index.auth.startCreating")}
+                </Button>
               </div>
             </div>
           </div>
