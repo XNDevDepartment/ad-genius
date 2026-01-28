@@ -1359,7 +1359,9 @@
       "viewLibrary": "Ver Biblioteca",
       "createContent": "Criar Conteúdo",
       "accountSettings": "Definições da Conta",
-      "getMoreCredits": "Obter mais créditos"
+      "getMoreCredits": "Obter mais créditos",
+      "bookDemo": "Marcar Demonstração",
+      "bookDemoDescription": "Tenha uma visita guiada sobre como tirar o melhor partido dos seus produtos"
     }
   },
   "photoshootModal": {
@@ -1946,6 +1948,9 @@
     }
   },
   "landing": {
+    "hero": {
+      "bookDemo": "Marcar Demonstração"
+    },
     "fashionCatalog": {
       "badge": "Catálogo Virtual de Moda",
       "title": "Uma Peça. Catálogo Completo.",

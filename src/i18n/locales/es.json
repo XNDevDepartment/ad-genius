@@ -1308,7 +1308,9 @@
       "viewLibrary": "Ver Biblioteca",
       "createContent": "Crear Contenido",
       "accountSettings": "Ajustes de la Cuenta",
-      "getMoreCredits": "Obtener más créditos"
+      "getMoreCredits": "Obtener más créditos",
+      "bookDemo": "Reservar Demo",
+      "bookDemoDescription": "Obtenga un recorrido guiado sobre cómo sacar el máximo partido a sus productos"
     }
   },
   "photoshootModal": {
@@ -1895,6 +1897,9 @@
     }
   },
   "landing": {
+    "hero": {
+      "bookDemo": "Reservar Demo"
+    },
     "fashionCatalog": {
       "badge": "Catálogo Virtual de Moda",
       "title": "Una Prenda. Catálogo Completo.",

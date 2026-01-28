@@ -1363,7 +1363,9 @@
       "viewLibrary": "View Library",
       "createContent": "Create Content",
       "accountSettings": "Account Settings",
-      "getMoreCredits": "Get more credits"
+      "getMoreCredits": "Get more credits",
+      "bookDemo": "Book a Demo",
+      "bookDemoDescription": "Get a guided tour on how to get the best out of your products"
     }
   },
   "photoshootModal": {
@@ -1965,6 +1967,9 @@
     }
   },
   "landing": {
+    "hero": {
+      "bookDemo": "Book a Demo"
+    },
     "fashionCatalog": {
       "badge": "Virtual Fashion Catalog",
       "title": "One Garment. Endless Catalog.",

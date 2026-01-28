@@ -1308,7 +1308,9 @@
       "viewLibrary": "Voir la Bibliothèque",
       "createContent": "Créer du Contenu",
       "accountSettings": "Paramètres du Compte",
-      "getMoreCredits": "Obtenir plus de crédits"
+      "getMoreCredits": "Obtenir plus de crédits",
+      "bookDemo": "Réserver une Démo",
+      "bookDemoDescription": "Obtenez une visite guidée pour tirer le meilleur parti de vos produits"
     }
   },
   "photoshootModal": {
@@ -1895,6 +1897,9 @@
     }
   },
   "landing": {
+    "hero": {
+      "bookDemo": "Réserver une Démo"
+    },
     "fashionCatalog": {
       "badge": "Catalogue Virtuel de Mode",
       "title": "Un Vêtement. Catalogue Complet.",

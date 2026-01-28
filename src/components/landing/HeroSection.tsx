@@ -128,10 +128,10 @@ const HeroSection = () => {
                 variant="outline"
                 size="lg"
                 className="border-2 border-primary/20 hover:border-primary/40 text-lg px-8 py-4"
-                onClick={() => setIsDemoModalOpen(true)}
+                onClick={() => window.open('https://cal.com/genius-clklot/demonstracao-privada', '_blank')}
               >
                 <Play className="mr-2 h-5 w-5" />
-                Watch Demo
+                {t('landing.hero.bookDemo', 'Book a Demo')}
               </Button>
             </motion.div>
 
