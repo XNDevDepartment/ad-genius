@@ -1,99 +1,167 @@
 
 
-## Fix Onboarding Checklist Layout for Longer Translations
+## Fix Book a Demo Button Visibility and Layout + Swap Landing Page CTA Priority
 
-### Problem
+### Overview
 
-When switching to Portuguese, the milestone item for "Outfit Swap" breaks the layout because:
-1. Portuguese title "Crie o seu primeiro Outfit Swap" is longer than English "Create your first Outfit Swap"
-2. The current flex layout doesn't handle text wrapping properly
-3. The "+5" badge, title, and CTA button compete for space in a single row
+Address three issues:
+1. Make the "Book a Demo" button visible on the authenticated homepage (currently has poor contrast)
+2. Improve the layout of the CTA section on the homepage
+3. Swap the priority of CTAs on the landing page - "Book a Demo" becomes primary, "Start Creating Free" becomes secondary
 
-### Root Cause
+---
 
-In `MilestoneItem` component (lines 230-252), the title and badge are in a horizontal flex container:
+### Issue 1: Homepage "Book a Demo" Button Not Visible
+
+**Current Problem (Index.tsx lines 71-83)**:
 ```tsx
-<div className="flex items-center gap-2">
-  <h4>...</h4>
-  <span>+5</span>  {/* Badge */}
-</div>
+<Button 
+  variant="outline" 
+  className="border-white/30 text-white hover:bg-white/10"  // ← Barely visible on purple
+>
 ```
 
-When the title wraps, the badge stays inline causing awkward alignment.
+The outline variant with white/30 border on a purple gradient background has very low contrast.
 
-### Solution
+**Fix**: Make the "Book a Demo" button the PRIMARY action with a solid white background (like the current "Start Creating" button) and make "Start Creating" the secondary option.
 
-Restructure the layout to be more resilient to longer text:
+---
 
-1. **Stack title and badge vertically on small widths** - Allow the title to wrap naturally without affecting the badge
-2. **Make the title use `line-clamp-2`** - Allow 2 lines maximum instead of truncating to 1 line
-3. **Move badge to a fixed position** - Place the "+5" indicator as a flex-shrink-0 element
+### Issue 2: Homepage Layout Problems
+
+**Current layout**:
+```
+[Start Creating] [Book Demo + description nested below it]
+```
+
+The description is nested inside the button's wrapper, creating awkward alignment.
+
+**Proposed layout**:
+```
+[  Book a Demo (Primary)  ] [Start Creating (Secondary)]
+
+Get a guided tour on how to get the best out of your products
+```
+
+Move the description below both buttons, spanning the full width.
+
+---
+
+### Issue 3: Landing Page Button Priority Swap
+
+**Current (HeroSection.tsx lines 117-136)**:
+- "Start Creating Free" = Primary (gradient background)
+- "Book a Demo" = Secondary (outline)
+
+**Proposed**:
+- "Book a Demo" = Primary (gradient background)
+- "Start Creating Free" = Secondary (outline)
+
+---
 
 ### Technical Changes
 
-**File: `src/components/onboarding/OnboardingChecklist.tsx`**
+#### File 1: `src/pages/Index.tsx`
 
-Update the `MilestoneItem` component's content section (lines 229-252):
+Update lines 61-84 with new layout:
 
 ```tsx
-{/* Content */}
-<div className="flex-1 min-w-0 overflow-hidden">
-  <div className="flex items-start justify-between gap-2">
-    <h4 className={cn(
-      "font-medium text-sm line-clamp-2",
-      state.credited ? "text-primary" : "text-foreground"
-    )}>
-      {title}
-    </h4>
-    <div className="flex-shrink-0">
-      {state.credited && (
-        <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">
-          +5 ✓
-        </span>
-      )}
-      {!state.credited && !isLocked && (
-        <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
-          +5
-        </span>
-      )}
-    </div>
-  </div>
-  <p className="text-xs text-muted-foreground mt-0.5 truncate">
-    {description}
-  </p>
+<div className="flex flex-col sm:flex-row gap-4 mt-6">
+  {/* Primary CTA - Book a Demo */}
+  <Button 
+    variant="default" 
+    size="lg"
+    onClick={() => window.open('https://cal.com/genius-clklot/demonstracao-privada', '_blank')}
+    className="lg:text-lg lg:px-8 lg:py-4 bg-white text-primary hover:bg-white/90"
+  >
+    <Play className="mr-2 h-5 w-5" />
+    {t("index.auth.bookDemo", "Book a Demo")}
+  </Button>
+  
+  {/* Secondary CTA - Start Creating */}
+  <Button 
+    variant="outline" 
+    size="lg"
+    onClick={() => navigate("/create/ugc")}
+    className="lg:text-lg lg:px-8 lg:py-4 bg-white/10 border-white/50 text-white hover:bg-white/20"
+  >
+    {t("index.auth.startCreating")}
+  </Button>
 </div>
+
+{/* Description below buttons */}
+<p className="text-sm text-white/80 mt-2">
+  {t("index.auth.bookDemoDescription", "Get a guided tour on how to get the best out of your products")}
+</p>
 ```
 
-Key changes:
-- Changed `items-center` to `items-start` so badge stays at top when title wraps
-- Added `justify-between` to push badge to the right edge
-- Wrapped badge in a `flex-shrink-0` div to prevent it from shrinking
-- Added `whitespace-nowrap` to badge spans to prevent badge text from wrapping
-- Changed title from `truncate` (implied by single line) to `line-clamp-2` to allow 2 lines
-- Added `overflow-hidden` to the content container for proper clipping
+#### File 2: `src/components/landing/HeroSection.tsx`
+
+Update lines 117-136 to swap button priorities:
+
+```tsx
+{/* CTA Buttons */}
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={inView ? { opacity: 1, y: 0 } : {}}
+  transition={{ duration: 0.6, delay: 0.6 }}
+  className="flex flex-col sm:flex-row gap-4"
+>
+  {/* Primary CTA - Book a Demo */}
+  <Button 
+    size="lg"
+    onClick={() => window.open('https://cal.com/genius-clklot/demonstracao-privada', '_blank')}
+    className="group bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-elegant text-lg px-8 py-4"
+  >
+    <Play className="mr-2 h-5 w-5" />
+    {t('landing.hero.bookDemo', 'Book a Demo')}
+  </Button>
+
+  {/* Secondary CTA - Start Creating Free */}
+  <Button
+    variant="outline"
+    size="lg"
+    className="border-2 border-primary/20 hover:border-primary/40 text-lg px-8 py-4"
+    onClick={() => navigate("/signup")}
+  >
+    {t('landing.hero.startCreating', 'Start Creating Free')}
+    <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+  </Button>
+</motion.div>
+```
+
+---
 
 ### Files to Modify
 
-| File | Change |
-|------|--------|
-| `src/components/onboarding/OnboardingChecklist.tsx` | Restructure MilestoneItem content layout to handle longer translations |
+| File | Changes |
+|------|---------|
+| `src/pages/Index.tsx` | Swap button priority, fix visibility, move description below buttons |
+| `src/components/landing/HeroSection.tsx` | Swap "Book a Demo" to primary, "Start Creating Free" to secondary |
+
+---
 
 ### Visual Result
 
-**Before (broken in Portuguese):**
+**Landing Page (before):**
 ```
-| [icon] | Crie o seu      | +5  Experimentar > |
-|        | primeiro        |                    |
-|        | Outfit          |                    |
-|        | Swap            |                    |
+[ Start Creating Free (Primary) ] [ Book a Demo (Secondary) ]
 ```
 
-**After (fixed):**
+**Landing Page (after):**
 ```
-| [icon] | Crie o seu primeiro    +5 | Experimentar > |
-|        | Outfit Swap                |                |
-|        | Experimente roupas...      |                |
+[ Book a Demo (Primary) ] [ Start Creating Free (Secondary) ]
 ```
 
-The title can now span up to 2 lines, the badge stays right-aligned at the top, and the CTA button remains properly positioned on the right.
+**Authenticated Homepage (before - broken):**
+```
+[ Start Creating ] [ Book Demo (barely visible) ]
+                    Get a guided tour...
+```
+
+**Authenticated Homepage (after - fixed):**
+```
+[ Book a Demo (Primary/White) ] [ Start Creating (Secondary) ]
+Get a guided tour on how to get the best out of your products
+```
 
