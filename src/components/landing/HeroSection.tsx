@@ -115,23 +115,25 @@ const HeroSection = () => {
               transition={{ duration: 0.6, delay: 0.6 }}
               className="flex flex-col sm:flex-row gap-4"
             >
+              {/* Primary CTA - Book a Demo */}
               <Button 
                 size="lg"
-                onClick={() => navigate("/signup")}
+                onClick={() => window.open('https://cal.com/genius-clklot/demonstracao-privada', '_blank')}
                 className="group bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-elegant text-lg px-8 py-4"
               >
-                Start Creating Free
-                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                <Play className="mr-2 h-5 w-5" />
+                {t('landing.hero.bookDemo', 'Book a Demo')}
               </Button>
 
+              {/* Secondary CTA - Start Creating Free */}
               <Button
                 variant="outline"
                 size="lg"
                 className="border-2 border-primary/20 hover:border-primary/40 text-lg px-8 py-4"
-                onClick={() => window.open('https://cal.com/genius-clklot/demonstracao-privada', '_blank')}
+                onClick={() => navigate("/signup")}
               >
-                <Play className="mr-2 h-5 w-5" />
-                {t('landing.hero.bookDemo', 'Book a Demo')}
+                Start Creating Free
+                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Button>
             </motion.div>
 
