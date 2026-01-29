@@ -325,6 +325,28 @@
         "satisfactionLabel": "Tasa de Satisfacción de nuestros Usuarios"
       },
       "generatedIn": "Generado en"
+    },
+    "fashionCatalog": {
+      "badge": "Catálogo Virtual de Moda",
+      "title": "Una Prenda. Catálogo Completo.",
+      "subtitle": "Sube una única foto de producto y genera un catálogo completo con modelos IA diversos, poses y fondos profesionales.",
+      "sourceLabel": "Tu Prenda",
+      "transformLabel": "La IA Crea",
+      "resultsLabel": "6+ Fotos de Catálogo",
+      "benefits": {
+        "uploadGarments": "Sube una foto flat-lay o maniquí",
+        "chooseModels": "La IA genera variaciones diversas de modelos",
+        "catalogShots": "Obtén 6+ imágenes listas para catálogo",
+        "batchProcess": "Procesa todo tu inventario en lote"
+      },
+      "useCases": {
+        "apparel": "Marcas de Ropa",
+        "fashion": "Tiendas de Moda",
+        "footwear": "Tiendas de Calzado",
+        "accessories": "Tiendas de Accesorios"
+      },
+      "cta": "Crea Tu Catálogo",
+      "perfectFor": "Perfecto para:"
     }
   },
   "trustBar": {
@@ -1915,33 +1937,6 @@
       "enterFullCode": "Por favor, introduce el código de 6 dígitos",
       "verifyFailed": "Verificación fallida",
       "invalidOrExpired": "Código inválido o expirado"
-    }
-  },
-  "landing": {
-    "hero": {
-      "bookDemo": "Reservar Demo Gratis"
-    },
-    "fashionCatalog": {
-      "badge": "Catálogo Virtual de Moda",
-      "title": "Una Prenda. Catálogo Completo.",
-      "subtitle": "Sube una única foto de producto y genera un catálogo completo con modelos IA diversos, poses y fondos profesionales.",
-      "sourceLabel": "Tu Prenda",
-      "transformLabel": "La IA Crea",
-      "resultsLabel": "6+ Fotos de Catálogo",
-      "benefits": {
-        "uploadGarments": "Sube una foto flat-lay o maniquí",
-        "chooseModels": "La IA genera variaciones diversas de modelos",
-        "catalogShots": "Obtén 6+ imágenes listas para catálogo",
-        "batchProcess": "Procesa todo tu inventario en lote"
-      },
-      "useCases": {
-        "apparel": "Marcas de Ropa",
-        "fashion": "Tiendas de Moda",
-        "footwear": "Tiendas de Calzado",
-        "accessories": "Tiendas de Accesorios"
-      },
-      "cta": "Crea Tu Catálogo",
-      "perfectFor": "Perfecto para:"
     }
   },
   "landingV2": {
