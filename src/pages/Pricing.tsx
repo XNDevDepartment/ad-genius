@@ -104,14 +104,17 @@ const plans = [
     { featureKey: "monthlyCredits", starter: "80", plus: "200", pro: "400" },
     { featureKey: "imagesPerMonth", starter: "80", plus: "200", pro: "400" },
     { featureKey: "maxImagesPerGeneration", starter: "3", plus: "3", pro: "3" },
-    { featureKey: "imageToVideo", starter: false, plus: true, pro: true },
-    { featureKey: "videoDuration", starter: "-", plus: "5s & 10s", pro: "5s & 10s" },
+    { featureKey: "imageToVideo", starter: true, plus: true, pro: true },
+    { featureKey: "videoDuration", starter: "5s & 10s", plus: "5s & 10s", pro: "5s & 10s" },
     { featureKey: "ugcScenarios", starter: "unlimited", plus: "unlimited", pro: "unlimited" },
     { featureKey: "allQualityLevels", starter: true, plus: true, pro: true },
     { featureKey: "commercialUsage", starter: true, plus: true, pro: true },
-    { featureKey: "prioritySupport", starter: true, plus: true, pro: true },
-    { featureKey: "liveChat", starter: false, plus: true, pro: true },
-    { featureKey: "dedicatedManager", starter: false, plus: false, pro: true }
+    { featureKey: "prioritySupport", starter: false, plus: true, pro: true },
+    // { featureKey: "liveChat", starter: false, plus: true, pro: true },
+    { featureKey: "dedicatedManager", starter: false, plus: false, pro: true },
+    { featureKey: "freeBetaFeatures", starter: false, plus: false, pro: true },
+    { featureKey: "earlyAccess", starter: false, plus: false, pro: true },
+    { featureKey: "businessConsulting", starter: false, plus: false, pro: true }
   ];
 
 const Pricing = () => {
