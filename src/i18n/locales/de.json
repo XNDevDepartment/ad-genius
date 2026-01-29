@@ -625,13 +625,70 @@
       "title": "Studiofotos",
       "description": "Erzeuge professionelle Produktfotografie"
     },
-  "outfitSwap": {
+    "outfitSwap": {
       "title": "Virtuelle Anprobe",
       "description": "Ziehe unseren Models deine Kleidung an und erhalte Fotos in professioneller Qualität"
+    },
+    "bulkBackground": {
+      "title": "Massen-Hintergrund",
+      "description": "Wende denselben Hintergrund auf mehrere Produktbilder gleichzeitig an"
     },
     "comingSoon": "Demnächst",
     "betaBadge": "BETA",
     "betaLockedDescription": "Upgrade auf einen beliebigen kostenpflichtigen Plan, um auf diese Beta-Funktion zuzugreifen. Hilf uns, das Outfit-Swap zu perfektionieren!"
+  },
+  "bulkBackground": {
+    "title": "Massen-Hintergrund-Ersetzung",
+    "description": "Wende denselben Hintergrund auf mehrere Produktbilder an",
+    "steps": {
+      "upload": "Produkte hochladen",
+      "background": "Hintergrund wählen",
+      "review": "Überprüfen & Verarbeiten",
+      "results": "Ergebnisse"
+    },
+    "uploadProducts": {
+      "title": "Lade deine Produktbilder hoch",
+      "subtitle": "Lade bis zu {{max}} Produktbilder hoch",
+      "imagesUploaded": "{{count}} Bilder hochgeladen"
+    },
+    "selectBackground": {
+      "title": "Wähle deinen Hintergrund",
+      "uploadCustom": "Eigenen hochladen",
+      "choosePreset": "Vorlage wählen",
+      "uploadHint": "Lade dein eigenes Hintergrundbild hoch",
+      "presetHint": "Wähle aus unseren kuratierten Hintergründen"
+    },
+    "categories": {
+      "lifestyle": "Lifestyle",
+      "studio": "Studio",
+      "magazine": "Magazin",
+      "nature": "Natur",
+      "urban": "Urban",
+      "seasonal": "Saisonal"
+    },
+    "review": {
+      "title": "Überprüfe deinen Stapel",
+      "products": "Produkte",
+      "background": "Hintergrund",
+      "totalCost": "Gesamtkosten",
+      "creditsPerImage": "{{credits}} Credits × {{count}} Bilder"
+    },
+    "processing": {
+      "title": "Deine Bilder werden verarbeitet",
+      "progress": "{{current}} von {{total}} abgeschlossen",
+      "estimatedTime": "Geschätzte Zeit: {{time}}"
+    },
+    "results": {
+      "title": "Deine Bilder sind fertig!",
+      "downloadAll": "Alle als ZIP herunterladen",
+      "downloadSingle": "Herunterladen"
+    },
+    "buttons": {
+      "next": "Weiter",
+      "back": "Zurück",
+      "startProcessing": "Verarbeitung starten",
+      "newBatch": "Neuer Stapel"
+    }
   },
   "common": {
     "getStarted": "Loslegen",

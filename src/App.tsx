@@ -66,6 +66,7 @@ const Bulk = lazyWithRetry(() => import("./pages/Bulk"));
 const ActivateAccount = lazyWithRetry(() => import("./pages/ActivateAccount"));
 const GeniusAgent = lazyWithRetry(() => import("./pages/GeniusAgent"));
 const GeniusAgentAdmin = lazyWithRetry(() => import("./pages/admin/GeniusAgentAdmin"));
+const BulkBackground = lazyWithRetry(() => import("./pages/BulkBackground"));
 const queryClient = new QueryClient();
 
 // Wrapper component to provide resetKey and user context to ErrorBoundary
@@ -201,6 +202,15 @@ const App = () => {
                   <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <VideoAds />
+                    </Suspense>
+                  </ErrorBoundaryWithReset>
+                } />
+                <Route path="create/bulk-background" element={
+                  <ErrorBoundaryWithReset>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AuthGuard>
+                        <BulkBackground />
+                      </AuthGuard>
                     </Suspense>
                   </ErrorBoundaryWithReset>
                 } />
