@@ -927,7 +927,14 @@ async function processOutfitSwap(jobId: string) {
       }
     });
     if (resultError) {
-      console.error("Error saving results:", resultError);
+      console.error("[OUTFIT-SWAP] Critical: Failed to save result", {
+        jobId,
+        userId: job.user_id,
+        error: resultError,
+        storagePath: jpgPath
+      });
+      // CRITICAL: Fail the job if result cannot be saved - prevents ghost completed jobs
+      throw new Error(`Database insert failed: ${resultError.message}${resultError.code ? ` (code: ${resultError.code})` : ''}`);
     }
     // Update job as completed (preserve garment metadata)
     await supabase.from("outfit_swap_jobs").update({
