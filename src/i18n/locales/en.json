@@ -634,9 +634,66 @@
       "title": "Outfit Creator",
       "description": "Compose complete outfits with top, bottom, shoes & accessories"
     },
+    "bulkBackground": {
+      "title": "Bulk Background",
+      "description": "Apply the same background to multiple product images at once"
+    },
     "comingSoon": "Coming soon",
     "betaBadge": "BETA",
     "betaLockedDescription": "Upgrade to any paid plan to access this beta feature. Help us perfect outfit-swap!"
+  },
+  "bulkBackground": {
+    "title": "Bulk Background Replacement",
+    "description": "Apply the same background to multiple product images",
+    "steps": {
+      "upload": "Upload Products",
+      "background": "Select Background",
+      "review": "Review & Process",
+      "results": "Results"
+    },
+    "uploadProducts": {
+      "title": "Upload Your Product Images",
+      "subtitle": "Upload up to {{max}} product images",
+      "imagesUploaded": "{{count}} images uploaded"
+    },
+    "selectBackground": {
+      "title": "Choose Your Background",
+      "uploadCustom": "Upload Custom",
+      "choosePreset": "Choose Preset",
+      "uploadHint": "Upload your own background image",
+      "presetHint": "Select from our curated backgrounds"
+    },
+    "categories": {
+      "lifestyle": "Lifestyle",
+      "studio": "Studio",
+      "magazine": "Magazine",
+      "nature": "Nature",
+      "urban": "Urban",
+      "seasonal": "Seasonal"
+    },
+    "review": {
+      "title": "Review Your Batch",
+      "products": "Products",
+      "background": "Background",
+      "totalCost": "Total Cost",
+      "creditsPerImage": "{{credits}} credits × {{count}} images"
+    },
+    "processing": {
+      "title": "Processing Your Images",
+      "progress": "{{current}} of {{total}} completed",
+      "estimatedTime": "Estimated time: {{time}}"
+    },
+    "results": {
+      "title": "Your Images Are Ready!",
+      "downloadAll": "Download All as ZIP",
+      "downloadSingle": "Download"
+    },
+    "buttons": {
+      "next": "Continue",
+      "back": "Back",
+      "startProcessing": "Start Processing",
+      "newBatch": "New Batch"
+    }
   },
   "outfitCreator": {
     "title": "Outfit Creator",

@@ -625,13 +625,70 @@
       "title": "Fotos de Estudio",
       "description": "Genera fotografía de producto profesional"
     },
-  "outfitSwap": {
+    "outfitSwap": {
       "title": "Probador",
       "description": "Viste a nuestros modelos con tu ropa y consigue fotos con calidad profesional"
+    },
+    "bulkBackground": {
+      "title": "Fondo Masivo",
+      "description": "Aplica el mismo fondo a múltiples imágenes de producto a la vez"
     },
     "comingSoon": "Próximamente",
     "betaBadge": "BETA",
     "betaLockedDescription": "Haz upgrade a cualquier plan de pago para acceder a esta función beta. ¡Ayúdanos a perfeccionar el outfit-swap!"
+  },
+  "bulkBackground": {
+    "title": "Reemplazo de Fondo Masivo",
+    "description": "Aplica el mismo fondo a múltiples imágenes de producto",
+    "steps": {
+      "upload": "Subir Productos",
+      "background": "Seleccionar Fondo",
+      "review": "Revisar y Procesar",
+      "results": "Resultados"
+    },
+    "uploadProducts": {
+      "title": "Sube tus Imágenes de Producto",
+      "subtitle": "Sube hasta {{max}} imágenes de producto",
+      "imagesUploaded": "{{count}} imágenes subidas"
+    },
+    "selectBackground": {
+      "title": "Elige tu Fondo",
+      "uploadCustom": "Subir Personalizado",
+      "choosePreset": "Elegir Preestablecido",
+      "uploadHint": "Sube tu propia imagen de fondo",
+      "presetHint": "Selecciona de nuestros fondos curados"
+    },
+    "categories": {
+      "lifestyle": "Lifestyle",
+      "studio": "Estudio",
+      "magazine": "Revista",
+      "nature": "Naturaleza",
+      "urban": "Urbano",
+      "seasonal": "Estacional"
+    },
+    "review": {
+      "title": "Revisa tu Lote",
+      "products": "Productos",
+      "background": "Fondo",
+      "totalCost": "Costo Total",
+      "creditsPerImage": "{{credits}} créditos × {{count}} imágenes"
+    },
+    "processing": {
+      "title": "Procesando tus Imágenes",
+      "progress": "{{current}} de {{total}} completadas",
+      "estimatedTime": "Tiempo estimado: {{time}}"
+    },
+    "results": {
+      "title": "¡Tus Imágenes están Listas!",
+      "downloadAll": "Descargar Todo como ZIP",
+      "downloadSingle": "Descargar"
+    },
+    "buttons": {
+      "next": "Continuar",
+      "back": "Atrás",
+      "startProcessing": "Iniciar Procesamiento",
+      "newBatch": "Nuevo Lote"
+    }
   },
   "common": {
     "getStarted": "Empezar",

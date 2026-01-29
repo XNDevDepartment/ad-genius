@@ -629,13 +629,70 @@
       "title": "Outfit Creator",
       "description": "Compõe looks completos com top, calças, sapatos e acessórios"
     },
-  "studioPhotos": {
+    "bulkBackground": {
+      "title": "Fundo em Lote",
+      "description": "Aplica o mesmo fundo a múltiplas imagens de produto de uma só vez"
+    },
+    "studioPhotos": {
       "title": "Fotos de Estúdio",
       "description": "Gere fotos de produto profissionais"
     },
     "comingSoon": "Brevemente",
     "betaBadge": "BETA",
     "betaLockedDescription": "Faz upgrade para qualquer plano pago para aceder a esta funcionalidade beta. Ajuda-nos a aperfeiçoar o outfit-swap!"
+  },
+  "bulkBackground": {
+    "title": "Substituição de Fundo em Lote",
+    "description": "Aplica o mesmo fundo a múltiplas imagens de produto",
+    "steps": {
+      "upload": "Carregar Produtos",
+      "background": "Escolher Fundo",
+      "review": "Rever e Processar",
+      "results": "Resultados"
+    },
+    "uploadProducts": {
+      "title": "Carrega as Tuas Imagens de Produto",
+      "subtitle": "Carrega até {{max}} imagens de produto",
+      "imagesUploaded": "{{count}} imagens carregadas"
+    },
+    "selectBackground": {
+      "title": "Escolhe o Teu Fundo",
+      "uploadCustom": "Carregar Personalizado",
+      "choosePreset": "Escolher Predefinido",
+      "uploadHint": "Carrega a tua própria imagem de fundo",
+      "presetHint": "Seleciona dos nossos fundos curados"
+    },
+    "categories": {
+      "lifestyle": "Lifestyle",
+      "studio": "Estúdio",
+      "magazine": "Revista",
+      "nature": "Natureza",
+      "urban": "Urbano",
+      "seasonal": "Sazonal"
+    },
+    "review": {
+      "title": "Revê o Teu Lote",
+      "products": "Produtos",
+      "background": "Fundo",
+      "totalCost": "Custo Total",
+      "creditsPerImage": "{{credits}} créditos × {{count}} imagens"
+    },
+    "processing": {
+      "title": "A Processar as Tuas Imagens",
+      "progress": "{{current}} de {{total}} concluídas",
+      "estimatedTime": "Tempo estimado: {{time}}"
+    },
+    "results": {
+      "title": "As Tuas Imagens Estão Prontas!",
+      "downloadAll": "Descarregar Tudo como ZIP",
+      "downloadSingle": "Descarregar"
+    },
+    "buttons": {
+      "next": "Continuar",
+      "back": "Voltar",
+      "startProcessing": "Iniciar Processamento",
+      "newBatch": "Novo Lote"
+    }
   },
   "outfitCreator": {
     "title": "Outfit Creator",

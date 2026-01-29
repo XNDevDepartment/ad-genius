@@ -1,0 +1,150 @@
+import { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Upload, X, Image as ImageIcon, Grid3X3 } from "lucide-react";
+import BackgroundPresets from "./BackgroundPresets";
+
+interface BackgroundPickerProps {
+  onCustomUpload: (file: File | null) => void;
+  onPresetSelect: (presetId: string | null) => void;
+  selectedPreset: string | null;
+  customBackground: File | null;
+}
+
+type PickerMode = "custom" | "preset";
+
+const BackgroundPicker = ({
+  onCustomUpload,
+  onPresetSelect,
+  selectedPreset,
+  customBackground
+}: BackgroundPickerProps) => {
+  const { t } = useTranslation();
+  const [mode, setMode] = useState<PickerMode>("preset");
+  const [customPreview, setCustomPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      onCustomUpload(file);
+      onPresetSelect(null); // Clear preset when uploading custom
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = () => setCustomPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveCustom = () => {
+    onCustomUpload(null);
+    setCustomPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handlePresetSelect = (presetId: string) => {
+    onPresetSelect(presetId);
+    onCustomUpload(null); // Clear custom when selecting preset
+    setCustomPreview(null);
+  };
+
+  const handleModeChange = (newMode: PickerMode) => {
+    setMode(newMode);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Mode Toggle */}
+      <div className="flex gap-2">
+        <Button
+          variant={mode === "custom" ? "default" : "outline"}
+          onClick={() => handleModeChange("custom")}
+          className="flex-1 gap-2"
+        >
+          <Upload className="h-4 w-4" />
+          {t("bulkBackground.selectBackground.uploadCustom")}
+        </Button>
+        <Button
+          variant={mode === "preset" ? "default" : "outline"}
+          onClick={() => handleModeChange("preset")}
+          className="flex-1 gap-2"
+        >
+          <Grid3X3 className="h-4 w-4" />
+          {t("bulkBackground.selectBackground.choosePreset")}
+        </Button>
+      </div>
+
+      {/* Custom Upload */}
+      {mode === "custom" && (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            {t("bulkBackground.selectBackground.uploadHint")}
+          </p>
+
+          {customPreview ? (
+            <Card className="relative overflow-hidden bg-transparent">
+              <img
+                src={customPreview}
+                alt="Custom background"
+                className="w-full h-48 object-cover"
+              />
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={handleRemoveCustom}
+                className="absolute top-2 right-2 h-8 w-8 bg-background/80 backdrop-blur-sm"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </Card>
+          ) : (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full border-2 border-dashed rounded-apple p-12 transition-colors border-border hover:border-primary/50 bg-transparent"
+            >
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-12 h-12 bg-primary/10 rounded-apple-sm flex items-center justify-center">
+                  <ImageIcon className="h-6 w-6 text-primary" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-medium text-foreground">
+                    {t("bulkBackground.selectBackground.uploadCustom")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    PNG, JPG up to 10MB
+                  </p>
+                </div>
+              </div>
+            </button>
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+        </div>
+      )}
+
+      {/* Preset Selection */}
+      {mode === "preset" && (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            {t("bulkBackground.selectBackground.presetHint")}
+          </p>
+          <BackgroundPresets
+            selectedPreset={selectedPreset}
+            onSelect={handlePresetSelect}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default BackgroundPicker;
