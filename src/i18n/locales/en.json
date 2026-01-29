@@ -321,6 +321,28 @@
         "satisfactionLabel": "Satisfaction Rate on our Users"
       },
       "generatedIn": "Generated in"
+    },
+    "fashionCatalog": {
+      "badge": "Virtual Fashion Catalog",
+      "title": "One Garment. Endless Catalog.",
+      "subtitle": "Upload a single product photo and generate a complete catalog with diverse AI models, poses, and professional backgrounds.",
+      "sourceLabel": "Your Garment",
+      "transformLabel": "AI Creates",
+      "resultsLabel": "6+ Catalog Shots",
+      "benefits": {
+        "uploadGarments": "Upload one flat-lay or mannequin shot",
+        "chooseModels": "AI generates diverse model variations",
+        "catalogShots": "Get 6+ catalog-ready images instantly",
+        "batchProcess": "Process your entire inventory in batch"
+      },
+      "useCases": {
+        "apparel": "Apparel Brands",
+        "fashion": "Fashion Retailers",
+        "footwear": "Footwear Stores",
+        "accessories": "Accessories Shops"
+      },
+      "cta": "Create Your Catalog",
+      "perfectFor": "Perfect for:"
     }
   },
   "trustBar": {
@@ -1987,33 +2009,6 @@
       "enterFullCode": "Please enter the 6-digit code",
       "verifyFailed": "Verification failed",
       "invalidOrExpired": "Invalid or expired code"
-    }
-  },
-  "landing": {
-    "hero": {
-      "bookDemo": "Book a Free Demo"
-    },
-    "fashionCatalog": {
-      "badge": "Virtual Fashion Catalog",
-      "title": "One Garment. Endless Catalog.",
-      "subtitle": "Upload a single product photo and generate a complete catalog with diverse AI models, poses, and professional backgrounds.",
-      "sourceLabel": "Your Garment",
-      "transformLabel": "AI Creates",
-      "resultsLabel": "6+ Catalog Shots",
-      "benefits": {
-        "uploadGarments": "Upload one flat-lay or mannequin shot",
-        "chooseModels": "AI generates diverse model variations",
-        "catalogShots": "Get 6+ catalog-ready images instantly",
-        "batchProcess": "Process your entire inventory in batch"
-      },
-      "useCases": {
-        "apparel": "Apparel Brands",
-        "fashion": "Fashion Retailers",
-        "footwear": "Footwear Stores",
-        "accessories": "Accessories Shops"
-      },
-      "cta": "Create Your Catalog",
-      "perfectFor": "Perfect for:"
     }
   },
   "landingV2": {

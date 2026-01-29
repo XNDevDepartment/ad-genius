@@ -325,6 +325,28 @@
         "satisfactionLabel": "Taux de Satisfaction de nos Utilisateurs"
       },
       "generatedIn": "Généré en"
+    },
+    "fashionCatalog": {
+      "badge": "Catalogue Virtuel de Mode",
+      "title": "Un Vêtement. Catalogue Complet.",
+      "subtitle": "Téléchargez une seule photo de produit et générez un catalogue complet avec des modèles IA variés, des poses et des fonds professionnels.",
+      "sourceLabel": "Votre Vêtement",
+      "transformLabel": "L'IA Crée",
+      "resultsLabel": "6+ Photos Catalogue",
+      "benefits": {
+        "uploadGarments": "Téléchargez une photo flat-lay ou mannequin",
+        "chooseModels": "L'IA génère des variations de modèles variées",
+        "catalogShots": "Obtenez 6+ images prêtes pour le catalogue",
+        "batchProcess": "Traitez tout votre inventaire en lot"
+      },
+      "useCases": {
+        "apparel": "Marques de Vêtements",
+        "fashion": "Détaillants de Mode",
+        "footwear": "Magasins de Chaussures",
+        "accessories": "Boutiques d'Accessoires"
+      },
+      "cta": "Créez Votre Catalogue",
+      "perfectFor": "Parfait pour :"
     }
   },
   "trustBar": {
@@ -1917,33 +1939,6 @@
       "enterFullCode": "Veuillez entrer le code à 6 chiffres",
       "verifyFailed": "Échec de la vérification",
       "invalidOrExpired": "Code invalide ou expiré"
-    }
-  },
-  "landing": {
-    "hero": {
-      "bookDemo": "Réserver une Démo Gratuit"
-    },
-    "fashionCatalog": {
-      "badge": "Catalogue Virtuel de Mode",
-      "title": "Un Vêtement. Catalogue Complet.",
-      "subtitle": "Téléchargez une seule photo de produit et générez un catalogue complet avec des modèles IA variés, des poses et des fonds professionnels.",
-      "sourceLabel": "Votre Vêtement",
-      "transformLabel": "L'IA Crée",
-      "resultsLabel": "6+ Photos Catalogue",
-      "benefits": {
-        "uploadGarments": "Téléchargez une photo flat-lay ou mannequin",
-        "chooseModels": "L'IA génère des variations de modèles variées",
-        "catalogShots": "Obtenez 6+ images prêtes pour le catalogue",
-        "batchProcess": "Traitez tout votre inventaire en lot"
-      },
-      "useCases": {
-        "apparel": "Marques de Vêtements",
-        "fashion": "Détaillants de Mode",
-        "footwear": "Magasins de Chaussures",
-        "accessories": "Boutiques d'Accessoires"
-      },
-      "cta": "Créez Votre Catalogue",
-      "perfectFor": "Parfait pour :"
     }
   },
   "landingV2": {

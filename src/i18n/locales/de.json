@@ -325,6 +325,28 @@
         "satisfactionLabel": "Zufriedenheitsrate unserer Nutzer"
       },
       "generatedIn": "Generiert in"
+    },
+    "fashionCatalog": {
+      "badge": "Virtueller Modekatalog",
+      "title": "Ein Kleidungsstück. Vollständiger Katalog.",
+      "subtitle": "Laden Sie ein einzelnes Produktfoto hoch und generieren Sie einen kompletten Katalog mit vielfältigen KI-Models, Posen und professionellen Hintergründen.",
+      "sourceLabel": "Ihr Kleidungsstück",
+      "transformLabel": "KI Erstellt",
+      "resultsLabel": "6+ Katalogfotos",
+      "benefits": {
+        "uploadGarments": "Laden Sie ein Flat-Lay oder Mannequin-Foto hoch",
+        "chooseModels": "KI generiert vielfältige Model-Variationen",
+        "catalogShots": "Erhalten Sie 6+ katalogfertige Bilder sofort",
+        "batchProcess": "Verarbeiten Sie Ihr gesamtes Inventar im Batch"
+      },
+      "useCases": {
+        "apparel": "Bekleidungsmarken",
+        "fashion": "Modehändler",
+        "footwear": "Schuhgeschäfte",
+        "accessories": "Accessoire-Shops"
+      },
+      "cta": "Katalog Erstellen",
+      "perfectFor": "Perfekt für:"
     }
   },
   "trustBar": {
@@ -1917,33 +1939,6 @@
       "enterFullCode": "Bitte geben Sie den 6-stelligen Code ein",
       "verifyFailed": "Verifizierung fehlgeschlagen",
       "invalidOrExpired": "Ungültiger oder abgelaufener Code"
-    }
-  },
-  "landing": {
-    "hero": {
-      "bookDemo": "Free Demo Buchen"
-    },
-    "fashionCatalog": {
-      "badge": "Virtueller Modekatalog",
-      "title": "Ein Kleidungsstück. Vollständiger Katalog.",
-      "subtitle": "Laden Sie ein einzelnes Produktfoto hoch und generieren Sie einen kompletten Katalog mit vielfältigen KI-Models, Posen und professionellen Hintergründen.",
-      "sourceLabel": "Ihr Kleidungsstück",
-      "transformLabel": "KI Erstellt",
-      "resultsLabel": "6+ Katalogfotos",
-      "benefits": {
-        "uploadGarments": "Laden Sie ein Flat-Lay oder Mannequin-Foto hoch",
-        "chooseModels": "KI generiert vielfältige Model-Variationen",
-        "catalogShots": "Erhalten Sie 6+ katalogfertige Bilder sofort",
-        "batchProcess": "Verarbeiten Sie Ihr gesamtes Inventar im Batch"
-      },
-      "useCases": {
-        "apparel": "Bekleidungsmarken",
-        "fashion": "Modehändler",
-        "footwear": "Schuhgeschäfte",
-        "accessories": "Accessoire-Shops"
-      },
-      "cta": "Katalog Erstellen",
-      "perfectFor": "Perfekt für:"
     }
   },
   "landingV2": {
