@@ -300,8 +300,28 @@
     "french": "French",
     "german": "German"
   },
-  "header": {
+"header": {
     "tagline": "Marketing with AI"
+  },
+  "landing": {
+    "hero": {
+      "bookDemo": "Book a Free Demo",
+      "trustBadge": "🚀 #1 AI Image Generator for E-commerce",
+      "headline1": "Create AI Product Images that sell for you",
+      "headline2": "Showcase your products in real, authentic contexts",
+      "headline3": "Make them look like they're already in customers' hands.",
+      "headline4": "Build instant trust and credibility for your brand.",
+      "description": "Transform any product into authentic, UGC-style visuals that build credibility and boost conversions — powered by our proprietary",
+      "descriptionBold": "Genius AI Intelligence",
+      "descriptionExtended": "No studios, no photographers, no designers. Just upload and get sales-ready images instantly.",
+      "startCreatingFree": "Start Creating Free",
+      "stats": {
+        "avgTimeLabel": "Average Time for Everything",
+        "imagesLabel": "Generated Images Per User Monthly",
+        "satisfactionLabel": "Satisfaction Rate on our Users"
+      },
+      "generatedIn": "Generated in"
+    }
   },
   "trustBar": {
     "conversionStat": "average conversion rate when UGC is present on product detail pages (PDPs)",

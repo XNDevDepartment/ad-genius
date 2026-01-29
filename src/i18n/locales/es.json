@@ -304,8 +304,28 @@
     "french": "Francés",
     "german": "Alemán"
   },
-  "header": {
+"header": {
     "tagline": "Marketing con IA"
+  },
+  "landing": {
+    "hero": {
+      "bookDemo": "Reservar Demo Gratis",
+      "trustBadge": "🚀 #1 Generador de Imágenes IA para E-commerce",
+      "headline1": "Crea Imágenes de Producto con IA que venden por ti",
+      "headline2": "Muestra tus productos en contextos reales y auténticos",
+      "headline3": "Haz que parezcan que ya están en manos de tus clientes.",
+      "headline4": "Construye confianza y credibilidad instantánea para tu marca.",
+      "description": "Transforma cualquier producto en visuales UGC auténticos que construyen credibilidad y aumentan conversiones — powered by",
+      "descriptionBold": "Genius AI Intelligence",
+      "descriptionExtended": "Sin estudios, sin fotógrafos, sin diseñadores. Sube y obtén imágenes listas para vender al instante.",
+      "startCreatingFree": "Empieza a Crear Gratis",
+      "stats": {
+        "avgTimeLabel": "Tiempo Promedio para Todo",
+        "imagesLabel": "Imágenes Generadas Por Usuario/Mes",
+        "satisfactionLabel": "Tasa de Satisfacción de nuestros Usuarios"
+      },
+      "generatedIn": "Generado en"
+    }
   },
   "trustBar": {
     "conversionStat": "conversión media cuando hay UGC en las PDP",
