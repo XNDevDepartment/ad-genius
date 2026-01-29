@@ -380,6 +380,7 @@
     "billedAnnually": "Faturado anualmente (€{amount}/ano)",
     "creditsPerMonth": "Créditos ",
     "loading": "Carregando...",
+    "perImage": "(apenas €{{price}} por imagem)",
     "plans": {
       "starter": {
         "name": "Starter",

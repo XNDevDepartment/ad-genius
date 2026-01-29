@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Check, X, Star, Zap, Shield, Crown, Video as VideoIcon, TreePine, Gift } from "lucide-react";
+import { Check, X, Star, Zap, Shield, Crown, Video as VideoIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import HeaderSection from "@/components/landing/HeaderSection";
 import { useEffect, useState } from "react";
@@ -120,9 +120,17 @@ const Pricing = () => {
   const [isYearly, setIsYearly] = useState(false);
   const { t } = useTranslation();
 
-  // Christmas promo expiration check
-  const promoEndDate = new Date('2025-12-31T23:59:59');
-  const showChristmasPromo = new Date() <= promoEndDate;
+  // Calculate price per image based on billing cycle
+  const calculatePricePerImage = (monthlyPrice: number, credits: number): string => {
+    if (isYearly) {
+      // Yearly: pay 10 months, get 12 months of credits
+      const totalPrice = monthlyPrice * 10;
+      const totalCredits = credits * 12;
+      return (totalPrice / totalCredits).toFixed(2);
+    }
+    // Monthly: simple division
+    return (monthlyPrice / credits).toFixed(2);
+  };
 
   useEffect(() => {
     localStorage.removeItem("billing");
@@ -263,40 +271,6 @@ const Pricing = () => {
           </div>
         )}
 
-        {/* Christmas Promo Banner */}
-        {showChristmasPromo && (
-          <div className="mb-8 max-w-7xl mx-auto">
-            <Card className="border-2 border-red-500/50 bg-gradient-to-r from-red-500/10 via-green-500/5 to-red-500/10 relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-red-500 text-white px-3 py-1 text-xs font-semibold rounded-bl-lg">
-                Oferta Limitada
-              </div>
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-red-500/20 rounded-full">
-                      <TreePine className="h-8 w-8 text-red-500" />
-                    </div>
-                    <div className="text-center md:text-left">
-                      <h3 className="text-xl font-bold flex items-center justify-center md:justify-start gap-2">
-                        🎄 Promoção de Natal 2025
-                      </h3>
-                      <p className="text-muted-foreground">
-                        <strong className="text-red-500">€19.99/mês</strong> durante 12 meses — Poupa 31% no plano Starter!
-                      </p>
-                    </div>
-                  </div>
-                  <Button 
-                    onClick={() => navigate('/natal')}
-                    className="bg-red-500 hover:bg-red-600 text-white"
-                  >
-                    <Gift className="h-4 w-4 mr-2" />
-                    Ver Oferta de Natal
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
 
         <div className="grid md:grid-cols-3 gap-6 max-w-7xl mx-auto mb-20">
           {plans.map((plan) => (
@@ -343,6 +317,9 @@ const Pricing = () => {
                       {t('pricing.billedAnnually', { amount: (plan.yearlyPrice * 12).toFixed(0) })}
                     </div>
                   )}
+                  <div className="text-sm text-primary/80 font-medium mt-1">
+                    {t('pricing.perImage', { price: calculatePricePerImage(plan.monthlyPrice, plan.credits) })}
+                  </div>
                 </div>
                 <CardDescription className="text-sm">
                   {t(`pricing.plans.${plan.id}.description`)}
