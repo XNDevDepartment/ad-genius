@@ -1,149 +1,139 @@
 
 
-## Data Recovery Script for Missing Outfit Swap Results
+## Pricing Page Review & Enhancement Plan
 
-### Problem Summary
+### Current Status Analysis
 
-56 outfit swap jobs across 5 users are marked as "completed" but have no corresponding records in `outfit_swap_results`:
+#### What's Correct
+| Element | Status |
+|---------|--------|
+| Three plans displayed (Starter €29, Plus €49, Pro €99) | ✅ Correct |
+| Monthly/Yearly toggle | ✅ Working |
+| Credits per plan (80, 200, 400) | ✅ Correct |
+| Yearly prices (€24.17, €40.83, €82.50 per month) | ✅ Correct |
+| "Save 2 months" badge on yearly toggle | ✅ Correct |
+| Video generation badge on Starter/Plus/Pro | ✅ Correct |
+| Comparison table | ✅ Correct |
+| FAQ section | ✅ Correct |
+| i18n translations (PT, EN, DE, FR, ES) | ✅ Present |
 
-| User | Email | Missing Results |
-|------|-------|-----------------|
-| Unknown | (no profile) | 38 |
-| Constança | constancahmatos@gmail.com | 9 |
-| Rafael Carvalho | a21505209@gmail.com | 4 |
-| Unknown | aigenius.xn@gmail.com | 3 |
-| Duarte Fonseca | duartefonseca2000e3@gmail.com | 2 |
+#### What's Missing (User Request)
+| Element | Status |
+|---------|--------|
+| **Price per image indicator** | ❌ Missing - This is the main request |
+| Dynamic calculation based on monthly/yearly toggle | ❌ Not implemented |
 
-The images exist in the `outfit-user-models` storage bucket but database records were never created due to the silent error bug (now fixed).
+#### What Could Be Improved (Conversion Optimization)
+| Element | Recommendation |
+|---------|----------------|
+| Christmas promo banner | Should be removed |
+| Price per image is a strong value proposition | Should be prominently displayed |
+| Social proof elements | Could add customer count or testimonials |
 
 ---
 
-### Storage Path Pattern
+### Implementation Plan
 
-From the edge function analysis, result files are stored as:
+#### 1. Add Price Per Image Calculation Function
+
+Create a helper function inside the Pricing component that calculates the cost per image:
+
 ```text
-{user_id}/{job_id}/result_{timestamp}.jpg
-{user_id}/{job_id}/result_{timestamp}.png
+Formula for MONTHLY:
+  pricePerImage = monthlyPrice / credits
+
+Formula for YEARLY:
+  totalPrice = yearlyPrice * 10 (pay for 10 months)
+  totalCredits = credits * 12 (get 12 months of credits)
+  pricePerImage = totalPrice / totalCredits
 ```
 
-Example for Constança's job:
+**Calculations:**
+
+| Plan | Monthly | Yearly |
+|------|---------|--------|
+| Starter (€29, 80 credits) | €29 ÷ 80 = €0.36/image | (€29 × 10) ÷ (80 × 12) = €0.30/image |
+| Plus (€49, 200 credits) | €49 ÷ 200 = €0.25/image | (€49 × 10) ÷ (200 × 12) = €0.20/image |
+| Pro (€99, 400 credits) | €99 ÷ 400 = €0.25/image | (€99 × 10) ÷ (400 × 12) = €0.20/image |
+
+#### 2. Update Pricing Card UI
+
+Add a new element below the main price showing the per-image cost:
+
 ```text
-ba6a14ac-c672-4bd9-9278-b4055ea79863/1b32aab1-2dc6-494e-9c9d-739041a316e6/result_1769646402155.jpg
-```
-
----
-
-### Recovery Approach
-
-Create a new Edge Function `recover-outfit-swap-results` that:
-
-1. **Queries for orphaned jobs** - Finds all completed jobs with no results
-2. **Scans storage bucket** - Looks for files matching the pattern `{user_id}/{job_id}/result_*.jpg`
-3. **Creates missing result records** - Inserts into `outfit_swap_results` with proper metadata
-4. **Generates report** - Returns summary of recovered vs. unrecoverable jobs
-
----
-
-### Technical Implementation
-
-#### New Edge Function: `supabase/functions/recover-outfit-swap-results/index.ts`
-
-```typescript
-// Pseudocode structure
-import { createClient } from "@supabase/supabase-js";
-
-Deno.serve(async (req) => {
-  // 1. Get orphaned jobs (completed but no results)
-  const orphanedJobs = await supabase.from("outfit_swap_jobs")
-    .select("id, user_id, metadata, finished_at")
-    .eq("status", "completed")
-    .not("id", "in", /* subquery for jobs with results */);
+Current layout:
+  €29/mês
   
-  // 2. For each orphaned job, look for files in storage
-  for (const job of orphanedJobs) {
-    const storagePath = `${job.user_id}/${job.id}`;
-    const files = await supabase.storage.from("outfit-user-models").list(storagePath);
-    
-    // 3. Find result files (pattern: result_*.jpg)
-    const resultFile = files.find(f => f.name.startsWith("result_") && f.name.endsWith(".jpg"));
-    
-    if (resultFile) {
-      // 4. Create the missing result record
-      const jpgPath = `${storagePath}/${resultFile.name}`;
-      const pngPath = jpgPath.replace(".jpg", ".png");
-      
-      await supabase.from("outfit_swap_results").insert({
-        job_id: job.id,
-        user_id: job.user_id,
-        storage_path: jpgPath,
-        public_url: getPublicUrl(jpgPath),
-        jpg_url: getPublicUrl(jpgPath),
-        png_url: getPublicUrl(pngPath),
-        metadata: { recovered: true, original_metadata: job.metadata }
-      });
-    }
-  }
-  
-  // 5. Return recovery report
-  return Response.json({ recovered, failed, total });
-});
+New layout:
+  €29/mês
+  (apenas €0.36 por imagem)  ← NEW ELEMENT
+```
+
+The per-image indicator will:
+- Be styled in a smaller, secondary text color
+- Update dynamically when toggling between monthly/yearly
+- Show a subtle highlight or "from" text for yearly to emphasize savings
+
+#### 3. Add Translation Keys
+
+Add new i18n keys for all supported languages:
+
+- `pricing.perImage` - "only €{{price}} per image" / "apenas €{{price}} por imagem"
+- `pricing.perImageFrom` - "from €{{price}}/image" (alternative wording)
+
+---
+
+### Technical Changes Summary
+
+| File | Change |
+|------|--------|
+| `src/pages/Pricing.tsx` | Add `calculatePricePerImage()` function and UI element |
+| `src/i18n/locales/en.json` | Add `pricing.perImage` translation |
+| `src/i18n/locales/pt.json` | Add `pricing.perImage` translation |
+| `src/i18n/locales/de.json` | Add `pricing.perImage` translation |
+| `src/i18n/locales/fr.json` | Add `pricing.perImage` translation |
+| `src/i18n/locales/es.json` | Add `pricing.perImage` translation |
+
+---
+
+### UI Mockup
+
+```text
+┌─────────────────────────────────────┐
+│             ⭐ Starter               │
+│                                     │
+│     €29/mês                         │
+│   (apenas €0.36 por imagem)  ← NEW  │
+│                                     │
+│   Perfeito para pequenos negócios   │
+│                                     │
+│   ┌─────────────────────────────┐   │
+│   │         80 Créditos         │   │
+│   └─────────────────────────────┘   │
+│                                     │
+│   ✓ 80 créditos por mês             │
+│   ✓ Até 80 imagens                  │
+│   ✓ Gere até 3 imagens...           │
+│                                     │
+│   [    Começar a Criar    ]         │
+└─────────────────────────────────────┘
+```
+
+When yearly is selected:
+```text
+     €24.17/mês
+     Faturado anualmente (€290/ano)
+   (apenas €0.30 por imagem)  ← UPDATED VALUE
 ```
 
 ---
 
-### Implementation Steps
+### Additional Considerations
 
-| Step | Action | Details |
-|------|--------|---------|
-| 1 | Create edge function | `supabase/functions/recover-outfit-swap-results/index.ts` |
-| 2 | Deploy function | Automatic on file creation |
-| 3 | Run recovery (dry-run) | Call with `?dryRun=true` to preview results |
-| 4 | Run actual recovery | Call without dry-run flag to insert records |
-| 5 | Verify results | Check that affected users can now see their images |
+1. **Christmas Promo Banner**: The `promoEndDate` is set to `2025-12-31` which is in the past (current date is 2026-01-29). This banner should be:
+   - Removed
 
----
+2. **Number Formatting**: The per-image price should use consistent decimal formatting (2 decimal places) and respect locale for number display (comma vs period).
 
-### Function Features
-
-- **Dry-run mode**: Preview what will be recovered without making changes
-- **Single user mode**: Optional `?userId=xxx` to recover specific user only
-- **Idempotent**: Won't create duplicate records (checks for existing results)
-- **Detailed logging**: Logs each recovery attempt with success/failure
-- **Admin-only**: Requires admin authentication
-
----
-
-### Expected Output
-
-```json
-{
-  "dryRun": false,
-  "summary": {
-    "totalOrphanedJobs": 56,
-    "recoveredJobs": 45,
-    "failedJobs": 11,
-    "failureReasons": {
-      "no_files_in_storage": 8,
-      "no_jpg_found": 3
-    }
-  },
-  "recoveredDetails": [
-    {
-      "jobId": "1b32aab1-2dc6-494e-9c9d-739041a316e6",
-      "userId": "ba6a14ac-c672-4bd9-9278-b4055ea79863",
-      "storagePath": "ba6a14ac.../result_1769646402155.jpg",
-      "status": "recovered"
-    }
-  ]
-}
-```
-
----
-
-### Safety Measures
-
-1. **Transaction safety**: Each insert is independent; failures don't affect other recoveries
-2. **Duplicate prevention**: Check if result already exists before inserting
-3. **Audit trail**: Mark recovered records with `metadata.recovered = true`
-4. **No destructive operations**: Only creates new records, never modifies existing data
+3. **Mobile Responsiveness**: Ensure the new per-image text displays correctly on mobile devices.
 
