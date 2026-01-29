@@ -1,139 +1,249 @@
 
+## Landing Page Hero & Pricing Page Translation Update Plan
 
-## Pricing Page Review & Enhancement Plan
+### Current State Analysis
 
-### Current Status Analysis
+#### Landing Page HeroSection (`src/components/landing/HeroSection.tsx`)
 
-#### What's Correct
-| Element | Status |
-|---------|--------|
-| Three plans displayed (Starter €29, Plus €49, Pro €99) | ✅ Correct |
-| Monthly/Yearly toggle | ✅ Working |
-| Credits per plan (80, 200, 400) | ✅ Correct |
-| Yearly prices (€24.17, €40.83, €82.50 per month) | ✅ Correct |
-| "Save 2 months" badge on yearly toggle | ✅ Correct |
-| Video generation badge on Starter/Plus/Pro | ✅ Correct |
-| Comparison table | ✅ Correct |
-| FAQ section | ✅ Correct |
-| i18n translations (PT, EN, DE, FR, ES) | ✅ Present |
+| Element | Current Status | Issue |
+|---------|---------------|-------|
+| Trust Badge | `"🚀 #1 AI Image Generator for E-commerce"` | **Hardcoded English** - Not using translations |
+| Rotating Headlines (4) | Hardcoded array of English strings | **Hardcoded English** - Not using translations |
+| Description paragraph | Hardcoded English text | **Hardcoded English** - Not using translations |
+| "Book a Demo" button | Uses `t('landing.hero.bookDemo')` | ✅ Translated |
+| "Start Creating Free" button | `"Start Creating Free"` | **Hardcoded English** - Not using translations |
+| Social proof stats labels | Hardcoded English: "Average Time...", "Generated Images...", "Satisfaction Rate..." | **Hardcoded English** - Not using translations |
+| Floating card text | `"Generated in"` | **Hardcoded English** - Not using translations |
 
-#### What's Missing (User Request)
-| Element | Status |
-|---------|--------|
-| **Price per image indicator** | ❌ Missing - This is the main request |
-| Dynamic calculation based on monthly/yearly toggle | ❌ Not implemented |
+#### Pricing Page (`src/pages/Pricing.tsx`)
 
-#### What Could Be Improved (Conversion Optimization)
-| Element | Recommendation |
-|---------|----------------|
-| Christmas promo banner | Should be removed |
-| Price per image is a strong value proposition | Should be prominently displayed |
-| Social proof elements | Could add customer count or testimonials |
+| Element | Current Status |
+|---------|---------------|
+| Main titles & toggle | ✅ Using `t('pricing.xxx')` |
+| Plan cards | ✅ Using `t('pricing.plans.xxx')` |
+| Price per image | ✅ Using `t('pricing.perImage', { price })` - **Already implemented** |
+| Comparison table | ✅ Using `t('pricing.comparisonTable.xxx')` |
+| FAQ section | ✅ Using `t('pricing.faq.xxx')` |
+| Credit system | ✅ Using `t('pricing.creditSystem.xxx')` |
+
+**Note**: The Pricing page is already fully translated - the `pricing.perImage` key was added in the previous implementation.
 
 ---
 
 ### Implementation Plan
 
-#### 1. Add Price Per Image Calculation Function
+#### 1. Add Missing Translation Keys to All Locale Files
 
-Create a helper function inside the Pricing component that calculates the cost per image:
+Add new keys under `landing.hero` for all 5 language files:
 
-```text
-Formula for MONTHLY:
-  pricePerImage = monthlyPrice / credits
-
-Formula for YEARLY:
-  totalPrice = yearlyPrice * 10 (pay for 10 months)
-  totalCredits = credits * 12 (get 12 months of credits)
-  pricePerImage = totalPrice / totalCredits
+```json
+"landing": {
+  "hero": {
+    "bookDemo": "Book a Free Demo",
+    "trustBadge": "🚀 #1 AI Image Generator for E-commerce",
+    "headline1": "Create AI Product Images that sell for you",
+    "headline2": "Showcase your products in real, authentic contexts",
+    "headline3": "Make them look like they're already in customers' hands.",
+    "headline4": "Build instant trust and credibility for your brand.",
+    "description": "Transform any product into authentic, UGC-style visuals that build credibility and boost conversions — powered by our proprietary <b>Genius AI Intelligence</b>.",
+    "descriptionExtended": "No studios, no photographers, no designers. Just upload and get sales-ready images instantly.",
+    "startCreatingFree": "Start Creating Free",
+    "stats": {
+      "avgTimeValue": "80s",
+      "avgTimeLabel": "Average Time for Everything",
+      "imagesValue": "50+",
+      "imagesLabel": "Generated Images Per User Monthly",
+      "satisfactionValue": "98%",
+      "satisfactionLabel": "Satisfaction Rate on our Users"
+    },
+    "generatedIn": "Generated in"
+  }
+}
 ```
 
-**Calculations:**
+#### 2. Update HeroSection Component
 
-| Plan | Monthly | Yearly |
-|------|---------|--------|
-| Starter (€29, 80 credits) | €29 ÷ 80 = €0.36/image | (€29 × 10) ÷ (80 × 12) = €0.30/image |
-| Plus (€49, 200 credits) | €49 ÷ 200 = €0.25/image | (€49 × 10) ÷ (200 × 12) = €0.20/image |
-| Pro (€99, 400 credits) | €99 ÷ 400 = €0.25/image | (€99 × 10) ÷ (400 × 12) = €0.20/image |
+Replace all hardcoded strings with translation calls:
 
-#### 2. Update Pricing Card UI
-
-Add a new element below the main price showing the per-image cost:
-
-```text
-Current layout:
-  €29/mês
-  
-New layout:
-  €29/mês
-  (apenas €0.36 por imagem)  ← NEW ELEMENT
-```
-
-The per-image indicator will:
-- Be styled in a smaller, secondary text color
-- Update dynamically when toggling between monthly/yearly
-- Show a subtle highlight or "from" text for yearly to emphasize savings
-
-#### 3. Add Translation Keys
-
-Add new i18n keys for all supported languages:
-
-- `pricing.perImage` - "only €{{price}} per image" / "apenas €{{price}} por imagem"
-- `pricing.perImageFrom` - "from €{{price}}/image" (alternative wording)
+| Current | Change To |
+|---------|-----------|
+| `"🚀 #1 AI Image Generator..."` | `{t('landing.hero.trustBadge')}` |
+| `headlines[currentHeadline]` | `{t(\`landing.hero.headline${currentHeadline + 1}\`)}` |
+| Hardcoded description | `{t('landing.hero.description')}` + `{t('landing.hero.descriptionExtended')}` |
+| `"Start Creating Free"` | `{t('landing.hero.startCreatingFree')}` |
+| `socialProofStats[].label` | `{t(\`landing.hero.stats.${statKey}Label\`)}` |
+| `"Generated in"` | `{t('landing.hero.generatedIn')}` |
 
 ---
 
-### Technical Changes Summary
+### Files to Modify
 
-| File | Change |
+| File | Changes |
+|------|---------|
+| `src/i18n/locales/en.json` | Add `landing.hero.*` keys (trust badge, headlines, description, stats) |
+| `src/i18n/locales/pt.json` | Add translated `landing.hero.*` keys |
+| `src/i18n/locales/de.json` | Add translated `landing.hero.*` keys |
+| `src/i18n/locales/fr.json` | Add translated `landing.hero.*` keys |
+| `src/i18n/locales/es.json` | Add translated `landing.hero.*` keys |
+| `src/components/landing/HeroSection.tsx` | Replace hardcoded strings with `t()` calls |
+
+---
+
+### Translation Content
+
+#### English (en.json) - Reference
+```json
+"landing": {
+  "hero": {
+    "bookDemo": "Book a Free Demo",
+    "trustBadge": "🚀 #1 AI Image Generator for E-commerce",
+    "headline1": "Create AI Product Images that sell for you",
+    "headline2": "Showcase your products in real, authentic contexts",
+    "headline3": "Make them look like they're already in customers' hands.",
+    "headline4": "Build instant trust and credibility for your brand.",
+    "description": "Transform any product into authentic, UGC-style visuals that build credibility and boost conversions — powered by our proprietary <bold>Genius AI Intelligence</bold>.",
+    "descriptionExtended": "No studios, no photographers, no designers. Just upload and get sales-ready images instantly.",
+    "startCreatingFree": "Start Creating Free",
+    "stats": {
+      "avgTimeLabel": "Average Time for Everything",
+      "imagesLabel": "Generated Images Per User Monthly",
+      "satisfactionLabel": "Satisfaction Rate on our Users"
+    },
+    "generatedIn": "Generated in"
+  }
+}
+```
+
+#### Portuguese (pt.json)
+```json
+"landing": {
+  "hero": {
+    "bookDemo": "Marcar Demonstração Grátis",
+    "trustBadge": "🚀 #1 Gerador de Imagens IA para E-commerce",
+    "headline1": "Crie Imagens de Produto com IA que vendem por si",
+    "headline2": "Apresente os seus produtos em contextos reais e autênticos",
+    "headline3": "Faça parecer que já estão nas mãos dos seus clientes.",
+    "headline4": "Construa confiança e credibilidade instantânea para a sua marca.",
+    "description": "Transforme qualquer produto em visuais autênticos estilo UGC que constroem credibilidade e aumentam conversões — powered by <bold>Genius AI Intelligence</bold>.",
+    "descriptionExtended": "Sem estúdios, sem fotógrafos, sem designers. Carregue e obtenha imagens prontas para vender instantaneamente.",
+    "startCreatingFree": "Comece a Criar Grátis",
+    "stats": {
+      "avgTimeLabel": "Tempo Médio para Tudo",
+      "imagesLabel": "Imagens Geradas Por Utilizador/Mês",
+      "satisfactionLabel": "Taxa de Satisfação dos Nossos Utilizadores"
+    },
+    "generatedIn": "Gerado em"
+  }
+}
+```
+
+#### German (de.json)
+```json
+"landing": {
+  "hero": {
+    "bookDemo": "Free Demo Buchen",
+    "trustBadge": "🚀 #1 KI-Bildgenerator für E-Commerce",
+    "headline1": "Erstellen Sie KI-Produktbilder, die für Sie verkaufen",
+    "headline2": "Präsentieren Sie Ihre Produkte in echten, authentischen Kontexten",
+    "headline3": "Lassen Sie sie aussehen, als wären sie bereits in Kundenhand.",
+    "headline4": "Bauen Sie sofortiges Vertrauen und Glaubwürdigkeit für Ihre Marke auf.",
+    "description": "Verwandeln Sie jedes Produkt in authentische UGC-Visuals, die Glaubwürdigkeit aufbauen und Conversions steigern — powered by <bold>Genius AI Intelligence</bold>.",
+    "descriptionExtended": "Keine Studios, keine Fotografen, keine Designer. Einfach hochladen und verkaufsfertige Bilder sofort erhalten.",
+    "startCreatingFree": "Kostenlos Erstellen",
+    "stats": {
+      "avgTimeLabel": "Durchschnittliche Zeit für Alles",
+      "imagesLabel": "Generierte Bilder Pro Nutzer/Monat",
+      "satisfactionLabel": "Zufriedenheitsrate unserer Nutzer"
+    },
+    "generatedIn": "Generiert in"
+  }
+}
+```
+
+#### French (fr.json)
+```json
+"landing": {
+  "hero": {
+    "bookDemo": "Réserver une Démo Gratuite",
+    "trustBadge": "🚀 #1 Générateur d'Images IA pour E-commerce",
+    "headline1": "Créez des Images Produit IA qui vendent pour vous",
+    "headline2": "Présentez vos produits dans des contextes réels et authentiques",
+    "headline3": "Faites-les paraître déjà entre les mains de vos clients.",
+    "headline4": "Construisez instantanément confiance et crédibilité pour votre marque.",
+    "description": "Transformez n'importe quel produit en visuels UGC authentiques qui renforcent la crédibilité et boostent les conversions — powered by <bold>Genius AI Intelligence</bold>.",
+    "descriptionExtended": "Pas de studios, pas de photographes, pas de designers. Téléchargez et obtenez des images prêtes à vendre instantanément.",
+    "startCreatingFree": "Commencer Gratuitement",
+    "stats": {
+      "avgTimeLabel": "Temps Moyen pour Tout",
+      "imagesLabel": "Images Générées Par Utilisateur/Mois",
+      "satisfactionLabel": "Taux de Satisfaction de nos Utilisateurs"
+    },
+    "generatedIn": "Généré en"
+  }
+}
+```
+
+#### Spanish (es.json)
+```json
+"landing": {
+  "hero": {
+    "bookDemo": "Reservar Demo Gratis",
+    "trustBadge": "🚀 #1 Generador de Imágenes IA para E-commerce",
+    "headline1": "Crea Imágenes de Producto con IA que venden por ti",
+    "headline2": "Muestra tus productos en contextos reales y auténticos",
+    "headline3": "Haz que parezcan que ya están en manos de tus clientes.",
+    "headline4": "Construye confianza y credibilidad instantánea para tu marca.",
+    "description": "Transforma cualquier producto en visuales UGC auténticos que construyen credibilidad y aumentan conversiones — powered by <bold>Genius AI Intelligence</bold>.",
+    "descriptionExtended": "Sin estudios, sin fotógrafos, sin diseñadores. Sube y obtén imágenes listas para vender al instante.",
+    "startCreatingFree": "Empieza a Crear Gratis",
+    "stats": {
+      "avgTimeLabel": "Tiempo Promedio para Todo",
+      "imagesLabel": "Imágenes Generadas Por Usuario/Mes",
+      "satisfactionLabel": "Tasa de Satisfacción de nuestros Usuarios"
+    },
+    "generatedIn": "Generado en"
+  }
+}
+```
+
+---
+
+### Technical Changes to HeroSection.tsx
+
+```typescript
+// Replace hardcoded headlines array with translation-aware logic
+const headlineKeys = ['headline1', 'headline2', 'headline3', 'headline4'];
+
+// Replace socialProofStats with translation keys
+const socialProofStats = [
+  { icon: Zap, value: "80s", labelKey: "avgTimeLabel" },
+  { icon: Image, value: "50+", labelKey: "imagesLabel" },
+  { icon: Trophy, value: "98%", labelKey: "satisfactionLabel" }
+];
+
+// In JSX:
+// Badge: {t('landing.hero.trustBadge')}
+// Headlines: {t(`landing.hero.${headlineKeys[currentHeadline]}`)}
+// Description: Use Trans component for bold text support
+// Stats labels: {t(`landing.hero.stats.${stat.labelKey}`)}
+// Floating card: {t('landing.hero.generatedIn')}
+// Secondary CTA: {t('landing.hero.startCreatingFree')}
+```
+
+---
+
+### Summary
+
+| Task | Status |
 |------|--------|
-| `src/pages/Pricing.tsx` | Add `calculatePricePerImage()` function and UI element |
-| `src/i18n/locales/en.json` | Add `pricing.perImage` translation |
-| `src/i18n/locales/pt.json` | Add `pricing.perImage` translation |
-| `src/i18n/locales/de.json` | Add `pricing.perImage` translation |
-| `src/i18n/locales/fr.json` | Add `pricing.perImage` translation |
-| `src/i18n/locales/es.json` | Add `pricing.perImage` translation |
+| Pricing page price-per-image | ✅ Already implemented |
+| Pricing page full i18n | ✅ Already complete |
+| Landing hero trust badge | 🔄 Needs translation |
+| Landing hero headlines (4) | 🔄 Needs translation |
+| Landing hero description | 🔄 Needs translation |
+| Landing hero secondary CTA | 🔄 Needs translation |
+| Landing hero stats labels | 🔄 Needs translation |
+| Landing hero floating card | 🔄 Needs translation |
+| Add translations to 5 locale files | 🔄 Needs implementation |
 
----
-
-### UI Mockup
-
-```text
-┌─────────────────────────────────────┐
-│             ⭐ Starter               │
-│                                     │
-│     €29/mês                         │
-│   (apenas €0.36 por imagem)  ← NEW  │
-│                                     │
-│   Perfeito para pequenos negócios   │
-│                                     │
-│   ┌─────────────────────────────┐   │
-│   │         80 Créditos         │   │
-│   └─────────────────────────────┘   │
-│                                     │
-│   ✓ 80 créditos por mês             │
-│   ✓ Até 80 imagens                  │
-│   ✓ Gere até 3 imagens...           │
-│                                     │
-│   [    Começar a Criar    ]         │
-└─────────────────────────────────────┘
-```
-
-When yearly is selected:
-```text
-     €24.17/mês
-     Faturado anualmente (€290/ano)
-   (apenas €0.30 por imagem)  ← UPDATED VALUE
-```
-
----
-
-### Additional Considerations
-
-1. **Christmas Promo Banner**: The `promoEndDate` is set to `2025-12-31` which is in the past (current date is 2026-01-29). This banner should be:
-   - Removed
-
-2. **Number Formatting**: The per-image price should use consistent decimal formatting (2 decimal places) and respect locale for number display (comma vs period).
-
-3. **Mobile Responsiveness**: Ensure the new per-image text displays correctly on mobile devices.
-
+This plan will fully internationalize the landing page hero section while maintaining the existing visual design and animation behaviors.
