@@ -20,25 +20,20 @@ const HeroSection = () => {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
 
-  const headlines = [
-    "Create AI Product Images that sell for you",
-    "Showcase your products in real, authentic contexts",
-    "Make them look they’re already in customers’ hands.",
-    "Build instant trust and credibility for your brand.",
-  ];
+  const headlineKeys = ['headline1', 'headline2', 'headline3', 'headline4'];
 
   const socialProofStats = [
-    { icon: Zap, value: "80s", label: "Average Time for Everything" },
-    { icon: Image, value: "50+", label: "Generated Images Per User Monthly" },
-    { icon: Trophy, value: "98%", label: "Satisfaction Rate on our Users" }
+    { icon: Zap, value: "80s", labelKey: "avgTimeLabel" },
+    { icon: Image, value: "50+", labelKey: "imagesLabel" },
+    { icon: Trophy, value: "98%", labelKey: "satisfactionLabel" }
   ];
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentHeadline((prev) => (prev + 1) % headlines.length);
+      setCurrentHeadline((prev) => (prev + 1) % headlineKeys.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, [headlines.length]);
+  }, [headlineKeys.length]);
 
 
   return (
@@ -75,7 +70,7 @@ const HeroSection = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                🚀 #1 AI Image Generator for E-commerce
+                {t('landing.hero.trustBadge')}
               </Badge>
             </motion.div>
 
@@ -83,7 +78,7 @@ const HeroSection = () => {
             <div className="space-y-4">
               {currentHeadline === 0 ? (
                 <h1 className="text-4xl lg:text-6xl font-bold leading-tight text-foreground">
-                  {headlines[currentHeadline]}
+                  {t(`landing.hero.${headlineKeys[currentHeadline]}`)}
                 </h1>
               ) : (
                 <motion.h1 
@@ -94,18 +89,19 @@ const HeroSection = () => {
                   transition={{ duration: 0.5 }}
                   className="text-4xl lg:text-6xl font-bold leading-tight text-foreground"
                 >
-                  {headlines[currentHeadline]}
+                  {t(`landing.hero.${headlineKeys[currentHeadline]}`)}
                 </motion.h1>
               )}
 
-              <motion.p
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.6, delay: 0.4 }}
                 className="text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-xl"
               >
-                <p>Transform any product into authentic, UGC-style visuals that build credibility and boost conversions — powered by our proprietary <b>Genius AI Intelligence</b>.</p><p className="hidden sm:"><br/><br/> No studios, no photographers, no designers. Just upload and get sales-ready images instantly.</p>
-              </motion.p>
+                <p>{t('landing.hero.description')} <b>{t('landing.hero.descriptionBold')}</b>.</p>
+                <p className="hidden sm:block"><br/><br/>{t('landing.hero.descriptionExtended')}</p>
+              </motion.div>
             </div>
 
             {/* CTA Buttons */}
@@ -132,7 +128,7 @@ const HeroSection = () => {
                 className="border-2 border-primary/20 hover:border-primary/40 text-lg px-8 py-4"
                 onClick={() => navigate("/signup")}
               >
-                Start Creating Free
+                {t('landing.hero.startCreatingFree')}
                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Button>
             </motion.div>
@@ -151,7 +147,7 @@ const HeroSection = () => {
                     <stat.icon className="h-6 w-6 text-primary" />
                   </div>
                   <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
+                  <div className="text-sm text-muted-foreground">{t(`landing.hero.stats.${stat.labelKey}`)}</div>
                 </div>
               ))}
             </motion.div>
@@ -167,7 +163,6 @@ const HeroSection = () => {
             <div className="relative">
               {/* Main Preview Card */}
               <motion.div
-                // whileHover={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300 }}
                 className="bg-card border border-border/50 rounded-apple-lg shadow-apple-lg backdrop-blur-sm"
               >
@@ -202,7 +197,7 @@ const HeroSection = () => {
                 transition={{ duration: 0.6, delay: 1.2 }}
                 className="absolute -bottom-4 -left-4 bg-card border border-border rounded-apple p-4 shadow-apple"
               >
-                <div className="text-xs text-muted-foreground">Generated in</div>
+                <div className="text-xs text-muted-foreground">{t('landing.hero.generatedIn')}</div>
                 <div className="text-lg font-bold text-primary">23s</div>
               </motion.div>
             </div>

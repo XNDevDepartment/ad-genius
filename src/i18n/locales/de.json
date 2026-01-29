@@ -304,8 +304,28 @@
     "french": "Französisch",
     "german": "Deutsch"
   },
-  "header": {
+"header": {
     "tagline": "Marketing mit KI"
+  },
+  "landing": {
+    "hero": {
+      "bookDemo": "Kostenlose Demo Buchen",
+      "trustBadge": "🚀 #1 KI-Bildgenerator für E-Commerce",
+      "headline1": "Erstellen Sie KI-Produktbilder, die für Sie verkaufen",
+      "headline2": "Präsentieren Sie Ihre Produkte in echten, authentischen Kontexten",
+      "headline3": "Lassen Sie sie aussehen, als wären sie bereits in Kundenhand.",
+      "headline4": "Bauen Sie sofortiges Vertrauen und Glaubwürdigkeit für Ihre Marke auf.",
+      "description": "Verwandeln Sie jedes Produkt in authentische UGC-Visuals, die Glaubwürdigkeit aufbauen und Conversions steigern — powered by",
+      "descriptionBold": "Genius AI Intelligence",
+      "descriptionExtended": "Keine Studios, keine Fotografen, keine Designer. Einfach hochladen und verkaufsfertige Bilder sofort erhalten.",
+      "startCreatingFree": "Kostenlos Erstellen",
+      "stats": {
+        "avgTimeLabel": "Durchschnittliche Zeit für Alles",
+        "imagesLabel": "Generierte Bilder Pro Nutzer/Monat",
+        "satisfactionLabel": "Zufriedenheitsrate unserer Nutzer"
+      },
+      "generatedIn": "Generiert in"
+    }
   },
   "trustBar": {
     "conversionStat": "durchschnittliche Conversion, wenn UGC auf PDPs vorhanden ist",
