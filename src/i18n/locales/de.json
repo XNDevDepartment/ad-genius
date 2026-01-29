@@ -488,7 +488,9 @@
         "commercialUsage": "Kommerzielle Nutzung",
         "prioritySupport": "Prioritäts-Support",
         "liveChat": "Live-Chat",
-        "dedicatedManager": "Dedizierter Manager"
+        "dedicatedManager": "Dedizierter Manager",
+        "earlyAccess": "Früher Zugang zu neuen Funktionen",
+        "businessConsulting": "Unterstützung bei der Implementierung im Unternehmen und Ergebnisüberwachung"
       },
       "values": {
         "unlimited": "unbegrenzt",
