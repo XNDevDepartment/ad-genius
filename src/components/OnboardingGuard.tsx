@@ -8,6 +8,11 @@ interface OnboardingGuardProps {
 }
 
 export const OnboardingGuard = ({ children }: OnboardingGuardProps) => {
+  // TEMPORARILY DISABLED: Mobile onboarding is deactivated
+  // Remove this early return to re-enable mobile onboarding
+  return <>{children}</>;
+
+  // Original logic below (kept for easy re-activation)
   const { completed, loading } = useOnboarding();
   const isMobile = useIsMobile();
 
