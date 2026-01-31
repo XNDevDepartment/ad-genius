@@ -1666,9 +1666,11 @@
       "uploading": "Uploading...",
       "starting": "Starting...",
       "cancelBatch": "Cancel Batch",
+      "cancel": "Cancel",
       "refresh": "Refresh",
       "downloadAll": "Download All",
-      "startNewBatch": "Start New Batch"
+      "startNewBatch": "Start New Batch",
+      "newBatch": "New Batch"
     },
     "batch": {
       "title": "Batch Processing",
@@ -1692,6 +1694,8 @@
       "animate": "Animate",
       "ecommerce": "UGC Image",
       "photoshoot": "Photoshoot",
+      "createPhotoshoot": "Create Photoshoot",
+      "angles": "angles",
       "download": "Download",
       "retry": "Retry",
       "retrying": "Retrying..."
