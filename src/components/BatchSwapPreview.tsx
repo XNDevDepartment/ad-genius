@@ -4,7 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { OutfitSwapBatch, OutfitSwapJob, OutfitSwapResult } from "@/api/outfit-swap-api";
-import { Download, X, CheckCircle2, XCircle, Loader2, AlertCircle, RefreshCw, Eye, Film, ExternalLink, Camera, ShoppingBag } from "lucide-react";
+import { Download, X, CheckCircle2, XCircle, Loader2, AlertCircle, RefreshCw, Eye, Film, ExternalLink, Camera, ShoppingBag, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ecommercePhotoApi, EcommercePhotoJob } from "@/api/ecommerce-photo-api";
 import { EcommercePhotoModal } from "@/components/EcommercePhotoModal";
@@ -17,6 +17,8 @@ import { PhotoshootModal } from "./PhotoshootModal";
 import { photoshootApi } from "@/api/photoshoot-api";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 interface BatchSwapPreviewProps {
   batch: OutfitSwapBatch;
@@ -45,6 +47,7 @@ export const BatchSwapPreview = ({
   const { t } = useTranslation();
   const { isAdmin } = useAdminAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [results, setResults] = useState<Record<string, OutfitSwapResult>>(initialResults || {});
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
@@ -262,25 +265,26 @@ export const BatchSwapPreview = ({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className={cn("space-y-6", isMobile && (isCompleted || isFailed) && "pb-24")}>
+      {/* Header - Compact on mobile */}
+      <div className={cn("flex items-center justify-between", isMobile && "flex-col items-start gap-3")}>
         <div>
-          <h2 className="text-2xl font-bold">{t('outfitSwap.batch.title')}</h2>
-          <p className="text-muted-foreground">
+          <h2 className={cn("font-bold", isMobile ? "text-xl" : "text-2xl")}>{t('outfitSwap.batch.title')}</h2>
+          <p className={cn("text-muted-foreground", isMobile && "text-sm")}>
             {t('outfitSwap.batch.completedOf', { completed: batch.completed_jobs, total: batch.total_jobs })}
             {batch.failed_jobs > 0 && ` • ${t('outfitSwap.batch.failed', { count: batch.failed_jobs })}`}
-            {isAdmin ? ` • ${t('outfitSwap.batch.adminUnlimited')}` : creditsUsed > 0 && ` • ${t('outfitSwap.batch.creditsUsed', { count: creditsUsed })}`}
+            {!isMobile && (isAdmin ? ` • ${t('outfitSwap.batch.adminUnlimited')}` : creditsUsed > 0 && ` • ${t('outfitSwap.batch.creditsUsed', { count: creditsUsed })}`)}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className={cn("flex gap-2", isMobile && "w-full")}>
           {isProcessing && (
-            <Button variant="outline" onClick={onCancel}>
+            <Button variant="outline" onClick={onCancel} className={cn(isMobile && "flex-1")}>
               <X className="w-4 h-4 mr-2" />
-              {t('outfitSwap.actions.cancelBatch')}
+              {isMobile ? t('outfitSwap.actions.cancel') : t('outfitSwap.actions.cancelBatch')}
             </Button>
           )}
-          {(isCompleted || isFailed) && (
+          {/* Desktop header actions - hide on mobile, show in sticky footer */}
+          {!isMobile && (isCompleted || isFailed) && (
             <>
               <Button 
                 variant="ghost" 
@@ -408,55 +412,92 @@ export const BatchSwapPreview = ({
                       </div>
                     )}
                     {result && (
-                      <div className="grid grid-cols-2 gap-2 mt-2">
+                      <div className="space-y-3 mt-3">
+                        {/* Featured Photoshoot CTA - Full Width, Highlighted */}
                         <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setPreviewImage({ url: result.public_url, name: t('outfitSwap.batch.swap', { index: index + 1 }) })}
-                        >
-                          <Eye className="w-3 h-3 mr-1" />
-                          {t('outfitSwap.buttons.preview')}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openInNewTab(result.public_url)}
-                        >
-                          <ExternalLink className="w-3 h-3 mr-1" />
-                          {t('outfitSwap.buttons.open')}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleAnimate(result.public_url, result)}
-                        >
-                          <Film className="w-3 h-3 mr-1" />
-                          {t('outfitSwap.buttons.animate')}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleCreateEcommercePhoto(result)}
-                        >
-                          <ShoppingBag className="w-3 h-3 mr-1" />
-                          {t('outfitSwap.buttons.ecommerce')}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
+                          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg h-12"
                           onClick={() => handleCreatePhotoshoot(result)}
                         >
-                          <Camera className="w-3 h-3 mr-1" />
-                          {t('outfitSwap.buttons.photoshoot')}
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          <span className="flex-1 text-left font-semibold">
+                            {t('outfitSwap.buttons.createPhotoshoot')}
+                          </span>
+                          <Badge variant="secondary" className="ml-2 text-xs bg-white/20 text-white border-0">
+                            4 {t('outfitSwap.buttons.angles')}
+                          </Badge>
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => downloadImage(result.public_url, job.id)}
-                        >
-                          <Download className="w-3 h-3 mr-1" />
-                          {t('outfitSwap.buttons.download')}
-                        </Button>
+                        
+                        {/* Primary actions - compact grid */}
+                        <div className={cn(
+                          "grid gap-2",
+                          isMobile ? "grid-cols-4" : "grid-cols-3"
+                        )}>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setPreviewImage({ url: result.public_url, name: t('outfitSwap.batch.swap', { index: index + 1 }) })}
+                            className="flex-col h-auto py-2"
+                          >
+                            <Eye className="w-4 h-4 mb-1" />
+                            <span className="text-xs">{t('outfitSwap.buttons.preview')}</span>
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openInNewTab(result.public_url)}
+                            className="flex-col h-auto py-2"
+                          >
+                            <ExternalLink className="w-4 h-4 mb-1" />
+                            <span className="text-xs">{t('outfitSwap.buttons.open')}</span>
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => downloadImage(result.public_url, job.id)}
+                            className="flex-col h-auto py-2"
+                          >
+                            <Download className="w-4 h-4 mb-1" />
+                            <span className="text-xs">{t('outfitSwap.buttons.download')}</span>
+                          </Button>
+                          {isMobile && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleAnimate(result.public_url, result)}
+                              className="flex-col h-auto py-2"
+                            >
+                              <Film className="w-4 h-4 mb-1" />
+                              <span className="text-xs">{t('outfitSwap.buttons.animate')}</span>
+                            </Button>
+                          )}
+                        </div>
+                        
+                        {/* Secondary actions */}
+                        <div className={cn(
+                          "flex gap-2",
+                          isMobile ? "flex-col" : "flex-row"
+                        )}>
+                          {!isMobile && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleAnimate(result.public_url, result)}
+                              className="flex-1"
+                            >
+                              <Film className="w-3 h-3 mr-1" />
+                              {t('outfitSwap.buttons.animate')}
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleCreateEcommercePhoto(result)}
+                            className="flex-1"
+                          >
+                            <ShoppingBag className="w-3 h-3 mr-1" />
+                            {t('outfitSwap.buttons.ecommerce')}
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -502,6 +543,37 @@ export const BatchSwapPreview = ({
           photoId={ecommercePhotoModal.photoId}
           originalImageUrl={ecommercePhotoModal.originalImageUrl || ""}
         />
+      )}
+
+      {/* Mobile Sticky Footer */}
+      {isMobile && (isCompleted || isFailed) && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t shadow-lg z-50">
+          <div className="flex gap-2 max-w-md mx-auto">
+            <Button
+              className="flex-1"
+              onClick={async () => {
+                if (onRefresh) {
+                  await onRefresh();
+                }
+                await refreshResults();
+              }}
+              disabled={isRefreshing || loading}
+              variant="outline"
+              size="sm"
+            >
+              <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin")} />
+            </Button>
+            {batch.completed_jobs > 0 && (
+              <Button className="flex-1" onClick={downloadAll}>
+                <Download className="w-4 h-4 mr-2" />
+                {t('outfitSwap.actions.downloadAll')}
+              </Button>
+            )}
+            <Button variant="outline" onClick={onReset} className="flex-1">
+              {t('outfitSwap.actions.newBatch')}
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );
