@@ -14,6 +14,9 @@ import { PromoCodesManagement } from './PromoCodesManagement';
 import { AdminErrorReports } from './AdminErrorReports';
 import { AdminAffiliates } from './AdminAffiliates';
 import { UserGrowthMetrics } from './UserGrowthMetrics';
+import { ConversionFunnel } from './ConversionFunnel';
+import { CohortAnalysis } from './CohortAnalysis';
+import { RevenueMetrics } from './RevenueMetrics';
 import { Image, AlertTriangle } from 'lucide-react';
 
 export const AdminOverview = () => {
@@ -32,64 +35,97 @@ export const AdminOverview = () => {
           Manage Base Models
         </Button>
       </div>
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-11 lg:grid-cols-11">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="financial">Financial</TabsTrigger>
+      <Tabs defaultValue="dashboard" className="w-full">
+        <TabsList className="grid w-full grid-cols-8">
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          <TabsTrigger value="funnel">Funnel</TabsTrigger>
+          <TabsTrigger value="revenue">Revenue</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
-          <TabsTrigger value="images">Images</TabsTrigger>
-          <TabsTrigger value="videos">Videos</TabsTrigger>
-          <TabsTrigger value="outfit-swaps">Outfit Swaps</TabsTrigger>
-          <TabsTrigger value="affiliates">Affiliates</TabsTrigger>
-          <TabsTrigger value="prompts">AI Prompts</TabsTrigger>
-          <TabsTrigger value="promo-codes">Promo Codes</TabsTrigger>
+          <TabsTrigger value="content">Content</TabsTrigger>
+          <TabsTrigger value="marketing">Marketing</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="errors">Errors</TabsTrigger>
-          <TabsTrigger value="admins">Admins</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-8">
+        {/* Dashboard - Overview with funnel summary */}
+        <TabsContent value="dashboard" className="space-y-8">
           <EnhancedMetrics />
+          <ConversionFunnel />
           <UserGrowthMetrics />
         </TabsContent>
 
-        <TabsContent value="financial" className="space-y-6">
+        {/* Funnel - Detailed conversion analysis */}
+        <TabsContent value="funnel" className="space-y-6">
+          <ConversionFunnel />
+          <CohortAnalysis />
+        </TabsContent>
+
+        {/* Revenue - Financial metrics and subscription data */}
+        <TabsContent value="revenue" className="space-y-6">
+          <RevenueMetrics />
           <FinancialDashboard />
         </TabsContent>
 
+        {/* Users */}
         <TabsContent value="users" className="space-y-6">
           <UsersList />
         </TabsContent>
 
-        <TabsContent value="images" className="space-y-6">
-          <AdminImagesList />
+        {/* Content - Images, Videos, Outfit Swaps */}
+        <TabsContent value="content" className="space-y-6">
+          <Tabs defaultValue="images" className="w-full">
+            <TabsList>
+              <TabsTrigger value="images">Images</TabsTrigger>
+              <TabsTrigger value="videos">Videos</TabsTrigger>
+              <TabsTrigger value="outfit-swaps">Outfit Swaps</TabsTrigger>
+            </TabsList>
+            <TabsContent value="images">
+              <AdminImagesList />
+            </TabsContent>
+            <TabsContent value="videos">
+              <AdminVideosList />
+            </TabsContent>
+            <TabsContent value="outfit-swaps">
+              <AdminOutfitSwapsList />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
-        <TabsContent value="videos" className="space-y-6">
-          <AdminVideosList />
+        {/* Marketing - Affiliates + Promo Codes */}
+        <TabsContent value="marketing" className="space-y-6">
+          <Tabs defaultValue="affiliates" className="w-full">
+            <TabsList>
+              <TabsTrigger value="affiliates">Affiliates</TabsTrigger>
+              <TabsTrigger value="promo-codes">Promo Codes</TabsTrigger>
+            </TabsList>
+            <TabsContent value="affiliates">
+              <AdminAffiliates />
+            </TabsContent>
+            <TabsContent value="promo-codes">
+              <PromoCodesManagement />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
-        <TabsContent value="outfit-swaps" className="space-y-6">
-          <AdminOutfitSwapsList />
+        {/* Settings - AI Prompts + Admins */}
+        <TabsContent value="settings" className="space-y-6">
+          <Tabs defaultValue="prompts" className="w-full">
+            <TabsList>
+              <TabsTrigger value="prompts">AI Prompts</TabsTrigger>
+              <TabsTrigger value="admins">Admin Users</TabsTrigger>
+            </TabsList>
+            <TabsContent value="prompts">
+              <PromptManagement />
+            </TabsContent>
+            <TabsContent value="admins">
+              <AdminManagement />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
-        <TabsContent value="affiliates" className="space-y-6">
-          <AdminAffiliates />
-        </TabsContent>
-
-        <TabsContent value="prompts" className="space-y-6">
-          <PromptManagement />
-        </TabsContent>
-
-        <TabsContent value="promo-codes" className="space-y-6">
-          <PromoCodesManagement />
-        </TabsContent>
-
+        {/* Errors */}
         <TabsContent value="errors" className="space-y-6">
           <AdminErrorReports />
-        </TabsContent>
-
-        <TabsContent value="admins" className="space-y-6">
-          <AdminManagement />
         </TabsContent>
       </Tabs>
     </div>
