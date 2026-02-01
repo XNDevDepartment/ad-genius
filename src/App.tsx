@@ -54,6 +54,7 @@ const CreateCustomModel = lazyWithRetry(() => import("./pages/CreateCustomModel"
 const VideoAds = lazyWithRetry(() => import("./pages/VideoAds"));
 const LandingPageV2 = lazyWithRetry(() => import("./pages/LandingPageV2"));
 const ChristmasPromo = lazyWithRetry(() => import("./pages/ChristmasPromo"));
+const PromoFirstMonth = lazyWithRetry(() => import("./pages/PromoFirstMonth"));
 const AffiliateLanding = lazyWithRetry(() => import("./pages/AffiliateLanding"));
 const AffiliateDashboard = lazyWithRetry(() => import("./pages/AffiliateDashboard"));
 const PrivacyPolicy = lazyWithRetry(() => import("./pages/PrivacyPolicy"));
@@ -382,6 +383,13 @@ const App = () => {
                 <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
                     <ChristmasPromo />
+                  </Suspense>
+                </ErrorBoundaryWithReset>
+              } />
+              <Route path="/promo/first-month" element={
+                <ErrorBoundaryWithReset>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <PromoFirstMonth />
                   </Suspense>
                 </ErrorBoundaryWithReset>
               } />

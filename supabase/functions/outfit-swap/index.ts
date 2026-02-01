@@ -1252,24 +1252,21 @@ async function createBatchJob(userId1: string, params: any) {
     status: "processing",
     started_at: new Date().toISOString()
   }).eq("id", batch.id);
-  // Process jobs asynchronously using service role key for internal calls
+  // Process jobs asynchronously using service role key for internal calls (fire-and-forget)
   const functionUrl = `${SUPABASE_URL}/functions/v1/outfit-swap`;
   for (const job of jobs){
-    // Use EdgeRuntime.waitUntil to ensure async calls complete after response
-    EdgeRuntime.waitUntil(
-      fetch(functionUrl, {
-        method: "POST",
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-        },
-        body: JSON.stringify({
-          action: "processJob",
-          jobId: job.id
-        })
-      }).catch((err)=>console.error(`Failed to trigger job ${job.id}:`, err))
-    );
+    fetch(functionUrl, {
+      method: "POST",
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+      },
+      body: JSON.stringify({
+        action: "processJob",
+        jobId: job.id
+      })
+    }).catch((err)=>console.error(`Failed to trigger job ${job.id}:`, err));
   }
   return jsonResponse({
     batch,
