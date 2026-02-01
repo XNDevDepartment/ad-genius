@@ -262,7 +262,7 @@ Deno.serve(async (req) => {
         skippedJobs: skippedCount,
         failureReasons,
       },
-      recoveredDetails,
+      recoveryDetails,
     };
 
     console.log(`[Recovery] Complete. Recovered: ${recoveredCount}, Failed: ${failedCount}`);

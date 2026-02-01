@@ -377,17 +377,15 @@ async function handleCreateJob(
     return jsonResponse({ error: 'Failed to create job' }, 500);
   }
   
-  // Trigger processing
-  EdgeRuntime.waitUntil(
-    fetch(`${SUPABASE_URL}/functions/v1/outfit-creator`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-      },
-      body: JSON.stringify({ action: 'processJob', jobId: job.id })
-    }).catch(err => console.error('[handleCreateJob] Failed to trigger processing:', err))
-  );
+  // Trigger processing asynchronously (fire-and-forget)
+  fetch(`${SUPABASE_URL}/functions/v1/outfit-creator`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+    },
+    body: JSON.stringify({ action: 'processJob', jobId: job.id })
+  }).catch(err => console.error('[handleCreateJob] Failed to trigger processing:', err));
   
   return jsonResponse({ job });
 }
