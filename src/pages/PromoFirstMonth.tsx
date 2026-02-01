@@ -60,9 +60,9 @@ const PromoFirstMonth = () => {
 
   const features = [
     { icon: Image, text: "80 créditos mensais" },
-    { icon: Sparkles, text: "Imagens UGC ilimitadas" },
+    { icon: Sparkles, text: "Imagens UGC Reais" },
     { icon: Video, text: "Geração de vídeos incluída" },
-    { icon: Palette, text: "Todos os cenários" },
+    { icon: Palette, text: "Cenários ilimitados" },
     { icon: ShoppingBag, text: "Uso comercial" },
   ];
 
