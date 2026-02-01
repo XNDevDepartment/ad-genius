@@ -84,7 +84,7 @@ const ModuleSelection = () => {
       description: t('createSelection.outfitSwap.description'),
       icon: Shirt,
       path: "/create/outfit-swap",
-      isAdmin: false,
+      isAdmin: true,
       isBeta: true,
       locked: false
     },
@@ -94,7 +94,7 @@ const ModuleSelection = () => {
       description: t('createSelection.bulkBackground.description'),
       icon: Images,
       path: "/create/bulk-background",
-      isAdmin: false,
+      isAdmin: true,
       isBeta: true,
       locked: false
     },
