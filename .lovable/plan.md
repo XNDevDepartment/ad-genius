@@ -1,42 +1,95 @@
-# ✅ COMPLETED: Fix Stuck Image Generation Jobs
 
-## Implementation Summary
 
-### 1. Worker Trigger Retry Logic ✅
-Added retry logic with exponential backoff (up to 3 attempts) when triggering the image generation worker:
+# Fix: Worker Trigger 401 Error in ugc-gemini
+
+## Problem Identified
+
+The error `Worker trigger failed - {"status":401}` occurs because:
+
+1. **`verify_jwt = true`** in `supabase/config.toml` for `ugc-gemini`
+2. When the function calls itself to trigger the worker, it uses `Bearer ${SERVICE_KEY}` in the Authorization header
+3. The Supabase gateway rejects this **before the request reaches your code** because the service role key is NOT a valid JWT - it's a different type of token
+
+```text
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  Edge Function  │────>│  Supabase        │────>│  Edge Function  │
+│  (createJob)    │     │  Gateway         │     │  (generateImages)│
+│                 │     │                  │     │                  │
+│  Authorization: │     │  verify_jwt=true │     │  Never reached!  │
+│  Bearer SERVICE │     │  "Invalid JWT"   │     │                  │
+│  _KEY           │     │  -> 401          │     │                  │
+└─────────────────┘     └──────────────────┘     └─────────────────┘
+```
+
+## Solution
+
+Set `verify_jwt = false` in config.toml and rely on the in-code authentication you already have (which correctly handles service calls, user auth, and cron recovery).
+
+---
+
+## Files to Modify
+
+| File | Change |
+|------|--------|
+| `supabase/config.toml` | Set `verify_jwt = false` for `ugc-gemini` |
+
+---
+
+## Implementation Details
+
+### Change in config.toml
+
+```toml
+# Before
+[functions.ugc-gemini]
+verify_jwt = true
+
+# After
+[functions.ugc-gemini]
+verify_jwt = false
+```
+
+### Why This Is Safe
+
+The function already has robust authentication checks:
+
 ```typescript
-const triggerWorker = async (jid: string, retries = 3) => {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    // ... fetch with retry and exponential backoff
-  }
-};
+// Line 225-248 in ugc-gemini/index.ts
+const authHeader = req.headers.get("Authorization") ?? "";
+const isServiceCall = authHeader === `Bearer ${SERVICE_KEY}`;
+
+if (isCronRecovery && authHeader) {
+  // Allow recovery calls with any valid auth
+} else if (isInternalAction && isServiceCall) {
+  // ok, internal worker call
+} else {
+  if (!authHeader) return errorJson("Missing authorization header", 401);
+  userId = await getUserIdFromAuth(authHeader);  // Validates user JWT
+}
 ```
 
-### 2. Structured Logging ✅
-Added detailed logging throughout job lifecycle:
-- `Job created` - when job is inserted
-- `Worker claiming job` - when worker starts
-- `Worker triggered successfully` - on successful trigger
-- `Job completed` - with duration, completed, failed counts
+All user-facing actions still require valid authentication - we just bypass the gateway check to allow internal service-role calls.
 
-### 3. pg_cron Recovery Job ✅
-Set up automatic recovery every 5 minutes:
-```sql
-cron.schedule('recover-stuck-ugc-jobs', '*/5 * * * *', ...)
-```
-- Calls `POST /ugc-gemini` with `{"action": "recoverQueued"}`
-- Recovery function handles:
-  - Queued jobs stuck >3 minutes → re-trigger worker
-  - Processing jobs stuck >10 minutes → mark failed + refund credits
+---
 
-### 4. Updated Auth for Recovery ✅
-Modified edge function to allow cron calls with anon key to trigger recovery.
+## Same Pattern Used Elsewhere
 
-## Files Modified
-- `supabase/functions/ugc-gemini/index.ts` - retry logic, logging, auth updates
+This is the standard pattern in your project for functions that call themselves or other functions:
 
-## Expected Behavior
-- Jobs stuck in `queued` for >3 minutes → auto-retried
-- Jobs stuck in `processing` for >10 minutes → failed + refunded
-- Recovery runs every 5 minutes via pg_cron
-- Worker invocation retries 3x with exponential backoff
+| Function | verify_jwt | Reason |
+|----------|-----------|--------|
+| `outfit-swap` | `false` | Internal worker triggers |
+| `outfit-creator` | `false` | Internal worker triggers |
+| `genius-agent` | `false` | Service calls |
+| `ugc-gemini` | `true` ❌ | Should be `false` |
+
+---
+
+## Expected Outcome
+
+After this change:
+- Worker trigger calls will succeed (no more 401)
+- Image generation jobs will process immediately
+- User authentication still works correctly
+- Cron recovery still works correctly
+
