@@ -233,10 +233,15 @@ serve(async (req)=>{
     const action = (body?.action as string) ?? new URL(req.url).searchParams.get("action");
     // clients
     const svc = serviceClient();
-    const isInternalAction = action === "generateImages" || action === "recoverQueued";
+    const isInternalAction = action === "generateImages";
+    const isCronRecovery = action === "recoverQueued"; // Allow cron with anon key
     let userId: string | null = null;
-    if (isInternalAction && isServiceCall) {
-    // ok, internal worker call
+    
+    if (isCronRecovery && authHeader) {
+      // Allow recovery calls with any valid auth (cron uses anon key)
+      log("Recovery action triggered", { hasAuth: !!authHeader });
+    } else if (isInternalAction && isServiceCall) {
+      // ok, internal worker call
     } else {
       if (!authHeader) return errorJson("Missing authorization header", 401);
       userId = await getUserIdFromAuth(authHeader);
@@ -264,7 +269,7 @@ serve(async (req)=>{
         if (!userId) return errorJson("Auth required", 401);
         return await getActiveJob(userId, svc);
       case "recoverQueued":
-        if (!(isInternalAction && isServiceCall)) return errorJson("Forbidden", 403);
+        if (!authHeader) return errorJson("Auth required", 401);
         return await recoverQueued(svc);
       default:
         return errorJson(`Unknown action: ${action ?? "none"}`, 400);
@@ -450,21 +455,40 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
     
     return errorJson(`Job insert failed: ${jobErr?.message ?? "Unknown error"}`, 400);
   }
-  // trigger worker (self-invoke with service auth)
-  try {
-    await serviceClient().functions.invoke("ugc-gemini", {
-      body: {
-        action: "generateImages",
-        jobId: job.id
-      },
-      headers: {
-        Authorization: `Bearer ${SERVICE_KEY}`,
-        apikey: SERVICE_KEY
+  log("Job created", { jobId: job.id, userId, total: totalImages });
+
+  // Trigger worker with retry logic (fire-and-forget, non-blocking)
+  const triggerWorker = async (jid: string, retries = 3) => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/ugc-gemini`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${SERVICE_KEY}`,
+            "apikey": SERVICE_KEY
+          },
+          body: JSON.stringify({ action: "generateImages", jobId: jid })
+        });
+        
+        if (response.ok) {
+          log("Worker triggered successfully", { jobId: jid, attempt });
+          return;
+        }
+        
+        log("Worker trigger failed", { jobId: jid, attempt, status: response.status });
+        if (attempt < retries) await sleep(1000 * attempt); // Exponential backoff
+      } catch (e) {
+        log("Worker trigger error", { jobId: jid, attempt, error: String(e) });
+        if (attempt < retries) await sleep(1000 * attempt);
       }
-    }).catch(()=>{});
-  } catch (_) {
-    // Ignore errors
-  }
+    }
+    log("All worker trigger attempts failed, relying on recovery", { jobId: jid });
+  };
+
+  // Fire and don't block the response
+  triggerWorker(job.id).catch(() => {});
+
   return json({
     jobId: job.id,
     status: "queued"
@@ -474,9 +498,9 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
 // Worker: claim and generate using Google Gemini
 // deno-lint-ignore no-explicit-any
 async function generateImages(jobId: string, supabase: SupabaseClient<any>): Promise<Response> {
-  log("Worker start", {
-    jobId
-  });
+  const workerStartTime = Date.now();
+  log("Worker claiming job", { jobId });
+  
   // atomic claim
   const { data: job, error: claimErr } = await supabase.from("image_jobs").update({
     status: "processing",
@@ -558,11 +582,13 @@ async function generateImages(jobId: string, supabase: SupabaseClient<any>): Pro
       updated_at: new Date().toISOString()
     };
     if (finalStatus === "failed") update.error = errors.join("; ");
-    log("Job processing completed", {
+    const durationMs = Date.now() - workerStartTime;
+    log("Job completed", {
       jobId,
       finalStatus,
       completed,
-      failed
+      failed,
+      duration_ms: durationMs
     });
     await supabase.from("image_jobs").update(update).eq("id", jobId);
     // partial refunds (skip admins)
