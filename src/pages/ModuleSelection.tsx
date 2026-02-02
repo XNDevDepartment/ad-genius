@@ -84,8 +84,8 @@ const ModuleSelection = () => {
       description: t('createSelection.outfitSwap.description'),
       icon: Shirt,
       path: "/create/outfit-swap",
-      isAdmin: true,
-      isBeta: true,
+      isAdmin: false,
+      isBeta: false,
       locked: false
     },
     {
