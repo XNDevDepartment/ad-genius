@@ -1,129 +1,191 @@
 
 
-## Dedicated Promo Landing Page: `/promo/first-month`
+## Fix Stuck Image Generation Jobs - Complete Solution
 
-### Overview
-Create a new landing page that automatically redirects users to Stripe checkout with the `ONB1ST` promo code pre-applied (€19.99 first month for Starter plan).
+### Problem Summary
 
----
-
-### Step 1: Fix Build Errors (Required First)
-
-Before creating the new page, we need to fix 3 TypeScript errors in edge functions:
-
-| File | Error | Fix |
-|------|-------|-----|
-| `supabase/functions/outfit-creator/index.ts` | `EdgeRuntime` not defined | Remove `EdgeRuntime.waitUntil()` wrapper, use standard async pattern |
-| `supabase/functions/outfit-swap/index.ts` | `EdgeRuntime` not defined | Remove `EdgeRuntime.waitUntil()` wrapper, use standard async pattern |
-| `supabase/functions/recover-outfit-swap-results/index.ts` | Typo `recoveredDetails` | Change to `recoveryDetails` (the declared variable name) |
-
-**Note:** `EdgeRuntime.waitUntil()` is a Vercel-specific API that doesn't exist in Deno/Supabase. The functions will work without it since the fetch calls are already async.
+Jobs are getting stuck because:
+1. The `recoverQueued` function exists but is **never automatically triggered**
+2. Worker invocation (fire-and-forget) fails silently when the edge function is cold or overloaded
+3. No cron job or scheduled task calls the recovery function
+4. Currently, there are 2 jobs stuck in `queued` (18-30 min) and 3 ancient jobs in `processing` (64-114 days old)
 
 ---
 
-### Step 2: Create New Promo Page
+### Solution: Automatic Recovery System
 
-**New file:** `src/pages/PromoFirstMonth.tsx`
+#### Option A: Supabase Cron Job (Recommended)
 
-This page will:
-1. Display the offer details (€19.99 first month for Starter)
-2. Auto-trigger checkout with `promoCode: 'ONB1ST'` when user clicks CTA
-3. If user is not authenticated, redirect to `/account` first
-4. Track Meta Pixel events for analytics
+Use `pg_cron` to call the recovery function every 5 minutes via a database trigger that invokes the edge function.
 
-**Design:** Simple, focused landing page similar to `ChristmasPromo.tsx` but tailored for email campaigns:
-- Clean hero with discount highlight
-- Clear value proposition (€19.99 instead of €29)
-- Single prominent CTA button
-- No distractions - one action only
+**Database Migration:**
+```sql
+-- Enable pg_cron extension (if not enabled)
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+-- Create a function to trigger recovery via HTTP
+CREATE OR REPLACE FUNCTION trigger_ugc_job_recovery()
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+DECLARE
+  service_key TEXT;
+BEGIN
+  -- Get service key from vault or env
+  service_key := current_setting('app.settings.service_role_key', true);
+  
+  -- Call the edge function (fire-and-forget)
+  PERFORM net.http_post(
+    url := 'https://dhqdamfisdbbcieqlpvt.supabase.co/functions/v1/ugc-gemini',
+    headers := jsonb_build_object(
+      'Authorization', 'Bearer ' || service_key,
+      'apikey', service_key,
+      'Content-Type', 'application/json'
+    ),
+    body := '{"action": "recoverQueued"}'::jsonb
+  );
+END;
+$$;
+
+-- Schedule cron job every 5 minutes
+SELECT cron.schedule(
+  'recover-stuck-ugc-jobs',
+  '*/5 * * * *',
+  $$SELECT trigger_ugc_job_recovery()$$
+);
+```
+
+---
+
+#### Option B: Client-Side Polling (Fallback)
+
+Add a recovery trigger on the frontend that runs when users access the UGC page:
+
+**File:** `src/hooks/useGeminiImageJobUnified.ts`
 
 ```typescript
-// Key checkout logic
-const handleGetOffer = async () => {
-  if (!user) {
-    navigate('/account');
-    return;
-  }
-  
-  const { data } = await supabase.functions.invoke('create-checkout', {
-    body: { 
-      planId: 'starter',
-      interval: 'month',
-      promoCode: 'ONB1ST'  // Auto-applied!
+// Add auto-recovery on page load
+useEffect(() => {
+  const triggerRecovery = async () => {
+    try {
+      await supabase.functions.invoke('ugc-gemini', {
+        body: { action: 'getActiveJob' }
+      });
+    } catch {}
+  };
+  triggerRecovery();
+}, []);
+```
+
+---
+
+### Immediate Cleanup: Mark Ancient Jobs as Failed
+
+Clean up the 3 jobs that have been stuck for 64-114 days:
+
+```sql
+-- Mark stuck jobs as failed and refund credits
+UPDATE image_jobs
+SET 
+  status = 'failed',
+  error = 'Job timed out - automatic cleanup',
+  finished_at = NOW(),
+  updated_at = NOW()
+WHERE id IN (
+  'd3d1733b-248c-4af7-9b31-21bfbb5b6c03',
+  '935dca2f-fc77-4f72-a0e7-32295e4e392d',
+  '0e1e2ffc-804a-4b7c-a166-f5982fa0e9e1'
+);
+
+-- Refund credits for incomplete images (1 credit per missing image)
+-- Job d3d1733b: 3 total - 2 completed = 1 credit
+-- Job 935dca2f: 3 total - 2 completed = 1 credit  
+-- Job 0e1e2ffc: 3 total - 2 completed = 1 credit
+```
+
+---
+
+### Add Retry on Worker Start
+
+**File:** `supabase/functions/ugc-gemini/index.ts`
+
+Improve the worker invocation to retry if the initial call fails:
+
+```typescript
+// In createImageJob function, replace fire-and-forget with retry logic
+const triggerWorker = async (jobId: string, retries = 3) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await serviceClient().functions.invoke("ugc-gemini", {
+        body: { action: "generateImages", jobId },
+        headers: {
+          Authorization: `Bearer ${SERVICE_KEY}`,
+          apikey: SERVICE_KEY
+        }
+      });
+      if (response.error) throw response.error;
+      log("Worker triggered successfully", { jobId, attempt: i + 1 });
+      return;
+    } catch (e) {
+      log("Worker trigger failed", { jobId, attempt: i + 1, error: String(e) });
+      if (i < retries - 1) await sleep(1000 * (i + 1)); // Exponential backoff
     }
-  });
-  
-  if (data?.url) {
-    window.location.href = data.url;
   }
+  // If all retries fail, the job will be picked up by recoverQueued
+  log("All worker trigger attempts failed, relying on recovery", { jobId });
 };
+
+// Fire and don't block the response
+triggerWorker(job.id).catch(() => {});
 ```
 
 ---
 
-### Step 3: Add Route to App.tsx
+### Add Better Logging
 
-Add the new route under `/promo/first-month`:
+Add structured logging to track job lifecycle:
 
 ```typescript
-const PromoFirstMonth = lazyWithRetry(() => import("./pages/PromoFirstMonth"));
+// At job creation
+log("Job created", { jobId: job.id, userId, total: totalImages });
 
-// In Routes:
-<Route path="/promo/first-month" element={
-  <ErrorBoundaryWithReset>
-    <Suspense fallback={<LoadingFallback />}>
-      <PromoFirstMonth />
-    </Suspense>
-  </ErrorBoundaryWithReset>
-} />
+// At worker start
+log("Worker claiming job", { jobId });
+
+// At each image completion
+log("Image completed", { jobId, index: i, completed, total });
+
+// At job completion
+log("Job completed", { jobId, completed, failed, duration_ms: Date.now() - startTime });
 ```
 
 ---
-
-### Page Content (Portuguese)
-
-**Headline:** "Primeiro Mês por €19.99"  
-**Subtitle:** "Oferta exclusiva para novos subscritores"  
-**Regular price:** ~~€29/mês~~  
-**Promo price:** €19.99 (primeiro mês)  
-**CTA:** "Ativar Oferta"
-
-**Features to highlight:**
-- 80 créditos mensais
-- Imagens UGC ilimitadas
-- Geração de vídeos incluída
-- Todos os cenários
-- Uso comercial
-
----
-
-### Email Link
-
-After implementation, the link for your email will be:
-
-```
-https://produktpix.com/promo/first-month
-```
-
-This link will:
-1. Show the promo page with offer details
-2. When user clicks "Ativar Oferta", redirect to Stripe with ONB1ST discount pre-applied
-3. If not logged in, redirect to account page first (then back to promo after auth)
-
----
-
-### Files to Create
-
-| File | Purpose |
-|------|---------|
-| `src/pages/PromoFirstMonth.tsx` | Dedicated promo landing page |
 
 ### Files to Modify
 
-| File | Change |
-|------|--------|
-| `src/App.tsx` | Add `/promo/first-month` route |
-| `supabase/functions/outfit-creator/index.ts` | Fix EdgeRuntime error |
-| `supabase/functions/outfit-swap/index.ts` | Fix EdgeRuntime error |
-| `supabase/functions/recover-outfit-swap-results/index.ts` | Fix typo |
+| File | Changes |
+|------|---------|
+| `supabase/functions/ugc-gemini/index.ts` | Add worker retry logic, better logging |
+| Database | Add pg_cron job for automatic recovery |
+| Database | Clean up ancient stuck jobs |
+
+---
+
+### Implementation Steps
+
+1. **Clean up ancient jobs** (manual SQL)
+2. **Add pg_cron job** for automatic recovery every 5 minutes
+3. **Improve worker trigger** with retry logic
+4. **Add structured logging** for debugging
+
+---
+
+### Expected Outcome
+
+- Jobs stuck in `queued` for >3 minutes will be auto-retried
+- Jobs stuck in `processing` for >10 minutes will be failed and refunded
+- Recovery runs every 5 minutes automatically
+- Worker invocation has retry logic for cold starts
 
