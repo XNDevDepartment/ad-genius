@@ -38,7 +38,7 @@ refresh_token_rotation_enabled = true
 security_update_enabled = true
 
 [functions.ugc-gemini]
-verify_jwt = true
+verify_jwt = false
 
 [functions.test-gemini-direct]
 verify_jwt = true
