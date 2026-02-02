@@ -148,40 +148,16 @@ serve(async (req) => {
       .update({ images_used: 2, updated_at: new Date().toISOString() })
       .eq('user_id', user.id);
 
-    // Wait for job completion and get images
+    // Return immediately with jobId - let client poll for completion
+    // This prevents edge function timeout issues
     const jobId = genResult?.jobId;
     if (!jobId) {
       throw new Error('No job ID returned');
     }
 
-    // Poll for job completion (max 2 minutes)
-    let images: string[] = [];
-    for (let i = 0; i < 24; i++) {
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      
-      const { data: job } = await supabase
-        .from('image_jobs')
-        .select('status, completed')
-        .eq('id', jobId)
-        .single();
+    console.log('[onboarding-generate] Success - returning jobId for client polling:', { jobId });
 
-      if (job?.status === 'completed' || job?.status === 'partially_completed') {
-        // Fetch generated images
-        const { data: ugcImages } = await supabase
-          .from('ugc_images')
-          .select('public_url')
-          .eq('job_id', jobId);
-
-        images = ugcImages?.map(img => img.public_url) || [];
-        break;
-      } else if (job?.status === 'failed') {
-        throw new Error('Image generation failed');
-      }
-    }
-
-    console.log('[onboarding-generate] Success:', { images: images.length });
-
-    return new Response(JSON.stringify({ success: true, images, jobId }), {
+    return new Response(JSON.stringify({ success: true, jobId, status: 'processing' }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
