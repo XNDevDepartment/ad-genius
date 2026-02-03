@@ -1,5 +1,4 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { S3Client, PutObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.864.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -76,39 +75,31 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function getS3Client() {
-  return new S3Client({
-    region: "fsn1",
-    endpoint: "https://fsn1.your-objectstorage.com",
-    credentials: {
-      accessKeyId: Deno.env.get("HETZNER_ACCESS_KEY_ID")!,
-      secretAccessKey: Deno.env.get("HETZNER_SECRET_ACCESS_KEY")!,
-    },
-    forcePathStyle: true,
-  });
-}
+// Storage bucket name
+const STORAGE_BUCKET = "bulk-backgrounds";
 
 async function uploadToStorage(
+  adminClient: ReturnType<typeof createClient>,
   imageData: Uint8Array,
-  fileName: string,
+  storagePath: string,
   contentType: string
 ): Promise<{ storagePath: string; publicUrl: string }> {
-  const s3 = getS3Client();
-  const bucket = Deno.env.get("HETZNER_BUCKET_NAME")!;
-  const storagePath = `bulk-background/${fileName}`;
+  const { error: uploadError } = await adminClient.storage
+    .from(STORAGE_BUCKET)
+    .upload(storagePath, imageData, {
+      contentType,
+      upsert: true,
+    });
 
-  await s3.send(
-    new PutObjectCommand({
-      Bucket: bucket,
-      Key: storagePath,
-      Body: imageData,
-      ContentType: contentType,
-      ACL: "public-read",
-    })
-  );
+  if (uploadError) {
+    throw new Error(`Storage upload failed: ${uploadError.message}`);
+  }
 
-  const publicUrl = `https://${bucket}.fsn1.your-objectstorage.com/${storagePath}`;
-  return { storagePath, publicUrl };
+  const { data } = adminClient.storage
+    .from(STORAGE_BUCKET)
+    .getPublicUrl(storagePath);
+
+  return { storagePath, publicUrl: data.publicUrl };
 }
 
 async function fetchImageAsBase64(url: string): Promise<string> {
@@ -319,10 +310,11 @@ async function processSingleResult(
     }
 
     // Upload result
-    const fileName = `${job.user_id}/${job.id}/${result.image_index}-result.webp`;
-    const { storagePath, publicUrl } = await uploadToStorage(
+    const storagePath = `${job.user_id}/${job.id}/${result.image_index}-result.webp`;
+    const { storagePath: finalPath, publicUrl } = await uploadToStorage(
+      adminClient,
       generatedImage,
-      fileName,
+      storagePath,
       "image/webp"
     );
 
@@ -334,7 +326,7 @@ async function processSingleResult(
       .update({
         status: "completed",
         result_url: publicUrl,
-        storage_path: storagePath,
+        storage_path: finalPath,
         processing_time_ms: processingTime,
         updated_at: new Date().toISOString()
       })
@@ -462,8 +454,8 @@ Deno.serve(async (req: Request) => {
           for (let i = 0; i < binaryStr.length; i++) {
             bytes[i] = binaryStr.charCodeAt(i);
           }
-          const fileName = `${userId}/${Date.now()}-custom-bg.jpg`;
-          const { publicUrl } = await uploadToStorage(bytes, fileName, "image/jpeg");
+          const storagePath = `${userId}/${Date.now()}-custom-bg.jpg`;
+          const { publicUrl } = await uploadToStorage(adminClient, bytes, storagePath, "image/jpeg");
           backgroundImageUrl = publicUrl;
         }
 
