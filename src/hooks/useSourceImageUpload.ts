@@ -20,39 +20,74 @@ export const useSourceImageUpload = () => {
     try {
       setUploading(true);
 
-      // Convert file to base64
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
-      console.log('Uploading source image:', file.name);
-
-      // Call the upload-source-image edge function
-      const { data, error } = await supabase.functions.invoke('upload-source-image', {
-        body: {
-          base64Image: base64,
-          fileName: file.name,
-          fileSize: file.size,
-          mimeType: file.type
-        }
-      });
-
-      if (error) {
-        console.error('Upload source image error:', error);
-        throw new Error(error.message || 'Failed to upload source image');
+      // Get current user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        throw new Error('User not authenticated');
       }
 
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to upload source image');
+      console.log('Uploading source image directly to storage:', file.name);
+
+      // Generate unique file path
+      const timestamp = Date.now();
+      const fileExtension = file.name.split('.').pop() || 'jpg';
+      const uniqueFileName = `${timestamp}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
+      const storagePath = `${user.id}/${uniqueFileName}`;
+
+      // 1. Upload directly to Supabase Storage (no base64, no edge function)
+      const { error: uploadError } = await supabase.storage
+        .from('source-images')
+        .upload(storagePath, file, {
+          contentType: file.type || 'image/jpeg',
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        throw new Error(`Upload failed: ${uploadError.message}`);
       }
 
-      console.log('Source image uploaded successfully:', data.sourceImage);
-      // toast.success('Source image uploaded successfully');
+      // 2. Get the public URL
+      const { data: urlData } = supabase.storage
+        .from('source-images')
+        .getPublicUrl(storagePath);
 
-      return data.sourceImage;
+      console.log('Source image uploaded to storage, creating database record');
+
+      // 3. Save to database
+      const { data: sourceImage, error: dbError } = await supabase
+        .from('source_images')
+        .insert({
+          user_id: user.id,
+          storage_path: storagePath,
+          public_url: urlData.publicUrl,
+          file_name: file.name,
+          file_size: file.size,
+          mime_type: file.type || 'image/jpeg'
+        })
+        .select()
+        .single();
+
+      if (dbError) {
+        console.error('Database error:', dbError);
+        // Cleanup uploaded file if database insert fails
+        await supabase.storage
+          .from('source-images')
+          .remove([storagePath]);
+        throw new Error(`Database error: ${dbError.message}`);
+      }
+
+      console.log('Source image saved successfully:', sourceImage.id);
+
+      return {
+        id: sourceImage.id,
+        publicUrl: sourceImage.public_url,
+        fileName: sourceImage.file_name,
+        fileSize: sourceImage.file_size,
+        mimeType: sourceImage.mime_type,
+        createdAt: sourceImage.created_at
+      };
     } catch (error) {
       console.error('Error uploading source image:', error);
       toast.error('Failed to upload source image');
