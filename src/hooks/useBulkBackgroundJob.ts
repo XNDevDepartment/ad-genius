@@ -123,6 +123,34 @@ export const useBulkBackgroundJob = () => {
     setError(null);
   }, []);
 
+  const retryResult = useCallback(async (resultId: string) => {
+    try {
+      const response = await bulkBackgroundApi.retryResult(resultId);
+      if (response.success) {
+        toast({
+          title: "Retry Started",
+          description: "Reprocessing image...",
+        });
+        // Refresh results
+        if (job?.id) {
+          const { results: updatedResults } = await bulkBackgroundApi.getJobResults(job.id);
+          if (isMountedRef.current) {
+            setResults(updatedResults);
+          }
+        }
+      } else {
+        throw new Error(response.error || 'Retry failed');
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to retry image';
+      toast({
+        title: "Retry Failed",
+        description: message,
+        variant: "destructive",
+      });
+    }
+  }, [job?.id, toast]);
+
   return {
     job,
     results,
@@ -132,6 +160,7 @@ export const useBulkBackgroundJob = () => {
     cancelJob,
     downloadAll,
     clearJob,
+    retryResult,
     isProcessing: job?.status === 'queued' || job?.status === 'processing',
     isComplete: job?.status === 'completed',
     isCanceled: job?.status === 'canceled',
