@@ -41,7 +41,7 @@ export interface CreateBulkJobPayload {
   sourceImageIds: string[];
   backgroundType: 'preset' | 'custom';
   backgroundPresetId?: string;
-  backgroundImageBase64?: string;
+  backgroundImageUrl?: string;
   settings?: {
     outputFormat?: 'png' | 'webp';
     quality?: 'high' | 'medium';

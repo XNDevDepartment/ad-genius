@@ -387,7 +387,7 @@ Deno.serve(async (req: Request) => {
           return errorResponse("Unauthorized", 401);
         }
 
-        const { sourceImageIds, backgroundType, backgroundPresetId, backgroundImageBase64, settings } = body;
+        const { sourceImageIds, backgroundType, backgroundPresetId, backgroundImageUrl, settings } = body;
 
         // Validate inputs
         if (!sourceImageIds?.length) {
@@ -398,7 +398,7 @@ Deno.serve(async (req: Request) => {
           return errorResponse("No background preset selected");
         }
 
-        if (backgroundType === "custom" && !backgroundImageBase64) {
+        if (backgroundType === "custom" && !backgroundImageUrl) {
           return errorResponse("No custom background provided");
         }
 
@@ -446,18 +446,8 @@ Deno.serve(async (req: Request) => {
           }
         }
 
-        // Upload custom background if provided
-        let backgroundImageUrl: string | null = null;
-        if (backgroundType === "custom" && backgroundImageBase64) {
-          const binaryStr = atob(backgroundImageBase64);
-          const bytes = new Uint8Array(binaryStr.length);
-          for (let i = 0; i < binaryStr.length; i++) {
-            bytes[i] = binaryStr.charCodeAt(i);
-          }
-          const storagePath = `${userId}/${Date.now()}-custom-bg.jpg`;
-          const { publicUrl } = await uploadToStorage(adminClient, bytes, storagePath, "image/jpeg");
-          backgroundImageUrl = publicUrl;
-        }
+        // Use custom background URL directly (already uploaded by frontend)
+        const finalBackgroundUrl: string | null = backgroundType === "custom" ? backgroundImageUrl : null;
 
         // Create job record
         const { data: job, error: jobError } = await adminClient
@@ -467,7 +457,7 @@ Deno.serve(async (req: Request) => {
             status: "queued",
             background_type: backgroundType,
             background_preset_id: backgroundPresetId || null,
-            background_image_url: backgroundImageUrl,
+            background_image_url: finalBackgroundUrl,
             total_images: sourceImages.length,
             settings: settings || {},
           })
