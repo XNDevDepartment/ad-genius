@@ -100,41 +100,41 @@ function buildPrompt(
 
   if (highlight === 'yes') {
     return `
-TASK: Create authentic UGC photo featuring this product.
+        TASK: Create authentic UGC photo featuring this product.
 
-SCENARIO: Natural lifestyle moment that resonates with the target audience.
+        SCENARIO: Natural lifestyle moment that resonates with the target audience.
 
-AUDIENCE: ${audience}
+        AUDIENCE: ${audience}
 
-MANDATORY RULES:
-1. PRODUCT INTEGRITY: Product is hero of the image - occupies 40-60% of frame, clearly visible
-2. AUTHENTICITY: iPhone-quality casual photography, natural lighting, candid feel
-3. STYLE: ${style} photography aesthetic
-4. HUMAN ELEMENT: If person present, show natural interaction with product
-5. QUALITY: Ultra high resolution, sharp focus on product
+        MANDATORY RULES:
+        1. PRODUCT INTEGRITY: Product is hero of the image - occupies 40-60% of frame, clearly visible
+        2. AUTHENTICITY: iPhone-quality casual photography, natural lighting, candid feel
+        3. STYLE: ${style} photography aesthetic
+        4. HUMAN ELEMENT: If person present, show natural interaction with product
+        5. QUALITY: Ultra high resolution, sharp focus on product
 
-${commonNegative}
+        ${commonNegative}
 
-OUTPUT: Single authentic UGC photo ready for social media advertising.
+        OUTPUT: Single authentic UGC photo ready for social media advertising.
     `.trim();
   } else {
     return `
-TASK: Create lifestyle photo where environment tells the story.
+        TASK: Create lifestyle photo where environment tells the story.
 
-SCENARIO: Scene that naturally incorporates the product as a subtle element.
+        SCENARIO: Scene that naturally incorporates the product as a subtle element.
 
-AUDIENCE: ${audience}
+        AUDIENCE: ${audience}
 
-MANDATORY RULES:
-1. ENVIRONMENT FIRST: Scene is hero, product occupies 20-35% of frame
-2. PRODUCT PLACEMENT: Natural, non-intrusive integration
-3. STYLE: ${style} lifestyle photography
-4. ATMOSPHERE: Mood and setting resonate with target audience
-5. QUALITY: Ultra high resolution, professional composition
+        MANDATORY RULES:
+        1. ENVIRONMENT FIRST: Scene is hero, product occupies 20-35% of frame
+        2. PRODUCT PLACEMENT: Natural, non-intrusive integration
+        3. STYLE: ${style} lifestyle photography
+        4. ATMOSPHERE: Mood and setting resonate with target audience
+        5. QUALITY: Ultra high resolution, professional composition
 
-${commonNegative}
+        ${commonNegative}
 
-OUTPUT: Single polished lifestyle photo usable as ad creative.
+        OUTPUT: Single polished lifestyle photo usable as ad creative.
     `.trim();
   }
 }
