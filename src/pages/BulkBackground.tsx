@@ -13,6 +13,7 @@ import { useCredits } from "@/hooks/useCredits";
 import { useBulkBackgroundJob } from "@/hooks/useBulkBackgroundJob";
 import { useSourceImageUpload } from "@/hooks/useSourceImageUpload";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -81,18 +82,28 @@ const BulkBackground = () => {
     setStep(newStep);
   };
 
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const result = reader.result as string;
-        // Remove the data URL prefix
-        const base64 = result.split(',')[1];
-        resolve(base64);
-      };
-      reader.onerror = reject;
-    });
+  const uploadBackgroundToStorage = async (file: File): Promise<string | null> => {
+    if (!user) return null;
+    
+    const fileName = `${user.id}/${Date.now()}-custom-bg.${file.name.split('.').pop() || 'jpg'}`;
+    
+    const { data, error } = await supabase.storage
+      .from('bulk-backgrounds')
+      .upload(fileName, file, {
+        contentType: file.type,
+        upsert: false,
+      });
+    
+    if (error) {
+      console.error('Background upload error:', error);
+      return null;
+    }
+    
+    const { data: urlData } = supabase.storage
+      .from('bulk-backgrounds')
+      .getPublicUrl(data.path);
+    
+    return urlData.publicUrl;
   };
 
   const handleStartProcessing = async () => {
@@ -134,10 +145,19 @@ const BulkBackground = () => {
 
       setIsUploading(false);
 
-      // 2. Get custom background as base64 if provided
-      let customBgBase64: string | undefined;
+      // 2. Upload custom background to storage if provided
+      let customBgUrl: string | undefined;
       if (customBackground) {
-        customBgBase64 = await fileToBase64(customBackground);
+        customBgUrl = await uploadBackgroundToStorage(customBackground) || undefined;
+        if (!customBgUrl) {
+          toast({
+            title: "Upload Failed",
+            description: "Failed to upload custom background. Please try again.",
+            variant: "destructive",
+          });
+          setStep(3);
+          return;
+        }
       }
 
       // 3. Create batch job
@@ -145,7 +165,7 @@ const BulkBackground = () => {
         sourceImageIds: uploadedIds,
         backgroundType: customBackground ? 'custom' : 'preset',
         backgroundPresetId: selectedPreset || undefined,
-        backgroundImageBase64: customBgBase64,
+        backgroundImageUrl: customBgUrl,
         settings: { outputFormat: 'webp', quality: 'high' }
       });
 
