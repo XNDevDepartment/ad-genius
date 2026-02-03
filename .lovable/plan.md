@@ -1,140 +1,103 @@
 
 
-# Correção: Memory Limit no Upload de Source Images
+# Correção: Erros de TypeScript no Edge Function bulk-background
 
 ## Problema Identificado
 
-O erro de memória persiste porque o **upload de product images** ainda usa base64 no body do request para o edge function `upload-source-image`.
-
-### Fluxo Atual (Problemático):
+Os erros de build são causados por **inferência de tipos incorreta** do Supabase client no edge function:
 
 ```text
-Frontend (useSourceImageUpload.ts)
-   │
-   ├── File → FileReader → base64 (5-10MB)
-   │      ↓
-   └── supabase.functions.invoke('upload-source-image', {
-         body: { base64Image: <base64 gigante> }
-       })
-                │
-                ▼
-Edge Function (upload-source-image/index.ts)
-   │
-   ├── req.json() → aloca toda a string base64
-   ├── atob() → aloca bytes descodificados
-   ├── Uint8Array → aloca buffer
-   │
-   └── MEMORY LIMIT EXCEEDED
+TS2345: Argument of type '{ status: string; ... }' is not assignable to parameter of type 'never'.
 ```
 
-## Solução: Upload Direto para Storage
+Isto acontece porque:
+1. O `createClient` está a ser usado sem tipos explícitos
+2. O TypeScript não consegue inferir o schema das tabelas
+3. Todas as operações `.update()` falham porque o tipo é inferido como `never`
 
-Fazer upload direto para Supabase Storage do **frontend** e depois apenas registar no banco de dados.
+## Solução
 
-### Fluxo Proposto (Corrigido):
-
-```text
-Frontend (useSourceImageUpload.ts)
-   │
-   ├── supabase.storage.from('source-images').upload(path, file)
-   │      ↓
-   ├── Recebe storage path e public URL
-   │      ↓
-   └── supabase.from('source_images').insert({...})
-   
-   [Tudo no frontend - SEM edge function para upload!]
-```
+Usar casting explícito `as any` nas operações de update para contornar o problema de tipos, dado que edge functions não têm acesso ao ficheiro de tipos gerado do Supabase.
 
 ---
 
 ## Alterações Técnicas
 
-### 1. Atualizar `useSourceImageUpload.ts`
+### Ficheiro: `supabase/functions/bulk-background/index.ts`
 
-Substituir a chamada ao edge function por upload direto:
-
+**Alteração 1 - Linha 284-290:**
 ```typescript
-// Antes (problemático)
-const base64 = await fileToBase64(file);
-const { data } = await supabase.functions.invoke('upload-source-image', {
-  body: { base64Image: base64, fileName: file.name }
-});
+// Antes (erro de tipos)
+await adminClient
+  .from("bulk_background_results")
+  .update({ status: "processing", ... })
+  .eq("id", result.id);
 
-// Depois (corrigido)
-const userId = (await supabase.auth.getUser()).data.user?.id;
-const storagePath = `${userId}/${Date.now()}-${file.name}`;
-
-// 1. Upload direto para storage
-const { error: uploadError } = await supabase.storage
-  .from('source-images')
-  .upload(storagePath, file, {
-    contentType: file.type,
-    upsert: false,
-  });
-
-// 2. Obter URL público
-const { data: urlData } = supabase.storage
-  .from('source-images')
-  .getPublicUrl(storagePath);
-
-// 3. Registar no banco de dados
-const { data: sourceImage } = await supabase
-  .from('source_images')
-  .insert({
-    user_id: userId,
-    storage_path: storagePath,
-    public_url: urlData.publicUrl,
-    file_name: file.name,
-    file_size: file.size,
-    mime_type: file.type
-  })
-  .select()
-  .single();
-
-return sourceImage;
+// Depois (com casting)
+await (adminClient
+  .from("bulk_background_results") as any)
+  .update({ status: "processing", ... })
+  .eq("id", result.id);
 ```
 
-### 2. Verificar RLS Policies do Bucket `source-images`
+**Alteração 2 - Linha 324-333:**
+```typescript
+await (adminClient
+  .from("bulk_background_results") as any)
+  .update({
+    status: "completed",
+    result_url: publicUrl,
+    ...
+  })
+  .eq("id", result.id);
+```
 
-O bucket já existe e é público. Precisamos garantir que as RLS policies permitem upload pelo utilizador autenticado.
+**Alteração 3 - Linha 339-346:**
+```typescript
+await (adminClient
+  .from("bulk_background_results") as any)
+  .update({
+    status: "failed",
+    error: ...,
+    ...
+  })
+  .eq("id", result.id);
+```
+
+**Alteração 4 - Linhas 600-605 e 762-769:**
+Mudar o tipo do parâmetro `adminClient` na função `processSingleResult` para `any`:
+```typescript
+async function processSingleResult(
+  result: BulkBackgroundResult,
+  job: BulkBackgroundJob,
+  adminClient: any,  // Changed from ReturnType<typeof createClient>
+  backgroundBase64: string | null
+): Promise<{ success: boolean; error?: string }>
+```
 
 ---
 
-## Ficheiros a Modificar
+## Resumo das Alterações
 
-| Ficheiro | Alteração |
-|----------|-----------|
-| `src/hooks/useSourceImageUpload.ts` | Upload direto para storage + insert no DB |
-
-## Edge Function `upload-source-image`
-
-Pode ser mantido como **fallback** para uso por API externa, mas o frontend não o vai usar mais.
-
----
-
-## Comparação: Antes vs Depois
-
-| Aspeto | Antes (Falha) | Depois |
-|--------|---------------|--------|
-| Dados no request | 5-10MB base64 | File binary (streaming) |
-| Memory no edge function | ~30MB+ | 0 (não usa edge function) |
-| Número de requests | 2 (edge + storage) | 2 (storage + DB insert) |
-| Latência | Alta (encode/decode) | Baixa (upload direto) |
+| Linha | Alteração |
+|-------|-----------|
+| 82 | Mudar tipo do parâmetro `adminClient` para `any` em `uploadToStorage` |
+| 276 | Mudar tipo do parâmetro `adminClient` para `any` em `processSingleResult` |
+| 284-290 | Adicionar `as any` ao `.from()` |
+| 324-333 | Adicionar `as any` ao `.from()` |
+| 339-346 | Adicionar `as any` ao `.from()` |
 
 ---
 
 ## Benefícios
 
-1. **Sem memory issues**: Upload vai direto para storage, sem passar pelo edge function
-2. **Mais rápido**: Sem encoding/decoding base64
-3. **Simpler**: Menos código, menos pontos de falha
-4. **Escalável**: Funciona para ficheiros de qualquer tamanho
+1. **Resolve todos os 5 erros de build** imediatamente
+2. **Não altera a lógica** - apenas os tipos
+3. **Padrão comum** em edge functions da Supabase que não têm acesso a tipos gerados
 
 ---
 
-## Passos de Implementação
+## Ficheiro a Modificar
 
-1. Verificar/adicionar RLS policies no bucket `source-images` para permitir upload
-2. Atualizar `useSourceImageUpload.ts` para upload direto
-3. Testar o fluxo completo
+- `supabase/functions/bulk-background/index.ts`
 
