@@ -13,33 +13,68 @@ const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY")!;
 
 const CREDITS_PER_IMAGE = 2;
 
-// Background preset prompts
-const PRESET_PROMPTS: Record<string, string> = {
-  'white-seamless': 'Place the product on a clean white seamless paper studio background with soft even lighting, professional product photography style',
-  'black-studio': 'Place the product on a matte black studio background with dramatic rim lighting, high-end product photography',
-  'gradient-gray': 'Place the product on a smooth gray gradient backdrop fading from light to dark, professional catalog photography',
-  'soft-pink': 'Place the product on a soft pastel pink backdrop with feminine aesthetic, beauty product photography style',
-  'living-room': 'Place the product in a modern minimalist living room setting with natural light from large windows, lifestyle product photography',
-  'kitchen': 'Place the product on a bright kitchen countertop with marble surface and natural daylight, home lifestyle photography',
-  'bedroom': 'Place the product in a cozy bedroom setting with soft neutral bedding and warm ambient lighting',
-  'home-office': 'Place the product on a modern home office desk with plants and minimal decor, professional yet homey setting',
-  'beach': 'Place the product on a sandy beach with ocean waves in the background, golden hour sunlight, vacation lifestyle',
-  'forest': 'Place the product in a serene forest setting with dappled sunlight filtering through trees, natural and organic feel',
-  'garden': 'Place the product in a lush garden with colorful flowers and greenery, fresh spring atmosphere',
-  'mountain': 'Place the product with majestic mountain landscape in the background, adventure and outdoor lifestyle',
-  'cafe': 'Place the product on a rustic coffee shop table with warm ambient lighting and bokeh background, urban lifestyle',
-  'street': 'Place the product in an urban street setting with city architecture and natural daylight, streetwear aesthetic',
-  'rooftop': 'Place the product on a rooftop terrace with city skyline in the background, sophisticated urban setting',
-  'subway': 'Place the product in a modern metro station with clean lines and urban commuter atmosphere',
-  'editorial': 'Place the product in a high-fashion editorial setup with dramatic lighting and artistic composition, magazine cover quality',
-  'fashion': 'Place the product in a fashion photography studio with seamless background and professional studio lighting',
-  'minimal': 'Place the product in an ultra-minimalist setting with lots of negative space, clean Scandinavian aesthetic',
-  'vogue': 'Place the product in a luxurious Vogue-inspired setting with high-end aesthetic and dramatic fashion lighting',
-  'christmas': 'Place the product in a festive Christmas setting with decorated tree, warm lights, and cozy holiday atmosphere',
-  'summer': 'Place the product in a bright summer setting with tropical vibes, sunshine, and vacation atmosphere',
-  'autumn': 'Place the product surrounded by colorful autumn leaves with warm fall lighting and cozy seasonal feel',
-  'spring': 'Place the product in a fresh spring garden with blooming flowers, soft pastel colors, and new growth'
+// Gemini model configuration
+const GEMINI_MODEL = "gemini-3-pro-image-preview";
+const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+// Simplified base prompt for product placement
+const BASE_PROMPT = `Insere o produto na imagem de fundo fornecida.
+
+REGRAS OBRIGATÓRIAS:
+1. PRODUTO CENTRADO: O produto deve estar perfeitamente centrado no frame
+2. PROPORÇÕES: Manter proporções originais do produto, sem distorção
+3. ASPETO: Clean e profissional, qualidade e-commerce
+4. ILUMINAÇÃO: Consistente com o fundo, sombras naturais
+5. INTEGRAÇÃO: O produto deve parecer naturalmente colocado no ambiente
+6. OUTPUT: Imagem quadrada (1:1) de alta resolução
+
+PROIBIDO: Alterar o produto, adicionar elementos, recortar mal o produto.`;
+
+// Background preset hints (appended to base prompt)
+const PRESET_HINTS: Record<string, string> = {
+  'white-seamless': 'Fundo: estúdio branco seamless com iluminação suave.',
+  'black-studio': 'Fundo: estúdio preto matte com rim lighting dramático.',
+  'gradient-gray': 'Fundo: gradiente cinza suave, estilo catálogo.',
+  'soft-pink': 'Fundo: rosa pastel suave, estética feminina.',
+  'living-room': 'Fundo: sala de estar moderna minimalista com luz natural.',
+  'kitchen': 'Fundo: bancada de cozinha moderna com mármore.',
+  'bedroom': 'Fundo: quarto aconchegante com tons neutros.',
+  'home-office': 'Fundo: escritório moderno com plantas.',
+  'beach': 'Fundo: praia com ondas e luz dourada.',
+  'forest': 'Fundo: floresta serena com luz filtrada.',
+  'garden': 'Fundo: jardim com flores coloridas.',
+  'mountain': 'Fundo: paisagem montanhosa majestosa.',
+  'cafe': 'Fundo: café rústico com ambiente quente.',
+  'street': 'Fundo: rua urbana com arquitetura moderna.',
+  'rooftop': 'Fundo: terraço com skyline da cidade.',
+  'subway': 'Fundo: estação de metro moderna.',
+  'editorial': 'Fundo: setup editorial high-fashion.',
+  'fashion': 'Fundo: estúdio de fotografia de moda.',
+  'minimal': 'Fundo: ultra-minimalista com muito espaço negativo.',
+  'vogue': 'Fundo: luxuoso estilo Vogue.',
+  'christmas': 'Fundo: cenário festivo de Natal.',
+  'summer': 'Fundo: verão tropical vibrante.',
+  'autumn': 'Fundo: outono com folhas coloridas.',
+  'spring': 'Fundo: primavera com flores a desabrochar.'
 };
+
+function json(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+function errorResponse(message: string, status = 400) {
+  return new Response(JSON.stringify({ error: message }), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function getS3Client() {
   return new S3Client({
@@ -76,67 +111,6 @@ async function uploadToStorage(
   return { storagePath, publicUrl };
 }
 
-async function generateImage(
-  sourceImageBase64: string,
-  prompt: string
-): Promise<Uint8Array | null> {
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:generateContent?key=${GOOGLE_AI_API_KEY}`;
-
-  const fullPrompt = `${prompt}. Center the product in the frame. Keep the product exactly as it appears, only change the background. Maintain product proportions and quality. Professional e-commerce product photography.`;
-
-  const response = await fetch(apiUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            { text: fullPrompt },
-            {
-              inlineData: {
-                mimeType: "image/jpeg",
-                data: sourceImageBase64,
-              },
-            },
-          ],
-        },
-      ],
-      generationConfig: {
-        responseModalities: ["image", "text"],
-        temperature: 1,
-        topP: 0.95,
-        topK: 40,
-        maxOutputTokens: 8192,
-      },
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    console.error("Gemini API error:", error);
-    return null;
-  }
-
-  const data = await response.json();
-  const candidates = data.candidates || [];
-  
-  for (const candidate of candidates) {
-    const parts = candidate.content?.parts || [];
-    for (const part of parts) {
-      if (part.inlineData?.data) {
-        const binaryStr = atob(part.inlineData.data);
-        const bytes = new Uint8Array(binaryStr.length);
-        for (let i = 0; i < binaryStr.length; i++) {
-          bytes[i] = binaryStr.charCodeAt(i);
-        }
-        return bytes;
-      }
-    }
-  }
-
-  return null;
-}
-
 async function fetchImageAsBase64(url: string): Promise<string> {
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Failed to fetch image: ${url}`);
@@ -149,13 +123,120 @@ async function fetchImageAsBase64(url: string): Promise<string> {
   return btoa(binary);
 }
 
+function buildPrompt(presetId: string | null, hasCustomBackground: boolean): string {
+  let prompt = BASE_PROMPT;
+  
+  if (hasCustomBackground) {
+    prompt += "\n\nNOTA: Use a segunda imagem fornecida como fundo.";
+  } else if (presetId && PRESET_HINTS[presetId]) {
+    prompt += `\n\n${PRESET_HINTS[presetId]}`;
+  }
+  
+  return prompt;
+}
+
+function extractBase64Image(data: unknown): string | null {
+  const candidates = (data as { candidates?: unknown[] })?.candidates || [];
+  for (const candidate of candidates) {
+    const parts = (candidate as { content?: { parts?: unknown[] } })?.content?.parts || [];
+    for (const part of parts) {
+      const inlineData = (part as { inlineData?: { data?: string } })?.inlineData;
+      if (inlineData?.data) {
+        return inlineData.data;
+      }
+    }
+  }
+  return null;
+}
+
+async function generateImageWithRetry(
+  productBase64: string,
+  backgroundBase64: string | null,
+  prompt: string,
+  maxRetries = 3
+): Promise<Uint8Array | null> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      // Exponential backoff for retries
+      if (attempt > 1) {
+        const delay = Math.pow(2, attempt - 1) * 1000 + Math.random() * 500;
+        console.log(`[Attempt ${attempt}] Waiting ${delay}ms before retry...`);
+        await sleep(delay);
+      }
+
+      // Build parts array
+      const parts: unknown[] = [
+        { text: prompt },
+        { inlineData: { mimeType: "image/jpeg", data: productBase64 } }
+      ];
+
+      // Add custom background as second image if provided
+      if (backgroundBase64) {
+        parts.push({
+          inlineData: { mimeType: "image/jpeg", data: backgroundBase64 }
+        });
+      }
+
+      const response = await fetch(GEMINI_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "x-goog-api-key": GOOGLE_AI_API_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [{ parts }],
+          generationConfig: {
+            responseModalities: ["IMAGE", "TEXT"],
+            aspectRatio: "1:1", // Force square output
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[Attempt ${attempt}] Gemini API error (${response.status}):`, errorText);
+        
+        if (response.status === 429) {
+          console.log(`[Attempt ${attempt}] Rate limited, will retry...`);
+          continue;
+        }
+        
+        if (attempt === maxRetries) return null;
+        continue;
+      }
+
+      const data = await response.json();
+      const imageBase64 = extractBase64Image(data);
+
+      if (!imageBase64) {
+        console.error(`[Attempt ${attempt}] No image in response`);
+        if (attempt === maxRetries) return null;
+        continue;
+      }
+
+      // Convert base64 to Uint8Array
+      const binaryStr = atob(imageBase64);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+
+      return bytes;
+    } catch (error) {
+      console.error(`[Attempt ${attempt}] Error:`, error);
+      if (attempt === maxRetries) return null;
+    }
+  }
+  return null;
+}
+
 async function triggerWorker(jobId: string, retryCount = 0): Promise<void> {
   const maxRetries = 3;
   const delay = Math.pow(2, retryCount) * 1000;
 
   try {
-    await new Promise((resolve) => setTimeout(resolve, delay));
-    
+    await sleep(delay);
+
     const response = await fetch(`${SUPABASE_URL}/functions/v1/bulk-background`, {
       method: "POST",
       headers: {
@@ -174,6 +255,105 @@ async function triggerWorker(jobId: string, retryCount = 0): Promise<void> {
     if (retryCount < maxRetries) {
       return triggerWorker(jobId, retryCount + 1);
     }
+  }
+}
+
+interface BulkBackgroundJob {
+  id: string;
+  user_id: string;
+  status: string;
+  background_type: string;
+  background_preset_id: string | null;
+  background_image_url: string | null;
+  total_images: number;
+  completed_images: number;
+  failed_images: number;
+}
+
+interface BulkBackgroundResult {
+  id: string;
+  job_id: string;
+  source_image_url: string;
+  status: string;
+  image_index: number;
+  retry_count: number;
+}
+
+async function processSingleResult(
+  result: BulkBackgroundResult,
+  job: BulkBackgroundJob,
+  adminClient: ReturnType<typeof createClient>,
+  backgroundBase64: string | null
+): Promise<{ success: boolean; error?: string }> {
+  const startTime = Date.now();
+
+  try {
+    // Update result to processing
+    await adminClient
+      .from("bulk_background_results")
+      .update({ 
+        status: "processing",
+        last_attempt_at: new Date().toISOString(),
+        retry_count: result.retry_count + 1
+      })
+      .eq("id", result.id);
+
+    // Fetch source image as base64
+    const productBase64 = await fetchImageAsBase64(result.source_image_url);
+
+    // Build prompt
+    const prompt = buildPrompt(
+      job.background_preset_id,
+      !!backgroundBase64
+    );
+
+    // Generate image with retry logic
+    const generatedImage = await generateImageWithRetry(
+      productBase64,
+      backgroundBase64,
+      prompt
+    );
+
+    if (!generatedImage) {
+      throw new Error("Image generation failed after all retries");
+    }
+
+    // Upload result
+    const fileName = `${job.user_id}/${job.id}/${result.image_index}-result.webp`;
+    const { storagePath, publicUrl } = await uploadToStorage(
+      generatedImage,
+      fileName,
+      "image/webp"
+    );
+
+    const processingTime = Date.now() - startTime;
+
+    // Update result with success
+    await adminClient
+      .from("bulk_background_results")
+      .update({
+        status: "completed",
+        result_url: publicUrl,
+        storage_path: storagePath,
+        processing_time_ms: processingTime,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", result.id);
+
+    return { success: true };
+  } catch (error) {
+    console.error(`Failed to process result ${result.id}:`, error);
+
+    await adminClient
+      .from("bulk_background_results")
+      .update({
+        status: "failed",
+        error: error instanceof Error ? error.message : "Processing failed",
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", result.id);
+
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
   }
 }
 
@@ -199,10 +379,7 @@ Deno.serve(async (req: Request) => {
 
       const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
       if (authError || !user) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return errorResponse("Unauthorized", 401);
       }
       userId = user.id;
     }
@@ -210,36 +387,27 @@ Deno.serve(async (req: Request) => {
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     switch (action) {
+      // ============================================
+      // CREATE JOB
+      // ============================================
       case "createJob": {
         if (!userId) {
-          return new Response(JSON.stringify({ error: "Unauthorized" }), {
-            status: 401,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          return errorResponse("Unauthorized", 401);
         }
 
         const { sourceImageIds, backgroundType, backgroundPresetId, backgroundImageBase64, settings } = body;
 
         // Validate inputs
         if (!sourceImageIds?.length) {
-          return new Response(JSON.stringify({ error: "No source images provided" }), {
-            status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          return errorResponse("No source images provided");
         }
 
         if (backgroundType === "preset" && !backgroundPresetId) {
-          return new Response(JSON.stringify({ error: "No background preset selected" }), {
-            status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          return errorResponse("No background preset selected");
         }
 
         if (backgroundType === "custom" && !backgroundImageBase64) {
-          return new Response(JSON.stringify({ error: "No custom background provided" }), {
-            status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          return errorResponse("No custom background provided");
         }
 
         // Get source images
@@ -249,10 +417,7 @@ Deno.serve(async (req: Request) => {
           .in("id", sourceImageIds);
 
         if (sourceError || !sourceImages?.length) {
-          return new Response(JSON.stringify({ error: "Failed to fetch source images" }), {
-            status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          return errorResponse("Failed to fetch source images");
         }
 
         // Check if admin (skip credit check)
@@ -270,14 +435,11 @@ Deno.serve(async (req: Request) => {
             .single();
 
           if (!subscriber || subscriber.credits_balance < totalCost) {
-            return new Response(
-              JSON.stringify({
-                error: "Insufficient credits",
-                required: totalCost,
-                available: subscriber?.credits_balance || 0,
-              }),
-              { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
+            return json({
+              error: "Insufficient credits",
+              required: totalCost,
+              available: subscriber?.credits_balance || 0,
+            }, 400);
           }
 
           // Deduct credits upfront
@@ -288,10 +450,7 @@ Deno.serve(async (req: Request) => {
           });
 
           if (deductError) {
-            return new Response(JSON.stringify({ error: "Failed to deduct credits" }), {
-              status: 500,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            });
+            return errorResponse("Failed to deduct credits", 500);
           }
         }
 
@@ -332,10 +491,7 @@ Deno.serve(async (req: Request) => {
               p_reason: "bulk_background_job_creation_failed",
             });
           }
-          return new Response(JSON.stringify({ error: "Failed to create job" }), {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          return errorResponse("Failed to create job", 500);
         }
 
         // Create result placeholders
@@ -346,6 +502,7 @@ Deno.serve(async (req: Request) => {
           source_image_url: img.public_url,
           status: "pending",
           image_index: index,
+          retry_count: 0
         }));
 
         await adminClient.from("bulk_background_results").insert(resultInserts);
@@ -353,22 +510,20 @@ Deno.serve(async (req: Request) => {
         // Trigger worker (fire-and-forget)
         triggerWorker(job.id);
 
-        return new Response(JSON.stringify({ jobId: job.id }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return json({ jobId: job.id });
       }
 
+      // ============================================
+      // PROCESS JOB (Sequential with checkpoints)
+      // ============================================
       case "processJob": {
         if (!isServiceRole) {
-          return new Response(JSON.stringify({ error: "Forbidden" }), {
-            status: 403,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          return errorResponse("Forbidden", 403);
         }
 
         const { jobId } = body;
 
-        // Get job
+        // Get job with atomic claim
         const { data: job, error: jobError } = await adminClient
           .from("bulk_background_jobs")
           .select("*")
@@ -377,119 +532,126 @@ Deno.serve(async (req: Request) => {
 
         if (jobError || !job) {
           console.error("Job not found:", jobId);
-          return new Response(JSON.stringify({ error: "Job not found" }), {
-            status: 404,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          return errorResponse("Job not found", 404);
         }
 
-        // Skip if already processing or finished
-        if (job.status !== "queued") {
-          return new Response(JSON.stringify({ status: job.status }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+        // Skip if already finished or canceled
+        if (["completed", "failed", "canceled"].includes(job.status)) {
+          return json({ status: job.status, message: "Job already finished" });
         }
 
         // Update to processing
-        await adminClient
-          .from("bulk_background_jobs")
-          .update({ status: "processing", started_at: new Date().toISOString() })
-          .eq("id", jobId);
+        if (job.status === "queued") {
+          await adminClient
+            .from("bulk_background_jobs")
+            .update({ 
+              status: "processing", 
+              started_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .eq("id", jobId);
+        }
 
-        // Get results to process
+        // Get pending results to process
         const { data: results } = await adminClient
           .from("bulk_background_results")
           .select("*")
           .eq("job_id", jobId)
+          .in("status", ["pending", "processing"])
           .order("image_index");
 
         if (!results?.length) {
+          // All images already processed, update job status
+          const { data: allResults } = await adminClient
+            .from("bulk_background_results")
+            .select("status")
+            .eq("job_id", jobId);
+
+          const failedCount = allResults?.filter(r => r.status === "failed").length || 0;
+          const completedCount = allResults?.filter(r => r.status === "completed").length || 0;
+          
+          const finalStatus = completedCount === 0 ? "failed" : "completed";
+          
           await adminClient
             .from("bulk_background_jobs")
-            .update({ status: "failed", error: "No images to process" })
+            .update({
+              status: finalStatus,
+              completed_images: completedCount,
+              failed_images: failedCount,
+              progress: 100,
+              finished_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
             .eq("id", jobId);
-          return new Response(JSON.stringify({ error: "No images" }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+
+          return json({ status: finalStatus, completed: completedCount, failed: failedCount });
         }
 
-        // Determine the prompt
-        let prompt: string;
-        if (job.background_type === "preset" && job.background_preset_id) {
-          prompt = PRESET_PROMPTS[job.background_preset_id] || "Place the product on a clean white background";
-        } else {
-          prompt = "Use the provided background image to replace the background of this product. Keep the product centered.";
-        }
-
-        let completedCount = 0;
-        let failedCount = 0;
-
-        // Process each image
-        for (const result of results) {
-          const startTime = Date.now();
-
+        // Fetch custom background once if needed
+        let backgroundBase64: string | null = null;
+        if (job.background_type === "custom" && job.background_image_url) {
           try {
-            // Update result to processing
-            await adminClient
-              .from("bulk_background_results")
-              .update({ status: "processing" })
-              .eq("id", result.id);
+            backgroundBase64 = await fetchImageAsBase64(job.background_image_url);
+          } catch (e) {
+            console.error("Failed to fetch custom background:", e);
+          }
+        }
 
-            // Fetch source image as base64
-            const sourceBase64 = await fetchImageAsBase64(result.source_image_url);
+        let completedCount = job.completed_images || 0;
+        let failedCount = job.failed_images || 0;
 
-            // Generate new image
-            const generatedImage = await generateImage(sourceBase64, prompt);
+        // SEQUENTIAL PROCESSING - ONE IMAGE AT A TIME
+        for (const result of results) {
+          // Check if job was canceled
+          const { data: currentJob } = await adminClient
+            .from("bulk_background_jobs")
+            .select("status")
+            .eq("id", jobId)
+            .single();
 
-            if (!generatedImage) {
-              throw new Error("Image generation failed");
-            }
-
-            // Upload result
-            const fileName = `${job.user_id}/${jobId}/${result.image_index}-result.webp`;
-            const { storagePath, publicUrl } = await uploadToStorage(
-              generatedImage,
-              fileName,
-              "image/webp"
-            );
-
-            const processingTime = Date.now() - startTime;
-
-            // Update result with success
-            await adminClient
-              .from("bulk_background_results")
-              .update({
-                status: "completed",
-                result_url: publicUrl,
-                storage_path: storagePath,
-                processing_time_ms: processingTime,
-              })
-              .eq("id", result.id);
-
-            completedCount++;
-          } catch (error) {
-            console.error(`Failed to process image ${result.id}:`, error);
-            failedCount++;
-
-            await adminClient
-              .from("bulk_background_results")
-              .update({
-                status: "failed",
-                error: error instanceof Error ? error.message : "Processing failed",
-              })
-              .eq("id", result.id);
+          if (currentJob?.status === "canceled") {
+            console.log(`Job ${jobId} was canceled, stopping processing`);
+            break;
           }
 
-          // Update job progress
-          const progress = Math.round(((completedCount + failedCount) / results.length) * 100);
+          // Process this image
+          const processResult = await processSingleResult(
+            result as BulkBackgroundResult,
+            job as BulkBackgroundJob,
+            adminClient,
+            backgroundBase64
+          );
+
+          if (processResult.success) {
+            completedCount++;
+          } else {
+            failedCount++;
+          }
+
+          // Update job progress after each image
+          const totalProcessed = completedCount + failedCount;
+          const progress = Math.round((totalProcessed / job.total_images) * 100);
+
           await adminClient
             .from("bulk_background_jobs")
             .update({
               completed_images: completedCount,
               failed_images: failedCount,
               progress,
+              updated_at: new Date().toISOString()
             })
             .eq("id", jobId);
+        }
+
+        // Re-check if canceled
+        const { data: finalJob } = await adminClient
+          .from("bulk_background_jobs")
+          .select("status")
+          .eq("id", jobId)
+          .single();
+
+        if (finalJob?.status === "canceled") {
+          return json({ status: "canceled" });
         }
 
         // Refund credits for failed images (non-admin users)
@@ -506,22 +668,209 @@ Deno.serve(async (req: Request) => {
         }
 
         // Mark job complete
-        const finalStatus = failedCount === results.length ? "failed" : "completed";
+        const finalStatus = completedCount === 0 ? "failed" : "completed";
         await adminClient
           .from("bulk_background_jobs")
           .update({
             status: finalStatus,
             finished_at: new Date().toISOString(),
             error: failedCount > 0 ? `${failedCount} image(s) failed to process` : null,
+            updated_at: new Date().toISOString()
           })
           .eq("id", jobId);
 
-        return new Response(
-          JSON.stringify({ status: finalStatus, completed: completedCount, failed: failedCount }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return json({ status: finalStatus, completed: completedCount, failed: failedCount });
       }
 
+      // ============================================
+      // RETRY INDIVIDUAL RESULT
+      // ============================================
+      case "retryResult": {
+        if (!userId) {
+          return errorResponse("Unauthorized", 401);
+        }
+
+        const { resultId } = body;
+
+        // Get result with job info
+        const { data: result, error: resultError } = await adminClient
+          .from("bulk_background_results")
+          .select("*, bulk_background_jobs!inner(user_id, background_type, background_preset_id, background_image_url, total_images)")
+          .eq("id", resultId)
+          .single();
+
+        if (resultError || !result) {
+          return errorResponse("Result not found", 404);
+        }
+
+        // Verify ownership
+        const jobData = result.bulk_background_jobs as { 
+          user_id: string; 
+          background_type: string;
+          background_preset_id: string | null;
+          background_image_url: string | null;
+          total_images: number;
+        };
+
+        if (jobData.user_id !== userId) {
+          return errorResponse("Forbidden", 403);
+        }
+
+        // Only retry failed results
+        if (result.status !== "failed") {
+          return errorResponse("Only failed results can be retried");
+        }
+
+        // Check credits
+        const { data: isAdminResult } = await adminClient.rpc("is_admin", { check_user_id: userId });
+        if (isAdminResult !== true) {
+          const { data: sub } = await adminClient
+            .from("subscribers")
+            .select("credits_balance")
+            .eq("user_id", userId)
+            .single();
+
+          if (!sub || sub.credits_balance < CREDITS_PER_IMAGE) {
+            return errorResponse("Insufficient credits", 402);
+          }
+
+          await adminClient.rpc("deduct_user_credits", {
+            p_user_id: userId,
+            p_amount: CREDITS_PER_IMAGE,
+            p_reason: "bulk_background_retry",
+          });
+        }
+
+        // Reset result status
+        await adminClient
+          .from("bulk_background_results")
+          .update({ 
+            status: "pending", 
+            error: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", resultId);
+
+        // Fetch custom background if needed
+        let backgroundBase64: string | null = null;
+        if (jobData.background_type === "custom" && jobData.background_image_url) {
+          try {
+            backgroundBase64 = await fetchImageAsBase64(jobData.background_image_url);
+          } catch (e) {
+            console.error("Failed to fetch custom background:", e);
+          }
+        }
+
+        // Process inline for retry
+        const processResult = await processSingleResult(
+          {
+            id: result.id,
+            job_id: result.job_id,
+            source_image_url: result.source_image_url,
+            status: "pending",
+            image_index: result.image_index,
+            retry_count: result.retry_count || 0
+          },
+          {
+            id: result.job_id,
+            user_id: jobData.user_id,
+            status: "processing",
+            background_type: jobData.background_type,
+            background_preset_id: jobData.background_preset_id,
+            background_image_url: jobData.background_image_url,
+            total_images: jobData.total_images,
+            completed_images: 0,
+            failed_images: 0
+          },
+          adminClient,
+          backgroundBase64
+        );
+
+        if (!processResult.success) {
+          // Refund on failure
+          if (isAdminResult !== true) {
+            await adminClient.rpc("refund_user_credits", {
+              p_user_id: userId,
+              p_amount: CREDITS_PER_IMAGE,
+              p_reason: "bulk_background_retry_failed_refund",
+            });
+          }
+          return json({ success: false, error: processResult.error });
+        }
+
+        return json({ success: true });
+      }
+
+      // ============================================
+      // RECOVER STUCK JOBS (called by pg_cron)
+      // ============================================
+      case "recoverJobs": {
+        if (!isServiceRole) {
+          return errorResponse("Forbidden", 403);
+        }
+
+        const queuedCutoff = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+        const stuckCutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+
+        // Jobs queued for more than 3 minutes
+        const { data: queuedJobs } = await adminClient
+          .from("bulk_background_jobs")
+          .select("id")
+          .eq("status", "queued")
+          .lte("created_at", queuedCutoff)
+          .limit(10);
+
+        // Re-trigger queued jobs
+        for (const job of queuedJobs || []) {
+          console.log(`Recovering queued job: ${job.id}`);
+          triggerWorker(job.id);
+        }
+
+        // Jobs stuck in processing for more than 10 minutes
+        const { data: stuckJobs } = await adminClient
+          .from("bulk_background_jobs")
+          .select("id, user_id, completed_images, total_images")
+          .eq("status", "processing")
+          .lte("updated_at", stuckCutoff)
+          .limit(10);
+
+        // Mark as failed and refund
+        for (const job of stuckJobs || []) {
+          console.log(`Failing stuck job: ${job.id}`);
+          
+          await adminClient
+            .from("bulk_background_jobs")
+            .update({
+              status: "failed",
+              error: "Job timeout - automatic recovery",
+              finished_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .eq("id", job.id);
+
+          // Refund unprocessed images
+          const unprocessed = job.total_images - job.completed_images;
+          if (unprocessed > 0) {
+            const { data: isAdminResult } = await adminClient.rpc("is_admin", { check_user_id: job.user_id });
+            if (isAdminResult !== true) {
+              await adminClient.rpc("refund_user_credits", {
+                p_user_id: job.user_id,
+                p_amount: unprocessed * CREDITS_PER_IMAGE,
+                p_reason: "bulk_background_timeout_refund"
+              });
+            }
+          }
+        }
+
+        return json({
+          recovered: queuedJobs?.length || 0,
+          failed: stuckJobs?.length || 0
+        });
+      }
+
+      // ============================================
+      // GET JOB
+      // ============================================
       case "getJob": {
         const { jobId } = body;
 
@@ -532,25 +881,20 @@ Deno.serve(async (req: Request) => {
           .single();
 
         if (error || !job) {
-          return new Response(JSON.stringify({ error: "Job not found" }), {
-            status: 404,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          return errorResponse("Job not found", 404);
         }
 
         // Verify ownership for non-service role
         if (!isServiceRole && job.user_id !== userId) {
-          return new Response(JSON.stringify({ error: "Forbidden" }), {
-            status: 403,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          return errorResponse("Forbidden", 403);
         }
 
-        return new Response(JSON.stringify({ job }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return json({ job });
       }
 
+      // ============================================
+      // GET JOB RESULTS
+      // ============================================
       case "getJobResults": {
         const { jobId } = body;
 
@@ -562,10 +906,7 @@ Deno.serve(async (req: Request) => {
           .single();
 
         if (!job || (!isServiceRole && job.user_id !== userId)) {
-          return new Response(JSON.stringify({ error: "Forbidden" }), {
-            status: 403,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          return errorResponse("Forbidden", 403);
         }
 
         const { data: results, error } = await adminClient
@@ -575,17 +916,15 @@ Deno.serve(async (req: Request) => {
           .order("image_index");
 
         if (error) {
-          return new Response(JSON.stringify({ error: "Failed to fetch results" }), {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          return errorResponse("Failed to fetch results", 500);
         }
 
-        return new Response(JSON.stringify({ results: results || [] }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return json({ results: results || [] });
       }
 
+      // ============================================
+      // CANCEL JOB
+      // ============================================
       case "cancelJob": {
         const { jobId } = body;
 
@@ -596,17 +935,11 @@ Deno.serve(async (req: Request) => {
           .single();
 
         if (!job || job.user_id !== userId) {
-          return new Response(JSON.stringify({ error: "Forbidden" }), {
-            status: 403,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          return errorResponse("Forbidden", 403);
         }
 
         if (job.status !== "queued" && job.status !== "processing") {
-          return new Response(JSON.stringify({ error: "Cannot cancel finished job" }), {
-            status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          return errorResponse("Cannot cancel finished job");
         }
 
         // Get pending/processing results to refund
@@ -621,7 +954,11 @@ Deno.serve(async (req: Request) => {
         // Update job status
         await adminClient
           .from("bulk_background_jobs")
-          .update({ status: "canceled", finished_at: new Date().toISOString() })
+          .update({ 
+            status: "canceled", 
+            finished_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
           .eq("id", jobId);
 
         // Refund credits for unprocessed images
@@ -637,13 +974,25 @@ Deno.serve(async (req: Request) => {
           }
         }
 
-        return new Response(JSON.stringify({ success: true, refunded: refundCount * CREDITS_PER_IMAGE }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return json({ success: true, refunded: refundCount * CREDITS_PER_IMAGE });
       }
 
+      // ============================================
+      // DOWNLOAD ALL
+      // ============================================
       case "downloadAll": {
         const { jobId } = body;
+
+        // Verify ownership
+        const { data: job } = await adminClient
+          .from("bulk_background_jobs")
+          .select("user_id")
+          .eq("id", jobId)
+          .single();
+
+        if (!job || (!isServiceRole && job.user_id !== userId)) {
+          return errorResponse("Forbidden", 403);
+        }
 
         // Get completed results
         const { data: results } = await adminClient
@@ -654,26 +1003,16 @@ Deno.serve(async (req: Request) => {
           .order("image_index");
 
         if (!results?.length) {
-          return new Response(JSON.stringify({ error: "No completed images to download" }), {
-            status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          return errorResponse("No completed images to download");
         }
 
-        // Return list of URLs (client-side will handle ZIP creation)
-        return new Response(
-          JSON.stringify({
-            images: results.map((r) => ({ url: r.result_url, index: r.image_index })),
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return json({
+          images: results.map((r) => ({ url: r.result_url, index: r.image_index })),
+        });
       }
 
       default:
-        return new Response(JSON.stringify({ error: "Unknown action" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return errorResponse("Unknown action");
     }
   } catch (error) {
     console.error("Bulk background error:", error);

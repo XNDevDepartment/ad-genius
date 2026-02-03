@@ -89,6 +89,10 @@ export const bulkBackgroundApi = {
     return callFunction('downloadAll', { jobId }) as Promise<{ images: { url: string; index: number }[] }>;
   },
 
+  async retryResult(resultId: string): Promise<{ success: boolean; error?: string }> {
+    return callFunction('retryResult', { resultId }) as Promise<{ success: boolean; error?: string }>;
+  },
+
   subscribeJob(jobId: string, onUpdate: (job: BulkBackgroundJob) => void) {
     const channel = supabase
       .channel(`bulk-bg-job:${jobId}`)

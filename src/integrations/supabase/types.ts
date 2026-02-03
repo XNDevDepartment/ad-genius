@@ -532,8 +532,10 @@ export type Database = {
           id: string
           image_index: number
           job_id: string
+          last_attempt_at: string | null
           processing_time_ms: number | null
           result_url: string | null
+          retry_count: number | null
           source_image_id: string | null
           source_image_url: string
           status: string
@@ -547,8 +549,10 @@ export type Database = {
           id?: string
           image_index: number
           job_id: string
+          last_attempt_at?: string | null
           processing_time_ms?: number | null
           result_url?: string | null
+          retry_count?: number | null
           source_image_id?: string | null
           source_image_url: string
           status?: string
@@ -562,8 +566,10 @@ export type Database = {
           id?: string
           image_index?: number
           job_id?: string
+          last_attempt_at?: string | null
           processing_time_ms?: number | null
           result_url?: string | null
+          retry_count?: number | null
           source_image_id?: string | null
           source_image_url?: string
           status?: string
