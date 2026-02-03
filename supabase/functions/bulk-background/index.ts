@@ -176,10 +176,10 @@ async function generateImageWithRetry(
         },
         body: JSON.stringify({
           contents: [{ parts }],
-          generationConfig: {
-            responseModalities: ["IMAGE", "TEXT"],
-            aspectRatio: "1:1", // Force square output
-          },
+          "generationConfig": {
+            "responseModalities": ["IMAGE","TEXT"],
+            "imageConfig": { "aspectRatio": "1:1" }
+          }
         }),
       });
 
