@@ -18,7 +18,7 @@ export const useBulkBackgroundJob = () => {
     };
   }, []);
 
-  // Subscribe to job updates
+  // Subscribe to job updates via Realtime
   useEffect(() => {
     if (!job?.id) return;
 
@@ -51,6 +51,44 @@ export const useBulkBackgroundJob = () => {
       unsubResults();
     };
   }, [job?.id, toast]);
+
+  // Polling fallback - ensures UI updates even if Realtime fails
+  useEffect(() => {
+    if (!job?.id || job.status === 'completed' || job.status === 'failed' || job.status === 'canceled') {
+      return;
+    }
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const { job: updatedJob } = await bulkBackgroundApi.getJob(job.id);
+        const { results: updatedResults } = await bulkBackgroundApi.getJobResults(job.id);
+        
+        if (isMountedRef.current) {
+          setJob(updatedJob);
+          setResults(updatedResults);
+          
+          // Show completion toast if job finished
+          if (updatedJob.status === 'completed' && job.status !== 'completed') {
+            toast({
+              title: "Batch Complete!",
+              description: `Processed ${updatedJob.completed_images} of ${updatedJob.total_images} images.`,
+            });
+          } else if (updatedJob.status === 'failed' && job.status !== 'failed') {
+            setError(updatedJob.error || 'Batch processing failed');
+            toast({
+              title: "Batch Failed",
+              description: updatedJob.error || "Failed to process images",
+              variant: "destructive",
+            });
+          }
+        }
+      } catch (e) {
+        console.error('Polling error:', e);
+      }
+    }, 3000);
+
+    return () => clearInterval(pollInterval);
+  }, [job?.id, job?.status, toast]);
 
   const createJob = useCallback(async (payload: CreateBulkJobPayload) => {
     try {
