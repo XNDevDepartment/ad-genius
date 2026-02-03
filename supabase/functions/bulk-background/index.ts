@@ -79,7 +79,7 @@ function sleep(ms: number): Promise<void> {
 const STORAGE_BUCKET = "bulk-backgrounds";
 
 async function uploadToStorage(
-  adminClient: ReturnType<typeof createClient>,
+  adminClient: any,
   imageData: Uint8Array,
   storagePath: string,
   contentType: string
@@ -273,15 +273,15 @@ interface BulkBackgroundResult {
 async function processSingleResult(
   result: BulkBackgroundResult,
   job: BulkBackgroundJob,
-  adminClient: ReturnType<typeof createClient>,
+  adminClient: any,
   backgroundBase64: string | null
 ): Promise<{ success: boolean; error?: string }> {
   const startTime = Date.now();
 
   try {
     // Update result to processing
-    await adminClient
-      .from("bulk_background_results")
+    await (adminClient
+      .from("bulk_background_results") as any)
       .update({ 
         status: "processing",
         last_attempt_at: new Date().toISOString(),
@@ -321,8 +321,8 @@ async function processSingleResult(
     const processingTime = Date.now() - startTime;
 
     // Update result with success
-    await adminClient
-      .from("bulk_background_results")
+    await (adminClient
+      .from("bulk_background_results") as any)
       .update({
         status: "completed",
         result_url: publicUrl,
@@ -336,8 +336,8 @@ async function processSingleResult(
   } catch (error) {
     console.error(`Failed to process result ${result.id}:`, error);
 
-    await adminClient
-      .from("bulk_background_results")
+    await (adminClient
+      .from("bulk_background_results") as any)
       .update({
         status: "failed",
         error: error instanceof Error ? error.message : "Processing failed",
