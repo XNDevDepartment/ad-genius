@@ -468,6 +468,119 @@ export type Database = {
           },
         ]
       }
+      bulk_background_jobs: {
+        Row: {
+          background_image_url: string | null
+          background_preset_id: string | null
+          background_type: string
+          completed_images: number
+          created_at: string
+          error: string | null
+          failed_images: number
+          finished_at: string | null
+          id: string
+          progress: number
+          settings: Json | null
+          started_at: string | null
+          status: string
+          total_images: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          background_image_url?: string | null
+          background_preset_id?: string | null
+          background_type: string
+          completed_images?: number
+          created_at?: string
+          error?: string | null
+          failed_images?: number
+          finished_at?: string | null
+          id?: string
+          progress?: number
+          settings?: Json | null
+          started_at?: string | null
+          status?: string
+          total_images?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          background_image_url?: string | null
+          background_preset_id?: string | null
+          background_type?: string
+          completed_images?: number
+          created_at?: string
+          error?: string | null
+          failed_images?: number
+          finished_at?: string | null
+          id?: string
+          progress?: number
+          settings?: Json | null
+          started_at?: string | null
+          status?: string
+          total_images?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      bulk_background_results: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          image_index: number
+          job_id: string
+          processing_time_ms: number | null
+          result_url: string | null
+          source_image_id: string | null
+          source_image_url: string
+          status: string
+          storage_path: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          image_index: number
+          job_id: string
+          processing_time_ms?: number | null
+          result_url?: string | null
+          source_image_id?: string | null
+          source_image_url: string
+          status?: string
+          storage_path?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          image_index?: number
+          job_id?: string
+          processing_time_ms?: number | null
+          result_url?: string | null
+          source_image_id?: string | null
+          source_image_url?: string
+          status?: string
+          storage_path?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_background_results_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "bulk_background_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversation_messages: {
         Row: {
           content: string
