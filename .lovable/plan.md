@@ -1,103 +1,116 @@
 
-
-# Correção: Erros de TypeScript no Edge Function bulk-background
+# Correção: Resultados Não Atualizam na UI (Realtime Subscriptions)
 
 ## Problema Identificado
 
-Os erros de build são causados por **inferência de tipos incorreta** do Supabase client no edge function:
+A base de dados confirma que as imagens estão a ser processadas com sucesso:
+- `job_status: completed`
+- `result_status: completed`  
+- `result_url` tem URLs válidos
+
+**Mas o frontend não recebe as atualizações** porque as tabelas `bulk_background_jobs` e `bulk_background_results` **não estão na publicação Realtime do Supabase**.
+
+Tabelas atualmente no Realtime:
+- `image_jobs` ✓
+- `ugc_images` ✓
+- `kling_jobs` ✓
+- `outfit_swap_jobs` ✓
+- `outfit_swap_results` ✓
+- `bulk_background_jobs` ✗ **← FALTA!**
+- `bulk_background_results` ✗ **← FALTA!**
+
+### Fluxo Atual (Falha):
 
 ```text
-TS2345: Argument of type '{ status: string; ... }' is not assignable to parameter of type 'never'.
+Edge Function                  Supabase Realtime                Frontend
+     │                              │                              │
+     ├── UPDATE job/result          │                              │
+     │      ↓                       │                              │
+     │   (tabela não está           │                              │
+     │    no realtime)              │                              │
+     │                         ✗ Nenhum evento                     │
+     │                              │                              │
+     └──────────────────────────────┼──────────────────────────────┤
+                                    │                              │
+                                    │    subscribeJob() não        │
+                                    │    recebe callback           │
+                                    │                              │
+                                    │    UI fica "stuck"           │
 ```
-
-Isto acontece porque:
-1. O `createClient` está a ser usado sem tipos explícitos
-2. O TypeScript não consegue inferir o schema das tabelas
-3. Todas as operações `.update()` falham porque o tipo é inferido como `never`
 
 ## Solução
 
-Usar casting explícito `as any` nas operações de update para contornar o problema de tipos, dado que edge functions não têm acesso ao ficheiro de tipos gerado do Supabase.
+Adicionar ambas as tabelas à publicação Realtime do Supabase.
 
 ---
 
-## Alterações Técnicas
+## Alteração de Base de Dados
 
-### Ficheiro: `supabase/functions/bulk-background/index.ts`
+```sql
+-- Adicionar tabelas ao Realtime
+ALTER PUBLICATION supabase_realtime 
+  ADD TABLE bulk_background_jobs;
 
-**Alteração 1 - Linha 284-290:**
-```typescript
-// Antes (erro de tipos)
-await adminClient
-  .from("bulk_background_results")
-  .update({ status: "processing", ... })
-  .eq("id", result.id);
-
-// Depois (com casting)
-await (adminClient
-  .from("bulk_background_results") as any)
-  .update({ status: "processing", ... })
-  .eq("id", result.id);
-```
-
-**Alteração 2 - Linha 324-333:**
-```typescript
-await (adminClient
-  .from("bulk_background_results") as any)
-  .update({
-    status: "completed",
-    result_url: publicUrl,
-    ...
-  })
-  .eq("id", result.id);
-```
-
-**Alteração 3 - Linha 339-346:**
-```typescript
-await (adminClient
-  .from("bulk_background_results") as any)
-  .update({
-    status: "failed",
-    error: ...,
-    ...
-  })
-  .eq("id", result.id);
-```
-
-**Alteração 4 - Linhas 600-605 e 762-769:**
-Mudar o tipo do parâmetro `adminClient` na função `processSingleResult` para `any`:
-```typescript
-async function processSingleResult(
-  result: BulkBackgroundResult,
-  job: BulkBackgroundJob,
-  adminClient: any,  // Changed from ReturnType<typeof createClient>
-  backgroundBase64: string | null
-): Promise<{ success: boolean; error?: string }>
+ALTER PUBLICATION supabase_realtime 
+  ADD TABLE bulk_background_results;
 ```
 
 ---
 
-## Resumo das Alterações
+## Adição de Polling Fallback (Segurança Extra)
 
-| Linha | Alteração |
-|-------|-----------|
-| 82 | Mudar tipo do parâmetro `adminClient` para `any` em `uploadToStorage` |
-| 276 | Mudar tipo do parâmetro `adminClient` para `any` em `processSingleResult` |
-| 284-290 | Adicionar `as any` ao `.from()` |
-| 324-333 | Adicionar `as any` ao `.from()` |
-| 339-346 | Adicionar `as any` ao `.from()` |
+Como backup, adicionar polling no hook `useBulkBackgroundJob` para garantir que mesmo sem Realtime, a UI atualiza:
+
+```typescript
+// Polling fallback - verificar a cada 3 segundos se job está em processamento
+useEffect(() => {
+  if (!job?.id || job.status === 'completed' || job.status === 'failed' || job.status === 'canceled') {
+    return;
+  }
+
+  const pollInterval = setInterval(async () => {
+    try {
+      const { job: updatedJob } = await bulkBackgroundApi.getJob(job.id);
+      const { results: updatedResults } = await bulkBackgroundApi.getJobResults(job.id);
+      
+      if (isMountedRef.current) {
+        setJob(updatedJob);
+        setResults(updatedResults);
+      }
+    } catch (e) {
+      console.error('Polling error:', e);
+    }
+  }, 3000);
+
+  return () => clearInterval(pollInterval);
+}, [job?.id, job?.status]);
+```
 
 ---
 
-## Benefícios
+## Ficheiros a Modificar
 
-1. **Resolve todos os 5 erros de build** imediatamente
-2. **Não altera a lógica** - apenas os tipos
-3. **Padrão comum** em edge functions da Supabase que não têm acesso a tipos gerados
+| Componente | Alteração |
+|------------|-----------|
+| **Base de dados** | Adicionar tabelas ao `supabase_realtime` |
+| `src/hooks/useBulkBackgroundJob.ts` | Adicionar polling fallback como segurança |
 
 ---
 
-## Ficheiro a Modificar
+## Comparação: Antes vs Depois
 
-- `supabase/functions/bulk-background/index.ts`
+| Aspeto | Antes | Depois |
+|--------|-------|--------|
+| Realtime ativo | ✗ Não | ✓ Sim |
+| Updates na UI | Stuck | Instantâneo |
+| Fallback | Nenhum | Polling 3s |
 
+---
+
+## Ordem de Implementação
+
+1. **Migração DB**: Adicionar tabelas ao Realtime (1 min)
+2. **Hook**: Adicionar polling fallback (3 min)
+3. **Teste**: Verificar fluxo completo
+
+**Tempo estimado: 5 minutos**
