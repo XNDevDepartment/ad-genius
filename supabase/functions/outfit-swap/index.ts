@@ -719,21 +719,35 @@ async function processOutfitSwap(jobId: string) {
     if (!garmentImage?.storage_path) {
       throw new Error("Garment image storage path not found in database");
     }
-    // Verify garment file exists in storage
+    // Verify garment file exists in storage by attempting to download metadata
     console.log(`[processOutfitSwap] Job ${jobId}: Verifying garment file exists in storage...`);
     const garmentBucket = "ugc-inputs";
-    const { data: garmentFileList, error: garmentListError } = await supabase.storage.from(garmentBucket).list(garmentImage.storage_path.includes('/') ? garmentImage.storage_path.split('/').slice(0, -1).join('/') : '', {
-      search: garmentImage.storage_path.includes('/') ? garmentImage.storage_path.split('/').pop() : garmentImage.storage_path
-    });
-    if (garmentListError || !garmentFileList || garmentFileList.length === 0) {
+    
+    // Use download to verify file exists - more reliable than list+search
+    const { data: garmentFileData, error: garmentDownloadError } = await supabase.storage
+      .from(garmentBucket)
+      .download(garmentImage.storage_path);
+    
+    if (garmentDownloadError || !garmentFileData) {
       console.error(`[processOutfitSwap] Job ${jobId}: Garment file not found in storage:`, {
         bucket: garmentBucket,
         path: garmentImage.storage_path,
-        garmentListError
+        error: garmentDownloadError?.message
       });
+      
+      // Check if file might be in a different location or the record is stale
+      const { data: publicUrlData } = supabase.storage
+        .from(garmentBucket)
+        .getPublicUrl(garmentImage.storage_path);
+      
+      console.error(`[processOutfitSwap] Job ${jobId}: Expected public URL would be:`, publicUrlData?.publicUrl);
+      
       throw new Error(`Garment image file "${garmentImage.file_name || 'Unknown'}" does not exist in storage. Please re-upload the garment image.`);
     }
-    console.log(`[processOutfitSwap] Job ${jobId}: Garment file verified in storage`);
+    
+    // Store the downloaded data for later use to avoid re-downloading
+    const garmentFileBuffer = await garmentFileData.arrayBuffer();
+    console.log(`[processOutfitSwap] Job ${jobId}: Garment file verified in storage (${garmentFileBuffer.byteLength} bytes)`);
     // Create signed URLs with proper error handling
     console.log(`[processOutfitSwap] Job ${jobId}: Creating signed URLs...`);
     const { data: personUrl, error: personError } = await supabase.storage.from(personBucket).createSignedUrl(personStoragePath, 3600);
@@ -794,17 +808,18 @@ async function processOutfitSwap(jobId: string) {
     }).eq("id", jobId);
     // STEP 3: Fetch source images and prepare for Gemini API
     const personResponse = await fetch(personUrl.signedUrl);
-    const garmentResponse = await fetch(garmentUrl.signedUrl);
-    if (!personResponse.ok || !garmentResponse.ok) {
-      throw new Error("Failed to fetch source images for AI processing");
+    if (!personResponse.ok) {
+      throw new Error("Failed to fetch person image for AI processing");
     }
     // Convert to base64 for Gemini API
+    // Use pre-downloaded garment buffer from earlier verification
     const personBuffer = await personResponse.arrayBuffer();
-    const garmentBuffer = await garmentResponse.arrayBuffer();
     const personBase64 = bufferToBase64(new Uint8Array(personBuffer));
-    const garmentBase64 = bufferToBase64(new Uint8Array(garmentBuffer));
+    const garmentBase64 = bufferToBase64(new Uint8Array(garmentFileBuffer));
     const personMimeType = personResponse.headers.get('content-type') ?? 'image/jpeg';
-    const garmentMimeType = garmentResponse.headers.get('content-type') ?? 'image/jpeg';
+    // Determine garment MIME type from file extension or default to jpeg
+    const garmentExt = garmentImage.storage_path.split('.').pop()?.toLowerCase() || 'jpg';
+    const garmentMimeType = garmentExt === 'png' ? 'image/png' : garmentExt === 'webp' ? 'image/webp' : 'image/jpeg';
     // Call Gemini API with multimodal input
     const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent', {
       method: 'POST',
