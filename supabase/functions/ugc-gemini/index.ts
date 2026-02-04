@@ -682,7 +682,7 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
         const NATIVE_ASPECT_RATIOS = ['1:1', '3:4', '4:3', '9:16', '16:9'];
         const useNativeAspect = aspectRatio && aspectRatio !== 'source' && NATIVE_ASPECT_RATIOS.includes(aspectRatio);
         
-        log("Generating image with Gemini 3 Pro", {
+        log("Generating image with Gemini 3 Pro (image edit mode)", {
           jobId: job.id,
           aspectRatio: aspectRatio || 'none',
           useNativeAspect
@@ -719,11 +719,46 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
             signal: controller.signal,
           }
         );
+      } else {
+        // ----- Text-to-image mode (no source image) -----
+        const aspectRatio = settings?.aspectRatio as string | undefined;
+        const NATIVE_ASPECT_RATIOS = ['1:1', '3:4', '4:3', '9:16', '16:9'];
+        const useNativeAspect = aspectRatio && aspectRatio !== 'source' && NATIVE_ASPECT_RATIOS.includes(aspectRatio);
+        
+        log("Generating image with Gemini 3 Pro (text-to-image mode)", {
+          jobId: job.id,
+          aspectRatio: aspectRatio || 'none',
+          useNativeAspect
+        });
 
+        res = await fetch(
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent",
+          {
+            method: "POST",
+            headers: {
+              "x-goog-api-key": GOOGLE_AI_KEY,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: {
+                responseModalities: ["TEXT", "IMAGE"],
+                ...(useNativeAspect && { imageConfig: { aspectRatio } })
+              },
+            }),
+            signal: controller.signal,
+          }
+        );
       }
       try {
-        if (!res) {
-          throw new Error("No response from Gemini API - source image may be required");
+        if (!res || !res.ok) {
+          const text = res ? await res.text() : "No response";
+          const retryable = res && (res.status >= 500 || res.status === 429);
+          if (retryable && attempt < MAX_ATTEMPTS) {
+            await sleep(backoffMs(attempt));
+            continue;
+          }
+          throw new Error(`Gemini API error ${res?.status ?? 'unknown'}: ${text}`);
         }
         if (!res.ok) {
           const text = await res.text();
