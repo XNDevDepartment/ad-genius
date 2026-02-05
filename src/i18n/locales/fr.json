@@ -1556,7 +1556,8 @@
       "open": "Ouvrir",
       "animate": "Animer",
       "ecommerce": "UGC Image",
-      "photoshoot": "Séance Photo",
+      "createPhotoshoot": "Create Photoshoot",
+      "angles": "angles",
       "download": "Télécharger",
       "retry": "Réessayer",
       "retrying": "Réessai..."

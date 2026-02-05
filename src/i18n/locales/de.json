@@ -1613,7 +1613,8 @@
       "open": "Öffnen",
       "animate": "Animieren",
       "ecommerce": "UGC Image",
-      "photoshoot": "Fotoshooting",
+      "createPhotoshoot": "Create Photoshoot",
+      "angles": "angles",
       "download": "Herunterladen",
       "retry": "Wiederholen",
       "retrying": "Wiederhole..."

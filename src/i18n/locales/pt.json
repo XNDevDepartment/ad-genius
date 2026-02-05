@@ -1664,7 +1664,8 @@
       "open": "Abrir",
       "animate": "Animar",
       "ecommerce": "UGC Image",
-      "photoshoot": "Sessão Fotográfica",
+      "createPhotoshoot": "Fazer Sessão Fotográfica",
+      "angles": "ângulos",
       "download": "Transferir",
       "retry": "Tentar Novamente",
       "retrying": "Tentando..."
