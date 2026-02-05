@@ -879,7 +879,7 @@ async function getSignedSourceUrls(source_image_ids: string[], supabase: Supabas
   for (const id of source_image_ids){
     const { data: src } = await supabase.from("source_images").select("storage_path").eq("id", id).maybeSingle() as { data: { storage_path: string } | null };
     if (src?.storage_path) {
-      const { data: signed } = await supabase.storage.from("ugc-inputs").createSignedUrl(src.storage_path, 3600);
+      const { data: signed } = await supabase.storage.from("source-images").createSignedUrl(src.storage_path, 3600);
       if (signed?.signedUrl) {
         urls.push(signed.signedUrl);
       }
@@ -894,7 +894,7 @@ async function getSignedSourceUrl(source_image_id: string | null, supabase: Supa
   if (!source_image_id) return null;
   const { data: src } = await supabase.from("source_images").select("storage_path").eq("id", source_image_id).single() as { data: { storage_path: string } | null };
   if (!src?.storage_path) return null;
-  const { data: signed } = await supabase.storage.from("ugc-inputs").createSignedUrl(src.storage_path, 3600);
+  const { data: signed } = await supabase.storage.from("source-images").createSignedUrl(src.storage_path, 3600);
   return signed?.signedUrl ?? null;
 }
 
