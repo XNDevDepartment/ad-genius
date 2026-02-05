@@ -721,7 +721,7 @@ async function processOutfitSwap(jobId: string) {
     }
     // Verify garment file exists in storage by attempting to download metadata
     console.log(`[processOutfitSwap] Job ${jobId}: Verifying garment file exists in storage...`);
-    const garmentBucket = "ugc-inputs";
+    const garmentBucket = "source-images";
     
     // Use download to verify file exists - more reliable than list+search
     const { data: garmentFileData, error: garmentDownloadError } = await supabase.storage
