@@ -132,8 +132,34 @@ async function createVideoJob(supabase: any, userId: string, payload: any): Prom
   // Check if user is admin
   const isAdmin = await isUserAdmin(supabase, userId);
   console.log(`[CREATE-JOB] User is admin: ${isAdmin}`);
-  // Skip subscription check for admins
+  
+  // Skip all checks for admins
   if (!isAdmin) {
+    // SERVER-SIDE ACTIVATION CHECK: Block unactivated accounts from video generation
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('account_activated')
+      .eq('id', userId)
+      .single();
+    
+    if (profileError) {
+      console.error('[CREATE-JOB] Failed to check activation status:', profileError);
+      return {
+        success: false,
+        error: 'Unable to verify account status.'
+      };
+    }
+    
+    // Block if account_activated is explicitly false (null = legacy user, allowed)
+    if (profile?.account_activated === false) {
+      console.log(`[CREATE-JOB] Blocked unactivated account: ${userId}`);
+      return {
+        success: false,
+        error: 'Please verify your email to access video features.',
+        activation_required: true
+      };
+    }
+    
     // Check subscription tier - All tiers except Starter can access videos
     const { data: subscriber, error: subError } = await supabase.from('subscribers').select('subscription_tier').eq('user_id', userId).single();
     if (subError || !subscriber) {
