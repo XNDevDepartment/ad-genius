@@ -88,16 +88,16 @@ const ModuleSelection = () => {
       isBeta: false,
       locked: false
     },
-    {
-      id: "bulk-background",
-      title: t('createSelection.bulkBackground.title'),
-      description: t('createSelection.bulkBackground.description'),
-      icon: Images,
-      path: "/create/bulk-background",
-      isAdmin: true,
-      isBeta: true,
-      locked: false
-    },
+    // {
+    //   id: "bulk-background",
+    //   title: t('createSelection.bulkBackground.title'),
+    //   description: t('createSelection.bulkBackground.description'),
+    //   icon: Images,
+    //   path: "/create/bulk-background",
+    //   isAdmin: true,
+    //   isBeta: true,
+    //   locked: false
+    // },
 
     // ...(isAdmin ? [{
     //   id: "product-studio",
