@@ -1,183 +1,122 @@
 
 
-# Security Vulnerability: Bot Account Abuse Analysis
+# UGC-Gemini Module: Source Image Bucket Mismatch Fix
 
-## Problem Summary
+## Problem Identified
 
-A bot operator is creating multiple accounts using disposable emails and virtual phone numbers to abuse the free video generation (Image Animator) feature. All accounts are verified and have `account_activated = true`.
+The UGC-Gemini module is generating invented products instead of using uploaded images because of a **bucket mismatch** when fetching source images.
+
+### Evidence
+
+| Metric | Value |
+|--------|-------|
+| Source images in `ugc-inputs` bucket | 2,537 (94%) |
+| Source images in `source-images` bucket | 144 (6%) |
+| Edge function looking in | `source-images` only ❌ |
+
+**Log showing the bug:**
+```
+"usingSourceImage":false  <-- Should be true!
+```
+
+The user's source image (`867f6811-9d01-4f5a-b33c-ba27e3c1be96`) is stored in the **`ugc-inputs`** bucket, but the edge function's `getSignedSourceUrls` function is hardcoded to look in `source-images` - causing the signed URL to fail and returning an empty array.
 
 ---
 
-## Evidence Found
+## Root Cause
 
-### Suspicious Accounts (Created Today)
+The `getSignedSourceUrls` function in both `ugc-gemini` and `ugc-gemini-v3` edge functions uses a hardcoded bucket name:
 
-| Email | Phone Number | Account Activated | Credits Used |
-|-------|--------------|-------------------|--------------|
-| ricardo@tmpbox.net | +3584573998018 | ✅ true | 0 (depleted) |
-| ricardo@tmpeml.com | +3584573998019 | ✅ true | 0 (depleted) |
-| ricardo@teml.net | +447490953883 | ✅ true | 0 (depleted) |
-| mischelled1@tweting.com | +447490953415 | ✅ true | 0 (depleted) |
-| yoselyn7464@uorak.com | +447490955184 | ✅ true | 0 (depleted) |
-| nepode2992@icubik.com | +447490955882 | ✅ true | 0 (depleted) |
-
-### Video Jobs from Bot Accounts
-
-- `mischelled1@tweting.com` → 1 completed video
-- `yoselyn7464@uorak.com` → 1 completed video  
-- `nepode2992@icubik.com` → 1 completed video
-
-### Attack Pattern
-
-```text
-1. Create account with:
-   - Disposable email (not in blocked list)
-   - UK virtual phone (+44749...) or Finnish (+3584...)
-   
-2. Pass OTP verification → phone_verified = true
-
-3. Profile auto-created with account_activated = TRUE (DB default)
-
-4. Get 10 free credits → Generate 2 videos (5 credits each)
-
-5. Repeat with new disposable email + different virtual number
+```typescript
+// Current code (lines 882 and 836)
+const { data: signed } = await supabase.storage
+  .from("source-images")  // ❌ Hardcoded - doesn't work for legacy images
+  .createSignedUrl(src.storage_path, 3600);
 ```
+
+But the `public_url` in the database actually contains the real bucket information:
+- `https://.../storage/v1/object/public/ugc-inputs/...` → use `ugc-inputs`
+- `https://.../storage/v1/object/public/source-images/...` → use `source-images`
 
 ---
 
-## Root Causes
+## Solution
 
-### Issue 1: Database Column Default
+Make the edge functions **detect the bucket from the `public_url`** in the database rather than hardcoding it.
 
-The `account_activated` column defaults to `TRUE`:
+### Technical Changes
 
-```sql
-column_default: true
-```
+**Files to modify:**
+1. `supabase/functions/ugc-gemini/index.ts`
+2. `supabase/functions/ugc-gemini-v3/index.ts`
 
-When `handle_new_user` trigger creates a profile, it doesn't set `account_activated`, so it gets the default `TRUE` value.
-
-### Issue 2: Phone Signup Doesn't Set Activation
-
-The `signup-with-phone` edge function creates users but doesn't set `account_activated = false`:
+**Updated `getSignedSourceUrls` function:**
 
 ```typescript
-// Current code (missing activation field):
-.update({
-  phone_number: phone_number,
-  phone_verified: true,
-  name: name,
-})
-```
-
-### Issue 3: No Server-Side Activation Check for Videos
-
-The `kling-video` edge function only checks:
-- ✅ Subscription tier (blocks Starter)
-- ✅ Credit balance
-- ❌ **Does NOT check `account_activated`**
-
-The activation check only exists client-side in `useCredits.tsx`:
-
-```typescript
-const canAccessVideos = (): boolean => {
-  if (!isActivated) return false;  // Client-side only!
-  // ...
+async function getSignedSourceUrls(
+  source_image_ids: string[], 
+  supabase: SupabaseClient
+): Promise<string[]> {
+  if (!source_image_ids || source_image_ids.length === 0) return [];
+  
+  const urls: string[] = [];
+  for (const id of source_image_ids) {
+    // Fetch both storage_path AND public_url to detect bucket
+    const { data: src } = await supabase.from("source_images")
+      .select("storage_path, public_url")
+      .eq("id", id)
+      .maybeSingle();
+      
+    if (src?.storage_path && src?.public_url) {
+      // Detect bucket from public_url
+      let bucket = "source-images"; // default
+      if (src.public_url.includes("/ugc-inputs/")) {
+        bucket = "ugc-inputs";
+      } else if (src.public_url.includes("/source-images/")) {
+        bucket = "source-images";
+      }
+      
+      log("Signing source image URL", { 
+        id, 
+        bucket, 
+        path: src.storage_path 
+      });
+      
+      const { data: signed, error } = await supabase.storage
+        .from(bucket)  // ✅ Dynamic bucket based on public_url
+        .createSignedUrl(src.storage_path, 3600);
+        
+      if (error) {
+        log("Failed to sign source image", { id, bucket, error: error.message });
+        continue;
+      }
+      
+      if (signed?.signedUrl) {
+        urls.push(signed.signedUrl);
+      }
+    }
+  }
+  return urls;
 }
 ```
 
-### Issue 4: Missing Disposable Domains
+---
 
-These domains are NOT in the `domain_rules` blocked list:
-- tmpbox.net
-- tmpeml.com
-- teml.net
-- tweting.com
-- uorak.com
-- icubik.com
+## Impact
+
+| Before Fix | After Fix |
+|------------|-----------|
+| 94% of source images fail to load | All source images work |
+| AI invents products | AI uses uploaded products |
+| Jobs show `usingSourceImage: false` | Jobs show `usingSourceImage: true` |
 
 ---
 
-## Recommended Fixes
+## Summary
 
-### Fix 1: Server-Side Activation Check (Critical)
+1. **Update `ugc-gemini/index.ts`** - Modify `getSignedSourceUrls` (line 876-889) to detect bucket dynamically
+2. **Update `ugc-gemini-v3/index.ts`** - Same change (line 825-844)
+3. **Redeploy both edge functions**
 
-Add `account_activated` check to `kling-video` edge function:
-
-```typescript
-// After subscription tier check, add:
-const { data: profile } = await supabase
-  .from('profiles')
-  .select('account_activated')
-  .eq('id', userId)
-  .single();
-
-if (profile?.account_activated === false) {
-  return {
-    success: false,
-    error: 'Please verify your email to access video features.',
-    activation_required: true
-  };
-}
-```
-
-### Fix 2: Phone Signup Should Set Activation False
-
-Update `signup-with-phone` to require email activation:
-
-```typescript
-.update({
-  phone_number: phone_number,
-  phone_verified: true,
-  name: name,
-  account_activated: false,  // Require email verification
-})
-```
-
-Then trigger activation email flow.
-
-### Fix 3: Change Database Default
-
-```sql
-ALTER TABLE profiles 
-ALTER COLUMN account_activated SET DEFAULT false;
-```
-
-### Fix 4: Block Disposable Email Domains
-
-```sql
-INSERT INTO domain_rules (domain, rule_type, description) VALUES
-('tmpbox.net', 'blocked', 'Disposable email - abuse detected'),
-('tmpeml.com', 'blocked', 'Disposable email - abuse detected'),
-('teml.net', 'blocked', 'Disposable email - abuse detected'),
-('tweting.com', 'blocked', 'Disposable email - abuse detected'),
-('uorak.com', 'blocked', 'Disposable email - abuse detected'),
-('icubik.com', 'blocked', 'Disposable email - abuse detected');
-```
-
-### Fix 5: Rate Limit Phone Numbers
-
-Consider blocking +44749... prefix (TextNow/similar virtual numbers) or implementing:
-- Delay between phone number reuse (24-48 hours)
-- Block multiple accounts from same phone prefix pattern
-
----
-
-## Implementation Priority
-
-1. **Immediate**: Add server-side activation check to `kling-video` (blocks video abuse)
-2. **Immediate**: Block the 6 disposable domains identified
-3. **Short-term**: Change DB default to `false` and update signup flow
-4. **Medium-term**: Implement virtual phone detection/blocking
-
----
-
-## Files to Modify
-
-| File | Change |
-|------|--------|
-| `supabase/functions/kling-video/index.ts` | Add `account_activated` server-side check |
-| `supabase/functions/signup-with-phone/index.ts` | Set `account_activated = false` |
-| Database migration | Change column default to `false` |
-| `domain_rules` table | Insert 6 new blocked domains |
+This single-function fix will restore proper source image handling for all 2,537 legacy images in `ugc-inputs` while continuing to work with the 144 new images in `source-images`.
 
