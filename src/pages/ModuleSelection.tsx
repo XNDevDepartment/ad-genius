@@ -42,15 +42,15 @@ const ModuleSelection = () => {
       isAdmin: false,
       isBeta: false,
     },
-    // ...(isAdmin ? [{
-    //   id: "ugc-gemini-v3",
-    //   title: "UGC Gemini 3.0 (Admin Test)",
-    //   description: "Test the gemini-3-pro-image-preview model for UGC generation",
-    //   icon: Sparkles,
-    //   path: "/create/ugc-v3",
-    //   isAdmin: true,
-    //   isBeta: false,
-    // }] : []),
+    ...(isAdmin ? [{
+      id: "ugc-gemini-v3",
+      title: "UGC Gemini 3.0 (Admin Test)",
+      description: "Test the gemini-3-pro-image-preview model for UGC generation",
+      icon: Sparkles,
+      path: "/create/ugc-v3",
+      isAdmin: true,
+      isBeta: false,
+    }] : []),
     {
       id: "video",
       title: t('createSelection.videoCreator.title'),
@@ -61,23 +61,23 @@ const ModuleSelection = () => {
       isBeta: false,
       locked: !canAccessVideos()
     },
-    // ...(isAdmin ? [{
-    //   id: "adgenius",
-    //   title: "AdGenius (Admin Only)",
-    //   description: "Advanced creative generation for advertising campaigns",
-    //   icon: Sparkles,
-    //   path: "/create/adgenius",
-    //   isAdmin: true
-    // }] : []),
-     // ...(isAdmin ? [{
-  //  ...(isAdmin ? [{
-    //   id: "adgenius",
-    //   title: "AdGenius (Admin Only)",
-    //   description: "Advanced creative generation for advertising campaigns",
-    //   icon: Sparkles,
-    //   path: "/create/adgenius",
-    //   isAdmin: true
-    // }] : []),
+    ...(isAdmin ? [{
+      id: "adgenius",
+      title: "AdGenius (Admin Only)",
+      description: "Advanced creative generation for advertising campaigns",
+      icon: Sparkles,
+      path: "/create/adgenius",
+      isAdmin: true
+    }] : []),
+     ...(isAdmin ? [{
+   ...(isAdmin ? [{
+      id: "adgenius",
+      title: "AdGenius (Admin Only)",
+      description: "Advanced creative generation for advertising campaigns",
+      icon: Sparkles,
+      path: "/create/adgenius",
+      isAdmin: true
+    }] : []),
     {
       id: "outfit-swap",
       title: t('createSelection.outfitSwap.title'),
@@ -88,59 +88,59 @@ const ModuleSelection = () => {
       isBeta: false,
       locked: false
     },
-    // {
-    //   id: "bulk-background",
-    //   title: t('createSelection.bulkBackground.title'),
-    //   description: t('createSelection.bulkBackground.description'),
-    //   icon: Images,
-    //   path: "/create/bulk-background",
-    //   isAdmin: true,
-    //   isBeta: true,
-    //   locked: false
-    // },
+    {
+      id: "bulk-background",
+      title: t('createSelection.bulkBackground.title'),
+      description: t('createSelection.bulkBackground.description'),
+      icon: Images,
+      path: "/create/bulk-background",
+      isAdmin: true,
+      isBeta: true,
+      locked: false
+    },
 
-    // ...(isAdmin ? [{
-    //   id: "product-studio",
-    //   title: "Product Studio Background",
-    //   description: "Replace product backgrounds with professional studio quality",
-    //   icon: ImageIcon,
-    //   path: "/create/product-studio",
-    //   isAdmin: true
-    // }] : []),
-    // ...(isAdmin ? [{
-    //   id: "product-studio-bulk",
-    //   title: "Product Studio Bulk",
-    //   description: "Process multiple products at once with batch background replacement",
-    //   icon: Images,
-    //   path: "/create/product-studio-bulk",
-    //   isAdmin: true,
-    //   isBeta: false
-    // }] : []),
-    // ...(isAdmin ? [{
-    //   id: "magazine-photoshoot",
-    //   title: "Magazine Photoshoot",
-    //   description: "Transform photos into high-fashion editorial magazine spreads",
-    //   icon: Camera,
-    //   path: "/create/magazine-photoshoot",
-    //   isAdmin: true,
-    //   isBeta: false
-    // }] : []),
-    // ...(isAdmin ? [{
-    //   id: "custom-model",
-    //   title: "Create Your Own Model",
-    //   description: "Train custom base models from your photo sets",
-    //   icon: UserPlus,
-    //   path: "/create/custom-model",
-    //   isAdmin: true
-    // }] : []),
-    // ...(isAdmin ? [{
-    //   id: "video-ads",
-    //   title: "Video Ads",
-    //   description: "Generate short video advertisements from product images",
-    //   icon: Video,
-    //   path: "/create/video-ads",
-    //   isAdmin: true
-    // }] : []),
+    ...(isAdmin ? [{
+      id: "product-studio",
+      title: "Product Studio Background",
+      description: "Replace product backgrounds with professional studio quality",
+      icon: ImageIcon,
+      path: "/create/product-studio",
+      isAdmin: true
+    }] : []),
+    ...(isAdmin ? [{
+      id: "product-studio-bulk",
+      title: "Product Studio Bulk",
+      description: "Process multiple products at once with batch background replacement",
+      icon: Images,
+      path: "/create/product-studio-bulk",
+      isAdmin: true,
+      isBeta: false
+    }] : []),
+    ...(isAdmin ? [{
+      id: "magazine-photoshoot",
+      title: "Magazine Photoshoot",
+      description: "Transform photos into high-fashion editorial magazine spreads",
+      icon: Camera,
+      path: "/create/magazine-photoshoot",
+      isAdmin: true,
+      isBeta: false
+    }] : []),
+    ...(isAdmin ? [{
+      id: "custom-model",
+      title: "Create Your Own Model",
+      description: "Train custom base models from your photo sets",
+      icon: UserPlus,
+      path: "/create/custom-model",
+      isAdmin: true
+    }] : []),
+    ...(isAdmin ? [{
+      id: "video-ads",
+      title: "Video Ads",
+      description: "Generate short video advertisements from product images",
+      icon: Video,
+      path: "/create/video-ads",
+      isAdmin: true
+    }] : []),
     {
       id: "soon",
       title: "In Progress",
