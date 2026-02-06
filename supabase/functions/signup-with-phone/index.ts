@@ -132,13 +132,15 @@ serve(async (req) => {
     const userId = newUser.user.id;
     console.log(`[signup-with-phone] User created with ID: ${userId}`);
 
-    // Step 5: Update profile with phone number
+    // Step 5: Update profile with phone number and set account_activated = false
+    // Phone signup requires email verification to activate account
     const { error: profileUpdateError } = await supabaseAdmin
       .from('profiles')
       .update({
         phone_number: phone_number,
         phone_verified: true,
         name: name,
+        account_activated: false, // Require email verification for phone signups
       })
       .eq('id', userId);
 
