@@ -69,7 +69,6 @@ const ModuleSelection = () => {
       path: "/create/adgenius",
       isAdmin: true
     }] : []),
-     ...(isAdmin ? [{
    ...(isAdmin ? [{
       id: "adgenius",
       title: "AdGenius (Admin Only)",
