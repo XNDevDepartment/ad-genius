@@ -822,20 +822,35 @@ async function generateSingleImageWithGemini(
 }
 
 // Signed URLs for user-provided source images (supports multiple)
+// Detects bucket dynamically from public_url to support both legacy (ugc-inputs) and new (source-images) buckets
 async function getSignedSourceUrls(source_image_ids: string[], supabase: SupabaseClient): Promise<string[]> {
   if (!source_image_ids || source_image_ids.length === 0) return [];
   
   const urls: string[] = [];
   for (const id of source_image_ids) {
     const { data: src } = await supabase.from("source_images")
-      .select("storage_path")
+      .select("storage_path, public_url")
       .eq("id", id)
       .maybeSingle();
+    
+    if (src?.storage_path && src?.public_url) {
+      // Detect bucket from public_url - legacy images are in ugc-inputs, new ones in source-images
+      let bucket = "source-images";
+      if (src.public_url.includes("/ugc-inputs/")) {
+        bucket = "ugc-inputs";
+      }
       
-    if (src?.storage_path) {
-      const { data: signed } = await supabase.storage
-        .from("source-images")
+      log("Signing source image URL", { id, bucket, path: src.storage_path });
+      
+      const { data: signed, error } = await supabase.storage
+        .from(bucket)
         .createSignedUrl(src.storage_path, 3600);
+      
+      if (error) {
+        log("Failed to sign source image", { id, bucket, error: error.message });
+        continue;
+      }
+      
       if (signed?.signedUrl) {
         urls.push(signed.signedUrl);
       }
@@ -849,16 +864,22 @@ async function getSignedSourceUrl(source_image_id: string | null, supabase: Supa
   if (!source_image_id) return null;
   
   const { data: src } = await supabase.from("source_images")
-    .select("storage_path")
+    .select("storage_path, public_url")
     .eq("id", source_image_id)
     .single();
-    
-  if (!src?.storage_path) return null;
+  
+  if (!src?.storage_path || !src?.public_url) return null;
+  
+  // Detect bucket from public_url
+  let bucket = "source-images";
+  if (src.public_url.includes("/ugc-inputs/")) {
+    bucket = "ugc-inputs";
+  }
   
   const { data: signed } = await supabase.storage
-    .from("source-images")
+    .from(bucket)
     .createSignedUrl(src.storage_path, 3600);
-    
+  
   return signed?.signedUrl ?? null;
 }
 
