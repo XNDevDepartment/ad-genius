@@ -86,8 +86,8 @@ const ModuleSelection = () => {
       isAdmin: false,
       isBeta: false,
       locked: false
-    },
-    {
+    },  
+    ...(isAdmin ? [{
       id: "bulk-background",
       title: t('createSelection.bulkBackground.title'),
       description: t('createSelection.bulkBackground.description'),
@@ -96,8 +96,7 @@ const ModuleSelection = () => {
       isAdmin: true,
       isBeta: true,
       locked: false
-    },
-
+    }] : []),
     ...(isAdmin ? [{
       id: "product-studio",
       title: "Product Studio Background",
