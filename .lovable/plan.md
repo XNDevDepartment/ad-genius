@@ -1,90 +1,49 @@
 
-# Fix Microsoft Clarity Session Recording
+
+# Fix Microsoft Clarity: Missing CSP Domains
 
 ## Problem
 
-Microsoft Clarity is installed but not capturing sessions because your **Content Security Policy (CSP)** blocks the required domains.
+The CSP was partially updated but still blocks Clarity because two domains are missing per the [official Clarity CSP documentation](https://learn.microsoft.com/en-us/clarity/setup-and-installation/clarity-csp).
 
-## Root Cause Analysis
+## What's Wrong
 
-| CSP Directive | Currently Allows | Missing for Clarity |
-|---------------|------------------|---------------------|
-| `script-src` | `'self' 'unsafe-inline' https://connect.facebook.net` | `https://www.clarity.ms` |
-| `connect-src` | Supabase, Facebook only | `https://*.clarity.ms` |
+| Directive | Current Value | Required by Clarity | Status |
+|-----------|--------------|---------------------|--------|
+| `script-src` | `https://www.clarity.ms` | `https://*.clarity.ms` (wildcard) | Needs wildcard -- Clarity loads scripts from `a.clarity.ms`, `b.clarity.ms`, etc. |
+| `img-src` | `https://*.clarity.ms` | `https://c.bing.com` also needed | Missing `c.bing.com` |
+| `connect-src` | `https://*.clarity.ms` | `https://*.clarity.ms` | OK |
+| `font-src` | `'self' data:` | `data:` | OK |
+| `worker-src` | `'self' blob:` | `blob:` | OK |
 
-The Clarity script at line 124-130 in `index.html` loads correctly, but:
-1. Its external scripts are blocked by `script-src`
-2. Session data can't be sent due to `connect-src` restrictions
+## Fix
 
-## Solution
+**File:** `index.html` (CSP meta tag, lines 18-36)
 
-Update the CSP in `index.html` to allow Clarity (and fix TikTok Pixel while we're at it).
+Two changes:
 
-### File to Modify
+1. **`script-src`**: Replace `https://www.clarity.ms` with `https://*.clarity.ms`
+2. **`img-src`**: Add `https://c.bing.com`
 
-**`index.html`** - Lines 18-36
-
-### Changes Required
-
-```text
-Before (script-src):
-script-src 'self' 'unsafe-inline' https://connect.facebook.net;
-
-After (script-src):
-script-src 'self' 'unsafe-inline' https://connect.facebook.net https://www.clarity.ms https://analytics.tiktok.com;
-
-Before (connect-src):
-connect-src 'self' https://dhqdamfisdbbcieqlpvt.supabase.co ...;
-
-After (connect-src):
-connect-src 'self'
-  https://dhqdamfisdbbcieqlpvt.supabase.co
-  wss://dhqdamfisdbbcieqlpvt.supabase.co
-  https://dhqdamfisdbbcieqlpvt.functions.supabase.co
-  https://saasfame.com/badge-light.svg
-  https://www.facebook.com
-  https://connect.facebook.net
-  https://*.clarity.ms
-  https://analytics.tiktok.com
-  ws://localhost:* wss://localhost:*;
-```
-
-### Optional: Add img-src for Clarity
-
-Clarity may also need image permissions for heatmaps:
+### Before
 
 ```text
 img-src 'self' data: blob: https://dhqdamfisdbbcieqlpvt.supabase.co https://www.facebook.com https://*.clarity.ms;
+script-src 'self' 'unsafe-inline' https://connect.facebook.net https://www.clarity.ms https://analytics.tiktok.com;
 ```
 
----
+### After
 
-## Technical Details
+```text
+img-src 'self' data: blob: https://dhqdamfisdbbcieqlpvt.supabase.co https://www.facebook.com https://*.clarity.ms https://c.bing.com;
+script-src 'self' 'unsafe-inline' https://connect.facebook.net https://*.clarity.ms https://analytics.tiktok.com;
+```
 
-### Why CSP Blocks Clarity
+## Why This Was Missed
 
-When the browser loads your page, it parses the CSP header and blocks any resources not explicitly allowed. The Clarity inline script executes (because of `'unsafe-inline'`), but when it tries to:
+The initial fix only added `https://www.clarity.ms` to `script-src`, but Clarity load-balances script delivery across multiple subdomains (a-z). The wildcard `*.clarity.ms` is required. Additionally, Clarity uses `c.bing.com` for image tracking which was not in the original plan.
 
-1. **Load additional scripts** from `https://www.clarity.ms/tag/v9stklh1ib` → blocked by `script-src`
-2. **Send session data** to Clarity servers → blocked by `connect-src`
+## Reference
 
-The browser silently drops these requests, which is why no errors appear in your console (CSP violations are logged to a separate console category or suppressed).
+Official documentation: [Clarity CSP Requirements](https://learn.microsoft.com/en-us/clarity/setup-and-installation/clarity-csp)
 
-### Domains Required by Clarity
-
-Microsoft Clarity uses these endpoints:
-- `https://www.clarity.ms` - Main script CDN
-- `https://*.clarity.ms` - Data collection endpoints (wildcard needed)
-
----
-
-## Summary
-
-| Step | Action |
-|------|--------|
-| 1 | Add `https://www.clarity.ms` to `script-src` directive |
-| 2 | Add `https://*.clarity.ms` to `connect-src` directive |
-| 3 | Add `https://analytics.tiktok.com` to both (bonus fix) |
-| 4 | Optionally add `https://*.clarity.ms` to `img-src` |
-
-After this change, Clarity will be able to load its full tracking script and transmit session recordings to Microsoft's servers.
