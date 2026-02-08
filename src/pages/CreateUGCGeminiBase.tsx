@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { generateScenarios } from "@/api/scenario-api";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import MultiImageUploader from "@/components/MultiImageUploader";
 import { useToast } from "@/hooks/use-toast";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
-import { startConversationAPI, converse } from '@/api/OpenAiChatClient';
+// Removed: startConversationAPI, converse - now using scenario-api
 import { useGeminiImageJobUnified } from '@/hooks/useGeminiImageJobUnified';
 import { useActiveJob } from '@/hooks/useActiveJob';
 import { useAuth } from "@/contexts/AuthContext";
@@ -103,7 +104,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
 
   const hasSelectedScenario = selectedScenario && selectedScenario.idea && selectedScenario.idea.trim().length > 0;
   const [isLoadingScenarios, setIsLoadingScenarios] = useState(false);
-  const [threadId, setThreadId] = useState<string | null>(null);
+  // threadId removed - no longer needed with stateless scenario API
   const [moreScenarios, setMoreScenarios] = useState(false);
   const [numImages, setNumImages] = useState(1);
   const [imageOrientation, setImageOrientation] = useState("1:1");
@@ -145,35 +146,9 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
     el.style.height = el.scrollHeight + 'px';
   }, [desiredAudience]);
 
-  const ASSISTANT_ID = "asst_zX2cHyZXHY1mj5CT4wzdJLU6";
-
-  const initializeThread = async () => {
-    try {
-      const result = await startConversationAPI(ASSISTANT_ID);
-      setThreadId(result.threadId);
-      console.log('New thread created with new-openai-chat:', result.threadId);
-
-      const conversation = await saveConversation({
-        threadId: result.threadId,
-        assistantId: ASSISTANT_ID
-      });
-
-      if (conversation) {
-        setConversationId(conversation.id);
-      }
-    } catch (error) {
-      console.error('Error initializing thread:', error);
-      toast({
-        title: "Initialization Error",
-        description: "Failed to start conversation with AI assistant. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  useEffect(() => {
-    initializeThread();
-  }, []);
+  // Thread/Assistant ID removed - no longer needed with stateless scenario API
+  // The app is always "ready" now - no initialization delay
+  const isReady = true; // Was previously: threadId !== null
 
   useEffect(() => {
     if (productImages.length === 0) {
@@ -631,60 +606,21 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       setImagesAnalysed(true);
     }
 
-    const imageDataArray: Array<{ fileData: string; fileName: string }> = [];
-
-    for (const file of productImages) {
-      try {
-        const base64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-
-        imageDataArray.push({
-          fileData: base64,
-          fileName: file.name
-        });
-      } catch (error) {
-        console.error(`Error converting image ${file.name} to base64:`, error);
-      }
-    }
-
     try {
-      const responseText = await converse(
-        threadId!,
-        `${`I have uploaded ${productImages.length} product images. Here are some details of the product: ${prodSpecs} Please analyze all of them together and provide comprehensive product analysis.`} Here is my desired audience to promote my product: ${desiredAudience}. Based on the product images I'm sending and this desired audience description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas out of the box. Return ONLY a compact JSON object with "scenarios" array and in this language: ` + language,
-        ASSISTANT_ID
-      );
+      // Use new stateless scenario API instead of thread-based conversation
+      const scenarios = await generateScenarios({
+        audience: desiredAudience,
+        productSpecs: prodSpecs || undefined,
+        language,
+      });
 
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const scenarios = JSON.parse(jsonMatch[0]);
-        setAiScenarios(scenarios.scenarios || []);
-        setIsAnalyzingImages(new Array(productImages.length).fill(false));
+      setAiScenarios(scenarios);
+      setIsAnalyzingImages(new Array(productImages.length).fill(false));
 
-        if (conversationId) {
-          await saveMessage({
-            conversationId,
-            role: 'user',
-            content: `Here is my desired audience to promote my product: ${desiredAudience}. Based on the product images and this caracteristics (${prodSpecs}) I'm sending and this desired audience description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas out of the box`,
-            metadata: { requestType: 'scenario_generation' }
-          });
-
-          await saveMessage({
-            conversationId,
-            role: 'assistant',
-            content: responseText,
-            metadata: { scenarioCount: scenarios.scenarios?.length || 0 }
-          });
-        }
-
-        toast({
-          title: "Scenarios Generated",
-          description: `Got ${scenarios.scenarios?.length || 0} UGC scenario ideas for your product.`,
-        });
-      }
+      toast({
+        title: "Scenarios Generated",
+        description: `Got ${scenarios.length} UGC scenario ideas for your product.`,
+      });
     } catch (error) {
       console.error('Error getting scenarios:', error);
       setIsAnalyzingImages(new Array(productImages.length).fill(false));
@@ -955,18 +891,7 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
   return (
     <TooltipProvider delayDuration={120} skipDelayDuration={400}>
       <div ref={topRef} className="min-h-screen bg-background relative overflow-y-auto">
-        {/* Loading Overlay */}
-        {!threadId && (
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-[30] flex items-center justify-center">
-            <div className="text-center space-y-4">
-              <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
-                <Sparkles className="h-10 w-10 text-primary animate-pulse" />
-              </div>
-              <h2 className="text-xl font-semibold">{t('ugc.loading.preparing')}</h2>
-              <p className="text-muted-foreground">{t('ugc.loading.moment')}</p>
-            </div>
-          </div>
-        )}
+        {/* Loading overlay removed - no longer needed with stateless scenario API */}
 
         <div className="container-responsive px-4 py-8">
           <div className="lg:grid lg:grid-cols-12 lg:gap-8">
@@ -979,7 +904,7 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                     size="icon"
                     onClick={() => navigate("/create")}
                     className="lg:hidden"
-                    disabled={!threadId}
+                    disabled={false}
                   >
                     <ArrowLeft className="h-5 w-5" />
                   </Button>
@@ -996,7 +921,7 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
             {/* Main Form */}
             <div className={`${isMobile ? 'col-span-12' : 'lg:col-span-7'} space-y-6`}>
               {/* Product & Niche Card */}
-              <Card className={`${!threadId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'}`}>
+              <Card className="rounded-apple shadow-lg">
                 <CardContent className="p-6 lg:p-8 space-y-6">
                   <div>
                     <div className="space-y-4">
@@ -1034,7 +959,7 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                               size="sm"
                               onClick={() => setSourceImagePickerOpen(true)}
                               className="flex-1 p-2"
-                              disabled={!threadId}
+                              disabled={false}
                             >
                               <Images className="h-4 w-4 mr-2" />
                               {t('ugc.importOptions.library')}
@@ -1046,7 +971,7 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                               size="sm"
                               onClick={() => setUrlImportOpen(true)}
                               className="flex-1 p-2"
-                              disabled={!threadId}
+                              disabled={false}
                             >
                               <LinkIcon className="h-4 w-4 mr-2" />
                               {t('ugc.importOptions.url')}
@@ -1059,7 +984,7 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                             size="sm"
                             onClick={() => setShopifyImportOpen(true)}
                             className="w-full text-muted-foreground hover:text-foreground"
-                            disabled={!threadId}
+                            disabled={false}
                           >
                             <Store className="h-4 w-4 mr-2" />
                             {t('ugc.importOptions.shopify')}
@@ -1096,7 +1021,7 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                           onChange={(e) => handleAudienceChange(e.target.value)}
                           className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full text-base md:text-sm"
                           style={{ lineHeight: '1.25rem' }}
-                          disabled={!threadId}
+                          disabled={false}
                           rows={1}
                         />
                       </div>
@@ -1128,7 +1053,7 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                           onChange={(e) => handleProdSpecsChange(e.target.value)}
                           className="rounded-apple-sm min-h-0 overflow-hidden resize-none w-full text-base md:text-sm"
                           style={{ lineHeight: '1.25rem' }}
-                          disabled={!threadId}
+                          disabled={false}
                           rows={1}
                         />
                       </div>
@@ -1137,7 +1062,7 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
                         type="button"
                         variant="default"
                         onClick={() => getScenariosFromConversation()}
-                        disabled={isLoadingScenarios || productImages.length === 0 || !desiredAudience.trim() || !threadId || isAnalyzingImages.some(Boolean)}
+                        disabled={isLoadingScenarios || productImages.length === 0 || !desiredAudience.trim() || isAnalyzingImages.some(Boolean)}
                         className="w-full"
                       >
                         {isLoadingScenarios ? (
@@ -1158,7 +1083,7 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
               </Card>
 
               {/* UGC Scenarios Card */}
-              <Card ref={scenariosRef} className={`${!threadId ? 'opacity-50 pointer-events-none' : ' rounded-apple shadow-lg'} scroll-mt-6`}>
+              <Card ref={scenariosRef} className="rounded-apple shadow-lg scroll-mt-6">
                 <CardContent className="p-6 lg:p-8">
                   <div>
                     <div className="flex items-center gap-2 mb-4">
@@ -1323,7 +1248,7 @@ OUTPUT: Single polished lifestyle photo usable as ad creative.
             {/* Desktop Sidebar - Settings & Preview */}
             {!isMobile && (
               <div className="lg:col-span-5 mt-6 lg:mt-0">
-                <div className={`bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6 lg:sticky lg:top-8 ${!threadId ? 'opacity-50 pointer-events-none' : ''}`}>
+                <div className="bg-card rounded-apple p-6 lg:p-8 shadow-apple space-y-6 lg:sticky lg:top-8">
                   <div>
                     <h3 className="text-lg font-semibold mb-4">{t('ugc.generationSettings.title')}</h3>
 
