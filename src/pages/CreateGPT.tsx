@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { generateScenarios } from "@/api/scenario-api";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ImageUploader from "@/components/ImageUploader";
 import { useToast } from "@/hooks/use-toast";
 import { useConversationStorage } from "@/hooks/useConversationStorage";
-import { startConversationAPI, converse, sendImageAndRun, sendMultipleImagesAndRun } from '@/api/OpenAiChatClient';
+import { startConversationAPI, sendImageAndRun, sendMultipleImagesAndRun } from '@/api/OpenAiChatClient';
 import { useImageJob } from '@/hooks/useImageJob';
 import { useActiveJob } from '@/hooks/useActiveJob';
 import { useAuth } from "@/contexts/AuthContext";
@@ -157,15 +158,13 @@ const CreateUGC = () => {
 
   const ASSISTANT_ID = "asst_zX2cHyZXHY1mj5CT4wzdJLU6";
 
-  // Initialize a new OpenAI thread when component mounts
+  // Initialize a new OpenAI thread when component mounts (still needed for image analysis)
   const initializeThread = async () => {
     try {
       const result = await startConversationAPI(ASSISTANT_ID);
-
       setThreadId(result.threadId);
       console.log('New thread created with new-openai-chat:', result.threadId);
 
-      // Save conversation to database
       const conversation = await saveConversation({
         threadId: result.threadId,
         assistantId: ASSISTANT_ID
@@ -174,7 +173,6 @@ const CreateUGC = () => {
       if (conversation) {
         setConversationId(conversation.id);
       }
-
     } catch (error) {
       console.error('Error initializing thread:', error);
       toast({
@@ -633,39 +631,18 @@ const CreateUGC = () => {
     const targetNiche = nicheText || niche;
     setIsLoadingScenarios(true);
     try {
-      const responseText = await converse(
-        threadId!,
-        `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas. Return ONLY a compact JSON object with "scenarios" array and in this language: ` + language,
-        ASSISTANT_ID
-      );
-      // Extract JSON from response
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const scenarios = JSON.parse(jsonMatch[0]);
-        setAiScenarios(scenarios.scenarios || []);
+      // Use new stateless scenario API instead of thread-based conversation
+      const scenarios = await generateScenarios({
+        audience: targetNiche,
+        language,
+      });
 
-        // Save user message and assistant response
-        if (conversationId) {
-          await saveMessage({
-            conversationId,
-            role: 'user',
-            content: `Product niche: ${targetNiche}. Based on the product image I shared and this niche description, please provide 6 creative UGC scenario ideas.`,
-            metadata: { requestType: 'scenario_generation' }
-          });
+      setAiScenarios(scenarios);
 
-          await saveMessage({
-            conversationId,
-            role: 'assistant',
-            content: responseText,
-            metadata: { scenarioCount: scenarios.scenarios?.length || 0 }
-          });
-        }
-
-        toast({
-          title: "Scenarios Generated",
-          description: `Got ${scenarios.scenarios?.length || 0} UGC scenario ideas for your product.`,
-        });
-      }
+      toast({
+        title: "Scenarios Generated",
+        description: `Got ${scenarios.length} UGC scenario ideas for your product.`,
+      });
     } catch (error) {
       console.error('Error getting scenarios:', error);
       toast({

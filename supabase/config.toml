@@ -178,6 +178,9 @@ verify_jwt = false
 [functions.bulk-background]
 verify_jwt = false
 
+[functions.scenario-generate]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 port = 54327
