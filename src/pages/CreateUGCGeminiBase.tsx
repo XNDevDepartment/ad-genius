@@ -668,7 +668,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
           await saveMessage({
             conversationId,
             role: 'user',
-            content: `Here is my desired audience to promote my product: ${desiredAudience}. Based on the product images and this caracteristics (${prodSpecs}) I'm sending and this desired audience description, please provide ${moreScen ? 'new and different' : ''} 6 creative UGC scenario ideas out of the box`,
+            content: `Here is my desired audience to promote my product: ${desiredAudience}. Based on the product images and this caracteristics (${prodSpecs}) I'm sending and this desired audience description, please provide ${moreScen ? 'new and different' : ''} 4 creative UGC scenario ideas out of the box`,
             metadata: { requestType: 'scenario_generation' }
           });
 
@@ -751,38 +751,78 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       const commonNeg = `--negative "AI artifacts, text overlays, watermark, extreme bokeh, macro close-up, center-composed product, invented branding, extra limbs, low resolution, duplicated faces, similar persons"`;
 
       const highlightYes = `
-TASK: Create authentic UGC photo featuring this product.
+          TASK:
+            Generate a professional, authentic UGC-style product photo that looks naturally captured but visually refined.
 
-SCENARIO: ${selectedScenario?.description || 'Natural lifestyle moment'}
-AUDIENCE: ${desiredAudience}
-SPECS: ${prodSpecs}
+            SCENARIO:
+            ${selectedScenario?.description || 'Everyday real-life usage moment in a natural environment'}
 
-MANDATORY RULES:
+            AUDIENCE:
+            ${desiredAudience}
 
-1. PRODUCT INTEGRITY:
-   - Use EXACT product from reference image
-   - Keep all labels, colors, shapes, branding unchanged
-   - Product is hero - 40-60% of frame
+            PRODUCT SPECS:
+            ${prodSpecs}
 
-2. AUTHENTICITY:
-   - iPhone-quality photography
-   - Natural lighting, real environments
-   - Slight imperfections (soft focus, natural shadows)
-   - Casual, off-center framing
+            MANDATORY CONSTRAINTS (NON-NEGOTIABLE):
 
-3. STYLE:
-   - ${style} photography aesthetic
-   - ${timeOfDay} lighting
+            1. PRODUCT FIDELITY & INTEGRITY
+            - Use the EXACT product from the uploaded reference image
+            - Preserve all branding, labels, colors, proportions, textures
+            - No redesign, no stylization of the product
+            - Product must be clearly recognizable and untouched
+            - Product occupies 60 to 75% of the frame and is the visual anchor
 
-4. QUALITY:
-   - No AI artifacts, watermarks, text
-   - Natural human anatomy if people appear
-   - No invented branding
+            2. PROFESSIONAL AUTHENTICITY (UGC, NOT STUDIO)
+            - Real-world environment, never a pure studio setup
+            - Natural, believable lighting (window light, overcast daylight, soft indoor light)
+            - Slight realism imperfections allowed (micro softness, subtle shadows, natural reflections, material defects)
+            - Composition feels casually captured, not staged
+            - Frame slightly off-center, handheld feel, organic angles
 
-${commonNeg}
+            3. HUMAN CONTEXT (OPTIONAL, IF RELEVANT)
+            - Human presence only if it enhances realism (hands holding product, product on body, lifestyle context)
+            - No full faces unless explicitly required
+            - Natural anatomy, realistic proportions
+            - Hands and interaction must feel natural and relaxed
 
-OUTPUT: Single authentic UGC photo ready for social media.
-`;
+            4. VISUAL UPGRADE (PRO-LEVEL WITHOUT LOOKING FAKE)
+            - Clean but realistic textures (no plastic skin, no over-smoothing)
+            - Balanced exposure with soft contrast
+            - Editorial color balance, neutral and modern
+            - Shallow depth of field only when realistic for phone photography
+            - Background supports the product but never steals focus
+
+            5. CAMERA & COMPOSITION LOGIC
+            - 4k professional camera photography realism
+            - Eye-level or slight angle perspective
+            - Natural focal distance
+            - Background gently separated through depth, not blur abuse
+            - Vertical framing preferred for social media
+
+            6. STYLE & MOOD
+            - ${style} visual aesthetic
+            - ${timeOfDay} lighting mood
+            - Feels like a real customer with a good eye, not a photographer with a studio
+
+            7. POST-PRODUCTION RULES
+            - Light, professional retouch only
+            - No heavy filters, no HDR abuse
+            - Natural color grading, subtle clarity
+            - Preserve realistic shadows and highlights
+
+            STRICTLY FORBIDDEN:
+            - CGI look, illustration, 3D render appearance
+            - Artificial studio lighting
+            - Floating products
+            - Fake reflections or fake shadows
+            - Text overlays, watermarks, logos added by AI
+            - Distorted shapes or invented elements
+            - Overly perfect, sterile compositions
+
+            ${commonNeg}
+
+            OUTPUT:
+            One high-quality, professional UGC-style product photo ready for paid ads and organic social media.`;
 
       const highlightNo = `
 TASK: Create lifestyle photo where environment is hero, product is subtle.
