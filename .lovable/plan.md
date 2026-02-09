@@ -1,183 +1,242 @@
 
 
-# Security Vulnerability: Bot Account Abuse Analysis
+# Replace OpenAI Assistants with OpenRouter Claude Sonnet 4
 
-## Problem Summary
+## Overview
 
-A bot operator is creating multiple accounts using disposable emails and virtual phone numbers to abuse the free video generation (Image Animator) feature. All accounts are verified and have `account_activated = true`.
+This plan migrates the UGC scenario generation feature from OpenAI Assistants API to OpenRouter with Claude Sonnet 4. This eliminates the thread-based architecture (which required "preparing the system" on page load) in favor of a simpler, stateless API call.
 
----
-
-## Evidence Found
-
-### Suspicious Accounts (Created Today)
-
-| Email | Phone Number | Account Activated | Credits Used |
-|-------|--------------|-------------------|--------------|
-| ricardo@tmpbox.net | +3584573998018 | ✅ true | 0 (depleted) |
-| ricardo@tmpeml.com | +3584573998019 | ✅ true | 0 (depleted) |
-| ricardo@teml.net | +447490953883 | ✅ true | 0 (depleted) |
-| mischelled1@tweting.com | +447490953415 | ✅ true | 0 (depleted) |
-| yoselyn7464@uorak.com | +447490955184 | ✅ true | 0 (depleted) |
-| nepode2992@icubik.com | +447490955882 | ✅ true | 0 (depleted) |
-
-### Video Jobs from Bot Accounts
-
-- `mischelled1@tweting.com` → 1 completed video
-- `yoselyn7464@uorak.com` → 1 completed video  
-- `nepode2992@icubik.com` → 1 completed video
-
-### Attack Pattern
+## Current Architecture
 
 ```text
-1. Create account with:
-   - Disposable email (not in blocked list)
-   - UK virtual phone (+44749...) or Finnish (+3584...)
-   
-2. Pass OTP verification → phone_verified = true
-
-3. Profile auto-created with account_activated = TRUE (DB default)
-
-4. Get 10 free credits → Generate 2 videos (5 credits each)
-
-5. Repeat with new disposable email + different virtual number
++----------------+     createThread     +-------------------+
+|   Frontend     | ------------------> |  new-openai-chat  |
+|  (React)       |                      |   Edge Function   |
++----------------+                      +-------------------+
+       |                                        |
+       |  converse(threadId, prompt)            v
+       +------------------------------------> OpenAI
+                                            Assistants API
 ```
+
+**Problems with current approach:**
+- Requires creating a thread before any request (slow initialization)
+- Thread state management adds complexity
+- OpenAI is deprecating Assistants API
+- Extra round-trip on page load
+
+## New Architecture
+
+```text
++----------------+     generateScenarios    +-------------------+
+|   Frontend     | -----------------------> | scenario-generate |
+|  (React)       |   (one-shot call)        |   Edge Function   |
++----------------+                          +-------------------+
+                                                    |
+                                                    v
+                                               OpenRouter
+                                           (Claude Sonnet 4)
+```
+
+**Benefits:**
+- Single API call (no thread creation needed)
+- Faster response (no initialization delay)
+- Simpler code (no thread state management)
+- Better model (Claude Sonnet 4)
 
 ---
 
-## Root Causes
+## Files to Create/Modify
 
-### Issue 1: Database Column Default
+### 1. New Edge Function: `supabase/functions/scenario-generate/index.ts`
 
-The `account_activated` column defaults to `TRUE`:
+A new stateless edge function that:
+- Accepts: audience, product specs, language, optional image URL
+- Calls OpenRouter API with Claude Sonnet 4
+- Uses tool calling to extract structured JSON (6 scenarios)
+- Returns: JSON with `{ scenarios: [...] }`
 
-```sql
-column_default: true
-```
-
-When `handle_new_user` trigger creates a profile, it doesn't set `account_activated`, so it gets the default `TRUE` value.
-
-### Issue 2: Phone Signup Doesn't Set Activation
-
-The `signup-with-phone` edge function creates users but doesn't set `account_activated = false`:
-
-```typescript
-// Current code (missing activation field):
-.update({
-  phone_number: phone_number,
-  phone_verified: true,
-  name: name,
-})
-```
-
-### Issue 3: No Server-Side Activation Check for Videos
-
-The `kling-video` edge function only checks:
-- ✅ Subscription tier (blocks Starter)
-- ✅ Credit balance
-- ❌ **Does NOT check `account_activated`**
-
-The activation check only exists client-side in `useCredits.tsx`:
-
-```typescript
-const canAccessVideos = (): boolean => {
-  if (!isActivated) return false;  // Client-side only!
-  // ...
+**API payload structure:**
+```json
+{
+  "audience": "busy professionals, health-conscious adults",
+  "productSpecs": "stainless steel water bottle, 500ml",
+  "language": "en",
+  "imageUrl": "https://..." // optional, for vision
 }
 ```
 
-### Issue 4: Missing Disposable Domains
-
-These domains are NOT in the `domain_rules` blocked list:
-- tmpbox.net
-- tmpeml.com
-- teml.net
-- tweting.com
-- uorak.com
-- icubik.com
-
----
-
-## Recommended Fixes
-
-### Fix 1: Server-Side Activation Check (Critical)
-
-Add `account_activated` check to `kling-video` edge function:
-
-```typescript
-// After subscription tier check, add:
-const { data: profile } = await supabase
-  .from('profiles')
-  .select('account_activated')
-  .eq('id', userId)
-  .single();
-
-if (profile?.account_activated === false) {
-  return {
-    success: false,
-    error: 'Please verify your email to access video features.',
-    activation_required: true
-  };
+**Response:**
+```json
+{
+  "scenarios": [
+    {
+      "idea": "Morning Commute Hydration",
+      "description": "...",
+      "small-description": "..."
+    },
+    // ... 5 more
+  ]
 }
 ```
 
-### Fix 2: Phone Signup Should Set Activation False
+### 2. New Client Function: `src/api/scenario-api.ts`
 
-Update `signup-with-phone` to require email activation:
+Simple client to call the new edge function:
 
 ```typescript
-.update({
-  phone_number: phone_number,
-  phone_verified: true,
-  name: name,
-  account_activated: false,  // Require email verification
-})
+export async function generateScenarios(params: {
+  audience: string;
+  productSpecs?: string;
+  language: string;
+  imageUrl?: string;
+}): Promise<AIScenario[]> {
+  const { data, error } = await supabase.functions.invoke('scenario-generate', {
+    body: params
+  });
+  if (error) throw error;
+  return data.scenarios;
+}
 ```
 
-Then trigger activation email flow.
+### 3. Modify: `src/components/onboarding/OnboardingStep3.tsx`
 
-### Fix 3: Change Database Default
+**Remove:**
+- `threadId` state
+- `startConversationAPI` call in useEffect
+- `converse` call with thread management
 
-```sql
-ALTER TABLE profiles 
-ALTER COLUMN account_activated SET DEFAULT false;
+**Replace with:**
+- Single `generateScenarios()` call
+- No initialization needed on mount
+- Call API only when user clicks "Get Scenario Ideas"
+
+### 4. Modify: `src/pages/CreateUGCGeminiBase.tsx`
+
+**Remove:**
+- `initializeThread()` function
+- `threadId` state
+- useEffect that calls `initializeThread()` on mount
+- Thread-based `converse()` calls
+
+**Replace with:**
+- Stateless `generateScenarios()` call in `getScenariosFromConversation()`
+- No initialization on page load
+
+### 5. Modify: `src/pages/CreateGPT.tsx`
+
+Same changes as CreateUGCGeminiBase - remove thread management, use new API.
+
+### 6. Update: `supabase/config.toml`
+
+Add new function configuration:
+```toml
+[functions.scenario-generate]
+verify_jwt = true
 ```
 
-### Fix 4: Block Disposable Email Domains
+### 7. API Key Setup
 
-```sql
-INSERT INTO domain_rules (domain, rule_type, description) VALUES
-('tmpbox.net', 'blocked', 'Disposable email - abuse detected'),
-('tmpeml.com', 'blocked', 'Disposable email - abuse detected'),
-('teml.net', 'blocked', 'Disposable email - abuse detected'),
-('tweting.com', 'blocked', 'Disposable email - abuse detected'),
-('uorak.com', 'blocked', 'Disposable email - abuse detected'),
-('icubik.com', 'blocked', 'Disposable email - abuse detected');
-```
-
-### Fix 5: Rate Limit Phone Numbers
-
-Consider blocking +44749... prefix (TextNow/similar virtual numbers) or implementing:
-- Delay between phone number reuse (24-48 hours)
-- Block multiple accounts from same phone prefix pattern
+The new edge function will use **OpenRouter** API. You'll need to add an `OPENROUTER_API_KEY` secret to Supabase.
 
 ---
 
-## Implementation Priority
+## Technical Details
 
-1. **Immediate**: Add server-side activation check to `kling-video` (blocks video abuse)
-2. **Immediate**: Block the 6 disposable domains identified
-3. **Short-term**: Change DB default to `false` and update signup flow
-4. **Medium-term**: Implement virtual phone detection/blocking
+### Edge Function Implementation
+
+```typescript
+// supabase/functions/scenario-generate/index.ts
+
+const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
+// Tool definition for structured output
+const scenarioTool = {
+  type: "function",
+  function: {
+    name: "generate_scenarios",
+    description: "Generate 6 UGC scenario ideas",
+    parameters: {
+      type: "object",
+      properties: {
+        scenarios: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              idea: { type: "string" },
+              description: { type: "string" },
+              "small-description": { type: "string" }
+            },
+            required: ["idea", "description", "small-description"]
+          }
+        }
+      },
+      required: ["scenarios"]
+    }
+  }
+};
+
+// System prompt
+const systemPrompt = `You are a creative UGC (User Generated Content) strategist. 
+Generate 6 unique, creative UGC scenario ideas for product photography and social media content.
+Each scenario should be practical, visually interesting, and tailored to the target audience.`;
+
+// Call OpenRouter with Claude Sonnet 4
+const response = await fetch(OPENROUTER_URL, {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    model: 'anthropic/claude-sonnet-4',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ],
+    tools: [scenarioTool],
+    tool_choice: { type: 'function', function: { name: 'generate_scenarios' } }
+  })
+});
+```
+
+### Frontend Changes Summary
+
+| Component | Current | New |
+|-----------|---------|-----|
+| OnboardingStep3 | Creates thread on mount, then converses | Calls `generateScenarios()` directly |
+| CreateUGCGeminiBase | `initializeThread()` on mount | No initialization needed |
+| CreateGPT | Same as above | No initialization needed |
+
+### What Gets Removed
+
+1. **Thread management** - No more `threadId` state or thread creation
+2. **Assistant ID** - No longer needed (prompts are inline)
+3. **Conversation storage** - Optional, can keep for history if desired
+4. **new-openai-chat dependency** - For scenario generation only (may still use for other features)
 
 ---
 
-## Files to Modify
+## Migration Checklist
 
-| File | Change |
+| Step | Action |
 |------|--------|
-| `supabase/functions/kling-video/index.ts` | Add `account_activated` server-side check |
-| `supabase/functions/signup-with-phone/index.ts` | Set `account_activated = false` |
-| Database migration | Change column default to `false` |
-| `domain_rules` table | Insert 6 new blocked domains |
+| 1 | Add `OPENROUTER_API_KEY` secret to Supabase |
+| 2 | Create `supabase/functions/scenario-generate/index.ts` |
+| 3 | Add function config to `supabase/config.toml` |
+| 4 | Create `src/api/scenario-api.ts` client |
+| 5 | Update `OnboardingStep3.tsx` to use new API |
+| 6 | Update `CreateUGCGeminiBase.tsx` to use new API |
+| 7 | Update `CreateGPT.tsx` to use new API |
+| 8 | Deploy and test |
+
+---
+
+## Notes
+
+- **Vision support**: Claude Sonnet 4 supports vision, so we can optionally pass the product image URL for better scenario suggestions (currently not used in the prompt but could be added)
+- **Backward compatibility**: The old `new-openai-chat` function remains for other features that still use OpenAI Assistants
+- **Rate limits**: OpenRouter has different rate limits than OpenAI; monitor usage after migration
 
