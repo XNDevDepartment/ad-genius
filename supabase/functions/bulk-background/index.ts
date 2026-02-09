@@ -66,6 +66,34 @@ const BASE_PROMPT = `Ultra-realistic professional studio product photography usi
 
       If any distortion appears, prioritize geometric accuracy over scene matching.`;
 
+      // Background preset hints (appended to base prompt)
+      const PRESET_HINTS: Record<string, string> = {
+        'white-seamless': 'Fundo: estúdio branco seamless com iluminação suave.',
+        'black-studio': 'Fundo: estúdio preto matte com rim lighting dramático.',
+        'gradient-gray': 'Fundo: gradiente cinza suave, estilo catálogo.',
+        'soft-pink': 'Fundo: rosa pastel suave, estética feminina.',
+        'living-room': 'Fundo: sala de estar moderna minimalista com luz natural.',
+        'kitchen': 'Fundo: bancada de cozinha moderna com mármore.',
+        'bedroom': 'Fundo: quarto aconchegante com tons neutros.',
+        'home-office': 'Fundo: escritório moderno com plantas.',
+        'beach': 'Fundo: praia com ondas e luz dourada.',
+        'forest': 'Fundo: floresta serena com luz filtrada.',
+        'garden': 'Fundo: jardim com flores coloridas.',
+        'mountain': 'Fundo: paisagem montanhosa majestosa.',
+        'cafe': 'Fundo: café rústico com ambiente quente.',
+        'street': 'Fundo: rua urbana com arquitetura moderna.',
+        'rooftop': 'Fundo: terraço com skyline da cidade.',
+        'subway': 'Fundo: estação de metro moderna.',
+        'editorial': 'Fundo: setup editorial high-fashion.',
+        'fashion': 'Fundo: estúdio de fotografia de moda.',
+        'minimal': 'Fundo: ultra-minimalista com muito espaço negativo.',
+        'vogue': 'Fundo: luxuoso estilo Vogue.',
+        'christmas': 'Fundo: cenário festivo de Natal.',
+        'summer': 'Fundo: verão tropical vibrante.',
+        'autumn': 'Fundo: outono com folhas coloridas.',
+        'spring': 'Fundo: primavera com flores a desabrochar.'
+      };
+
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -128,6 +156,8 @@ function buildPrompt(presetId: string | null, hasCustomBackground: boolean): str
 
   if (hasCustomBackground) {
     prompt += "\n\nNOTA: Use a segunda imagem fornecida como fundo.";
+  } else if (presetId && PRESET_HINTS[presetId]) {
+    prompt += `\n\n${PRESET_HINTS[presetId]}`;
   }
   return prompt;
 }
