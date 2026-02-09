@@ -721,38 +721,38 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
         `;
 
       const highlightNo = `
-TASK: Create lifestyle photo where environment is hero, product is subtle.
+        TASK: Create lifestyle photo where environment is hero, product is subtle.
 
-SCENARIO: ${selectedScenario?.description || 'Natural lifestyle setting'}
-AUDIENCE: ${desiredAudience}
-SPECS: ${prodSpecs}
+        SCENARIO: ${selectedScenario?.description || 'Natural lifestyle setting'}
+        AUDIENCE: ${desiredAudience}
+        SPECS: ${prodSpecs}
 
-MANDATORY RULES:
+        MANDATORY RULES:
 
-1. PRODUCT INTEGRITY:
-   - Use EXACT product from reference image
-   - Keep all labels, colors, shapes, branding unchanged
-   - Product occupies 20-35% of frame (visible but not dominant)
+        1. PRODUCT INTEGRITY:
+          - Use EXACT product from reference image
+          - Keep all labels, colors, shapes, branding unchanged
+          - Product occupies 20-35% of frame (visible but not dominant)
 
-2. ENVIRONMENT FIRST:
-   - Scene tells a story
-   - Product appears naturally within environment
-   - Use leading lines and depth to guide eye to product
+        2. ENVIRONMENT FIRST:
+          - Scene tells a story
+          - Product appears naturally within environment
+          - Use leading lines and depth to guide eye to product
 
-3. STYLE:
-   - ${style} lifestyle photography
-   - ${timeOfDay} natural lighting
-   - Warm, inviting, lived-in atmosphere
+        3. STYLE:
+          - ${style} lifestyle photography
+          - ${timeOfDay} natural lighting
+          - Warm, inviting, lived-in atmosphere
 
-4. QUALITY:
-   - No AI artifacts, watermarks, text
-   - Natural human anatomy if people appear
-   - No invented branding
+        4. QUALITY:
+          - No AI artifacts, watermarks, text
+          - Natural human anatomy if people appear
+          - No invented branding
 
-${commonNeg}
+        ${commonNeg}
 
-OUTPUT: Single polished lifestyle photo usable as ad creative.
-`;
+        OUTPUT: Single polished lifestyle photo usable as ad creative.
+        `;
 
       const prompt = (highlight === 'yes' ? highlightYes : highlightNo).trim();
 
