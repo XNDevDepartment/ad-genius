@@ -12,7 +12,7 @@ const scenarioTool = {
   type: "function",
   function: {
     name: "generate_scenarios",
-    description: "Generate 6 unique UGC scenario ideas for product photography and social media content",
+    description: "Generate 5 unique UGC scenario ideas for product photography and social media content",
     parameters: {
       type: "object",
       properties: {
@@ -36,8 +36,8 @@ const scenarioTool = {
             },
             required: ["idea", "description", "small-description"]
           },
-          minItems: 6,
-          maxItems: 6
+          minItems: 5,
+          maxItems: 5
         }
       },
       required: ["scenarios"]
@@ -67,31 +67,31 @@ serve(async (req) => {
     }
 
     // Build user prompt
-    let userPrompt = `Generate 6 creative and unique UGC (User Generated Content) scenario ideas for product photography.
+    let userPrompt = `Generate 5 creative and unique UGC (User Generated Content) scenario ideas for product photography.
 
-Target Audience: ${audience}
-${productSpecs ? `Product Details: ${productSpecs}` : ""}
-Language for response: ${language || "en"}
+    Target Audience: ${audience}
+    ${productSpecs ? `Product Details: ${productSpecs}` : ""}
+    Language for response: ${language || "en"}
 
-Requirements:
-- Each scenario should be practical to photograph
-- Consider the target audience's lifestyle and preferences
-- Include a mix of indoor and outdoor settings
-- Vary the moods (energetic, calm, professional, casual, etc.)
-- Make scenarios authentic and relatable for social media
-- Focus on realistic, achievable setups for UGC creators`;
+    Requirements:
+    - Each scenario should be practical to photograph
+    - Consider the target audience's lifestyle and preferences
+    - Include a mix of indoor and outdoor settings
+    - Vary the moods (energetic, calm, professional, casual, etc.)
+    - Make scenarios authentic and relatable for social media
+    - Focus on realistic, achievable setups for UGC creators`;
 
     // System prompt
     const systemPrompt = `You are a creative UGC (User Generated Content) strategist and photographer with expertise in product photography for social media.
 
-Your role is to generate unique, creative, and practical scenario ideas that resonate with the target audience. Each scenario should:
-- Be visually interesting and engaging for social media
-- Feel authentic and relatable (not overly staged)
-- Be achievable for content creators with basic equipment
-- Highlight the product naturally within the scene
-- Consider lighting, composition, and mood
+  Your role is to generate unique, creative, and practical scenario ideas that resonate with the target audience. Each scenario should:
+  - Be visually interesting and engaging for social media
+  - Feel authentic and relatable (not overly staged)
+  - Be achievable for content creators with basic equipment
+  - Highlight the product naturally within the scene
+  - Consider lighting, composition, and mood
 
-Always respond in the language requested by the user.`;
+  Always respond in the language requested by the user.`;
 
     // Build messages array
     const messages: Array<{ role: string; content: string | Array<{ type: string; text?: string; image_url?: { url: string } }> }> = [
@@ -126,7 +126,7 @@ Always respond in the language requested by the user.`;
         messages,
         tools: [scenarioTool],
         tool_choice: { type: "function", function: { name: "generate_scenarios" } },
-        max_tokens: 2000
+        max_tokens: 1500
       })
     });
 
