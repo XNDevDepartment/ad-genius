@@ -79,7 +79,7 @@ const BackgroundPicker = ({
 
       {/* Custom Upload */}
       {mode === "custom" && (
-        <div className="space-y-4 w-[50vw]">
+        <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
             {t("bulkBackground.selectBackground.uploadHint")}
           </p>
