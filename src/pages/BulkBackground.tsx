@@ -231,7 +231,7 @@ const BulkBackground = () => {
         </div>
 
         {/* Section 1: Upload Products — always visible */}
-        <Card className="bg-transparent scroll-mt-6">
+        <Card className="rounded-apple shadow-lg scroll-mt-6">
           <CardHeader>
             <CardTitle>{t("bulkBackground.uploadProducts.title")}</CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -255,11 +255,11 @@ const BulkBackground = () => {
         {/* Section 2: Select Background — appears when images uploaded */}
         {productImages.length > 0 && (
           <div ref={backgroundRef} className="scroll-mt-6">
-            <Card className="bg-transparent">
+            <Card className="rounded-apple shadow-lg">
               <CardHeader>
                 <CardTitle>{t("bulkBackground.selectBackground.title")}</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6 lg:p-8">
                 <BackgroundPicker
                   customBackground={customBackground}
                   selectedPreset={selectedPreset}
@@ -274,11 +274,11 @@ const BulkBackground = () => {
         {/* Section 3: Review & Start — appears when background selected */}
         {productImages.length > 0 && hasBackground && !processingStarted && (
           <div ref={reviewRef} className="scroll-mt-6">
-            <Card className="bg-transparent">
+            <Card className="rounded-apple shadow-lg">
               <CardHeader>
                 <CardTitle>{t("bulkBackground.review.title")}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="p-6 lg:p-8 space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-muted/30 rounded-apple p-4">
                     <p className="text-sm text-muted-foreground">{t("bulkBackground.review.products")}</p>
@@ -325,7 +325,7 @@ const BulkBackground = () => {
         {/* Section 4: Processing & Results — appears when processing starts */}
         {processingStarted && (
           <div ref={processingRef} className="scroll-mt-6">
-            <Card className="bg-transparent">
+            <Card className="rounded-apple shadow-lg">
               <CardHeader>
                 <CardTitle>
                   {isUploading
