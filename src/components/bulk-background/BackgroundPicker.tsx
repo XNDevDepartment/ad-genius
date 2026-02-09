@@ -1,9 +1,9 @@
 import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Upload, X, Image as ImageIcon, Grid3X3 } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Upload, X, Image as ImageIcon, Grid3X3, Pencil } from "lucide-react";
 import BackgroundPresets from "./BackgroundPresets";
 
 interface BackgroundPickerProps {
@@ -11,6 +11,8 @@ interface BackgroundPickerProps {
   onPresetSelect: (presetId: string | null) => void;
   selectedPreset: string | null;
   customBackground: File | null;
+  promptValue: string;
+  onPromptChange: (value: string) => void;
 }
 
 type PickerMode = "custom" | "preset";
@@ -19,7 +21,9 @@ const BackgroundPicker = ({
   onCustomUpload,
   onPresetSelect,
   selectedPreset,
-  customBackground
+  customBackground,
+  promptValue,
+  onPromptChange
 }: BackgroundPickerProps) => {
   const { t } = useTranslation();
   const [mode, setMode] = useState<PickerMode>("preset");
@@ -30,9 +34,8 @@ const BackgroundPicker = ({
     const file = e.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
       onCustomUpload(file);
-      onPresetSelect(null); // Clear preset when uploading custom
+      onPresetSelect(null);
 
-      // Create preview
       const reader = new FileReader();
       reader.onload = () => setCustomPreview(reader.result as string);
       reader.readAsDataURL(file);
@@ -42,18 +45,21 @@ const BackgroundPicker = ({
   const handleRemoveCustom = () => {
     onCustomUpload(null);
     setCustomPreview(null);
+    onPromptChange("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handlePresetSelect = (presetId: string) => {
     onPresetSelect(presetId);
-    onCustomUpload(null); // Clear custom when selecting preset
+    onCustomUpload(null);
     setCustomPreview(null);
   };
 
   const handleModeChange = (newMode: PickerMode) => {
     setMode(newMode);
   };
+
+  const hasSelection = selectedPreset !== null || customBackground !== null;
 
   return (
     <div className="space-y-6">
@@ -141,6 +147,27 @@ const BackgroundPicker = ({
             selectedPreset={selectedPreset}
             onSelect={handlePresetSelect}
           />
+        </div>
+      )}
+
+      {/* Editable Prompt Field */}
+      {hasSelection && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Pencil className="h-4 w-4 text-muted-foreground" />
+            <label className="text-sm font-medium text-foreground">
+              Prompt
+            </label>
+          </div>
+          <Textarea
+            value={promptValue}
+            onChange={(e) => onPromptChange(e.target.value)}
+            placeholder="Describe how you want the product placed on this background..."
+            className="min-h-[80px] rounded-apple-sm text-sm"
+          />
+          <p className="text-xs text-muted-foreground">
+            Edit the prompt to customize how your product is placed on the background.
+          </p>
         </div>
       )}
     </div>
