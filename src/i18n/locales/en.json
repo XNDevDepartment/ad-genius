@@ -671,17 +671,85 @@
       "urban": "Urban",
       "seasonal": "Seasonal"
     },
+    "presets": {
+      "white-seamless": "White Seamless",
+      "black-studio": "Black Studio",
+      "gradient-gray": "Gray Gradient",
+      "soft-pink": "Soft Pink",
+      "living-room": "Modern Living Room",
+      "kitchen": "Bright Kitchen",
+      "bedroom": "Cozy Bedroom",
+      "home-office": "Home Office",
+      "beach": "Beach Scene",
+      "forest": "Forest Path",
+      "garden": "Garden Setting",
+      "mountain": "Mountain View",
+      "cafe": "Coffee Shop",
+      "street": "Street Style",
+      "rooftop": "Rooftop View",
+      "subway": "Metro Station",
+      "editorial": "Editorial Setup",
+      "fashion": "Fashion Studio",
+      "minimal": "Minimalist",
+      "vogue": "Vogue Style",
+      "christmas": "Christmas Scene",
+      "summer": "Summer Vibes",
+      "autumn": "Autumn Leaves",
+      "spring": "Spring Garden"
+    },
+    "prompts": {
+      "white-seamless": "Place the product on a clean white seamless paper studio background with soft even lighting, professional product photography style",
+      "black-studio": "Place the product on a matte black studio background with dramatic rim lighting, high-end product photography",
+      "gradient-gray": "Place the product on a smooth gray gradient backdrop fading from light to dark, professional catalog photography",
+      "soft-pink": "Place the product on a soft pastel pink backdrop with feminine aesthetic, beauty product photography style",
+      "living-room": "Place the product in a modern minimalist living room setting with natural light from large windows, lifestyle product photography",
+      "kitchen": "Place the product on a bright kitchen countertop with marble surface and natural daylight, home lifestyle photography",
+      "bedroom": "Place the product in a cozy bedroom setting with soft neutral bedding and warm ambient lighting",
+      "home-office": "Place the product on a modern home office desk with plants and minimal decor, professional yet homey setting",
+      "beach": "Place the product on a sandy beach with ocean waves in the background, golden hour sunlight, vacation lifestyle",
+      "forest": "Place the product in a serene forest setting with dappled sunlight filtering through trees, natural and organic feel",
+      "garden": "Place the product in a lush garden with colorful flowers and greenery, fresh spring atmosphere",
+      "mountain": "Place the product with majestic mountain landscape in the background, adventure and outdoor lifestyle",
+      "cafe": "Place the product on a rustic coffee shop table with warm ambient lighting and bokeh background, urban lifestyle",
+      "street": "Place the product in an urban street setting with city architecture and natural daylight, streetwear aesthetic",
+      "rooftop": "Place the product on a rooftop terrace with city skyline in the background, sophisticated urban setting",
+      "subway": "Place the product in a modern metro station with clean lines and urban commuter atmosphere",
+      "editorial": "Place the product in a high-fashion editorial setup with dramatic lighting and artistic composition, magazine cover quality",
+      "fashion": "Place the product in a fashion photography studio with seamless background and professional studio lighting",
+      "minimal": "Place the product in an ultra-minimalist setting with lots of negative space, clean Scandinavian aesthetic",
+      "vogue": "Place the product in a luxurious Vogue-inspired setting with high-end aesthetic and dramatic fashion lighting",
+      "christmas": "Place the product in a festive Christmas setting with decorated tree, warm lights, and cozy holiday atmosphere",
+      "summer": "Place the product in a bright summer setting with tropical vibes, sunshine, and vacation atmosphere",
+      "autumn": "Place the product surrounded by colorful autumn leaves with warm fall lighting and cozy seasonal feel",
+      "spring": "Place the product in a fresh spring garden with blooming flowers, soft pastel colors, and new growth"
+    },
+    "prompt": {
+      "label": "Prompt",
+      "placeholder": "Describe how you want the product placed on this background...",
+      "hint": "Edit the prompt to customize how your product is placed on the background.",
+      "defaultCustom": "Place the product on this background with a clean, professional look"
+    },
     "review": {
       "title": "Review Your Batch",
       "products": "Products",
       "background": "Background",
       "totalCost": "Total Cost",
-      "creditsPerImage": "{{credits}} credits × {{count}} images"
+      "creditsPerImage": "{{credits}} credits × {{count}} images",
+      "insufficientCredits": "You have {{available}} credits. You need {{needed}} more."
     },
     "processing": {
       "title": "Processing Your Images",
       "progress": "{{current}} of {{total}} completed",
-      "estimatedTime": "Estimated time: {{time}}"
+      "estimatedTime": "Estimated time: {{time}}",
+      "uploading": "Uploading Images...",
+      "uploadingProgress": "Uploading images... {{progress}}%",
+      "starting": "Starting...",
+      "canceled": "Batch Canceled",
+      "failed": "Batch Failed",
+      "processingFallback": "Processing...",
+      "cancel": "Cancel",
+      "completed": "Completed: {{count}}",
+      "failedCount": "Failed: {{count}}"
     },
     "results": {
       "title": "Your Images Are Ready!",
@@ -693,6 +761,15 @@
       "back": "Back",
       "startProcessing": "Start Processing",
       "newBatch": "New Batch"
+    },
+    "errors": {
+      "signIn": "Please sign in",
+      "signInDesc": "You need to be signed in to process images.",
+      "uploadFailed": "Upload Failed",
+      "uploadFailedDesc": "Failed to upload product images. Please try again.",
+      "bgUploadFailedDesc": "Failed to upload custom background. Please try again.",
+      "processingFailed": "Processing Failed",
+      "processingFailedDesc": "Failed to start batch processing."
     }
   },
   "outfitCreator": {

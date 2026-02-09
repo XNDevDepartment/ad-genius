@@ -75,7 +75,7 @@ const BulkBackground = () => {
     setSelectedPreset(presetId);
     if (presetId) {
       const preset = backgroundPresets.find(p => p.id === presetId);
-      if (preset?.prompt) setBackgroundPrompt(preset.prompt);
+      if (preset?.promptKey) setBackgroundPrompt(t(preset.promptKey));
     } else {
       setBackgroundPrompt("");
     }
@@ -130,7 +130,7 @@ const BulkBackground = () => {
 
   const handleStartProcessing = async () => {
     if (!user) {
-      toast({ title: "Please sign in", description: "You need to be signed in to process images.", variant: "destructive" });
+      toast({ title: t("bulkBackground.errors.signIn"), description: t("bulkBackground.errors.signInDesc"), variant: "destructive" });
       return;
     }
 
@@ -148,7 +148,7 @@ const BulkBackground = () => {
       }
 
       if (uploadedIds.length === 0) {
-        toast({ title: "Upload Failed", description: "Failed to upload product images. Please try again.", variant: "destructive" });
+        toast({ title: t("bulkBackground.errors.uploadFailed"), description: t("bulkBackground.errors.uploadFailedDesc"), variant: "destructive" });
         setProcessingStarted(false);
         setIsUploading(false);
         return;
@@ -160,7 +160,7 @@ const BulkBackground = () => {
       if (customBackground) {
         customBgUrl = await uploadBackgroundToStorage(customBackground) || undefined;
         if (!customBgUrl) {
-          toast({ title: "Upload Failed", description: "Failed to upload custom background. Please try again.", variant: "destructive" });
+          toast({ title: t("bulkBackground.errors.uploadFailed"), description: t("bulkBackground.errors.bgUploadFailedDesc"), variant: "destructive" });
           setProcessingStarted(false);
           return;
         }
@@ -178,8 +178,8 @@ const BulkBackground = () => {
     } catch (error) {
       console.error('Processing error:', error);
       toast({
-        title: "Processing Failed",
-        description: error instanceof Error ? error.message : "Failed to start batch processing.",
+        title: t("bulkBackground.errors.processingFailed"),
+        description: error instanceof Error ? error.message : t("bulkBackground.errors.processingFailedDesc"),
         variant: "destructive",
       });
       setProcessingStarted(false);
@@ -306,13 +306,13 @@ const BulkBackground = () => {
 
                 <div className="bg-primary/10 rounded-apple p-4 border border-primary/20">
                   <p className="text-sm text-muted-foreground">{t("bulkBackground.review.totalCost")}</p>
-                  <p className="text-2xl font-bold text-primary">{totalCost} credits</p>
+                  <p className="text-2xl font-bold text-primary">{totalCost} {t("bulkBackground.review.credits", "credits")}</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {t("bulkBackground.review.creditsPerImage", { credits: CREDITS_PER_IMAGE, count: productImages.length })}
                   </p>
                   {!hasEnoughCredits && (
                     <p className="text-xs text-destructive mt-2">
-                      You have {credits} credits. You need {totalCost - credits} more.
+                      {t("bulkBackground.review.insufficientCredits", { available: credits, needed: totalCost - credits })}
                     </p>
                   )}
                 </div>
@@ -325,7 +325,7 @@ const BulkBackground = () => {
                   {jobLoading ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Starting...
+                      {t("bulkBackground.processing.starting")}
                     </>
                   ) : (
                     t("bulkBackground.buttons.startProcessing")
@@ -343,16 +343,16 @@ const BulkBackground = () => {
               <CardHeader>
                 <CardTitle>
                   {isUploading
-                    ? "Uploading Images..."
+                    ? t("bulkBackground.processing.uploading")
                     : isProcessing
                       ? t("bulkBackground.processing.title")
                       : isComplete
                         ? t("bulkBackground.results.title")
                         : isCanceled
-                          ? "Batch Canceled"
+                          ? t("bulkBackground.processing.canceled")
                           : isFailed
-                            ? "Batch Failed"
-                            : "Processing..."}
+                            ? t("bulkBackground.processing.failed")
+                            : t("bulkBackground.processing.processingFallback")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -363,7 +363,7 @@ const BulkBackground = () => {
                     </div>
                     <Progress value={uploadProgress} className="h-3" />
                     <p className="text-center text-sm text-muted-foreground">
-                      Uploading images... {uploadProgress}%
+                      {t("bulkBackground.processing.uploadingProgress", { progress: uploadProgress })}
                     </p>
                   </>
                 ) : isProcessing ? (
@@ -381,7 +381,7 @@ const BulkBackground = () => {
                     <div className="flex justify-center">
                       <Button variant="outline" onClick={cancelJob} className="gap-2">
                         <X className="h-4 w-4" />
-                        Cancel
+                        {t("bulkBackground.processing.cancel")}
                       </Button>
                     </div>
                   </>
@@ -390,7 +390,7 @@ const BulkBackground = () => {
                     {(isFailed || jobError) && (
                       <div className="bg-destructive/10 border border-destructive/20 rounded-apple p-4 text-center">
                         <p className="text-destructive font-medium">
-                          {jobError || job?.error || "Processing failed"}
+                          {jobError || job?.error || t("bulkBackground.processing.failed")}
                         </p>
                       </div>
                     )}
@@ -444,9 +444,9 @@ const BulkBackground = () => {
 
                     {job && (
                       <div className="flex justify-center gap-6 text-sm text-muted-foreground">
-                        <span>Completed: {job.completed_images}</span>
+                        <span>{t("bulkBackground.processing.completed", { count: job.completed_images })}</span>
                         {job.failed_images > 0 && (
-                          <span className="text-destructive">Failed: {job.failed_images}</span>
+                          <span className="text-destructive">{t("bulkBackground.processing.failedCount", { count: job.failed_images })}</span>
                         )}
                       </div>
                     )}

@@ -156,17 +156,17 @@ const BackgroundPicker = ({
           <div className="flex items-center gap-2">
             <Pencil className="h-4 w-4 text-muted-foreground" />
             <label className="text-sm font-medium text-foreground">
-              Prompt
+              {t("bulkBackground.prompt.label")}
             </label>
           </div>
           <Textarea
             value={promptValue}
             onChange={(e) => onPromptChange(e.target.value)}
-            placeholder="Describe how you want the product placed on this background..."
+            placeholder={t("bulkBackground.prompt.placeholder")}
             className="min-h-[80px] rounded-apple-sm text-sm"
           />
           <p className="text-xs text-muted-foreground">
-            Edit the prompt to customize how your product is placed on the background.
+            {t("bulkBackground.prompt.hint")}
           </p>
         </div>
       )}

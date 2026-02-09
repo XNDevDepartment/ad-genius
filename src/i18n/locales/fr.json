@@ -2245,6 +2245,136 @@
       "uploadFailed": "Échec du Téléchargement"
     }
   },
+  "bulkBackground": {
+    "title": "Remplacement de Fond en Masse",
+    "description": "Appliquez le même fond à plusieurs images de produit",
+    "steps": {
+      "upload": "Télécharger Produits",
+      "background": "Choisir le Fond",
+      "review": "Vérifier et Traiter",
+      "results": "Résultats"
+    },
+    "uploadProducts": {
+      "title": "Téléchargez vos Produits",
+      "subtitle": "Téléchargez jusqu'à {{max}} images de produit",
+      "imagesUploaded": "{{count}} images téléchargées"
+    },
+    "selectBackground": {
+      "title": "Choisissez votre Fond",
+      "uploadCustom": "Télécharger Personnalisé",
+      "choosePreset": "Choisir un Préréglage",
+      "uploadHint": "Téléchargez votre propre image de fond",
+      "presetHint": "Sélectionnez parmi nos fonds sélectionnés"
+    },
+    "categories": {
+      "lifestyle": "Lifestyle",
+      "studio": "Studio",
+      "magazine": "Magazine",
+      "nature": "Nature",
+      "urban": "Urbain",
+      "seasonal": "Saisonnier"
+    },
+    "presets": {
+      "white-seamless": "Blanc Uni",
+      "black-studio": "Studio Noir",
+      "gradient-gray": "Dégradé Gris",
+      "soft-pink": "Rose Doux",
+      "living-room": "Salon Moderne",
+      "kitchen": "Cuisine Lumineuse",
+      "bedroom": "Chambre Confortable",
+      "home-office": "Bureau à Domicile",
+      "beach": "Scène de Plage",
+      "forest": "Sentier Forestier",
+      "garden": "Cadre de Jardin",
+      "mountain": "Vue Montagne",
+      "cafe": "Café",
+      "street": "Style Urbain",
+      "rooftop": "Terrasse sur le Toit",
+      "subway": "Station de Métro",
+      "editorial": "Setup Éditorial",
+      "fashion": "Studio de Mode",
+      "minimal": "Minimaliste",
+      "vogue": "Style Vogue",
+      "christmas": "Scène de Noël",
+      "summer": "Vibes d'Été",
+      "autumn": "Feuilles d'Automne",
+      "spring": "Jardin de Printemps"
+    },
+    "prompts": {
+      "white-seamless": "Placez le produit sur un fond blanc uni de studio avec un éclairage doux et uniforme, style photographie professionnelle de produit",
+      "black-studio": "Placez le produit sur un fond noir mat de studio avec un éclairage dramatique, photographie de produit haut de gamme",
+      "gradient-gray": "Placez le produit sur un fond dégradé gris doux du clair au foncé, photographie professionnelle de catalogue",
+      "soft-pink": "Placez le produit sur un fond rose pastel doux avec une esthétique féminine, style photographie de beauté",
+      "living-room": "Placez le produit dans un salon moderne et minimaliste avec lumière naturelle par de grandes fenêtres, photographie lifestyle",
+      "kitchen": "Placez le produit sur un comptoir de cuisine lumineux avec surface en marbre et lumière naturelle, photographie lifestyle maison",
+      "bedroom": "Placez le produit dans une chambre confortable avec literie neutre et éclairage ambiant chaleureux",
+      "home-office": "Placez le produit sur un bureau de bureau moderne avec des plantes et un décor minimaliste, cadre professionnel et confortable",
+      "beach": "Placez le produit sur une plage de sable avec des vagues en arrière-plan, lumière dorée, lifestyle vacances",
+      "forest": "Placez le produit dans un cadre forestier serein avec des rayons de soleil filtrant à travers les arbres, sensation naturelle et organique",
+      "garden": "Placez le produit dans un jardin luxuriant avec des fleurs colorées et de la verdure, atmosphère fraîche de printemps",
+      "mountain": "Placez le produit avec un paysage montagneux majestueux en arrière-plan, lifestyle aventure et plein air",
+      "cafe": "Placez le produit sur une table rustique de café avec éclairage ambiant chaleureux et fond flou, lifestyle urbain",
+      "street": "Placez le produit dans un cadre urbain de rue avec architecture de la ville et lumière naturelle, esthétique streetwear",
+      "rooftop": "Placez le produit sur une terrasse avec l'horizon de la ville en arrière-plan, cadre urbain sophistiqué",
+      "subway": "Placez le produit dans une station de métro moderne avec des lignes épurées et une atmosphère urbaine",
+      "editorial": "Placez le produit dans un setup éditorial haute couture avec éclairage dramatique et composition artistique, qualité couverture de magazine",
+      "fashion": "Placez le produit dans un studio de photographie de mode avec fond continu et éclairage professionnel de studio",
+      "minimal": "Placez le produit dans un cadre ultra-minimaliste avec beaucoup d'espace négatif, esthétique scandinave épurée",
+      "vogue": "Placez le produit dans un cadre luxueux inspiré de Vogue avec esthétique haut de gamme et éclairage dramatique de mode",
+      "christmas": "Placez le produit dans un cadre festif de Noël avec sapin décoré, lumières chaudes et atmosphère cosy de fêtes",
+      "summer": "Placez le produit dans un cadre estival lumineux avec des vibes tropicales, du soleil et une atmosphère de vacances",
+      "autumn": "Placez le produit entouré de feuilles d'automne colorées avec un éclairage automnal chaleureux et une sensation saisonnière cosy",
+      "spring": "Placez le produit dans un jardin printanier frais avec des fleurs en éclosion, des couleurs pastel douces et une nouvelle croissance"
+    },
+    "prompt": {
+      "label": "Prompt",
+      "placeholder": "Décrivez comment vous souhaitez que le produit soit placé sur ce fond...",
+      "hint": "Modifiez le prompt pour personnaliser le placement de votre produit sur le fond.",
+      "defaultCustom": "Placez le produit sur ce fond avec un aspect propre et professionnel"
+    },
+    "review": {
+      "title": "Vérifiez votre Lot",
+      "products": "Produits",
+      "background": "Fond",
+      "totalCost": "Coût Total",
+      "creditsPerImage": "{{credits}} crédits × {{count}} images",
+      "insufficientCredits": "Vous avez {{available}} crédits. Il vous en faut {{needed}} de plus."
+    },
+    "processing": {
+      "title": "Traitement de vos Images",
+      "progress": "{{current}} sur {{total}} terminées",
+      "estimatedTime": "Temps estimé : {{time}}",
+      "uploading": "Téléchargement des Images...",
+      "uploadingProgress": "Téléchargement des images... {{progress}}%",
+      "starting": "Démarrage...",
+      "canceled": "Lot Annulé",
+      "failed": "Lot Échoué",
+      "processingFallback": "Traitement...",
+      "cancel": "Annuler",
+      "completed": "Terminées : {{count}}",
+      "failedCount": "Échouées : {{count}}"
+    },
+    "results": {
+      "title": "Vos Images sont Prêtes !",
+      "downloadAll": "Tout Télécharger en ZIP",
+      "downloadSingle": "Télécharger"
+    },
+    "buttons": {
+      "next": "Continuer",
+      "back": "Retour",
+      "startProcessing": "Lancer le Traitement",
+      "newBatch": "Nouveau Lot"
+    },
+    "errors": {
+      "signIn": "Veuillez vous connecter",
+      "signInDesc": "Vous devez être connecté pour traiter des images.",
+      "uploadFailed": "Échec du Téléchargement",
+      "uploadFailedDesc": "Échec du téléchargement des images de produit. Veuillez réessayer.",
+      "bgUploadFailedDesc": "Échec du téléchargement du fond personnalisé. Veuillez réessayer.",
+      "processingFailed": "Échec du Traitement",
+      "processingFailedDesc": "Échec du lancement du traitement par lots."
+    }
+  },
   "createSelection": {
     "outfitCreator": {
       "title": "Créateur de Tenues",

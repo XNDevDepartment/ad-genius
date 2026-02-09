@@ -670,17 +670,85 @@
       "urban": "Urbano",
       "seasonal": "Sazonal"
     },
+    "presets": {
+      "white-seamless": "Branco Liso",
+      "black-studio": "Estúdio Preto",
+      "gradient-gray": "Gradiente Cinza",
+      "soft-pink": "Rosa Suave",
+      "living-room": "Sala de Estar Moderna",
+      "kitchen": "Cozinha Luminosa",
+      "bedroom": "Quarto Acolhedor",
+      "home-office": "Escritório em Casa",
+      "beach": "Cenário de Praia",
+      "forest": "Trilho na Floresta",
+      "garden": "Cenário de Jardim",
+      "mountain": "Vista de Montanha",
+      "cafe": "Cafetaria",
+      "street": "Estilo Urbano",
+      "rooftop": "Vista do Terraço",
+      "subway": "Estação de Metro",
+      "editorial": "Setup Editorial",
+      "fashion": "Estúdio de Moda",
+      "minimal": "Minimalista",
+      "vogue": "Estilo Vogue",
+      "christmas": "Cenário de Natal",
+      "summer": "Vibes de Verão",
+      "autumn": "Folhas de Outono",
+      "spring": "Jardim de Primavera"
+    },
+    "prompts": {
+      "white-seamless": "Coloca o produto num fundo branco liso de estúdio com iluminação suave e uniforme, estilo fotografia profissional de produto",
+      "black-studio": "Coloca o produto num fundo preto mate de estúdio com iluminação dramática, fotografia de produto premium",
+      "gradient-gray": "Coloca o produto num fundo gradiente cinza suave do claro ao escuro, fotografia profissional de catálogo",
+      "soft-pink": "Coloca o produto num fundo rosa pastel suave com estética feminina, estilo fotografia de beleza",
+      "living-room": "Coloca o produto numa sala de estar moderna e minimalista com luz natural de grandes janelas, fotografia lifestyle",
+      "kitchen": "Coloca o produto numa bancada de cozinha luminosa com superfície de mármore e luz natural, fotografia lifestyle caseira",
+      "bedroom": "Coloca o produto num quarto acolhedor com roupa de cama neutra e iluminação ambiente quente",
+      "home-office": "Coloca o produto numa secretária de escritório moderna com plantas e decoração minimalista, ambiente profissional e caseiro",
+      "beach": "Coloca o produto numa praia de areia com ondas do mar ao fundo, luz dourada, lifestyle de férias",
+      "forest": "Coloca o produto num cenário sereno de floresta com raios de sol entre as árvores, sensação natural e orgânica",
+      "garden": "Coloca o produto num jardim exuberante com flores coloridas e vegetação, atmosfera fresca de primavera",
+      "mountain": "Coloca o produto com paisagem majestosa de montanha ao fundo, lifestyle de aventura e ar livre",
+      "cafe": "Coloca o produto numa mesa rústica de cafetaria com iluminação ambiente quente e fundo desfocado, lifestyle urbano",
+      "street": "Coloca o produto num cenário urbano de rua com arquitetura da cidade e luz natural, estética streetwear",
+      "rooftop": "Coloca o produto num terraço com skyline da cidade ao fundo, cenário urbano sofisticado",
+      "subway": "Coloca o produto numa estação de metro moderna com linhas limpas e atmosfera urbana",
+      "editorial": "Coloca o produto num setup editorial de alta moda com iluminação dramática e composição artística, qualidade de capa de revista",
+      "fashion": "Coloca o produto num estúdio de fotografia de moda com fundo contínuo e iluminação profissional",
+      "minimal": "Coloca o produto num cenário ultra-minimalista com muito espaço negativo, estética escandinava limpa",
+      "vogue": "Coloca o produto num cenário luxuoso inspirado na Vogue com estética premium e iluminação dramática de moda",
+      "christmas": "Coloca o produto num cenário festivo de Natal com árvore decorada, luzes quentes e atmosfera acolhedora de feriado",
+      "summer": "Coloca o produto num cenário luminoso de verão com vibes tropicais, sol e atmosfera de férias",
+      "autumn": "Coloca o produto rodeado de folhas coloridas de outono com iluminação quente e sensação sazonal acolhedora",
+      "spring": "Coloca o produto num jardim fresco de primavera com flores a desabrochar, cores pastel suaves e crescimento novo"
+    },
+    "prompt": {
+      "label": "Prompt",
+      "placeholder": "Descreve como queres que o produto seja colocado neste fundo...",
+      "hint": "Edita o prompt para personalizar como o produto é colocado no fundo.",
+      "defaultCustom": "Coloca o produto neste fundo com um aspeto limpo e profissional"
+    },
     "review": {
       "title": "Revê o Teu Lote",
       "products": "Produtos",
       "background": "Fundo",
       "totalCost": "Custo Total",
-      "creditsPerImage": "{{credits}} créditos × {{count}} imagens"
+      "creditsPerImage": "{{credits}} créditos × {{count}} imagens",
+      "insufficientCredits": "Tens {{available}} créditos. Precisas de mais {{needed}}."
     },
     "processing": {
       "title": "A Processar as Tuas Imagens",
       "progress": "{{current}} de {{total}} concluídas",
-      "estimatedTime": "Tempo estimado: {{time}}"
+      "estimatedTime": "Tempo estimado: {{time}}",
+      "uploading": "A Carregar Imagens...",
+      "uploadingProgress": "A carregar imagens... {{progress}}%",
+      "starting": "A iniciar...",
+      "canceled": "Lote Cancelado",
+      "failed": "Lote Falhado",
+      "processingFallback": "A processar...",
+      "cancel": "Cancelar",
+      "completed": "Concluídas: {{count}}",
+      "failedCount": "Falhadas: {{count}}"
     },
     "results": {
       "title": "As Tuas Imagens Estão Prontas!",
@@ -692,6 +760,15 @@
       "back": "Voltar",
       "startProcessing": "Iniciar Processamento",
       "newBatch": "Novo Lote"
+    },
+    "errors": {
+      "signIn": "Inicia sessão",
+      "signInDesc": "Precisas de ter sessão iniciada para processar imagens.",
+      "uploadFailed": "Falha no Carregamento",
+      "uploadFailedDesc": "Falha ao carregar imagens de produto. Tenta novamente.",
+      "bgUploadFailedDesc": "Falha ao carregar fundo personalizado. Tenta novamente.",
+      "processingFailed": "Falha no Processamento",
+      "processingFailedDesc": "Falha ao iniciar processamento em lote."
     }
   },
   "outfitCreator": {

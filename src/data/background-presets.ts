@@ -45,6 +45,8 @@ export type BackgroundCategory =
 export interface BackgroundPreset {
   id: string;
   name: string;
+  nameKey: string;
+  promptKey: string;
   category: BackgroundCategory;
   thumbnail: string;
   prompt: string;
@@ -89,40 +91,40 @@ export const backgroundCategories: Record<BackgroundCategory, {
 
 export const backgroundPresets: BackgroundPreset[] = [
   // Studio
-  { id: 'white-seamless', name: 'White Seamless', category: 'studio', thumbnail: studioWhite, prompt: 'Place the product on a clean white seamless paper studio background with soft even lighting, professional product photography style' },
-  { id: 'black-studio', name: 'Black Studio', category: 'studio', thumbnail: studioBlack, prompt: 'Place the product on a matte black studio background with dramatic rim lighting, high-end product photography' },
-  { id: 'gradient-gray', name: 'Gray Gradient', category: 'studio', thumbnail: studioGray, prompt: 'Place the product on a smooth gray gradient backdrop fading from light to dark, professional catalog photography' },
-  { id: 'soft-pink', name: 'Soft Pink', category: 'studio', thumbnail: studioPink, prompt: 'Place the product on a soft pastel pink backdrop with feminine aesthetic, beauty product photography style' },
+  { id: 'white-seamless', name: 'White Seamless', nameKey: 'bulkBackground.presets.white-seamless', promptKey: 'bulkBackground.prompts.white-seamless', category: 'studio', thumbnail: studioWhite, prompt: 'Place the product on a clean white seamless paper studio background with soft even lighting, professional product photography style' },
+  { id: 'black-studio', name: 'Black Studio', nameKey: 'bulkBackground.presets.black-studio', promptKey: 'bulkBackground.prompts.black-studio', category: 'studio', thumbnail: studioBlack, prompt: 'Place the product on a matte black studio background with dramatic rim lighting, high-end product photography' },
+  { id: 'gradient-gray', name: 'Gray Gradient', nameKey: 'bulkBackground.presets.gradient-gray', promptKey: 'bulkBackground.prompts.gradient-gray', category: 'studio', thumbnail: studioGray, prompt: 'Place the product on a smooth gray gradient backdrop fading from light to dark, professional catalog photography' },
+  { id: 'soft-pink', name: 'Soft Pink', nameKey: 'bulkBackground.presets.soft-pink', promptKey: 'bulkBackground.prompts.soft-pink', category: 'studio', thumbnail: studioPink, prompt: 'Place the product on a soft pastel pink backdrop with feminine aesthetic, beauty product photography style' },
 
   // Lifestyle
-  { id: 'living-room', name: 'Modern Living Room', category: 'lifestyle', thumbnail: lifestyleLiving, prompt: 'Place the product in a modern minimalist living room setting with natural light from large windows, lifestyle product photography' },
-  { id: 'kitchen', name: 'Bright Kitchen', category: 'lifestyle', thumbnail: lifestyleKitchen, prompt: 'Place the product on a bright kitchen countertop with marble surface and natural daylight, home lifestyle photography' },
-  { id: 'bedroom', name: 'Cozy Bedroom', category: 'lifestyle', thumbnail: lifestyleBedroom, prompt: 'Place the product in a cozy bedroom setting with soft neutral bedding and warm ambient lighting' },
-  { id: 'home-office', name: 'Home Office', category: 'lifestyle', thumbnail: lifestyleOffice, prompt: 'Place the product on a modern home office desk with plants and minimal decor, professional yet homey setting' },
+  { id: 'living-room', name: 'Modern Living Room', nameKey: 'bulkBackground.presets.living-room', promptKey: 'bulkBackground.prompts.living-room', category: 'lifestyle', thumbnail: lifestyleLiving, prompt: 'Place the product in a modern minimalist living room setting with natural light from large windows, lifestyle product photography' },
+  { id: 'kitchen', name: 'Bright Kitchen', nameKey: 'bulkBackground.presets.kitchen', promptKey: 'bulkBackground.prompts.kitchen', category: 'lifestyle', thumbnail: lifestyleKitchen, prompt: 'Place the product on a bright kitchen countertop with marble surface and natural daylight, home lifestyle photography' },
+  { id: 'bedroom', name: 'Cozy Bedroom', nameKey: 'bulkBackground.presets.bedroom', promptKey: 'bulkBackground.prompts.bedroom', category: 'lifestyle', thumbnail: lifestyleBedroom, prompt: 'Place the product in a cozy bedroom setting with soft neutral bedding and warm ambient lighting' },
+  { id: 'home-office', name: 'Home Office', nameKey: 'bulkBackground.presets.home-office', promptKey: 'bulkBackground.prompts.home-office', category: 'lifestyle', thumbnail: lifestyleOffice, prompt: 'Place the product on a modern home office desk with plants and minimal decor, professional yet homey setting' },
 
   // Nature
-  { id: 'beach', name: 'Beach Scene', category: 'nature', thumbnail: natureBeach, prompt: 'Place the product on a sandy beach with ocean waves in the background, golden hour sunlight, vacation lifestyle' },
-  { id: 'forest', name: 'Forest Path', category: 'nature', thumbnail: natureForest, prompt: 'Place the product in a serene forest setting with dappled sunlight filtering through trees, natural and organic feel' },
-  { id: 'garden', name: 'Garden Setting', category: 'nature', thumbnail: natureGarden, prompt: 'Place the product in a lush garden with colorful flowers and greenery, fresh spring atmosphere' },
-  { id: 'mountain', name: 'Mountain View', category: 'nature', thumbnail: natureMountain, prompt: 'Place the product with majestic mountain landscape in the background, adventure and outdoor lifestyle' },
+  { id: 'beach', name: 'Beach Scene', nameKey: 'bulkBackground.presets.beach', promptKey: 'bulkBackground.prompts.beach', category: 'nature', thumbnail: natureBeach, prompt: 'Place the product on a sandy beach with ocean waves in the background, golden hour sunlight, vacation lifestyle' },
+  { id: 'forest', name: 'Forest Path', nameKey: 'bulkBackground.presets.forest', promptKey: 'bulkBackground.prompts.forest', category: 'nature', thumbnail: natureForest, prompt: 'Place the product in a serene forest setting with dappled sunlight filtering through trees, natural and organic feel' },
+  { id: 'garden', name: 'Garden Setting', nameKey: 'bulkBackground.presets.garden', promptKey: 'bulkBackground.prompts.garden', category: 'nature', thumbnail: natureGarden, prompt: 'Place the product in a lush garden with colorful flowers and greenery, fresh spring atmosphere' },
+  { id: 'mountain', name: 'Mountain View', nameKey: 'bulkBackground.presets.mountain', promptKey: 'bulkBackground.prompts.mountain', category: 'nature', thumbnail: natureMountain, prompt: 'Place the product with majestic mountain landscape in the background, adventure and outdoor lifestyle' },
 
   // Urban
-  { id: 'cafe', name: 'Coffee Shop', category: 'urban', thumbnail: urbanCafe, prompt: 'Place the product on a rustic coffee shop table with warm ambient lighting and bokeh background, urban lifestyle' },
-  { id: 'street', name: 'Street Style', category: 'urban', thumbnail: urbanStreet, prompt: 'Place the product in an urban street setting with city architecture and natural daylight, streetwear aesthetic' },
-  { id: 'rooftop', name: 'Rooftop View', category: 'urban', thumbnail: urbanRooftop, prompt: 'Place the product on a rooftop terrace with city skyline in the background, sophisticated urban setting' },
-  { id: 'subway', name: 'Metro Station', category: 'urban', thumbnail: urbanSubway, prompt: 'Place the product in a modern metro station with clean lines and urban commuter atmosphere' },
+  { id: 'cafe', name: 'Coffee Shop', nameKey: 'bulkBackground.presets.cafe', promptKey: 'bulkBackground.prompts.cafe', category: 'urban', thumbnail: urbanCafe, prompt: 'Place the product on a rustic coffee shop table with warm ambient lighting and bokeh background, urban lifestyle' },
+  { id: 'street', name: 'Street Style', nameKey: 'bulkBackground.presets.street', promptKey: 'bulkBackground.prompts.street', category: 'urban', thumbnail: urbanStreet, prompt: 'Place the product in an urban street setting with city architecture and natural daylight, streetwear aesthetic' },
+  { id: 'rooftop', name: 'Rooftop View', nameKey: 'bulkBackground.presets.rooftop', promptKey: 'bulkBackground.prompts.rooftop', category: 'urban', thumbnail: urbanRooftop, prompt: 'Place the product on a rooftop terrace with city skyline in the background, sophisticated urban setting' },
+  { id: 'subway', name: 'Metro Station', nameKey: 'bulkBackground.presets.subway', promptKey: 'bulkBackground.prompts.subway', category: 'urban', thumbnail: urbanSubway, prompt: 'Place the product in a modern metro station with clean lines and urban commuter atmosphere' },
 
   // Magazine
-  { id: 'editorial', name: 'Editorial Setup', category: 'magazine', thumbnail: magazineEditorial, prompt: 'Place the product in a high-fashion editorial setup with dramatic lighting and artistic composition, magazine cover quality' },
-  { id: 'fashion', name: 'Fashion Studio', category: 'magazine', thumbnail: magazineFashion, prompt: 'Place the product in a fashion photography studio with seamless background and professional studio lighting' },
-  { id: 'minimal', name: 'Minimalist', category: 'magazine', thumbnail: magazineMinimal, prompt: 'Place the product in an ultra-minimalist setting with lots of negative space, clean Scandinavian aesthetic' },
-  { id: 'vogue', name: 'Vogue Style', category: 'magazine', thumbnail: magazineVogue, prompt: 'Place the product in a luxurious Vogue-inspired setting with high-end aesthetic and dramatic fashion lighting' },
+  { id: 'editorial', name: 'Editorial Setup', nameKey: 'bulkBackground.presets.editorial', promptKey: 'bulkBackground.prompts.editorial', category: 'magazine', thumbnail: magazineEditorial, prompt: 'Place the product in a high-fashion editorial setup with dramatic lighting and artistic composition, magazine cover quality' },
+  { id: 'fashion', name: 'Fashion Studio', nameKey: 'bulkBackground.presets.fashion', promptKey: 'bulkBackground.prompts.fashion', category: 'magazine', thumbnail: magazineFashion, prompt: 'Place the product in a fashion photography studio with seamless background and professional studio lighting' },
+  { id: 'minimal', name: 'Minimalist', nameKey: 'bulkBackground.presets.minimal', promptKey: 'bulkBackground.prompts.minimal', category: 'magazine', thumbnail: magazineMinimal, prompt: 'Place the product in an ultra-minimalist setting with lots of negative space, clean Scandinavian aesthetic' },
+  { id: 'vogue', name: 'Vogue Style', nameKey: 'bulkBackground.presets.vogue', promptKey: 'bulkBackground.prompts.vogue', category: 'magazine', thumbnail: magazineVogue, prompt: 'Place the product in a luxurious Vogue-inspired setting with high-end aesthetic and dramatic fashion lighting' },
 
   // Seasonal
-  { id: 'christmas', name: 'Christmas Scene', category: 'seasonal', thumbnail: seasonalChristmas, prompt: 'Place the product in a festive Christmas setting with decorated tree, warm lights, and cozy holiday atmosphere' },
-  { id: 'summer', name: 'Summer Vibes', category: 'seasonal', thumbnail: seasonalSummer, prompt: 'Place the product in a bright summer setting with tropical vibes, sunshine, and vacation atmosphere' },
-  { id: 'autumn', name: 'Autumn Leaves', category: 'seasonal', thumbnail: seasonalAutumn, prompt: 'Place the product surrounded by colorful autumn leaves with warm fall lighting and cozy seasonal feel' },
-  { id: 'spring', name: 'Spring Garden', category: 'seasonal', thumbnail: seasonalSpring, prompt: 'Place the product in a fresh spring garden with blooming flowers, soft pastel colors, and new growth' }
+  { id: 'christmas', name: 'Christmas Scene', nameKey: 'bulkBackground.presets.christmas', promptKey: 'bulkBackground.prompts.christmas', category: 'seasonal', thumbnail: seasonalChristmas, prompt: 'Place the product in a festive Christmas setting with decorated tree, warm lights, and cozy holiday atmosphere' },
+  { id: 'summer', name: 'Summer Vibes', nameKey: 'bulkBackground.presets.summer', promptKey: 'bulkBackground.prompts.summer', category: 'seasonal', thumbnail: seasonalSummer, prompt: 'Place the product in a bright summer setting with tropical vibes, sunshine, and vacation atmosphere' },
+  { id: 'autumn', name: 'Autumn Leaves', nameKey: 'bulkBackground.presets.autumn', promptKey: 'bulkBackground.prompts.autumn', category: 'seasonal', thumbnail: seasonalAutumn, prompt: 'Place the product surrounded by colorful autumn leaves with warm fall lighting and cozy seasonal feel' },
+  { id: 'spring', name: 'Spring Garden', nameKey: 'bulkBackground.presets.spring', promptKey: 'bulkBackground.prompts.spring', category: 'seasonal', thumbnail: seasonalSpring, prompt: 'Place the product in a fresh spring garden with blooming flowers, soft pastel colors, and new growth' }
 ];
 
 export const getCategoryIcon = (category: BackgroundCategory): string => {
