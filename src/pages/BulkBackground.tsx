@@ -46,6 +46,7 @@ const BulkBackground = () => {
   const [productImages, setProductImages] = useState<File[]>([]);
   const [customBackground, setCustomBackground] = useState<File | null>(null);
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
+  const [backgroundPrompt, setBackgroundPrompt] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [processingStarted, setProcessingStarted] = useState(false);
@@ -69,6 +70,16 @@ const BulkBackground = () => {
     }
     return null;
   }, [customBackground, selectedPreset]);
+
+  const handlePresetSelect = (presetId: string | null) => {
+    setSelectedPreset(presetId);
+    if (presetId) {
+      const preset = backgroundPresets.find(p => p.id === presetId);
+      if (preset?.prompt) setBackgroundPrompt(preset.prompt);
+    } else {
+      setBackgroundPrompt("");
+    }
+  };
 
   // Smooth scroll when background section appears
   const prevImageCount = useRef(0);
@@ -160,7 +171,7 @@ const BulkBackground = () => {
         backgroundType: customBackground ? 'custom' : 'preset',
         backgroundPresetId: selectedPreset || undefined,
         backgroundImageUrl: customBgUrl,
-        settings: { outputFormat: 'webp', quality: 'high' }
+        settings: { outputFormat: 'webp', quality: 'high', customPrompt: backgroundPrompt || undefined }
       });
 
       if (result) await refreshCredits();
@@ -204,6 +215,7 @@ const BulkBackground = () => {
     setProductImages([]);
     setCustomBackground(null);
     setSelectedPreset(null);
+    setBackgroundPrompt("");
     setUploadProgress(0);
   };
 
@@ -264,7 +276,9 @@ const BulkBackground = () => {
                   customBackground={customBackground}
                   selectedPreset={selectedPreset}
                   onCustomUpload={setCustomBackground}
-                  onPresetSelect={setSelectedPreset}
+                  onPresetSelect={handlePresetSelect}
+                  promptValue={backgroundPrompt}
+                  onPromptChange={setBackgroundPrompt}
                 />
               </CardContent>
             </Card>

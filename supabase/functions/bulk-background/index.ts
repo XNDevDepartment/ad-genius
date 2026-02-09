@@ -151,8 +151,14 @@ async function fetchImageAsBase64(url: string): Promise<string> {
   return btoa(binary);
 }
 
-function buildPrompt(presetId: string | null, hasCustomBackground: boolean): string {
+function buildPrompt(presetId: string | null, hasCustomBackground: boolean, customPrompt?: string): string {
   let prompt = BASE_PROMPT;
+
+  // If user provided a custom prompt, append it
+  if (customPrompt) {
+    prompt += `\n\nCena pretendida: ${customPrompt}`;
+    return prompt;
+  }
 
   if (hasCustomBackground) {
     prompt += "\n\nNOTA: Use a segunda imagem fornecida como fundo.";
@@ -295,6 +301,7 @@ interface BulkBackgroundJob {
   total_images: number;
   completed_images: number;
   failed_images: number;
+  settings: Record<string, unknown> | null;
 }
 
 interface BulkBackgroundResult {
@@ -329,9 +336,11 @@ async function processSingleResult(
     const productBase64 = await fetchImageAsBase64(result.source_image_url);
 
     // Build prompt
+    const customPrompt = (job.settings as Record<string, unknown>)?.customPrompt as string | undefined;
     const prompt = buildPrompt(
       job.background_preset_id,
-      !!backgroundBase64
+      !!backgroundBase64,
+      customPrompt
     );
 
     // Generate image with retry logic
