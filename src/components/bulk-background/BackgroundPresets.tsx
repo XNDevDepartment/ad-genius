@@ -60,11 +60,13 @@ const BackgroundPresets = ({ selectedPreset, onSelect }: BackgroundPresetsProps)
                       : "border-transparent hover:border-primary/50"
                   )}
                 >
-                  {/* Placeholder for preset thumbnail */}
-                  <div className="aspect-square bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-                    <span className="text-xs text-muted-foreground text-center px-2">
-                      {preset.name}
-                    </span>
+                  <div className="aspect-square overflow-hidden">
+                    <img
+                      src={preset.thumbnail}
+                      alt={preset.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
                   </div>
 
                   {/* Selected indicator */}
