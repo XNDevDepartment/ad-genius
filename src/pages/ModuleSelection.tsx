@@ -42,15 +42,6 @@ const ModuleSelection = () => {
       isAdmin: false,
       isBeta: false,
     },
-    ...(isAdmin ? [{
-      id: "ugc-gemini-v3",
-      title: "UGC Gemini 3.0 (Admin Test)",
-      description: "Test the gemini-3-pro-image-preview model for UGC generation",
-      icon: Sparkles,
-      path: "/create/ugc-v3",
-      isAdmin: true,
-      isBeta: false,
-    }] : []),
     {
       id: "video",
       title: t('createSelection.videoCreator.title'),
@@ -61,22 +52,6 @@ const ModuleSelection = () => {
       isBeta: false,
       locked: !canAccessVideos()
     },
-    ...(isAdmin ? [{
-      id: "adgenius",
-      title: "AdGenius (Admin Only)",
-      description: "Advanced creative generation for advertising campaigns",
-      icon: Sparkles,
-      path: "/create/adgenius",
-      isAdmin: true
-    }] : []),
-   ...(isAdmin ? [{
-      id: "adgenius",
-      title: "AdGenius (Admin Only)",
-      description: "Advanced creative generation for advertising campaigns",
-      icon: Sparkles,
-      path: "/create/adgenius",
-      isAdmin: true
-    }] : []),
     {
       id: "outfit-swap",
       title: t('createSelection.outfitSwap.title'),
@@ -86,7 +61,7 @@ const ModuleSelection = () => {
       isAdmin: false,
       isBeta: false,
       locked: false
-    },  
+    },
     ...(isAdmin ? [{
       id: "bulk-background",
       title: t('createSelection.bulkBackground.title'),
@@ -129,14 +104,6 @@ const ModuleSelection = () => {
       description: "Train custom base models from your photo sets",
       icon: UserPlus,
       path: "/create/custom-model",
-      isAdmin: true
-    }] : []),
-    ...(isAdmin ? [{
-      id: "video-ads",
-      title: "Video Ads",
-      description: "Generate short video advertisements from product images",
-      icon: Video,
-      path: "/create/video-ads",
       isAdmin: true
     }] : []),
     {
