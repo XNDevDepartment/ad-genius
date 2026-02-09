@@ -17,45 +17,54 @@ const GEMINI_MODEL = "gemini-3-pro-image-preview";
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 // Simplified base prompt for product placement
-const BASE_PROMPT = `Insere o produto na imagem de fundo fornecida.
+const BASE_PROMPT = `Ultra-realistic professional studio product photography using reference scene and product projection.
 
-REGRAS OBRIGATÓRIAS:
-1. PRODUTO CENTRADO: O produto deve estar perfeitamente centrado no frame
-2. PROPORÇÕES: Manter proporções originais do produto, sem distorção
-3. ASPETO: Clean e profissional, qualidade e-commerce
-4. ILUMINAÇÃO: Consistente com o fundo, sombras naturais
-5. INTEGRAÇÃO: O produto deve parecer naturalmente colocado no ambiente
-6. OUTPUT: Imagem quadrada (1:1) de alta resolução
+      Use the reference image ONLY for environment, background, lighting direction and surface contact.
+      Use the uploaded product image as the ONLY source of product geometry and proportions.
 
-PROIBIDO: Alterar o produto, adicionar elementos, recortar mal o produto.`;
+      CRITICAL PRODUCT RULES:
+      Do NOT reconstruct the product in 3D.
+      Do NOT reinterpret shape, proportions or perspective.
+      Do NOT modify bottle geometry, cap shape, label curvature or symmetry.
 
-// Background preset hints (appended to base prompt)
-const PRESET_HINTS: Record<string, string> = {
-  'white-seamless': 'Fundo: estúdio branco seamless com iluminação suave.',
-  'black-studio': 'Fundo: estúdio preto matte com rim lighting dramático.',
-  'gradient-gray': 'Fundo: gradiente cinza suave, estilo catálogo.',
-  'soft-pink': 'Fundo: rosa pastel suave, estética feminina.',
-  'living-room': 'Fundo: sala de estar moderna minimalista com luz natural.',
-  'kitchen': 'Fundo: bancada de cozinha moderna com mármore.',
-  'bedroom': 'Fundo: quarto aconchegante com tons neutros.',
-  'home-office': 'Fundo: escritório moderno com plantas.',
-  'beach': 'Fundo: praia com ondas e luz dourada.',
-  'forest': 'Fundo: floresta serena com luz filtrada.',
-  'garden': 'Fundo: jardim com flores coloridas.',
-  'mountain': 'Fundo: paisagem montanhosa majestosa.',
-  'cafe': 'Fundo: café rústico com ambiente quente.',
-  'street': 'Fundo: rua urbana com arquitetura moderna.',
-  'rooftop': 'Fundo: terraço com skyline da cidade.',
-  'subway': 'Fundo: estação de metro moderna.',
-  'editorial': 'Fundo: setup editorial high-fashion.',
-  'fashion': 'Fundo: estúdio de fotografia de moda.',
-  'minimal': 'Fundo: ultra-minimalista com muito espaço negativo.',
-  'vogue': 'Fundo: luxuoso estilo Vogue.',
-  'christmas': 'Fundo: cenário festivo de Natal.',
-  'summer': 'Fundo: verão tropical vibrante.',
-  'autumn': 'Fundo: outono com folhas coloridas.',
-  'spring': 'Fundo: primavera com flores a desabrochar.'
-};
+      The product must be treated as a projected photographic object:
+      - Exact proportions preserved
+      - No stretching
+      - No warping
+      - No perspective correction beyond uniform scaling
+
+      Perspective handling:
+      Match the scene perspective ONLY by scale, position and rotation.
+      If perspectives conflict, preserve product realism over scene realism.
+
+      Lighting & shadows:
+      Analyze light direction from the reference image.
+      Apply light and shadow as an overlay interaction, not as a re-render.
+      Shadows must be soft, grounded and physically plausible.
+      No artificial shadow painting or exaggerated contrast.
+
+      Contact & grounding:
+      Product must rest naturally on the surface.
+      No floating.
+      No incorrect contact shadows.
+      Shadow softness and direction must match the scene.
+
+      Camera realism:
+      Maintain photographic integrity.
+      No CGI look.
+      No synthetic depth reconstruction.
+      Natural lens behavior only.
+
+      Constraints:
+      No added objects.
+      No scene alteration.
+      No creative interpretation.
+      No stylization.
+
+      Final result:
+      Product must look indistinguishable from a real studio photograph placed in this exact environment.
+
+      If any distortion appears, prioritize geometric accuracy over scene matching.`;
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -116,13 +125,10 @@ async function fetchImageAsBase64(url: string): Promise<string> {
 
 function buildPrompt(presetId: string | null, hasCustomBackground: boolean): string {
   let prompt = BASE_PROMPT;
-  
+
   if (hasCustomBackground) {
     prompt += "\n\nNOTA: Use a segunda imagem fornecida como fundo.";
-  } else if (presetId && PRESET_HINTS[presetId]) {
-    prompt += `\n\n${PRESET_HINTS[presetId]}`;
   }
-  
   return prompt;
 }
 

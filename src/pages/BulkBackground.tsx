@@ -290,7 +290,6 @@ const BulkBackground = () => {
                 onImagesSelect={setProductImages}
                 maxImages={MAX_IMAGES}
               />
-              
               {productImages.length > 0 && (
                 <p className="mt-4 text-sm text-muted-foreground">
                   {t("bulkBackground.uploadProducts.imagesUploaded", { count: productImages.length })}

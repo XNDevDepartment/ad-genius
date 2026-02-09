@@ -647,7 +647,7 @@
       "results": "Resultados"
     },
     "uploadProducts": {
-      "title": "Sube tus Imágenes de Producto",
+      "title": "Sube tus Productos",
       "subtitle": "Sube hasta {{max}} imágenes de producto",
       "imagesUploaded": "{{count}} imágenes subidas"
     },

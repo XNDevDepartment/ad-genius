@@ -73,23 +73,6 @@ const ModuleSelection = () => {
       locked: false
     }] : []),
     ...(isAdmin ? [{
-      id: "product-studio",
-      title: "Product Studio Background",
-      description: "Replace product backgrounds with professional studio quality",
-      icon: ImageIcon,
-      path: "/create/product-studio",
-      isAdmin: true
-    }] : []),
-    ...(isAdmin ? [{
-      id: "product-studio-bulk",
-      title: "Product Studio Bulk",
-      description: "Process multiple products at once with batch background replacement",
-      icon: Images,
-      path: "/create/product-studio-bulk",
-      isAdmin: true,
-      isBeta: false
-    }] : []),
-    ...(isAdmin ? [{
       id: "magazine-photoshoot",
       title: "Magazine Photoshoot",
       description: "Transform photos into high-fashion editorial magazine spreads",

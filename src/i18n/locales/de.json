@@ -647,7 +647,7 @@
       "results": "Ergebnisse"
     },
     "uploadProducts": {
-      "title": "Lade deine Produktbilder hoch",
+      "title": "Laden Sie Ihre Produkte hoch",
       "subtitle": "Lade bis zu {{max}} Produktbilder hoch",
       "imagesUploaded": "{{count}} Bilder hochgeladen"
     },

@@ -31,7 +31,7 @@ const BackgroundPicker = ({
     if (file && file.type.startsWith("image/")) {
       onCustomUpload(file);
       onPresetSelect(null); // Clear preset when uploading custom
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onload = () => setCustomPreview(reader.result as string);
@@ -79,7 +79,7 @@ const BackgroundPicker = ({
 
       {/* Custom Upload */}
       {mode === "custom" && (
-        <div className="space-y-4">
+        <div className="space-y-4 w-[50vw]">
           <p className="text-sm text-muted-foreground">
             {t("bulkBackground.selectBackground.uploadHint")}
           </p>
@@ -89,7 +89,7 @@ const BackgroundPicker = ({
               <img
                 src={customPreview}
                 alt="Custom background"
-                className="w-full h-48 object-cover"
+                className="w-full h-full object-cover"
               />
               <Button
                 variant="secondary"

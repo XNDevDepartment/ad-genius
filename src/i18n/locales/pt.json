@@ -651,7 +651,7 @@
       "results": "Resultados"
     },
     "uploadProducts": {
-      "title": "Carrega as Tuas Imagens de Produto",
+      "title": "Carrega os teus Produtos",
       "subtitle": "Carrega até {{max}} imagens de produto",
       "imagesUploaded": "{{count}} imagens carregadas"
     },

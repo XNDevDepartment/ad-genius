@@ -652,7 +652,7 @@
       "results": "Results"
     },
     "uploadProducts": {
-      "title": "Upload Your Product Images",
+      "title": "Upload Your Products",
       "subtitle": "Upload up to {{max}} product images",
       "imagesUploaded": "{{count}} images uploaded"
     },
