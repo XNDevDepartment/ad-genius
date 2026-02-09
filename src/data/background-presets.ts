@@ -1,38 +1,38 @@
 // Studio thumbnails
-import studioWhite from '@/assets/backgrounds/studio/Gemini_Generated_Image_ik2lirik2lirik2l.png';
-import studioBlack from '@/assets/backgrounds/studio/Gemini_Generated_Image_n1ilw2n1ilw2n1il.png';
-import studioGray from '@/assets/backgrounds/studio/Gemini_Generated_Image_rwemv5rwemv5rwem.png';
-import studioPink from '@/assets/backgrounds/studio/Gemini_Generated_Image_s37udls37udls37u.png';
+import studioWhite from '@/assets/backgrounds/studio/white.png';
+import studioBlack from '@/assets/backgrounds/studio/black.png';
+import studioGray from '@/assets/backgrounds/studio/white-darkgrey.png';
+import studioPink from '@/assets/backgrounds/studio/pink.png';
 
 // Lifestyle thumbnails
-import lifestyleLiving from '@/assets/backgrounds/lifestyle/Gemini_Generated_Image_t0rg8yt0rg8yt0rg.png';
-import lifestyleKitchen from '@/assets/backgrounds/lifestyle/Gemini_Generated_Image_w3po0ow3po0ow3po.png';
-import lifestyleBedroom from '@/assets/backgrounds/lifestyle/Gemini_Generated_Image_wta9vtwta9vtwta9.png';
-import lifestyleOffice from '@/assets/backgrounds/lifestyle/Gemini_Generated_Image_xals7rxals7rxals.png';
+import lifestyleLiving from '@/assets/backgrounds/lifestyle/livingroom.png';
+import lifestyleKitchen from '@/assets/backgrounds/lifestyle/kitchen.png';
+import lifestyleBedroom from '@/assets/backgrounds/lifestyle/bedroom.png';
+import lifestyleOffice from '@/assets/backgrounds/lifestyle/desk.png';
 
 // Magazine thumbnails
-import magazineEditorial from '@/assets/backgrounds/magazine/Gemini_Generated_Image_2gp0c52gp0c52gp0.png';
-import magazineFashion from '@/assets/backgrounds/magazine/Gemini_Generated_Image_8evys58evys58evy.png';
-import magazineMinimal from '@/assets/backgrounds/magazine/Gemini_Generated_Image_u6gh6ou6gh6ou6gh.png';
-import magazineVogue from '@/assets/backgrounds/magazine/Gemini_Generated_Image_xnddxlxnddxlxndd.png';
+import magazineEditorial from '@/assets/backgrounds/magazine/editorial.png';
+import magazineFashion from '@/assets/backgrounds/magazine/studio.png';
+import magazineMinimal from '@/assets/backgrounds/magazine/minimal.png';
+import magazineVogue from '@/assets/backgrounds/magazine/vogue.png';
 
 // Nature thumbnails
-import natureBeach from '@/assets/backgrounds/nature/Gemini_Generated_Image_a4whwba4whwba4wh.png';
-import natureForest from '@/assets/backgrounds/nature/Gemini_Generated_Image_bh41z7bh41z7bh41.png';
-import natureGarden from '@/assets/backgrounds/nature/Gemini_Generated_Image_qan62qqan62qqan6.png';
-import natureMountain from '@/assets/backgrounds/nature/Gemini_Generated_Image_wp14twp14twp14tw.png';
+import natureBeach from '@/assets/backgrounds/nature/beach.png';
+import natureForest from '@/assets/backgrounds/nature/forest.png';
+import natureGarden from '@/assets/backgrounds/nature/garden.png';
+import natureMountain from '@/assets/backgrounds/nature/mountains.png';
 
 // Urban thumbnails
-import urbanCafe from '@/assets/backgrounds/urban/Gemini_Generated_Image_5ya0s35ya0s35ya0.png';
-import urbanStreet from '@/assets/backgrounds/urban/Gemini_Generated_Image_beywvtbeywvtbeyw.png';
-import urbanRooftop from '@/assets/backgrounds/urban/Gemini_Generated_Image_pj2w64pj2w64pj2w.png';
-import urbanSubway from '@/assets/backgrounds/urban/Gemini_Generated_Image_rwcp65rwcp65rwcp.png';
+import urbanCafe from '@/assets/backgrounds/urban/coffe.png';
+import urbanStreet from '@/assets/backgrounds/urban/street.png';
+import urbanRooftop from '@/assets/backgrounds/urban/rooftop.png';
+import urbanSubway from '@/assets/backgrounds/urban/subway.png';
 
 // Seasonal thumbnails
-import seasonalChristmas from '@/assets/backgrounds/seasonal/Gemini_Generated_Image_2ymyhm2ymyhm2ymy.png';
-import seasonalSummer from '@/assets/backgrounds/seasonal/Gemini_Generated_Image_7hdi067hdi067hdi.png';
-import seasonalAutumn from '@/assets/backgrounds/seasonal/Gemini_Generated_Image_mm71jqmm71jqmm71.png';
-import seasonalSpring from '@/assets/backgrounds/seasonal/Gemini_Generated_Image_smjpkzsmjpkzsmjp.png';
+import seasonalChristmas from '@/assets/backgrounds/seasonal/christmas.png';
+import seasonalSummer from '@/assets/backgrounds/seasonal/summer.png';
+import seasonalAutumn from '@/assets/backgrounds/seasonal/autumn.png';
+import seasonalSpring from '@/assets/backgrounds/seasonal/spring.png';
 
 export type BackgroundCategory = 
   | 'lifestyle' 
