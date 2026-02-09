@@ -34,21 +34,21 @@ export const backgroundCategories: Record<BackgroundCategory, {
     descriptionKey: 'Editorial & fashion',
     icon: 'BookOpen' 
   },
-  // nature: { 
-  //   labelKey: 'bulkBackground.categories.nature', 
-  //   descriptionKey: 'Outdoor natural settings',
-  //   icon: 'TreeDeciduous' 
-  // },
-  // urban: { 
-  //   labelKey: 'bulkBackground.categories.urban', 
-  //   descriptionKey: 'City & street scenes',
-  //   icon: 'Building2' 
-  // },
-  // seasonal: { 
-  //   labelKey: 'bulkBackground.categories.seasonal', 
-  //   descriptionKey: 'Holiday & seasonal themes',
-  //   icon: 'Snowflake' 
-  // }
+  nature: { 
+    labelKey: 'bulkBackground.categories.nature', 
+    descriptionKey: 'Outdoor natural settings',
+    icon: 'TreeDeciduous' 
+  },
+  urban: { 
+    labelKey: 'bulkBackground.categories.urban', 
+    descriptionKey: 'City & street scenes',
+    icon: 'Building2' 
+  },
+  seasonal: { 
+    labelKey: 'bulkBackground.categories.seasonal', 
+    descriptionKey: 'Holiday & seasonal themes',
+    icon: 'Snowflake' 
+  }
 };
 
 export const backgroundPresets: BackgroundPreset[] = [
