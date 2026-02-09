@@ -109,7 +109,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [numImages, setNumImages] = useState(1);
   const [imageOrientation, setImageOrientation] = useState("1:1");
   const [timeOfDay, setTimeOfDay] = useState<'natural' | 'golden' | 'night' | 'morning'>("natural");
-  const [highlight, setHighlight] = useState("yes");
+  const [highlight, setHighlight] = useState("no");
   const [style, setStyle] = useState<'lifestyle' | 'studio' | 'cinematic' | 'natural' | 'minimal' | 'professional'>("lifestyle");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('source');
   const [outputFormat, setOutputFormat] = useState<'png' | 'webp'>('png');
@@ -738,11 +738,13 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
           - Scene tells a story
           - Product appears naturally within environment
           - Use leading lines and depth to guide eye to product
+          - Slight imperfections (soft focus, natural shadows)
+          - Casual, off-center framing
 
         3. STYLE:
+          - 4k-professional-quality photography
           - ${style} lifestyle photography
           - ${timeOfDay} natural lighting
-          - Warm, inviting, lived-in atmosphere
 
         4. QUALITY:
           - No AI artifacts, watermarks, text
@@ -751,7 +753,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
 
         ${commonNeg}
 
-        OUTPUT: Single polished lifestyle photo usable as ad creative.
+        OUTPUT: Single authentic UGC photo ready for social media.
         `;
 
       const prompt = (highlight === 'yes' ? highlightYes : highlightNo).trim();
