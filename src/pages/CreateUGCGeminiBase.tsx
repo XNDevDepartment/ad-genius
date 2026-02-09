@@ -721,7 +721,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
         `;
 
       const highlightNo = `
-        TASK: Create lifestyle photo where environment is hero, product is subtle.
+        TASK: Create authentic UGC photo featuring this product.
 
         SCENARIO: ${selectedScenario?.description || 'Natural lifestyle setting'}
         AUDIENCE: ${desiredAudience}
@@ -743,7 +743,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
 
         3. STYLE:
           - 4k-professional-quality photography
-          - ${style} lifestyle photography
+          - ${style} photography
           - ${timeOfDay} natural lighting
 
         4. QUALITY:
