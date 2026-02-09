@@ -63,7 +63,7 @@ const BackgroundPresets = ({ selectedPreset, onSelect }: BackgroundPresetsProps)
                   <div className="aspect-square overflow-hidden">
                     <img
                       src={preset.thumbnail}
-                      alt={preset.name}
+                      alt={t(preset.nameKey)}
                       className="w-full h-full object-cover"
                       loading="lazy"
                     />
@@ -79,7 +79,7 @@ const BackgroundPresets = ({ selectedPreset, onSelect }: BackgroundPresetsProps)
                   {/* Name overlay */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
                     <p className="text-xs text-white font-medium truncate">
-                      {preset.name}
+                      {t(preset.nameKey)}
                     </p>
                   </div>
                 </Card>

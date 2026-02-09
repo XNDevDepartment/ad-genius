@@ -666,17 +666,85 @@
       "urban": "Urban",
       "seasonal": "Saisonal"
     },
+    "presets": {
+      "white-seamless": "Weiß Nahtlos",
+      "black-studio": "Schwarzes Studio",
+      "gradient-gray": "Grauer Verlauf",
+      "soft-pink": "Sanftes Rosa",
+      "living-room": "Modernes Wohnzimmer",
+      "kitchen": "Helle Küche",
+      "bedroom": "Gemütliches Schlafzimmer",
+      "home-office": "Home Office",
+      "beach": "Strandszene",
+      "forest": "Waldpfad",
+      "garden": "Garten-Setting",
+      "mountain": "Bergblick",
+      "cafe": "Café",
+      "street": "Street Style",
+      "rooftop": "Dachterrasse",
+      "subway": "U-Bahn-Station",
+      "editorial": "Editorial Setup",
+      "fashion": "Mode-Studio",
+      "minimal": "Minimalistisch",
+      "vogue": "Vogue-Stil",
+      "christmas": "Weihnachtsszene",
+      "summer": "Sommer-Vibes",
+      "autumn": "Herbstblätter",
+      "spring": "Frühlingsgarten"
+    },
+    "prompts": {
+      "white-seamless": "Platziere das Produkt auf einem sauberen weißen nahtlosen Studio-Hintergrund mit gleichmäßiger, weicher Beleuchtung, professioneller Produktfotografie-Stil",
+      "black-studio": "Platziere das Produkt auf einem matten schwarzen Studio-Hintergrund mit dramatischer Randbeleuchtung, High-End-Produktfotografie",
+      "gradient-gray": "Platziere das Produkt auf einem sanften grauen Verlaufshintergrund von hell nach dunkel, professionelle Katalogfotografie",
+      "soft-pink": "Platziere das Produkt auf einem sanften pastellrosa Hintergrund mit femininer Ästhetik, Beauty-Produktfotografie-Stil",
+      "living-room": "Platziere das Produkt in einem modernen minimalistischen Wohnzimmer mit natürlichem Licht durch große Fenster, Lifestyle-Produktfotografie",
+      "kitchen": "Platziere das Produkt auf einer hellen Küchentheke mit Marmoroberfläche und natürlichem Tageslicht, Heim-Lifestyle-Fotografie",
+      "bedroom": "Platziere das Produkt in einem gemütlichen Schlafzimmer mit neutraler Bettwäsche und warmer Umgebungsbeleuchtung",
+      "home-office": "Platziere das Produkt auf einem modernen Home-Office-Schreibtisch mit Pflanzen und minimaler Dekoration, professionelles und häusliches Setting",
+      "beach": "Platziere das Produkt an einem Sandstrand mit Meereswellen im Hintergrund, goldenes Stundenlicht, Urlaubs-Lifestyle",
+      "forest": "Platziere das Produkt in einem ruhigen Wald-Setting mit gesprenkeltem Sonnenlicht durch die Bäume, natürliches und organisches Gefühl",
+      "garden": "Platziere das Produkt in einem üppigen Garten mit bunten Blumen und Grün, frische Frühlingsatmosphäre",
+      "mountain": "Platziere das Produkt mit majestätischer Berglandschaft im Hintergrund, Abenteuer- und Outdoor-Lifestyle",
+      "cafe": "Platziere das Produkt auf einem rustikalen Café-Tisch mit warmer Umgebungsbeleuchtung und Bokeh-Hintergrund, urbaner Lifestyle",
+      "street": "Platziere das Produkt in einem urbanen Straßen-Setting mit Stadtarchitektur und natürlichem Tageslicht, Streetwear-Ästhetik",
+      "rooftop": "Platziere das Produkt auf einer Dachterrasse mit Stadtskyline im Hintergrund, anspruchsvolles urbanes Setting",
+      "subway": "Platziere das Produkt in einer modernen U-Bahn-Station mit klaren Linien und urbaner Pendleratmosphäre",
+      "editorial": "Platziere das Produkt in einem High-Fashion-Editorial-Setup mit dramatischer Beleuchtung und künstlerischer Komposition, Magazin-Cover-Qualität",
+      "fashion": "Platziere das Produkt in einem Mode-Fotostudio mit nahtlosem Hintergrund und professioneller Studiobeleuchtung",
+      "minimal": "Platziere das Produkt in einem ultra-minimalistischen Setting mit viel Negativraum, saubere skandinavische Ästhetik",
+      "vogue": "Platziere das Produkt in einem luxuriösen Vogue-inspirierten Setting mit High-End-Ästhetik und dramatischer Modebeleuchtung",
+      "christmas": "Platziere das Produkt in einem festlichen Weihnachts-Setting mit geschmücktem Baum, warmen Lichtern und gemütlicher Feiertagsatmosphäre",
+      "summer": "Platziere das Produkt in einem hellen Sommer-Setting mit tropischen Vibes, Sonnenschein und Urlaubsatmosphäre",
+      "autumn": "Platziere das Produkt umgeben von bunten Herbstblättern mit warmem Herbstlicht und gemütlichem saisonalem Gefühl",
+      "spring": "Platziere das Produkt in einem frischen Frühlingsgarten mit blühenden Blumen, sanften Pastellfarben und neuem Wachstum"
+    },
+    "prompt": {
+      "label": "Prompt",
+      "placeholder": "Beschreibe, wie das Produkt auf diesem Hintergrund platziert werden soll...",
+      "hint": "Bearbeite den Prompt, um die Platzierung deines Produkts anzupassen.",
+      "defaultCustom": "Platziere das Produkt auf diesem Hintergrund mit einem sauberen, professionellen Look"
+    },
     "review": {
       "title": "Überprüfe deinen Stapel",
       "products": "Produkte",
       "background": "Hintergrund",
       "totalCost": "Gesamtkosten",
-      "creditsPerImage": "{{credits}} Credits × {{count}} Bilder"
+      "creditsPerImage": "{{credits}} Credits × {{count}} Bilder",
+      "insufficientCredits": "Du hast {{available}} Credits. Du brauchst noch {{needed}}."
     },
     "processing": {
       "title": "Deine Bilder werden verarbeitet",
       "progress": "{{current}} von {{total}} abgeschlossen",
-      "estimatedTime": "Geschätzte Zeit: {{time}}"
+      "estimatedTime": "Geschätzte Zeit: {{time}}",
+      "uploading": "Bilder hochladen...",
+      "uploadingProgress": "Bilder hochladen... {{progress}}%",
+      "starting": "Wird gestartet...",
+      "canceled": "Stapel Abgebrochen",
+      "failed": "Stapel Fehlgeschlagen",
+      "processingFallback": "Verarbeitung...",
+      "cancel": "Abbrechen",
+      "completed": "Abgeschlossen: {{count}}",
+      "failedCount": "Fehlgeschlagen: {{count}}"
     },
     "results": {
       "title": "Deine Bilder sind fertig!",
@@ -688,6 +756,15 @@
       "back": "Zurück",
       "startProcessing": "Verarbeitung starten",
       "newBatch": "Neuer Stapel"
+    },
+    "errors": {
+      "signIn": "Bitte anmelden",
+      "signInDesc": "Du musst angemeldet sein, um Bilder zu verarbeiten.",
+      "uploadFailed": "Upload Fehlgeschlagen",
+      "uploadFailedDesc": "Fehler beim Hochladen der Produktbilder. Bitte versuche es erneut.",
+      "bgUploadFailedDesc": "Fehler beim Hochladen des benutzerdefinierten Hintergrunds. Bitte versuche es erneut.",
+      "processingFailed": "Verarbeitung Fehlgeschlagen",
+      "processingFailedDesc": "Fehler beim Starten der Stapelverarbeitung."
     }
   },
   "common": {

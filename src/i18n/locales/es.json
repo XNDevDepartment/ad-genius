@@ -666,17 +666,85 @@
       "urban": "Urbano",
       "seasonal": "Estacional"
     },
+    "presets": {
+      "white-seamless": "Blanco Liso",
+      "black-studio": "Estudio Negro",
+      "gradient-gray": "Gradiente Gris",
+      "soft-pink": "Rosa Suave",
+      "living-room": "Sala de Estar Moderna",
+      "kitchen": "Cocina Luminosa",
+      "bedroom": "Dormitorio Acogedor",
+      "home-office": "Oficina en Casa",
+      "beach": "Escena de Playa",
+      "forest": "Sendero del Bosque",
+      "garden": "Escenario de Jardín",
+      "mountain": "Vista de Montaña",
+      "cafe": "Cafetería",
+      "street": "Estilo Urbano",
+      "rooftop": "Vista desde la Azotea",
+      "subway": "Estación de Metro",
+      "editorial": "Setup Editorial",
+      "fashion": "Estudio de Moda",
+      "minimal": "Minimalista",
+      "vogue": "Estilo Vogue",
+      "christmas": "Escena de Navidad",
+      "summer": "Vibes de Verano",
+      "autumn": "Hojas de Otoño",
+      "spring": "Jardín de Primavera"
+    },
+    "prompts": {
+      "white-seamless": "Coloca el producto sobre un fondo blanco liso de estudio con iluminación suave y uniforme, estilo fotografía profesional de producto",
+      "black-studio": "Coloca el producto sobre un fondo negro mate de estudio con iluminación dramática, fotografía de producto premium",
+      "gradient-gray": "Coloca el producto sobre un fondo degradado gris suave de claro a oscuro, fotografía profesional de catálogo",
+      "soft-pink": "Coloca el producto sobre un fondo rosa pastel suave con estética femenina, estilo fotografía de belleza",
+      "living-room": "Coloca el producto en una sala de estar moderna y minimalista con luz natural de grandes ventanas, fotografía lifestyle",
+      "kitchen": "Coloca el producto sobre una encimera de cocina luminosa con superficie de mármol y luz natural, fotografía lifestyle del hogar",
+      "bedroom": "Coloca el producto en un dormitorio acogedor con ropa de cama neutra e iluminación ambiente cálida",
+      "home-office": "Coloca el producto en un escritorio de oficina moderno con plantas y decoración minimalista, ambiente profesional y hogareño",
+      "beach": "Coloca el producto en una playa de arena con olas del mar al fondo, luz dorada, lifestyle de vacaciones",
+      "forest": "Coloca el producto en un escenario sereno de bosque con rayos de sol entre los árboles, sensación natural y orgánica",
+      "garden": "Coloca el producto en un jardín exuberante con flores coloridas y vegetación, atmósfera fresca de primavera",
+      "mountain": "Coloca el producto con un paisaje majestuoso de montaña al fondo, lifestyle de aventura y aire libre",
+      "cafe": "Coloca el producto en una mesa rústica de cafetería con iluminación ambiente cálida y fondo desenfocado, lifestyle urbano",
+      "street": "Coloca el producto en un escenario urbano de calle con arquitectura de la ciudad y luz natural, estética streetwear",
+      "rooftop": "Coloca el producto en una terraza con el horizonte de la ciudad al fondo, escenario urbano sofisticado",
+      "subway": "Coloca el producto en una estación de metro moderna con líneas limpias y atmósfera urbana",
+      "editorial": "Coloca el producto en un setup editorial de alta moda con iluminación dramática y composición artística, calidad de portada de revista",
+      "fashion": "Coloca el producto en un estudio de fotografía de moda con fondo continuo e iluminación profesional",
+      "minimal": "Coloca el producto en un escenario ultra-minimalista con mucho espacio negativo, estética escandinava limpia",
+      "vogue": "Coloca el producto en un escenario lujoso inspirado en Vogue con estética premium e iluminación dramática de moda",
+      "christmas": "Coloca el producto en un escenario festivo de Navidad con árbol decorado, luces cálidas y atmósfera acogedora de fiestas",
+      "summer": "Coloca el producto en un escenario luminoso de verano con vibes tropicales, sol y atmósfera de vacaciones",
+      "autumn": "Coloca el producto rodeado de hojas coloridas de otoño con iluminación cálida y sensación estacional acogedora",
+      "spring": "Coloca el producto en un jardín fresco de primavera con flores en flor, colores pastel suaves y crecimiento nuevo"
+    },
+    "prompt": {
+      "label": "Prompt",
+      "placeholder": "Describe cómo quieres que el producto se coloque en este fondo...",
+      "hint": "Edita el prompt para personalizar cómo se coloca tu producto en el fondo.",
+      "defaultCustom": "Coloca el producto en este fondo con un aspecto limpio y profesional"
+    },
     "review": {
       "title": "Revisa tu Lote",
       "products": "Productos",
       "background": "Fondo",
       "totalCost": "Costo Total",
-      "creditsPerImage": "{{credits}} créditos × {{count}} imágenes"
+      "creditsPerImage": "{{credits}} créditos × {{count}} imágenes",
+      "insufficientCredits": "Tienes {{available}} créditos. Necesitas {{needed}} más."
     },
     "processing": {
       "title": "Procesando tus Imágenes",
       "progress": "{{current}} de {{total}} completadas",
-      "estimatedTime": "Tiempo estimado: {{time}}"
+      "estimatedTime": "Tiempo estimado: {{time}}",
+      "uploading": "Subiendo Imágenes...",
+      "uploadingProgress": "Subiendo imágenes... {{progress}}%",
+      "starting": "Iniciando...",
+      "canceled": "Lote Cancelado",
+      "failed": "Lote Fallido",
+      "processingFallback": "Procesando...",
+      "cancel": "Cancelar",
+      "completed": "Completadas: {{count}}",
+      "failedCount": "Fallidas: {{count}}"
     },
     "results": {
       "title": "¡Tus Imágenes están Listas!",
@@ -688,6 +756,15 @@
       "back": "Atrás",
       "startProcessing": "Iniciar Procesamiento",
       "newBatch": "Nuevo Lote"
+    },
+    "errors": {
+      "signIn": "Inicia sesión",
+      "signInDesc": "Necesitas iniciar sesión para procesar imágenes.",
+      "uploadFailed": "Fallo en la Subida",
+      "uploadFailedDesc": "Error al subir imágenes de producto. Inténtalo de nuevo.",
+      "bgUploadFailedDesc": "Error al subir fondo personalizado. Inténtalo de nuevo.",
+      "processingFailed": "Fallo en el Procesamiento",
+      "processingFailedDesc": "Error al iniciar el procesamiento por lotes."
     }
   },
   "common": {
