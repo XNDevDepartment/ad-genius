@@ -2380,5 +2380,17 @@
       "title": "Créateur de Tenues",
       "description": "Composez des tenues complètes avec haut, bas, chaussures et accessoires"
     }
+  },
+  "promo": {
+    "mobile": {
+      "starterOffer": "Plan Starter",
+      "firstMonth": "1er mois",
+      "timeLeft": "restant",
+      "getOffer": "Voir l'Offre",
+      "upgradeFrom": "Upgrade dès",
+      "perMonth": "/mois",
+      "limitedOffer": "Offre Limitée",
+      "seeOffer": "Voir l'Offre"
+    }
   }
 }

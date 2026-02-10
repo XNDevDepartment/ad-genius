@@ -2384,5 +2384,17 @@
       "title": "Creador de Outfits",
       "description": "Compón outfits completos con superior, inferior, zapatos y accesorios"
     }
+  },
+  "promo": {
+    "mobile": {
+      "starterOffer": "Plan Starter",
+      "firstMonth": "1er mes",
+      "timeLeft": "restante",
+      "getOffer": "Ver Oferta",
+      "upgradeFrom": "Upgrade desde",
+      "perMonth": "/mes",
+      "limitedOffer": "Oferta Limitada",
+      "seeOffer": "Ver Oferta"
+    }
   }
 }

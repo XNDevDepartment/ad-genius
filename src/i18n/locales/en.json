@@ -2402,5 +2402,17 @@
       "title": "AI Product Studio",
       "description": "Transform product photos with AI backgrounds. Create professional e-commerce images in seconds."
     }
+  },
+  "promo": {
+    "mobile": {
+      "starterOffer": "Starter Plan",
+      "firstMonth": "1st month",
+      "timeLeft": "left",
+      "getOffer": "Get Offer",
+      "upgradeFrom": "Upgrade from",
+      "perMonth": "/mo",
+      "limitedOffer": "Limited Offer",
+      "seeOffer": "See Offer"
+    }
   }
 }

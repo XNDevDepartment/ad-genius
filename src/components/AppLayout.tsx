@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import PaymentFailedBanner from "./PaymentFailedBanner";
 import ChristmasBanner from "./ChristmasBanner";
 import { FloatingOnboardingCard } from "./onboarding/FloatingOnboardingCard";
+import MobilePromoBanner from "./MobilePromoBanner";
 
 const AppLayout = () => {
   const location = useLocation();
@@ -42,6 +43,7 @@ const AppLayout = () => {
         <main className="pb-20">
           <Outlet />
         </main>
+        {user && <MobilePromoBanner />}
         {(user && (location.pathname !== '/create/ugc' && location.pathname !== '/create/ugc')) &&
           <BottomTabBar />
         }
