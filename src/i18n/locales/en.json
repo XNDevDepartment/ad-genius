@@ -741,8 +741,14 @@
       "products": "Products",
       "background": "Background",
       "totalCost": "Total Cost",
+      "credits": "credits",
       "creditsPerImage": "{{credits}} credits × {{count}} images",
       "insufficientCredits": "You have {{available}} credits. You need {{needed}} more."
+    },
+    "settings": {
+      "title": "Settings",
+      "imageSize": "Image Size",
+      "aspectRatio": "Aspect Ratio"
     },
     "processing": {
       "title": "Processing Your Images",
