@@ -94,16 +94,16 @@ export const useBulkBackgroundJob = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const { jobId } = await bulkBackgroundApi.createJob(payload);
       const { job: newJob } = await bulkBackgroundApi.getJob(jobId);
       const { results: initialResults } = await bulkBackgroundApi.getJobResults(jobId);
-      
+
       if (!isMountedRef.current) return null;
-      
+
       setJob(newJob);
       setResults(initialResults);
-      
+
       return { jobId };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create batch job';

@@ -8,7 +8,7 @@ export type CreateJobPayload = {
     number: number;
     size: '1024x1024' | '1536x1024' | '1024x1536';
     quality: 'low' | 'medium' | 'high';
-    orientation?: '1:1' | '3:2' | '2:3';
+    orientation?: '1:1' | '2:3' | '3:2' | '3:4' | '4:3' | '4:5' | '5:4' | '9:16' | '16:9' | '21:9';
     style?: 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'cinematic' | 'natural';
     timeOfDay?: 'natural' | 'golden' | 'night';
     highlight?: 'yes' | 'no';

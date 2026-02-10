@@ -1,5 +1,13 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+interface SettingsPayload {
+    outputFormat?: 'png' | 'webp';
+    quality?: 'high' | 'medium';
+    customPrompt?: string;
+    imageSize?: string;
+    aspectRatio?: string;
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -186,7 +194,8 @@ async function generateImageWithRetry(
   productBase64: string,
   backgroundBase64: string | null,
   prompt: string,
-  maxRetries = 3
+  maxRetries = 3,
+  settings: SettingsPayload | null
 ): Promise<Uint8Array | null> {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
@@ -220,7 +229,7 @@ async function generateImageWithRetry(
           contents: [{ parts }],
           "generationConfig": {
             "responseModalities": ["IMAGE","TEXT"],
-            "imageConfig": { "aspectRatio": "1:1" }
+            "imageConfig": { "aspectRatio": settings?.aspectRatio, "imageSize": settings?.imageSize }
           }
         }),
       });
@@ -347,7 +356,8 @@ async function processSingleResult(
     const generatedImage = await generateImageWithRetry(
       productBase64,
       backgroundBase64,
-      prompt
+      prompt,
+      job.settings
     );
 
     if (!generatedImage) {
