@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Download, Loader2, X, ExternalLink } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -331,28 +332,30 @@ const BulkBackground = () => {
                 {/* Aspect Ratio */}
                 <div className="space-y-2">
                   <p className="text-sm font-medium">{t("bulkBackground.settings.aspectRatio")}</p>
-                  <ToggleGroup
-                    type="single"
-                    value={aspectRatio}
-                    onValueChange={(v) => v && setAspectRatio(v)}
-                    className="grid grid-cols-3 sm:grid-cols-5 gap-1"
-                  >
-                    {['1:1','2:3','3:2','3:4','4:3','4:5','5:4','9:16','16:9','21:9'].map((ratio) => {
-                      const [w, h] = ratio.split(':').map(Number);
-                      const scale = 16 / Math.max(w, h);
-                      const boxW = Math.round(w * scale);
-                      const boxH = Math.round(h * scale);
-                      return (
-                        <ToggleGroupItem key={ratio} value={ratio} size="sm" className="text-xs px-2 py-1 bg-muted flex items-center gap-1.5">
-                          <div
-                            className={`border ${ratio === aspectRatio ? 'border-foreground' : 'border-muted-foreground/50'} shrink-0`}
-                            style={{ width: `${boxW}px`, height: `${boxH}px` }}
-                          />
-                          {ratio}
-                        </ToggleGroupItem>
-                      );
-                    })}
-                  </ToggleGroup>
+                  <Select value={aspectRatio} onValueChange={setAspectRatio}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {['1:1','2:3','3:2','3:4','4:3','4:5','5:4','9:16','16:9','21:9'].map((ratio) => {
+                        const [w, h] = ratio.split(':').map(Number);
+                        const scale = 16 / Math.max(w, h);
+                        const boxW = Math.round(w * scale);
+                        const boxH = Math.round(h * scale);
+                        return (
+                          <SelectItem key={ratio} value={ratio}>
+                            <span className="flex items-center gap-2">
+                              <span
+                                className="border border-foreground/50 shrink-0 inline-block"
+                                style={{ width: `${boxW}px`, height: `${boxH}px` }}
+                              />
+                              {ratio}
+                            </span>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <Button
