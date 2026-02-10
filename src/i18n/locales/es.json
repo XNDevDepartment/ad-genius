@@ -762,7 +762,8 @@
       "next": "Continuar",
       "back": "Atrás",
       "startProcessing": "Iniciar Procesamiento",
-      "newBatch": "Nuevo Lote"
+      "newBatch": "Nuevo Lote",
+      "changeBackground": "Cambiar Fondo"
     },
     "errors": {
       "signIn": "Inicia sesión",

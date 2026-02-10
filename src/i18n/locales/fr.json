@@ -2370,7 +2370,8 @@
       "next": "Continuer",
       "back": "Retour",
       "startProcessing": "Lancer le Traitement",
-      "newBatch": "Nouveau Lot"
+      "newBatch": "Nouveau Lot",
+      "changeBackground": "Changer le Fond"
     },
     "errors": {
       "signIn": "Veuillez vous connecter",

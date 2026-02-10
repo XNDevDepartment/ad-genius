@@ -767,7 +767,8 @@
       "next": "Continue",
       "back": "Back",
       "startProcessing": "Start Processing",
-      "newBatch": "New Batch"
+      "newBatch": "New Batch",
+      "changeBackground": "Change Background"
     },
     "errors": {
       "signIn": "Please sign in",
