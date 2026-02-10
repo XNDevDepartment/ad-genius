@@ -1,48 +1,54 @@
 
 
-# Bulk Background: Desktop Layout + New Job After Completion
+# Replace Review Section with Settings Section in Bulk Background
+
+## Overview
+Replace the current "Review & Start" section (Section 3) with a "Settings" section where the user picks image resolution and aspect ratio before processing. start button remain with the credits count in it. The product count / background name cards are replaced by resolution and aspect ratio selectors.
 
 ## Changes
 
-### 1. Wider desktop layout (match Outfit Swap style)
+### 1. Add new settings state and selectors to BulkBackground page
 **File:** `src/pages/BulkBackground.tsx`
 
-Currently the page uses `max-w-2xl` for all screen sizes. Change to:
-- Mobile: keep the narrow vertical layout as-is
-- Desktop (`lg:`): widen to `max-w-5xl` (similar to Outfit Swap's `max-w-7xl container`)
-- Keep the vertical single-column flow (no side-by-side panels)
-- Add responsive padding: `px-4 py-4 lg:py-8`
+- Add two new state variables:
+  - `imageSize: '1K' | '2K' | '4K'` (default `'1K'`)
+  - `aspectRatio` with options `'1:1' | '2:3' | '3:2' | '3:4' | '4:3' | '4:5' | '5:4' | '9:16' | '16:9' | '21:9'` (default `'1:1'`)
+- Replace the review section content (the product count / background name stat cards) with:
+  - **Image Size** selector: a ToggleGroup with 3 options (1K, 2K, 4K)
+  - **Aspect Ratio** selector: a ToggleGroup grid with all 10 ratio options, each showing a visual box icon representing the ratio
+- Add the credit cost summary to the "Start Processing" button below the selectors
+- Pass `imageSize` and `aspectRatio` into the `createJob` call via the `settings` object
+- Reset `imageSize` and `aspectRatio` in `handleNewBatch`; preserve them in `handleChangeBackground`
+- Rename the ref from `reviewRef` to `settingsRef`
 
-The outer wrapper changes from:
+### 2. Update section title and scroll triggers
+- Change section 3 title from `t("bulkBackground.review.title")` to `t("bulkBackground.settings.title")`
+- Scroll trigger remains the same (appears when background is selected)
+
+### 3. Add translation keys
+**Files:** All 5 locale files (`en.json`, `pt.json`, `es.json`, `de.json`, `fr.json`)
+
+Add under `bulkBackground.settings`:
+- `title`: "Settings" / "Definicoes" / "Configuracion" / "Einstellungen" / "Parametres"
+- `imageSize`: "Image Size" + translations
+- `aspectRatio`: "Aspect Ratio" + translations
+- Size labels: `1K`, `2K`, `4K` (same across languages)
+
+### 4. Update createJob payload
+Currently:
 ```
-max-w-2xl mx-auto
+settings: { outputFormat: 'webp', quality: 'high', customPrompt: ... }
 ```
-to:
+Will become:
 ```
-max-w-2xl lg:max-w-5xl mx-auto
+settings: { outputFormat: 'webp', quality: 'high', customPrompt: ..., imageSize, aspectRatio }
 ```
 
-### 2. Mobile optimization
-- Reduce padding on mobile for cards (`p-4` on mobile, `p-6 lg:p-8` on desktop)
-- Make the header more compact on mobile (smaller text, tighter gaps)
-- Results grid: `grid-cols-2` on mobile, `sm:grid-cols-3 lg:grid-cols-4` on desktop
+No backend changes needed -- `settings` is stored as a JSONB column so new keys are accepted automatically.
 
-### 3. "New Background" flow after job completion
-Currently `handleNewBatch` resets everything including uploaded product images. Add a second action that keeps the uploaded images but lets the user pick a new background:
-
-- Add a **"Change Background"** button alongside "New Batch" and "Download All" in the completion section
-- This button clears only the background selection, prompt, and job state -- but keeps `productImages` intact
-- The user scrolls back up to the background picker to choose a new background and start again
-- Add translation keys for the new button
-
-### Technical Details
-
-**File:** `src/pages/BulkBackground.tsx`
-- Change `max-w-2xl` to `max-w-2xl lg:max-w-5xl` on line 224
-- Update results grid from `grid-cols-2 sm:grid-cols-3` to `grid-cols-2 sm:grid-cols-3 lg:grid-cols-4`
-- Add `handleChangeBackground` function that resets job/background state but keeps product images
-- Add a new button in the completion actions area
-
-**Files:** `src/i18n/locales/en.json`, `pt.json`, `es.json`, `de.json`, `fr.json`
-- Add `bulkBackground.buttons.changeBackground` translation key
+## Technical Notes
+- The aspect ratio selector will use a `grid grid-cols-5` layout on desktop and `grid-cols-3` on mobile
+- Each ratio option shows a small rectangular box with proportional dimensions to visually represent the ratio
+- Image size options are simple text toggles: "1K", "2K", "4K"
+- The `handleChangeBackground` function preserves the selected resolution and aspect ratio so the user only needs to pick a new background
 
