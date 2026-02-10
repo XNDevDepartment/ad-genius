@@ -62,7 +62,7 @@ const ModuleSelection = () => {
       isBeta: false,
       locked: false
     },
-    ...(isAdmin ? [{
+    ...((isAdmin || user?.email === 'bacalhaustore@gmail.com') ? [{
       id: "bulk-background",
       title: t('createSelection.bulkBackground.title'),
       description: t('createSelection.bulkBackground.description'),
