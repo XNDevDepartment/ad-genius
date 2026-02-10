@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-interface SettingsPayload {
+export interface SettingsPayload {
     outputFormat?: 'png' | 'webp';
     quality?: 'high' | 'medium';
     customPrompt?: string;
@@ -219,6 +219,7 @@ async function generateImageWithRetry(
         });
       }
 
+
       const response = await fetch(GEMINI_ENDPOINT, {
         method: "POST",
         headers: {
@@ -228,8 +229,11 @@ async function generateImageWithRetry(
         body: JSON.stringify({
           contents: [{ parts }],
           "generationConfig": {
-            "responseModalities": ["IMAGE","TEXT"],
-            "imageConfig": { "aspectRatio": settings?.aspectRatio, "imageSize": settings?.imageSize }
+            "responseModalities": ["IMAGE"],
+            "imageConfig": {
+              "aspectRatio": settings?.aspectRatio,
+              "imageSize": settings?.imageSize
+            }
           }
         }),
       });
@@ -346,6 +350,7 @@ async function processSingleResult(
 
     // Build prompt
     const customPrompt = (job.settings as Record<string, unknown>)?.customPrompt as string | undefined;
+
     const prompt = buildPrompt(
       job.background_preset_id,
       !!backgroundBase64,
@@ -357,6 +362,7 @@ async function processSingleResult(
       productBase64,
       backgroundBase64,
       prompt,
+      3,
       job.settings
     );
 
