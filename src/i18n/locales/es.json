@@ -366,6 +366,13 @@
     "sourceImagesToggle": "Imágenes de Origen",
     "showSource": "Mostrar Origen",
     "loading": "Cargando tu biblioteca...",
+    "categories": {
+      "all": "Todas",
+      "ugc": "UGC",
+      "outfitSwap": "Outfit Swap",
+      "bulkBackground": "Fondo Masivo",
+      "sourceImages": "Imágenes de Origen"
+    },
     "empty": {
       "title": "Aún no hay imágenes en tu biblioteca",
       "description": "Genera contenido UGC para verlo aquí",

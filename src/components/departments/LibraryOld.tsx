@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileImage, Upload, CheckSquare, Trash2, Loader2, Store } from "lucide-react";
 import { BulkImageUploadModal } from "@/components/BulkImageUploadModal";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +24,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+
+type CategoryTab = 'all' | 'ugc' | 'outfit_swap' | 'bulk_background' | 'source';
 
 interface LibraryImage {
   id: string;
@@ -47,8 +49,7 @@ interface LibraryProps {
 export const Library = ({ onBack }: LibraryProps) => {
   const navigate = useNavigate();
   const [showSourceThumbnails, setShowSourceThumbnails] = useState(false);
-  const [viewMode, setViewMode] = useState<"ai" | "source">("ai");
-  const [filter, setFilter] = useState<"all" | "ugc" | "outfit_swap">("all");
+  const [activeTab, setActiveTab] = useState<CategoryTab>("all");
   const [showUploadModal, setShowUploadModal] = useState(false);
   
   // Selection mode states
@@ -62,9 +63,13 @@ export const Library = ({ onBack }: LibraryProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { t } = useTranslation();
+
+  const isSourceTab = activeTab === 'source';
+  const aiFilter = isSourceTab ? undefined : (activeTab as 'all' | 'ugc' | 'outfit_swap' | 'bulk_background');
+
   const { images, loading, hasMore, loadMore, deleteImage: deleteImageFromDB, deleteImages } = useLibraryImages({ 
     limit: 20, 
-    filter: viewMode === "ai" ? filter : undefined 
+    filter: aiFilter
   });
   const { sourceImages, loading: sourceLoading, refetch: refetchSourceImages, deleteSourceImage, deleteSourceImages } = useSourceImages();
   const { activeJob, activeImages } = useActiveJob();
@@ -74,18 +79,11 @@ export const Library = ({ onBack }: LibraryProps) => {
   };
 
   const handleDownload = async (image: LibraryImage) => {
-    toast({
-      title: "Download Started",
-      description: "Downloading image...",
-    });
-
+    toast({ title: "Download Started", description: "Downloading image..." });
     try {
       const isSourceImage = !!(image as any).signedUrl;
       const downloadUrl = isSourceImage ? (image as any).signedUrl : image.url;
-      
-      if (!downloadUrl) {
-        throw new Error('No download URL available');
-      }
+      if (!downloadUrl) throw new Error('No download URL available');
 
       const response = await fetch(downloadUrl);
       const blob = await response.blob();
@@ -94,22 +92,15 @@ export const Library = ({ onBack }: LibraryProps) => {
       link.href = url;
       
       if (isSourceImage) {
-        const fileName = (image as any).fileName || `source-${image.id}`;
-        link.download = fileName;
+        link.download = (image as any).fileName || `source-${image.id}`;
       } else {
-        const extension = image.settings?.format || 'png';
-        link.download = `ugc-${image.id}.${extension}`;
+        link.download = `ugc-${image.id}.${image.settings?.format || 'png'}`;
       }
-      
       link.click();
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Download error:', error);
-      toast({
-        title: "Download Failed",
-        description: "Failed to download image. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Download Failed", description: "Failed to download image. Please try again.", variant: "destructive" });
     }
   };
 
@@ -135,17 +126,12 @@ export const Library = ({ onBack }: LibraryProps) => {
       setTimeout(() => URL.revokeObjectURL(url), 30000);
     } catch (err) {
       console.error("Failed to open image in new tab:", err);
-      toast({
-        title: "Failed to Open",
-        description: "Could not open image in new tab.",
-        variant: "destructive",
-      });
+      toast({ title: "Failed to Open", description: "Could not open image in new tab.", variant: "destructive" });
     }
   };
 
   const handleSourceBulkDelete = async () => {
     if (sourceSelectedIds.size === 0) return;
-    
     setSourceBulkDeleting(true);
     try {
       const result = await deleteSourceImages(Array.from(sourceSelectedIds));
@@ -164,8 +150,17 @@ export const Library = ({ onBack }: LibraryProps) => {
     }
   };
 
-  const displayImages = viewMode === "ai" ? images : sourceImages;
-  const isLoading = viewMode === "ai" ? loading : sourceLoading;
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as CategoryTab);
+    // Reset selection mode when switching tabs
+    setAiSelectionMode(false);
+    setAiSelectedIds(new Set());
+    setSourceSelectionMode(false);
+    setSourceSelectedIds(new Set());
+  };
+
+  const displayImages = isSourceTab ? sourceImages : images;
+  const isLoading = isSourceTab ? sourceLoading : loading;
 
   return (
     <div className="lg:p-8 space-y-6 animate-fade-in">
@@ -191,11 +186,11 @@ export const Library = ({ onBack }: LibraryProps) => {
         <div className="flex items-center justify-between mr-7">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              {viewMode === "ai" ? t('library.aiGenerated') : t('library.sourceImages')} ({displayImages.length})
+              {isSourceTab ? t('library.sourceImages') : t('library.aiGenerated')} ({displayImages.length})
             </CardTitle>
           </CardHeader>
           <div className="flex items-center gap-2">
-            {viewMode === "source" && !sourceSelectionMode && (
+            {isSourceTab && !sourceSelectionMode && (
               <>
                 <Button variant="outline" size="sm" onClick={() => setSourceSelectionMode(true)}>
                   <CheckSquare className="w-4 h-4 mr-2" />
@@ -211,7 +206,7 @@ export const Library = ({ onBack }: LibraryProps) => {
                 </Button>
               </>
             )}
-            {viewMode === "ai" && !aiSelectionMode && (
+            {!isSourceTab && !aiSelectionMode && (
               <Button variant="outline" size="sm" onClick={() => setAiSelectionMode(true)}>
                 <CheckSquare className="w-4 h-4 mr-2" />
                 Select
@@ -221,25 +216,27 @@ export const Library = ({ onBack }: LibraryProps) => {
         </div>
         <CardContent>
           <div className="flex items-start lg:items-center gap-4 mb-6 lg:justify-between flex-col lg:flex-row">
-            <ToggleGroup type="single" value={viewMode} onValueChange={(value) => {
-              if (value) {
-                setViewMode(value as "ai" | "source");
-                // Reset selection mode when switching
-                setAiSelectionMode(false);
-                setAiSelectedIds(new Set());
-                setSourceSelectionMode(false);
-                setSourceSelectedIds(new Set());
-              }
-            }}>
-              <ToggleGroupItem value="ai" className="text-sm bg-muted">
-                {t('library.aiGenerated')}
-              </ToggleGroupItem>
-              <ToggleGroupItem value="source" className="text-sm bg-muted">
-                {t('library.sourceImages')}
-              </ToggleGroupItem>
-            </ToggleGroup>
+            <Tabs value={activeTab} onValueChange={handleTabChange}>
+              <TabsList className="flex-wrap h-auto">
+                <TabsTrigger value="all" className="text-sm">
+                  {t('library.categories.all', 'All')}
+                </TabsTrigger>
+                <TabsTrigger value="ugc" className="text-sm">
+                  {t('library.categories.ugc', 'UGC')}
+                </TabsTrigger>
+                <TabsTrigger value="outfit_swap" className="text-sm">
+                  {t('library.categories.outfitSwap', 'Outfit Swap')}
+                </TabsTrigger>
+                <TabsTrigger value="bulk_background" className="text-sm">
+                  {t('library.categories.bulkBackground', 'Bulk Background')}
+                </TabsTrigger>
+                <TabsTrigger value="source" className="text-sm">
+                  {t('library.categories.sourceImages', 'Source Images')}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
             
-            {viewMode === "ai" && (
+            {!isSourceTab && (
               <div className="flex items-center text-center gap-2">
                 <Switch
                   id="source-thumbnails"
@@ -254,7 +251,7 @@ export const Library = ({ onBack }: LibraryProps) => {
           </div>
 
           {/* Source Selection Mode Header */}
-          {viewMode === "source" && sourceSelectionMode && (
+          {isSourceTab && sourceSelectionMode && (
             <div className="flex items-center justify-between mb-4 p-3 bg-muted/50 rounded-lg">
               <div className="flex items-center gap-3">
                 <span className="text-sm font-medium">{sourceSelectedIds.size} selected</span>
@@ -287,7 +284,7 @@ export const Library = ({ onBack }: LibraryProps) => {
               </div>
               <p className="text-muted-foreground">{t('library.loading')}</p>
             </div>
-          ) : viewMode === "ai" ? (
+          ) : !isSourceTab ? (
             <ImageLibraryGrid
               images={images as any}
               loading={loading}

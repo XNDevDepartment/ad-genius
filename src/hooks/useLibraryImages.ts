@@ -19,7 +19,7 @@ export interface LibraryImage {
   desiredAudience?: string;
   prodSpecs?: string;
   source_image_ids?: string[];
-  source_type?: 'ugc' | 'outfit_swap' | 'photoshoot' | 'ecommerce';
+  source_type?: 'ugc' | 'outfit_swap' | 'photoshoot' | 'ecommerce' | 'bulk_background';
   photoshoot_id?: string;
   angle_type?: 'front' | 'three_quarter' | 'back' | 'side';
   style_prompt?: string;
@@ -29,7 +29,7 @@ export interface LibraryImage {
 interface PaginationOptions {
   page?: number;
   limit?: number;
-  filter?: 'all' | 'ugc' | 'outfit_swap';
+  filter?: 'all' | 'ugc' | 'outfit_swap' | 'bulk_background';
 }
 
 export const useLibraryImages = (options: PaginationOptions = {}) => {
@@ -61,115 +61,135 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       
       if (sessionError) {
         console.error('[useLibraryImages] Session error:', sessionError);
-        
-        // Try to refresh the session once
-        console.log('[useLibraryImages] Attempting to refresh session...');
         const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
-        
         if (refreshError || !refreshedSession) {
-          console.error('[useLibraryImages] Session refresh failed, forcing logout');
           localStorage.clear();
           await supabase.auth.signOut();
           setError('Your session has expired. Please log in again.');
           setLoading(false);
           return;
         }
-        
-        console.log('[useLibraryImages] Session refreshed successfully');
       }
       
       if (!session) {
-        console.error('[useLibraryImages] No active session found');
-        
-        // Try to refresh the session
         const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
-        
         if (refreshError || !refreshedSession) {
-          console.error('[useLibraryImages] No valid session, forcing logout');
           localStorage.clear();
           await supabase.auth.signOut();
           setError('Your session has expired. Please log in again.');
           setLoading(false);
           return;
         }
-        
-        console.log('[useLibraryImages] Session recovered after refresh');
       }
-
-      console.log('[useLibraryImages] Session verified, fetching images for user:', user.id);
 
       const offset = (pageNumber - 1) * limit;
       console.log('[useLibraryImages] Fetching images:', { pageNumber, offset, limit, filter });
 
-      // Conditionally fetch based on filter
-      let ugcResult = { data: null, error: null };
-      let outfitSwapResult = { data: null, error: null };
-      let photoshootResult = { data: null, error: null };
-      let ecommerceResult = { data: null, error: null };
+      // Only query tables relevant to the active filter
+      let ugcResult = { data: null as any[] | null, error: null as any };
+      let outfitSwapResult = { data: null as any[] | null, error: null as any };
+      let photoshootResult = { data: null as any[] | null, error: null as any };
+      let ecommerceResult = { data: null as any[] | null, error: null as any };
+      let bulkBgResult = { data: null as any[] | null, error: null as any };
 
-      if (filter === 'all' || filter === 'ugc') {
+      if (filter === 'ugc') {
+        // Only UGC — pagination is accurate
         ugcResult = await supabase
           .from('ugc_images')
           .select('*, image_jobs(desiredAudience, prodSpecs, source_image_ids, settings)')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .range(offset, offset + limit - 1);
-      }
-
-      if (filter === 'all' || filter === 'outfit_swap') {
-        outfitSwapResult = await supabase
-          .from('outfit_swap_results')
-          .select('*, outfit_swap_jobs(settings, metadata)')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .range(offset, offset + limit - 1);
-        
-        photoshootResult = await supabase
-          .from('outfit_swap_photoshoots')
-          .select('*')
-          .eq('user_id', user.id)
+      } else if (filter === 'outfit_swap') {
+        // Only outfit swap related tables
+        const [osRes, psRes, ecRes] = await Promise.all([
+          supabase
+            .from('outfit_swap_results')
+            .select('*, outfit_swap_jobs(settings, metadata)')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1),
+          supabase
+            .from('outfit_swap_photoshoots')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('status', 'completed')
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1),
+          supabase
+            .from('outfit_swap_ecommerce_photos')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('status', 'completed')
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1),
+        ]);
+        outfitSwapResult = osRes;
+        photoshootResult = psRes;
+        ecommerceResult = ecRes;
+      } else if (filter === 'bulk_background') {
+        // Only bulk background — pagination is accurate
+        bulkBgResult = await supabase
+          .from('bulk_background_results')
+          .select('*, bulk_background_jobs!inner(user_id)')
+          .eq('bulk_background_jobs.user_id', user.id)
           .eq('status', 'completed')
+          .not('result_url', 'is', null)
           .order('created_at', { ascending: false })
           .range(offset, offset + limit - 1);
-        
-        ecommerceResult = await supabase
-          .from('outfit_swap_ecommerce_photos')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('status', 'completed')
-          .order('created_at', { ascending: false })
-          .range(offset, offset + limit - 1);
+      } else {
+        // "all" — query all tables with the same range (approximate pagination)
+        const [ugcRes, osRes, psRes, ecRes, bgRes] = await Promise.all([
+          supabase
+            .from('ugc_images')
+            .select('*, image_jobs(desiredAudience, prodSpecs, source_image_ids, settings)')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1),
+          supabase
+            .from('outfit_swap_results')
+            .select('*, outfit_swap_jobs(settings, metadata)')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1),
+          supabase
+            .from('outfit_swap_photoshoots')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('status', 'completed')
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1),
+          supabase
+            .from('outfit_swap_ecommerce_photos')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('status', 'completed')
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1),
+          supabase
+            .from('bulk_background_results')
+            .select('*, bulk_background_jobs!inner(user_id)')
+            .eq('bulk_background_jobs.user_id', user.id)
+            .eq('status', 'completed')
+            .not('result_url', 'is', null)
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1),
+        ]);
+        ugcResult = ugcRes;
+        outfitSwapResult = osRes;
+        photoshootResult = psRes;
+        ecommerceResult = ecRes;
+        bulkBgResult = bgRes;
       }
 
-      console.log('[useLibraryImages] Query results:', { 
-        ugcCount: ugcResult.data?.length || 0, 
-        outfitSwapCount: outfitSwapResult.data?.length || 0,
-        photoshootCount: photoshootResult.data?.length || 0,
-        ecommerceCount: ecommerceResult.data?.length || 0,
-        ugcError: ugcResult.error,
-        outfitSwapError: outfitSwapResult.error,
-        photoshootError: photoshootResult.error,
-        ecommerceError: ecommerceResult.error
-      });
+      // Check for errors
+      if (ugcResult.error) throw ugcResult.error;
+      if (outfitSwapResult.error) throw outfitSwapResult.error;
+      if (photoshootResult.error) throw photoshootResult.error;
+      if (ecommerceResult.error) throw ecommerceResult.error;
+      if (bulkBgResult.error) throw bulkBgResult.error;
 
-      if (ugcResult.error) {
-        console.error('[useLibraryImages] UGC images query error:', ugcResult.error);
-        throw ugcResult.error;
-      }
-      if (outfitSwapResult.error) {
-        console.error('[useLibraryImages] Outfit swap results query error:', outfitSwapResult.error);
-        throw outfitSwapResult.error;
-      }
-      if (photoshootResult.error) {
-        console.error('[useLibraryImages] Photoshoot query error:', photoshootResult.error);
-        throw photoshootResult.error;
-      }
-      if (ecommerceResult.error) {
-        console.error('[useLibraryImages] E-commerce query error:', ecommerceResult.error);
-        throw ecommerceResult.error;
-      }
-
-      // Normalize both data sources to LibraryImage format
+      // Normalize UGC images
       const ugcImages: LibraryImage[] = (ugcResult.data || []).map(img => {
         const jobData = Array.isArray(img.image_jobs) ? img.image_jobs[0] : img.image_jobs;
         return {
@@ -188,10 +208,11 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
           desiredAudience: jobData?.desiredAudience,
           prodSpecs: jobData?.prodSpecs,
           source_image_ids: jobData?.source_image_ids,
-          source_type: 'ugc'
+          source_type: 'ugc' as const
         };
       });
 
+      // Normalize outfit swap images
       const outfitSwapImages: LibraryImage[] = (outfitSwapResult.data || []).map((result: any) => {
         const jobData = result.outfit_swap_jobs;
         return {
@@ -207,30 +228,23 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
             ...jobData?.settings
           },
           job_id: result.job_id,
-          source_type: 'outfit_swap'
+          source_type: 'outfit_swap' as const
         };
       });
 
-      // Process photoshoot images
+      // Normalize photoshoot images
       const photoshootImages: LibraryImage[] = (photoshootResult.data || []).flatMap((photoshoot: any) => {
         const images: LibraryImage[] = [];
         const selectedAngles = photoshoot.selected_angles || ['front', 'three_quarter', 'back', 'side'];
-        
         selectedAngles.forEach((angle: string, index: number) => {
           const imageUrl = photoshoot[`image_${index + 1}_url`];
-          
           if (imageUrl) {
             images.push({
               id: `${photoshoot.id}_${angle}`,
               url: imageUrl,
               prompt: `Photoshoot - ${angle.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())} View`,
               created_at: photoshoot.created_at,
-              settings: {
-                size: '1024x1024',
-                quality: 'high',
-                numberOfImages: 1,
-                format: 'png'
-              },
+              settings: { size: '1024x1024', quality: 'high', numberOfImages: 1, format: 'png' },
               source_type: 'photoshoot',
               photoshoot_id: photoshoot.id,
               angle_type: angle as any,
@@ -238,25 +252,30 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
             });
           }
         });
-        
         return images;
       });
 
-      // Process e-commerce photos
+      // Normalize e-commerce photos
       const ecommerceImages: LibraryImage[] = (ecommerceResult.data || []).map((photo: any) => ({
         id: photo.id,
         url: photo.public_url,
         prompt: photo.prompt_used || 'E-commerce Photo',
         created_at: photo.created_at,
-        settings: {
-          size: '1024x1024',
-          quality: 'high',
-          numberOfImages: 1,
-          format: 'png'
-        },
-        source_type: 'ecommerce',
+        settings: { size: '1024x1024', quality: 'high', numberOfImages: 1, format: 'png' },
+        source_type: 'ecommerce' as const,
         style_prompt: photo.prompt_used,
         original_result_id: photo.result_id
+      }));
+
+      // Normalize bulk background images
+      const bulkBgImages: LibraryImage[] = (bulkBgResult.data || []).map((result: any) => ({
+        id: result.id,
+        url: result.result_url,
+        prompt: 'Bulk Background',
+        created_at: result.created_at,
+        settings: { size: '1024x1024', quality: 'high', numberOfImages: 1, format: 'png' },
+        source_type: 'bulk_background' as const,
+        source_image_id: result.source_image_id
       }));
 
       // Combine and sort by creation date
@@ -264,7 +283,8 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
         ...ugcImages, 
         ...outfitSwapImages, 
         ...photoshootImages, 
-        ...ecommerceImages
+        ...ecommerceImages,
+        ...bulkBgImages
       ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       console.log('[useLibraryImages] Processed images:', { 
@@ -272,23 +292,19 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
         outfitSwap: outfitSwapImages.length,
         photoshoot: photoshootImages.length,
         ecommerce: ecommerceImages.length,
+        bulkBg: bulkBgImages.length,
         total: processedImages.length 
       });
 
-      // Estimate total count and hasMore status
-      const currentCount = ugcImages.length + outfitSwapImages.length + photoshootImages.length + ecommerceImages.length;
+      // Estimate hasMore
+      const currentCount = processedImages.length;
       setHasMore(currentCount >= limit);
 
-      // Get source image signed URLs for thumbnail overlays (batch optimized)
-      // Support both singular source_image_id and array source_image_ids
+      // Get source image signed URLs for thumbnail overlays
       const sourceImageIds = Array.from(new Set(
         processedImages.flatMap(img => {
           const ids: string[] = [];
-          // Add singular source_image_id if exists
-          if (img.source_image_id) {
-            ids.push(img.source_image_id);
-          }
-          // Add first item from source_image_ids array if exists
+          if (img.source_image_id) ids.push(img.source_image_id);
           if (img.source_image_ids && Array.isArray(img.source_image_ids) && img.source_image_ids.length > 0) {
             ids.push(img.source_image_ids[0]);
           }
@@ -297,23 +313,18 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       )).filter(Boolean) as string[];
 
       if (sourceImageIds.length > 0) {
-        // Batch fetch source images with signed URLs
         const { data: sourceImages } = await supabase
           .from('source_images')
           .select('id, storage_path')
           .in('id', sourceImageIds);
 
         if (sourceImages && sourceImages.length > 0) {
-          // Create signed URLs in parallel with better error handling
           const sourceUrlResults = await Promise.allSettled(
             sourceImages.map(async (sourceImg) => {
               const { data } = await supabase.storage
                 .from('ugc-inputs')
                 .createSignedUrl(sourceImg.storage_path, 3600);
-              return {
-                id: sourceImg.id,
-                signedUrl: data?.signedUrl || null
-              };
+              return { id: sourceImg.id, signedUrl: data?.signedUrl || null };
             })
           );
 
@@ -324,14 +335,10 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
             }
           });
 
-          // Add source signed URLs to images
           processedImages.forEach(img => {
-            // Try singular source_image_id first
             if (img.source_image_id && sourceUrlMap.has(img.source_image_id)) {
               img.sourceSignedUrl = sourceUrlMap.get(img.source_image_id);
-            }
-            // Fall back to first item in source_image_ids array
-            else if (img.source_image_ids && Array.isArray(img.source_image_ids) && img.source_image_ids.length > 0) {
+            } else if (img.source_image_ids && Array.isArray(img.source_image_ids) && img.source_image_ids.length > 0) {
               const firstSourceId = img.source_image_ids[0];
               if (sourceUrlMap.has(firstSourceId)) {
                 img.sourceSignedUrl = sourceUrlMap.get(firstSourceId);
@@ -341,7 +348,6 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
         }
       }
 
-      // Append or replace images based on pagination
       if (shouldAppend) {
         setImages(prev => [...prev, ...processedImages]);
       } else {
@@ -349,31 +355,17 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       }
     } catch (err) {
       console.error('[useLibraryImages] Failed to fetch library images:', err);
-      console.error('[useLibraryImages] Error details:', {
-        message: err instanceof Error ? err.message : 'Unknown error',
-        code: (err as any)?.code,
-        details: (err as any)?.details,
-        hint: (err as any)?.hint
-      });
       
-      // Check if it's a session/auth error (403 or session-related)
       const errorCode = (err as any)?.code;
       const errorMessage = err instanceof Error ? err.message : '';
       
       if (errorCode === 'PGRST301' || errorMessage.includes('session') || errorMessage.includes('JWT')) {
-        console.error('[useLibraryImages] Auth error detected, attempting recovery...');
-        
-        // Try to refresh session once
         const { error: refreshError } = await supabase.auth.refreshSession();
-        
         if (refreshError) {
-          console.error('[useLibraryImages] Session refresh failed during error recovery');
           localStorage.clear();
           await supabase.auth.signOut();
           setError('Your session has expired. Please log in again.');
         } else {
-          console.log('[useLibraryImages] Session refreshed during error recovery, retrying...');
-          // Retry the fetch after successful refresh
           setTimeout(() => fetchImages(pageNumber, shouldAppend), 100);
           return;
         }
@@ -389,45 +381,31 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
     if (!user) return;
 
     try {
-      console.log('[useLibraryImages] Attempting to delete image:', imageId);
-      
-      // Check if it's a composite ID for photoshoot images (format: "photoshoot_id_angle")
       const isPhotoshootImage = imageId.includes('_front') || imageId.includes('_back') || 
                                  imageId.includes('_side') || imageId.includes('_three_quarter');
       
       let deleteResults;
       
       if (isPhotoshootImage) {
-        // Extract photoshoot ID from composite ID (remove the angle suffix)
         const photoshootId = imageId.split('_').slice(0, -1).join('_');
-        
-        // Delete entire photoshoot (deleting individual angles isn't supported)
         deleteResults = await Promise.all([
           supabase.from('outfit_swap_photoshoots').delete().eq('id', photoshootId).eq('user_id', user.id)
         ]);
       } else {
-        // Try deleting from all possible tables
         deleteResults = await Promise.all([
           supabase.from('ugc_images').delete().eq('id', imageId).eq('user_id', user.id),
           supabase.from('outfit_swap_results').delete().eq('id', imageId).eq('user_id', user.id),
-          supabase.from('outfit_swap_ecommerce_photos').delete().eq('id', imageId).eq('user_id', user.id)
+          supabase.from('outfit_swap_ecommerce_photos').delete().eq('id', imageId).eq('user_id', user.id),
+          supabase.from('bulk_background_results').delete().eq('id', imageId).eq('user_id', user.id)
         ]);
       }
 
-      console.log('[useLibraryImages] Delete results:', deleteResults.map(r => ({ error: r.error })));
-
-      // Check if any deletion succeeded
       const anySuccess = deleteResults.some(result => !result.error);
-      
       if (!anySuccess) {
         const errorMsg = deleteResults.find(r => r.error)?.error?.message || 'Unknown error';
-        console.error('[useLibraryImages] All delete operations failed');
         throw new Error(`Failed to delete image: ${errorMsg}`);
       }
 
-      console.log('[useLibraryImages] Image deleted successfully, refreshing list');
-      
-      // Refresh the images list
       await fetchImages(1, false);
     } catch (err) {
       console.error('[useLibraryImages] Failed to delete image:', err);
@@ -452,10 +430,8 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
     let success = 0;
     let failed = 0;
 
-    // Get images to delete with their types
     const imagesToDelete = images.filter(img => imageIds.includes(img.id));
     
-    // Process in batches of 5
     const batchSize = 5;
     for (let i = 0; i < imagesToDelete.length; i += batchSize) {
       const batch = imagesToDelete.slice(i, i + batchSize);
