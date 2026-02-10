@@ -1,64 +1,95 @@
 
-# Add Editable Prompt Field and Thumbnail Images to Background Presets
+# Mobile Promo Banner Strategy for Free Users (ONB1ST - 19.99 EUR)
 
 ## Overview
 
-Add representative thumbnail images to each background preset and an editable "Prompt" textarea field (like the UGC scenario description field) that auto-fills when a preset is selected. The user can then edit the prompt before processing.
+Create a time-limited promotional banner system that targets free-tier users on mobile, showing a 24-hour countdown offer for the Starter plan at 19.99 EUR (using the existing ONB1ST promo code). The strategy has three touchpoints:
+
+1. **Sticky promo banner** above the bottom tab bar on mobile (most visible)
+2. **Promo card on the home page** replacing the current subtle "Get More Credits" ghost button
+3. **Highlighted promo badge on the Pricing page** for the Starter plan card
+
+## Strategy Rationale
+
+- Free users on mobile currently only see a small ghost "Get More Credits" button -- easy to miss
+- A sticky banner with a live countdown creates urgency without being intrusive (dismissible)
+- The 24h countdown starts from the user's first login (stored in localStorage), so each user gets their own window
+- If dismissed, it stays hidden for the session but reappears next visit (soft persistence)
+- Once the 24h window expires, the banner changes to a softer "Upgrade" nudge without the countdown
 
 ## Changes
 
-### 1. Map thumbnail images to presets (`src/data/background-presets.ts`)
+### 1. New Component: `src/components/MobilePromoBanner.tsx`
 
-Each category folder has 4 images matching the 4 presets in order. Add `thumbnail` imports:
+A sticky banner positioned just above the BottomTabBar (bottom-20) on mobile only:
 
-- **Studio** (4 presets, 4 images): white-seamless, black-studio, gradient-gray, soft-pink
-- **Lifestyle** (4 presets, 4 images): living-room, kitchen, bedroom, home-office
-- **Magazine** (4 presets, 4 images): editorial, fashion, minimal, vogue
-- **Nature** (4 presets, 4 images): beach, forest, garden, mountain
-- **Urban** (4 presets, 4 images): cafe, street, rooftop, subway
-- **Seasonal** (4 presets, 4 images): christmas, summer, autumn, spring
+- **Visibility rules**: Only renders when user is authenticated, on Free tier, and on mobile
+- **Countdown timer**: 24h countdown from first-seen timestamp (stored in localStorage as `promo_onb1st_start`)
+- **Design**: Compact gradient bar (primary-to-purple) with:
+  - Price highlight: "Starter plan -- 19.99 EUR/1st month"
+  - Live countdown: "HH:MM:SS remaining"
+  - CTA button: navigates to `/promo/first-month` (reuses existing checkout page)
+  - Dismiss X button (hides for current session via sessionStorage)
+- **Post-expiry**: Shows a simpler "Upgrade from 19.99 EUR/mo" without countdown (the ONB1ST code remains valid, just no urgency)
+- Fully translated (all 5 locales)
 
-Import each image and assign it to the corresponding preset's `thumbnail` field.
+### 2. Update `src/components/AppLayout.tsx`
 
-### 2. Show thumbnails in BackgroundPresets component (`src/components/bulk-background/BackgroundPresets.tsx`)
+- Import and render `MobilePromoBanner` in the mobile layout section, between `<Outlet />` and `<BottomTabBar />`
+- Only render when `user` exists
 
-Replace the current placeholder `div` (gradient with text) with an actual `img` tag using the preset's `thumbnail` when available. Keep the name overlay and selection indicator as they are.
+### 3. Update `src/pages/Index.tsx` -- Mobile Home Promo Card
 
-### 3. Add editable prompt field to BackgroundPicker (`src/components/bulk-background/BackgroundPicker.tsx`)
+Replace the current ghost "Get More Credits" button (lines 78-88) with a more prominent promo card for Free users:
 
-- Add a new prop: `promptValue: string` and `onPromptChange: (value: string) => void`
-- After the `BackgroundPresets` grid (in preset mode), render a `Textarea` similar to the UGC scenario description field:
-  - Label: "Prompt" or similar
-  - Auto-fills with the selected preset's `prompt` when a preset is clicked
-  - Editable by the user
-  - Disabled when no preset is selected
-  - Styled with `min-h-[80px] rounded-apple-sm`
-- Also show the textarea in custom mode (for custom background uploads) so the user can describe their desired result
+- **For Free tier**: Show a compact card with gradient border, showing "Starter 19.99 EUR/1st month" with a "See Offer" button linking to `/promo/first-month`
+- **For paid tiers**: Keep the existing "Get More Credits" ghost button as-is
 
-### 4. Wire prompt state through BulkBackground page (`src/pages/BulkBackground.tsx`)
+### 4. Add translations to all locale files
 
-- Add `backgroundPrompt` state (string)
-- When a preset is selected, auto-fill `backgroundPrompt` from `backgroundPresets.find(p => p.id === presetId)?.prompt`
-- When custom background is uploaded, set a default prompt like "Place the product on this background with a clean, professional look"
-- Pass `backgroundPrompt` and `setBackgroundPrompt` to `BackgroundPicker`
-- Include the prompt in the `createJob` call via the `settings` field: `settings: { outputFormat: 'webp', quality: 'high', customPrompt: backgroundPrompt }`
+Add `promo.mobile.*` keys to EN, PT, ES, DE, FR:
 
-### 5. Update edge function to use custom prompt (`supabase/functions/bulk-background/index.ts`)
+- `promo.mobile.starterOffer` -- "Starter Plan"
+- `promo.mobile.firstMonth` -- "1st month"
+- `promo.mobile.timeLeft` -- "left"
+- `promo.mobile.getOffer` -- "Get Offer"
+- `promo.mobile.upgradeFrom` -- "Upgrade from"
+- `promo.mobile.perMonth` -- "/mo"
+- `promo.mobile.limitedOffer` -- "Limited Offer"
+- `promo.mobile.seeOffer` -- "See Offer"
 
-- In the `createJob` action, pass `settings.customPrompt` through to the job record (already stored in JSONB `settings` column)
-- In `buildPrompt` / where prompt is constructed for Gemini, check if `job.settings.customPrompt` exists and use it instead of auto-building from preset hints
-- Fallback to current `buildPrompt` logic if no custom prompt is present
+### 5. No backend changes needed
 
-### 6. Update API types (`src/api/bulk-background-api.ts`)
-
-- Add `customPrompt?: string` to the `settings` field of `CreateBulkJobPayload`
+- The ONB1ST promo code and `/promo/first-month` checkout page already exist and work
+- The `create-checkout` edge function already handles ONB1ST
 
 ## Technical Details
 
-**Prompt flow:**
-1. User selects preset -> prompt auto-fills from preset data
-2. User optionally edits the prompt text
-3. On "Start Processing", the final prompt text is sent in `settings.customPrompt`
-4. Edge function uses `settings.customPrompt` as the prompt for Gemini, falling back to the old preset-based prompt building if absent
+**Countdown logic:**
+```text
+1. On first render, check localStorage for 'promo_onb1st_start'
+2. If not set, store Date.now() as the start timestamp
+3. Calculate remaining = start + 24h - now
+4. Update every second via setInterval
+5. If remaining <= 0, show post-expiry soft CTA
+```
 
-**No database schema changes needed** -- the `settings` JSONB column can store the custom prompt without migration.
+**Dismiss logic:**
+```text
+- sessionStorage key: 'promo_banner_dismissed'
+- Dismissing hides banner for current browser session only
+- Returns on next visit/session to maintain visibility
+```
+
+**Tier detection:**
+```text
+- Uses useCredits() hook to get 'tier'
+- Banner only shows when tier === 'Free'
+```
+
+**Positioning:**
+```text
+- Banner: fixed bottom-20 (above BottomTabBar's bottom-0)
+- z-index: z-40 (below BottomTabBar's z-50)
+- Left/right padding with rounded corners for a floating card feel
+```
