@@ -68,9 +68,9 @@ const PromoFirstMonth = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <HeaderSection />
+      {/* <HeaderSection /> */}
       
-      <div className="container mx-auto px-4 pt-24 pb-12 max-w-2xl">
+      <div className="container mx-auto px-4 pt-3 pb-12 max-w-2xl">
         {/* Back button */}
         <Button
           variant="ghost"

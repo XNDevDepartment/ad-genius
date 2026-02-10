@@ -17,7 +17,7 @@ import { LoadingFallback } from "./components/LoadingFallback";
 import { checkForCachedVersion } from "./utils/cacheCheck";
 import { lazyWithRetry } from "./utils/lazyWithRetry";
 import { AuthGuard } from "./components/AuthGuard";
-import ChristmasBanner from "./components/ChristmasBanner";
+
 import { CookieConsent } from "./components/CookieConsent";
 
 // Lazy load non-critical routes with automatic retry logic
@@ -53,7 +53,6 @@ const MagazinePhotoshoot = lazyWithRetry(() => import("./pages/MagazinePhotoshoo
 const CreateCustomModel = lazyWithRetry(() => import("./pages/CreateCustomModel"));
 const VideoAds = lazyWithRetry(() => import("./pages/VideoAds"));
 const LandingPageV2 = lazyWithRetry(() => import("./pages/LandingPageV2"));
-const ChristmasPromo = lazyWithRetry(() => import("./pages/ChristmasPromo"));
 const PromoFirstMonth = lazyWithRetry(() => import("./pages/PromoFirstMonth"));
 const AffiliateLanding = lazyWithRetry(() => import("./pages/AffiliateLanding"));
 const AffiliateDashboard = lazyWithRetry(() => import("./pages/AffiliateDashboard"));
@@ -376,13 +375,6 @@ const App = () => {
                 <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
                     <LandingPageV2 />
-                  </Suspense>
-                </ErrorBoundaryWithReset>
-              } />
-              <Route path="/natal" element={
-                <ErrorBoundaryWithReset>
-                  <Suspense fallback={<LoadingFallback />}>
-                    <ChristmasPromo />
                   </Suspense>
                 </ErrorBoundaryWithReset>
               } />
