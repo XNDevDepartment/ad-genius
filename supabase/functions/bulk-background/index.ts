@@ -807,7 +807,8 @@ Deno.serve(async (req: Request) => {
             background_image_url: jobData.background_image_url,
             total_images: jobData.total_images,
             completed_images: 0,
-            failed_images: 0
+            failed_images: 0,
+            settings: jobData.settings || null
           },
           adminClient,
           backgroundBase64
