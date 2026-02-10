@@ -762,7 +762,8 @@
       "next": "Weiter",
       "back": "Zurück",
       "startProcessing": "Verarbeitung starten",
-      "newBatch": "Neuer Stapel"
+      "newBatch": "Neuer Stapel",
+      "changeBackground": "Hintergrund ändern"
     },
     "errors": {
       "signIn": "Bitte anmelden",

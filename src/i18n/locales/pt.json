@@ -766,7 +766,8 @@
       "next": "Continuar",
       "back": "Voltar",
       "startProcessing": "Iniciar Processamento",
-      "newBatch": "Novo Lote"
+      "newBatch": "Novo Lote",
+      "changeBackground": "Alterar Fundo"
     },
     "errors": {
       "signIn": "Inicia sessão",

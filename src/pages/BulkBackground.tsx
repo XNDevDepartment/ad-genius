@@ -219,9 +219,22 @@ const BulkBackground = () => {
     setUploadProgress(0);
   };
 
+  const handleChangeBackground = () => {
+    clearJob();
+    setProcessingStarted(false);
+    setCustomBackground(null);
+    setSelectedPreset(null);
+    setBackgroundPrompt("");
+    setUploadProgress(0);
+    // Scroll back to background picker
+    setTimeout(() => {
+      backgroundRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
+
   return (
     <div className="min-h-screen bg-background p-4">
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-2xl lg:max-w-5xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button
@@ -395,7 +408,7 @@ const BulkBackground = () => {
                       </div>
                     )}
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                       {results.map((result, index) => (
                         <div
                           key={result.id || index}
@@ -460,7 +473,10 @@ const BulkBackground = () => {
                         <Download className="h-4 w-4" />
                         {t("bulkBackground.results.downloadAll")}
                       </Button>
-                      <Button variant="outline" onClick={handleNewBatch}>
+                      <Button variant="outline" onClick={handleChangeBackground}>
+                        {t("bulkBackground.buttons.changeBackground")}
+                      </Button>
+                      <Button variant="ghost" onClick={handleNewBatch}>
                         {t("bulkBackground.buttons.newBatch")}
                       </Button>
                     </div>
