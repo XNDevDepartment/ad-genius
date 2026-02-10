@@ -192,18 +192,18 @@ serve(async (req) => {
     });
 
     // Check file size limit (20MB for high-resolution images)
-    const maxFileSize = 20 * 1024 * 1024; // 20MB
+    const maxFileSize = 30 * 1024 * 1024; // 30MB
     if (fileSize > maxFileSize) {
       console.error('File size exceeds limit:', {
         fileSize,
         maxFileSize,
         fileSizeMB: (fileSize / (1024 * 1024)).toFixed(2)
       });
-      
+
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: `Image file size (${(fileSize / (1024 * 1024)).toFixed(2)}MB) exceeds 20MB limit` 
+          error: `Image file size (${(fileSize / (1024 * 1024)).toFixed(2)}MB) exceeds 30MB limit` 
         }),
         { 
           status: 400, 

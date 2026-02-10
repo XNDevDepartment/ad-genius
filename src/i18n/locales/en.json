@@ -877,7 +877,7 @@
       "dragDrop": "Drop your image here",
       "clickUpload": "Upload Product Image",
       "releaseUpload": "Release to upload",
-      "supportedFormats": "PNG, JPG up to 10 MB • Click or drag & drop",
+      "supportedFormats": "PNG, JPG up to 30 MB • Click or drag & drop",
       "preview": "Product preview",
       "remove": "Remove image"
     },
