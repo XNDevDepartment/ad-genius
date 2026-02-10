@@ -664,8 +664,8 @@
     },
     "selectBackground": {
       "title": "Escolhe o Teu Fundo",
-      "uploadCustom": "Carregar Personalizado",
-      "choosePreset": "Escolher Predefinido",
+      "uploadCustom": "Carregar",
+      "choosePreset": "Escolher",
       "uploadHint": "Carrega a tua própria imagem de fundo",
       "presetHint": "Seleciona dos nossos fundos curados"
     },
