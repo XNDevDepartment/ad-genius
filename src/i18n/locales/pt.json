@@ -637,8 +637,8 @@
       "description": "Compõe looks completos com top, calças, sapatos e acessórios"
     },
     "bulkBackground": {
-      "title": "Fundo em Lote",
-      "description": "Aplica o mesmo fundo a múltiplas imagens de produto de uma só vez"
+      "title": "Catálogo Produto",
+      "description": "Cria catálogos completos para os teus produtos"
     },
     "studioPhotos": {
       "title": "Fotos de Estúdio",
@@ -649,8 +649,8 @@
     "betaLockedDescription": "Faz upgrade para qualquer plano pago para aceder a esta funcionalidade beta. Ajuda-nos a aperfeiçoar o outfit-swap!"
   },
   "bulkBackground": {
-    "title": "Substituição de Fundo em Lote",
-    "description": "Aplica o mesmo fundo a múltiplas imagens de produto",
+    "title": "Catálogo Produto",
+    "description": "Cria catálogos completos para os teus produtos",
     "steps": {
       "upload": "Carregar Produtos",
       "background": "Escolher Fundo",
@@ -659,7 +659,7 @@
     },
     "uploadProducts": {
       "title": "Carrega os teus Produtos",
-      "subtitle": "Carrega até {{max}} imagens de produto",
+      "subtitle": "Carrega até {{max}} produtos",
       "imagesUploaded": "{{count}} imagens carregadas"
     },
     "selectBackground": {
@@ -736,7 +736,7 @@
       "defaultCustom": "Coloca o produto neste fundo com um aspeto limpo e profissional"
     },
     "review": {
-      "title": "Revê o Teu Lote",
+      "title": "Revê ",
       "products": "Produtos",
       "background": "Fundo",
       "totalCost": "Custo Total",
