@@ -366,6 +366,13 @@
     "sourceImagesToggle": "Quellbilder",
     "showSource": "Quelle anzeigen",
     "loading": "Mediathek wird geladen...",
+    "categories": {
+      "all": "Alle",
+      "ugc": "UGC",
+      "outfitSwap": "Outfit Swap",
+      "bulkBackground": "Massen-Hintergrund",
+      "sourceImages": "Quellbilder"
+    },
     "empty": {
       "title": "Noch keine Bilder in deiner Mediathek",
       "description": "Erzeuge UGC-Inhalte, um sie hier zu sehen",

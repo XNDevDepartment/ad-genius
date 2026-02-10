@@ -722,7 +722,7 @@ Deno.serve(async (req: Request) => {
         // Get result with job info
         const { data: result, error: resultError } = await adminClient
           .from("bulk_background_results")
-          .select("*, bulk_background_jobs!inner(user_id, background_type, background_preset_id, background_image_url, total_images)")
+          .select("*, bulk_background_jobs!inner(user_id, background_type, background_preset_id, background_image_url, total_images, settings)")
           .eq("id", resultId)
           .single();
 
@@ -737,6 +737,7 @@ Deno.serve(async (req: Request) => {
           background_preset_id: string | null;
           background_image_url: string | null;
           total_images: number;
+          settings: any;
         };
 
         if (jobData.user_id !== userId) {

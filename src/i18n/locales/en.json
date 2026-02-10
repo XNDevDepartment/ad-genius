@@ -362,6 +362,13 @@
     "sourceImagesToggle": "Source Images",
     "showSource": "Show Source",
     "loading": "Loading your library...",
+    "categories": {
+      "all": "All",
+      "ugc": "UGC",
+      "outfitSwap": "Outfit Swap",
+      "bulkBackground": "Bulk Background",
+      "sourceImages": "Source Images"
+    },
     "empty": {
       "title": "No images in your library yet",
       "description": "Generate UGC to display it here",
