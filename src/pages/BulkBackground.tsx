@@ -284,7 +284,7 @@ const BulkBackground = () => {
               <CardHeader>
                 <CardTitle>{t("bulkBackground.selectBackground.title")}</CardTitle>
               </CardHeader>
-              <CardContent className="p-6 lg:p-8">
+              <CardContent className="p-4 sm:p-6 lg:p-8">
                 <BackgroundPicker
                   customBackground={customBackground}
                   selectedPreset={selectedPreset}
@@ -305,8 +305,8 @@ const BulkBackground = () => {
               <CardHeader>
                 <CardTitle>{t("bulkBackground.review.title")}</CardTitle>
               </CardHeader>
-              <CardContent className="p-6 lg:p-8 space-y-6">
-                <div className="grid grid-cols-2 gap-4">
+              <CardContent className="p-4 sm:p-6 lg:p-8 space-y-6">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
                   <div className="bg-muted/30 rounded-apple p-4">
                     <p className="text-sm text-muted-foreground">{t("bulkBackground.review.products")}</p>
                     <p className="text-2xl font-bold">{productImages.length}</p>
