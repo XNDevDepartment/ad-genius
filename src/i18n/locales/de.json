@@ -2384,5 +2384,17 @@
       "title": "Outfit-Creator",
       "description": "Stellen Sie komplette Outfits mit Ober-, Unterteil, Schuhen und Accessoires zusammen"
     }
+  },
+  "promo": {
+    "mobile": {
+      "starterOffer": "Starter-Plan",
+      "firstMonth": "1. Monat",
+      "timeLeft": "verbleibend",
+      "getOffer": "Angebot sichern",
+      "upgradeFrom": "Upgrade ab",
+      "perMonth": "/Mo",
+      "limitedOffer": "Begrenztes Angebot",
+      "seeOffer": "Angebot ansehen"
+    }
   }
 }

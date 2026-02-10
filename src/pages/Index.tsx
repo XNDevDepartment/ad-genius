@@ -4,8 +4,9 @@ import SocialProofSection from "@/components/landing/SocialProofSection";
 import Footer from "@/components/landing/Footer";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Coins } from "lucide-react";
+import { Coins, Zap, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCredits } from "@/hooks/useCredits";
 import PricingSection from "@/components/landing/PricingSection";
 import HeaderSection from "@/components/landing/HeaderSection";
 import { EmbeddedLibrary } from "@/components/EmbeddedLibrary";
@@ -25,6 +26,7 @@ const Index = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { tier } = useCredits();
 
   useEffect(() => {
     if(localStorage.getItem("billing") === 'true'){
@@ -74,17 +76,40 @@ const Index = () => {
           <div className="lg:col-span-5">
             <UserStatsPanel />
             
-            {/* Mobile-only Get More Credits button */}
-            <div className="lg:hidden mt-4 text-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/pricing")}
-                className="text-muted-foreground hover:bg-primary/10 hover:text-foreground"
-              >
-                <Coins className="h-4 w-4 mr-2" />
-                {t("index.auth.getMoreCredits")}
-              </Button>
+            {/* Mobile-only CTA */}
+            <div className="lg:hidden mt-4">
+              {tier === 'Free' ? (
+                <div
+                  onClick={() => navigate("/promo/first-month")}
+                  className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-purple-600 p-3 cursor-pointer active:scale-[0.98] transition-transform"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white/20 rounded-xl p-2 flex-shrink-0">
+                      <Zap className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white text-sm font-bold">{t("promo.mobile.starterOffer")} — €19.99/{t("promo.mobile.firstMonth")}</p>
+                      <p className="text-white/70 text-xs">{t("promo.mobile.limitedOffer")}</p>
+                    </div>
+                    <Button size="sm" className="bg-white text-primary hover:bg-white/90 text-xs font-bold px-3 h-8 rounded-xl shadow-none flex-shrink-0">
+                      {t("promo.mobile.seeOffer")}
+                      <ArrowRight className="h-3 w-3 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate("/pricing")}
+                    className="text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+                  >
+                    <Coins className="h-4 w-4 mr-2" />
+                    {t("index.auth.getMoreCredits")}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>

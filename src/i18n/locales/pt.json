@@ -2380,5 +2380,17 @@
       "title": "Estúdio de Produto IA",
       "description": "Transforme fotos de produto com fundos IA. Crie imagens profissionais para e-commerce em segundos."
     }
+  },
+  "promo": {
+    "mobile": {
+      "starterOffer": "Plano Starter",
+      "firstMonth": "1º mês",
+      "timeLeft": "restante",
+      "getOffer": "Ver Oferta",
+      "upgradeFrom": "Upgrade desde",
+      "perMonth": "/mês",
+      "limitedOffer": "Oferta Limitada",
+      "seeOffer": "Ver Oferta"
+    }
   }
 }
