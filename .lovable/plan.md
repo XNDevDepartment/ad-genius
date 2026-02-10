@@ -1,53 +1,48 @@
 
 
-# Library Panel: Pagination Fix and Category Navigation
-
-## Problem
-1. The library bugs when loading images because all image types are fetched simultaneously with overlapping pagination, causing issues when datasets exceed Supabase's row limits.
-2. Users cannot filter between Outfit-Swap, UGC, and Bulk Background images -- everything is mixed together.
-
-## Build Error Fix (Prerequisite)
-The `supabase/functions/bulk-background/index.ts` has a type error at line 811: `settings` is not included in the select query (line 725) or the type cast (line 734). Both need to be updated to include `settings`.
+# Bulk Background: Desktop Layout + New Job After Completion
 
 ## Changes
 
-### 1. Fix bulk-background edge function build error
-**File:** `supabase/functions/bulk-background/index.ts`
-- Add `settings` to the select query on line 725
-- Add `settings` to the type cast on line 734
+### 1. Wider desktop layout (match Outfit Swap style)
+**File:** `src/pages/BulkBackground.tsx`
 
-### 2. Add "Bulk Background" as a new category in `useLibraryImages`
-**File:** `src/hooks/useLibraryImages.ts`
-- Expand the `filter` type from `'all' | 'ugc' | 'outfit_swap'` to `'all' | 'ugc' | 'outfit_swap' | 'bulk_background'`
-- Add a new query for `bulk_background_results` table when filter is `'all'` or `'bulk_background'`
-- Normalize bulk background results into `LibraryImage` format with `source_type: 'bulk_background'`
-- **Fix pagination**: When a specific filter is active (not "all"), only query that single table, making pagination accurate and preventing the current bug where offset/limit is applied to each table separately and then merged
+Currently the page uses `max-w-2xl` for all screen sizes. Change to:
+- Mobile: keep the narrow vertical layout as-is
+- Desktop (`lg:`): widen to `max-w-5xl` (similar to Outfit Swap's `max-w-7xl container`)
+- Keep the vertical single-column flow (no side-by-side panels)
+- Add responsive padding: `px-4 py-4 lg:py-8`
 
-### 3. Replace the ToggleGroup navigation in the Library component
-**File:** `src/components/departments/LibraryOld.tsx`
-- Replace the current "AI Generated / Source Images" toggle with a category tab bar:
-  - **All** (default) -- shows everything mixed, sorted by date
-  - **UGC** -- only UGC-generated images
-  - **Outfit Swap** -- outfit swap results, photoshoots, e-commerce photos
-  - **Bulk Background** -- bulk background results
-  - **Source Images** -- uploaded product images (existing behavior)
-- The filter value is passed to `useLibraryImages` which fetches only the relevant table(s)
-- Keep the existing "Show Source Thumbnails" toggle for AI image categories
+The outer wrapper changes from:
+```
+max-w-2xl mx-auto
+```
+to:
+```
+max-w-2xl lg:max-w-5xl mx-auto
+```
 
-### 4. Add Bulk Background images query
-**File:** `src/hooks/useLibraryImages.ts`
-- Query `bulk_background_results` table filtered by `status = 'completed'` and joining via `bulk_background_jobs` for `user_id`
-- Map results to `LibraryImage` format using the `result_url` field
+### 2. Mobile optimization
+- Reduce padding on mobile for cards (`p-4` on mobile, `p-6 lg:p-8` on desktop)
+- Make the header more compact on mobile (smaller text, tighter gaps)
+- Results grid: `grid-cols-2` on mobile, `sm:grid-cols-3 lg:grid-cols-4` on desktop
 
-### 5. Add translations for new category tabs
+### 3. "New Background" flow after job completion
+Currently `handleNewBatch` resets everything including uploaded product images. Add a second action that keeps the uploaded images but lets the user pick a new background:
+
+- Add a **"Change Background"** button alongside "New Batch" and "Download All" in the completion section
+- This button clears only the background selection, prompt, and job state -- but keeps `productImages` intact
+- The user scrolls back up to the background picker to choose a new background and start again
+- Add translation keys for the new button
+
+### Technical Details
+
+**File:** `src/pages/BulkBackground.tsx`
+- Change `max-w-2xl` to `max-w-2xl lg:max-w-5xl` on line 224
+- Update results grid from `grid-cols-2 sm:grid-cols-3` to `grid-cols-2 sm:grid-cols-3 lg:grid-cols-4`
+- Add `handleChangeBackground` function that resets job/background state but keeps product images
+- Add a new button in the completion actions area
+
 **Files:** `src/i18n/locales/en.json`, `pt.json`, `es.json`, `de.json`, `fr.json`
-- Add keys: `library.categories.all`, `library.categories.ugc`, `library.categories.outfitSwap`, `library.categories.bulkBackground`, `library.categories.sourceImages`
-
-### 6. Redeploy the bulk-background edge function
-
-## Technical Notes
-- When filtering by a specific category, pagination works correctly because we query only one table with proper `.range()` offsets
-- The "All" view combines results from all tables, sorted by `created_at` descending -- pagination here is approximate but sufficient for infinite scroll
-- The `LibraryImage` interface already has `source_type` which supports identifying image origins
-- The existing `ImageLibraryGrid` component with infinite scroll (`useInView`) remains unchanged
+- Add `bulkBackground.buttons.changeBackground` translation key
 
