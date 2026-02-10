@@ -736,12 +736,18 @@
       "defaultCustom": "Coloca o produto neste fundo com um aspeto limpo e profissional"
     },
     "review": {
-      "title": "Revê ",
+      "title": "Revê",
       "products": "Produtos",
       "background": "Fundo",
       "totalCost": "Custo Total",
+      "credits": "créditos",
       "creditsPerImage": "{{credits}} créditos × {{count}} imagens",
       "insufficientCredits": "Tens {{available}} créditos. Precisas de mais {{needed}}."
+    },
+    "settings": {
+      "title": "Definições",
+      "imageSize": "Tamanho da Imagem",
+      "aspectRatio": "Proporção"
     },
     "processing": {
       "title": "A Processar as Tuas Imagens",

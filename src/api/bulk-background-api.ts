@@ -46,6 +46,8 @@ export interface CreateBulkJobPayload {
     outputFormat?: 'png' | 'webp';
     quality?: 'high' | 'medium';
     customPrompt?: string;
+    imageSize?: string;
+    aspectRatio?: string;
   };
 }
 

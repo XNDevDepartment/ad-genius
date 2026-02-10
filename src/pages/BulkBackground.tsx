@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Download, Loader2, X, ExternalLink } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -50,10 +51,12 @@ const BulkBackground = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [processingStarted, setProcessingStarted] = useState(false);
+  const [imageSize, setImageSize] = useState<'1K' | '2K' | '4K'>('1K');
+  const [aspectRatio, setAspectRatio] = useState<string>('1:1');
 
   // Scroll refs
   const backgroundRef = useRef<HTMLDivElement>(null);
-  const reviewRef = useRef<HTMLDivElement>(null);
+  const settingsRef = useRef<HTMLDivElement>(null);
   const processingRef = useRef<HTMLDivElement>(null);
 
   // Derived state
@@ -92,12 +95,12 @@ const BulkBackground = () => {
     prevImageCount.current = productImages.length;
   }, [productImages.length]);
 
-  // Smooth scroll when review section appears
+  // Smooth scroll when settings section appears
   const prevHasBackground = useRef(false);
   useEffect(() => {
     if (!prevHasBackground.current && hasBackground) {
       setTimeout(() => {
-        reviewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        settingsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
     }
     prevHasBackground.current = hasBackground;
@@ -171,7 +174,7 @@ const BulkBackground = () => {
         backgroundType: customBackground ? 'custom' : 'preset',
         backgroundPresetId: selectedPreset || undefined,
         backgroundImageUrl: customBgUrl,
-        settings: { outputFormat: 'webp', quality: 'high', customPrompt: backgroundPrompt || undefined }
+        settings: { outputFormat: 'webp', quality: 'high', customPrompt: backgroundPrompt || undefined, imageSize, aspectRatio }
       });
 
       if (result) await refreshCredits();
@@ -217,6 +220,8 @@ const BulkBackground = () => {
     setSelectedPreset(null);
     setBackgroundPrompt("");
     setUploadProgress(0);
+    setImageSize('1K');
+    setAspectRatio('1:1');
   };
 
   const handleChangeBackground = () => {
@@ -298,36 +303,56 @@ const BulkBackground = () => {
           </div>
         )}
 
-        {/* Section 3: Review & Start — appears when background selected */}
+        {/* Section 3: Settings — appears when background selected */}
         {productImages.length > 0 && hasBackground && !processingStarted && (
-          <div ref={reviewRef} className="scroll-mt-6">
+          <div ref={settingsRef} className="scroll-mt-6">
             <Card className="rounded-apple shadow-lg">
               <CardHeader>
-                <CardTitle>{t("bulkBackground.review.title")}</CardTitle>
+                <CardTitle>{t("bulkBackground.settings.title")}</CardTitle>
               </CardHeader>
               <CardContent className="p-4 sm:p-6 lg:p-8 space-y-6">
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  <div className="bg-muted/30 rounded-apple p-4">
-                    <p className="text-sm text-muted-foreground">{t("bulkBackground.review.products")}</p>
-                    <p className="text-2xl font-bold">{productImages.length}</p>
-                  </div>
-                  <div className="bg-muted/30 rounded-apple p-4">
-                    <p className="text-sm text-muted-foreground">{t("bulkBackground.review.background")}</p>
-                    <p className="text-lg font-medium truncate">{selectedBackgroundName}</p>
-                  </div>
+                {/* Image Size */}
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">{t("bulkBackground.settings.imageSize")}</p>
+                  <ToggleGroup
+                    type="single"
+                    value={imageSize}
+                    onValueChange={(v) => v && setImageSize(v as '1K' | '2K' | '4K')}
+                    className="justify-start"
+                  >
+                    {(['1K', '2K', '4K'] as const).map((size) => (
+                      <ToggleGroupItem key={size} value={size} size="sm" className="px-4 bg-muted">
+                        {size}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
                 </div>
 
-                <div className="bg-primary/10 rounded-apple p-4 border border-primary/20">
-                  <p className="text-sm text-muted-foreground">{t("bulkBackground.review.totalCost")}</p>
-                  <p className="text-2xl font-bold text-primary">{totalCost} {t("bulkBackground.review.credits", "credits")}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t("bulkBackground.review.creditsPerImage", { credits: CREDITS_PER_IMAGE, count: productImages.length })}
-                  </p>
-                  {!hasEnoughCredits && (
-                    <p className="text-xs text-destructive mt-2">
-                      {t("bulkBackground.review.insufficientCredits", { available: credits, needed: totalCost - credits })}
-                    </p>
-                  )}
+                {/* Aspect Ratio */}
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">{t("bulkBackground.settings.aspectRatio")}</p>
+                  <ToggleGroup
+                    type="single"
+                    value={aspectRatio}
+                    onValueChange={(v) => v && setAspectRatio(v)}
+                    className="grid grid-cols-3 sm:grid-cols-5 gap-1"
+                  >
+                    {['1:1','2:3','3:2','3:4','4:3','4:5','5:4','9:16','16:9','21:9'].map((ratio) => {
+                      const [w, h] = ratio.split(':').map(Number);
+                      const scale = 16 / Math.max(w, h);
+                      const boxW = Math.round(w * scale);
+                      const boxH = Math.round(h * scale);
+                      return (
+                        <ToggleGroupItem key={ratio} value={ratio} size="sm" className="text-xs px-2 py-1 bg-muted flex items-center gap-1.5">
+                          <div
+                            className={`border ${ratio === aspectRatio ? 'border-foreground' : 'border-muted-foreground/50'} shrink-0`}
+                            style={{ width: `${boxW}px`, height: `${boxH}px` }}
+                          />
+                          {ratio}
+                        </ToggleGroupItem>
+                      );
+                    })}
+                  </ToggleGroup>
                 </div>
 
                 <Button
@@ -341,9 +366,16 @@ const BulkBackground = () => {
                       {t("bulkBackground.processing.starting")}
                     </>
                   ) : (
-                    t("bulkBackground.buttons.startProcessing")
+                    <>
+                      {t("bulkBackground.buttons.startProcessing")} — {totalCost} {t("bulkBackground.review.credits", "credits")}
+                    </>
                   )}
                 </Button>
+                {!hasEnoughCredits && (
+                  <p className="text-xs text-destructive text-center">
+                    {t("bulkBackground.review.insufficientCredits", { available: credits, needed: totalCost - credits })}
+                  </p>
+                )}
               </CardContent>
             </Card>
           </div>

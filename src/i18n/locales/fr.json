@@ -2344,8 +2344,14 @@
       "products": "Produits",
       "background": "Fond",
       "totalCost": "Coût Total",
+      "credits": "crédits",
       "creditsPerImage": "{{credits}} crédits × {{count}} images",
       "insufficientCredits": "Vous avez {{available}} crédits. Il vous en faut {{needed}} de plus."
+    },
+    "settings": {
+      "title": "Paramètres",
+      "imageSize": "Taille de l'Image",
+      "aspectRatio": "Format"
     },
     "processing": {
       "title": "Traitement de vos Images",
