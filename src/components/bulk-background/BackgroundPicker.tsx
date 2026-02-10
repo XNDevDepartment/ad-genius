@@ -68,18 +68,18 @@ const BackgroundPicker = ({
         <Button
           variant={mode === "custom" ? "default" : "outline"}
           onClick={() => handleModeChange("custom")}
-          className="flex-1 gap-2"
+          className="flex-1 gap-2 text-xs sm:text-sm min-w-0"
         >
-          <Upload className="h-4 w-4" />
-          {t("bulkBackground.selectBackground.uploadCustom")}
+          <Upload className="h-4 w-4 shrink-0" />
+          <span className="truncate">{t("bulkBackground.selectBackground.uploadCustom")}</span>
         </Button>
         <Button
           variant={mode === "preset" ? "default" : "outline"}
           onClick={() => handleModeChange("preset")}
-          className="flex-1 gap-2"
+          className="flex-1 gap-2 text-xs sm:text-sm min-w-0"
         >
-          <Grid3X3 className="h-4 w-4" />
-          {t("bulkBackground.selectBackground.choosePreset")}
+          <Grid3X3 className="h-4 w-4 shrink-0" />
+          <span className="truncate">{t("bulkBackground.selectBackground.choosePreset")}</span>
         </Button>
       </div>
 
