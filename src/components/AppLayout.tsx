@@ -6,7 +6,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import PaymentFailedBanner from "./PaymentFailedBanner";
-import ChristmasBanner from "./ChristmasBanner";
+
 import { FloatingOnboardingCard } from "./onboarding/FloatingOnboardingCard";
 import MobilePromoBanner from "./MobilePromoBanner";
 
