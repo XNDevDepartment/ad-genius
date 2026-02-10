@@ -1841,17 +1841,17 @@ async function enhanceScenarioPrompt(userId1: string, params: any) {
     
     // Build the enhancement prompt
     let prompt = `You are an e-commerce photography expert. 
-The user wants to create a professional UGC (User Generated Content) product photo with this vision: "${userPrompt}"
+        The user wants to create a professional UGC (User Generated Content) product photo with this vision: "${userPrompt}"
 
-Enhance and expand this description into a detailed, professional e-commerce photography brief (2-3 sentences). Include:
-- Lighting style and mood
-- Background/setting details  
-- Composition and atmosphere
-- Camera angle or perspective suggestions
+        Enhance and expand this description into a detailed, professional e-commerce photography brief (2 sentences max). 1 Photo, 1 Angle always. Include:
+        - Lighting style and mood
+        - Background/setting details
+        - Composition and atmosphere
+        - Camera angle or perspective suggestions
 
-Keep the user's core idea but make it more specific, visual, and actionable for image generation.
-Return ONLY the enhanced description text, no explanations or formatting.
-Language: ${language || 'en'}`;
+        Keep the user's core idea but make it more specific, visual, and actionable for image generation.
+        Return ONLY the enhanced description text, no explanations or formatting.
+        Language: ${language || 'en'}`;
 
     const requestBody: any = {
       contents: [

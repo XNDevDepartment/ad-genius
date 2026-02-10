@@ -27,7 +27,7 @@ const scenarioTool = {
               },
               description: { 
                 type: "string",
-                description: "A detailed description of the scenario, including setting, mood, and how to capture it (2-3 sentences)"
+                description: "A detailed description of the scenario, including setting, mood, and how to capture it (2 sentences max). 1 Photo, 1 Angle always"
               },
               "small-description": { 
                 type: "string",
