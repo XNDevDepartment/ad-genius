@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Check, Sparkles, Image, Video, Palette, ShoppingBag } from "lucide-react";
+import { Check, Sparkles, Image, Video, Palette, ShoppingBag, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import HeaderSection from "@/components/landing/HeaderSection";
 import { useState, useEffect } from "react";
@@ -71,6 +71,17 @@ const PromoFirstMonth = () => {
       <HeaderSection />
       
       <div className="container mx-auto px-4 pt-24 pb-12 max-w-2xl">
+        {/* Back button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/')}
+          className="mb-4 -ml-2 text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          Home
+        </Button>
+
         {/* Hero Section */}
         <div className="text-center mb-8 space-y-4">
           <Badge className="text-sm px-3 py-1 bg-primary/10 text-primary border-primary/20">
