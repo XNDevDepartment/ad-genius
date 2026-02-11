@@ -202,8 +202,6 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
               )}
             </div>
           </div>
-        </div>
-
         {/* Sticky Footer */}
         <div className="sticky bottom-0 border-t bg-background p-4 flex gap-2 justify-end">
           {isProcessing && (
@@ -230,6 +228,8 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
             {isComplete ? t('ecommercePhotoModal.done') : t('ecommercePhotoModal.close')}
           </Button>
         </div>
+        </div>
+
       </DialogContent>
     </Dialog>
   );

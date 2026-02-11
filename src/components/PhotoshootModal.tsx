@@ -491,8 +491,6 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
                   })}
                 </div>
               </div>
-            </div>
-
             <div className="sticky bottom-0 border-t bg-background p-4 flex justify-end gap-2">
               {isProcessing && (
                 <Button variant="outline" onClick={handleCancel}>
@@ -504,6 +502,8 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
                 {isComplete ? t('photoshootModal.done') : t('photoshootModal.close')}
               </Button>
             </div>
+            </div>
+
           </>
         )}
       </DialogContent>
