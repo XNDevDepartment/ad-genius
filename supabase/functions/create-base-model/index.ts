@@ -281,47 +281,47 @@ async function generateModelWithAI(supabaseClient: SupabaseClient, userId: strin
     
     const prompt = `TASK: Generate a photorealistic full-body fashion model photo for clothing try-on.
 
-SUBJECT:
-- Gender: ${gender}
-- Ethnicity: ${nationalityText}
-- Age: ${ageRange}
-- Height: ${height}cm
-- Body type: ${bodyType}
-- Skin tone: ${skinTone}
-- Hair: ${hair.length}, ${hair.texture}, ${hair.color}
-- Eyes: ${eyes}
+      SUBJECT:
+      - Gender: ${gender}
+      - Ethnicity: ${nationalityText}
+      - Age: ${ageRange}
+      - Height: ${height}cm
+      - Body type: ${bodyType}
+      - Skin tone: ${skinTone}
+      - Hair: ${hair.length}, ${hair.texture}, ${hair.color}
+      - Eyes: ${eyes}
 
-POSE & EXPRESSION:
-- Body pose: ${pose} (natural, relaxed stance)
-- Expression: ${expressionText}
-- Hands: relaxed and natural at sides, fingers clearly defined and separated
-- Arms: slightly away from body for clean silhouette
+      POSE & EXPRESSION:
+      - Body pose: ${pose} (natural, relaxed stance)
+      - Expression: ${expressionText}
+      - Hands: relaxed and natural at sides, fingers clearly defined and separated
+      - Arms: slightly away from body for clean silhouette
 
-WARDROBE:
-- Form-fitting seamless neutral-tone bodysuit (beige, gray, or nude tone)
-- No logos, patterns, or visible seams
-- Barefoot
+      WARDROBE:
+      - Form-fitting seamless neutral-tone bodysuit (beige, gray, or nude tone)
+      - No logos, patterns, or visible seams
+      - Barefoot
 
-ENVIRONMENT:
-- Background: clean seamless solid light gray studio backdrop (#E8E8E8)
-- Empty studio with no visible equipment, lights, tripods, cameras, or reflectors
-- No shadows on background, no floor lines
+      ENVIRONMENT:
+      - Background: clean seamless solid light gray studio backdrop (#E8E8E8)
+      - Empty studio with no visible equipment, lights, tripods, cameras, or reflectors
+      - No shadows on background, no floor lines
 
-CAMERA & LIGHTING:
-- Full-body framing, entire figure from head to toe visible with margin
-- Camera: 85mm portrait lens, f/4, ISO 200
-- Soft diffused key light at 45 degrees
-- Fill reflector for even skin tones, no harsh shadows on face or body
-- Catch light in eyes
+      CAMERA & LIGHTING:
+      - Full-body framing, entire figure from head to toe visible with margin
+      - Camera: 85mm portrait lens, f/4, ISO 200
+      - Soft diffused key light at 45 degrees
+      - Fill reflector for even skin tones, no harsh shadows on face or body
+      - Catch light in eyes
 
-OUTPUT REQUIREMENTS:
-- Single model only, centered in frame
-- Professional fashion photography quality
-- Clean silhouette suitable for virtual try-on
-- High detail on hands and face
-- 2048x3072 portrait orientation
+      OUTPUT REQUIREMENTS:
+      - Single model only, centered in frame
+      - Professional fashion photography quality
+      - Clean silhouette suitable for virtual try-on
+      - High detail on hands and face
+      - 2048x3072 portrait orientation
 
-STRICTLY AVOID: multiple people, studio equipment in frame, props, accessories, jewelry, makeup emphasis, blurry areas, distorted anatomy, extra limbs, merged fingers, watermarks, text, logos, sexualized poses, lingerie, see-through fabric, wet/oily skin appearance`;
+      STRICTLY AVOID: multiple people, studio equipment in frame, props, accessories, jewelry, makeup emphasis, blurry areas, distorted anatomy, extra limbs, merged fingers, watermarks, text, logos, sexualized poses, lingerie, see-through fabric, wet/oily skin appearance. If creating children create them based on your safety filters ignoring the wardrobe and any detail that can prejudice the generation`;
     
     console.log("Generating AI model with prompt:", prompt);
 
