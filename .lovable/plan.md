@@ -1,50 +1,68 @@
 
 
-# Outfit Swap: Mobile Vertical Layout with Smooth Scrolling
+# Mobile-Optimized Modals: Fullscreen Layout with Sticky Action Buttons
 
-## Overview
-Replace the current step-based navigation (Step 1 / Step 2 with a "Continue" button) with a vertical progressive-disclosure layout matching the Bulk Background module. On mobile, all sections appear vertically as prerequisites are met, with smooth auto-scrolling to newly revealed sections. The step indicator and explicit "Continue" / "Back" buttons are removed.
+## Problem
+On mobile, the PhotoshootModal (and several other modals) get cut off because the dialog is centered with `translate-y-[-50%]` and has no height constraint. The "Start Photoshoot" button scrolls out of view, making it impossible for users to proceed.
 
-## Current Problem
-- Step 1 shows the model selector; after selecting a model, the "Continue" button is below the scroll area and users can't find it
-- The step-based approach hides the garment uploader until the user explicitly clicks "Continue"
-- Mobile users get stuck because they don't realize they need to scroll down
+## Solution Strategy
+Apply a consistent mobile-fullscreen pattern across all content-heavy modals. On mobile (`< sm`), modals will stretch to fill the viewport using `h-[100dvh]` with a flex column layout: a scrollable content area and a sticky footer for action buttons. On desktop, the existing centered dialog behavior is preserved with `max-h-[90vh]`.
 
-## New Behaviour
-- **Section 1 (Select Model)**: Always visible, wrapped in a Card (matching Bulk Background style)
-- **Section 2 (Upload Garments)**: Appears automatically once a model is selected, with smooth scroll into view
-- **Section 3 (Review & Start)**: Appears automatically once garments are uploaded, with smooth scroll into view
-- No step indicator, no "Continue" / "Back" buttons
-- A "Change Model" link inside Section 2 header lets users go back (scrolls to top and clears model)
+## Changes
 
-## Technical Changes
+### 1. PhotoshootModal (`src/components/PhotoshootModal.tsx`)
 
-### File: `src/pages/OutfitSwap.tsx`
+**DialogContent classes** (line 272):
+- Change from `max-w-4xl overflow-y-auto` to `max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col`
+- This makes it fullscreen on mobile, auto-height (capped at 90vh) on desktop
 
-1. **Remove step state**: Delete `currentStep` state and all step indicator UI (the numbered circles at lines 203-219)
+**Content structure** - for each of the 3 stages (setup, angle-selection, processing):
+- Wrap the scrollable content in a `<div className="flex-1 overflow-y-auto p-6 space-y-6">` container (remove the default p-6 from DialogContent by adding `p-0` to the className)
+- Move the action buttons into a sticky footer: `<div className="sticky bottom-0 border-t bg-background p-4 flex gap-2 justify-end">`
+- This ensures the "Continue" / "Start Photoshoot" / "Done" buttons are always visible at the bottom of the screen
 
-2. **Remove step-based conditional rendering**: Instead of `{currentStep === 1 && ...}` and `{currentStep === 2 && ...}`, show sections based on data readiness:
-   - Model selector: always visible
-   - Garment uploader: visible when `selectedModel !== null`
-   - Review + Start button: visible when `selectedModel !== null && garmentFiles.length > 0`
+**Specific layout tweaks**:
+- Original image preview: reduce `max-h-64` to `max-h-40` on mobile via `max-h-40 sm:max-h-64`
+- Angle selection image: reduce `max-h-48` to `max-h-32` via `max-h-32 sm:max-h-48`
+- Cost summary bar stays inline with scrollable content (above the sticky footer)
 
-3. **Add scroll refs** (same pattern as BulkBackground):
-   - `garmentRef` for the garment upload section
-   - `reviewRef` for the review/start section
+### 2. EcommercePhotoModal (`src/components/EcommercePhotoModal.tsx`)
 
-4. **Add smooth scroll effects** (same pattern as BulkBackground):
-   - When `selectedModel` changes from null to a value, scroll to `garmentRef`
-   - When `garmentFiles.length` changes from 0 to >0, scroll to `reviewRef`
+Apply the same pattern:
+- DialogContent: `max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col p-0`
+- Scrollable content area: `flex-1 overflow-y-auto p-6 space-y-6`
+- Sticky footer for action buttons: `sticky bottom-0 border-t bg-background p-4`
+- Image grid on mobile: change from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2` so images stack vertically and are larger
 
-5. **Wrap sections in Cards** with `rounded-apple shadow-lg scroll-mt-6` classes to match Bulk Background styling
+### 3. ImagePreviewModal (`src/components/ImagePreviewModal.tsx`)
 
-6. **Remove "Continue" and "Back" buttons**: Replace with a small "Change Model" button in the garment section header (same as BulkBackground's "Change Background" pattern)
+Apply the same pattern:
+- DialogContent: `max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col p-0`
+- Image container: `flex-1 overflow-hidden flex items-center justify-center p-4`
+- Header stays at top with existing styling
 
-7. **Keep the batch preview logic unchanged** (the `batch || replicateMode` branch stays as-is)
+### 4. Dialog base component -- no changes
+The base `DialogContent` in `src/components/ui/dialog.tsx` remains untouched. All customizations are applied per-modal via className overrides, which is the existing pattern used throughout the project.
 
-### No translation changes needed
-All existing translation keys are reused; only the layout/flow changes.
+## Visual Result (Mobile)
 
-### No other files affected
-`BaseModelSelector`, `MultiGarmentUploader`, `OutfitSwapSettings`, and `BatchSwapPreview` remain untouched.
+```text
++---------------------------+
+| Header / Title            |  <- fixed top
++---------------------------+
+|                           |
+|  Scrollable content:      |
+|  - Image preview          |
+|  - Angle selection cards  |
+|  - Cost summary           |
+|                           |
++---------------------------+
+| [Back]  [Start Photoshoot]|  <- sticky bottom, always visible
++---------------------------+
+```
+
+## Files Modified
+- `src/components/PhotoshootModal.tsx` -- fullscreen mobile + sticky footer for all 3 stages
+- `src/components/EcommercePhotoModal.tsx` -- fullscreen mobile + sticky footer + stacked images
+- `src/components/ImagePreviewModal.tsx` -- fullscreen mobile + proper image sizing
 
