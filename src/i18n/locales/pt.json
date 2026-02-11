@@ -369,8 +369,8 @@
     "categories": {
       "all": "Todas",
       "ugc": "UGC",
-      "outfitSwap": "Outfit Swap",
-      "bulkBackground": "Fundo em Massa",
+      "outfitSwap": "Catálogo Moda",
+      "bulkBackground": "Catálogo Produto",
       "sourceImages": "Imagens de Origem"
     },
     "empty": {

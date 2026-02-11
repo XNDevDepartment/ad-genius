@@ -365,8 +365,8 @@
     "categories": {
       "all": "All",
       "ugc": "UGC",
-      "outfitSwap": "Outfit Swap",
-      "bulkBackground": "Bulk Background",
+      "outfitSwap": "Fashion Catalog",
+      "bulkBackground": "Product Catalog",
       "sourceImages": "Source Images"
     },
     "empty": {
@@ -642,8 +642,8 @@
       "description": "Compose complete outfits with top, bottom, shoes & accessories"
     },
     "bulkBackground": {
-      "title": "Bulk Background",
-      "description": "Apply the same background to multiple product images at once"
+      "title": "Product Catalog",
+      "description": "Create complete catalogs for your products"
     },
     "comingSoon": "Coming soon",
     "betaBadge": "BETA",

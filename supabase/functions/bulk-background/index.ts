@@ -1125,7 +1125,17 @@ Deno.serve(async (req: Request) => {
           // Fetch the result image
           const resultBase64 = await fetchImageAsBase64(result.result_url);
 
-          const detailedPrompt = `Create a close-up or macro-style view of the uploaded product focusing on material quality, texture, and finish. Preserve exact product details and proportions. Use soft, controlled lighting to enhance surface characteristics without distortion. Shallow depth of field, ultra-sharp focus on key materials, clean background. High-end product photography style, ultra-realistic. Without affecting the product shape.`;
+          const detailedPrompt = `Macro product photography of [PRODUCT], close-up shot emphasizing material texture, surface finish, and tactile quality. Preserve exact product proportions, colors, and details — no distortion or hallucinated elements.
+
+            Lighting: soft diffused studio light with subtle specular highlights to reveal material depth — silk catches light differently than matte rubber, leather shows grain, metal reflects cleanly. Single or dual softbox setup implied.
+
+            Lens: 100mm macro equivalent, f/2.8–f/4, razor-sharp focus on the hero surface or detail, smooth bokeh falloff on secondary elements.
+
+            Background: clean neutral (white, off-white, or light grey seamless), no props, no distractions.
+
+            Mood: clinical precision meets luxury craftsmanship — the kind of shot that makes a material feel worth touching.
+
+Style: high-end ecommerce product photography, ultra-realistic, 8K, shot for premium brand catalog.`;
 
           const parts: unknown[] = [
             { text: detailedPrompt },
