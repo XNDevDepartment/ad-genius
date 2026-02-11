@@ -1,68 +1,90 @@
 
 
-# Mobile-Optimized Modals: Fullscreen Layout with Sticky Action Buttons
+# Dynamic Credits + Detailed Image Generation
 
-## Problem
-On mobile, the PhotoshootModal (and several other modals) get cut off because the dialog is centered with `translate-y-[-50%]` and has no height constraint. The "Start Photoshoot" button scrolls out of view, making it impossible for users to proceed.
+## Overview
+Two changes: (1) credits per image vary by resolution (1K=1, 2K=2, 4K=4), and (2) the "Detailed Image" button triggers a Gemini macro/close-up generation and stores the result linked to the original image.
 
-## Solution Strategy
-Apply a consistent mobile-fullscreen pattern across all content-heavy modals. On mobile (`< sm`), modals will stretch to fill the viewport using `h-[100dvh]` with a flex column layout: a scrollable content area and a sticky footer for action buttons. On desktop, the existing centered dialog behavior is preserved with `max-h-[90vh]`.
+## 1. Dynamic Credits by Image Size
 
-## Changes
+### Frontend (`src/pages/BulkBackground.tsx`)
+- Replace the fixed `CREDITS_PER_IMAGE = 2` constant with a function:
+  ```
+  getCreditsPerImage(size): 1K -> 1, 2K -> 2, 4K -> 4
+  ```
+- `totalCost` becomes `productImages.length * getCreditsPerImage(imageSize)`
+- Pass `imageSize` into settings (already done) so the backend can compute correctly
 
-### 1. PhotoshootModal (`src/components/PhotoshootModal.tsx`)
+### Backend (`supabase/functions/bulk-background/index.ts`)
+- Replace `CREDITS_PER_IMAGE = 2` with a helper function that reads `settings.imageSize`
+- Update all credit calculations (createJob, cancelJob, retryResult, recoverJobs) to use dynamic cost
+- The `settings.imageSize` is already stored in the job record
 
-**DialogContent classes** (line 272):
-- Change from `max-w-4xl overflow-y-auto` to `max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col`
-- This makes it fullscreen on mobile, auto-height (capped at 90vh) on desktop
+## 2. Detailed Image Generation
 
-**Content structure** - for each of the 3 stages (setup, angle-selection, processing):
-- Wrap the scrollable content in a `<div className="flex-1 overflow-y-auto p-6 space-y-6">` container (remove the default p-6 from DialogContent by adding `p-0` to the className)
-- Move the action buttons into a sticky footer: `<div className="sticky bottom-0 border-t bg-background p-4 flex gap-2 justify-end">`
-- This ensures the "Continue" / "Start Photoshoot" / "Done" buttons are always visible at the bottom of the screen
+### New Database Column
+Add `detailed_result_url TEXT` to `bulk_background_results` to store the enhanced close-up image linked to the original result.
 
-**Specific layout tweaks**:
-- Original image preview: reduce `max-h-64` to `max-h-40` on mobile via `max-h-40 sm:max-h-64`
-- Angle selection image: reduce `max-h-48` to `max-h-32` via `max-h-32 sm:max-h-48`
-- Cost summary bar stays inline with scrollable content (above the sticky footer)
+### New Edge Function Action: `generateDetailedImage`
+Add a new action to `supabase/functions/bulk-background/index.ts`:
+- Accepts `resultId` from the frontend
+- Validates ownership and that the result is completed
+- Deducts 1 credit (admin-exempt)
+- Fetches the result image (not source -- the already-generated background image)
+- Sends it to Gemini with the macro/close-up prompt:
+  ```
+  Create a close-up or macro-style view of the uploaded product focusing on material quality, texture, and finish. Preserve exact product details and proportions. Use soft, controlled lighting to enhance surface characteristics without distortion. Shallow depth of field, ultra-sharp focus on key materials, clean background. High-end product photography style, ultra-realistic. Without affecting the product shape.
+  ```
+- Uploads the result to storage: `{user_id}/{job_id}/{index}-detailed.webp`
+- Updates `detailed_result_url` on the `bulk_background_results` row
+- Returns the URL
 
-### 2. EcommercePhotoModal (`src/components/EcommercePhotoModal.tsx`)
-
-Apply the same pattern:
-- DialogContent: `max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col p-0`
-- Scrollable content area: `flex-1 overflow-y-auto p-6 space-y-6`
-- Sticky footer for action buttons: `sticky bottom-0 border-t bg-background p-4`
-- Image grid on mobile: change from `grid-cols-2` to `grid-cols-1 sm:grid-cols-2` so images stack vertically and are larger
-
-### 3. ImagePreviewModal (`src/components/ImagePreviewModal.tsx`)
-
-Apply the same pattern:
-- DialogContent: `max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col p-0`
-- Image container: `flex-1 overflow-hidden flex items-center justify-center p-4`
-- Header stays at top with existing styling
-
-### 4. Dialog base component -- no changes
-The base `DialogContent` in `src/components/ui/dialog.tsx` remains untouched. All customizations are applied per-modal via className overrides, which is the existing pattern used throughout the project.
-
-## Visual Result (Mobile)
-
-```text
-+---------------------------+
-| Header / Title            |  <- fixed top
-+---------------------------+
-|                           |
-|  Scrollable content:      |
-|  - Image preview          |
-|  - Angle selection cards  |
-|  - Cost summary           |
-|                           |
-+---------------------------+
-| [Back]  [Start Photoshoot]|  <- sticky bottom, always visible
-+---------------------------+
+### Frontend API (`src/api/bulk-background-api.ts`)
+Add a new method:
+```typescript
+async generateDetailedImage(resultId: string): Promise<{ detailedUrl: string }>
 ```
 
-## Files Modified
-- `src/components/PhotoshootModal.tsx` -- fullscreen mobile + sticky footer for all 3 stages
-- `src/components/EcommercePhotoModal.tsx` -- fullscreen mobile + sticky footer + stacked images
-- `src/components/ImagePreviewModal.tsx` -- fullscreen mobile + proper image sizing
+### Frontend UI (`src/pages/BulkBackground.tsx`)
+- "Detailed Image" button behavior changes:
+  - If `result.detailed_result_url` exists: open the detailed image in `ImagePreviewModal`
+  - If not: call `generateDetailedImage(result.id)`, show a loading spinner on the button, and on success update the result in local state with the new URL
+- Add a loading state map: `detailedLoading: Record<string, boolean>`
+- Once generated, the gradient button changes to "View Detailed" and opens the preview
+
+### Hook Update (`src/hooks/useBulkBackgroundJob.ts`)
+- Add `generateDetailedImage` method that calls the API and updates the local results state
+
+### API Type Update (`src/api/bulk-background-api.ts`)
+- Add `detailed_result_url?: string` to `BulkBackgroundResult` interface
+
+## Technical Details
+
+### Credit Cost Function (shared frontend + backend pattern)
+```
+function getCreditsForSize(imageSize: string): number {
+  switch (imageSize) {
+    case '4K': return 4;
+    case '2K': return 2;
+    default: return 1; // 1K
+  }
+}
+```
+
+### Detailed Image Prompt (hardcoded in edge function)
+```
+Create a close-up or macro-style view of the uploaded product focusing on material quality, texture, and finish. Preserve exact product details and proportions. Use soft, controlled lighting to enhance surface characteristics without distortion. Shallow depth of field, ultra-sharp focus on key materials, clean background. High-end product photography style, ultra-realistic. Without affecting the product shape.
+```
+
+### Files Modified
+- `src/pages/BulkBackground.tsx` -- dynamic credits + detailed image button logic
+- `src/api/bulk-background-api.ts` -- new method + type update
+- `src/hooks/useBulkBackgroundJob.ts` -- new generateDetailedImage wrapper
+- `supabase/functions/bulk-background/index.ts` -- dynamic credits + generateDetailedImage action
+- Database migration: add `detailed_result_url` column
+
+### Translation Keys
+Add under `bulkBackground.buttons`:
+- `viewDetailed`: "View Detail" / translations
+- `generating`: "Generating..." / translations
 
