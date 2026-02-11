@@ -1,77 +1,50 @@
 
 
-# Bulk Background: Result Cards Redesign
+# Outfit Swap: Mobile Vertical Layout with Smooth Scrolling
 
 ## Overview
-Replace the current simple image grid in the results section with proper cards matching the Outfit Swap module style. Each result gets its own Card with the image displayed larger, and 4 action buttons below.
+Replace the current step-based navigation (Step 1 / Step 2 with a "Continue" button) with a vertical progressive-disclosure layout matching the Bulk Background module. On mobile, all sections appear vertically as prerequisites are met, with smooth auto-scrolling to newly revealed sections. The step indicator and explicit "Continue" / "Back" buttons are removed.
 
-## Layout Changes
+## Current Problem
+- Step 1 shows the model selector; after selecting a model, the "Continue" button is below the scroll area and users can't find it
+- The step-based approach hides the garment uploader until the user explicitly clicks "Continue"
+- Mobile users get stuck because they don't realize they need to scroll down
 
-**Results grid (`src/pages/BulkBackground.tsx`, lines ~446-491)**
-
-Current: Small square thumbnails in a `grid-cols-2 sm:grid-cols-3 lg:grid-cols-4` grid with only a hover overlay link.
-
-New: Card-based layout matching Outfit Swap:
-- Mobile: `grid-cols-1` (one card per row, full width)
-- Desktop: `grid-cols-2 lg:grid-cols-3` (matching Outfit Swap's `md:grid-cols-2 lg:grid-cols-3`)
-- Each card is a `Card` component with `overflow-hidden`
-- Image displayed in `aspect-square` container
-- Below the image, 4 action buttons
-
-## Card Structure (per result)
-
-Each completed result card will contain:
-
-```text
-+---------------------------+
-|                           |
-|      Result Image         |
-|    (aspect-square)        |
-|                           |
-+---------------------------+
-| [Detailed Image]  (CTA)  |  <-- gradient button like photoshoot
-| [Preview] [UGC] [Download]|  <-- 3-col icon grid
-+---------------------------+
-```
-
-### Button Details
-
-1. **Detailed Image** (highlighted, full-width)
-   - Gradient style: `bg-gradient-to-r from-purple-500 to-pink-500` (same as "Create Photoshoot" in Outfit Swap)
-   - Navigates to the Product Studio Background single-image mode with the result image pre-loaded
-   - Icon: `Sparkles`
-
-2. **UGC Image** (outline, in grid)
-   - Navigates to the UGC module (`/create/ugc`) with the result image URL in state
-   - Icon: `Camera`
-
-3. **Download** (outline, in grid)
-   - Downloads the result image directly
-   - Icon: `Download`
-
-4. **Preview** (outline, in grid)
-   - Opens the `ImagePreviewModal` to view the image in a larger dialog
-   - Icon: `Eye`
+## New Behaviour
+- **Section 1 (Select Model)**: Always visible, wrapped in a Card (matching Bulk Background style)
+- **Section 2 (Upload Garments)**: Appears automatically once a model is selected, with smooth scroll into view
+- **Section 3 (Review & Start)**: Appears automatically once garments are uploaded, with smooth scroll into view
+- No step indicator, no "Continue" / "Back" buttons
+- A "Change Model" link inside Section 2 header lets users go back (scrolls to top and clears model)
 
 ## Technical Changes
 
-### File: `src/pages/BulkBackground.tsx`
+### File: `src/pages/OutfitSwap.tsx`
 
-1. Add imports: `ImagePreviewModal`, `Eye`, `Camera`, `Sparkles`, `useIsMobile`
-2. Add state for `previewImage` (same pattern as BatchSwapPreview)
-3. Replace the results grid (lines 446-491) with the new card-based layout:
-   - Change grid classes to `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`
-   - Each result wrapped in a `Card` with image + action buttons
-   - Failed/processing states remain inside their respective cards
-4. Add `downloadImage` helper function (fetch + blob + anchor click)
-5. Add `ImagePreviewModal` component at the bottom of the return
-6. Navigation handlers for "Detailed Image" and "UGC Image" buttons
+1. **Remove step state**: Delete `currentStep` state and all step indicator UI (the numbered circles at lines 203-219)
 
-### File: `src/i18n/locales/en.json` (+ pt, es, de, fr)
+2. **Remove step-based conditional rendering**: Instead of `{currentStep === 1 && ...}` and `{currentStep === 2 && ...}`, show sections based on data readiness:
+   - Model selector: always visible
+   - Garment uploader: visible when `selectedModel !== null`
+   - Review + Start button: visible when `selectedModel !== null && garmentFiles.length > 0`
 
-Add keys under `bulkBackground.buttons`:
-- `detailedImage`: "Detailed Image" / translations
-- `ugcImage`: "UGC Image" / translations
-- `preview`: "Preview" / translations
-- `download`: "Download" / translations
+3. **Add scroll refs** (same pattern as BulkBackground):
+   - `garmentRef` for the garment upload section
+   - `reviewRef` for the review/start section
+
+4. **Add smooth scroll effects** (same pattern as BulkBackground):
+   - When `selectedModel` changes from null to a value, scroll to `garmentRef`
+   - When `garmentFiles.length` changes from 0 to >0, scroll to `reviewRef`
+
+5. **Wrap sections in Cards** with `rounded-apple shadow-lg scroll-mt-6` classes to match Bulk Background styling
+
+6. **Remove "Continue" and "Back" buttons**: Replace with a small "Change Model" button in the garment section header (same as BulkBackground's "Change Background" pattern)
+
+7. **Keep the batch preview logic unchanged** (the `batch || replicateMode` branch stays as-is)
+
+### No translation changes needed
+All existing translation keys are reused; only the layout/flow changes.
+
+### No other files affected
+`BaseModelSelector`, `MultiGarmentUploader`, `OutfitSwapSettings`, and `BatchSwapPreview` remain untouched.
 
