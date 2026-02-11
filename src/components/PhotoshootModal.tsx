@@ -292,20 +292,20 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
                   analyzingText={t('photoshootModal.uploading')}
                 />
               </div>
+              <div className="sticky bottom-0 border-t bg-background p-4 flex gap-2 justify-end">
+                <Button variant="outline" onClick={onClose}>
+                  {t('photoshootModal.cancel')}
+                </Button>
+                <Button 
+                  onClick={handleContinueToAngleSelection}
+                  disabled={isUploading}
+                  size="lg"
+                >
+                  {t('photoshootModal.continue')}
+                </Button>
+              </div>
             </div>
 
-            <div className="sticky bottom-0 border-t bg-background p-4 flex gap-2 justify-end">
-              <Button variant="outline" onClick={onClose}>
-                {t('photoshootModal.cancel')}
-              </Button>
-              <Button 
-                onClick={handleContinueToAngleSelection}
-                disabled={isUploading}
-                size="lg"
-              >
-                {t('photoshootModal.continue')}
-              </Button>
-            </div>
           </>
         ) : stage === 'angle-selection' ? (
           <>
@@ -320,7 +320,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
               </div>
 
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex-col items-center justify-between space-y-4">
                   <Label>{t('photoshootModal.selectAnglesLabel')}</Label>
                   <div className="flex gap-2">
                     <Button
@@ -380,8 +380,6 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
                   </p>
                 </div>
               </div>
-            </div>
-
             <div className="sticky bottom-0 border-t bg-background p-4 flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setStage('setup')}>
                 {t('photoshootModal.back')}
@@ -401,6 +399,8 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
                 )}
               </Button>
             </div>
+            </div>
+
           </>
         ) : (
           <>
