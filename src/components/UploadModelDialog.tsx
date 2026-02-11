@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, X, Loader2 } from "lucide-react";
+import { Upload, X, Loader2, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "./ui/badge";
 
 interface UploadModelDialogProps {
   isOpen: boolean;
@@ -107,9 +108,19 @@ export const UploadModelDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[100vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t('uploadModelDialog.title')}</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              {t('uploadModelDialog.title')}
+            </DialogTitle>
+            <div>
+            <Button variant="outline" onClick={handleClose}>
+              <X />
+            </Button>
+            </div>
+          </div>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -246,6 +257,9 @@ export const UploadModelDialog = ({
             </Select>
           </div>
 
+          <div className="space-y-2">
+            <Badge variant="secondary" className="text-sm">5 {t('aiModelForm.credits')}</Badge>
+          </div>
           {/* Action Buttons */}
           <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={handleClose} disabled={uploading}>

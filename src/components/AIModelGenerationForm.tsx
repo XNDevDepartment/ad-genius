@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Sparkles } from "lucide-react";
+import { Cross, Loader2, Sparkles, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface AIModelGenerationFormProps {
@@ -96,14 +96,18 @@ export const AIModelGenerationForm = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[100vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
               {t('aiModelForm.title')}
             </DialogTitle>
-            <Badge variant="secondary" className="text-sm">6 {t('aiModelForm.credits')}</Badge>
+            <div>
+            <Button variant="outline" onClick={handleClose}>
+              <X />
+            </Button>
+            </div>
           </div>
         </DialogHeader>
 
@@ -408,6 +412,7 @@ export const AIModelGenerationForm = ({
                 onCheckedChange={setGentleSmile}
               />
             </div>
+              <Badge variant="secondary" className="text-sm">6 {t('aiModelForm.credits')}</Badge>
           </div>
 
           {/* Action Buttons */}
