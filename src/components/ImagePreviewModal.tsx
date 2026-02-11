@@ -21,7 +21,7 @@ export const ImagePreviewModal = ({
 }: ImagePreviewModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+      <DialogContent className="max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col p-0">
         <DialogHeader className="p-4 border-b">
           <div className="flex items-center justify-between">
             <DialogTitle>{imageName}</DialogTitle>
@@ -57,7 +57,7 @@ export const ImagePreviewModal = ({
             </div>
           </div>
         </DialogHeader>
-        <div className="relative flex items-center justify-center p-4 max-h-[calc(90vh-120px)]">
+        <div className="flex-1 overflow-hidden flex items-center justify-center p-4">
           <img
             src={imageUrl}
             alt={imageName}

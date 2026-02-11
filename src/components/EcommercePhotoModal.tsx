@@ -26,7 +26,6 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
 
     setLoading(true);
 
-    // Fetch initial photo data
     ecommercePhotoApi.getEcommercePhoto(photoId)
       .then(setPhoto)
       .catch((error) => {
@@ -35,7 +34,6 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
       })
       .finally(() => setLoading(false));
 
-    // Subscribe to updates
     const unsubscribe = ecommercePhotoApi.subscribeToEcommercePhoto(photoId, (updatedPhoto) => {
       setPhoto(updatedPhoto);
 
@@ -51,7 +49,6 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
     };
   }, [isOpen, photoId]);
 
-  // Polling fallback for ecommerce photo status
   useEffect(() => {
     if (!photo?.id || photo.status === 'completed' || photo.status === 'failed' || photo.status === 'canceled') {
       return;
@@ -136,15 +133,15 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col p-0">
+        <DialogHeader className="p-6 pb-0">
           <DialogTitle>{t('ecommercePhotoModal.title')}</DialogTitle>
           <DialogDescription>
             {t('ecommercePhotoModal.description')}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Status */}
           {isProcessing && (
             <div className="space-y-3">
@@ -174,7 +171,7 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
           )}
 
           {/* Images */}
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {/* Original */}
             <div className="space-y-2">
               <p className="text-sm font-medium text-muted-foreground">{t('ecommercePhotoModal.original')}</p>
@@ -205,36 +202,33 @@ export const EcommercePhotoModal = ({ isOpen, onClose, photoId, originalImageUrl
               )}
             </div>
           </div>
+        </div>
 
-          {/* Actions */}
-          <div className="flex gap-2 justify-end">
-            {isProcessing && (
-              <Button variant="outline" onClick={handleCancel}>
-                <X className="h-4 w-4 mr-2" />
-                {t('ecommercePhotoModal.cancel')}
-              </Button>
-            )}
-
-            {isComplete && photo.public_url && (
-              <>
-                <Button variant="outline" onClick={() => handleDownload(photo.public_url!)}>
-                  <Download className="h-4 w-4 mr-2" />
-                  {t('ecommercePhotoModal.download')}
-                </Button>
-                <Button variant="outline" onClick={() => openInNewTab(photo.public_url!)}>
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  {t('ecommercePhotoModal.open')}
-                </Button>
-                {/* <Button onClick={handleAnimate}>
-                  {t('ecommercePhotoModal.animate')}
-                </Button> */}
-              </>
-            )}
-
-            <Button variant={isComplete ? "outline" : "default"} onClick={onClose}>
-              {isComplete ? t('ecommercePhotoModal.done') : t('ecommercePhotoModal.close')}
+        {/* Sticky Footer */}
+        <div className="sticky bottom-0 border-t bg-background p-4 flex gap-2 justify-end">
+          {isProcessing && (
+            <Button variant="outline" onClick={handleCancel}>
+              <X className="h-4 w-4 mr-2" />
+              {t('ecommercePhotoModal.cancel')}
             </Button>
-          </div>
+          )}
+
+          {isComplete && photo.public_url && (
+            <>
+              <Button variant="outline" onClick={() => handleDownload(photo.public_url!)}>
+                <Download className="h-4 w-4 mr-2" />
+                {t('ecommercePhotoModal.download')}
+              </Button>
+              <Button variant="outline" onClick={() => openInNewTab(photo.public_url!)}>
+                <ExternalLink className="h-4 w-4 mr-2" />
+                {t('ecommercePhotoModal.open')}
+              </Button>
+            </>
+          )}
+
+          <Button variant={isComplete ? "outline" : "default"} onClick={onClose}>
+            {isComplete ? t('ecommercePhotoModal.done') : t('ecommercePhotoModal.close')}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
