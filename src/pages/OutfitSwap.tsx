@@ -199,11 +199,11 @@ const OutfitSwap = () => {
                   finished_at: replicatedJob.finished_at,
                 }
               : batch;
-              
+
             const displayJobs = replicateMode && replicatedJob
               ? [replicatedJob]
               : jobs;
-              
+
             const initialResults = replicateMode && replicatedResult && replicatedJob
               ? { [replicatedJob.id]: replicatedResult }
               : undefined;

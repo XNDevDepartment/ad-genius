@@ -199,7 +199,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
 
         if (updatedPhotoshoot.status === 'completed') {
           toast.success(t('photoshootModal.photoshootCompleted'));
-          
+
           // Delete the back image from storage if it was uploaded
           if (backImageUrl && backImageUrl.includes('outfit-user-models/temp/')) {
             const path = backImageUrl.split('outfit-user-models/')[1];
@@ -246,7 +246,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
 
   const handleCancel = async () => {
     if (!photoshoot?.id) return;
-    
+
     try {
       await photoshootApi.cancelPhotoshoot(photoshoot.id);
       toast.success(t('photoshootModal.photoshootCanceled'));
@@ -269,7 +269,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t('photoshootModal.title')}</DialogTitle>
           <DialogDescription>
@@ -324,7 +324,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
             {/* Original Image Preview */}
             <div className="space-y-2">
               <Label>{t('photoshootModal.originalImage')}</Label>
-              <img 
+              <img
                 src={originalImageUrl} 
                 alt="Original outfit swap"
                 className="w-full rounded-lg border max-h-48 object-contain"
