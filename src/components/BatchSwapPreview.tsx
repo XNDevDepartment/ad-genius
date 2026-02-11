@@ -426,13 +426,13 @@ export const BatchSwapPreview = ({
                             4 {t('outfitSwap.buttons.angles')}
                           </Badge>
                         </Button>
-                        
+
                         {/* Primary actions - compact grid */}
                         <div className={cn(
                           "grid gap-2",
-                          isMobile ? "grid-cols-4" : "grid-cols-3"
+                          isMobile ? "grid-cols-2" : "grid-cols-2"
                         )}>
-                          <Button
+                          {/* <Button
                             size="sm"
                             variant="outline"
                             onClick={() => setPreviewImage({ url: result.public_url, name: t('outfitSwap.batch.swap', { index: index + 1 }) })}
@@ -440,7 +440,7 @@ export const BatchSwapPreview = ({
                           >
                             <Eye className="w-4 h-4 mb-1" />
                             <span className="text-xs">{t('outfitSwap.buttons.preview')}</span>
-                          </Button>
+                          </Button> */}
                           <Button
                             size="sm"
                             variant="outline"
@@ -459,7 +459,6 @@ export const BatchSwapPreview = ({
                             <Download className="w-4 h-4 mb-1" />
                             <span className="text-xs">{t('outfitSwap.buttons.download')}</span>
                           </Button>
-                          {isMobile && (
                             <Button
                               size="sm"
                               variant="outline"
@@ -469,30 +468,11 @@ export const BatchSwapPreview = ({
                               <Film className="w-4 h-4 mb-1" />
                               <span className="text-xs">{t('outfitSwap.buttons.animate')}</span>
                             </Button>
-                          )}
-                        </div>
-                        
-                        {/* Secondary actions */}
-                        <div className={cn(
-                          "flex gap-2",
-                          isMobile ? "flex-col" : "flex-row"
-                        )}>
-                          {!isMobile && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleAnimate(result.public_url, result)}
-                              className="flex-1"
-                            >
-                              <Film className="w-3 h-3 mr-1" />
-                              {t('outfitSwap.buttons.animate')}
-                            </Button>
-                          )}
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => handleCreateEcommercePhoto(result)}
-                            className="flex-1"
+                            className="flex-col h-auto py-2"
                           >
                             <ShoppingBag className="w-3 h-3 mr-1" />
                             {t('outfitSwap.buttons.ecommerce')}
