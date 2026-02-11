@@ -1,11 +1,12 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Download, Loader2, X, ExternalLink } from "lucide-react";
+import { ArrowLeft, Download, Loader2, X, Eye, Camera, Sparkles } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ImagePreviewModal } from "@/components/ImagePreviewModal";
 import { Progress } from "@/components/ui/progress";
 import MultiImageUploader from "@/components/MultiImageUploader";
 import BackgroundPicker from "@/components/bulk-background/BackgroundPicker";
@@ -54,6 +55,7 @@ const BulkBackground = () => {
   const [processingStarted, setProcessingStarted] = useState(false);
   const [imageSize, setImageSize] = useState<'1K' | '2K' | '4K'>('1K');
   const [aspectRatio, setAspectRatio] = useState<string>('1:1');
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Scroll refs
   const backgroundRef = useRef<HTMLDivElement>(null);
@@ -443,50 +445,93 @@ const BulkBackground = () => {
                       </div>
                     )}
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {results.map((result, index) => (
-                        <div
-                          key={result.id || index}
-                          className="aspect-square bg-muted rounded-apple overflow-hidden relative group"
-                        >
-                          {result.status === 'completed' && result.result_url ? (
-                            <>
+                        <Card key={result.id || index} className="overflow-hidden">
+                          <div className="aspect-square bg-muted relative">
+                            {result.status === 'completed' && result.result_url ? (
                               <img
                                 src={result.result_url}
                                 alt={`Result ${index + 1}`}
                                 className="w-full h-full object-cover"
                               />
-                              <a
-                                href={result.result_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                            ) : result.status === 'failed' ? (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <X className="h-8 w-8 text-destructive" />
+                              </div>
+                            ) : result.status === 'processing' ? (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                              </div>
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <div className="h-8 w-8 rounded-full border-2 border-muted-foreground/30" />
+                              </div>
+                            )}
+                          </div>
+                          {result.status === 'completed' && result.result_url && (
+                            <div className="p-3 space-y-2">
+                              <Button
+                                className="w-full gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90"
+                                onClick={() => navigate('/create/product-studio', { state: { imageUrl: result.result_url } })}
                               >
-                                <ExternalLink className="h-6 w-6 text-white" />
-                              </a>
-                            </>
-                          ) : result.status === 'failed' ? (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <X className="h-8 w-8 text-destructive" />
-                            </div>
-                          ) : result.status === 'processing' ? (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                            </div>
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <div className="h-8 w-8 rounded-full border-2 border-muted-foreground/30" />
+                                <Sparkles className="h-4 w-4" />
+                                {t("bulkBackground.buttons.detailedImage")}
+                              </Button>
+                              <div className="grid grid-cols-3 gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-1"
+                                  onClick={() => setPreviewImage(result.result_url!)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                  <span className="hidden sm:inline">{t("bulkBackground.buttons.preview")}</span>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-1"
+                                  onClick={() => navigate('/create/ugc', { state: { imageUrl: result.result_url } })}
+                                >
+                                  <Camera className="h-4 w-4" />
+                                  <span className="hidden sm:inline">{t("bulkBackground.buttons.ugcImage")}</span>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-1"
+                                  onClick={async () => {
+                                    try {
+                                      const response = await fetch(result.result_url!);
+                                      const blob = await response.blob();
+                                      const url = URL.createObjectURL(blob);
+                                      const a = document.createElement('a');
+                                      a.href = url;
+                                      a.download = `product-${index + 1}.webp`;
+                                      document.body.appendChild(a);
+                                      a.click();
+                                      document.body.removeChild(a);
+                                      URL.revokeObjectURL(url);
+                                    } catch (e) {
+                                      console.error('Download error:', e);
+                                    }
+                                  }}
+                                >
+                                  <Download className="h-4 w-4" />
+                                  <span className="hidden sm:inline">{t("bulkBackground.buttons.download")}</span>
+                                </Button>
+                              </div>
                             </div>
                           )}
-                        </div>
+                        </Card>
                       ))}
                       {results.length === 0 && productImages.map((_, index) => (
-                        <div
-                          key={index}
-                          className="aspect-square bg-muted rounded-apple flex items-center justify-center"
-                        >
-                          <div className="h-8 w-8 rounded-full border-2 border-muted-foreground/30" />
-                        </div>
+                        <Card key={index} className="overflow-hidden">
+                          <div className="aspect-square bg-muted flex items-center justify-center">
+                            <div className="h-8 w-8 rounded-full border-2 border-muted-foreground/30" />
+                          </div>
+                        </Card>
                       ))}
                     </div>
 
@@ -521,6 +566,15 @@ const BulkBackground = () => {
             </Card>
           </div>
         )}
+
+        {/* Image Preview Modal */}
+        <ImagePreviewModal
+          isOpen={!!previewImage}
+          onClose={() => setPreviewImage(null)}
+          imageUrl={previewImage || ''}
+          imageName="Result Image"
+          onOpenInNewTab={() => previewImage && window.open(previewImage, '_blank')}
+        />
       </div>
     </div>
   );

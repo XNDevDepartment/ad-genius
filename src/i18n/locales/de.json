@@ -769,7 +769,11 @@
       "back": "Zurück",
       "startProcessing": "Verarbeitung starten",
       "newBatch": "Neuer Stapel",
-      "changeBackground": "Hintergrund ändern"
+      "changeBackground": "Hintergrund ändern",
+      "detailedImage": "Detailbild",
+      "ugcImage": "UGC-Bild",
+      "preview": "Vorschau",
+      "download": "Herunterladen"
     },
     "errors": {
       "signIn": "Bitte anmelden",

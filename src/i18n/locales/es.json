@@ -769,7 +769,11 @@
       "back": "Atrás",
       "startProcessing": "Iniciar Procesamiento",
       "newBatch": "Nuevo Lote",
-      "changeBackground": "Cambiar Fondo"
+      "changeBackground": "Cambiar Fondo",
+      "detailedImage": "Imagen Detallada",
+      "ugcImage": "Imagen UGC",
+      "preview": "Vista Previa",
+      "download": "Descargar"
     },
     "errors": {
       "signIn": "Inicia sesión",

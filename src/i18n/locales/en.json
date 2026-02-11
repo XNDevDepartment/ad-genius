@@ -774,7 +774,11 @@
       "back": "Back",
       "startProcessing": "Start Processing",
       "newBatch": "New Batch",
-      "changeBackground": "Change Background"
+      "changeBackground": "Change Background",
+      "detailedImage": "Detailed Image",
+      "ugcImage": "UGC Image",
+      "preview": "Preview",
+      "download": "Download"
     },
     "errors": {
       "signIn": "Please sign in",
