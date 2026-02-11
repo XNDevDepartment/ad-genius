@@ -125,7 +125,7 @@ const MultiImageUploader = ({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
       {/* Uploaded Images Grid */}
       {selectedImages.length > 0 && (
         <>
@@ -172,10 +172,10 @@ const MultiImageUploader = ({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={` bg-transparent border-2 border-dashed rounded-apple p-8 transition-colors ${
-          isDragOver 
+          isDragOver
           ? 'border-primary bg-primary/5 scale-[1.02]' 
           : 'border-border hover:border-primary/50'
-        } ${selectedImages.length > 0 ? '' : 'w-full col-span-3 col-span-auto'}`}
+        } ${selectedImages.length > 0 ? '' : 'w-full col-span-6 col-span-auto'}`}
         >
           <div className="flex flex-col items-center gap-3">
             <div className="w-12 h-12 bg-primary/10 rounded-apple-sm flex items-center justify-center">

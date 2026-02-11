@@ -335,7 +335,7 @@ const BulkBackground = () => {
                 <div className="space-y-2">
                   <p className="text-sm font-medium">{t("bulkBackground.settings.aspectRatio")}</p>
                   <Select value={aspectRatio} onValueChange={setAspectRatio}>
-                    <SelectTrigger className="">
+                    <SelectTrigger className="w-44">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -359,23 +359,25 @@ const BulkBackground = () => {
                     </SelectContent>
                   </Select>
                 </div>
-
-                <Button
-                  onClick={handleStartProcessing}
-                  disabled={!hasEnoughCredits || jobLoading}
-                  className="gap-2"
-                >
-                  {jobLoading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      {t("bulkBackground.processing.starting")}
-                    </>
-                  ) : (
-                    <>
-                      {t("bulkBackground.buttons.startProcessing")} — {totalCost} {t("bulkBackground.review.credits", "credits")}
-                    </>
-                  )}
-                </Button>
+                <div className="w-full flex justify-center">
+                  <Button
+                    onClick={handleStartProcessing}
+                    disabled={!hasEnoughCredits || jobLoading}
+                    className="gap-2 w-full"
+                    variant="alternative"
+                  >
+                    {jobLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        {t("bulkBackground.processing.starting")}
+                      </>
+                    ) : (
+                      <>
+                        {t("bulkBackground.buttons.startProcessing")} — {totalCost} {t("bulkBackground.review.credits", "credits")}
+                      </>
+                    )}
+                  </Button>
+                </div>
                 {!hasEnoughCredits && (
                   <p className="text-xs text-destructive text-center">
                     {t("bulkBackground.review.insufficientCredits", { available: credits, needed: totalCost - credits })}
@@ -476,7 +478,7 @@ const BulkBackground = () => {
                                   className="gap-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90"
                                   onClick={() => navigate('/create/product-studio', { state: { imageUrl: result.result_url } })}
                                 >
-                                  <Sparkles className="h-4 w-4" />
+                                  {/* <Sparkles className="h-4 w-4" /> */}
                                   {t("bulkBackground.buttons.detailedImage")}
                                 </Button>
                                 <Button
