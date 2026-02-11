@@ -726,7 +726,7 @@
       "spring": "Coloca el producto en un jardín fresco de primavera con flores en flor, colores pastel suaves y crecimiento nuevo"
     },
     "prompt": {
-      "label": "Prompt",
+      "label": "Instrucciones",
       "placeholder": "Describe cómo quieres que el producto se coloque en este fondo...",
       "hint": "Edita el prompt para personalizar cómo se coloca tu producto en el fondo.",
       "defaultCustom": "Coloca el producto en este fondo con un aspecto limpio y profesional"

@@ -731,7 +731,7 @@
       "spring": "Place the product in a fresh spring garden with blooming flowers, soft pastel colors, and new growth"
     },
     "prompt": {
-      "label": "Prompt",
+      "label": "Instructions",
       "placeholder": "Describe how you want the product placed on this background...",
       "hint": "Edit the prompt to customize how your product is placed on the background.",
       "defaultCustom": "Place the product on this background with a clean, professional look"

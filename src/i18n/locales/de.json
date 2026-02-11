@@ -726,7 +726,7 @@
       "spring": "Platziere das Produkt in einem frischen Frühlingsgarten mit blühenden Blumen, sanften Pastellfarben und neuem Wachstum"
     },
     "prompt": {
-      "label": "Prompt",
+      "label": "Anweisungen",
       "placeholder": "Beschreibe, wie das Produkt auf diesem Hintergrund platziert werden soll...",
       "hint": "Bearbeite den Prompt, um die Platzierung deines Produkts anzupassen.",
       "defaultCustom": "Platziere das Produkt auf diesem Hintergrund mit einem sauberen, professionellen Look"

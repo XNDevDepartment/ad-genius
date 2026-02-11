@@ -72,23 +72,23 @@ const ModuleSelection = () => {
       isBeta: true,
       locked: false
     }] : []),
-    ...(isAdmin ? [{
-      id: "magazine-photoshoot",
-      title: "Magazine Photoshoot",
-      description: "Transform photos into high-fashion editorial magazine spreads",
-      icon: Camera,
-      path: "/create/magazine-photoshoot",
-      isAdmin: true,
-      isBeta: false
-    }] : []),
-    ...(isAdmin ? [{
-      id: "custom-model",
-      title: "Create Your Own Model",
-      description: "Train custom base models from your photo sets",
-      icon: UserPlus,
-      path: "/create/custom-model",
-      isAdmin: true
-    }] : []),
+    // ...(isAdmin ? [{
+    //   id: "magazine-photoshoot",
+    //   title: "Magazine Photoshoot",
+    //   description: "Transform photos into high-fashion editorial magazine spreads",
+    //   icon: Camera,
+    //   path: "/create/magazine-photoshoot",
+    //   isAdmin: true,
+    //   isBeta: false
+    // }] : []),
+    // ...(isAdmin ? [{
+    //   id: "custom-model",
+    //   title: "Create Your Own Model",
+    //   description: "Train custom base models from your photo sets",
+    //   icon: UserPlus,
+    //   path: "/create/custom-model",
+    //   isAdmin: true
+    // }] : []),
     {
       id: "soon",
       title: "In Progress",

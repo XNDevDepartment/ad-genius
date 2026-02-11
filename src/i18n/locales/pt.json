@@ -659,7 +659,7 @@
     },
     "uploadProducts": {
       "title": "Carrega os teus Produtos",
-      "subtitle": "Carrega até {{max}} produtos",
+      "subtitle": "Carrega até {{max}} imagens",
       "imagesUploaded": "{{count}} imagens carregadas"
     },
     "selectBackground": {
@@ -730,7 +730,7 @@
       "spring": "Coloca o produto num jardim fresco de primavera com flores a desabrochar, cores pastel suaves e crescimento novo"
     },
     "prompt": {
-      "label": "Prompt",
+      "label": "Instruções",
       "placeholder": "Descreve como queres que o produto seja colocado neste fundo...",
       "hint": "Edita o prompt para personalizar como o produto é colocado no fundo.",
       "defaultCustom": "Coloca o produto neste fundo com um aspeto limpo e profissional"
