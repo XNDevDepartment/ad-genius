@@ -471,14 +471,14 @@ const BulkBackground = () => {
                           </div>
                           {result.status === 'completed' && result.result_url && (
                             <div className="p-3 space-y-2">
-                              <Button
-                                className="w-full gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90"
-                                onClick={() => navigate('/create/product-studio', { state: { imageUrl: result.result_url } })}
-                              >
-                                <Sparkles className="h-4 w-4" />
-                                {t("bulkBackground.buttons.detailedImage")}
-                              </Button>
                               <div className="grid grid-cols-3 gap-2">
+                                <Button
+                                  className="gap-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90"
+                                  onClick={() => navigate('/create/product-studio', { state: { imageUrl: result.result_url } })}
+                                >
+                                  <Sparkles className="h-4 w-4" />
+                                  {t("bulkBackground.buttons.detailedImage")}
+                                </Button>
                                 <Button
                                   variant="outline"
                                   size="sm"
