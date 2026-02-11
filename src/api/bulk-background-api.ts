@@ -29,6 +29,7 @@ export interface BulkBackgroundResult {
   source_image_url: string;
   result_url?: string;
   storage_path?: string;
+  detailed_result_url?: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
   error?: string;
   image_index: number;
@@ -94,6 +95,10 @@ export const bulkBackgroundApi = {
 
   async retryResult(resultId: string): Promise<{ success: boolean; error?: string }> {
     return callFunction('retryResult', { resultId }) as Promise<{ success: boolean; error?: string }>;
+  },
+
+  async generateDetailedImage(resultId: string): Promise<{ detailedUrl: string }> {
+    return callFunction('generateDetailedImage', { resultId }) as Promise<{ detailedUrl: string }>;
   },
 
   subscribeJob(jobId: string, onUpdate: (job: BulkBackgroundJob) => void) {

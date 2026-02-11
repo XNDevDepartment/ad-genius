@@ -1,0 +1,1 @@
+ALTER TABLE public.bulk_background_results ADD COLUMN detailed_result_url TEXT;

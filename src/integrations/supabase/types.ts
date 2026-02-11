@@ -528,6 +528,7 @@ export type Database = {
       bulk_background_results: {
         Row: {
           created_at: string
+          detailed_result_url: string | null
           error: string | null
           id: string
           image_index: number
@@ -545,6 +546,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          detailed_result_url?: string | null
           error?: string | null
           id?: string
           image_index: number
@@ -562,6 +564,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          detailed_result_url?: string | null
           error?: string | null
           id?: string
           image_index?: number
