@@ -18,7 +18,14 @@ const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY")!;
 
-const CREDITS_PER_IMAGE = 2;
+function getCreditsPerImage(settings: Record<string, unknown> | null): number {
+  const size = (settings as any)?.imageSize || '1K';
+  switch (size) {
+    case '4K': return 4;
+    case '2K': return 2;
+    default: return 1;
+  }
+}
 
 // Gemini model configuration
 const GEMINI_MODEL = "gemini-3-pro-image-preview";
@@ -477,7 +484,8 @@ Deno.serve(async (req: Request) => {
         const { data: isAdminResult } = await adminClient.rpc("is_admin", { check_user_id: userId });
         const isAdmin = isAdminResult === true;
 
-        const totalCost = sourceImages.length * CREDITS_PER_IMAGE;
+        const creditsPerImg = getCreditsPerImage(settings || null);
+        const totalCost = sourceImages.length * creditsPerImg;
 
         // Check credits for non-admin users
         if (!isAdmin) {
@@ -701,7 +709,7 @@ Deno.serve(async (req: Request) => {
         if (failedCount > 0) {
           const { data: isAdminResult } = await adminClient.rpc("is_admin", { check_user_id: job.user_id });
           if (isAdminResult !== true) {
-            const refundAmount = failedCount * CREDITS_PER_IMAGE;
+            const refundAmount = failedCount * getCreditsPerImage(job.settings || null);
             await adminClient.rpc("refund_user_credits", {
               p_user_id: job.user_id,
               p_amount: refundAmount,
@@ -774,13 +782,13 @@ Deno.serve(async (req: Request) => {
             .eq("user_id", userId)
             .single();
 
-          if (!sub || sub.credits_balance < CREDITS_PER_IMAGE) {
+          if (!sub || sub.credits_balance < getCreditsPerImage(jobData.settings || null)) {
             return errorResponse("Insufficient credits", 402);
           }
 
           await adminClient.rpc("deduct_user_credits", {
             p_user_id: userId,
-            p_amount: CREDITS_PER_IMAGE,
+            p_amount: getCreditsPerImage(jobData.settings || null),
             p_reason: "bulk_background_retry",
           });
         }
@@ -836,7 +844,7 @@ Deno.serve(async (req: Request) => {
           if (isAdminResult !== true) {
             await adminClient.rpc("refund_user_credits", {
               p_user_id: userId,
-              p_amount: CREDITS_PER_IMAGE,
+              p_amount: getCreditsPerImage(jobData.settings || null),
               p_reason: "bulk_background_retry_failed_refund",
             });
           }
@@ -874,7 +882,7 @@ Deno.serve(async (req: Request) => {
         // Jobs stuck in processing for more than 10 minutes
         const { data: stuckJobs } = await adminClient
           .from("bulk_background_jobs")
-          .select("id, user_id, completed_images, total_images")
+          .select("id, user_id, completed_images, total_images, settings")
           .eq("status", "processing")
           .lte("updated_at", stuckCutoff)
           .limit(10);
@@ -900,7 +908,7 @@ Deno.serve(async (req: Request) => {
             if (isAdminResult !== true) {
               await adminClient.rpc("refund_user_credits", {
                 p_user_id: job.user_id,
-                p_amount: unprocessed * CREDITS_PER_IMAGE,
+                p_amount: unprocessed * getCreditsPerImage((job as any).settings || null),
                 p_reason: "bulk_background_timeout_refund"
               });
             }
@@ -1010,7 +1018,8 @@ Deno.serve(async (req: Request) => {
         if (refundCount > 0) {
           const { data: isAdminResult } = await adminClient.rpc("is_admin", { check_user_id: userId });
           if (isAdminResult !== true) {
-            const refundAmount = refundCount * CREDITS_PER_IMAGE;
+            const jobSettings = job.settings || null;
+            const refundAmount = refundCount * getCreditsPerImage(jobSettings as Record<string, unknown> | null);
             await adminClient.rpc("refund_user_credits", {
               p_user_id: userId,
               p_amount: refundAmount,
@@ -1019,7 +1028,7 @@ Deno.serve(async (req: Request) => {
           }
         }
 
-        return json({ success: true, refunded: refundCount * CREDITS_PER_IMAGE });
+        return json({ success: true, refunded: refundCount * getCreditsPerImage((job as any)?.settings || null) });
       }
 
       // ============================================
@@ -1054,6 +1063,145 @@ Deno.serve(async (req: Request) => {
         return json({
           images: results.map((r) => ({ url: r.result_url, index: r.image_index })),
         });
+      }
+
+      // ============================================
+      // GENERATE DETAILED IMAGE
+      // ============================================
+      case "generateDetailedImage": {
+        if (!userId) {
+          return errorResponse("Unauthorized", 401);
+        }
+
+        const { resultId } = body;
+        if (!resultId) return errorResponse("Missing resultId");
+
+        // Get result with job info
+        const { data: result, error: resultError } = await adminClient
+          .from("bulk_background_results")
+          .select("*, bulk_background_jobs!inner(user_id, id, settings)")
+          .eq("id", resultId)
+          .single();
+
+        if (resultError || !result) {
+          return errorResponse("Result not found", 404);
+        }
+
+        const resultJob = result.bulk_background_jobs as { user_id: string; id: string; settings: any };
+        if (resultJob.user_id !== userId) {
+          return errorResponse("Forbidden", 403);
+        }
+
+        if (result.status !== "completed" || !result.result_url) {
+          return errorResponse("Result must be completed before generating detailed image");
+        }
+
+        // If already generated, return existing URL
+        if (result.detailed_result_url) {
+          return json({ detailedUrl: result.detailed_result_url });
+        }
+
+        // Deduct 1 credit (admin-exempt)
+        const { data: isAdminCheck } = await adminClient.rpc("is_admin", { check_user_id: userId });
+        if (isAdminCheck !== true) {
+          const { data: sub } = await adminClient
+            .from("subscribers")
+            .select("credits_balance")
+            .eq("user_id", userId)
+            .single();
+
+          if (!sub || sub.credits_balance < 1) {
+            return errorResponse("Insufficient credits", 402);
+          }
+
+          await adminClient.rpc("deduct_user_credits", {
+            p_user_id: userId,
+            p_amount: 1,
+            p_reason: "bulk_background_detailed_image",
+          });
+        }
+
+        try {
+          // Fetch the result image
+          const resultBase64 = await fetchImageAsBase64(result.result_url);
+
+          const detailedPrompt = `Create a close-up or macro-style view of the uploaded product focusing on material quality, texture, and finish. Preserve exact product details and proportions. Use soft, controlled lighting to enhance surface characteristics without distortion. Shallow depth of field, ultra-sharp focus on key materials, clean background. High-end product photography style, ultra-realistic. Without affecting the product shape.`;
+
+          const parts: unknown[] = [
+            { text: detailedPrompt },
+            { inlineData: { mimeType: "image/jpeg", data: resultBase64 } }
+          ];
+
+          const response = await fetch(GEMINI_ENDPOINT, {
+            method: "POST",
+            headers: {
+              "x-goog-api-key": GOOGLE_AI_API_KEY,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              contents: [{ parts }],
+              generationConfig: {
+                responseModalities: ["IMAGE"],
+                imageConfig: { aspectRatio: "1:1" }
+              }
+            }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Detailed image Gemini error:", errorText);
+            // Refund on failure
+            if (isAdminCheck !== true) {
+              await adminClient.rpc("refund_user_credits", {
+                p_user_id: userId,
+                p_amount: 1,
+                p_reason: "bulk_background_detailed_image_failed_refund",
+              });
+            }
+            return errorResponse("AI generation failed", 500);
+          }
+
+          const data = await response.json();
+          const imageBase64 = extractBase64Image(data);
+
+          if (!imageBase64) {
+            if (isAdminCheck !== true) {
+              await adminClient.rpc("refund_user_credits", {
+                p_user_id: userId,
+                p_amount: 1,
+                p_reason: "bulk_background_detailed_image_no_result_refund",
+              });
+            }
+            return errorResponse("No image generated", 500);
+          }
+
+          // Convert and upload
+          const binaryStr = atob(imageBase64);
+          const bytes = new Uint8Array(binaryStr.length);
+          for (let i = 0; i < binaryStr.length; i++) {
+            bytes[i] = binaryStr.charCodeAt(i);
+          }
+
+          const storagePath = `${userId}/${resultJob.id}/${result.image_index}-detailed.webp`;
+          const { publicUrl } = await uploadToStorage(adminClient, bytes, storagePath, "image/webp");
+
+          // Update result row
+          await (adminClient.from("bulk_background_results") as any)
+            .update({ detailed_result_url: publicUrl, updated_at: new Date().toISOString() })
+            .eq("id", resultId);
+
+          return json({ detailedUrl: publicUrl });
+        } catch (error) {
+          console.error("Detailed image error:", error);
+          if (isAdminCheck !== true) {
+            await adminClient.rpc("refund_user_credits", {
+              p_user_id: userId,
+              p_amount: 1,
+              p_reason: "bulk_background_detailed_image_error_refund",
+            });
+          }
+          return errorResponse(error instanceof Error ? error.message : "Generation failed", 500);
+        }
       }
 
       default:
