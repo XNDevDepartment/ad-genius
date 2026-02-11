@@ -335,7 +335,7 @@ const BulkBackground = () => {
                 <div className="space-y-2">
                   <p className="text-sm font-medium">{t("bulkBackground.settings.aspectRatio")}</p>
                   <Select value={aspectRatio} onValueChange={setAspectRatio}>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -363,7 +363,7 @@ const BulkBackground = () => {
                 <Button
                   onClick={handleStartProcessing}
                   disabled={!hasEnoughCredits || jobLoading}
-                  className="w-full gap-2"
+                  className="gap-2"
                 >
                   {jobLoading ? (
                     <>
@@ -471,7 +471,7 @@ const BulkBackground = () => {
                           </div>
                           {result.status === 'completed' && result.result_url && (
                             <div className="p-3 space-y-2">
-                              <div className="grid grid-cols-3 gap-2">
+                              <div className="grid grid-cols-2 gap-2">
                                 <Button
                                   className="gap-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90"
                                   onClick={() => navigate('/create/product-studio', { state: { imageUrl: result.result_url } })}
