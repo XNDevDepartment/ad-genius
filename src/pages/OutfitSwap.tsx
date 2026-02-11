@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Shirt } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,12 +28,17 @@ const OutfitSwap = () => {
   const { calculateBatchCost, canAffordBatch, getSavings } = useOutfitSwapLimit();
   const { uploadSourceImage } = useSourceImageUpload();
 
-  const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [selectedModel, setSelectedModel] = useState<BaseModel | null>(null);
   const [garmentFiles, setGarmentFiles] = useState<File[]>([]);
   const [garmentDetails, setGarmentDetails] = useState<Record<number, string>>({});
   const [uploading, setUploading] = useState(false);
   const [settings, setSettings] = useState({});
+
+  // Scroll refs for progressive disclosure
+  const garmentRef = useRef<HTMLDivElement>(null);
+  const reviewRef = useRef<HTMLDivElement>(null);
+  const prevModelRef = useRef<BaseModel | null>(null);
+  const prevGarmentCountRef = useRef<number>(0);
   
   // Replicate mode state
   const [replicateMode, setReplicateMode] = useState(false);
@@ -82,6 +87,26 @@ const OutfitSwap = () => {
     }
   }, [location.state]);
 
+  // Smooth scroll when model is selected
+  useEffect(() => {
+    if (!prevModelRef.current && selectedModel && garmentRef.current) {
+      setTimeout(() => {
+        garmentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+    prevModelRef.current = selectedModel;
+  }, [selectedModel]);
+
+  // Smooth scroll when garments are added
+  useEffect(() => {
+    if (prevGarmentCountRef.current === 0 && garmentFiles.length > 0 && reviewRef.current) {
+      setTimeout(() => {
+        reviewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+    prevGarmentCountRef.current = garmentFiles.length;
+  }, [garmentFiles.length]);
+
   const handleStartBatch = async () => {
     if (!selectedModel || garmentFiles.length === 0) {
       toast({
@@ -120,7 +145,6 @@ const OutfitSwap = () => {
 
   const handleReset = () => {
     reset();
-    setCurrentStep(1);
     setSelectedModel(null);
     setGarmentFiles([]);
     setGarmentDetails({});
@@ -199,52 +223,32 @@ const OutfitSwap = () => {
             );
           })()
         ) : (
-          <>
-            {/* Step Indicator */}
-            <div className="flex items-center justify-center gap-4 mb-8">
-              {[1, 2].map((step) => (
-                <div key={step} className="flex items-center">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-                      currentStep >= step
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {step}
-                  </div>
-                  {step < 2 && <div className="w-16 h-1 bg-muted mx-2" />}
-                </div>
-              ))}
-            </div>
+          <div className="space-y-6">
+            {/* Section 1: Select Model */}
+            <Card className="rounded-apple shadow-lg scroll-mt-6 p-6 lg:p-8">
+              <h2 className="text-xl font-semibold mb-4">{t('outfitSwap.steps.step1Title')}</h2>
+              <BaseModelSelector
+                selectedModel={selectedModel}
+                onSelectModel={setSelectedModel}
+                showUpload={true}
+              />
+            </Card>
 
-            {/* Step 1: Select Model */}
-            {currentStep === 1 && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold">{t('outfitSwap.steps.step1Title')}</h2>
-                <BaseModelSelector
-                  selectedModel={selectedModel}
-                  onSelectModel={setSelectedModel}
-                  showUpload={true}
-                />
-                <div className="flex justify-center">
-                  <Button
-                    size="lg"
-                    onClick={() => setCurrentStep(2)}
-                    disabled={!selectedModel}
-                  >
-                    {t('outfitSwap.steps.continueToUpload')}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Step 2: Upload Garments & Review */}
-            {currentStep === 2 && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
+            {/* Section 2: Upload Garments - visible when model selected */}
+            {selectedModel && (
+              <Card ref={garmentRef} className="rounded-apple shadow-lg scroll-mt-6 p-6 lg:p-8">
+                <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold">{t('outfitSwap.steps.step2Title')}</h2>
-                  <Button variant="outline" onClick={() => setCurrentStep(1)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedModel(null);
+                      setGarmentFiles([]);
+                      setGarmentDetails({});
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                  >
                     {t('outfitSwap.steps.changeModel')}
                   </Button>
                 </div>
@@ -258,47 +262,44 @@ const OutfitSwap = () => {
                   }}
                   maxGarments={10}
                 />
+              </Card>
+            )}
 
-                {/* Review & Settings - Shown inline when garments are uploaded */}
-                {garmentFiles.length > 0 && (
-                  <>
-                    <Card className="p-6">
-                      <h3 className="text-lg font-semibold mb-4">{t('outfitSwap.review.title')}</h3>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold">{t('outfitSwap.review.selectedModel')}</span>
-                          <span>{selectedModel?.name}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold">{t('outfitSwap.review.garments')}</span>
-                          <span>{t('outfitSwap.review.garmentsCount', { count: garmentFiles.length })}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold">{t('outfitSwap.review.cost')}</span>
-                          <div className="text-right">
-                            <span className="text-lg font-bold">{cost} {t('outfitSwap.review.credits')}</span>
-                            {savings > 0 && (
-                              <Badge variant="default" className="ml-2">
-                                {t('outfitSwap.review.saveCredits', { savings })}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
+            {/* Section 3: Review & Start - visible when garments uploaded */}
+            {selectedModel && garmentFiles.length > 0 && (
+              <div ref={reviewRef} className="scroll-mt-6 space-y-6">
+                <Card className="rounded-apple shadow-lg p-6 lg:p-8">
+                  <h3 className="text-lg font-semibold mb-4">{t('outfitSwap.review.title')}</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold">{t('outfitSwap.review.selectedModel')}</span>
+                      <span>{selectedModel?.name}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold">{t('outfitSwap.review.garments')}</span>
+                      <span>{t('outfitSwap.review.garmentsCount', { count: garmentFiles.length })}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold">{t('outfitSwap.review.cost')}</span>
+                      <div className="text-right">
+                        <span className="text-lg font-bold">{cost} {t('outfitSwap.review.credits')}</span>
+                        {savings > 0 && (
+                          <Badge variant="default" className="ml-2">
+                            {t('outfitSwap.review.saveCredits', { savings })}
+                          </Badge>
+                        )}
                       </div>
-                    </Card>
+                    </div>
+                  </div>
+                </Card>
 
-                    <OutfitSwapSettings settings={settings} onChange={setSettings} />
-                  </>
-                )}
+                <OutfitSwapSettings settings={settings} onChange={setSettings} />
 
-                <div className="flex justify-center gap-4">
-                  <Button variant="outline" onClick={() => setCurrentStep(1)}>
-                    {t('outfitSwap.steps.back')}
-                  </Button>
+                <div className="flex justify-center">
                   <Button
                     size="lg"
                     onClick={handleStartBatch}
-                    disabled={garmentFiles.length === 0 || !canAfford || batchLoading || uploading}
+                    disabled={!canAfford || batchLoading || uploading}
                     className="min-w-[200px]"
                   >
                     {uploading
@@ -310,7 +311,7 @@ const OutfitSwap = () => {
                 </div>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>
