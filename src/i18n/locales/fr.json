@@ -2377,7 +2377,11 @@
       "back": "Retour",
       "startProcessing": "Lancer le Traitement",
       "newBatch": "Nouveau Lot",
-      "changeBackground": "Changer le Fond"
+      "changeBackground": "Changer le Fond",
+      "detailedImage": "Image Détaillée",
+      "ugcImage": "Image UGC",
+      "preview": "Aperçu",
+      "download": "Télécharger"
     },
     "errors": {
       "signIn": "Veuillez vous connecter",
