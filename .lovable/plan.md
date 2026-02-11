@@ -1,54 +1,77 @@
 
 
-# Replace Review Section with Settings Section in Bulk Background
+# Bulk Background: Result Cards Redesign
 
 ## Overview
-Replace the current "Review & Start" section (Section 3) with a "Settings" section where the user picks image resolution and aspect ratio before processing. start button remain with the credits count in it. The product count / background name cards are replaced by resolution and aspect ratio selectors.
+Replace the current simple image grid in the results section with proper cards matching the Outfit Swap module style. Each result gets its own Card with the image displayed larger, and 4 action buttons below.
 
-## Changes
+## Layout Changes
 
-### 1. Add new settings state and selectors to BulkBackground page
-**File:** `src/pages/BulkBackground.tsx`
+**Results grid (`src/pages/BulkBackground.tsx`, lines ~446-491)**
 
-- Add two new state variables:
-  - `imageSize: '1K' | '2K' | '4K'` (default `'1K'`)
-  - `aspectRatio` with options `'1:1' | '2:3' | '3:2' | '3:4' | '4:3' | '4:5' | '5:4' | '9:16' | '16:9' | '21:9'` (default `'1:1'`)
-- Replace the review section content (the product count / background name stat cards) with:
-  - **Image Size** selector: a ToggleGroup with 3 options (1K, 2K, 4K)
-  - **Aspect Ratio** selector: a ToggleGroup grid with all 10 ratio options, each showing a visual box icon representing the ratio
-- Add the credit cost summary to the "Start Processing" button below the selectors
-- Pass `imageSize` and `aspectRatio` into the `createJob` call via the `settings` object
-- Reset `imageSize` and `aspectRatio` in `handleNewBatch`; preserve them in `handleChangeBackground`
-- Rename the ref from `reviewRef` to `settingsRef`
+Current: Small square thumbnails in a `grid-cols-2 sm:grid-cols-3 lg:grid-cols-4` grid with only a hover overlay link.
 
-### 2. Update section title and scroll triggers
-- Change section 3 title from `t("bulkBackground.review.title")` to `t("bulkBackground.settings.title")`
-- Scroll trigger remains the same (appears when background is selected)
+New: Card-based layout matching Outfit Swap:
+- Mobile: `grid-cols-1` (one card per row, full width)
+- Desktop: `grid-cols-2 lg:grid-cols-3` (matching Outfit Swap's `md:grid-cols-2 lg:grid-cols-3`)
+- Each card is a `Card` component with `overflow-hidden`
+- Image displayed in `aspect-square` container
+- Below the image, 4 action buttons
 
-### 3. Add translation keys
-**Files:** All 5 locale files (`en.json`, `pt.json`, `es.json`, `de.json`, `fr.json`)
+## Card Structure (per result)
 
-Add under `bulkBackground.settings`:
-- `title`: "Settings" / "Definicoes" / "Configuracion" / "Einstellungen" / "Parametres"
-- `imageSize`: "Image Size" + translations
-- `aspectRatio`: "Aspect Ratio" + translations
-- Size labels: `1K`, `2K`, `4K` (same across languages)
+Each completed result card will contain:
 
-### 4. Update createJob payload
-Currently:
-```
-settings: { outputFormat: 'webp', quality: 'high', customPrompt: ... }
-```
-Will become:
-```
-settings: { outputFormat: 'webp', quality: 'high', customPrompt: ..., imageSize, aspectRatio }
+```text
++---------------------------+
+|                           |
+|      Result Image         |
+|    (aspect-square)        |
+|                           |
++---------------------------+
+| [Detailed Image]  (CTA)  |  <-- gradient button like photoshoot
+| [Preview] [UGC] [Download]|  <-- 3-col icon grid
++---------------------------+
 ```
 
-No backend changes needed -- `settings` is stored as a JSONB column so new keys are accepted automatically.
+### Button Details
 
-## Technical Notes
-- The aspect ratio selector will use a `grid grid-cols-5` layout on desktop and `grid-cols-3` on mobile
-- Each ratio option shows a small rectangular box with proportional dimensions to visually represent the ratio
-- Image size options are simple text toggles: "1K", "2K", "4K"
-- The `handleChangeBackground` function preserves the selected resolution and aspect ratio so the user only needs to pick a new background
+1. **Detailed Image** (highlighted, full-width)
+   - Gradient style: `bg-gradient-to-r from-purple-500 to-pink-500` (same as "Create Photoshoot" in Outfit Swap)
+   - Navigates to the Product Studio Background single-image mode with the result image pre-loaded
+   - Icon: `Sparkles`
+
+2. **UGC Image** (outline, in grid)
+   - Navigates to the UGC module (`/create/ugc`) with the result image URL in state
+   - Icon: `Camera`
+
+3. **Download** (outline, in grid)
+   - Downloads the result image directly
+   - Icon: `Download`
+
+4. **Preview** (outline, in grid)
+   - Opens the `ImagePreviewModal` to view the image in a larger dialog
+   - Icon: `Eye`
+
+## Technical Changes
+
+### File: `src/pages/BulkBackground.tsx`
+
+1. Add imports: `ImagePreviewModal`, `Eye`, `Camera`, `Sparkles`, `useIsMobile`
+2. Add state for `previewImage` (same pattern as BatchSwapPreview)
+3. Replace the results grid (lines 446-491) with the new card-based layout:
+   - Change grid classes to `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`
+   - Each result wrapped in a `Card` with image + action buttons
+   - Failed/processing states remain inside their respective cards
+4. Add `downloadImage` helper function (fetch + blob + anchor click)
+5. Add `ImagePreviewModal` component at the bottom of the return
+6. Navigation handlers for "Detailed Image" and "UGC Image" buttons
+
+### File: `src/i18n/locales/en.json` (+ pt, es, de, fr)
+
+Add keys under `bulkBackground.buttons`:
+- `detailedImage`: "Detailed Image" / translations
+- `ugcImage`: "UGC Image" / translations
+- `preview`: "Preview" / translations
+- `download`: "Download" / translations
 
