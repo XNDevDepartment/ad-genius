@@ -1,90 +1,95 @@
+# Fix Mobile Image Layout + Add Inline Animate Modal
 
+## Problem 1: Mobile Image Layout Broken
 
-# Dynamic Credits + Detailed Image Generation
+The `GeneratedImagesRows` component uses fixed pixel widths for image thumbnails (`w-80`, `w-72`, `w-[22rem]`) that overflow on small screens, causing the layout shown in the screenshot where the image and action buttons are misaligned.
 
-## Overview
-Two changes: (1) credits per image vary by resolution (1K=1, 2K=2, 4K=4), and (2) the "Detailed Image" button triggers a Gemini macro/close-up generation and stores the result linked to the original image.
+## Problem 2: Animate Button Missing / Requires Page Navigation
 
-## 1. Dynamic Credits by Image Size
+Currently, `CreateUGCGeminiBase` does not pass `onAnimateImage` to `GeneratedImagesRows`, so there is no "Animate" button. Users must navigate to a separate Video Generator page. We will add an inline modal that embeds the full video creation flow.
 
-### Frontend (`src/pages/BulkBackground.tsx`)
-- Replace the fixed `CREDITS_PER_IMAGE = 2` constant with a function:
-  ```
-  getCreditsPerImage(size): 1K -> 1, 2K -> 2, 4K -> 4
-  ```
-- `totalCost` becomes `productImages.length * getCreditsPerImage(imageSize)`
-- Pass `imageSize` into settings (already done) so the backend can compute correctly
+---
 
-### Backend (`supabase/functions/bulk-background/index.ts`)
-- Replace `CREDITS_PER_IMAGE = 2` with a helper function that reads `settings.imageSize`
-- Update all credit calculations (createJob, cancelJob, retryResult, recoverJobs) to use dynamic cost
-- The `settings.imageSize` is already stored in the job record
+## Changes
 
-## 2. Detailed Image Generation
+### 1. Fix `GeneratedImagesRows.tsx` -- Mobile-Responsive Thumbnails
 
-### New Database Column
-Add `detailed_result_url TEXT` to `bulk_background_results` to store the enhanced close-up image linked to the original result.
+`**classesFor` function** (line 122-127): Replace fixed widths with responsive classes that constrain to the container width on mobile.
 
-### New Edge Function Action: `generateDetailedImage`
-Add a new action to `supabase/functions/bulk-background/index.ts`:
-- Accepts `resultId` from the frontend
-- Validates ownership and that the result is completed
-- Deducts 1 credit (admin-exempt)
-- Fetches the result image (not source -- the already-generated background image)
-- Sends it to Gemini with the macro/close-up prompt:
-  ```
-  Create a close-up or macro-style view of the uploaded product focusing on material quality, texture, and finish. Preserve exact product details and proportions. Use soft, controlled lighting to enhance surface characteristics without distortion. Shallow depth of field, ultra-sharp focus on key materials, clean background. High-end product photography style, ultra-realistic. Without affecting the product shape.
-  ```
-- Uploads the result to storage: `{user_id}/{job_id}/{index}-detailed.webp`
-- Updates `detailed_result_url` on the `bulk_background_results` row
-- Returns the URL
+```
+Before:
+  w-80 h-80          (320px square -- overflows mobile)
+  w-72 aspect-[2/3]  (288px -- overflows)
+  w-[22rem]           (352px -- overflows)
 
-### Frontend API (`src/api/bulk-background-api.ts`)
-Add a new method:
-```typescript
-async generateDetailedImage(resultId: string): Promise<{ detailedUrl: string }>
+After:
+  w-full sm:w-80 h-auto aspect-square
+  w-full sm:w-72 aspect-[2/3]
+  w-full sm:w-[22rem] aspect-[3/2]
 ```
 
-### Frontend UI (`src/pages/BulkBackground.tsx`)
-- "Detailed Image" button behavior changes:
-  - If `result.detailed_result_url` exists: open the detailed image in `ImagePreviewModal`
-  - If not: call `generateDetailedImage(result.id)`, show a loading spinner on the button, and on success update the result in local state with the new URL
-- Add a loading state map: `detailedLoading: Record<string, boolean>`
-- Once generated, the gradient button changes to "View Detailed" and opens the preview
+**Row layout** (lines 190, 276): The `flex-col sm:flex-row` is correct, but on mobile the image `shrink-0` div needs `w-full` so the image fills the card width. Action buttons should sit below the image on mobile as a horizontal row instead of a vertical stack.
 
-### Hook Update (`src/hooks/useBulkBackgroundJob.ts`)
-- Add `generateDetailedImage` method that calls the API and updates the local results state
+On mobile: buttons grid switches to `grid-cols-2` for a compact 2x2 layout. On desktop stays `grid-cols-1` vertical stack.
 
-### API Type Update (`src/api/bulk-background-api.ts`)
-- Add `detailed_result_url?: string` to `BulkBackgroundResult` interface
+### 2. Add Animate Image Modal to `CreateUGCGeminiBase.tsx`
 
-## Technical Details
+**New state variables**:
 
-### Credit Cost Function (shared frontend + backend pattern)
-```
-function getCreditsForSize(imageSize: string): number {
-  switch (imageSize) {
-    case '4K': return 4;
-    case '2K': return 2;
-    default: return 1; // 1K
-  }
-}
+- `animateModalOpen: boolean`
+- `animateImageUrl: string | null`
+- `animateImageId: string | null`
+
+**Wire `onAnimateImage` prop** to `GeneratedImagesRows`:
+
+```tsx
+onAnimateImage={(imageId, imageUrl) => {
+  setAnimateImageId(imageId);
+  setAnimateImageUrl(imageUrl);
+  setAnimateModalOpen(true);
+}}
 ```
 
-### Detailed Image Prompt (hardcoded in edge function)
-```
-Create a close-up or macro-style view of the uploaded product focusing on material quality, texture, and finish. Preserve exact product details and proportions. Use soft, controlled lighting to enhance surface characteristics without distortion. Shallow depth of field, ultra-sharp focus on key materials, clean background. High-end product photography style, ultra-realistic. Without affecting the product shape.
-```
+**New `AnimateImageModal` component** (inline or separate file):
+A Dialog that contains a self-contained version of the video generation flow:
 
-### Files Modified
-- `src/pages/BulkBackground.tsx` -- dynamic credits + detailed image button logic
-- `src/api/bulk-background-api.ts` -- new method + type update
-- `src/hooks/useBulkBackgroundJob.ts` -- new generateDetailedImage wrapper
-- `supabase/functions/bulk-background/index.ts` -- dynamic credits + generateDetailedImage action
-- Database migration: add `detailed_result_url` column
+- Shows the pre-selected image (read-only)
+- AI-suggested prompt (calls `analyze-image-for-motion` edge function)
+- Prompt textarea
+- Duration selector (5s / 10s)
+- Video settings (camera movement, intensity, style) via `VideoSettingsPanel`
+- Generate button
+- Progress/status display
+- Video playback when complete
+- Uses the existing `kling` API functions directly
 
-### Translation Keys
-Add under `bulkBackground.buttons`:
-- `viewDetailed`: "View Detail" / translations
-- `generating`: "Generating..." / translations
+This modal follows the mobile-fullscreen pattern: `h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col p-0` with a sticky footer for the generate button.
 
+### 3. New Component: `src/components/AnimateImageModal.tsx`
+
+A self-contained modal component that accepts:
+
+- `open`, `onClose`
+- `imageUrl`, `imageId`
+
+Internally manages:
+
+- Video job creation via `createVideoJob` / `getVideoJob` / `subscribeVideoJob` from `@/api/kling`
+- AI motion analysis via `analyze-image-for-motion` edge function
+- `VideoSettings` state
+- Job status, progress, and video playback
+
+This avoids duplicating the full VideoGenerator page -- it reuses the same API layer but presents a focused, modal-based UI.
+
+## Files Modified
+
+- `src/components/GeneratedImagesRows.tsx` -- responsive mobile layout
+- `src/pages/CreateUGCGeminiBase.tsx` -- add animate modal state + pass `onAnimateImage` prop
+- `src/components/AnimateImageModal.tsx` -- new component for inline video generation
+
+## Technical Notes
+
+- The modal reuses existing API functions from `@/api/kling.ts` (no backend changes needed)
+- The `analyze-image-for-motion` edge function is already deployed and working
+- Mobile-fullscreen pattern applied consistently with other optimized modals
+- The `VideoSettingsPanel` component is reused inside the modal
