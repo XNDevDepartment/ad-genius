@@ -121,9 +121,9 @@ const handleDownload = async (image: GeneratedImage) => {
 /** Return thumbnail classes for a given orientation. */
 function classesFor(orientation?: string) {
   const o = (orientation as Orientation) || "3:2";
-  if (o === "1:1") return "relative rounded-xl overflow-hidden w-80 h-80";
-  if (o === "2:3") return "relative rounded-xl overflow-hidden w-72 aspect-[2/3]";
-  return "relative rounded-xl overflow-hidden w-[22rem] aspect-[3/2]";
+  if (o === "1:1") return "relative rounded-xl overflow-hidden w-full sm:w-80 aspect-square";
+  if (o === "2:3") return "relative rounded-xl overflow-hidden w-full sm:w-72 aspect-[2/3]";
+  return "relative rounded-xl overflow-hidden w-full sm:w-[22rem] aspect-[3/2]";
 }
 
 export default function GeneratedImagesRows({
@@ -162,13 +162,13 @@ export default function GeneratedImagesRows({
           <Card key={`pending-${jobId ?? "none"}-${i}`} className="rounded-apple shadow-sm">
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row items-center gap-4">
-                <div className="shrink-0">
+                <div className="shrink-0 w-full sm:w-auto">
                   <GrainPlaceholder
                     label="Generating..."
                     THUMB_CLASSES={classesFor(jobAspectRatio || imageOrientation)}
                   />
                 </div>
-                <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-1 gap-2">
+                <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-2 sm:grid-cols-1 gap-2">
                   <Button variant="default" size="sm" className="w-full justify-center" disabled aria-disabled>
                     <Download className="h-4 w-4 mr-2" />
                     Download
@@ -188,7 +188,7 @@ export default function GeneratedImagesRows({
         <Card key={img.id ?? `current-${i}`} className="rounded-apple shadow-sm">
           <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row items-center gap-4">
-              <div className="shrink-0">
+              <div className="shrink-0 w-full sm:w-auto">
                 {img.url ? (
                   <img
                     src={img.url}
@@ -205,7 +205,7 @@ export default function GeneratedImagesRows({
                 )}
               </div>
 
-              <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-1 gap-2">
+              <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-2 sm:grid-cols-1 gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -274,7 +274,7 @@ export default function GeneratedImagesRows({
         <Card key={img.id ?? `previous-${i}`} className="rounded-apple shadow-sm">
           <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row items-center gap-4">
-              <div className="shrink-0">
+              <div className="shrink-0 w-full sm:w-auto">
                 {img.url ? (
                   <img
                     src={img.url}
@@ -291,7 +291,7 @@ export default function GeneratedImagesRows({
                 )}
               </div>
 
-              <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-1 gap-2">
+              <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-2 sm:grid-cols-1 gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
