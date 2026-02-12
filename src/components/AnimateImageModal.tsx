@@ -229,7 +229,7 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
         </div>
 
         {/* Sticky Footer */}
-        <div className="sticky bottom-0 p-4 pt-3 border-t border-border/50 bg-background">
+        <div className="bottom-0 p-4 pt-3 border-t border-border/50 bg-background">
           {isCompleted ? (
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={handleDownloadVideo}>
