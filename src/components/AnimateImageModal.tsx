@@ -152,12 +152,15 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
 
           {/* Processing State */}
           {isProcessing && (
-            <div className="text-center py-6 space-y-3">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-              <p className="text-sm text-muted-foreground">
-                Generating your video... This may take a few minutes.
+            <div className="flex flex-col items-center text-center py-8 space-y-4">
+              <Loader2 className="h-10 w-10 animate-spin text-primary" />
+              <Progress value={job?.status === "processing" ? 50 : 10} className="h-2 w-full max-w-xs" />
+              <p className="text-sm text-muted-foreground max-w-[280px]">
+                Your video is generating. You may now continue your work. You can find it in your <span className="font-semibold text-foreground">Videos</span> tab.
               </p>
-              <Progress value={job?.status === "processing" ? 50 : 10} className="h-2" />
+              <Button variant="outline" onClick={onClose} className="mt-2">
+                Got it
+              </Button>
             </div>
           )}
 
