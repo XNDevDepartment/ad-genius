@@ -304,7 +304,7 @@ export default function GeneratedImagesRows({
                   title={!img?.url ? "Available when ready" : "Open in new tab"}
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
-                  Open in New Tab
+                  <span className="hidden sm:inline"> Open in New Tab </span>
                 </Button>
 
                 {onAnimateImage && (
@@ -320,7 +320,7 @@ export default function GeneratedImagesRows({
                     title={!img?.url ? "Available when ready" : "Animate image"}
                   >
                     <Video className="h-4 w-4 mr-2" />
-                    Animate Image
+                    <span className="hidden sm:inline"> Animate Image </span>
                   </Button>
                 )}
 
@@ -334,7 +334,7 @@ export default function GeneratedImagesRows({
                   }}
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Download
+                  <span className="hidden sm:inline"> Download </span>
                 </Button>
                 <Button
                   variant="ghost"
@@ -343,7 +343,7 @@ export default function GeneratedImagesRows({
                   onClick={() => onOpenInLibrary(img?.id)}
                 >
                   <Images className="h-4 w-4 mr-2" />
-                  Library
+                  <span className="hidden sm:inline"> Library </span>
                 </Button>
               </div>
             </div>
