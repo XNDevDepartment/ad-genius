@@ -32,6 +32,7 @@ import { Link as LinkIcon, Images, Store } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ShopifyImportModal } from "@/components/ShopifyImportModal";
 import { useLanguage } from "@/contexts/LanguageContext";
+import AnimateImageModal from "@/components/AnimateImageModal";
 import AspectRatioSelector, { AspectRatio } from "@/components/AspectRatioSelector";
 import { SIZE_MAP } from "@/lib/aspectSizes";
 import { ModelVersion } from "@/api/ugc-gemini-unified";
@@ -132,6 +133,9 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [pendingSlots, setPendingSlots] = useState(0);
   const [showScrollDown, setShowScrollDown] = useState(false);
   const [shopifyImportOpen, setShopifyImportOpen] = useState(false);
+  const [animateModalOpen, setAnimateModalOpen] = useState(false);
+  const [animateImageUrl, setAnimateImageUrl] = useState<string | null>(null);
+  const [animateImageId, setAnimateImageId] = useState<string | null>(null);
 
   const taRef = useRef<HTMLTextAreaElement>(null);
   const scnRef = useRef<HTMLTextAreaElement>(null);
@@ -1240,6 +1244,11 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                         onStartFromScratch={handleStartFromScratch}
                         jobId={job?.id}
                         imageOrientation={aspectRatio}
+                        onAnimateImage={(imageId, imageUrl) => {
+                          setAnimateImageId(imageId);
+                          setAnimateImageUrl(imageUrl);
+                          setAnimateModalOpen(true);
+                        }}
                       />
                     </CardContent>
                   </Card>
@@ -1542,6 +1551,13 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
           open={shopifyImportOpen}
           onOpenChange={setShopifyImportOpen}
           onImportComplete={handleShopifyImportComplete}
+        />
+        {/* Animate Image Modal */}
+        <AnimateImageModal
+          open={animateModalOpen}
+          onClose={() => setAnimateModalOpen(false)}
+          imageUrl={animateImageUrl}
+          imageId={animateImageId}
         />
       </div>
     </TooltipProvider>
