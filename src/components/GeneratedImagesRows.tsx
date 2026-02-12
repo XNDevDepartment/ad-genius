@@ -325,7 +325,7 @@ export default function GeneratedImagesRows({
                 )}
 
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   className="w-full justify-center"
                   disabled={!img?.url}
