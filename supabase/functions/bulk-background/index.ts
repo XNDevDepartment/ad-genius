@@ -173,14 +173,14 @@ function buildPrompt(presetId: string | null, hasCustomBackground: boolean, cust
   if (customPrompt) {
     prompt += `\n\nCena pretendida: ${customPrompt}`;
     if (isFollowUp) {
-      prompt += `\n\nIMPORTANT: A second reference image is provided showing the EXACT background/scene to use. Place the product in this EXACT same environment, maintaining identical lighting, surface, color tones and composition. Do NOT alter the background in any way. The background must be pixel-perfect consistent with the reference.`;
+      prompt += `\n\nIMPORTANT: A second reference image is provided. This reference contains a PREVIOUSLY GENERATED scene with another product in it. You MUST:\n1. IGNORE and COMPLETELY REMOVE any product/object visible in the reference image\n2. Extract ONLY the background environment, lighting, surface texture, and color palette from the reference\n3. Place the NEW product (from the first image) into this extracted background scene\n4. The background must match the reference exactly -- same lighting direction, same surface, same tones, same composition\n5. The ONLY product visible in the final image must be the one from the first uploaded image\n6. Do NOT duplicate, replicate, or include any trace of the product that was in the reference image`;
     }
     return prompt;
   }
 
   if (hasCustomBackground || isFollowUp) {
     if (isFollowUp) {
-      prompt += `\n\nIMPORTANT: A second reference image is provided showing the EXACT background/scene to use. Place the product in this EXACT same environment, maintaining identical lighting, surface, color tones and composition. Do NOT alter the background in any way. The background must be pixel-perfect consistent with the reference.`;
+      prompt += `\n\nIMPORTANT: A second reference image is provided. This reference contains a PREVIOUSLY GENERATED scene with another product in it. You MUST:\n1. IGNORE and COMPLETELY REMOVE any product/object visible in the reference image\n2. Extract ONLY the background environment, lighting, surface texture, and color palette from the reference\n3. Place the NEW product (from the first image) into this extracted background scene\n4. The background must match the reference exactly -- same lighting direction, same surface, same tones, same composition\n5. The ONLY product visible in the final image must be the one from the first uploaded image\n6. Do NOT duplicate, replicate, or include any trace of the product that was in the reference image`;
     } else {
       prompt += "\n\nNOTA: Use a segunda imagem fornecida como fundo.";
     }
