@@ -1,43 +1,53 @@
 
 
-# Fix: Reference Image Reproducing Previous Product
+# Chain Previous Image as Reference for Consistent Proportions
 
 ## Problem
-The "first image as reference" pattern is sending the complete generated result (product + background) as the reference for subsequent images. Gemini sees the scarf in the reference and reproduces it instead of only extracting the background scene. This caused:
-- 4 products uploaded (jacket, scarf, jeans, shoes)
-- Result: scarf appears twice, jacket is missing
-
-## Root Cause
-The follow-up prompt says "use this as the EXACT background/scene" but the reference image contains both the product AND the background. Gemini interprets the product-in-scene as part of the scene and replicates it.
+Currently the first successful image is used as reference for ALL subsequent images. When products are similar (same shape, different colors), Gemini has no size anchor from the previous result and renders them at inconsistent scales.
 
 ## Solution
-Rewrite the follow-up prompt to explicitly instruct Gemini to:
-1. IGNORE any product/object visible in the reference image
-2. Extract ONLY the background, lighting, surface, and color palette
-3. Replace whatever is in the reference scene with the NEW product from the first image
+Change from "first image as reference" to "previous image as reference" (chaining). Each image uses the immediately preceding successful result as its reference. This gives Gemini a much better size/proportion anchor since the previous product is visually similar.
+
+```text
+Image 1: Product + Prompt  -->  Result 1
+Image 2: Product + Result 1 as ref  -->  Result 2
+Image 3: Product + Result 2 as ref  -->  Result 3
+Image 4: Product + Result 3 as ref  -->  Result 4
+```
 
 ## Changes
 
 ### File: `supabase/functions/bulk-background/index.ts`
 
-Update the `isFollowUp` prompt text in `buildPrompt` (appears twice -- once for custom prompt path, once for preset path). Replace the current instruction:
+**1. Update the reference capture logic (lines 694-704)**
 
-**Current:**
-> "A second reference image is provided showing the EXACT background/scene to use. Place the product in this EXACT same environment, maintaining identical lighting, surface, color tones and composition. Do NOT alter the background in any way. The background must be pixel-perfect consistent with the reference."
+Instead of only capturing the first successful result, update `referenceBase64` after EVERY successful generation:
 
-**New:**
-> "A second reference image is provided. This reference contains a PREVIOUSLY GENERATED scene with another product in it. You MUST:
-> 1. IGNORE and COMPLETELY REMOVE any product/object visible in the reference image
-> 2. Extract ONLY the background environment, lighting, surface texture, and color palette from the reference
-> 3. Place the NEW product (from the first image) into this extracted background scene
-> 4. The background must match the reference exactly -- same lighting direction, same surface, same tones, same composition
-> 5. The ONLY product visible in the final image must be the one from the first uploaded image
-> 6. Do NOT duplicate, replicate, or include any trace of the product that was in the reference image"
+Current:
+```typescript
+if (isPresetJob && !referenceBase64 && processResult.imageData) {
+  // Only captures first
+```
 
-This makes it unambiguous that the reference is for scene extraction only, not product replication.
+New:
+```typescript
+if (isPresetJob && processResult.imageData) {
+  // Always update to latest successful result
+```
 
-## Technical Details
-- Two occurrences of the `isFollowUp` prompt in `buildPrompt` need updating (line 176 for custom prompt path, line 183 for preset path)
-- No other files need changes
-- Edge function will be redeployed after the edit
+This is a one-line change: remove `!referenceBase64` from the condition on line 697.
 
+**2. Update the follow-up prompt to add proportion guidance**
+
+Add an explicit instruction about maintaining consistent product size/proportions relative to the frame. Append to the existing follow-up prompt:
+
+> "7. MAINTAIN the same product SIZE and PROPORTIONS relative to the frame as shown in the reference. The product should occupy approximately the same percentage of the image area."
+
+This goes in both occurrences of the `isFollowUp` prompt (lines 176 and 183).
+
+## Technical Notes
+- No database changes needed
+- No frontend changes needed
+- The chaining approach is safe for memory since we only hold one reference at a time (same as before)
+- If an image fails, the chain continues using the last successful result
+- Custom background jobs are unaffected (they already use a fixed uploaded background)
