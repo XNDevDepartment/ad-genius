@@ -173,14 +173,14 @@ function buildPrompt(presetId: string | null, hasCustomBackground: boolean, cust
   if (customPrompt) {
     prompt += `\n\nCena pretendida: ${customPrompt}`;
     if (isFollowUp) {
-      prompt += `\n\nIMPORTANT: A second reference image is provided. This reference contains a PREVIOUSLY GENERATED scene with another product in it. You MUST:\n1. IGNORE and COMPLETELY REMOVE any product/object visible in the reference image\n2. Extract ONLY the background environment, lighting, surface texture, and color palette from the reference\n3. Place the NEW product (from the first image) into this extracted background scene\n4. The background must match the reference exactly -- same lighting direction, same surface, same tones, same composition\n5. The ONLY product visible in the final image must be the one from the first uploaded image\n6. Do NOT duplicate, replicate, or include any trace of the product that was in the reference image`;
+      prompt += `\n\nIMPORTANT: A second reference image is provided. This reference contains a PREVIOUSLY GENERATED scene with another product in it. You MUST:\n1. IGNORE and COMPLETELY REMOVE any product/object visible in the reference image\n2. Extract ONLY the background environment, lighting, surface texture, and color palette from the reference\n3. Place the NEW product (from the first image) into this extracted background scene\n4. The background must match the reference exactly -- same lighting direction, same surface, same tones, same composition\n5. The ONLY product visible in the final image must be the one from the first uploaded image\n6. Do NOT duplicate, replicate, or include any trace of the product that was in the reference image\n7. MAINTAIN the same product SIZE and PROPORTIONS relative to the frame as shown in the reference. The product should occupy approximately the same percentage of the image area`;
     }
     return prompt;
   }
 
   if (hasCustomBackground || isFollowUp) {
     if (isFollowUp) {
-      prompt += `\n\nIMPORTANT: A second reference image is provided. This reference contains a PREVIOUSLY GENERATED scene with another product in it. You MUST:\n1. IGNORE and COMPLETELY REMOVE any product/object visible in the reference image\n2. Extract ONLY the background environment, lighting, surface texture, and color palette from the reference\n3. Place the NEW product (from the first image) into this extracted background scene\n4. The background must match the reference exactly -- same lighting direction, same surface, same tones, same composition\n5. The ONLY product visible in the final image must be the one from the first uploaded image\n6. Do NOT duplicate, replicate, or include any trace of the product that was in the reference image`;
+      prompt += `\n\nIMPORTANT: A second reference image is provided. This reference contains a PREVIOUSLY GENERATED scene with another product in it. You MUST:\n1. IGNORE and COMPLETELY REMOVE any product/object visible in the reference image\n2. Extract ONLY the background environment, lighting, surface texture, and color palette from the reference\n3. Place the NEW product (from the first image) into this extracted background scene\n4. The background must match the reference exactly -- same lighting direction, same surface, same tones, same composition\n5. The ONLY product visible in the final image must be the one from the first uploaded image\n6. Do NOT duplicate, replicate, or include any trace of the product that was in the reference image\n7. MAINTAIN the same product SIZE and PROPORTIONS relative to the frame as shown in the reference. The product should occupy approximately the same percentage of the image area`;
     } else {
       prompt += "\n\nNOTA: Use a segunda imagem fornecida como fundo.";
     }
@@ -694,13 +694,13 @@ Deno.serve(async (req: Request) => {
           if (processResult.success) {
             completedCount++;
             // Capture first successful result as reference for preset jobs
-            if (isPresetJob && !referenceBase64 && processResult.imageData) {
+            if (isPresetJob && processResult.imageData) {
               let binary = "";
               for (let i = 0; i < processResult.imageData.length; i++) {
                 binary += String.fromCharCode(processResult.imageData[i]);
               }
               referenceBase64 = btoa(binary);
-              console.log(`[Job ${jobId}] First successful image captured as reference (${referenceBase64.length} chars base64)`);
+              console.log(`[Job ${jobId}] Image captured as chained reference (${referenceBase64.length} chars base64)`);
             }
           } else {
             failedCount++;
