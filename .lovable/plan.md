@@ -1,79 +1,43 @@
 
-# Consistent Backgrounds via "First Image as Reference" Pattern
+
+# Fix: Reference Image Reproducing Previous Product
 
 ## Problem
-When using prompt-based backgrounds (presets), each product image is generated independently by Gemini. Since AI interpretation varies per call, each product ends up with a slightly different background -- different lighting, textures, tones, etc. This makes collections look inconsistent.
+The "first image as reference" pattern is sending the complete generated result (product + background) as the reference for subsequent images. Gemini sees the scarf in the reference and reproduces it instead of only extracting the background scene. This caused:
+- 4 products uploaded (jacket, scarf, jeans, shoes)
+- Result: scarf appears twice, jacket is missing
+
+## Root Cause
+The follow-up prompt says "use this as the EXACT background/scene" but the reference image contains both the product AND the background. Gemini interprets the product-in-scene as part of the scene and replicates it.
 
 ## Solution
-Process the first image as usual (prompt-generated), then use that completed result as the **reference background image** for all subsequent products. This guarantees visual consistency across the entire batch.
-
-```text
-Image 1: Product + Prompt  -->  Gemini  -->  Result 1 (becomes the reference)
-Image 2: Product + Result 1 as background  -->  Gemini  -->  Result 2
-Image 3: Product + Result 1 as background  -->  Gemini  -->  Result 3
-...
-```
+Rewrite the follow-up prompt to explicitly instruct Gemini to:
+1. IGNORE any product/object visible in the reference image
+2. Extract ONLY the background, lighting, surface, and color palette
+3. Replace whatever is in the reference scene with the NEW product from the first image
 
 ## Changes
 
-### 1. Edge Function: `supabase/functions/bulk-background/index.ts`
+### File: `supabase/functions/bulk-background/index.ts`
 
-**Modify `processSingleResult` to return the generated image bytes** (not just success/fail), so the caller can capture the first result's image data.
+Update the `isFollowUp` prompt text in `buildPrompt` (appears twice -- once for custom prompt path, once for preset path). Replace the current instruction:
 
-**Update the sequential loop in `processJob`**:
-- After the **first image** completes successfully, capture its result image as base64
-- Store it in a `referenceBackgroundBase64` variable
-- For all subsequent images, pass this reference as the `backgroundBase64` parameter instead of null
-- Adjust the prompt for subsequent images: append a note telling Gemini to use the provided reference image as the exact background/scene, placing the new product in the same environment
+**Current:**
+> "A second reference image is provided showing the EXACT background/scene to use. Place the product in this EXACT same environment, maintaining identical lighting, surface, color tones and composition. Do NOT alter the background in any way. The background must be pixel-perfect consistent with the reference."
 
-**Prompt adjustment for images 2+**:
-The prompt will include an instruction like:
-> "Use the reference image as the EXACT background scene. Place the new product in the same environment, maintaining identical lighting, surface, and color tones. Do NOT alter the background."
+**New:**
+> "A second reference image is provided. This reference contains a PREVIOUSLY GENERATED scene with another product in it. You MUST:
+> 1. IGNORE and COMPLETELY REMOVE any product/object visible in the reference image
+> 2. Extract ONLY the background environment, lighting, surface texture, and color palette from the reference
+> 3. Place the NEW product (from the first image) into this extracted background scene
+> 4. The background must match the reference exactly -- same lighting direction, same surface, same tones, same composition
+> 5. The ONLY product visible in the final image must be the one from the first uploaded image
+> 6. Do NOT duplicate, replicate, or include any trace of the product that was in the reference image"
 
-This ensures Gemini treats the first result as a fixed scene reference rather than generating a new interpretation each time.
-
-**Edge case handling**:
-- If the first image fails, try the second image as the reference source instead (use the first successful result)
-- For custom background jobs (user uploads a background image), behavior stays the same -- the uploaded image is already used as reference for all images, so no change needed
-- The reference image is kept in memory (already within the 150MB limit since we process sequentially)
-
-### 2. No Database Changes Needed
-The existing schema supports this without modifications. The reference background is held in memory during the processing loop -- it does not need to be persisted.
-
-### 3. No Frontend Changes Needed
-The UI and API contract remain identical. The improvement is entirely server-side.
+This makes it unambiguous that the reference is for scene extraction only, not product replication.
 
 ## Technical Details
+- Two occurrences of the `isFollowUp` prompt in `buildPrompt` need updating (line 176 for custom prompt path, line 183 for preset path)
+- No other files need changes
+- Edge function will be redeployed after the edit
 
-**Modified function signature**:
-```typescript
-// Before: returns { success, error }
-// After:  returns { success, error, imageData? }
-async function processSingleResult(...): Promise<{
-  success: boolean;
-  error?: string;
-  imageData?: Uint8Array;  // NEW: raw generated image for reference
-}>
-```
-
-**Updated loop logic** (pseudocode):
-```text
-let referenceBase64 = null;
-
-for each result in pendingResults:
-  // For preset backgrounds: use reference if available
-  bgToUse = referenceBase64 || backgroundBase64 (custom) || null
-  isFollowUp = (referenceBase64 != null)
-
-  processResult = processSingleResult(result, job, adminClient, bgToUse, isFollowUp)
-
-  if processResult.success AND referenceBase64 == null:
-    // First success becomes the reference
-    referenceBase64 = base64Encode(processResult.imageData)
-```
-
-**Prompt for follow-up images**:
-A new flag `isFollowUp` is passed to `buildPrompt`. When true, the prompt emphasizes using the provided image as the exact background scene rather than generating from a text description.
-
-## Files Modified
-- `supabase/functions/bulk-background/index.ts` -- modify `processSingleResult` return type, update `processJob` loop, adjust prompt logic
