@@ -31,55 +31,7 @@ function getCreditsPerImage(settings: Record<string, unknown> | null): number {
 const GEMINI_MODEL = "gemini-3-pro-image-preview";
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
-// Simplified base prompt for product placement
-const BASE_PROMPT = `Ultra-realistic professional studio product photography using reference scene and product projection.
-
-      Use the reference image ONLY for environment, background, lighting direction and surface contact.
-      Use the uploaded product image as the ONLY source of product geometry and proportions.
-
-      CRITICAL PRODUCT RULES:
-      Do NOT reconstruct the product in 3D.
-      Do NOT reinterpret shape, proportions or perspective.
-      Do NOT modify bottle geometry, cap shape, label curvature or symmetry.
-
-      The product must be treated as a projected photographic object:
-      - Exact proportions preserved
-      - No stretching
-      - No warping
-      - No perspective correction beyond uniform scaling
-
-      Perspective handling:
-      Match the scene perspective ONLY by scale, position and rotation.
-      If perspectives conflict, preserve product realism over scene realism.
-
-      Lighting & shadows:
-      Analyze light direction from the reference image.
-      Apply light and shadow as an overlay interaction, not as a re-render.
-      Shadows must be soft, grounded and physically plausible.
-      No artificial shadow painting or exaggerated contrast.
-
-      Contact & grounding:
-      Product must rest naturally on the surface.
-      No floating.
-      No incorrect contact shadows.
-      Shadow softness and direction must match the scene.
-
-      Camera realism:
-      Maintain photographic integrity.
-      No CGI look.
-      No synthetic depth reconstruction.
-      Natural lens behavior only.
-
-      Constraints:
-      No added objects.
-      No scene alteration.
-      No creative interpretation.
-      No stylization.
-
-      Final result:
-      Product must look indistinguishable from a real studio photograph placed in this exact environment.
-
-      If any distortion appears, prioritize geometric accuracy over scene matching.`;
+const BASE_PROMPT = `Ultra-realistic professional studio product photography using reference scene and product projection. Use the reference image ONLY for environment, background, lighting direction and surface contact. Use the uploaded product image as the ONLY source of product geometry and proportions. CRITICAL PRODUCT RULES: Do NOT reconstruct the product in 3D. Do NOT reinterpret shape, proportions or perspective. Do NOT modify bottle geometry, cap shape, label curvature or symmetry. The product must be treated as a projected photographic object: Exact proportions preserved, No stretching, No warping, No perspective correction beyond uniform scaling. Perspective handling: Match the scene perspective ONLY by scale, position and rotation. If perspectives conflict, preserve product realism over scene realism. Lighting & shadows: Analyze light direction from the reference image. Apply light and shadow as an overlay interaction, not as a re-render. Shadows must be soft, grounded and physically plausible. No artificial shadow painting or exaggerated contrast. Contact & grounding: Product must rest naturally on the surface. No floating. No incorrect contact shadows. Shadow softness and direction must match the scene. Camera realism: Maintain photographic integrity. No CGI look. No synthetic depth reconstruction. Natural lens behavior only. Constraints: No added objects. No scene alteration. No creative interpretation. No stylization. Final result: Product must look indistinguishable from a real studio photograph placed in this exact environment. If any distortion appears, prioritize geometric accuracy over scene matching.`;
 
       // Background preset hints (appended to base prompt)
       const PRESET_HINTS: Record<string, string> = {
@@ -166,24 +118,18 @@ async function fetchImageAsBase64(url: string): Promise<string> {
   return btoa(binary);
 }
 
+const FOLLOWUP_PROMPT = `IMPORTANT: A second reference image is provided containing a PREVIOUSLY GENERATED scene with another product. You MUST: 1. IGNORE and COMPLETELY REMOVE any product/object visible in the reference image 2. Extract ONLY the background environment, lighting, surface texture, and color palette 3. Place the NEW product (first image) into this extracted background scene 4. Background must match reference exactly 5. ONLY product visible must be from the first uploaded image 6. Do NOT duplicate any trace of the reference product 7. MAINTAIN same product SIZE and PROPORTIONS relative to the frame`;
+
 function buildPrompt(presetId: string | null, hasCustomBackground: boolean, customPrompt?: string, isFollowUp = false): string {
   let prompt = BASE_PROMPT;
-
-  // If user provided a custom prompt, append it
   if (customPrompt) {
     prompt += `\n\nCena pretendida: ${customPrompt}`;
-    if (isFollowUp) {
-      prompt += `\n\nIMPORTANT: A second reference image is provided. This reference contains a PREVIOUSLY GENERATED scene with another product in it. You MUST:\n1. IGNORE and COMPLETELY REMOVE any product/object visible in the reference image\n2. Extract ONLY the background environment, lighting, surface texture, and color palette from the reference\n3. Place the NEW product (from the first image) into this extracted background scene\n4. The background must match the reference exactly -- same lighting direction, same surface, same tones, same composition\n5. The ONLY product visible in the final image must be the one from the first uploaded image\n6. Do NOT duplicate, replicate, or include any trace of the product that was in the reference image\n7. MAINTAIN the same product SIZE and PROPORTIONS relative to the frame as shown in the reference. The product should occupy approximately the same percentage of the image area`;
-    }
+    if (isFollowUp) prompt += `\n\n${FOLLOWUP_PROMPT}`;
     return prompt;
   }
-
   if (hasCustomBackground || isFollowUp) {
-    if (isFollowUp) {
-      prompt += `\n\nIMPORTANT: A second reference image is provided. This reference contains a PREVIOUSLY GENERATED scene with another product in it. You MUST:\n1. IGNORE and COMPLETELY REMOVE any product/object visible in the reference image\n2. Extract ONLY the background environment, lighting, surface texture, and color palette from the reference\n3. Place the NEW product (from the first image) into this extracted background scene\n4. The background must match the reference exactly -- same lighting direction, same surface, same tones, same composition\n5. The ONLY product visible in the final image must be the one from the first uploaded image\n6. Do NOT duplicate, replicate, or include any trace of the product that was in the reference image\n7. MAINTAIN the same product SIZE and PROPORTIONS relative to the frame as shown in the reference. The product should occupy approximately the same percentage of the image area`;
-    } else {
-      prompt += "\n\nNOTA: Use a segunda imagem fornecida como fundo.";
-    }
+    if (isFollowUp) prompt += `\n\n${FOLLOWUP_PROMPT}`;
+    else prompt += "\n\nNOTA: Use a segunda imagem fornecida como fundo.";
   } else if (presetId && PRESET_HINTS[presetId]) {
     prompt += `\n\n${PRESET_HINTS[presetId]}`;
   }
