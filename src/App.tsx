@@ -54,6 +54,8 @@ const CreateCustomModel = lazyWithRetry(() => import("./pages/CreateCustomModel"
 const VideoAds = lazyWithRetry(() => import("./pages/VideoAds"));
 const LandingPageV2 = lazyWithRetry(() => import("./pages/LandingPageV2"));
 const PromoFirstMonth = lazyWithRetry(() => import("./pages/PromoFirstMonth"));
+const Promo1Mes = lazyWithRetry(() => import("./pages/Promo1Mes"));
+const Promo1MesCheckout = lazyWithRetry(() => import("./pages/Promo1MesCheckout"));
 const AffiliateLanding = lazyWithRetry(() => import("./pages/AffiliateLanding"));
 const AffiliateDashboard = lazyWithRetry(() => import("./pages/AffiliateDashboard"));
 const PrivacyPolicy = lazyWithRetry(() => import("./pages/PrivacyPolicy"));
@@ -382,6 +384,20 @@ const App = () => {
                 <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
                     <PromoFirstMonth />
+                  </Suspense>
+                </ErrorBoundaryWithReset>
+              } />
+              <Route path="/promo/1mes" element={
+                <ErrorBoundaryWithReset>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <Promo1Mes />
+                  </Suspense>
+                </ErrorBoundaryWithReset>
+              } />
+              <Route path="/promo/1mes/checkout" element={
+                <ErrorBoundaryWithReset>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <Promo1MesCheckout />
                   </Suspense>
                 </ErrorBoundaryWithReset>
               } />

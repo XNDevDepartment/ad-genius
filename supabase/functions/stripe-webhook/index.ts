@@ -191,6 +191,12 @@ serve(async (req) => {
           console.log(`[WEBHOOK] PROV15 bonus applied: +${bonusCredits} credits (total: ${credits})`);
         }
         
+        // 1MES promo: limit first month to 35 credits instead of 80
+        if (promoCodeUsed === '1MES') {
+          credits = 35;
+          console.log('[WEBHOOK] 1MES promo: limiting credits to 35');
+        }
+        
         console.log(`[WEBHOOK] Activating ${tier} subscription with ${credits} credits${promoCodeUsed ? ` (promo: ${promoCodeUsed})` : ''}`);
         
         // Update subscriber in database
