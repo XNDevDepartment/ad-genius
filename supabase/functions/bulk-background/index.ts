@@ -166,17 +166,24 @@ async function fetchImageAsBase64(url: string): Promise<string> {
   return btoa(binary);
 }
 
-function buildPrompt(presetId: string | null, hasCustomBackground: boolean, customPrompt?: string): string {
+function buildPrompt(presetId: string | null, hasCustomBackground: boolean, customPrompt?: string, isFollowUp = false): string {
   let prompt = BASE_PROMPT;
 
   // If user provided a custom prompt, append it
   if (customPrompt) {
     prompt += `\n\nCena pretendida: ${customPrompt}`;
+    if (isFollowUp) {
+      prompt += `\n\nIMPORTANT: A second reference image is provided showing the EXACT background/scene to use. Place the product in this EXACT same environment, maintaining identical lighting, surface, color tones and composition. Do NOT alter the background in any way. The background must be pixel-perfect consistent with the reference.`;
+    }
     return prompt;
   }
 
-  if (hasCustomBackground) {
-    prompt += "\n\nNOTA: Use a segunda imagem fornecida como fundo.";
+  if (hasCustomBackground || isFollowUp) {
+    if (isFollowUp) {
+      prompt += `\n\nIMPORTANT: A second reference image is provided showing the EXACT background/scene to use. Place the product in this EXACT same environment, maintaining identical lighting, surface, color tones and composition. Do NOT alter the background in any way. The background must be pixel-perfect consistent with the reference.`;
+    } else {
+      prompt += "\n\nNOTA: Use a segunda imagem fornecida como fundo.";
+    }
   } else if (presetId && PRESET_HINTS[presetId]) {
     prompt += `\n\n${PRESET_HINTS[presetId]}`;
   }
@@ -337,8 +344,9 @@ async function processSingleResult(
   result: BulkBackgroundResult,
   job: BulkBackgroundJob,
   adminClient: any,
-  backgroundBase64: string | null
-): Promise<{ success: boolean; error?: string }> {
+  backgroundBase64: string | null,
+  isFollowUp = false
+): Promise<{ success: boolean; error?: string; imageData?: Uint8Array }> {
   const startTime = Date.now();
 
   try {
@@ -361,7 +369,8 @@ async function processSingleResult(
     const prompt = buildPrompt(
       job.background_preset_id,
       !!backgroundBase64,
-      customPrompt
+      customPrompt,
+      isFollowUp
     );
 
     // Generate image with retry logic
@@ -400,7 +409,7 @@ async function processSingleResult(
       })
       .eq("id", result.id);
 
-    return { success: true };
+    return { success: true, imageData: generatedImage };
   } catch (error) {
     console.error(`Failed to process result ${result.id}:`, error);
 
@@ -652,6 +661,10 @@ Deno.serve(async (req: Request) => {
         let failedCount = job.failed_images || 0;
 
         // SEQUENTIAL PROCESSING - ONE IMAGE AT A TIME
+        // For preset backgrounds, use first successful result as reference for consistency
+        let referenceBase64: string | null = null;
+        const isPresetJob = job.background_type === "preset";
+
         for (const result of results) {
           // Check if job was canceled
           const { data: currentJob } = await adminClient
@@ -665,16 +678,30 @@ Deno.serve(async (req: Request) => {
             break;
           }
 
+          // For preset jobs: once we have a reference, use it instead of prompt-only generation
+          const bgToUse = (isPresetJob && referenceBase64) ? referenceBase64 : backgroundBase64;
+          const isFollowUp = isPresetJob && !!referenceBase64;
+
           // Process this image
           const processResult = await processSingleResult(
             result as BulkBackgroundResult,
             job as BulkBackgroundJob,
             adminClient,
-            backgroundBase64
+            bgToUse,
+            isFollowUp
           );
 
           if (processResult.success) {
             completedCount++;
+            // Capture first successful result as reference for preset jobs
+            if (isPresetJob && !referenceBase64 && processResult.imageData) {
+              let binary = "";
+              for (let i = 0; i < processResult.imageData.length; i++) {
+                binary += String.fromCharCode(processResult.imageData[i]);
+              }
+              referenceBase64 = btoa(binary);
+              console.log(`[Job ${jobId}] First successful image captured as reference (${referenceBase64.length} chars base64)`);
+            }
           } else {
             failedCount++;
           }
