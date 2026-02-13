@@ -1,52 +1,79 @@
 
-# New Promo Page: First Month at 9.99 EUR with code 1MES
+# Consistent Backgrounds via "First Image as Reference" Pattern
 
-## Overview
-Create a new promotional landing page at `/promo/1mes` for a more aggressive offer: Starter plan for 9.99 EUR in the first month with only 35 credits (instead of the usual 80). Also provide a direct checkout link that skips the landing page entirely.
+## Problem
+When using prompt-based backgrounds (presets), each product image is generated independently by Gemini. Since AI interpretation varies per call, each product ends up with a slightly different background -- different lighting, textures, tones, etc. This makes collections look inconsistent.
+
+## Solution
+Process the first image as usual (prompt-generated), then use that completed result as the **reference background image** for all subsequent products. This guarantees visual consistency across the entire batch.
+
+```text
+Image 1: Product + Prompt  -->  Gemini  -->  Result 1 (becomes the reference)
+Image 2: Product + Result 1 as background  -->  Gemini  -->  Result 2
+Image 3: Product + Result 1 as background  -->  Gemini  -->  Result 3
+...
+```
 
 ## Changes
 
-### 1. New Page: `src/pages/Promo1Mes.tsx`
-A copy of `PromoFirstMonth.tsx` adapted for this offer:
-- Price: 9.99 EUR (instead of 19.99 EUR)
-- Regular price: 29 EUR (same Starter plan)
-- Discount badge: -66%
-- Promo code: `1MES` (auto-applied)
-- Feature list updated: "35 creditos no primeiro mes" (instead of 80)
-- Meta Pixel tracking with "First Month Promo - 1MES"
-- Auth redirect stores `/promo/1mes` for post-login return
-- Portuguese copy matching the existing page style
+### 1. Edge Function: `supabase/functions/bulk-background/index.ts`
 
-### 2. New Route + Direct Checkout Route in `src/App.tsx`
-- `/promo/1mes` -- landing page with offer details
-- `/promo/1mes/checkout` -- a lightweight page that immediately redirects authenticated users to Stripe checkout with the `1MES` code pre-applied (no landing page needed). Unauthenticated users are sent to `/account` first with a redirect back.
+**Modify `processSingleResult` to return the generated image bytes** (not just success/fail), so the caller can capture the first result's image data.
 
-### 3. Update `supabase/functions/stripe-webhook/index.ts`
-In the `checkout.session.completed` handler, after detecting the promo code, add logic:
+**Update the sequential loop in `processJob`**:
+- After the **first image** completes successfully, capture its result image as base64
+- Store it in a `referenceBackgroundBase64` variable
+- For all subsequent images, pass this reference as the `backgroundBase64` parameter instead of null
+- Adjust the prompt for subsequent images: append a note telling Gemini to use the provided reference image as the exact background/scene, placing the new product in the same environment
+
+**Prompt adjustment for images 2+**:
+The prompt will include an instruction like:
+> "Use the reference image as the EXACT background scene. Place the new product in the same environment, maintaining identical lighting, surface, and color tones. Do NOT alter the background."
+
+This ensures Gemini treats the first result as a fixed scene reference rather than generating a new interpretation each time.
+
+**Edge case handling**:
+- If the first image fails, try the second image as the reference source instead (use the first successful result)
+- For custom background jobs (user uploads a background image), behavior stays the same -- the uploaded image is already used as reference for all images, so no change needed
+- The reference image is kept in memory (already within the 150MB limit since we process sequentially)
+
+### 2. No Database Changes Needed
+The existing schema supports this without modifications. The reference background is held in memory during the processing loop -- it does not need to be persisted.
+
+### 3. No Frontend Changes Needed
+The UI and API contract remain identical. The improvement is entirely server-side.
+
+## Technical Details
+
+**Modified function signature**:
+```typescript
+// Before: returns { success, error }
+// After:  returns { success, error, imageData? }
+async function processSingleResult(...): Promise<{
+  success: boolean;
+  error?: string;
+  imageData?: Uint8Array;  // NEW: raw generated image for reference
+}>
 ```
-if (promoCodeUsed === '1MES') {
-  credits = 35;
-  console.log('[WEBHOOK] 1MES promo: limiting credits to 35');
-}
+
+**Updated loop logic** (pseudocode):
+```text
+let referenceBase64 = null;
+
+for each result in pendingResults:
+  // For preset backgrounds: use reference if available
+  bgToUse = referenceBase64 || backgroundBase64 (custom) || null
+  isFollowUp = (referenceBase64 != null)
+
+  processResult = processSingleResult(result, job, adminClient, bgToUse, isFollowUp)
+
+  if processResult.success AND referenceBase64 == null:
+    // First success becomes the reference
+    referenceBase64 = base64Encode(processResult.imageData)
 ```
-This overrides the default 80 Starter credits when the `1MES` code is detected.
 
-### 4. Update `supabase/functions/create-checkout/index.ts`
-No structural changes needed -- the existing promo code lookup logic already handles any Stripe promotion code string. The `1MES` code (Stripe ID: `promo_1T09lfCdNWwdXCd8M1oHVhIG`) will be resolved automatically via `stripe.promotionCodes.list({ code: '1MES' })`.
-
-## Direct Checkout Link
-After implementation, you can use this URL to send users directly to checkout:
-`https://produktpix.com/promo/1mes/checkout`
-
-This will authenticate the user if needed and then redirect them straight to Stripe with the `1MES` code applied.
+**Prompt for follow-up images**:
+A new flag `isFollowUp` is passed to `buildPrompt`. When true, the prompt emphasizes using the provided image as the exact background scene rather than generating from a text description.
 
 ## Files Modified
-- `src/pages/Promo1Mes.tsx` -- new landing page
-- `src/pages/Promo1MesCheckout.tsx` -- new direct-to-checkout redirect page
-- `src/App.tsx` -- add both new routes
-- `supabase/functions/stripe-webhook/index.ts` -- override credits to 35 for `1MES` promo
-
-## Technical Notes
-- The Stripe promotion code `1MES` (ID: `promo_1T09lfCdNWwdXCd8M1oHVhIG`) must already exist and be active in Stripe for the checkout to apply the discount
-- The webhook detects the promo code from the Stripe session discounts breakdown (existing logic) and overrides credits accordingly
-- On renewal (next month), `reset_user_monthly_credits` will give the full 80 Starter credits since it reads from the tier, not the promo -- this is correct behavior (promo only affects the first month)
+- `supabase/functions/bulk-background/index.ts` -- modify `processSingleResult` return type, update `processJob` loop, adjust prompt logic
