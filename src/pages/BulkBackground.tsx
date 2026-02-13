@@ -17,6 +17,7 @@ import { useBulkBackgroundJob } from "@/hooks/useBulkBackgroundJob";
 import { useSourceImageUpload } from "@/hooks/useSourceImageUpload";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ProductViewsModal } from "@/components/ProductViewsModal";
 
 const MAX_IMAGES = 20;
 
@@ -45,7 +46,6 @@ const BulkBackground = () => {
     cancelJob,
     downloadAll,
     clearJob,
-    generateDetailedImage,
     isProcessing,
     isComplete,
     isCanceled,
@@ -64,7 +64,7 @@ const BulkBackground = () => {
   const [imageSize, setImageSize] = useState<'1K' | '2K' | '4K'>('1K');
   const [aspectRatio, setAspectRatio] = useState<string>('1:1');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [detailedLoading, setDetailedLoading] = useState<Record<string, boolean>>({});
+  const [photoshootModal, setPhotoshootModal] = useState<{ resultId: string; resultUrl: string } | null>(null);
 
   // Scroll refs
   const backgroundRef = useRef<HTMLDivElement>(null);
@@ -486,24 +486,10 @@ const BulkBackground = () => {
                               <div className="grid grid-cols-2 gap-2">
                                 <Button
                                   className="gap-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90"
-                                  disabled={detailedLoading[result.id]}
-                                  onClick={async () => {
-                                    if (result.detailed_result_url) {
-                                      setPreviewImage(result.detailed_result_url);
-                                    } else {
-                                      setDetailedLoading(prev => ({ ...prev, [result.id]: true }));
-                                      const url = await generateDetailedImage(result.id);
-                                      setDetailedLoading(prev => ({ ...prev, [result.id]: false }));
-                                      if (url) setPreviewImage(url);
-                                    }
-                                  }}
+                                  onClick={() => setPhotoshootModal({ resultId: result.id, resultUrl: result.result_url! })}
                                 >
-                                  {detailedLoading[result.id] ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : null}
-                                  {result.detailed_result_url
-                                    ? t("bulkBackground.buttons.viewDetailed", "View Detail")
-                                    : t("bulkBackground.buttons.detailedImage")}
+                                  <Camera className="h-4 w-4" />
+                                  {t("bulkBackground.buttons.photoshoot", "Photoshoot")}
                                 </Button>
                                 <Button
                                   variant="outline"
@@ -591,6 +577,16 @@ const BulkBackground = () => {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {/* Product Views Modal */}
+        {photoshootModal && (
+          <ProductViewsModal
+            isOpen={!!photoshootModal}
+            onClose={() => setPhotoshootModal(null)}
+            resultId={photoshootModal.resultId}
+            resultUrl={photoshootModal.resultUrl}
+          />
         )}
 
         {/* Image Preview Modal */}

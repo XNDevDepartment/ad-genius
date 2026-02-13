@@ -525,6 +525,77 @@ export type Database = {
         }
         Relationships: []
       }
+      bulk_background_product_views: {
+        Row: {
+          angle_storage_path: string | null
+          angle_url: string | null
+          created_at: string
+          environment_storage_path: string | null
+          environment_url: string | null
+          error: string | null
+          finished_at: string | null
+          id: string
+          macro_storage_path: string | null
+          macro_url: string | null
+          metadata: Json | null
+          progress: number
+          result_id: string
+          selected_views: string[]
+          started_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          angle_storage_path?: string | null
+          angle_url?: string | null
+          created_at?: string
+          environment_storage_path?: string | null
+          environment_url?: string | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          macro_storage_path?: string | null
+          macro_url?: string | null
+          metadata?: Json | null
+          progress?: number
+          result_id: string
+          selected_views?: string[]
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          angle_storage_path?: string | null
+          angle_url?: string | null
+          created_at?: string
+          environment_storage_path?: string | null
+          environment_url?: string | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          macro_storage_path?: string | null
+          macro_url?: string | null
+          metadata?: Json | null
+          progress?: number
+          result_id?: string
+          selected_views?: string[]
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_background_product_views_result_id_fkey"
+            columns: ["result_id"]
+            isOneToOne: false
+            referencedRelation: "bulk_background_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bulk_background_results: {
         Row: {
           created_at: string
