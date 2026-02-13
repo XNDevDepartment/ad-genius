@@ -1,1338 +1,432 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 export interface SettingsPayload {
-    outputFormat?: 'png' | 'webp';
-    quality?: 'high' | 'medium';
-    customPrompt?: string;
-    imageSize?: string;
-    aspectRatio?: string;
+  outputFormat?: 'png' | 'webp';
+  quality?: 'high' | 'medium';
+  customPrompt?: string;
+  imageSize?: string;
+  aspectRatio?: string;
 }
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY")!;
+const GEMINI_MODEL = "gemini-3-pro-image-preview";
+const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const STORAGE_BUCKET = "bulk-backgrounds";
 
 function getCreditsPerImage(settings: Record<string, unknown> | null): number {
   const size = (settings as any)?.imageSize || '1K';
-  switch (size) {
-    case '4K': return 4;
-    case '2K': return 2;
-    default: return 1;
-  }
+  return size === '4K' ? 4 : size === '2K' ? 2 : 1;
 }
 
-// Gemini model configuration
-const GEMINI_MODEL = "gemini-3-pro-image-preview";
-const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const BASE_PROMPT = `Ultra-realistic studio product photo. Use reference for environment/lighting only. Product image is the ONLY geometry source. No 3D reconstruction, exact proportions preserved, no stretching/warping. Match scene by scale/position/rotation. Soft grounded shadows. No floating. Natural lens, no CGI. No added objects. Prioritize geometric accuracy.`;
 
-const BASE_PROMPT = `Ultra-realistic professional studio product photography using reference scene and product projection. Use the reference image ONLY for environment, background, lighting direction and surface contact. Use the uploaded product image as the ONLY source of product geometry and proportions. CRITICAL PRODUCT RULES: Do NOT reconstruct the product in 3D. Do NOT reinterpret shape, proportions or perspective. Do NOT modify bottle geometry, cap shape, label curvature or symmetry. The product must be treated as a projected photographic object: Exact proportions preserved, No stretching, No warping, No perspective correction beyond uniform scaling. Perspective handling: Match the scene perspective ONLY by scale, position and rotation. If perspectives conflict, preserve product realism over scene realism. Lighting & shadows: Analyze light direction from the reference image. Apply light and shadow as an overlay interaction, not as a re-render. Shadows must be soft, grounded and physically plausible. No artificial shadow painting or exaggerated contrast. Contact & grounding: Product must rest naturally on the surface. No floating. No incorrect contact shadows. Shadow softness and direction must match the scene. Camera realism: Maintain photographic integrity. No CGI look. No synthetic depth reconstruction. Natural lens behavior only. Constraints: No added objects. No scene alteration. No creative interpretation. No stylization. Final result: Product must look indistinguishable from a real studio photograph placed in this exact environment. If any distortion appears, prioritize geometric accuracy over scene matching.`;
+const PRESET_HINTS: Record<string, string> = {
+  'white-seamless':'white seamless studio, soft light','black-studio':'black matte studio, rim lighting',
+  'gradient-gray':'gray gradient, catalog style','soft-pink':'pastel pink, feminine',
+  'living-room':'modern living room, natural light','kitchen':'modern kitchen, marble counter',
+  'bedroom':'cozy bedroom, neutral tones','home-office':'modern office with plants',
+  'beach':'beach, golden light','forest':'serene forest, filtered light',
+  'garden':'colorful garden','mountain':'majestic mountain landscape',
+  'cafe':'rustic café, warm ambience','street':'modern urban street',
+  'rooftop':'rooftop, city skyline','subway':'modern subway station',
+  'editorial':'editorial high-fashion setup','fashion':'fashion photography studio',
+  'minimal':'ultra-minimal, negative space','vogue':'luxurious Vogue style',
+  'christmas':'festive Christmas scene','summer':'vibrant tropical summer',
+  'autumn':'autumn, colorful leaves','spring':'spring, blooming flowers'
+};
 
-      // Background preset hints (appended to base prompt)
-      const PRESET_HINTS: Record<string, string> = {
-        'white-seamless': 'Fundo: estúdio branco seamless com iluminação suave.',
-        'black-studio': 'Fundo: estúdio preto matte com rim lighting dramático.',
-        'gradient-gray': 'Fundo: gradiente cinza suave, estilo catálogo.',
-        'soft-pink': 'Fundo: rosa pastel suave, estética feminina.',
-        'living-room': 'Fundo: sala de estar moderna minimalista com luz natural.',
-        'kitchen': 'Fundo: bancada de cozinha moderna com mármore.',
-        'bedroom': 'Fundo: quarto aconchegante com tons neutros.',
-        'home-office': 'Fundo: escritório moderno com plantas.',
-        'beach': 'Fundo: praia com ondas e luz dourada.',
-        'forest': 'Fundo: floresta serena com luz filtrada.',
-        'garden': 'Fundo: jardim com flores coloridas.',
-        'mountain': 'Fundo: paisagem montanhosa majestosa.',
-        'cafe': 'Fundo: café rústico com ambiente quente.',
-        'street': 'Fundo: rua urbana com arquitetura moderna.',
-        'rooftop': 'Fundo: terraço com skyline da cidade.',
-        'subway': 'Fundo: estação de metro moderna.',
-        'editorial': 'Fundo: setup editorial high-fashion.',
-        'fashion': 'Fundo: estúdio de fotografia de moda.',
-        'minimal': 'Fundo: ultra-minimalista com muito espaço negativo.',
-        'vogue': 'Fundo: luxuoso estilo Vogue.',
-        'christmas': 'Fundo: cenário festivo de Natal.',
-        'summer': 'Fundo: verão tropical vibrante.',
-        'autumn': 'Fundo: outono com folhas coloridas.',
-        'spring': 'Fundo: primavera com flores a desabrochar.'
-      };
+const FOLLOWUP_PROMPT = `Second image is reference scene. REMOVE any product in it. Extract ONLY background/lighting/surface. Place NEW product (first image) into that scene. Match background exactly. Only first image product visible. Maintain size/proportions.`;
 
 function json(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
+  return new Response(JSON.stringify(data), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 }
-
 function errorResponse(message: string, status = 400) {
-  return new Response(JSON.stringify({ error: message }), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
+  return new Response(JSON.stringify({ error: message }), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 }
+function sleep(ms: number) { return new Promise((r) => setTimeout(r, ms)); }
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-// Storage bucket name
-const STORAGE_BUCKET = "bulk-backgrounds";
-
-async function uploadToStorage(
-  adminClient: any,
-  imageData: Uint8Array,
-  storagePath: string,
-  contentType: string
-): Promise<{ storagePath: string; publicUrl: string }> {
-  const { error: uploadError } = await adminClient.storage
-    .from(STORAGE_BUCKET)
-    .upload(storagePath, imageData, {
-      contentType,
-      upsert: true,
-    });
-
-  if (uploadError) {
-    throw new Error(`Storage upload failed: ${uploadError.message}`);
-  }
-
-  const { data } = adminClient.storage
-    .from(STORAGE_BUCKET)
-    .getPublicUrl(storagePath);
-
+async function uploadToStorage(adminClient: any, imageData: Uint8Array, storagePath: string, contentType: string) {
+  const { error } = await adminClient.storage.from(STORAGE_BUCKET).upload(storagePath, imageData, { contentType, upsert: true });
+  if (error) throw new Error(`Storage upload failed: ${error.message}`);
+  const { data } = adminClient.storage.from(STORAGE_BUCKET).getPublicUrl(storagePath);
   return { storagePath, publicUrl: data.publicUrl };
 }
 
 async function fetchImageAsBase64(url: string): Promise<string> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to fetch image: ${url}`);
-  const arrayBuffer = await response.arrayBuffer();
-  const bytes = new Uint8Array(arrayBuffer);
-  let binary = "";
-  for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`Failed to fetch image: ${url}`);
+  const buf = await r.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  let b = "";
+  for (let i = 0; i < bytes.length; i++) b += String.fromCharCode(bytes[i]);
+  return btoa(b);
 }
 
-const FOLLOWUP_PROMPT = `IMPORTANT: A second reference image is provided containing a PREVIOUSLY GENERATED scene with another product. You MUST: 1. IGNORE and COMPLETELY REMOVE any product/object visible in the reference image 2. Extract ONLY the background environment, lighting, surface texture, and color palette 3. Place the NEW product (first image) into this extracted background scene 4. Background must match reference exactly 5. ONLY product visible must be from the first uploaded image 6. Do NOT duplicate any trace of the reference product 7. MAINTAIN same product SIZE and PROPORTIONS relative to the frame`;
-
-function buildPrompt(presetId: string | null, hasCustomBackground: boolean, customPrompt?: string, isFollowUp = false): string {
-  let prompt = BASE_PROMPT;
+function buildPrompt(presetId: string | null, hasCustomBg: boolean, customPrompt?: string, isFollowUp = false): string {
+  let p = BASE_PROMPT;
   if (customPrompt) {
-    prompt += `\n\nCena pretendida: ${customPrompt}`;
-    if (isFollowUp) prompt += `\n\n${FOLLOWUP_PROMPT}`;
-    return prompt;
+    p += `\n\nCena pretendida: ${customPrompt}`;
+    if (isFollowUp) p += `\n\n${FOLLOWUP_PROMPT}`;
+    return p;
   }
-  if (hasCustomBackground || isFollowUp) {
-    if (isFollowUp) prompt += `\n\n${FOLLOWUP_PROMPT}`;
-    else prompt += "\n\nNOTA: Use a segunda imagem fornecida como fundo.";
+  if (hasCustomBg || isFollowUp) {
+    p += isFollowUp ? `\n\n${FOLLOWUP_PROMPT}` : "\n\nNOTA: Use a segunda imagem fornecida como fundo.";
   } else if (presetId && PRESET_HINTS[presetId]) {
-    prompt += `\n\n${PRESET_HINTS[presetId]}`;
+    p += `\n\n${PRESET_HINTS[presetId]}`;
   }
-  return prompt;
+  return p;
 }
 
 function extractBase64Image(data: unknown): string | null {
-  const candidates = (data as { candidates?: unknown[] })?.candidates || [];
-  for (const candidate of candidates) {
-    const parts = (candidate as { content?: { parts?: unknown[] } })?.content?.parts || [];
-    for (const part of parts) {
-      const inlineData = (part as { inlineData?: { data?: string } })?.inlineData;
-      if (inlineData?.data) {
-        return inlineData.data;
-      }
+  for (const c of ((data as any)?.candidates || [])) {
+    for (const p of (c?.content?.parts || [])) {
+      if (p?.inlineData?.data) return p.inlineData.data;
     }
   }
   return null;
 }
 
-async function generateImageWithRetry(
-  productBase64: string,
-  backgroundBase64: string | null,
-  prompt: string,
-  maxRetries = 3,
-  settings: SettingsPayload | null
-): Promise<Uint8Array | null> {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+function b64ToBytes(b64: string): Uint8Array {
+  const s = atob(b64);
+  const b = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) b[i] = s.charCodeAt(i);
+  return b;
+}
+
+function bytesToB64(bytes: Uint8Array): string {
+  let b = "";
+  for (let i = 0; i < bytes.length; i++) b += String.fromCharCode(bytes[i]);
+  return btoa(b);
+}
+
+async function callGemini(parts: unknown[], settings?: SettingsPayload | null) {
+  return fetch(GEMINI_ENDPOINT, {
+    method: "POST",
+    headers: { "x-goog-api-key": GOOGLE_AI_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts }],
+      generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: settings?.aspectRatio, imageSize: settings?.imageSize } },
+    }),
+  });
+}
+
+async function generateImageWithRetry(productB64: string, bgB64: string | null, prompt: string, maxRetries = 3, settings: SettingsPayload | null): Promise<Uint8Array | null> {
+  for (let a = 1; a <= maxRetries; a++) {
     try {
-      // Exponential backoff for retries
-      if (attempt > 1) {
-        const delay = Math.pow(2, attempt - 1) * 1000 + Math.random() * 500;
-        console.log(`[Attempt ${attempt}] Waiting ${delay}ms before retry...`);
-        await sleep(delay);
-      }
-
-      // Build parts array
-      const parts: unknown[] = [
-        { text: prompt },
-        { inlineData: { mimeType: "image/jpeg", data: productBase64 } }
-      ];
-
-      // Add custom background as second image if provided
-      if (backgroundBase64) {
-        parts.push({
-          inlineData: { mimeType: "image/jpeg", data: backgroundBase64 }
-        });
-      }
-
-
-      const response = await fetch(GEMINI_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "x-goog-api-key": GOOGLE_AI_API_KEY,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: [{ parts }],
-          "generationConfig": {
-            "responseModalities": ["IMAGE"],
-            "imageConfig": {
-              "aspectRatio": settings?.aspectRatio,
-              "imageSize": settings?.imageSize
-            }
-          }
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`[Attempt ${attempt}] Gemini API error (${response.status}):`, errorText);
-        
-        if (response.status === 429) {
-          console.log(`[Attempt ${attempt}] Rate limited, will retry...`);
-          continue;
-        }
-        
-        if (attempt === maxRetries) return null;
+      if (a > 1) await sleep(Math.pow(2, a - 1) * 1000 + Math.random() * 500);
+      const parts: unknown[] = [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: productB64 } }];
+      if (bgB64) parts.push({ inlineData: { mimeType: "image/jpeg", data: bgB64 } });
+      const res = await callGemini(parts, settings);
+      if (!res.ok) {
+        console.error(`[Attempt ${a}] Gemini error (${res.status}):`, await res.text());
+        if (a === maxRetries) return null;
         continue;
       }
-
-      const data = await response.json();
-      const imageBase64 = extractBase64Image(data);
-
-      if (!imageBase64) {
-        console.error(`[Attempt ${attempt}] No image in response`);
-        if (attempt === maxRetries) return null;
-        continue;
-      }
-
-      // Convert base64 to Uint8Array
-      const binaryStr = atob(imageBase64);
-      const bytes = new Uint8Array(binaryStr.length);
-      for (let i = 0; i < binaryStr.length; i++) {
-        bytes[i] = binaryStr.charCodeAt(i);
-      }
-
-      return bytes;
-    } catch (error) {
-      console.error(`[Attempt ${attempt}] Error:`, error);
-      if (attempt === maxRetries) return null;
-    }
+      const img = extractBase64Image(await res.json());
+      if (!img) { if (a === maxRetries) return null; continue; }
+      return b64ToBytes(img);
+    } catch (e) { console.error(`[Attempt ${a}]`, e); if (a === maxRetries) return null; }
   }
   return null;
 }
 
-async function triggerWorker(jobId: string, retryCount = 0): Promise<void> {
-  const maxRetries = 3;
-  const delay = Math.pow(2, retryCount) * 1000;
-
+async function triggerWorker(jobId: string, retry = 0): Promise<void> {
   try {
-    await sleep(delay);
-
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/bulk-background`, {
+    await sleep(Math.pow(2, retry) * 1000);
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/bulk-background`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
       body: JSON.stringify({ action: "processJob", jobId }),
     });
-
-    if (!response.ok && retryCount < maxRetries) {
-      console.log(`Worker trigger failed, retrying (${retryCount + 1}/${maxRetries})...`);
-      return triggerWorker(jobId, retryCount + 1);
-    }
-  } catch (error) {
-    console.error("Worker trigger error:", error);
-    if (retryCount < maxRetries) {
-      return triggerWorker(jobId, retryCount + 1);
-    }
-  }
+    if (!r.ok && retry < 3) return triggerWorker(jobId, retry + 1);
+  } catch (e) { console.error("Worker trigger error:", e); if (retry < 3) return triggerWorker(jobId, retry + 1); }
 }
 
-interface BulkBackgroundJob {
-  id: string;
-  user_id: string;
-  status: string;
-  background_type: string;
-  background_preset_id: string | null;
-  background_image_url: string | null;
-  total_images: number;
-  completed_images: number;
-  failed_images: number;
-  settings: Record<string, unknown> | null;
-}
+interface BJJob { id: string; user_id: string; status: string; background_type: string; background_preset_id: string | null; background_image_url: string | null; total_images: number; completed_images: number; failed_images: number; settings: Record<string, unknown> | null; }
+interface BJResult { id: string; job_id: string; source_image_url: string; status: string; image_index: number; retry_count: number; }
 
-interface BulkBackgroundResult {
-  id: string;
-  job_id: string;
-  source_image_url: string;
-  status: string;
-  image_index: number;
-  retry_count: number;
-}
-
-async function processSingleResult(
-  result: BulkBackgroundResult,
-  job: BulkBackgroundJob,
-  adminClient: any,
-  backgroundBase64: string | null,
-  isFollowUp = false
-): Promise<{ success: boolean; error?: string; imageData?: Uint8Array }> {
-  const startTime = Date.now();
-
+async function processSingleResult(result: BJResult, job: BJJob, ac: any, bgB64: string | null, isFollowUp = false): Promise<{ success: boolean; error?: string; imageData?: Uint8Array }> {
+  const t0 = Date.now();
   try {
-    // Update result to processing
-    await (adminClient
-      .from("bulk_background_results") as any)
-      .update({ 
-        status: "processing",
-        last_attempt_at: new Date().toISOString(),
-        retry_count: result.retry_count + 1
-      })
-      .eq("id", result.id);
-
-    // Fetch source image as base64
-    const productBase64 = await fetchImageAsBase64(result.source_image_url);
-
-    // Build prompt
-    const customPrompt = (job.settings as Record<string, unknown>)?.customPrompt as string | undefined;
-
-    const prompt = buildPrompt(
-      job.background_preset_id,
-      !!backgroundBase64,
-      customPrompt,
-      isFollowUp
-    );
-
-    // Generate image with retry logic
-    const generatedImage = await generateImageWithRetry(
-      productBase64,
-      backgroundBase64,
-      prompt,
-      3,
-      job.settings
-    );
-
-    if (!generatedImage) {
-      throw new Error("Image generation failed after all retries");
-    }
-
-    // Upload result
-    const storagePath = `${job.user_id}/${job.id}/${result.image_index}-result.webp`;
-    const { storagePath: finalPath, publicUrl } = await uploadToStorage(
-      adminClient,
-      generatedImage,
-      storagePath,
-      "image/webp"
-    );
-
-    const processingTime = Date.now() - startTime;
-
-    // Update result with success
-    await (adminClient
-      .from("bulk_background_results") as any)
-      .update({
-        status: "completed",
-        result_url: publicUrl,
-        storage_path: finalPath,
-        processing_time_ms: processingTime,
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", result.id);
-
-    return { success: true, imageData: generatedImage };
-  } catch (error) {
-    console.error(`Failed to process result ${result.id}:`, error);
-
-    await (adminClient
-      .from("bulk_background_results") as any)
-      .update({
-        status: "failed",
-        error: error instanceof Error ? error.message : "Processing failed",
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", result.id);
-
-    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
+    await (ac.from("bulk_background_results") as any).update({ status: "processing", last_attempt_at: new Date().toISOString(), retry_count: result.retry_count + 1 }).eq("id", result.id);
+    const productB64 = await fetchImageAsBase64(result.source_image_url);
+    const prompt = buildPrompt(job.background_preset_id, !!bgB64, (job.settings as any)?.customPrompt, isFollowUp);
+    const img = await generateImageWithRetry(productB64, bgB64, prompt, 3, job.settings as any);
+    if (!img) throw new Error("Image generation failed after all retries");
+    const sp = `${job.user_id}/${job.id}/${result.image_index}-result.webp`;
+    const { storagePath: fp, publicUrl } = await uploadToStorage(ac, img, sp, "image/webp");
+    await (ac.from("bulk_background_results") as any).update({ status: "completed", result_url: publicUrl, storage_path: fp, processing_time_ms: Date.now() - t0, updated_at: new Date().toISOString() }).eq("id", result.id);
+    return { success: true, imageData: img };
+  } catch (e) {
+    console.error(`Failed result ${result.id}:`, e);
+    await (ac.from("bulk_background_results") as any).update({ status: "failed", error: e instanceof Error ? e.message : "Processing failed", updated_at: new Date().toISOString() }).eq("id", result.id);
+    return { success: false, error: e instanceof Error ? e.message : "Unknown error" };
   }
+}
+
+async function checkAdmin(ac: any, uid: string) {
+  const { data } = await ac.rpc("is_admin", { check_user_id: uid });
+  return data === true;
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
     const body = await req.json();
     const { action } = body;
-
-    // Check if this is a service role call (internal worker)
     const authHeader = req.headers.get("Authorization");
     const isServiceRole = authHeader === `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`;
-
-    // For user actions, validate JWT
     let userId: string | null = null;
     if (!isServiceRole) {
-      const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        global: { headers: { Authorization: authHeader || "" } },
-      });
-
-      const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-      if (authError || !user) {
-        return errorResponse("Unauthorized", 401);
-      }
+      const sc = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { global: { headers: { Authorization: authHeader || "" } } });
+      const { data: { user }, error } = await sc.auth.getUser();
+      if (error || !user) return errorResponse("Unauthorized", 401);
       userId = user.id;
     }
-
-    const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const ac = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     switch (action) {
-      // ============================================
-      // CREATE JOB
-      // ============================================
       case "createJob": {
-        if (!userId) {
-          return errorResponse("Unauthorized", 401);
-        }
-
+        if (!userId) return errorResponse("Unauthorized", 401);
         const { sourceImageIds, backgroundType, backgroundPresetId, backgroundImageUrl, settings } = body;
-
-        // Validate inputs
-        if (!sourceImageIds?.length) {
-          return errorResponse("No source images provided");
-        }
-
-        if (backgroundType === "preset" && !backgroundPresetId) {
-          return errorResponse("No background preset selected");
-        }
-
-        if (backgroundType === "custom" && !backgroundImageUrl) {
-          return errorResponse("No custom background provided");
-        }
-
-        // Get source images
-        const { data: sourceImages, error: sourceError } = await adminClient
-          .from("source_images")
-          .select("id, public_url")
-          .in("id", sourceImageIds);
-
-        if (sourceError || !sourceImages?.length) {
-          return errorResponse("Failed to fetch source images");
-        }
-
-        // Check if admin (skip credit check)
-        const { data: isAdminResult } = await adminClient.rpc("is_admin", { check_user_id: userId });
-        const isAdmin = isAdminResult === true;
-
+        if (!sourceImageIds?.length) return errorResponse("No source images provided");
+        if (backgroundType === "preset" && !backgroundPresetId) return errorResponse("No background preset selected");
+        if (backgroundType === "custom" && !backgroundImageUrl) return errorResponse("No custom background provided");
+        const { data: sourceImages, error: srcErr } = await ac.from("source_images").select("id, public_url").in("id", sourceImageIds);
+        if (srcErr || !sourceImages?.length) return errorResponse("Failed to fetch source images");
+        const isAdmin = await checkAdmin(ac, userId);
         const creditsPerImg = getCreditsPerImage(settings || null);
         const totalCost = sourceImages.length * creditsPerImg;
-
-        // Check credits for non-admin users
         if (!isAdmin) {
-          const { data: subscriber } = await adminClient
-            .from("subscribers")
-            .select("credits_balance")
-            .eq("user_id", userId)
-            .single();
-
-          if (!subscriber || subscriber.credits_balance < totalCost) {
-            return json({
-              error: "Insufficient credits",
-              required: totalCost,
-              available: subscriber?.credits_balance || 0,
-            }, 400);
-          }
-
-          // Deduct credits upfront
-          const { error: deductError } = await adminClient.rpc("deduct_user_credits", {
-            p_user_id: userId,
-            p_amount: totalCost,
-            p_reason: "bulk_background_generation",
-          });
-
-          if (deductError) {
-            return errorResponse("Failed to deduct credits", 500);
-          }
+          const { data: sub } = await ac.from("subscribers").select("credits_balance").eq("user_id", userId).single();
+          if (!sub || sub.credits_balance < totalCost) return json({ error: "Insufficient credits", required: totalCost, available: sub?.credits_balance || 0 }, 400);
+          const { error: dErr } = await ac.rpc("deduct_user_credits", { p_user_id: userId, p_amount: totalCost, p_reason: "bulk_background_generation" });
+          if (dErr) return errorResponse("Failed to deduct credits", 500);
         }
-
-        // Use custom background URL directly (already uploaded by frontend)
-        const finalBackgroundUrl: string | null = backgroundType === "custom" ? backgroundImageUrl : null;
-
-        // Create job record
-        const { data: job, error: jobError } = await adminClient
-          .from("bulk_background_jobs")
-          .insert({
-            user_id: userId,
-            status: "queued",
-            background_type: backgroundType,
-            background_preset_id: backgroundPresetId || null,
-            background_image_url: finalBackgroundUrl,
-            total_images: sourceImages.length,
-            settings: settings || {},
-          })
-          .select()
-          .single();
-
-        if (jobError || !job) {
-          // Refund credits on failure
-          if (!isAdmin) {
-            await adminClient.rpc("refund_user_credits", {
-              p_user_id: userId,
-              p_amount: totalCost,
-              p_reason: "bulk_background_job_creation_failed",
-            });
-          }
+        const finalBgUrl = backgroundType === "custom" ? backgroundImageUrl : null;
+        const { data: job, error: jErr } = await ac.from("bulk_background_jobs").insert({ user_id: userId, status: "queued", background_type: backgroundType, background_preset_id: backgroundPresetId || null, background_image_url: finalBgUrl, total_images: sourceImages.length, settings: settings || {} }).select().single();
+        if (jErr || !job) {
+          if (!isAdmin) await ac.rpc("refund_user_credits", { p_user_id: userId, p_amount: totalCost, p_reason: "bulk_background_job_creation_failed" });
           return errorResponse("Failed to create job", 500);
         }
-
-        // Create result placeholders
-        const resultInserts = sourceImages.map((img, index) => ({
-          job_id: job.id,
-          user_id: userId,
-          source_image_id: img.id,
-          source_image_url: img.public_url,
-          status: "pending",
-          image_index: index,
-          retry_count: 0
-        }));
-
-        await adminClient.from("bulk_background_results").insert(resultInserts);
-
-        // Trigger worker (fire-and-forget)
+        await ac.from("bulk_background_results").insert(sourceImages.map((img: any, i: number) => ({ job_id: job.id, user_id: userId, source_image_id: img.id, source_image_url: img.public_url, status: "pending", image_index: i, retry_count: 0 })));
         triggerWorker(job.id);
-
         return json({ jobId: job.id });
       }
 
-      // ============================================
-      // PROCESS JOB (Sequential with checkpoints)
-      // ============================================
       case "processJob": {
-        if (!isServiceRole) {
-          return errorResponse("Forbidden", 403);
-        }
-
+        if (!isServiceRole) return errorResponse("Forbidden", 403);
         const { jobId } = body;
-
-        // Get job with atomic claim
-        const { data: job, error: jobError } = await adminClient
-          .from("bulk_background_jobs")
-          .select("*")
-          .eq("id", jobId)
-          .single();
-
-        if (jobError || !job) {
-          console.error("Job not found:", jobId);
-          return errorResponse("Job not found", 404);
-        }
-
-        // Skip if already finished or canceled
-        if (["completed", "failed", "canceled"].includes(job.status)) {
-          return json({ status: job.status, message: "Job already finished" });
-        }
-
-        // Update to processing
-        if (job.status === "queued") {
-          await adminClient
-            .from("bulk_background_jobs")
-            .update({ 
-              status: "processing", 
-              started_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            })
-            .eq("id", jobId);
-        }
-
-        // Get pending results to process
-        const { data: results } = await adminClient
-          .from("bulk_background_results")
-          .select("*")
-          .eq("job_id", jobId)
-          .in("status", ["pending", "processing"])
-          .order("image_index");
-
+        const { data: job } = await ac.from("bulk_background_jobs").select("*").eq("id", jobId).single();
+        if (!job) return errorResponse("Job not found", 404);
+        if (["completed", "failed", "canceled"].includes(job.status)) return json({ status: job.status });
+        if (job.status === "queued") await ac.from("bulk_background_jobs").update({ status: "processing", started_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", jobId);
+        const { data: results } = await ac.from("bulk_background_results").select("*").eq("job_id", jobId).in("status", ["pending", "processing"]).order("image_index");
         if (!results?.length) {
-          // All images already processed, update job status
-          const { data: allResults } = await adminClient
-            .from("bulk_background_results")
-            .select("status")
-            .eq("job_id", jobId);
-
-          const failedCount = allResults?.filter(r => r.status === "failed").length || 0;
-          const completedCount = allResults?.filter(r => r.status === "completed").length || 0;
-          
-          const finalStatus = completedCount === 0 ? "failed" : "completed";
-          
-          await adminClient
-            .from("bulk_background_jobs")
-            .update({
-              status: finalStatus,
-              completed_images: completedCount,
-              failed_images: failedCount,
-              progress: 100,
-              finished_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            })
-            .eq("id", jobId);
-
-          return json({ status: finalStatus, completed: completedCount, failed: failedCount });
+          const { data: all } = await ac.from("bulk_background_results").select("status").eq("job_id", jobId);
+          const fc = all?.filter((r: any) => r.status === "failed").length || 0;
+          const cc = all?.filter((r: any) => r.status === "completed").length || 0;
+          const fs = cc === 0 ? "failed" : "completed";
+          await ac.from("bulk_background_jobs").update({ status: fs, completed_images: cc, failed_images: fc, progress: 100, finished_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", jobId);
+          return json({ status: fs, completed: cc, failed: fc });
         }
-
-        // Fetch custom background once if needed
-        let backgroundBase64: string | null = null;
-        if (job.background_type === "custom" && job.background_image_url) {
-          try {
-            backgroundBase64 = await fetchImageAsBase64(job.background_image_url);
-          } catch (e) {
-            console.error("Failed to fetch custom background:", e);
-          }
+        let bgB64: string | null = null;
+        if (job.background_type === "custom" && job.background_image_url) { try { bgB64 = await fetchImageAsBase64(job.background_image_url); } catch (e) { console.error("Bg fetch failed:", e); } }
+        let cc = job.completed_images || 0, fc = job.failed_images || 0;
+        let refB64: string | null = null;
+        const isPre = job.background_type === "preset";
+        for (const r of results) {
+          const { data: cur } = await ac.from("bulk_background_jobs").select("status").eq("id", jobId).single();
+          if (cur?.status === "canceled") break;
+          const bg = (isPre && refB64) ? refB64 : bgB64;
+          const pr = await processSingleResult(r as BJResult, job as BJJob, ac, bg, isPre && !!refB64);
+          if (pr.success) { cc++; if (isPre && pr.imageData) refB64 = bytesToB64(pr.imageData); } else fc++;
+          await ac.from("bulk_background_jobs").update({ completed_images: cc, failed_images: fc, progress: Math.round(((cc + fc) / job.total_images) * 100), updated_at: new Date().toISOString() }).eq("id", jobId);
         }
-
-        let completedCount = job.completed_images || 0;
-        let failedCount = job.failed_images || 0;
-
-        // SEQUENTIAL PROCESSING - ONE IMAGE AT A TIME
-        // For preset backgrounds, use first successful result as reference for consistency
-        let referenceBase64: string | null = null;
-        const isPresetJob = job.background_type === "preset";
-
-        for (const result of results) {
-          // Check if job was canceled
-          const { data: currentJob } = await adminClient
-            .from("bulk_background_jobs")
-            .select("status")
-            .eq("id", jobId)
-            .single();
-
-          if (currentJob?.status === "canceled") {
-            console.log(`Job ${jobId} was canceled, stopping processing`);
-            break;
-          }
-
-          // For preset jobs: once we have a reference, use it instead of prompt-only generation
-          const bgToUse = (isPresetJob && referenceBase64) ? referenceBase64 : backgroundBase64;
-          const isFollowUp = isPresetJob && !!referenceBase64;
-
-          // Process this image
-          const processResult = await processSingleResult(
-            result as BulkBackgroundResult,
-            job as BulkBackgroundJob,
-            adminClient,
-            bgToUse,
-            isFollowUp
-          );
-
-          if (processResult.success) {
-            completedCount++;
-            // Capture first successful result as reference for preset jobs
-            if (isPresetJob && processResult.imageData) {
-              let binary = "";
-              for (let i = 0; i < processResult.imageData.length; i++) {
-                binary += String.fromCharCode(processResult.imageData[i]);
-              }
-              referenceBase64 = btoa(binary);
-              console.log(`[Job ${jobId}] Image captured as chained reference (${referenceBase64.length} chars base64)`);
-            }
-          } else {
-            failedCount++;
-          }
-
-          // Update job progress after each image
-          const totalProcessed = completedCount + failedCount;
-          const progress = Math.round((totalProcessed / job.total_images) * 100);
-
-          await adminClient
-            .from("bulk_background_jobs")
-            .update({
-              completed_images: completedCount,
-              failed_images: failedCount,
-              progress,
-              updated_at: new Date().toISOString()
-            })
-            .eq("id", jobId);
-        }
-
-        // Re-check if canceled
-        const { data: finalJob } = await adminClient
-          .from("bulk_background_jobs")
-          .select("status")
-          .eq("id", jobId)
-          .single();
-
-        if (finalJob?.status === "canceled") {
-          return json({ status: "canceled" });
-        }
-
-        // Refund credits for failed images (non-admin users)
-        if (failedCount > 0) {
-          const { data: isAdminResult } = await adminClient.rpc("is_admin", { check_user_id: job.user_id });
-          if (isAdminResult !== true) {
-            const refundAmount = failedCount * getCreditsPerImage(job.settings || null);
-            await adminClient.rpc("refund_user_credits", {
-              p_user_id: job.user_id,
-              p_amount: refundAmount,
-              p_reason: "bulk_background_failed_images_refund",
-            });
-          }
-        }
-
-        // Mark job complete
-        const finalStatus = completedCount === 0 ? "failed" : "completed";
-        await adminClient
-          .from("bulk_background_jobs")
-          .update({
-            status: finalStatus,
-            finished_at: new Date().toISOString(),
-            error: failedCount > 0 ? `${failedCount} image(s) failed to process` : null,
-            updated_at: new Date().toISOString()
-          })
-          .eq("id", jobId);
-
-        return json({ status: finalStatus, completed: completedCount, failed: failedCount });
+        const { data: fj } = await ac.from("bulk_background_jobs").select("status").eq("id", jobId).single();
+        if (fj?.status === "canceled") return json({ status: "canceled" });
+        if (fc > 0) { const adm = await checkAdmin(ac, job.user_id); if (!adm) await ac.rpc("refund_user_credits", { p_user_id: job.user_id, p_amount: fc * getCreditsPerImage(job.settings || null), p_reason: "bulk_background_failed_images_refund" }); }
+        const fs = cc === 0 ? "failed" : "completed";
+        await ac.from("bulk_background_jobs").update({ status: fs, finished_at: new Date().toISOString(), error: fc > 0 ? `${fc} image(s) failed` : null, updated_at: new Date().toISOString() }).eq("id", jobId);
+        return json({ status: fs, completed: cc, failed: fc });
       }
 
-      // ============================================
-      // RETRY INDIVIDUAL RESULT
-      // ============================================
       case "retryResult": {
-        if (!userId) {
-          return errorResponse("Unauthorized", 401);
-        }
-
+        if (!userId) return errorResponse("Unauthorized", 401);
         const { resultId } = body;
-
-        // Get result with job info
-        const { data: result, error: resultError } = await adminClient
-          .from("bulk_background_results")
-          .select("*, bulk_background_jobs!inner(user_id, background_type, background_preset_id, background_image_url, total_images, settings)")
-          .eq("id", resultId)
-          .single();
-
-        if (resultError || !result) {
-          return errorResponse("Result not found", 404);
+        const { data: result } = await ac.from("bulk_background_results").select("*, bulk_background_jobs!inner(user_id, background_type, background_preset_id, background_image_url, total_images, settings)").eq("id", resultId).single();
+        if (!result) return errorResponse("Result not found", 404);
+        const jd = result.bulk_background_jobs as any;
+        if (jd.user_id !== userId) return errorResponse("Forbidden", 403);
+        if (result.status !== "failed") return errorResponse("Only failed results can be retried");
+        const isAdmin = await checkAdmin(ac, userId);
+        const cpi = getCreditsPerImage(jd.settings || null);
+        if (!isAdmin) {
+          const { data: sub } = await ac.from("subscribers").select("credits_balance").eq("user_id", userId).single();
+          if (!sub || sub.credits_balance < cpi) return errorResponse("Insufficient credits", 402);
+          await ac.rpc("deduct_user_credits", { p_user_id: userId, p_amount: cpi, p_reason: "bulk_background_retry" });
         }
-
-        // Verify ownership
-        const jobData = result.bulk_background_jobs as { 
-          user_id: string; 
-          background_type: string;
-          background_preset_id: string | null;
-          background_image_url: string | null;
-          total_images: number;
-          settings: any;
-        };
-
-        if (jobData.user_id !== userId) {
-          return errorResponse("Forbidden", 403);
-        }
-
-        // Only retry failed results
-        if (result.status !== "failed") {
-          return errorResponse("Only failed results can be retried");
-        }
-
-        // Check credits
-        const { data: isAdminResult } = await adminClient.rpc("is_admin", { check_user_id: userId });
-        if (isAdminResult !== true) {
-          const { data: sub } = await adminClient
-            .from("subscribers")
-            .select("credits_balance")
-            .eq("user_id", userId)
-            .single();
-
-          if (!sub || sub.credits_balance < getCreditsPerImage(jobData.settings || null)) {
-            return errorResponse("Insufficient credits", 402);
-          }
-
-          await adminClient.rpc("deduct_user_credits", {
-            p_user_id: userId,
-            p_amount: getCreditsPerImage(jobData.settings || null),
-            p_reason: "bulk_background_retry",
-          });
-        }
-
-        // Reset result status
-        await adminClient
-          .from("bulk_background_results")
-          .update({ 
-            status: "pending", 
-            error: null,
-            updated_at: new Date().toISOString()
-          })
-          .eq("id", resultId);
-
-        // Fetch custom background if needed
-        let backgroundBase64: string | null = null;
-        if (jobData.background_type === "custom" && jobData.background_image_url) {
-          try {
-            backgroundBase64 = await fetchImageAsBase64(jobData.background_image_url);
-          } catch (e) {
-            console.error("Failed to fetch custom background:", e);
-          }
-        }
-
-        // Process inline for retry
-        const processResult = await processSingleResult(
-          {
-            id: result.id,
-            job_id: result.job_id,
-            source_image_url: result.source_image_url,
-            status: "pending",
-            image_index: result.image_index,
-            retry_count: result.retry_count || 0
-          },
-          {
-            id: result.job_id,
-            user_id: jobData.user_id,
-            status: "processing",
-            background_type: jobData.background_type,
-            background_preset_id: jobData.background_preset_id,
-            background_image_url: jobData.background_image_url,
-            total_images: jobData.total_images,
-            completed_images: 0,
-            failed_images: 0,
-            settings: jobData.settings || null
-          },
-          adminClient,
-          backgroundBase64
-        );
-
-        if (!processResult.success) {
-          // Refund on failure
-          if (isAdminResult !== true) {
-            await adminClient.rpc("refund_user_credits", {
-              p_user_id: userId,
-              p_amount: getCreditsPerImage(jobData.settings || null),
-              p_reason: "bulk_background_retry_failed_refund",
-            });
-          }
-          return json({ success: false, error: processResult.error });
-        }
-
+        await ac.from("bulk_background_results").update({ status: "pending", error: null, updated_at: new Date().toISOString() }).eq("id", resultId);
+        let bgB64: string | null = null;
+        if (jd.background_type === "custom" && jd.background_image_url) { try { bgB64 = await fetchImageAsBase64(jd.background_image_url); } catch (e) { console.error("Bg fetch failed:", e); } }
+        const pr = await processSingleResult({ id: result.id, job_id: result.job_id, source_image_url: result.source_image_url, status: "pending", image_index: result.image_index, retry_count: result.retry_count || 0 }, { id: result.job_id, user_id: jd.user_id, status: "processing", background_type: jd.background_type, background_preset_id: jd.background_preset_id, background_image_url: jd.background_image_url, total_images: jd.total_images, completed_images: 0, failed_images: 0, settings: jd.settings || null }, ac, bgB64);
+        if (!pr.success) { if (!isAdmin) await ac.rpc("refund_user_credits", { p_user_id: userId, p_amount: cpi, p_reason: "bulk_background_retry_failed_refund" }); return json({ success: false, error: pr.error }); }
         return json({ success: true });
       }
 
-      // ============================================
-      // RECOVER STUCK JOBS (called by pg_cron)
-      // ============================================
       case "recoverJobs": {
-        if (!isServiceRole) {
-          return errorResponse("Forbidden", 403);
+        if (!isServiceRole) return errorResponse("Forbidden", 403);
+        const qCut = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+        const sCut = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+        const { data: qj } = await ac.from("bulk_background_jobs").select("id").eq("status", "queued").lte("created_at", qCut).limit(10);
+        for (const j of qj || []) triggerWorker(j.id);
+        const { data: sj } = await ac.from("bulk_background_jobs").select("id, user_id, completed_images, total_images, settings").eq("status", "processing").lte("updated_at", sCut).limit(10);
+        for (const j of sj || []) {
+          await ac.from("bulk_background_jobs").update({ status: "failed", error: "Job timeout", finished_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", j.id);
+          const un = j.total_images - j.completed_images;
+          if (un > 0) { const adm = await checkAdmin(ac, j.user_id); if (!adm) await ac.rpc("refund_user_credits", { p_user_id: j.user_id, p_amount: un * getCreditsPerImage((j as any).settings || null), p_reason: "bulk_background_timeout_refund" }); }
         }
-
-        const queuedCutoff = new Date(Date.now() - 3 * 60 * 1000).toISOString();
-        const stuckCutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-
-        // Jobs queued for more than 3 minutes
-        const { data: queuedJobs } = await adminClient
-          .from("bulk_background_jobs")
-          .select("id")
-          .eq("status", "queued")
-          .lte("created_at", queuedCutoff)
-          .limit(10);
-
-        // Re-trigger queued jobs
-        for (const job of queuedJobs || []) {
-          console.log(`Recovering queued job: ${job.id}`);
-          triggerWorker(job.id);
-        }
-
-        // Jobs stuck in processing for more than 10 minutes
-        const { data: stuckJobs } = await adminClient
-          .from("bulk_background_jobs")
-          .select("id, user_id, completed_images, total_images, settings")
-          .eq("status", "processing")
-          .lte("updated_at", stuckCutoff)
-          .limit(10);
-
-        // Mark as failed and refund
-        for (const job of stuckJobs || []) {
-          console.log(`Failing stuck job: ${job.id}`);
-          
-          await adminClient
-            .from("bulk_background_jobs")
-            .update({
-              status: "failed",
-              error: "Job timeout - automatic recovery",
-              finished_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            })
-            .eq("id", job.id);
-
-          // Refund unprocessed images
-          const unprocessed = job.total_images - job.completed_images;
-          if (unprocessed > 0) {
-            const { data: isAdminResult } = await adminClient.rpc("is_admin", { check_user_id: job.user_id });
-            if (isAdminResult !== true) {
-              await adminClient.rpc("refund_user_credits", {
-                p_user_id: job.user_id,
-                p_amount: unprocessed * getCreditsPerImage((job as any).settings || null),
-                p_reason: "bulk_background_timeout_refund"
-              });
-            }
-          }
-        }
-
-        return json({
-          recovered: queuedJobs?.length || 0,
-          failed: stuckJobs?.length || 0
-        });
+        return json({ recovered: qj?.length || 0, failed: sj?.length || 0 });
       }
 
-      // ============================================
-      // GET JOB
-      // ============================================
       case "getJob": {
         const { jobId } = body;
-
-        const { data: job, error } = await adminClient
-          .from("bulk_background_jobs")
-          .select("*")
-          .eq("id", jobId)
-          .single();
-
-        if (error || !job) {
-          return errorResponse("Job not found", 404);
-        }
-
-        // Verify ownership for non-service role
-        if (!isServiceRole && job.user_id !== userId) {
-          return errorResponse("Forbidden", 403);
-        }
-
+        const { data: job } = await ac.from("bulk_background_jobs").select("*").eq("id", jobId).single();
+        if (!job) return errorResponse("Job not found", 404);
+        if (!isServiceRole && job.user_id !== userId) return errorResponse("Forbidden", 403);
         return json({ job });
       }
 
-      // ============================================
-      // GET JOB RESULTS
-      // ============================================
       case "getJobResults": {
         const { jobId } = body;
-
-        // First verify job ownership
-        const { data: job } = await adminClient
-          .from("bulk_background_jobs")
-          .select("user_id")
-          .eq("id", jobId)
-          .single();
-
-        if (!job || (!isServiceRole && job.user_id !== userId)) {
-          return errorResponse("Forbidden", 403);
-        }
-
-        const { data: results, error } = await adminClient
-          .from("bulk_background_results")
-          .select("*")
-          .eq("job_id", jobId)
-          .order("image_index");
-
-        if (error) {
-          return errorResponse("Failed to fetch results", 500);
-        }
-
+        const { data: job } = await ac.from("bulk_background_jobs").select("user_id").eq("id", jobId).single();
+        if (!job || (!isServiceRole && job.user_id !== userId)) return errorResponse("Forbidden", 403);
+        const { data: results } = await ac.from("bulk_background_results").select("*").eq("job_id", jobId).order("image_index");
         return json({ results: results || [] });
       }
 
-      // ============================================
-      // CANCEL JOB
-      // ============================================
       case "cancelJob": {
         const { jobId } = body;
-
-        const { data: job } = await adminClient
-          .from("bulk_background_jobs")
-          .select("*")
-          .eq("id", jobId)
-          .single();
-
-        if (!job || job.user_id !== userId) {
-          return errorResponse("Forbidden", 403);
-        }
-
-        if (job.status !== "queued" && job.status !== "processing") {
-          return errorResponse("Cannot cancel finished job");
-        }
-
-        // Get pending/processing results to refund
-        const { data: pendingResults } = await adminClient
-          .from("bulk_background_results")
-          .select("id")
-          .eq("job_id", jobId)
-          .in("status", ["pending", "processing"]);
-
-        const refundCount = pendingResults?.length || 0;
-
-        // Update job status
-        await adminClient
-          .from("bulk_background_jobs")
-          .update({ 
-            status: "canceled", 
-            finished_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq("id", jobId);
-
-        // Refund credits for unprocessed images
-        if (refundCount > 0) {
-          const { data: isAdminResult } = await adminClient.rpc("is_admin", { check_user_id: userId });
-          if (isAdminResult !== true) {
-            const jobSettings = job.settings || null;
-            const refundAmount = refundCount * getCreditsPerImage(jobSettings as Record<string, unknown> | null);
-            await adminClient.rpc("refund_user_credits", {
-              p_user_id: userId,
-              p_amount: refundAmount,
-              p_reason: "bulk_background_job_canceled",
-            });
-          }
-        }
-
-        return json({ success: true, refunded: refundCount * getCreditsPerImage((job as any)?.settings || null) });
+        const { data: job } = await ac.from("bulk_background_jobs").select("*").eq("id", jobId).single();
+        if (!job || job.user_id !== userId) return errorResponse("Forbidden", 403);
+        if (!["queued", "processing"].includes(job.status)) return errorResponse("Cannot cancel finished job");
+        const { data: pending } = await ac.from("bulk_background_results").select("id").eq("job_id", jobId).in("status", ["pending", "processing"]);
+        const rc = pending?.length || 0;
+        await ac.from("bulk_background_jobs").update({ status: "canceled", finished_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", jobId);
+        if (rc > 0) { const adm = await checkAdmin(ac, userId!); if (!adm) { const ra = rc * getCreditsPerImage((job as any)?.settings || null); await ac.rpc("refund_user_credits", { p_user_id: userId, p_amount: ra, p_reason: "bulk_background_job_canceled" }); } }
+        return json({ success: true, refunded: rc * getCreditsPerImage((job as any)?.settings || null) });
       }
 
-      // ============================================
-      // DOWNLOAD ALL
-      // ============================================
       case "downloadAll": {
         const { jobId } = body;
-
-        // Verify ownership
-        const { data: job } = await adminClient
-          .from("bulk_background_jobs")
-          .select("user_id")
-          .eq("id", jobId)
-          .single();
-
-        if (!job || (!isServiceRole && job.user_id !== userId)) {
-          return errorResponse("Forbidden", 403);
-        }
-
-        // Get completed results
-        const { data: results } = await adminClient
-          .from("bulk_background_results")
-          .select("result_url, image_index")
-          .eq("job_id", jobId)
-          .eq("status", "completed")
-          .order("image_index");
-
-        if (!results?.length) {
-          return errorResponse("No completed images to download");
-        }
-
-        return json({
-          images: results.map((r) => ({ url: r.result_url, index: r.image_index })),
-        });
+        const { data: job } = await ac.from("bulk_background_jobs").select("user_id").eq("id", jobId).single();
+        if (!job || (!isServiceRole && job.user_id !== userId)) return errorResponse("Forbidden", 403);
+        const { data: results } = await ac.from("bulk_background_results").select("result_url, image_index").eq("job_id", jobId).eq("status", "completed").order("image_index");
+        if (!results?.length) return errorResponse("No completed images to download");
+        return json({ images: results.map((r: any) => ({ url: r.result_url, index: r.image_index })) });
       }
 
-      // ============================================
-      // CREATE PRODUCT VIEWS
-      // ============================================
       case "createProductViews": {
         if (!userId) return errorResponse("Unauthorized", 401);
-
         const { resultId, selectedViews } = body;
         if (!resultId) return errorResponse("Missing resultId");
         if (!selectedViews?.length) return errorResponse("No views selected");
-
-        // Validate view types
-        const validViews = ['macro', 'environment', 'angle'];
-        const views = (selectedViews as string[]).filter(v => validViews.includes(v));
+        const validV = ['macro', 'environment', 'angle'];
+        const views = (selectedViews as string[]).filter(v => validV.includes(v));
         if (!views.length) return errorResponse("Invalid view types");
-
-        // Get result with job info
-        const { data: pvResult, error: pvResultError } = await adminClient
-          .from("bulk_background_results")
-          .select("*, bulk_background_jobs!inner(user_id, id)")
-          .eq("id", resultId)
-          .single();
-
-        if (pvResultError || !pvResult) return errorResponse("Result not found", 404);
-
-        const pvJob = pvResult.bulk_background_jobs as { user_id: string; id: string };
-        if (pvJob.user_id !== userId) return errorResponse("Forbidden", 403);
-        if (pvResult.status !== "completed" || !pvResult.result_url) {
-          return errorResponse("Result must be completed first");
+        const { data: pvR } = await ac.from("bulk_background_results").select("*, bulk_background_jobs!inner(user_id, id)").eq("id", resultId).single();
+        if (!pvR) return errorResponse("Result not found", 404);
+        const pvJ = pvR.bulk_background_jobs as any;
+        if (pvJ.user_id !== userId) return errorResponse("Forbidden", 403);
+        if (pvR.status !== "completed" || !pvR.result_url) return errorResponse("Result must be completed first");
+        const cost = views.length;
+        const adm = await checkAdmin(ac, userId);
+        if (!adm) {
+          const { data: sub } = await ac.from("subscribers").select("credits_balance").eq("user_id", userId).single();
+          if (!sub || sub.credits_balance < cost) return errorResponse("Insufficient credits", 402);
+          const { error: dErr } = await ac.rpc("deduct_user_credits", { p_user_id: userId, p_amount: cost, p_reason: "bulk_background_product_views" });
+          if (dErr) return errorResponse("Failed to deduct credits", 500);
         }
-
-        // Deduct credits (1 per view, admin exempt)
-        const totalViewCost = views.length;
-        const { data: isPvAdmin } = await adminClient.rpc("is_admin", { check_user_id: userId });
-        if (isPvAdmin !== true) {
-          const { data: pvSub } = await adminClient
-            .from("subscribers")
-            .select("credits_balance")
-            .eq("user_id", userId)
-            .single();
-
-          if (!pvSub || pvSub.credits_balance < totalViewCost) {
-            return errorResponse("Insufficient credits", 402);
-          }
-
-          const { error: pvDeductErr } = await adminClient.rpc("deduct_user_credits", {
-            p_user_id: userId,
-            p_amount: totalViewCost,
-            p_reason: "bulk_background_product_views",
-          });
-          if (pvDeductErr) return errorResponse("Failed to deduct credits", 500);
-        }
-
-        // Create product views record
-        const { data: pvRecord, error: pvInsertErr } = await adminClient
-          .from("bulk_background_product_views")
-          .insert({
-            user_id: userId,
-            result_id: resultId,
-            status: "queued",
-            selected_views: views,
-            progress: 0,
-          })
-          .select()
-          .single();
-
-        if (pvInsertErr || !pvRecord) {
-          // Refund on failure
-          if (isPvAdmin !== true) {
-            await adminClient.rpc("refund_user_credits", {
-              p_user_id: userId,
-              p_amount: totalViewCost,
-              p_reason: "bulk_background_product_views_creation_failed",
-            });
-          }
-          return errorResponse("Failed to create product views record", 500);
-        }
-
-        // Trigger async processing
-        fetch(`${SUPABASE_URL}/functions/v1/bulk-background`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          },
-          body: JSON.stringify({
-            action: "processProductViews",
-            productViewsId: pvRecord.id,
-          }),
-        }).catch(e => console.error("Product views trigger error:", e));
-
-        return json({ productViewsId: pvRecord.id });
+        const { data: pvRec, error: pvErr } = await ac.from("bulk_background_product_views").insert({ user_id: userId, result_id: resultId, status: "queued", selected_views: views, progress: 0 }).select().single();
+        if (pvErr || !pvRec) { if (!adm) await ac.rpc("refund_user_credits", { p_user_id: userId, p_amount: cost, p_reason: "bulk_background_product_views_creation_failed" }); return errorResponse("Failed to create product views record", 500); }
+        fetch(`${SUPABASE_URL}/functions/v1/bulk-background`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` }, body: JSON.stringify({ action: "processProductViews", productViewsId: pvRec.id }) }).catch(e => console.error("PV trigger error:", e));
+        return json({ productViewsId: pvRec.id });
       }
 
-      // ============================================
-      // PROCESS PRODUCT VIEWS (internal worker)
-      // ============================================
       case "processProductViews": {
         if (!isServiceRole) return errorResponse("Forbidden", 403);
-
         const { productViewsId } = body;
-
-        const { data: pvRecord } = await adminClient
-          .from("bulk_background_product_views")
-          .select("*")
-          .eq("id", productViewsId)
-          .single();
-
-        if (!pvRecord) return errorResponse("Product views record not found", 404);
-        if (pvRecord.status !== "queued") return json({ status: pvRecord.status });
-
-        // Update to processing
-        await (adminClient.from("bulk_background_product_views") as any)
-          .update({ status: "processing", started_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-          .eq("id", productViewsId);
-
-        // Get the source result image
-        const { data: sourceResult } = await adminClient
-          .from("bulk_background_results")
-          .select("result_url")
-          .eq("id", pvRecord.result_id)
-          .single();
-
-        if (!sourceResult?.result_url) {
-          await (adminClient.from("bulk_background_product_views") as any)
-            .update({ status: "failed", error: "Source result not found", updated_at: new Date().toISOString() })
-            .eq("id", productViewsId);
-          return errorResponse("Source result not found");
-        }
-
-        const sourceBase64 = await fetchImageAsBase64(sourceResult.result_url);
-
-        const VIEW_PROMPTS: Record<string, string> = {
-          macro: `Create a close-up or macro-style view of the uploaded product focusing on material quality, texture, and finish. Preserve exact product details and proportions. Use soft, controlled lighting to enhance surface characteristics without distortion. Shallow depth of field, ultra-sharp focus on key materials, clean background. High-end product photography style, ultra-realistic.`,
-          environment: `Show the uploaded product in realistic use within an appropriate environment. Lighting should be natural and context-aware, interacting believably with the product's materials. Maintain exact product proportions, textures, and branding. The scene should feel authentic and lived-in, not staged. Subtle depth of field, realistic contact shadows, premium lifestyle photography style, no people, no text.`,
-          angle: `Create an angled 3/4 view product photo using the uploaded product image as the exact product. The camera should be slightly above the product, rotated 25–35 degrees to reveal both the front and one side, showing depth and shape clearly. Place the product on a clean premium surface with a neutral, minimal background. Use soft, controlled studio lighting that produces realistic contact shadows and natural reflections consistent with the product's materials. Preserve exact proportions, colors, textures, and branding. High-end e-commerce catalog photography, ultra-realistic, no text, no invented logos, no artifacts.`,
+        const { data: pv } = await ac.from("bulk_background_product_views").select("*").eq("id", productViewsId).single();
+        if (!pv) return errorResponse("Not found", 404);
+        if (pv.status !== "queued") return json({ status: pv.status });
+        await (ac.from("bulk_background_product_views") as any).update({ status: "processing", started_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", productViewsId);
+        const { data: srcR } = await ac.from("bulk_background_results").select("result_url").eq("id", pv.result_id).single();
+        if (!srcR?.result_url) { await (ac.from("bulk_background_product_views") as any).update({ status: "failed", error: "Source not found", updated_at: new Date().toISOString() }).eq("id", productViewsId); return errorResponse("Source not found"); }
+        const srcB64 = await fetchImageAsBase64(srcR.result_url);
+        const VP: Record<string, string> = {
+          macro: `Close-up macro of uploaded product. Material quality, texture, finish. Exact proportions. Soft lighting, shallow DOF, ultra-sharp, clean bg. Ultra-realistic.`,
+          environment: `Product in realistic use environment. Natural lighting. Exact proportions/textures/branding. Authentic scene, subtle DOF, realistic shadows. No people, no text.`,
+          angle: `3/4 angled view, camera slightly above, 25-35° rotation. Clean premium surface, neutral bg. Soft studio lighting, realistic shadows. Exact proportions. Ultra-realistic catalog, no text.`,
         };
-
-        const STORAGE_BUCKET_PV = "bulk-background-product-views";
-        const selectedViews = pvRecord.selected_views as string[];
-        const updates: Record<string, string> = {};
-        let completedViews = 0;
-        let failedViews = 0;
-
-        for (const viewType of selectedViews) {
-          // Check if canceled
-          const { data: currentPv } = await adminClient
-            .from("bulk_background_product_views")
-            .select("status")
-            .eq("id", productViewsId)
-            .single();
-          if (currentPv?.status === "canceled") break;
-
+        const PV_BUCKET = "bulk-background-product-views";
+        const selViews = pv.selected_views as string[];
+        const upd: Record<string, string> = {};
+        let ok = 0, fail = 0;
+        for (const vt of selViews) {
+          const { data: cur } = await ac.from("bulk_background_product_views").select("status").eq("id", productViewsId).single();
+          if (cur?.status === "canceled") break;
           try {
-            const prompt = VIEW_PROMPTS[viewType];
-            if (!prompt) { failedViews++; continue; }
-
-            const parts: unknown[] = [
-              { text: prompt },
-              { inlineData: { mimeType: "image/jpeg", data: sourceBase64 } },
-            ];
-
-            const response = await fetch(GEMINI_ENDPOINT, {
-              method: "POST",
-              headers: {
-                "x-goog-api-key": GOOGLE_AI_API_KEY,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                contents: [{ parts }],
-                generationConfig: {
-                  responseModalities: ["IMAGE"],
-                  imageConfig: { aspectRatio: "1:1" },
-                },
-              }),
-            });
-
-            if (!response.ok) {
-              console.error(`Product view ${viewType} failed:`, await response.text());
-              failedViews++;
-              continue;
-            }
-
-            const data = await response.json();
-            const imageBase64 = extractBase64Image(data);
-            if (!imageBase64) { failedViews++; continue; }
-
-            const binaryStr = atob(imageBase64);
-            const bytes = new Uint8Array(binaryStr.length);
-            for (let i = 0; i < binaryStr.length; i++) {
-              bytes[i] = binaryStr.charCodeAt(i);
-            }
-
-            const storagePath = `${pvRecord.user_id}/${productViewsId}/${viewType}.webp`;
-            const { error: uploadErr } = await adminClient.storage
-              .from(STORAGE_BUCKET_PV)
-              .upload(storagePath, bytes, { contentType: "image/webp", upsert: true });
-
-            if (uploadErr) {
-              console.error(`Upload failed for ${viewType}:`, uploadErr);
-              failedViews++;
-              continue;
-            }
-
-            const { data: urlData } = adminClient.storage
-              .from(STORAGE_BUCKET_PV)
-              .getPublicUrl(storagePath);
-
-            updates[`${viewType}_url`] = urlData.publicUrl;
-            updates[`${viewType}_storage_path`] = storagePath;
-            completedViews++;
-          } catch (e) {
-            console.error(`Error processing ${viewType}:`, e);
-            failedViews++;
-          }
-
-          // Update progress
-          const totalDone = completedViews + failedViews;
-          const progressPct = Math.round((totalDone / selectedViews.length) * 100);
-          await (adminClient.from("bulk_background_product_views") as any)
-            .update({ ...updates, progress: progressPct, updated_at: new Date().toISOString() })
-            .eq("id", productViewsId);
+            const prompt = VP[vt];
+            if (!prompt) { fail++; continue; }
+            const parts = [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: srcB64 } }];
+            const res = await fetch(GEMINI_ENDPOINT, { method: "POST", headers: { "x-goog-api-key": GOOGLE_AI_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: "1:1" } } }) });
+            if (!res.ok) { console.error(`PV ${vt} failed:`, await res.text()); fail++; continue; }
+            const img = extractBase64Image(await res.json());
+            if (!img) { fail++; continue; }
+            const bytes = b64ToBytes(img);
+            const sp = `${pv.user_id}/${productViewsId}/${vt}.webp`;
+            const { error: uErr } = await ac.storage.from(PV_BUCKET).upload(sp, bytes, { contentType: "image/webp", upsert: true });
+            if (uErr) { console.error(`Upload ${vt}:`, uErr); fail++; continue; }
+            const { data: ud } = ac.storage.from(PV_BUCKET).getPublicUrl(sp);
+            upd[`${vt}_url`] = ud.publicUrl;
+            upd[`${vt}_storage_path`] = sp;
+            ok++;
+          } catch (e) { console.error(`PV ${vt}:`, e); fail++; }
+          await (ac.from("bulk_background_product_views") as any).update({ ...upd, progress: Math.round(((ok + fail) / selViews.length) * 100), updated_at: new Date().toISOString() }).eq("id", productViewsId);
         }
-
-        // Final status
-        const finalStatus = completedViews === 0 ? "failed" : "completed";
-        await (adminClient.from("bulk_background_product_views") as any)
-          .update({
-            ...updates,
-            status: finalStatus,
-            progress: 100,
-            finished_at: new Date().toISOString(),
-            error: failedViews > 0 ? `${failedViews} view(s) failed` : null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", productViewsId);
-
-        // Refund failed views
-        if (failedViews > 0) {
-          const { data: isPvAdminCheck } = await adminClient.rpc("is_admin", { check_user_id: pvRecord.user_id });
-          if (isPvAdminCheck !== true) {
-            await adminClient.rpc("refund_user_credits", {
-              p_user_id: pvRecord.user_id,
-              p_amount: failedViews,
-              p_reason: "bulk_background_product_views_failed_refund",
-            });
-          }
-        }
-
-        return json({ status: finalStatus, completed: completedViews, failed: failedViews });
+        const fs = ok === 0 ? "failed" : "completed";
+        await (ac.from("bulk_background_product_views") as any).update({ ...upd, status: fs, progress: 100, finished_at: new Date().toISOString(), error: fail > 0 ? `${fail} view(s) failed` : null, updated_at: new Date().toISOString() }).eq("id", productViewsId);
+        if (fail > 0) { const adm = await checkAdmin(ac, pv.user_id); if (!adm) await ac.rpc("refund_user_credits", { p_user_id: pv.user_id, p_amount: fail, p_reason: "bulk_background_product_views_failed_refund" }); }
+        return json({ status: fs, completed: ok, failed: fail });
       }
 
-      // ============================================
-      // GET PRODUCT VIEWS
-      // ============================================
       case "getProductViews": {
         const { productViewsId } = body;
         if (!productViewsId) return errorResponse("Missing productViewsId");
-
-        const { data: pvData, error: pvError } = await adminClient
-          .from("bulk_background_product_views")
-          .select("*")
-          .eq("id", productViewsId)
-          .single();
-
-        if (pvError || !pvData) return errorResponse("Product views not found", 404);
-        if (!isServiceRole && pvData.user_id !== userId) return errorResponse("Forbidden", 403);
-
-        return json({ productViews: pvData });
+        const { data: pv } = await ac.from("bulk_background_product_views").select("*").eq("id", productViewsId).single();
+        if (!pv) return errorResponse("Not found", 404);
+        if (!isServiceRole && pv.user_id !== userId) return errorResponse("Forbidden", 403);
+        return json({ productViews: pv });
       }
 
-      // ============================================
-      // GET PRODUCT VIEWS BY RESULT
-      // ============================================
       case "getProductViewsByResult": {
-        const { resultId: pvResultId } = body;
-        if (!pvResultId) return errorResponse("Missing resultId");
-
-        const { data: pvList } = await adminClient
-          .from("bulk_background_product_views")
-          .select("*")
-          .eq("result_id", pvResultId)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
+        const { resultId: pvRid } = body;
+        if (!pvRid) return errorResponse("Missing resultId");
+        const { data: pvList } = await ac.from("bulk_background_product_views").select("*").eq("result_id", pvRid).order("created_at", { ascending: false }).limit(1);
         return json({ productViews: pvList?.[0] || null });
       }
 
-      default:
-        return errorResponse("Unknown action");
+      default: return errorResponse("Unknown action");
     }
-  } catch (error) {
-    console.error("Bulk background error:", error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Internal error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+  } catch (e) {
+    console.error("Bulk background error:", e);
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Internal error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
