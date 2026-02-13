@@ -1093,152 +1093,290 @@ Deno.serve(async (req: Request) => {
       }
 
       // ============================================
-      // GENERATE DETAILED IMAGE
+      // CREATE PRODUCT VIEWS
       // ============================================
-      case "generateDetailedImage": {
-        if (!userId) {
-          return errorResponse("Unauthorized", 401);
-        }
+      case "createProductViews": {
+        if (!userId) return errorResponse("Unauthorized", 401);
 
-        const { resultId } = body;
+        const { resultId, selectedViews } = body;
         if (!resultId) return errorResponse("Missing resultId");
+        if (!selectedViews?.length) return errorResponse("No views selected");
+
+        // Validate view types
+        const validViews = ['macro', 'environment', 'angle'];
+        const views = (selectedViews as string[]).filter(v => validViews.includes(v));
+        if (!views.length) return errorResponse("Invalid view types");
 
         // Get result with job info
-        const { data: result, error: resultError } = await adminClient
+        const { data: pvResult, error: pvResultError } = await adminClient
           .from("bulk_background_results")
-          .select("*, bulk_background_jobs!inner(user_id, id, settings)")
+          .select("*, bulk_background_jobs!inner(user_id, id)")
           .eq("id", resultId)
           .single();
 
-        if (resultError || !result) {
-          return errorResponse("Result not found", 404);
+        if (pvResultError || !pvResult) return errorResponse("Result not found", 404);
+
+        const pvJob = pvResult.bulk_background_jobs as { user_id: string; id: string };
+        if (pvJob.user_id !== userId) return errorResponse("Forbidden", 403);
+        if (pvResult.status !== "completed" || !pvResult.result_url) {
+          return errorResponse("Result must be completed first");
         }
 
-        const resultJob = result.bulk_background_jobs as { user_id: string; id: string; settings: any };
-        if (resultJob.user_id !== userId) {
-          return errorResponse("Forbidden", 403);
-        }
-
-        if (result.status !== "completed" || !result.result_url) {
-          return errorResponse("Result must be completed before generating detailed image");
-        }
-
-        // If already generated, return existing URL
-        if (result.detailed_result_url) {
-          return json({ detailedUrl: result.detailed_result_url });
-        }
-
-        // Deduct 1 credit (admin-exempt)
-        const { data: isAdminCheck } = await adminClient.rpc("is_admin", { check_user_id: userId });
-        if (isAdminCheck !== true) {
-          const { data: sub } = await adminClient
+        // Deduct credits (1 per view, admin exempt)
+        const totalViewCost = views.length;
+        const { data: isPvAdmin } = await adminClient.rpc("is_admin", { check_user_id: userId });
+        if (isPvAdmin !== true) {
+          const { data: pvSub } = await adminClient
             .from("subscribers")
             .select("credits_balance")
             .eq("user_id", userId)
             .single();
 
-          if (!sub || sub.credits_balance < 1) {
+          if (!pvSub || pvSub.credits_balance < totalViewCost) {
             return errorResponse("Insufficient credits", 402);
           }
 
-          await adminClient.rpc("deduct_user_credits", {
+          const { error: pvDeductErr } = await adminClient.rpc("deduct_user_credits", {
             p_user_id: userId,
-            p_amount: 1,
-            p_reason: "bulk_background_detailed_image",
+            p_amount: totalViewCost,
+            p_reason: "bulk_background_product_views",
           });
+          if (pvDeductErr) return errorResponse("Failed to deduct credits", 500);
         }
 
-        try {
-          // Fetch the result image
-          const resultBase64 = await fetchImageAsBase64(result.result_url);
+        // Create product views record
+        const { data: pvRecord, error: pvInsertErr } = await adminClient
+          .from("bulk_background_product_views")
+          .insert({
+            user_id: userId,
+            result_id: resultId,
+            status: "queued",
+            selected_views: views,
+            progress: 0,
+          })
+          .select()
+          .single();
 
-          const detailedPrompt = `Macro product photography of [PRODUCT], close-up shot emphasizing material texture, surface finish, and tactile quality. Preserve exact product proportions, colors, and details — no distortion or hallucinated elements.
-
-            Lighting: soft diffused studio light with subtle specular highlights to reveal material depth — silk catches light differently than matte rubber, leather shows grain, metal reflects cleanly. Single or dual softbox setup implied.
-
-            Lens: 100mm macro equivalent, f/2.8–f/4, razor-sharp focus on the hero surface or detail, smooth bokeh falloff on secondary elements.
-
-            Background: clean neutral (white, off-white, or light grey seamless), no props, no distractions.
-
-            Mood: clinical precision meets luxury craftsmanship — the kind of shot that makes a material feel worth touching.
-
-Style: high-end ecommerce product photography, ultra-realistic, 8K, shot for premium brand catalog.`;
-
-          const parts: unknown[] = [
-            { text: detailedPrompt },
-            { inlineData: { mimeType: "image/jpeg", data: resultBase64 } }
-          ];
-
-          const response = await fetch(GEMINI_ENDPOINT, {
-            method: "POST",
-            headers: {
-              "x-goog-api-key": GOOGLE_AI_API_KEY,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              contents: [{ parts }],
-              generationConfig: {
-                responseModalities: ["IMAGE"],
-                imageConfig: { aspectRatio: "1:1" }
-              }
-            }),
-          });
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error("Detailed image Gemini error:", errorText);
-            // Refund on failure
-            if (isAdminCheck !== true) {
-              await adminClient.rpc("refund_user_credits", {
-                p_user_id: userId,
-                p_amount: 1,
-                p_reason: "bulk_background_detailed_image_failed_refund",
-              });
-            }
-            return errorResponse("AI generation failed", 500);
-          }
-
-          const data = await response.json();
-          const imageBase64 = extractBase64Image(data);
-
-          if (!imageBase64) {
-            if (isAdminCheck !== true) {
-              await adminClient.rpc("refund_user_credits", {
-                p_user_id: userId,
-                p_amount: 1,
-                p_reason: "bulk_background_detailed_image_no_result_refund",
-              });
-            }
-            return errorResponse("No image generated", 500);
-          }
-
-          // Convert and upload
-          const binaryStr = atob(imageBase64);
-          const bytes = new Uint8Array(binaryStr.length);
-          for (let i = 0; i < binaryStr.length; i++) {
-            bytes[i] = binaryStr.charCodeAt(i);
-          }
-
-          const storagePath = `${userId}/${resultJob.id}/${result.image_index}-detailed.webp`;
-          const { publicUrl } = await uploadToStorage(adminClient, bytes, storagePath, "image/webp");
-
-          // Update result row
-          await (adminClient.from("bulk_background_results") as any)
-            .update({ detailed_result_url: publicUrl, updated_at: new Date().toISOString() })
-            .eq("id", resultId);
-
-          return json({ detailedUrl: publicUrl });
-        } catch (error) {
-          console.error("Detailed image error:", error);
-          if (isAdminCheck !== true) {
+        if (pvInsertErr || !pvRecord) {
+          // Refund on failure
+          if (isPvAdmin !== true) {
             await adminClient.rpc("refund_user_credits", {
               p_user_id: userId,
-              p_amount: 1,
-              p_reason: "bulk_background_detailed_image_error_refund",
+              p_amount: totalViewCost,
+              p_reason: "bulk_background_product_views_creation_failed",
             });
           }
-          return errorResponse(error instanceof Error ? error.message : "Generation failed", 500);
+          return errorResponse("Failed to create product views record", 500);
         }
+
+        // Trigger async processing
+        fetch(`${SUPABASE_URL}/functions/v1/bulk-background`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+          body: JSON.stringify({
+            action: "processProductViews",
+            productViewsId: pvRecord.id,
+          }),
+        }).catch(e => console.error("Product views trigger error:", e));
+
+        return json({ productViewsId: pvRecord.id });
+      }
+
+      // ============================================
+      // PROCESS PRODUCT VIEWS (internal worker)
+      // ============================================
+      case "processProductViews": {
+        if (!isServiceRole) return errorResponse("Forbidden", 403);
+
+        const { productViewsId } = body;
+
+        const { data: pvRecord } = await adminClient
+          .from("bulk_background_product_views")
+          .select("*")
+          .eq("id", productViewsId)
+          .single();
+
+        if (!pvRecord) return errorResponse("Product views record not found", 404);
+        if (pvRecord.status !== "queued") return json({ status: pvRecord.status });
+
+        // Update to processing
+        await (adminClient.from("bulk_background_product_views") as any)
+          .update({ status: "processing", started_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+          .eq("id", productViewsId);
+
+        // Get the source result image
+        const { data: sourceResult } = await adminClient
+          .from("bulk_background_results")
+          .select("result_url")
+          .eq("id", pvRecord.result_id)
+          .single();
+
+        if (!sourceResult?.result_url) {
+          await (adminClient.from("bulk_background_product_views") as any)
+            .update({ status: "failed", error: "Source result not found", updated_at: new Date().toISOString() })
+            .eq("id", productViewsId);
+          return errorResponse("Source result not found");
+        }
+
+        const sourceBase64 = await fetchImageAsBase64(sourceResult.result_url);
+
+        const VIEW_PROMPTS: Record<string, string> = {
+          macro: `Create a close-up or macro-style view of the uploaded product focusing on material quality, texture, and finish. Preserve exact product details and proportions. Use soft, controlled lighting to enhance surface characteristics without distortion. Shallow depth of field, ultra-sharp focus on key materials, clean background. High-end product photography style, ultra-realistic.`,
+          environment: `Show the uploaded product in realistic use within an appropriate environment. Lighting should be natural and context-aware, interacting believably with the product's materials. Maintain exact product proportions, textures, and branding. The scene should feel authentic and lived-in, not staged. Subtle depth of field, realistic contact shadows, premium lifestyle photography style, no people, no text.`,
+          angle: `Create an angled 3/4 view product photo using the uploaded product image as the exact product. The camera should be slightly above the product, rotated 25–35 degrees to reveal both the front and one side, showing depth and shape clearly. Place the product on a clean premium surface with a neutral, minimal background. Use soft, controlled studio lighting that produces realistic contact shadows and natural reflections consistent with the product's materials. Preserve exact proportions, colors, textures, and branding. High-end e-commerce catalog photography, ultra-realistic, no text, no invented logos, no artifacts.`,
+        };
+
+        const STORAGE_BUCKET_PV = "bulk-background-product-views";
+        const selectedViews = pvRecord.selected_views as string[];
+        const updates: Record<string, string> = {};
+        let completedViews = 0;
+        let failedViews = 0;
+
+        for (const viewType of selectedViews) {
+          // Check if canceled
+          const { data: currentPv } = await adminClient
+            .from("bulk_background_product_views")
+            .select("status")
+            .eq("id", productViewsId)
+            .single();
+          if (currentPv?.status === "canceled") break;
+
+          try {
+            const prompt = VIEW_PROMPTS[viewType];
+            if (!prompt) { failedViews++; continue; }
+
+            const parts: unknown[] = [
+              { text: prompt },
+              { inlineData: { mimeType: "image/jpeg", data: sourceBase64 } },
+            ];
+
+            const response = await fetch(GEMINI_ENDPOINT, {
+              method: "POST",
+              headers: {
+                "x-goog-api-key": GOOGLE_AI_API_KEY,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                contents: [{ parts }],
+                generationConfig: {
+                  responseModalities: ["IMAGE"],
+                  imageConfig: { aspectRatio: "1:1" },
+                },
+              }),
+            });
+
+            if (!response.ok) {
+              console.error(`Product view ${viewType} failed:`, await response.text());
+              failedViews++;
+              continue;
+            }
+
+            const data = await response.json();
+            const imageBase64 = extractBase64Image(data);
+            if (!imageBase64) { failedViews++; continue; }
+
+            const binaryStr = atob(imageBase64);
+            const bytes = new Uint8Array(binaryStr.length);
+            for (let i = 0; i < binaryStr.length; i++) {
+              bytes[i] = binaryStr.charCodeAt(i);
+            }
+
+            const storagePath = `${pvRecord.user_id}/${productViewsId}/${viewType}.webp`;
+            const { error: uploadErr } = await adminClient.storage
+              .from(STORAGE_BUCKET_PV)
+              .upload(storagePath, bytes, { contentType: "image/webp", upsert: true });
+
+            if (uploadErr) {
+              console.error(`Upload failed for ${viewType}:`, uploadErr);
+              failedViews++;
+              continue;
+            }
+
+            const { data: urlData } = adminClient.storage
+              .from(STORAGE_BUCKET_PV)
+              .getPublicUrl(storagePath);
+
+            updates[`${viewType}_url`] = urlData.publicUrl;
+            updates[`${viewType}_storage_path`] = storagePath;
+            completedViews++;
+          } catch (e) {
+            console.error(`Error processing ${viewType}:`, e);
+            failedViews++;
+          }
+
+          // Update progress
+          const totalDone = completedViews + failedViews;
+          const progressPct = Math.round((totalDone / selectedViews.length) * 100);
+          await (adminClient.from("bulk_background_product_views") as any)
+            .update({ ...updates, progress: progressPct, updated_at: new Date().toISOString() })
+            .eq("id", productViewsId);
+        }
+
+        // Final status
+        const finalStatus = completedViews === 0 ? "failed" : "completed";
+        await (adminClient.from("bulk_background_product_views") as any)
+          .update({
+            ...updates,
+            status: finalStatus,
+            progress: 100,
+            finished_at: new Date().toISOString(),
+            error: failedViews > 0 ? `${failedViews} view(s) failed` : null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", productViewsId);
+
+        // Refund failed views
+        if (failedViews > 0) {
+          const { data: isPvAdminCheck } = await adminClient.rpc("is_admin", { check_user_id: pvRecord.user_id });
+          if (isPvAdminCheck !== true) {
+            await adminClient.rpc("refund_user_credits", {
+              p_user_id: pvRecord.user_id,
+              p_amount: failedViews,
+              p_reason: "bulk_background_product_views_failed_refund",
+            });
+          }
+        }
+
+        return json({ status: finalStatus, completed: completedViews, failed: failedViews });
+      }
+
+      // ============================================
+      // GET PRODUCT VIEWS
+      // ============================================
+      case "getProductViews": {
+        const { productViewsId } = body;
+        if (!productViewsId) return errorResponse("Missing productViewsId");
+
+        const { data: pvData, error: pvError } = await adminClient
+          .from("bulk_background_product_views")
+          .select("*")
+          .eq("id", productViewsId)
+          .single();
+
+        if (pvError || !pvData) return errorResponse("Product views not found", 404);
+        if (!isServiceRole && pvData.user_id !== userId) return errorResponse("Forbidden", 403);
+
+        return json({ productViews: pvData });
+      }
+
+      // ============================================
+      // GET PRODUCT VIEWS BY RESULT
+      // ============================================
+      case "getProductViewsByResult": {
+        const { resultId: pvResultId } = body;
+        if (!pvResultId) return errorResponse("Missing resultId");
+
+        const { data: pvList } = await adminClient
+          .from("bulk_background_product_views")
+          .select("*")
+          .eq("result_id", pvResultId)
+          .order("created_at", { ascending: false })
+          .limit(1);
+
+        return json({ productViews: pvList?.[0] || null });
       }
 
       default:

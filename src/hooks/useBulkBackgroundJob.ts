@@ -189,21 +189,6 @@ export const useBulkBackgroundJob = () => {
     }
   }, [job?.id, toast]);
 
-  const generateDetailedImage = useCallback(async (resultId: string): Promise<string | null> => {
-    try {
-      const { detailedUrl } = await bulkBackgroundApi.generateDetailedImage(resultId);
-      // Update the result in local state
-      setResults(prev => prev.map(r => 
-        r.id === resultId ? { ...r, detailed_result_url: detailedUrl } : r
-      ));
-      toast({ title: "Detailed image generated!" });
-      return detailedUrl;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to generate detailed image';
-      toast({ title: "Generation Failed", description: message, variant: "destructive" });
-      return null;
-    }
-  }, [toast]);
 
   return {
     job,
@@ -215,7 +200,6 @@ export const useBulkBackgroundJob = () => {
     downloadAll,
     clearJob,
     retryResult,
-    generateDetailedImage,
     isProcessing: job?.status === 'queued' || job?.status === 'processing',
     isComplete: job?.status === 'completed',
     isCanceled: job?.status === 'canceled',
