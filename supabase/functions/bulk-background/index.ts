@@ -371,12 +371,13 @@ Deno.serve(async (req: Request) => {
         if (!srcR?.result_url) { await (ac.from("bulk_background_product_views") as any).update({ status: "failed", error: "Source not found", updated_at: new Date().toISOString() }).eq("id", productViewsId); return errorResponse("Source not found"); }
         const srcB64 = await fetchImageAsBase64(srcR.result_url);
         const VP: Record<string, string> = {
-          macro: `Close-up macro of uploaded product. Material quality, texture, finish. Exact proportions. Soft lighting, shallow DOF, ultra-sharp, clean bg. Ultra-realistic.`,
-          environment: `Product in realistic use environment. Natural lighting. Exact proportions/textures/branding. Authentic scene, subtle DOF, realistic shadows. No people, no text.`,
-          angle: `3/4 angled view, camera slightly above, 25-35° rotation. Clean premium surface, neutral bg. Soft studio lighting, realistic shadows. Exact proportions. Ultra-realistic catalog, no text.`,
+          macro: `Using this product photo as reference, create a close-up macro shot of the same product in the same setting. Focus on material quality, texture and finish details. Maintain the same background, lighting and color palette. Shallow depth of field, ultra-sharp on product surface.`,
+          angle: `Using this product photo as reference, create a 3/4 angled catalog view of the same product. Camera slightly above, 25-35 degree rotation. Keep the exact same background, lighting and environment. Soft studio lighting with realistic contact shadows. No text.`,
+          environment: `Using this product photo as reference, create a wide lifestyle shot showing the same product in a premium, realistic environment matching the image style. Soft natural lighting, sophisticated professional photography. Product is the clear focal point. Maintain the same product proportions, textures and branding. No people, no text overlays.`,
         };
         const PV_BUCKET = "bulk-background-product-views";
-        const selViews = pv.selected_views as string[];
+        const VIEW_ORDER = ['macro', 'angle', 'environment'];
+        const selViews = (pv.selected_views as string[]).sort((a, b) => VIEW_ORDER.indexOf(a) - VIEW_ORDER.indexOf(b));
         const upd: Record<string, string> = {};
         let ok = 0, fail = 0;
         for (const vt of selViews) {
