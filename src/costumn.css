@@ -1,9 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Tailwind-friendly: paste in globals.css or inside a <style jsx global> */
-@layer components {
+/* Custom animation styles */
     .grain-analysed {
       position: absolute;
       inset: 0;
@@ -48,7 +43,6 @@
       animation: scan-slow 12s ease-in-out infinite;
       filter: blur(0.5px);             /* softer edges */
     }
-  }
   
   @keyframes grain-shift {
     0%   { transform: translate(0,0); }
