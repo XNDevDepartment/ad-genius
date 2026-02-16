@@ -94,7 +94,25 @@ serve(async (req) => {
 
     // Look up promotion code ID if a code string was provided
     let promotionCodeId: string | undefined;
-    if (promoCode) {
+    let adHocCouponId: string | undefined;
+
+    if (promoCode === '1MES') {
+      // The 1MES Stripe coupon is restricted to specific products, but we use
+      // dynamic price_data (inline products). Create an ad-hoc unrestricted
+      // coupon so the discount applies regardless of product.
+      try {
+        const coupon = await stripe.coupons.create({
+          amount_off: 1901,   // 29.00 − 19.01 = 9.99 EUR first month
+          currency: 'eur',
+          duration: 'once',
+          name: '1MES First Month',
+        });
+        adHocCouponId = coupon.id;
+        console.log('[create-checkout] Created ad-hoc coupon for 1MES:', adHocCouponId);
+      } catch (err) {
+        console.error('[create-checkout] Failed to create ad-hoc coupon for 1MES:', err);
+      }
+    } else if (promoCode) {
       try {
         const promoCodes = await stripe.promotionCodes.list({
           code: promoCode,
@@ -128,10 +146,12 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email!,
-      // Use discounts if promo code found, otherwise allow manual entry
-      ...(promotionCodeId 
-        ? { discounts: [{ promotion_code: promotionCodeId }] }
-        : { allow_promotion_codes: true }
+      // Use discounts if promo code / ad-hoc coupon found, otherwise allow manual entry
+      ...(adHocCouponId
+        ? { discounts: [{ coupon: adHocCouponId }] }
+        : promotionCodeId 
+          ? { discounts: [{ promotion_code: promotionCodeId }] }
+          : { allow_promotion_codes: true }
       ),
       tax_id_collection: { enabled: true },
       billing_address_collection: 'required',

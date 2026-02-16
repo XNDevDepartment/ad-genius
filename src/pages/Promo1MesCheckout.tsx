@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { trackInitiateCheckout } from "@/lib/metaPixel";
+import { toast } from "sonner";
 
 const Promo1MesCheckout = () => {
   const navigate = useNavigate();
@@ -37,6 +38,7 @@ const Promo1MesCheckout = () => {
         }
       } catch (err) {
         console.error('[Promo1MesCheckout] Error:', err);
+        toast.error('Erro ao iniciar checkout. Tenta novamente.');
         setError('Erro ao iniciar checkout. Tenta novamente.');
       }
     };

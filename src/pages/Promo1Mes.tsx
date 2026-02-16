@@ -7,6 +7,7 @@ import { Check, Sparkles, Image, Video, Palette, ShoppingBag, ArrowLeft } from "
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { trackInitiateCheckout, trackViewContent } from "@/lib/metaPixel";
+import { toast } from "sonner";
 
 const Promo1Mes = () => {
   const navigate = useNavigate();
@@ -49,6 +50,7 @@ const Promo1Mes = () => {
       }
     } catch (error) {
       console.error('[Promo1Mes] Error creating checkout:', error);
+      toast.error('Erro ao processar o checkout. Tenta novamente.');
       setIsProcessing(false);
     }
   };
