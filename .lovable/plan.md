@@ -1,28 +1,33 @@
 
 
-# Fix Product Views: Use Hero Image as Reference + Reorder Views
+# Fix: 1MES Promo Code Not Applying at Checkout
 
-## Problem
+## Root Cause
 
-The prompts treat the input as a raw "uploaded product" and ask Gemini to create new backgrounds from scratch. But the input IS already the hero image (bulk background result) with its styled background. Gemini ignores the existing background and invents a new one.
+The `1MES` coupon in Stripe is restricted to specific Products ("Starter" and "Starter Anual"). However, the checkout creates **inline dynamic products** via `price_data`, which Stripe treats as a different product. Stripe silently rejects the coupon, the edge function throws an error, and the frontend swallows it with no user feedback.
 
-## Changes
+## Solution
 
-### File: `supabase/functions/bulk-background/index.ts` (lines 373-388)
+### 1. Edge Function (`supabase/functions/create-checkout/index.ts`)
 
-**1. Reorder processing: Macro, Angle, then Environment last**
+For the `1MES` promo code specifically, bypass the restricted promotion code and instead create a **one-time ad-hoc coupon** via the Stripe API that has no product restriction:
 
-Sort `selViews` into fixed order `['macro', 'angle', 'environment']` before the loop.
+```
+if promoCode === '1MES':
+  - Create coupon: stripe.coupons.create({ amount_off: 1901, currency: 'eur', duration: 'once', name: '1MES First Month' })
+  - Use discounts: [{ coupon: newCoupon.id }] instead of promotion_code
+```
 
-**2. Rewrite prompts to treat the input as a reference hero image**
+This deducts 19.01 EUR from the 29.00 EUR first charge, resulting in exactly 9.99 EUR. Subsequent months charge the full 29.00 EUR automatically since the coupon duration is "once".
 
-Current prompts say "uploaded product" which causes Gemini to discard the background. New prompts will explicitly instruct Gemini to use the provided image as the styled reference and only change the camera perspective:
+### 2. Frontend Error Feedback
 
-- **Macro**: "Using this product photo as reference, create a close-up macro shot of the same product in the same setting. Focus on material quality, texture and finish details. Maintain the same background, lighting and color palette. Shallow depth of field, ultra-sharp on product surface."
-- **Angle**: "Using this product photo as reference, create a 3/4 angled catalog view of the same product. Camera slightly above, 25-35 degree rotation. Keep the exact same background, lighting and environment. Soft studio lighting with realistic contact shadows. No text."
-- **Environment**: "Using this product photo as reference, create a wide lifestyle shot showing the same product in a premium, realistic environment matching the image style. Soft natural lighting, sophisticated professional photography. Product is the clear focal point. Maintain the same product proportions, textures and branding. No people, no text overlays."
+**`src/pages/Promo1Mes.tsx`** and **`src/pages/Promo1MesCheckout.tsx`**:
+- Import `toast` from `sonner`
+- Show a toast error in catch blocks so users see feedback instead of a silent failure
 
-**3. No frontend changes needed**
-
-The modal, API client, and page remain unchanged -- this is purely a backend prompt and ordering fix.
+### Files Changed
+- `supabase/functions/create-checkout/index.ts` -- ad-hoc coupon for 1MES
+- `src/pages/Promo1Mes.tsx` -- error toast
+- `src/pages/Promo1MesCheckout.tsx` -- error toast
 
