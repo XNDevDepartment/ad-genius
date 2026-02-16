@@ -15,6 +15,7 @@ interface ProductViewsModalProps {
   onClose: () => void;
   resultId: string;
   resultUrl: string;
+  aspectRatio?: string;
 }
 
 const VIEW_OPTIONS = [
@@ -25,7 +26,7 @@ const VIEW_OPTIONS = [
 
 type ViewType = typeof VIEW_OPTIONS[number]["id"];
 
-export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl }: ProductViewsModalProps) => {
+export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspectRatio }: ProductViewsModalProps) => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { getRemainingCredits, refreshCredits } = useCredits();
@@ -104,7 +105,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl }: Prod
     if (selectedViews.size === 0) return;
     setLoading(true);
     try {
-      const { productViewsId } = await productViewsApi.create(resultId, Array.from(selectedViews));
+      const { productViewsId } = await productViewsApi.create(resultId, Array.from(selectedViews), aspectRatio);
       const { productViews: created } = await productViewsApi.get(productViewsId);
       if (isMountedRef.current) {
         setProductViews(created);
