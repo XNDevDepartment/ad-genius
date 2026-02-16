@@ -4,6 +4,7 @@ export interface SettingsPayload {
   outputFormat?: 'png' | 'webp';
   quality?: 'high' | 'medium';
   customPrompt?: string;
+  editRequest?: string;
   imageSize?: string;
   aspectRatio?: string;
 }
@@ -69,17 +70,18 @@ async function fetchImageAsBase64(url: string): Promise<string> {
   return btoa(b);
 }
 
-function buildPrompt(presetId: string | null, hasCustomBg: boolean, customPrompt?: string, isFollowUp = false): string {
+function buildPrompt(presetId: string | null, hasCustomBg: boolean, customPrompt?: string, isFollowUp = false, editRequest?: string): string {
   let p = BASE_PROMPT;
   if (customPrompt) {
     p += `\n\nCena pretendida: ${customPrompt}`;
     if (isFollowUp) p += `\n\n${FOLLOWUP_PROMPT}`;
-    return p;
-  }
-  if (hasCustomBg || isFollowUp) {
+  } else if (hasCustomBg || isFollowUp) {
     p += isFollowUp ? `\n\n${FOLLOWUP_PROMPT}` : "\n\nNOTA: Use a segunda imagem fornecida como fundo.";
   } else if (presetId && PRESET_HINTS[presetId]) {
     p += `\n\n${PRESET_HINTS[presetId]}`;
+  }
+  if (editRequest) {
+    p += `\n\nAdditional editing instructions: ${editRequest}`;
   }
   return p;
 }
@@ -157,7 +159,7 @@ async function processSingleResult(result: BJResult, job: BJJob, ac: any, bgB64:
   try {
     await (ac.from("bulk_background_results") as any).update({ status: "processing", last_attempt_at: new Date().toISOString(), retry_count: result.retry_count + 1 }).eq("id", result.id);
     const productB64 = await fetchImageAsBase64(result.source_image_url);
-    const prompt = buildPrompt(job.background_preset_id, !!bgB64, (job.settings as any)?.customPrompt, isFollowUp);
+    const prompt = buildPrompt(job.background_preset_id, !!bgB64, (job.settings as any)?.customPrompt, isFollowUp, (job.settings as any)?.editRequest);
     const img = await generateImageWithRetry(productB64, bgB64, prompt, 3, job.settings as any);
     if (!img) throw new Error("Image generation failed after all retries");
     const sp = `${job.user_id}/${job.id}/${result.image_index}-result.webp`;
