@@ -1,30 +1,34 @@
 
-# Add Edit Request Input to Bulk Background Upload Section
 
-## What This Does
-Adds a text input field below the uploaded product images in the Bulk Background panel. This field lets you type editing instructions like "remove the label", "remove the box", "clean up the background", etc. These instructions will be passed along to the AI during generation.
+# Integrate Edit Request into AI Prompt
 
-## Changes
+## What needs to change
 
-### 1. Bulk Background Page (`src/pages/BulkBackground.tsx`)
-- Add a new state variable `editRequest` for the text input
-- Add a `Textarea` input below the uploaded images count (inside the Upload Products card, visible only when images are uploaded)
-- Pass `editRequest` into the `createJob` settings so it reaches the edge function
-- Clear `editRequest` on "New Batch"
+The `editRequest` field is saved in job settings but the edge function's prompt builder doesn't use it. We need to:
 
-### 2. Translation Files (all 5 languages)
-Add new keys under `bulkBackground.uploadProducts`:
+### 1. Update the `SettingsPayload` interface (line 3-9)
 
-| Key | EN | PT | ES | FR | DE |
-|---|---|---|---|---|---|
-| `editRequestLabel` | Edit requests | Pedidos de edicao | Solicitudes de edicion | Demandes de modification | Bearbeitungswunsche |
-| `editRequestPlaceholder` | e.g. "Remove the label", "Clean up shadows"... | ex: "Remover a etiqueta", "Limpar sombras"... | ej: "Quitar la etiqueta", "Limpiar sombras"... | ex: "Retirer l'etiquette", "Nettoyer les ombres"... | z.B. "Etikett entfernen", "Schatten bereinigen"... |
-| `editRequestHint` | These instructions will be applied to all images | Estas instrucoes serao aplicadas a todas as imagens | Estas instrucciones se aplicaran a todas las imagenes | Ces instructions seront appliquees a toutes les images | Diese Anweisungen werden auf alle Bilder angewendet |
+Add `editRequest?: string` to the interface.
+
+### 2. Update `buildPrompt` function (line 72-85)
+
+Append the edit request text to the prompt when present. After the existing prompt is built, add something like:
+
+```
+if (editRequest) {
+  p += `\n\nAdditional editing instructions: ${editRequest}`;
+}
+```
+
+### 3. Update `processSingleResult` (line 160)
+
+Pass the `editRequest` from `job.settings` into `buildPrompt`.
+
+The simplest approach: extract `editRequest` from settings alongside `customPrompt` and pass it as a new parameter to `buildPrompt`.
 
 ### Files Modified
-- `src/pages/BulkBackground.tsx`
-- `src/i18n/locales/en.json`
-- `src/i18n/locales/pt.json`
-- `src/i18n/locales/es.json`
-- `src/i18n/locales/fr.json`
-- `src/i18n/locales/de.json`
+- `supabase/functions/bulk-background/index.ts` (interface, buildPrompt, processSingleResult call)
+
+### No frontend changes needed
+The frontend already sends `editRequest` in the settings payload correctly.
+
