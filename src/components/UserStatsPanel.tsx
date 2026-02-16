@@ -59,7 +59,7 @@ export const UserStatsPanel = () => {
     : 0;
 
   return (
-    <Card className="bg-gradient-card border-border/50">
+    <Card className="hidden lg:block bg-gradient-card border-border/50">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-primary" />

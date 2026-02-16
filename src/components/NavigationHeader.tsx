@@ -5,9 +5,10 @@ import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from "react-i18next";
-import { LogIn, Sparkles } from "lucide-react";
+import { LogIn, Sparkles, Coins } from "lucide-react";
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSelector } from '@/components/LanguageSelector';
+import { useCredits } from '@/hooks/useCredits';
 
 const NavigationHeader = () => {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
@@ -78,11 +79,22 @@ const NavigationHeader = () => {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="flex items-center gap-1"
         >
+          <CreditsBadge />
           <ThemeToggle variant="ghost" size="icon" />
           <LanguageSelector variant="ghost" size="icon" />
         </motion.div>
       )}
     </header>
+  );
+};
+
+const CreditsBadge = () => {
+  const { remainingCredits } = useCredits();
+  return (
+    <div className="flex items-center gap-1 bg-muted rounded-full px-2.5 py-1">
+      <Coins className="h-3.5 w-3.5 text-primary" />
+      <span className="text-xs font-semibold text-foreground">{remainingCredits}</span>
+    </div>
   );
 };
 
