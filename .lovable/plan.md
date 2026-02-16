@@ -1,95 +1,47 @@
 
-# Product Views: Aspect Ratio, Library, and Admin Panel
+# Remake Mobile Home Screen
 
 ## Overview
-Three issues need to be addressed with the "Create Photoshoot" (Product Views) feature in the Bulk Background module:
+Reorganize the authenticated mobile home screen to be more action-oriented: show credits in the top bar, replace the activity/stats section with the first 4 module cards, move the promo offer above the hero section, and add a "Discover Possibilities" button linking to the full module selection page.
 
-1. **Photoshoot images must use the hero image's aspect ratio** (currently hardcoded to "1:1")
-2. **Photoshoot results must appear in the Library panel**
-3. **Photoshoot results must be visible in the Admin panel**
+## Changes
 
----
+### 1. NavigationHeader (`src/components/NavigationHeader.tsx`)
+- When the user is logged in, add a **credits badge** next to the ThemeToggle showing remaining credits (e.g., a small pill with a coin icon and the number)
+- Import `useCredits` hook to get `remainingCredits`
 
-## 1. Use Hero Image Aspect Ratio for Product Views
+### 2. Index Page - Mobile Layout (`src/pages/Index.tsx`)
+Restructure the mobile-only authenticated layout (the section inside `<OnboardingGuard>`):
 
-**Problem:** In `supabase/functions/bulk-background/index.ts` (line 392), the `processProductViews` action hardcodes `aspectRatio: "1:1"` for all product view generations. It should instead use the aspect ratio from the parent bulk background job's settings.
+**New order (mobile only, using `lg:hidden`):**
+1. **Promo offer banner** (moved from below stats to the very top, before the hero)
+2. **Hero "Create Images" section** (the gradient card with title + CTA button, keep as-is)
+3. **First 4 module cards** in a 2x2 grid (replacing the UserStatsPanel which only showed credits on mobile anyway -- credits now in header)
+4. **"Discover Possibilities" button** linking to `/create` (the full ModuleSelection page)
+5. **EmbeddedLibrary** (recent images, unchanged)
 
-**Solution:**
+Desktop layout remains unchanged.
 
-### Frontend: Pass aspect ratio when creating product views
+### 3. UserStatsPanel (`src/components/UserStatsPanel.tsx`)
+- Hide the entire component on mobile (`hidden lg:block` wrapper) since credits move to the header and the stats grid was already hidden on mobile
 
-**File:** `src/api/product-views-api.ts`
-- Update the `create` method to accept an optional `aspectRatio` parameter and send it in the payload.
-
-**File:** `src/components/ProductViewsModal.tsx`
-- Accept an optional `aspectRatio` prop.
-- Pass it through to `productViewsApi.create()`.
-
-**File:** `src/pages/BulkBackground.tsx`
-- When rendering the `ProductViewsModal`, pass the current `aspectRatio` from the job settings.
-
-### Backend: Use the passed aspect ratio
-
-**File:** `supabase/functions/bulk-background/index.ts`
-- In the `createProductViews` action: read `aspectRatio` from the request body and store it in `metadata` on the product views record.
-- In the `processProductViews` action (line 392): read the aspect ratio from `pv.metadata.aspectRatio` instead of hardcoding `"1:1"`.
-
----
-
-## 2. Show Product View Images in the Library Panel
-
-**Problem:** `useLibraryImages.ts` queries multiple tables (ugc_images, outfit_swap_results, bulk_background_results, etc.) but does NOT query `bulk_background_product_views`.
-
-**Solution:**
-
-**File:** `src/hooks/useLibraryImages.ts`
-- Add a new query for `bulk_background_product_views` with `status = 'completed'`.
-- Query it in the `bulk_background` filter and in the `all` filter.
-- Normalize the results into `LibraryImage` objects. Each completed view (macro, angle, environment) becomes a separate library entry, similar to how photoshoot angles are handled.
-- Add `'product_views'` to the `source_type` union.
-- Include product view images in the combined/sorted results array.
-- Add product view deletion support in `deleteImage`.
-
----
-
-## 3. Show Product View Images in the Admin Panel
-
-**Problem:** `AdminImagesList` only queries `generated_images` and `ugc_images`. It doesn't include product views.
-
-**Solution:**
-
-**File:** `src/components/admin/AdminImagesList.tsx`
-- Add a query for `bulk_background_product_views` (all users, since admin).
-- Add a new filter option `'product_views'` to the filter dropdown.
-- Normalize each completed view (macro/angle/environment) into the `GeneratedImage` format for display.
-- Join with profiles for user info.
-
----
-
-## Files Modified
+### Files Modified
 
 | File | Change |
 |---|---|
-| `supabase/functions/bulk-background/index.ts` | Read aspectRatio from request/metadata instead of hardcoded "1:1" |
-| `src/api/product-views-api.ts` | Add aspectRatio parameter to create method |
-| `src/components/ProductViewsModal.tsx` | Accept and pass aspectRatio prop |
-| `src/pages/BulkBackground.tsx` | Pass aspectRatio to ProductViewsModal |
-| `src/hooks/useLibraryImages.ts` | Add bulk_background_product_views query and normalization |
-| `src/components/admin/AdminImagesList.tsx` | Add product views query and filter option |
+| `src/components/NavigationHeader.tsx` | Add credits badge next to theme toggle for authenticated users |
+| `src/pages/Index.tsx` | Reorder mobile layout: promo on top, hero, module grid (first 4), discover button, library |
+| `src/components/UserStatsPanel.tsx` | Hide on mobile with `hidden lg:block` |
 
-## Technical Details
+### Technical Details
 
-### Aspect Ratio Flow
-The aspect ratio is already stored in `bulk_background_jobs.settings.aspectRatio`. The flow will be:
-1. Frontend reads aspectRatio from job settings and passes it to the create API call
-2. Edge function stores it in `metadata.aspectRatio` on the product views record
-3. During processing, the function reads `pv.metadata.aspectRatio` and uses it in the Gemini `imageConfig`
+**Credits in header**: Use `useCredits()` hook to get `getRemainingCredits()`. Display as a small badge like:
+```
+[Coin icon] 42
+```
 
-### Library Normalization
-Each product view record can have up to 3 URLs (macro_url, angle_url, environment_url). Each non-null URL will become a separate `LibraryImage` entry with:
-- `source_type: 'product_views'`
-- A descriptive prompt like "Product View - Macro"
-- The view's URL as the image URL
+**Module cards on home**: Import the same workflow data from ModuleSelection (the first 4 non-disabled items: UGC Creator, Video Creator, Outfit Swap, Bulk Background). Render them in a compact 2-column grid with icon + title only (matching the existing mobile card style from ModuleSelection).
 
-### Admin Panel
-Product views will appear as a new filter option alongside "All", "Generated", and "UGC". Each view image will be shown with the user profile, creation date, and view type label.
+**"Discover Possibilities" button**: A full-width outlined button below the module grid that navigates to `/create`.
+
+**Promo banner**: The existing free-tier promo or "get more credits" button, moved above the hero gradient card on mobile only.
