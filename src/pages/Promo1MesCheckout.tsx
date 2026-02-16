@@ -15,7 +15,7 @@ const Promo1MesCheckout = () => {
 
     if (!user) {
       sessionStorage.setItem('promo_redirect', '/promo/1mes/checkout');
-      navigate('/account');
+      navigate('/signin');
       return;
     }
 

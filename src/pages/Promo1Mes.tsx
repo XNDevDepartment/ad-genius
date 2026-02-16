@@ -27,7 +27,7 @@ const Promo1Mes = () => {
 
     if (!user) {
       sessionStorage.setItem('promo_redirect', '/promo/1mes');
-      navigate('/account');
+      navigate('/signin');
       return;
     }
 

@@ -4,21 +4,28 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEffect } from 'react';
 import { trackSignUp } from '@/lib/metaPixel';
 
+const getRedirectPath = () => {
+  const promo = sessionStorage.getItem('promo_redirect');
+  if (promo) {
+    sessionStorage.removeItem('promo_redirect');
+    return promo;
+  }
+  return '/';
+};
+
 const SignUp = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
   useEffect(() => {
     if (user) {
-      navigate('/');
+      navigate(getRedirectPath());
     }
   }, [user, navigate]);
 
   const handleSuccess = () => {
-    // Track the sign-up event in Meta Pixel
     trackSignUp();
-    // Always redirect to home after signup (auto-login)
-    navigate('/');
+    navigate(getRedirectPath());
   };
 
   return (
