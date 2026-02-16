@@ -146,6 +146,7 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email!,
+      ...(customerId ? { customer_update: { name: 'auto' } } : {}),
       // Use discounts if promo code / ad-hoc coupon found, otherwise allow manual entry
       ...(adHocCouponId
         ? { discounts: [{ coupon: adHocCouponId }] }
