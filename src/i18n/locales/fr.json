@@ -2264,7 +2264,10 @@
     "uploadProducts": {
       "title": "Téléchargez vos Produits",
       "subtitle": "Téléchargez jusqu'à {{max}} images de produit",
-      "imagesUploaded": "{{count}} images téléchargées"
+      "imagesUploaded": "{{count}} images téléchargées",
+      "editRequestLabel": "Demandes de modification",
+      "editRequestPlaceholder": "ex: \"Retirer l'étiquette\", \"Nettoyer les ombres\"...",
+      "editRequestHint": "Ces instructions seront appliquées à toutes les images"
     },
     "selectBackground": {
       "title": "Choisissez votre Fond",

@@ -661,7 +661,10 @@
     "uploadProducts": {
       "title": "Upload Your Products",
       "subtitle": "Upload up to {{max}} product images",
-      "imagesUploaded": "{{count}} images uploaded"
+      "imagesUploaded": "{{count}} images uploaded",
+      "editRequestLabel": "Edit requests",
+      "editRequestPlaceholder": "e.g. \"Remove the label\", \"Clean up shadows\"...",
+      "editRequestHint": "These instructions will be applied to all images"
     },
     "selectBackground": {
       "title": "Choose Your Background",
