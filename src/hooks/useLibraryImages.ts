@@ -19,7 +19,7 @@ export interface LibraryImage {
   desiredAudience?: string;
   prodSpecs?: string;
   source_image_ids?: string[];
-  source_type?: 'ugc' | 'outfit_swap' | 'photoshoot' | 'ecommerce' | 'bulk_background';
+  source_type?: 'ugc' | 'outfit_swap' | 'photoshoot' | 'ecommerce' | 'bulk_background' | 'product_views';
   photoshoot_id?: string;
   angle_type?: 'front' | 'three_quarter' | 'back' | 'side';
   style_prompt?: string;
@@ -91,6 +91,7 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       let photoshootResult = { data: null as any[] | null, error: null as any };
       let ecommerceResult = { data: null as any[] | null, error: null as any };
       let bulkBgResult = { data: null as any[] | null, error: null as any };
+      let productViewsResult = { data: null as any[] | null, error: null as any };
 
       if (filter === 'ugc') {
         // Only UGC — pagination is accurate
@@ -128,18 +129,29 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
         photoshootResult = psRes;
         ecommerceResult = ecRes;
       } else if (filter === 'bulk_background') {
-        // Only bulk background — pagination is accurate
-        bulkBgResult = await supabase
-          .from('bulk_background_results')
-          .select('*, bulk_background_jobs!inner(user_id)')
-          .eq('bulk_background_jobs.user_id', user.id)
-          .eq('status', 'completed')
-          .not('result_url', 'is', null)
-          .order('created_at', { ascending: false })
-          .range(offset, offset + limit - 1);
+        // Bulk background + product views — pagination is accurate
+        const [bgRes, pvRes] = await Promise.all([
+          supabase
+            .from('bulk_background_results')
+            .select('*, bulk_background_jobs!inner(user_id)')
+            .eq('bulk_background_jobs.user_id', user.id)
+            .eq('status', 'completed')
+            .not('result_url', 'is', null)
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1),
+          supabase
+            .from('bulk_background_product_views')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('status', 'completed')
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1),
+        ]);
+        bulkBgResult = bgRes;
+        productViewsResult = pvRes;
       } else {
         // "all" — query all tables with the same range (approximate pagination)
-        const [ugcRes, osRes, psRes, ecRes, bgRes] = await Promise.all([
+        const [ugcRes, osRes, psRes, ecRes, bgRes, pvRes] = await Promise.all([
           supabase
             .from('ugc_images')
             .select('*, image_jobs(desiredAudience, prodSpecs, source_image_ids, settings)')
@@ -174,12 +186,20 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
             .not('result_url', 'is', null)
             .order('created_at', { ascending: false })
             .range(offset, offset + limit - 1),
+          supabase
+            .from('bulk_background_product_views')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('status', 'completed')
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1),
         ]);
         ugcResult = ugcRes;
         outfitSwapResult = osRes;
         photoshootResult = psRes;
         ecommerceResult = ecRes;
         bulkBgResult = bgRes;
+        productViewsResult = pvRes;
       }
 
       // Check for errors
@@ -188,6 +208,7 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       if (photoshootResult.error) throw photoshootResult.error;
       if (ecommerceResult.error) throw ecommerceResult.error;
       if (bulkBgResult.error) throw bulkBgResult.error;
+      if (productViewsResult.error) throw productViewsResult.error;
 
       // Normalize UGC images
       const ugcImages: LibraryImage[] = (ugcResult.data || []).map(img => {
@@ -278,13 +299,39 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
         source_image_id: result.source_image_id
       }));
 
+      // Normalize product views images
+      const productViewsImages: LibraryImage[] = (productViewsResult.data || []).flatMap((pv: any) => {
+        const views: LibraryImage[] = [];
+        const viewTypes = [
+          { key: 'macro', label: 'Product View - Macro' },
+          { key: 'environment', label: 'Product View - Environment' },
+          { key: 'angle', label: 'Product View - 3/4 Angle' },
+        ];
+        for (const vt of viewTypes) {
+          const url = pv[`${vt.key}_url`];
+          if (url) {
+            views.push({
+              id: `${pv.id}_${vt.key}`,
+              url,
+              prompt: vt.label,
+              created_at: pv.created_at,
+              settings: { size: '1024x1024', quality: 'high', numberOfImages: 1, format: 'webp' },
+              source_type: 'product_views' as const,
+              original_result_id: pv.result_id
+            });
+          }
+        }
+        return views;
+      });
+
       // Combine and sort by creation date
       const processedImages = [
         ...ugcImages, 
         ...outfitSwapImages, 
         ...photoshootImages, 
         ...ecommerceImages,
-        ...bulkBgImages
+        ...bulkBgImages,
+        ...productViewsImages
       ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       console.log('[useLibraryImages] Processed images:', { 
@@ -293,6 +340,7 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
         photoshoot: photoshootImages.length,
         ecommerce: ecommerceImages.length,
         bulkBg: bulkBgImages.length,
+        productViews: productViewsImages.length,
         total: processedImages.length 
       });
 

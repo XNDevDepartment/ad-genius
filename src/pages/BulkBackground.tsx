@@ -607,6 +607,7 @@ const BulkBackground = () => {
             onClose={() => setPhotoshootModal(null)}
             resultId={photoshootModal.resultId}
             resultUrl={photoshootModal.resultUrl}
+            aspectRatio={(job?.settings as any)?.aspectRatio || aspectRatio}
           />
         )}
 

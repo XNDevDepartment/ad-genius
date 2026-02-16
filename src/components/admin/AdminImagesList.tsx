@@ -29,7 +29,7 @@ interface GeneratedImage {
   created_at: string;
   user_id: string;
   settings?: any;
-  source: 'generated_images' | 'ugc_images';
+  source: 'generated_images' | 'ugc_images' | 'product_views';
   job_id?: string;
   public_showcase?: boolean;
   profiles: {
@@ -41,7 +41,7 @@ interface GeneratedImage {
 export const AdminImagesList = () => {
   const [images, setImages] = useState<GeneratedImage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'generated_images' | 'ugc_images'>('all');
+  const [filter, setFilter] = useState<'all' | 'generated_images' | 'ugc_images' | 'product_views'>('all');
   const [downloadingAll, setDownloadingAll] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
@@ -53,8 +53,8 @@ export const AdminImagesList = () => {
 
   const fetchImages = async () => {
     try {
-      // Fetch from both tables
-      const [generatedResponse, ugcResponse] = await Promise.all([
+      // Fetch from all tables
+      const [generatedResponse, ugcResponse, pvResponse] = await Promise.all([
         supabase
           .from('generated_images')
           .select('*')
@@ -62,11 +62,17 @@ export const AdminImagesList = () => {
         supabase
           .from('ugc_images')
           .select('*')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('bulk_background_product_views')
+          .select('*')
+          .eq('status', 'completed')
           .order('created_at', { ascending: false })
       ]);
 
       if (generatedResponse.error) throw generatedResponse.error;
       if (ugcResponse.error) throw ugcResponse.error;
+      if (pvResponse.error) throw pvResponse.error;
 
       // Add source identifier to each image
       const generatedImages = (generatedResponse.data || []).map(img => ({
@@ -79,8 +85,32 @@ export const AdminImagesList = () => {
         source: 'ugc_images' as const
       }));
 
+      // Normalize product views - each view URL becomes a separate entry
+      const pvImages = (pvResponse.data || []).flatMap((pv: any) => {
+        const views: any[] = [];
+        const viewTypes = [
+          { key: 'macro', label: 'Product View - Macro' },
+          { key: 'environment', label: 'Product View - Environment' },
+          { key: 'angle', label: 'Product View - 3/4 Angle' },
+        ];
+        for (const vt of viewTypes) {
+          const url = pv[`${vt.key}_url`];
+          if (url) {
+            views.push({
+              id: `${pv.id}_${vt.key}`,
+              prompt: vt.label,
+              public_url: url,
+              created_at: pv.created_at,
+              user_id: pv.user_id,
+              source: 'product_views' as const,
+            });
+          }
+        }
+        return views;
+      });
+
       // Combine and sort by created_at
-      const allImages = [...generatedImages, ...ugcImages].sort(
+      const allImages = [...generatedImages, ...ugcImages, ...pvImages].sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
 
@@ -293,8 +323,8 @@ export const AdminImagesList = () => {
       label: 'Type',
       sortable: true,
       render: (image: GeneratedImage) => (
-        <Badge variant={image.source === 'generated_images' ? 'default' : 'secondary'}>
-          {image.source === 'generated_images' ? 'Generated' : 'UGC'}
+        <Badge variant={image.source === 'generated_images' ? 'default' : image.source === 'product_views' ? 'outline' : 'secondary'}>
+          {image.source === 'generated_images' ? 'Generated' : image.source === 'product_views' ? 'Product View' : 'UGC'}
         </Badge>
       ),
     },
@@ -352,6 +382,7 @@ export const AdminImagesList = () => {
                   <SelectItem value="all">All Images</SelectItem>
                   <SelectItem value="generated_images">Generated</SelectItem>
                   <SelectItem value="ugc_images">UGC</SelectItem>
+                  <SelectItem value="product_views">Product Views</SelectItem>
                 </SelectContent>
               </Select>
               
@@ -391,7 +422,8 @@ export const AdminImagesList = () => {
           </div>
           <p className="text-sm text-muted-foreground mt-2">
             {images.filter(img => img.source === 'generated_images').length} generated,{' '}
-            {images.filter(img => img.source === 'ugc_images').length} UGC
+            {images.filter(img => img.source === 'ugc_images').length} UGC,{' '}
+            {images.filter(img => img.source === 'product_views').length} product views
           </p>
         </CardHeader>
         <CardContent>

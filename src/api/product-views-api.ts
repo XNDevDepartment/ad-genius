@@ -42,8 +42,8 @@ async function callFunction(action: string, payload: Record<string, unknown> = {
 }
 
 export const productViewsApi = {
-  async create(resultId: string, selectedViews: string[]): Promise<{ productViewsId: string }> {
-    return callFunction('createProductViews', { resultId, selectedViews }) as Promise<{ productViewsId: string }>;
+  async create(resultId: string, selectedViews: string[], aspectRatio?: string): Promise<{ productViewsId: string }> {
+    return callFunction('createProductViews', { resultId, selectedViews, aspectRatio }) as Promise<{ productViewsId: string }>;
   },
 
   async get(productViewsId: string): Promise<{ productViews: ProductViews }> {

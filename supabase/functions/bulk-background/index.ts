@@ -337,7 +337,7 @@ Deno.serve(async (req: Request) => {
 
       case "createProductViews": {
         if (!userId) return errorResponse("Unauthorized", 401);
-        const { resultId, selectedViews } = body;
+        const { resultId, selectedViews, aspectRatio: pvAspectRatio } = body;
         if (!resultId) return errorResponse("Missing resultId");
         if (!selectedViews?.length) return errorResponse("No views selected");
         const validV = ['macro', 'environment', 'angle'];
@@ -356,7 +356,7 @@ Deno.serve(async (req: Request) => {
           const { error: dErr } = await ac.rpc("deduct_user_credits", { p_user_id: userId, p_amount: cost, p_reason: "bulk_background_product_views" });
           if (dErr) return errorResponse("Failed to deduct credits", 500);
         }
-        const { data: pvRec, error: pvErr } = await ac.from("bulk_background_product_views").insert({ user_id: userId, result_id: resultId, status: "queued", selected_views: views, progress: 0 }).select().single();
+        const { data: pvRec, error: pvErr } = await ac.from("bulk_background_product_views").insert({ user_id: userId, result_id: resultId, status: "queued", selected_views: views, progress: 0, metadata: { aspectRatio: pvAspectRatio || "1:1" } }).select().single();
         if (pvErr || !pvRec) { if (!adm) await ac.rpc("refund_user_credits", { p_user_id: userId, p_amount: cost, p_reason: "bulk_background_product_views_creation_failed" }); return errorResponse("Failed to create product views record", 500); }
         fetch(`${SUPABASE_URL}/functions/v1/bulk-background`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` }, body: JSON.stringify({ action: "processProductViews", productViewsId: pvRec.id }) }).catch(e => console.error("PV trigger error:", e));
         return json({ productViewsId: pvRec.id });
@@ -389,7 +389,8 @@ Deno.serve(async (req: Request) => {
             const prompt = VP[vt];
             if (!prompt) { fail++; continue; }
             const parts = [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: srcB64 } }];
-            const res = await fetch(GEMINI_ENDPOINT, { method: "POST", headers: { "x-goog-api-key": GOOGLE_AI_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: "1:1" } } }) });
+            const pvAR = (pv.metadata as any)?.aspectRatio || "1:1";
+            const res = await fetch(GEMINI_ENDPOINT, { method: "POST", headers: { "x-goog-api-key": GOOGLE_AI_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: pvAR } } }) });
             if (!res.ok) { console.error(`PV ${vt} failed:`, await res.text()); fail++; continue; }
             const img = extractBase64Image(await res.json());
             if (!img) { fail++; continue; }
