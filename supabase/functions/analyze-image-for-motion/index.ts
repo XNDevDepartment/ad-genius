@@ -12,30 +12,21 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const serviceClient = () => createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 // Fallback prompt if database is unavailable
-const FALLBACK_MOTION_PROMPT = `Analyze this UGC image and describe natural motion that would make it feel like authentic social media content.
+const FALLBACK_MOTION_PROMPT = `You are looking at the first frame of a UGC video. Describe the motion that plays out from this moment — as if a real person is casually showing off the most prominent product in the image.
 
-Think like a content creator holding a phone camera. Suggest simple, realistic movements:
-- Handheld camera shake or gentle pans
-- Natural product handling (picking up, rotating, setting down)
-- Organic environmental motion (slight wind, natural lighting shifts)
-- Minimal, purposeful movements that feel unscripted
+Keep it human and unpolished:
+- Subtle handheld sway or slow natural drift
+- Real hands naturally interacting with the product
+- Small, unscripted-feeling gestures
+- Organic environment (soft breeze, natural light)
 
-Avoid:
-- Overly smooth or cinematic movements
-- Complex effects or transitions
-- Anything that looks professionally produced
-- Fast or exaggerated motions
-- Creating new items of nowhere
-- Avoid unrealistic movement
+Never suggest:
+- Cinematic or gimbal-smooth movement
+- Hands/objects appearing from off-screen
+- Fast, exaggerated, or looping motions
+- Anything that looks staged or produced
 
-Keep it raw and relatable - like someone genuinely showing off a product they love.
-
-The image you are watching represents the beggining frame of the video. The idea is to promote the product that has more relevance on the picture. 
-The motion prompt will generate a video that will be used for UGC purposes. You must suggest human behaviour. For example: "Appear a hand and rotate the product" is not a human behaviour.
-
-###IMPORTANT: Keep it natural, no brutal pans. The image you'll find will be the initial frame of the video. Start from there.
-
-Return ONLY a simple, conversational motion description (max 350 characters). No technical jargon, just natural language describing what should move and how. Create the final prompt in this language: `;
+This description feeds directly into a video generation model. Return ONLY a plain-language motion description — max 350 characters, no bullet points, no preamble. Write it in the language we were asked in.`;
 
 // Helper: Get prompt from database with fallback
 async function getPrompt(
