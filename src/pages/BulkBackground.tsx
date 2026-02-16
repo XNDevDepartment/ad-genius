@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Download, Loader2, X, Eye, Camera, Sparkles } from "lucide-react";
+import { ArrowLeft, Download, Loader2, X, Eye, Camera, Sparkles, Pencil } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,8 @@ import { ImagePreviewModal } from "@/components/ImagePreviewModal";
 import { Progress } from "@/components/ui/progress";
 import MultiImageUploader from "@/components/MultiImageUploader";
 import BackgroundPicker from "@/components/bulk-background/BackgroundPicker";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { backgroundPresets } from "@/data/background-presets";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
@@ -63,6 +65,7 @@ const BulkBackground = () => {
   const [processingStarted, setProcessingStarted] = useState(false);
   const [imageSize, setImageSize] = useState<'1K' | '2K' | '4K'>('1K');
   const [aspectRatio, setAspectRatio] = useState<string>('1:1');
+  const [editRequest, setEditRequest] = useState("");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [photoshootModal, setPhotoshootModal] = useState<{ resultId: string; resultUrl: string } | null>(null);
 
@@ -187,7 +190,7 @@ const BulkBackground = () => {
         backgroundType: customBackground ? 'custom' : 'preset',
         backgroundPresetId: selectedPreset || undefined,
         backgroundImageUrl: customBgUrl,
-        settings: { outputFormat: 'webp', quality: 'high', customPrompt: backgroundPrompt || undefined, imageSize, aspectRatio }
+        settings: { outputFormat: 'webp', quality: 'high', customPrompt: backgroundPrompt || undefined, imageSize, aspectRatio, editRequest: editRequest || undefined }
       });
 
       if (result) await refreshCredits();
@@ -232,6 +235,7 @@ const BulkBackground = () => {
     setCustomBackground(null);
     setSelectedPreset(null);
     setBackgroundPrompt("");
+    setEditRequest("");
     setUploadProgress(0);
     setImageSize('1K');
     setAspectRatio('1:1');
@@ -288,9 +292,26 @@ const BulkBackground = () => {
               maxImages={MAX_IMAGES}
             />
             {productImages.length > 0 && (
-              <p className="mt-4 text-sm text-muted-foreground">
-                {t("bulkBackground.uploadProducts.imagesUploaded", { count: productImages.length })}
-              </p>
+              <div className="mt-4 space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  {t("bulkBackground.uploadProducts.imagesUploaded", { count: productImages.length })}
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Pencil className="h-4 w-4 text-muted-foreground" />
+                    <Label className="text-sm font-medium">{t("bulkBackground.uploadProducts.editRequestLabel")}</Label>
+                  </div>
+                  <Textarea
+                    value={editRequest}
+                    onChange={(e) => setEditRequest(e.target.value)}
+                    placeholder={t("bulkBackground.uploadProducts.editRequestPlaceholder")}
+                    className="min-h-[80px] rounded-apple-sm text-sm"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t("bulkBackground.uploadProducts.editRequestHint")}
+                  </p>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>

@@ -656,7 +656,10 @@
     "uploadProducts": {
       "title": "Laden Sie Ihre Produkte hoch",
       "subtitle": "Lade bis zu {{max}} Produktbilder hoch",
-      "imagesUploaded": "{{count}} Bilder hochgeladen"
+      "imagesUploaded": "{{count}} Bilder hochgeladen",
+      "editRequestLabel": "Bearbeitungswünsche",
+      "editRequestPlaceholder": "z.B. \"Etikett entfernen\", \"Schatten bereinigen\"...",
+      "editRequestHint": "Diese Anweisungen werden auf alle Bilder angewendet"
     },
     "selectBackground": {
       "title": "Wähle deinen Hintergrund",

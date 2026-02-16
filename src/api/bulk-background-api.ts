@@ -49,6 +49,7 @@ export interface CreateBulkJobPayload {
     customPrompt?: string;
     imageSize?: string;
     aspectRatio?: string;
+    editRequest?: string;
   };
 }
 

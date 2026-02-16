@@ -660,7 +660,10 @@
     "uploadProducts": {
       "title": "Carrega os teus Produtos",
       "subtitle": "Carrega até {{max}} imagens",
-      "imagesUploaded": "{{count}} imagens carregadas"
+      "imagesUploaded": "{{count}} imagens carregadas",
+      "editRequestLabel": "Pedidos de edição",
+      "editRequestPlaceholder": "ex: \"Remover a etiqueta\", \"Limpar sombras\"...",
+      "editRequestHint": "Estas instruções serão aplicadas a todas as imagens"
     },
     "selectBackground": {
       "title": "Escolhe o fundo para aplicar",
