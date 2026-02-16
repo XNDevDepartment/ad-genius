@@ -1,176 +1,124 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.4";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-const serviceClient = () => createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+function cleanAndCap(text: string, maxChars = 2000) {
+  if (!text) return "";
+  let t = text.trim();
 
-// Fallback prompt if database is unavailable
-const FALLBACK_MOTION_PROMPT = `You are looking at the first frame of a UGC video. Describe the motion that plays out from this moment — as if a real person is casually showing off the most prominent product in the image.
+  // Remove line breaks & bullets just in case
+  t = t.replace(/^\s*[-•]\s+/gm, "");
+  t = t.replace(/\n+/g, " ").replace(/\s+/g, " ").trim();
 
-Keep it human and unpolished:
-- Subtle handheld sway or slow natural drift
-- Real hands naturally interacting with the product
-- Small, unscripted-feeling gestures
-- Organic environment (soft breeze, natural light)
-
-Never suggest:
-- Cinematic or gimbal-smooth movement
-- Hands/objects appearing from off-screen
-- Fast, exaggerated, or looping motions
-- Anything that looks staged or produced
-
-This description feeds directly into a video generation model. Return ONLY a plain-language motion description — max 350 characters, no bullet points, no preamble. Write it in the language we were asked in.`;
-
-// Helper: Get prompt from database with fallback
-async function getPrompt(
-  promptKey: string,
-  fallback: string
-): Promise<string> {
-  try {
-    const supabase = serviceClient();
-    const { data, error } = await supabase
-      .from('ai_prompts')
-      .select('prompt_template')
-      .eq('prompt_key', promptKey)
-      .eq('is_active', true)
-      .single();
-    
-    if (error) throw error;
-    
-    console.log(`[getPrompt] Successfully loaded prompt: ${promptKey}`);
-    return data.prompt_template;
-  } catch (error) {
-    console.warn(`[getPrompt] Failed to load prompt ${promptKey}, using fallback:`, error);
-    return fallback;
+  if (t.length > maxChars) {
+    t = t.slice(0, maxChars).trim();
   }
-}
 
-function getLanguageName(code: string): string {
-  const names: Record<string, string> = {
-    en: 'English',
-    pt: 'Portuguese',
-    es: 'Spanish',
-    fr: 'French',
-    de: 'German'
-  };
-  return names[code] || 'English';
+  return t;
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { imageUrl, language = 'en' } = await req.json();
+    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
+    if (!OPENROUTER_API_KEY) {
+      throw new Error("OPENROUTER_API_KEY is not configured");
+    }
+
+    const { imageUrl, language = "en" } = await req.json();
 
     if (!imageUrl) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'imageUrl is required'
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+      return new Response(
+        JSON.stringify({ success: false, error: "Missing imageUrl" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    if (!OPENAI_API_KEY) {
-      console.error('OPENAI_API_KEY is not configured');
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'OpenAI API key not configured'
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
+    const systemPrompt = `
+You generate short instructions describing natural movement that continues an image scene.
 
-    console.log('Analyzing image for motion:', imageUrl);
+Rules:
+- Continue the scene realistically for a few seconds.
+- Keep it simple and natural.
+- No cinematic language.
+- No dramatic actions.
+- No new objects appearing.
+- No formatting.
+- Output only one short paragraph.
+- Write in ${language}.
+- Maximum 1000 characters.
+- No slow movements.
+`.trim();
 
-    // Get system prompt from database
-    const systemPrompt = await getPrompt(
-      'motion_analysis_system',
-      FALLBACK_MOTION_PROMPT
-    );
+    const userPrompt = `
+Describe the natural movement that would continue from this image for a few seconds.
+Keep it subtle and human.
+`.trim();
 
-    // Call OpenAI Vision API with specialized motion analysis prompt
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
+    const response = await fetch(OPENROUTER_URL, {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://produktpix.com",
+        "X-Title": "ProduktPix Motion Generator",
       },
       body: JSON.stringify({
-        model: 'gpt-5-mini',
+        model: "anthropic/claude-sonnet-4",
         messages: [
-          { role: 'system', content: systemPrompt },
+          { role: "system", content: systemPrompt },
           {
-            role: 'user',
+            role: "user",
             content: [
-              {
-                type: 'text',
-                text: `${FALLBACK_MOTION_PROMPT} ${language}.\n\nIMPORTANT: Respond in ${getLanguageName(language)}. The user expects the motion description in their language.`
-              },
-              {
-                type: 'image_url',
-                image_url: { url: imageUrl }
-              }
-            ]
-          }
-        ]
-      })
+              { type: "text", text: userPrompt },
+              { type: "image_url", image_url: { url: imageUrl } },
+            ],
+          },
+        ],
+        temperature: 0.6,
+        max_tokens: 200,
+      }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      return new Response(JSON.stringify({
-        success: false,
-        error: `OpenAI API error: ${response.status}`
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+      console.error("OpenRouter error:", errorText);
+      return new Response(
+        JSON.stringify({ success: false, error: "Failed to generate motion" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const data = await response.json();
-    const suggestedPrompt = data.choices?.[0]?.message?.content?.trim();
 
-    if (!suggestedPrompt) {
-      console.error('No prompt generated from OpenAI response');
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Failed to generate motion prompt'
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+    let raw = data?.choices?.[0]?.message?.content || "";
+
+    if (Array.isArray(raw)) {
+      raw = raw
+        .map((p: any) => (p?.type === "text" ? p.text : ""))
+        .join(" ");
     }
 
-    console.log('Motion prompt generated successfully');
-    return new Response(JSON.stringify({
-      success: true,
-      suggestedPrompt
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-  } catch (error) {
-    console.error('Error in analyze-image-for-motion:', error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
+    const suggestedPrompt = cleanAndCap(raw, 2000);
+
+    return new Response(
+      JSON.stringify({ success: true, suggestedPrompt }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (err) {
+    console.error("Edge function error:", err);
+    return new Response(
+      JSON.stringify({ success: false, error: "Unexpected error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 });
