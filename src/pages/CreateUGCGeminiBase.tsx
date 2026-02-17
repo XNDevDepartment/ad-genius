@@ -35,6 +35,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import AnimateImageModal from "@/components/AnimateImageModal";
 import AspectRatioSelector, { AspectRatio } from "@/components/AspectRatioSelector";
 import { SIZE_MAP } from "@/lib/aspectSizes";
+import { PostGenerationUpgradeModal } from "@/components/PostGenerationUpgradeModal";
 import { ModelVersion } from "@/api/ugc-gemini-unified";
 
 interface GeneratedImage {
@@ -1559,6 +1560,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
           imageUrl={animateImageUrl}
           imageId={animateImageId}
         />
+        <PostGenerationUpgradeModal jobStatus={job?.status} jobId={job?.id} />
       </div>
     </TooltipProvider>
   );

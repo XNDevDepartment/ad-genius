@@ -1,9 +1,8 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { X, CreditCard, Download, Calendar, Zap, Crown, ExternalLink, RotateCcw } from "lucide-react";
+import { X, CreditCard, Download, Calendar, Zap, Crown, ExternalLink, RotateCcw, ChevronDown, Images, Sparkles, Headphones } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +13,7 @@ import { PaymentMethodCard } from "./PaymentMethodCard";
 import { InvoicesList } from "./InvoicesList";
 import { CreditTransactionsList } from "./CreditTransactionsList";
 import { PromoCodeRedemption } from "./PromoCodeRedemption";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface BillingPanelProps {
   onClose: () => void;
@@ -27,11 +27,13 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
     getTotalCredits, 
     getUsedCredits, 
     getDaysUntilReset,
-    tier
+    tier,
+    isFreeTier
   } = useCredits();
   const { toast } = useToast();
   const { t } = useTranslation();
   const [refreshing, setRefreshing] = useState(false);
+  const [billingOpen, setBillingOpen] = useState(false);
 
   const handleManageSubscription = async () => {
     if (!user) return;
@@ -95,14 +97,10 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
     }
   };
 
-  // Better logic for determining subscription status
   const isSubscribed = () => {
     if (!subscriptionData) return false;
-    
-    // If tier is not Free and user has subscription data, they're subscribed
     const isNotFree = subscriptionData.subscription_tier !== 'Free';
     const hasValidSubscription = subscriptionData.subscribed;
-    
     return isNotFree || hasValidSubscription;
   };
 
@@ -143,15 +141,124 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
     );
   }
 
-  return (
-    <div className="space-y-6">
-      {/* <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">{t("account.billing.title")}</h2>
-        <Button variant="ghost" size="icon" onClick={onClose}>
-          <X className="h-4 w-4" />
-        </Button>
-      </div> */}
+  // ===== MOBILE LAYOUT =====
+  const MobileBillingLayout = () => (
+    <div className="lg:hidden space-y-5">
+      {/* 1. Current Plan Badge */}
+      <div className="rounded-2xl bg-gradient-to-br from-primary to-primary/80 p-6 text-primary-foreground">
+        <p className="text-sm font-medium opacity-80">Current Plan</p>
+        <h2 className="text-3xl font-bold mt-1">{tier}</h2>
+        <p className="text-sm opacity-70 mt-1">{getPlanPrice(tier)}</p>
+        {isSubscribed() && (
+          <Badge variant="secondary" className="mt-3 bg-primary-foreground/20 text-primary-foreground border-0">
+            {t("account.billing.active")}
+          </Badge>
+        )}
+      </div>
 
+      {/* 2. What you unlock with Plus (Free tier only) */}
+      {isFreeTier() && (
+        <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+          <h3 className="text-base font-bold text-foreground">What you unlock with Plus</h3>
+          <ul className="space-y-3">
+            <li className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Images className="h-4 w-4 text-primary" />
+              </div>
+              <span className="text-sm font-medium">200 credits/month</span>
+            </li>
+            <li className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="h-4 w-4 text-primary" />
+              </div>
+              <span className="text-sm font-medium">High resolution</span>
+            </li>
+            <li className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Headphones className="h-4 w-4 text-primary" />
+              </div>
+              <span className="text-sm font-medium">Priority support</span>
+            </li>
+          </ul>
+        </div>
+      )}
+
+      {/* 3. Primary CTA */}
+      {isFreeTier() ? (
+        <Button
+          size="lg"
+          className="w-full h-14 text-base font-bold bg-gradient-to-r from-primary to-primary/80"
+          onClick={() => window.location.href = '/pricing'}
+        >
+          Unlock Plus
+        </Button>
+      ) : (
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={handleManageSubscription}
+        >
+          <ExternalLink className="h-4 w-4 mr-2" />
+          {t("account.billing.manageSubscription")}
+        </Button>
+      )}
+
+      {/* 4. Billing details (collapsed) */}
+      <Collapsible open={billingOpen} onOpenChange={setBillingOpen}>
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" className="w-full justify-between text-muted-foreground">
+            Billing details
+            <ChevronDown className={`h-4 w-4 transition-transform ${billingOpen ? 'rotate-180' : ''}`} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-4 pt-2">
+          {/* Credit usage */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Zap className="h-4 w-4" />
+                {t("account.billing.creditUsage")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>{t("account.billing.creditsUsed")}</span>
+                  <span>{getUsedCredits()} / {getTotalCredits()}</span>
+                </div>
+                <Progress value={getUsagePercentage()} className="h-2" />
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-center">
+                <div className="p-2 border rounded-lg">
+                  <div className="text-xl font-semibold">{getRemainingCredits()}</div>
+                  <div className="text-xs text-muted-foreground">{t("account.billing.remaining")}</div>
+                </div>
+                <div className="p-2 border rounded-lg">
+                  <div className="text-xl font-semibold">{getDaysUntilReset()}</div>
+                  <div className="text-xs text-muted-foreground">{t("account.billing.daysLeft")}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <PromoCodeRedemption onSuccess={handleRefreshSubscription} />
+
+          {isSubscribed() && (
+            <>
+              <PaymentMethodCard />
+              <InvoicesList />
+            </>
+          )}
+
+          <CreditTransactionsList />
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  );
+
+  // ===== DESKTOP LAYOUT (unchanged) =====
+  const DesktopBillingLayout = () => (
+    <div className="hidden lg:block space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -313,6 +420,13 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+
+  return (
+    <div>
+      <MobileBillingLayout />
+      <DesktopBillingLayout />
     </div>
   );
 };
