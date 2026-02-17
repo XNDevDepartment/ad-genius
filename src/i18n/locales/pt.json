@@ -2413,5 +2413,38 @@
       "limitedOffer": "Oferta Limitada",
       "seeOffer": "Ver Oferta"
     }
+  },
+  "mobileUpgrade": {
+    "freePlan": "Plano Grátis",
+    "urgency": {
+      "roomToTest": "Ainda tem espaço para testar.",
+      "almostOut": "Está quase a ficar sem imagens.",
+      "lastImages": "Últimas imagens disponíveis.",
+      "locked": "Geração bloqueada. Faça upgrade para continuar."
+    },
+    "unlockMoreImages": "Desbloquear Mais Imagens",
+    "stickyBar": {
+      "message": "Está a gerar resultados. Pronto para escalar?",
+      "cta": "Desbloquear 200 créditos — €49"
+    },
+    "postGeneration": {
+      "title": "Esta imagem foi criada com o plano Grátis.",
+      "description": "Com o Plus, pode gerar 200 imagens este mês.",
+      "upgradeCta": "Fazer Upgrade e Escalar a Minha Loja",
+      "continueFree": "Continuar com o Grátis"
+    },
+    "billing": {
+      "currentPlan": "Plano Atual",
+      "whatYouUnlock": "O que desbloqueia com o Plus",
+      "creditsPerMonth": "200 créditos/mês",
+      "highResolution": "Alta resolução",
+      "prioritySupport": "Suporte prioritário",
+      "unlockPlus": "Desbloquear Plus",
+      "billingDetails": "Detalhes de faturação"
+    },
+    "pricing": {
+      "perImage": "/imagem",
+      "credits": "créditos"
+    }
   }
 }

@@ -3,12 +3,13 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
-const getUrgencyCopy = (remaining: number): string => {
-  if (remaining >= 7) return "You still have room to test.";
-  if (remaining >= 3) return "You're almost out of images.";
-  if (remaining >= 1) return "Last images available.";
-  return "Generation locked. Upgrade to continue.";
+const getUrgencyKey = (remaining: number): string => {
+  if (remaining >= 7) return "mobileUpgrade.urgency.roomToTest";
+  if (remaining >= 3) return "mobileUpgrade.urgency.almostOut";
+  if (remaining >= 1) return "mobileUpgrade.urgency.lastImages";
+  return "mobileUpgrade.urgency.locked";
 };
 
 const getProgressColor = (remaining: number, total: number): string => {
@@ -22,6 +23,7 @@ const getProgressColor = (remaining: number, total: number): string => {
 export const MobileCreditCard = () => {
   const { remainingCredits, isFreeTier, getRemainingCredits, getTotalCredits } = useCredits();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const remaining = getRemainingCredits();
   const total = getTotalCredits();
@@ -36,9 +38,9 @@ export const MobileCreditCard = () => {
     <div className="lg:hidden rounded-2xl border border-border bg-card p-5 space-y-4 shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold text-foreground">Free Plan</span>
+        <span className="text-sm font-semibold text-foreground">{t('mobileUpgrade.freePlan')}</span>
         <span className="text-xs text-muted-foreground">
-          {remaining} / {total} credits
+          {remaining} / {total} {t('mobileUpgrade.pricing.credits')}
         </span>
       </div>
 
@@ -52,7 +54,7 @@ export const MobileCreditCard = () => {
       {/* Urgency copy */}
       <p className="text-sm text-muted-foreground flex items-center gap-2">
         {isLocked && <Lock className="h-4 w-4 text-destructive flex-shrink-0" />}
-        {getUrgencyCopy(remaining)}
+        {t(getUrgencyKey(remaining))}
       </p>
 
       {/* CTA */}
@@ -61,7 +63,7 @@ export const MobileCreditCard = () => {
         className="w-full text-base font-bold h-14"
         onClick={() => navigate("/pricing")}
       >
-        Unlock More Images
+        {t('mobileUpgrade.unlockMoreImages')}
         <ArrowRight className="h-5 w-5 ml-2" />
       </Button>
     </div>

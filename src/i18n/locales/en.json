@@ -2435,5 +2435,38 @@
       "limitedOffer": "Limited Offer",
       "seeOffer": "See Offer"
     }
+  },
+  "mobileUpgrade": {
+    "freePlan": "Free Plan",
+    "urgency": {
+      "roomToTest": "You still have room to test.",
+      "almostOut": "You're almost out of images.",
+      "lastImages": "Last images available.",
+      "locked": "Generation locked. Upgrade to continue."
+    },
+    "unlockMoreImages": "Unlock More Images",
+    "stickyBar": {
+      "message": "You're generating results. Ready to scale?",
+      "cta": "Unlock 200 credits — €49"
+    },
+    "postGeneration": {
+      "title": "This image was created with the Free plan.",
+      "description": "With Plus, you can generate 200 images this month.",
+      "upgradeCta": "Upgrade and Scale My Store",
+      "continueFree": "Continue with Free"
+    },
+    "billing": {
+      "currentPlan": "Current Plan",
+      "whatYouUnlock": "What you unlock with Plus",
+      "creditsPerMonth": "200 credits/month",
+      "highResolution": "High resolution",
+      "prioritySupport": "Priority support",
+      "unlockPlus": "Unlock Plus",
+      "billingDetails": "Billing details"
+    },
+    "pricing": {
+      "perImage": "/image",
+      "credits": "credits"
+    }
   }
 }

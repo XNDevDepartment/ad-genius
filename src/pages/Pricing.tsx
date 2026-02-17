@@ -262,7 +262,7 @@ const Pricing = () => {
                         {/* Cost per image - LARGEST */}
                         <div className="text-4xl font-black text-primary">
                           €{calculatePricePerImage(plan.monthlyPrice, plan.credits)}
-                          <span className="text-base font-medium text-muted-foreground"> /image</span>
+                          <span className="text-base font-medium text-muted-foreground"> {t('mobileUpgrade.pricing.perImage')}</span>
                         </div>
 
                         {/* Monthly price */}
@@ -272,7 +272,7 @@ const Pricing = () => {
 
                         {/* Credits */}
                         <div className="text-base font-semibold text-foreground">
-                          {plan.credits} credits
+                          {plan.credits} {t('mobileUpgrade.pricing.credits')}
                         </div>
                       </div>
 
