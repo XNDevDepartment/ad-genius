@@ -71,7 +71,7 @@ const ModuleSelection = () => {
       isAdmin: false,
       isBeta: true,
       locked: false
-    }
+    },
     // ...(isAdmin ? [{
     //   id: "magazine-photoshoot",
     //   title: "Magazine Photoshoot",
