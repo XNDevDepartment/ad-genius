@@ -130,14 +130,8 @@ export const useCredits = () => {
     // NEW: Check if account is activated (required for video access)
     if (!isActivated) return false;
     
-    // Users in grace period keep video access
-    if (isInGracePeriod()) {
-      const tier = subscriptionData.subscription_tier;
-      return tier !== 'Starter';
-    }
-    const tier = subscriptionData.subscription_tier;
-    // All tiers except Starter can access videos
-    return tier !== 'Starter';
+    // All tiers can access videos
+    return true;
   };
 
   const getVideoAccessMessage = (): string => {
@@ -148,19 +142,7 @@ export const useCredits = () => {
       return 'Please verify your email to access video features. Check your inbox for the activation link.';
     }
     
-    const tier = subscriptionData.subscription_tier;
-    
-    switch (tier) {
-      case 'Starter':
-        return 'Video generation is not available on the Starter plan. Upgrade to Plus for video access, or try our Free tier to test the feature!';
-      case 'Free':
-      case 'Founders':
-      case 'Plus':
-      case 'Pro':
-        return 'You have access to video generation!';
-      default:
-        return 'Video generation is available on Free, Founders, Plus, and Pro plans.';
-    }
+    return 'You have access to video generation!';
   };
 
   const canAccessOutfitSwap = (): boolean => {
