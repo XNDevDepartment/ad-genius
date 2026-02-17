@@ -169,13 +169,13 @@ async function createVideoJob(supabase: any, userId: string, payload: any): Prom
       };
     }
     // Only Starter tier is excluded from video generation
-    if (subscriber.subscription_tier === 'Starter') {
-      return {
-        success: false,
-        error: 'Video generation is not available on the Starter plan. Upgrade to Plus or try our Free tier!',
-        upgrade_required: true
-      };
-    }
+    // if (subscriber.subscription_tier === 'Starter') {
+    //   return {
+    //     success: false,
+    //     error: 'Video generation is not available on the Starter plan. Upgrade to Plus or try our Free tier!',
+    //     upgrade_required: true
+    //   };
+    // }
   }
   // Validate basic inputs
   if (!prompt) return {
