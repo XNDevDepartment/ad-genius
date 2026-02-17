@@ -7,13 +7,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Check, X, Star, Zap, Shield, Crown, Video as VideoIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import HeaderSection from "@/components/landing/HeaderSection";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { trackInitiateCheckout, trackViewContent } from "@/lib/metaPixel";
 import { useTranslation } from "react-i18next";
 import SEO from "@/components/SEO";
 import { buildProductSchema } from "@/lib/schema";
+import useEmblaCarousel from "embla-carousel-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-// Features will be translated dynamically using t() in the component
 const plans = [
   {
     id: "starter",
@@ -23,13 +24,7 @@ const plans = [
     period: "/month",
     description: "Perfect for small businesses and content creators",
     credits: 80,
-    features: [
-      "credits",
-      "images",
-      "maxImages",
-      "scenarios",
-      "support"
-    ],
+    features: ["credits", "images", "maxImages", "scenarios", "support"],
     limitations: [],
     cta: "Start Creating",
     popular: false,
@@ -44,14 +39,7 @@ const plans = [
     period: "/month",
     description: "Best for agencies and growing businesses",
     credits: 200,
-    features: [
-      "credits",
-      "images",
-      "maxImages",
-      "scenarios",
-      "support",
-      "commercial"
-    ],
+    features: ["credits", "images", "maxImages", "scenarios", "support", "commercial"],
     limitations: [],
     cta: "Go Plus",
     popular: true,
@@ -66,13 +54,7 @@ const plans = [
     period: "/month",
     description: "For high-volume users and enterprises",
     credits: 400,
-    features: [
-      "credits",
-      "images",
-      "maxImages",
-      "scenarios",
-      "support"
-    ],
+    features: ["credits", "images", "maxImages", "scenarios", "support"],
     limitations: [],
     cta: "Go Pro",
     popular: false,
@@ -81,96 +63,81 @@ const plans = [
   }
 ];
 
-// const comparisonFeatures = [
-//   { feature: "Monthly Credits", founders: "80", starter: "80", plus: "200", pro: "400" },
-//   { feature: "Max Images per Generation", founders: "3", starter: "3", plus: "3", pro: "3" },
-//   { feature: "High Quality Images/Month", founders: "40", starter: "40", plus: "100", pro: "200" },
-//   { feature: "Medium Quality Images/Month", founders: "53", starter: "53", plus: "133", pro: "266" },
-//   { feature: "Low Quality Images/Month", founders: "80", starter: "80", plus: "200", pro: "400" },
-//   { feature: "Image-to-Video Generation", founders: true, starter: false, plus: true, pro: true },
-//   { feature: "Video Duration Options", founders: "5s & 10s", starter: "-", plus: "5s & 10s", pro: "5s & 10s" },
-//   { feature: "Video Cost (5s)", founders: "5 credits", starter: "-", plus: "5 credits", pro: "5 credits" },
-//   { feature: "Video Cost (10s)", founders: "10 credits", starter: "-", plus: "10 credits", pro: "10 credits" },
-//   { feature: "UGC Scenarios Available", founders: "unlimited", starter: "unlimited", plus: "unlimited", pro: "unlimited" },
-//   { feature: "All Quality Levels", founders: true, starter: true, plus: true, pro: true },
-//   { feature: "Commercial Usage", founders: true, starter: true, plus: true, pro: true },
-//   { feature: "Priority Support", founders: true, starter: true, plus: true, pro: true },
-//   { feature: "Live Chat Support", founders: false, starter: false, plus: true, pro: true },
-//   { feature: "Dedicated Manager", founders: false, starter: false, plus: false, pro: true },
-//   { feature: "Lifetime Pricing", founders: true, starter: false, plus: false, pro: false }
-// ];
-  // Features will be translated dynamically using t()
-  const comparisonFeatures = [
-    { featureKey: "monthlyCredits", starter: "80", plus: "200", pro: "400" },
-    { featureKey: "imagesPerMonth", starter: "80", plus: "200", pro: "400" },
-    { featureKey: "maxImagesPerGeneration", starter: "3", plus: "3", pro: "3" },
-    { featureKey: "imageToVideo", starter: true, plus: true, pro: true },
-    { featureKey: "videoDuration", starter: "5s & 10s", plus: "5s & 10s", pro: "5s & 10s" },
-    { featureKey: "ugcScenarios", starter: "unlimited", plus: "unlimited", pro: "unlimited" },
-    { featureKey: "allQualityLevels", starter: true, plus: true, pro: true },
-    { featureKey: "commercialUsage", starter: true, plus: true, pro: true },
-    { featureKey: "prioritySupport", starter: false, plus: true, pro: true },
-    // { featureKey: "liveChat", starter: false, plus: true, pro: true },
-    { featureKey: "dedicatedManager", starter: false, plus: false, pro: true },
-    { featureKey: "freeBetaFeatures", starter: false, plus: false, pro: true },
-    { featureKey: "earlyAccess", starter: false, plus: false, pro: true },
-    { featureKey: "businessConsulting", starter: false, plus: false, pro: true }
-  ];
+const comparisonFeatures = [
+  { featureKey: "monthlyCredits", starter: "80", plus: "200", pro: "400" },
+  { featureKey: "imagesPerMonth", starter: "80", plus: "200", pro: "400" },
+  { featureKey: "maxImagesPerGeneration", starter: "3", plus: "3", pro: "3" },
+  { featureKey: "imageToVideo", starter: true, plus: true, pro: true },
+  { featureKey: "videoDuration", starter: "5s & 10s", plus: "5s & 10s", pro: "5s & 10s" },
+  { featureKey: "ugcScenarios", starter: "unlimited", plus: "unlimited", pro: "unlimited" },
+  { featureKey: "allQualityLevels", starter: true, plus: true, pro: true },
+  { featureKey: "commercialUsage", starter: true, plus: true, pro: true },
+  { featureKey: "prioritySupport", starter: false, plus: true, pro: true },
+  { featureKey: "dedicatedManager", starter: false, plus: false, pro: true },
+  { featureKey: "freeBetaFeatures", starter: false, plus: false, pro: true },
+  { featureKey: "earlyAccess", starter: false, plus: false, pro: true },
+  { featureKey: "businessConsulting", starter: false, plus: false, pro: true }
+];
 
 const Pricing = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [isYearly, setIsYearly] = useState(false);
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
 
-  // Calculate price per image based on billing cycle
+  const [emblaRef, emblaApi] = useEmblaCarousel({ 
+    align: 'center',
+    startIndex: 1, // Start on Plus (most popular)
+  });
+  const [selectedIndex, setSelectedIndex] = useState(1);
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on('select', onSelect);
+    return () => { emblaApi.off('select', onSelect); };
+  }, [emblaApi, onSelect]);
+
   const calculatePricePerImage = (monthlyPrice: number, credits: number): string => {
     if (isYearly) {
-      // Yearly: pay 10 months, get 12 months of credits
       const totalPrice = monthlyPrice * 10;
       const totalCredits = credits * 12;
       return (totalPrice / totalCredits).toFixed(2);
     }
-    // Monthly: simple division
     return (monthlyPrice / credits).toFixed(2);
   };
 
   useEffect(() => {
     localStorage.removeItem("billing");
     trackViewContent('Pricing');
-  }, [])
+  }, []);
 
   const handlePlanSelect = async (planId: string) => {
     if (planId === "free") {
-      // Free plan - redirect to account to sign up
       navigate('/account');
       return;
     }
 
-    // Wait for authentication to finish loading
-    if (loading) {
-      console.log('[Pricing] Authentication still loading, please wait...');
-      return;
-    }
+    if (loading) return;
 
     if (!user) {
-      // Redirect to account page to sign up first
       navigate('/account');
       return;
     }
 
-    // Track checkout initiation in Meta Pixel with plan details
     const selectedPlan = plans.find(p => p.id === planId);
     const checkoutValue = selectedPlan ? (isYearly ? selectedPlan.yearlyPrice * 12 : selectedPlan.monthlyPrice) : undefined;
     trackInitiateCheckout(planId, checkoutValue, 'EUR');
 
     try {
-      // For paid plans, create checkout session
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { 
-          planId,
-          interval: isYearly ? 'year' : 'month'
-        }
+        body: { planId, interval: isYearly ? 'year' : 'month' }
       });
       if (data?.url) {
         window.open(data.url, '_blank');
@@ -186,7 +153,6 @@ const Pricing = () => {
 
   const getDisplayPrice = (plan: any) => {
     if (plan.price === "Free") return "Free";
-
     const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
     return `€${price}`;
   };
@@ -207,7 +173,7 @@ const Pricing = () => {
       }
 
       {/* Header */}
-      <div className="bg-gradient-hero text-primary-foreground py-20 ">
+      <div className="bg-gradient-hero text-primary-foreground py-20">
         <div className="container mx-auto px-6 text-center">
           <h1 className="text-4xl lg:text-6xl font-bold mb-6">
             {t('pricing.title')}
@@ -274,96 +240,178 @@ const Pricing = () => {
           </div>
         )}
 
+        {/* ===== MOBILE: Swipeable carousel ===== */}
+        {isMobile ? (
+          <div className="mb-20">
+            <div className="overflow-hidden" ref={emblaRef}>
+              <div className="flex">
+                {plans.map((plan) => (
+                  <div key={plan.id} className="flex-[0_0_85%] min-w-0 px-2">
+                    <div className={`rounded-2xl border-2 p-6 space-y-5 ${
+                      plan.popular ? 'border-primary bg-card shadow-lg' : 'border-border bg-card'
+                    }`}>
+                      {plan.popular && (
+                        <Badge className="bg-primary text-primary-foreground">
+                          {t('pricing.plans.plus.popular')}
+                        </Badge>
+                      )}
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-7xl mx-auto mb-20">
-          {plans.map((plan) => (
-            <Card
-              key={plan.id}
-              className={`relative border-2 transition-all duration-300 hover:shadow-lg ${
-                plan.popular
-                  ? "border-primary shadow-lg scale-105 bg-white dark:bg-card"
-                  : "border-border hover:border-primary/50"
-              }`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-primary text-primary-foreground px-4 py-1">
-                    {t('pricing.plans.plus.popular')}
-                  </Badge>
-                </div>
-              )}
+                      <div className="text-center space-y-1">
+                        <h3 className="text-lg font-bold">{t(`pricing.plans.${plan.id}.name`)}</h3>
 
-              <CardHeader className="text-center">
-                <div className="flex justify-center mb-4">
-                  <div className={`p-3 rounded-full ${
-                    plan.popular ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {plan.icon}
+                        {/* Cost per image - LARGEST */}
+                        <div className="text-4xl font-black text-primary">
+                          €{calculatePricePerImage(plan.monthlyPrice, plan.credits)}
+                          <span className="text-base font-medium text-muted-foreground"> /image</span>
+                        </div>
+
+                        {/* Monthly price */}
+                        <div className="text-lg text-muted-foreground">
+                          {getDisplayPrice(plan)}{t(`pricing.plans.${plan.id}.period`)}
+                        </div>
+
+                        {/* Credits */}
+                        <div className="text-base font-semibold text-foreground">
+                          {plan.credits} credits
+                        </div>
+                      </div>
+
+                      {(plan.id === 'plus' || plan.id === 'pro') && (
+                        <div className="flex justify-center">
+                          <span className="inline-flex items-center gap-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full">
+                            <VideoIcon className="h-3 w-3" />
+                            {t('pricing.includesVideo')}
+                          </span>
+                        </div>
+                      )}
+
+                      <ul className="space-y-2">
+                        {plan.features.map((featureKey, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                            <span className="text-xs">{t(`pricing.plans.${plan.id}.features.${featureKey}`)}</span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <Button
+                        onClick={() => handlePlanSelect(plan.id)}
+                        className={`w-full h-14 text-base font-bold ${
+                          plan.popular ? 'bg-primary hover:bg-primary/90' : ''
+                        }`}
+                        disabled={loading}
+                      >
+                        {loading ? t('pricing.loading') : t(`pricing.cta.${plan.id === 'starter' ? 'start' : plan.id === 'plus' ? 'goPlus' : 'goPro'}`)}
+                      </Button>
+                    </div>
                   </div>
-                </div>
-                {(plan.id === 'founders' || plan.id === 'plus' || plan.id === 'pro') && (
-                  <div className="mb-2">
-                    <span className="inline-flex items-center gap-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full">
-                      <VideoIcon className="h-3 w-3" />
-                      {t('pricing.includesVideo')}
-                    </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Dot indicators */}
+            <div className="flex justify-center gap-2 mt-4">
+              {plans.map((_, idx) => (
+                <button
+                  key={idx}
+                  className={`h-2 rounded-full transition-all ${
+                    idx === selectedIndex ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/30'
+                  }`}
+                  onClick={() => emblaApi?.scrollTo(idx)}
+                  aria-label={`Go to plan ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* ===== DESKTOP: Grid layout (unchanged) ===== */
+          <div className="grid md:grid-cols-3 gap-6 max-w-7xl mx-auto mb-20">
+            {plans.map((plan) => (
+              <Card
+                key={plan.id}
+                className={`relative border-2 transition-all duration-300 hover:shadow-lg ${
+                  plan.popular
+                    ? "border-primary shadow-lg scale-105 bg-white dark:bg-card"
+                    : "border-border hover:border-primary/50"
+                }`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-primary text-primary-foreground px-4 py-1">
+                      {t('pricing.plans.plus.popular')}
+                    </Badge>
                   </div>
                 )}
-                <CardTitle className="text-xl font-bold">{t(`pricing.plans.${plan.id}.name`)}</CardTitle>
-                <div className="mb-4">
-                  <span className="text-3xl font-bold text-primary">{getDisplayPrice(plan)}</span>
-                  {plan.period && (
-                    <span className="text-muted-foreground text-sm">{t(`pricing.plans.${plan.id}.period`)}</span>
-                  )}
-                  {isYearly && plan.monthlyPrice && plan.yearlyPrice && (
-                    <div className="text-xs text-muted-foreground">
-                      {t('pricing.billedAnnually', { amount: (plan.yearlyPrice * 12).toFixed(0) })}
+
+                <CardHeader className="text-center">
+                  <div className="flex justify-center mb-4">
+                    <div className={`p-3 rounded-full ${
+                      plan.popular ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {plan.icon}
+                    </div>
+                  </div>
+                  {(plan.id === 'founders' || plan.id === 'plus' || plan.id === 'pro') && (
+                    <div className="mb-2">
+                      <span className="inline-flex items-center gap-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full">
+                        <VideoIcon className="h-3 w-3" />
+                        {t('pricing.includesVideo')}
+                      </span>
                     </div>
                   )}
-                  <div className="text-sm text-primary/80 font-medium mt-1">
-                    {t('pricing.perImage', { price: calculatePricePerImage(plan.monthlyPrice, plan.credits) })}
+                  <CardTitle className="text-xl font-bold">{t(`pricing.plans.${plan.id}.name`)}</CardTitle>
+                  <div className="mb-4">
+                    <span className="text-3xl font-bold text-primary">{getDisplayPrice(plan)}</span>
+                    {plan.period && (
+                      <span className="text-muted-foreground text-sm">{t(`pricing.plans.${plan.id}.period`)}</span>
+                    )}
+                    {isYearly && plan.monthlyPrice && plan.yearlyPrice && (
+                      <div className="text-xs text-muted-foreground">
+                        {t('pricing.billedAnnually', { amount: (plan.yearlyPrice * 12).toFixed(0) })}
+                      </div>
+                    )}
+                    <div className="text-sm text-primary/80 font-medium mt-1">
+                      {t('pricing.perImage', { price: calculatePricePerImage(plan.monthlyPrice, plan.credits) })}
+                    </div>
                   </div>
-                </div>
-                <CardDescription className="text-sm">
-                  {t(`pricing.plans.${plan.id}.description`)}
-                </CardDescription>
-              </CardHeader>
+                  <CardDescription className="text-sm">
+                    {t(`pricing.plans.${plan.id}.description`)}
+                  </CardDescription>
+                </CardHeader>
 
-              <CardContent className="space-y-6">
-                <div className="text-center p-3 bg-muted rounded-lg">
-                  <div className="text-xl font-bold text-primary">{plan.credits}</div>
-                  <div className="text-xs text-muted-foreground">{t('pricing.creditsPerMonth')}</div>
-                </div>
+                <CardContent className="space-y-6">
+                  <div className="text-center p-3 bg-muted rounded-lg">
+                    <div className="text-xl font-bold text-primary">{plan.credits}</div>
+                    <div className="text-xs text-muted-foreground">{t('pricing.creditsPerMonth')}</div>
+                  </div>
 
-                <ul className="space-y-2">
-                  {plan.features.map((featureKey, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-xs">{t(`pricing.plans.${plan.id}.features.${featureKey}`)}</span>
-                    </li>
-                  ))}
-                </ul>
+                  <ul className="space-y-2">
+                    {plan.features.map((featureKey, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                        <span className="text-xs">{t(`pricing.plans.${plan.id}.features.${featureKey}`)}</span>
+                      </li>
+                    ))}
+                  </ul>
 
+                  <Button
+                    onClick={() => handlePlanSelect(plan.id)}
+                    className={`w-full ${
+                      plan.popular ? "bg-primary hover:bg-primary/90" : "variant-outline"
+                    }`}
+                    size="sm"
+                    disabled={loading}
+                  >
+                    {loading ? t('pricing.loading') : t(`pricing.cta.${plan.id === 'starter' ? 'start' : plan.id === 'plus' ? 'goPlus' : 'goPro'}`)}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
-                <Button
-                  onClick={() => handlePlanSelect(plan.id)}
-                  className={`w-full ${
-                    plan.popular
-                      ? "bg-primary hover:bg-primary/90"
-                      : "variant-outline"
-                  }`}
-                  size="sm"
-                  disabled={loading}
-                >
-                  {loading ? t('pricing.loading') : t(`pricing.cta.${plan.id === 'starter' ? 'start' : plan.id === 'plus' ? 'goPlus' : 'goPro'}`)}
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Detailed Comparison Table */}
-        <div className="max-w-6xl mx-auto">
+        {/* Detailed Comparison Table - hidden on mobile */}
+        <div className="max-w-6xl mx-auto hidden lg:block">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">{t('pricing.comparisonTable.title')}</h2>
             <p className="text-muted-foreground text-lg">
@@ -391,33 +439,21 @@ const Pricing = () => {
                       <TableCell className="font-medium">{t(`pricing.comparisonTable.features.${item.featureKey}`)}</TableCell>
                       <TableCell className="text-center">
                         {typeof item.starter === 'boolean' ? (
-                          item.starter ? (
-                            <Check className="h-5 w-5 text-primary mx-auto" />
-                          ) : (
-                            <X className="h-5 w-5 text-muted-foreground mx-auto" />
-                          )
+                          item.starter ? <Check className="h-5 w-5 text-primary mx-auto" /> : <X className="h-5 w-5 text-muted-foreground mx-auto" />
                         ) : (
                           <span className="font-medium">{item.starter}</span>
                         )}
                       </TableCell>
                       <TableCell className="text-center bg-primary/5">
                         {typeof item.plus === 'boolean' ? (
-                          item.plus ? (
-                            <Check className="h-5 w-5 text-primary mx-auto" />
-                          ) : (
-                            <X className="h-5 w-5 text-muted-foreground mx-auto" />
-                          )
+                          item.plus ? <Check className="h-5 w-5 text-primary mx-auto" /> : <X className="h-5 w-5 text-muted-foreground mx-auto" />
                         ) : (
                           <span className="font-medium">{item.plus}</span>
                         )}
                       </TableCell>
                       <TableCell className="text-center">
                         {typeof item.pro === 'boolean' ? (
-                          item.pro ? (
-                            <Check className="h-5 w-5 text-primary mx-auto" />
-                          ) : (
-                            <X className="h-5 w-5 text-muted-foreground mx-auto" />
-                          )
+                          item.pro ? <Check className="h-5 w-5 text-primary mx-auto" /> : <X className="h-5 w-5 text-muted-foreground mx-auto" />
                         ) : (
                           <span className="font-medium">{item.pro}</span>
                         )}
