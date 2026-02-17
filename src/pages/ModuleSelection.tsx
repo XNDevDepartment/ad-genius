@@ -62,16 +62,16 @@ const ModuleSelection = () => {
       isBeta: false,
       locked: false
     },
-    ...((isAdmin || user?.email === 'bacalhaustore@gmail.com') ? [{
+    {
       id: "bulk-background",
       title: t('createSelection.bulkBackground.title'),
       description: t('createSelection.bulkBackground.description'),
       icon: Images,
       path: "/create/bulk-background",
-      isAdmin: true,
+      isAdmin: false,
       isBeta: true,
       locked: false
-    }] : []),
+    }
     // ...(isAdmin ? [{
     //   id: "magazine-photoshoot",
     //   title: "Magazine Photoshoot",
