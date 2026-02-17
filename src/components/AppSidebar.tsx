@@ -38,7 +38,8 @@ import {
 const mainNavItems = [
   { id: "home", icon: Home, path: "/" },
   { id: "create", icon: Plus, path: "/create", primary: true },
-  { id: "grupo", icon: Layers, path: "/bulk", adminOnly: true },
+  { id: "pricing", icon: Crown, path: "/pricing", primary: true },
+  // { id: "grupo", icon: Layers, path: "/bulk", adminOnly: true },
 ];
 
 // Your Content navigation items
@@ -78,7 +79,7 @@ export function AppSidebar() {
 
   return (
     <>
-      <Sidebar className={isCollapsed ? "w-24 pt-10" : "w-64 pt-10"} collapsible="icon">
+      <Sidebar className={isCollapsed ? "w-24 pt-10" : "w-64 p-3"} collapsible="icon" variant="floating">
         {/* User Header Section */}
         <SidebarHeader className={isCollapsed ? "p-3" : "p-4"}>
           {user ? (
@@ -229,7 +230,7 @@ export function AppSidebar() {
           )}
 
           {/* Hidden Invite People button - can be enabled later */}
-          {false && user && (
+          {/* { user && (
             <SidebarGroup className="mt-6">
               <SidebarGroupContent>
                 <SidebarMenu>
@@ -253,7 +254,7 @@ export function AppSidebar() {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
-          )}
+          )} */}
         </SidebarContent>
 
         <SidebarFooter className="p-4">
@@ -333,7 +334,7 @@ export function AppSidebar() {
 
           {!isCollapsed && (
             <div className="text-xs text-sidebar-foreground/40 text-center mt-4">
-              Genius UGC v3.0
+              Genius UGC v7.0
             </div>
           )}
         </SidebarFooter>

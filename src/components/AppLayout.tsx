@@ -8,7 +8,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import PaymentFailedBanner from "./PaymentFailedBanner";
 
 import { FloatingOnboardingCard } from "./onboarding/FloatingOnboardingCard";
-import MobilePromoBanner from "./MobilePromoBanner";
 
 const AppLayout = () => {
   const location = useLocation();
