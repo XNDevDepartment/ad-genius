@@ -387,10 +387,6 @@ export const BaseModelSelector = ({
                     <Check className="w-4 h-4 text-primary-foreground" />
                   </div>
                 )}
-                <Badge className="absolute top-2 left-2" variant="secondary">
-                  <Sparkles className="w-3 h-3 mr-1" />
-                  {t('outfitSwap.baseModelSelector.badges.system')}
-                </Badge>
               </div>
               <div className="p-3">
                 <h3 className="font-semibold text-sm truncate">{model.name}</h3>
