@@ -3,7 +3,7 @@
  * Detects stale cached application versions and forces a refresh
  */
 
-const APP_VERSION = '3.0.1'; // Increment this with each deploy that has breaking changes
+const APP_VERSION = '3.0.2'; // Increment this with each deploy that has breaking changes
 const VERSION_KEY = 'app_version';
 
 export const checkForCachedVersion = () => {
