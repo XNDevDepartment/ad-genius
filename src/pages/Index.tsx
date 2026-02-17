@@ -98,23 +98,6 @@ const Index = () => {
       <div className="container-responsive px-4 py-8">
         {/* ===== MOBILE LAYOUT ===== */}
         <div className="lg:hidden space-y-4">
-          {/* 1. Credit Card / Promo */}
-          {tier === 'Free' ? (
-            <MobileCreditCard />
-          ) : (
-            <div className="text-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/pricing")}
-                className="text-muted-foreground hover:bg-primary/10 hover:text-foreground"
-              >
-                <Coins className="h-4 w-4 mr-2" />
-                {t("index.auth.getMoreCredits")}
-              </Button>
-            </div>
-          )}
-
           {/* 2. Hero "Create Images" */}
           <div className="bg-gradient-hero rounded-apple p-8 shadow-apple-lg text-center text-background relative overflow-hidden">
             <div className="relative z-10 space-y-4">
@@ -134,6 +117,24 @@ const Index = () => {
               </Button>
             </div>
           </div>
+
+          {/* 1. Credit Card / Promo */}
+          {tier === 'Free' ? (
+            <MobileCreditCard />
+          ) : (
+            <div className="text-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/pricing")}
+                className="text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+              >
+                <Coins className="h-4 w-4 mr-2" />
+                {t("index.auth.getMoreCredits")}
+              </Button>
+            </div>
+          )}
+
 
           {/* 3. First 4 module cards in 2x2 grid */}
           <MobileModuleGrid navigate={navigate} t={t} canAccessVideos={canAccessVideos} isAdmin={isAdmin} user={user} />

@@ -158,7 +158,7 @@ const Pricing = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background mt-10 lg:mt-0">
+    <div className="min-h-screen bg-background lg:mt-0">
       <SEO
         title="Pricing Plans"
         description="Choose the perfect plan for your business. From Starter to Pro, get AI-powered product photos and videos with flexible credits."
@@ -478,7 +478,7 @@ const Pricing = () => {
             <CardContent className="space-y-8">
               <div className="text-center p-8 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg">
                 <div className="text-4xl font-bold text-primary mb-3">{t('pricing.creditSystem.imageCredit')}</div>
-                <div className="text-lg font-medium mb-2">{t('pricing.creditSystem.anyQuality')}</div>
+                <div className="text-lg font-medium mb-2">{t('pricing.creditSystem.anyQuality.title')}</div>
                 <div className="text-sm text-muted-foreground max-w-2xl mx-auto">
                   {t('pricing.creditSystem.description')}
                 </div>

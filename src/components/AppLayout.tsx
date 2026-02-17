@@ -43,7 +43,7 @@ const AppLayout = () => {
         <main className="pb-20">
           <Outlet />
         </main>
-        {user && <MobilePromoBanner />}
+        {/* {user && <MobilePromoBanner />} */}
         {(user && (location.pathname !== '/create/ugc' && location.pathname !== '/create/ugc' && location.pathname !== '/promo/first-month')) &&
           <BottomTabBar />
         }

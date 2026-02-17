@@ -11,8 +11,8 @@ const BottomTabBar = () => {
 
   const tabs = [
     { id: "home", label: t('navigation.home'), icon: Home, path: "/" },
-    { id: "create", label: t('navigation.create'), icon: Plus, path: "/create", primary: true },
     { id: "library", label: t('navigation.library'), icon: Image, path: "/library" },
+    { id: "create", label: t('navigation.create'), icon: Plus, path: "/create", primary: true },
     { id: "videos", label: t('navigation.videos'), icon: Video, path: "/videos" },
     { id: "account", label: t('navigation.account'), icon: User, path: "/account" },
   ];
@@ -28,10 +28,10 @@ const BottomTabBar = () => {
             return (
               <Link key={tab.id} to={tab.path} className="touch-manipulation">
                 <Button 
-                  variant="default" 
+                  variant="default"
                   size="sm"
                   className={cn(
-                    "text-xs gap-1 h-12 px-4 min-h-[44px] min-w-[44px] transition-transform active:scale-95",
+                    "text-xs gap-1 h-12 px-4 min-h-[44px] min-w-[44px] transition-transform active:scale-95 ",
                     isActive && "bg-primary/20 text-primary"
                   )}
                 >
