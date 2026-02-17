@@ -1,21 +1,26 @@
 
 
-# Allow Starter Plan to Access Video Animator
+# Fix: Bump Cache Version to Force Refresh
 
-## Overview
-Currently, the `canAccessVideos()` function in `useCredits.tsx` explicitly blocks Starter tier users from accessing the Video Animator. This change removes that restriction so Starter users can use the feature.
+## Problem
+The video access fix is deployed, but users are seeing the **old cached version** of the app. The cache-busting mechanism in `src/utils/cacheCheck.ts` only forces a refresh when `APP_VERSION` changes -- but it was never incremented after the Starter video restriction was removed.
 
-## Change
+Users who already have version `3.0.1` stored in localStorage will **never reload** to get the updated code.
 
-**File:** `src/hooks/useCredits.tsx`
+## Fix
 
-Update `canAccessVideos()` to no longer exclude the Starter tier. The check `tier !== 'Starter'` will be removed, allowing all tiers (Free, Starter, Founders, Plus, Pro) to access videos.
+**File:** `src/utils/cacheCheck.ts`
 
-Similarly, update the `getVideoAccessMessage()` function to remove the Starter-specific denial message, and update the `ModuleSelection.tsx` locked logic if it references video access for Starter.
+Bump `APP_VERSION` from `'3.0.1'` to `'3.0.2'`.
 
-## Files Modified
+This will cause all returning users to:
+1. Detect a version mismatch on next visit
+2. Clear localStorage and sessionStorage
+3. Hard-reload to fetch fresh JS bundles (with the corrected `canAccessVideos()` logic)
 
 | File | Change |
 |---|---|
-| `src/hooks/useCredits.tsx` | Remove Starter exclusion from `canAccessVideos()` and update `getVideoAccessMessage()` |
+| `src/utils/cacheCheck.ts` | Change `APP_VERSION` from `'3.0.1'` to `'3.0.2'` |
+
+After this change, **publish again** so the version bump reaches the live site.
 
