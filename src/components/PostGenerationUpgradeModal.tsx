@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useCredits } from "@/hooks/useCredits";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTranslation } from "react-i18next";
 
 interface PostGenerationUpgradeModalProps {
   jobStatus: string | undefined;
@@ -16,6 +17,7 @@ export const PostGenerationUpgradeModal = ({ jobStatus, jobId }: PostGenerationU
   const { isFreeTier } = useCredits();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (
@@ -26,7 +28,6 @@ export const PostGenerationUpgradeModal = ({ jobStatus, jobId }: PostGenerationU
       isMobile
     ) {
       shownForJobRef.current = jobId;
-      // Small delay so user sees their result first
       const timer = setTimeout(() => setOpen(true), 1500);
       return () => clearTimeout(timer);
     }
@@ -39,10 +40,10 @@ export const PostGenerationUpgradeModal = ({ jobStatus, jobId }: PostGenerationU
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-lg">
-            This image was created with the Free plan.
+            {t('mobileUpgrade.postGeneration.title')}
           </DialogTitle>
           <DialogDescription className="text-base pt-2">
-            With Plus, you can generate 200 images this month.
+            {t('mobileUpgrade.postGeneration.description')}
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3 pt-2">
@@ -54,7 +55,7 @@ export const PostGenerationUpgradeModal = ({ jobStatus, jobId }: PostGenerationU
               navigate("/pricing");
             }}
           >
-            Upgrade and Scale My Store
+            {t('mobileUpgrade.postGeneration.upgradeCta')}
           </Button>
           <Button
             variant="ghost"
@@ -62,7 +63,7 @@ export const PostGenerationUpgradeModal = ({ jobStatus, jobId }: PostGenerationU
             className="w-full"
             onClick={() => setOpen(false)}
           >
-            Continue with Free
+            {t('mobileUpgrade.postGeneration.continueFree')}
           </Button>
         </div>
       </DialogContent>

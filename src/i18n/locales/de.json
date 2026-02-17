@@ -2417,5 +2417,38 @@
       "limitedOffer": "Begrenztes Angebot",
       "seeOffer": "Angebot ansehen"
     }
+  },
+  "mobileUpgrade": {
+    "freePlan": "Kostenloser Plan",
+    "urgency": {
+      "roomToTest": "Sie haben noch Platz zum Testen.",
+      "almostOut": "Ihre Bilder gehen zur Neige.",
+      "lastImages": "Letzte verfügbare Bilder.",
+      "locked": "Generierung gesperrt. Upgraden Sie, um fortzufahren."
+    },
+    "unlockMoreImages": "Mehr Bilder Freischalten",
+    "stickyBar": {
+      "message": "Sie generieren Ergebnisse. Bereit zu skalieren?",
+      "cta": "200 Credits freischalten — 49 €"
+    },
+    "postGeneration": {
+      "title": "Dieses Bild wurde mit dem kostenlosen Plan erstellt.",
+      "description": "Mit Plus können Sie diesen Monat 200 Bilder generieren.",
+      "upgradeCta": "Upgraden und Meinen Shop Skalieren",
+      "continueFree": "Mit Kostenlos fortfahren"
+    },
+    "billing": {
+      "currentPlan": "Aktueller Plan",
+      "whatYouUnlock": "Was Sie mit Plus freischalten",
+      "creditsPerMonth": "200 Credits/Monat",
+      "highResolution": "Hohe Auflösung",
+      "prioritySupport": "Prioritäts-Support",
+      "unlockPlus": "Plus Freischalten",
+      "billingDetails": "Rechnungsdetails"
+    },
+    "pricing": {
+      "perImage": "/Bild",
+      "credits": "Credits"
+    }
   }
 }

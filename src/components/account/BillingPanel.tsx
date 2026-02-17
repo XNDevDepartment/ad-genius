@@ -146,7 +146,7 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
     <div className="lg:hidden space-y-5">
       {/* 1. Current Plan Badge */}
       <div className="rounded-2xl bg-gradient-to-br from-primary to-primary/80 p-6 text-primary-foreground">
-        <p className="text-sm font-medium opacity-80">Current Plan</p>
+        <p className="text-sm font-medium opacity-80">{t('mobileUpgrade.billing.currentPlan')}</p>
         <h2 className="text-3xl font-bold mt-1">{tier}</h2>
         <p className="text-sm opacity-70 mt-1">{getPlanPrice(tier)}</p>
         {isSubscribed() && (
@@ -159,25 +159,25 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
       {/* 2. What you unlock with Plus (Free tier only) */}
       {isFreeTier() && (
         <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
-          <h3 className="text-base font-bold text-foreground">What you unlock with Plus</h3>
+          <h3 className="text-base font-bold text-foreground">{t('mobileUpgrade.billing.whatYouUnlock')}</h3>
           <ul className="space-y-3">
             <li className="flex items-center gap-3">
               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <Images className="h-4 w-4 text-primary" />
               </div>
-              <span className="text-sm font-medium">200 credits/month</span>
+              <span className="text-sm font-medium">{t('mobileUpgrade.billing.creditsPerMonth')}</span>
             </li>
             <li className="flex items-center gap-3">
               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <Sparkles className="h-4 w-4 text-primary" />
               </div>
-              <span className="text-sm font-medium">High resolution</span>
+              <span className="text-sm font-medium">{t('mobileUpgrade.billing.highResolution')}</span>
             </li>
             <li className="flex items-center gap-3">
               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <Headphones className="h-4 w-4 text-primary" />
               </div>
-              <span className="text-sm font-medium">Priority support</span>
+              <span className="text-sm font-medium">{t('mobileUpgrade.billing.prioritySupport')}</span>
             </li>
           </ul>
         </div>
@@ -190,7 +190,7 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
           className="w-full h-14 text-base font-bold bg-gradient-to-r from-primary to-primary/80"
           onClick={() => window.location.href = '/pricing'}
         >
-          Unlock Plus
+          {t('mobileUpgrade.billing.unlockPlus')}
         </Button>
       ) : (
         <Button
@@ -207,7 +207,7 @@ export const BillingPanel = ({ onClose }: BillingPanelProps) => {
       <Collapsible open={billingOpen} onOpenChange={setBillingOpen}>
         <CollapsibleTrigger asChild>
           <Button variant="ghost" className="w-full justify-between text-muted-foreground">
-            Billing details
+            {t('mobileUpgrade.billing.billingDetails')}
             <ChevronDown className={`h-4 w-4 transition-transform ${billingOpen ? 'rotate-180' : ''}`} />
           </Button>
         </CollapsibleTrigger>

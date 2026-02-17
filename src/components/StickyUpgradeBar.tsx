@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTranslation } from "react-i18next";
 
 export const StickyUpgradeBar = () => {
   const [dismissed, setDismissed] = useState(false);
@@ -12,6 +13,7 @@ export const StickyUpgradeBar = () => {
   const { stats } = useUserStats();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { t } = useTranslation();
 
   if (!isMobile) return null;
   if (dismissed) return null;
@@ -27,7 +29,7 @@ export const StickyUpgradeBar = () => {
       <div className="flex items-center gap-3">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-foreground truncate">
-            You're generating results. Ready to scale?
+            {t('mobileUpgrade.stickyBar.message')}
           </p>
         </div>
         <Button
@@ -35,7 +37,7 @@ export const StickyUpgradeBar = () => {
           className="flex-shrink-0 font-bold text-xs"
           onClick={() => navigate("/pricing")}
         >
-          Unlock 200 credits — €49
+          {t('mobileUpgrade.stickyBar.cta')}
         </Button>
         <button
           onClick={() => setDismissed(true)}
