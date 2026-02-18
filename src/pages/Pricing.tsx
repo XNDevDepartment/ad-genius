@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Check, X, Star, Zap, Shield, Crown, Video as VideoIcon } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import HeaderSection from "@/components/landing/HeaderSection";
 import { useEffect, useState, useCallback } from "react";
@@ -247,62 +248,66 @@ const Pricing = () => {
               <div className="flex">
                 {plans.map((plan) => (
                   <div key={plan.id} className="flex-[0_0_85%] min-w-0 px-2">
-                    <div className={`rounded-2xl border-2 p-6 space-y-5 ${
-                      plan.popular ? 'border-primary bg-card shadow-lg' : 'border-border bg-card'
+                    <div className={`rounded-2xl border p-6 flex flex-col h-full ${
+                      plan.popular
+                        ? 'border-primary bg-card shadow-lg shadow-primary/10 ring-1 ring-primary/20'
+                        : 'border-border bg-card'
                     }`}>
-                      {plan.popular && (
-                        <Badge className="bg-primary text-primary-foreground">
-                          {t('pricing.plans.plus.popular')}
-                        </Badge>
-                      )}
-
-                      <div className="text-center space-y-1">
-                        <h3 className="text-lg font-bold">{t(`pricing.plans.${plan.id}.name`)}</h3>
-
-                        {/* Cost per image - LARGEST */}
-                        <div className="text-4xl font-black text-primary">
-                          €{calculatePricePerImage(plan.monthlyPrice, plan.credits)}
-                          <span className="text-base font-medium text-muted-foreground"> {t('mobileUpgrade.pricing.perImage')}</span>
-                        </div>
-
-                        {/* Monthly price */}
-                        <div className="text-lg text-muted-foreground">
-                          {getDisplayPrice(plan)}{t(`pricing.plans.${plan.id}.period`)}
-                        </div>
-
-                        {/* Credits */}
-                        <div className="text-base font-semibold text-foreground">
-                          {plan.credits} {t('mobileUpgrade.pricing.credits')}
-                        </div>
+                      {/* Plan name + badge */}
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="text-lg font-bold text-foreground">{t(`pricing.plans.${plan.id}.name`)}</h3>
+                        {plan.popular && (
+                          <Badge className="bg-primary text-primary-foreground text-xs">
+                            {t('pricing.plans.plus.popular')}
+                          </Badge>
+                        )}
                       </div>
 
-                      {(plan.id === 'plus' || plan.id === 'pro') && (
-                        <div className="flex justify-center">
-                          <span className="inline-flex items-center gap-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full">
-                            <VideoIcon className="h-3 w-3" />
-                            {t('pricing.includesVideo')}
-                          </span>
+                      {/* Description */}
+                      <p className="text-sm text-muted-foreground mb-4">{t(`pricing.plans.${plan.id}.description`)}</p>
+
+                      {/* Price */}
+                      <div className="mb-1">
+                        <span className="text-4xl font-bold text-foreground">{getDisplayPrice(plan)}</span>
+                        <span className="text-muted-foreground text-sm">{t(`pricing.plans.${plan.id}.period`)}</span>
+                      </div>
+                      {isYearly && plan.yearlyPrice && (
+                        <div className="text-xs text-muted-foreground mb-1">
+                          {t('pricing.billedAnnually', { amount: (plan.yearlyPrice * 12).toFixed(0) })}
                         </div>
                       )}
 
-                      <ul className="space-y-2">
-                        {plan.features.map((featureKey, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                            <span className="text-xs">{t(`pricing.plans.${plan.id}.features.${featureKey}`)}</span>
-                          </li>
-                        ))}
-                      </ul>
+                      {/* Cost per image */}
+                      <div className="text-sm font-semibold text-primary mb-5">
+                        €{calculatePricePerImage(plan.monthlyPrice, plan.credits)} {t('mobileUpgrade.pricing.perImage')}
+                      </div>
 
+                      {/* CTA */}
                       <Button
                         onClick={() => handlePlanSelect(plan.id)}
-                        className={`w-full h-14 text-base font-bold ${
-                          plan.popular ? 'bg-primary hover:bg-primary/90' : ''
-                        }`}
+                        className="w-full h-12 text-base font-bold mb-5"
+                        variant={plan.popular ? "default" : "outline"}
                         disabled={loading}
                       >
                         {loading ? t('pricing.loading') : t(`pricing.cta.${plan.id === 'starter' ? 'start' : plan.id === 'plus' ? 'goPlus' : 'goPro'}`)}
                       </Button>
+
+                      {/* Divider */}
+                      <Separator className="mb-4" />
+
+                      {/* What's included */}
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                        {t('pricing.whatsIncluded', "What's included")}
+                      </p>
+
+                      <ul className="space-y-2 flex-1">
+                        {plan.features.map((featureKey, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                            <span className="text-xs text-foreground">{t(`pricing.plans.${plan.id}.features.${featureKey}`)}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
                 ))}
@@ -324,92 +329,86 @@ const Pricing = () => {
             </div>
           </div>
         ) : (
-          /* ===== DESKTOP: Grid layout (unchanged) ===== */
+          /* ===== DESKTOP: Higgsfield-inspired layout ===== */
           <div className="grid md:grid-cols-3 gap-6 max-w-7xl mx-auto mb-20">
             {plans.map((plan) => (
               <Card
                 key={plan.id}
-                className={`relative border-2 transition-all duration-300 hover:shadow-lg ${
+                className={`relative flex flex-col border transition-all duration-300 hover:shadow-lg ${
                   plan.popular
-                    ? "border-primary shadow-lg scale-105 bg-white dark:bg-card"
-                    : "border-border hover:border-primary/50"
+                    ? "border-primary shadow-lg shadow-primary/10 ring-1 ring-primary/20"
+                    : "border-border hover:border-primary/30"
                 }`}
               >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-primary text-primary-foreground px-4 py-1">
-                      {t('pricing.plans.plus.popular')}
-                    </Badge>
+                <CardHeader className="pb-4">
+                  {/* Plan name + badge */}
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl font-bold">{t(`pricing.plans.${plan.id}.name`)}</CardTitle>
+                    {plan.popular && (
+                      <Badge className="bg-primary text-primary-foreground">
+                        {t('pricing.plans.plus.popular')}
+                      </Badge>
+                    )}
                   </div>
-                )}
 
-                <CardHeader className="text-center">
-                  <div className="flex justify-center mb-4">
-                    <div className={`p-3 rounded-full ${
-                      plan.popular ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                    }`}>
-                      {plan.icon}
-                    </div>
-                  </div>
-                  {(plan.id === 'founders' || plan.id === 'plus' || plan.id === 'pro') && (
-                    <div className="mb-2">
-                      <span className="inline-flex items-center gap-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full">
-                        <VideoIcon className="h-3 w-3" />
-                        {t('pricing.includesVideo')}
-                      </span>
-                    </div>
-                  )}
-                  <CardTitle className="text-xl font-bold">{t(`pricing.plans.${plan.id}.name`)}</CardTitle>
-                  <div className="mb-4">
-                    <span className="text-3xl font-bold text-primary">{getDisplayPrice(plan)}</span>
+                  {/* Description */}
+                  <CardDescription className="text-sm mt-1">
+                    {t(`pricing.plans.${plan.id}.description`)}
+                  </CardDescription>
+
+                  {/* Price */}
+                  <div className="mt-4">
+                    <span className="text-4xl font-bold text-foreground">{getDisplayPrice(plan)}</span>
                     {plan.period && (
                       <span className="text-muted-foreground text-sm">{t(`pricing.plans.${plan.id}.period`)}</span>
                     )}
                     {isYearly && plan.monthlyPrice && plan.yearlyPrice && (
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-muted-foreground mt-1">
                         {t('pricing.billedAnnually', { amount: (plan.yearlyPrice * 12).toFixed(0) })}
                       </div>
                     )}
-                    <div className="text-sm text-primary/80 font-medium mt-1">
-                      {t('pricing.perImage', { price: calculatePricePerImage(plan.monthlyPrice, plan.credits) })}
-                    </div>
                   </div>
-                  <CardDescription className="text-sm">
-                    {t(`pricing.plans.${plan.id}.description`)}
-                  </CardDescription>
+
+                  {/* Cost per image */}
+                  <div className="text-sm font-semibold text-primary mt-1">
+                    {t('pricing.perImage', { price: calculatePricePerImage(plan.monthlyPrice, plan.credits) })}
+                  </div>
                 </CardHeader>
 
-                <CardContent className="space-y-6">
-                  <div className="text-center p-3 bg-muted rounded-lg">
-                    <div className="text-xl font-bold text-primary">{plan.credits}</div>
-                    <div className="text-xs text-muted-foreground">{t('pricing.creditsPerMonth')}</div>
-                  </div>
-
-                  <ul className="space-y-2">
-                    {plan.features.map((featureKey, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span className="text-xs">{t(`pricing.plans.${plan.id}.features.${featureKey}`)}</span>
-                      </li>
-                    ))}
-                  </ul>
-
+                <CardContent className="flex flex-col flex-1 space-y-5">
+                  {/* CTA */}
                   <Button
                     onClick={() => handlePlanSelect(plan.id)}
-                    className={`w-full ${
-                      plan.popular ? "bg-primary hover:bg-primary/90" : "variant-outline"
-                    }`}
-                    size="sm"
+                    className="w-full"
+                    variant={plan.popular ? "default" : "outline"}
                     disabled={loading}
                   >
                     {loading ? t('pricing.loading') : t(`pricing.cta.${plan.id === 'starter' ? 'start' : plan.id === 'plus' ? 'goPlus' : 'goPro'}`)}
                   </Button>
+
+                  {/* Divider */}
+                  <Separator />
+
+                  {/* What's included */}
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                      {t('pricing.whatsIncluded', "What's included")}
+                    </p>
+
+                    <ul className="space-y-2.5">
+                      {plan.features.map((featureKey, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                          <span className="text-sm">{t(`pricing.plans.${plan.id}.features.${featureKey}`)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
-
         {/* Detailed Comparison Table - hidden on mobile */}
         <div className="max-w-6xl mx-auto hidden lg:block">
           <div className="text-center mb-12">

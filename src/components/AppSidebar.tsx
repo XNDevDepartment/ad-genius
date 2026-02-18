@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/sidebar";
 
 // Main navigation items
-const mainNavItems = [
+const mainNavItems: Array<{ id: string; icon: any; path: string; primary?: boolean; adminOnly?: boolean }> = [
   { id: "home", icon: Home, path: "/" },
   { id: "create", icon: Plus, path: "/create", primary: true },
   { id: "pricing", icon: Crown, path: "/pricing", primary: true },
