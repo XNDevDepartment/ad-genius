@@ -430,6 +430,8 @@
     "creditsPerMonth": "Créditos ",
     "loading": "Carregando...",
     "perImage": "(apenas €{{price}} por imagem)",
+    "bestValue": "Melhor Valor",
+    "saveCompared": "Poupe €{{amount}} vs mensal",
     "plans": {
       "starter": {
         "name": "Starter",

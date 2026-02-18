@@ -59,6 +59,7 @@ const plans = [
     limitations: [],
     cta: "Go Pro",
     popular: false,
+    bestValue: true,
     icon: <Shield className="h-6 w-6" />,
     bgClass: "bg-gradient-to-br from-accent to-secondary"
   }
@@ -83,7 +84,7 @@ const comparisonFeatures = [
 const Pricing = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const [isYearly, setIsYearly] = useState(false);
+  const [isYearly, setIsYearly] = useState(true);
   const { t } = useTranslation();
   const isMobile = useIsMobile();
 
@@ -112,6 +113,10 @@ const Pricing = () => {
       return (totalPrice / totalCredits).toFixed(2);
     }
     return (monthlyPrice / credits).toFixed(2);
+  };
+
+  const calculateYearlySavings = (plan: typeof plans[0]): number => {
+    return Math.round((plan.monthlyPrice * 12) - (plan.yearlyPrice * 12));
   };
 
   useEffect(() => {
@@ -241,92 +246,89 @@ const Pricing = () => {
           </div>
         )}
 
-        {/* ===== MOBILE: Swipeable carousel ===== */}
+        {/* ===== MOBILE: Vertical scroll ===== */}
         {isMobile ? (
-          <div className="mb-20">
-            <div className="overflow-hidden" ref={emblaRef}>
-              <div className="flex">
-                {plans.map((plan) => (
-                  <div key={plan.id} className="flex-[0_0_85%] min-w-0 px-2">
-                    <div className={`rounded-2xl border p-6 flex flex-col h-full ${
-                      plan.popular
-                        ? 'border-primary bg-card shadow-lg shadow-primary/10 ring-1 ring-primary/20'
-                        : 'border-border bg-card'
-                    }`}>
-                      {/* Plan name + badge */}
-                      <div className="flex items-center justify-between mb-1">
-                        <h3 className="text-lg font-bold text-foreground">{t(`pricing.plans.${plan.id}.name`)}</h3>
-                        {plan.popular && (
-                          <Badge className="bg-primary text-primary-foreground text-xs">
-                            {t('pricing.plans.plus.popular')}
-                          </Badge>
-                        )}
-                      </div>
+          <div className="space-y-4 mb-20">
+            {plans.map((plan) => (
+              <div key={plan.id} className={`rounded-2xl border p-6 flex flex-col ${
+                plan.popular
+                  ? 'border-primary bg-card shadow-lg shadow-primary/10 ring-1 ring-primary/20'
+                  : 'border-border bg-card'
+              }`}>
+                {/* Plan name + badges */}
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <h3 className="text-lg font-bold text-foreground">{t(`pricing.plans.${plan.id}.name`)}</h3>
+                  {plan.popular && (
+                    <Badge className="bg-primary text-primary-foreground text-xs">
+                      {t('pricing.plans.plus.popular')}
+                    </Badge>
+                  )}
+                  {(plan as any).bestValue && (
+                    <Badge variant="secondary" className="text-xs">
+                      {t('pricing.bestValue', 'Best Value')}
+                    </Badge>
+                  )}
+                </div>
 
-                      {/* Description */}
-                      <p className="text-sm text-muted-foreground mb-4">{t(`pricing.plans.${plan.id}.description`)}</p>
+                {/* Description */}
+                <p className="text-sm text-muted-foreground mb-4">{t(`pricing.plans.${plan.id}.description`)}</p>
 
-                      {/* Price */}
-                      <div className="mb-1">
-                        <span className="text-4xl font-bold text-foreground">{getDisplayPrice(plan)}</span>
-                        <span className="text-muted-foreground text-sm">{t(`pricing.plans.${plan.id}.period`)}</span>
-                      </div>
-                      {isYearly && plan.yearlyPrice && (
-                        <div className="text-xs text-muted-foreground mb-1">
-                          {t('pricing.billedAnnually', { amount: (plan.yearlyPrice * 12).toFixed(0) })}
-                        </div>
-                      )}
-
-                      {/* Cost per image */}
-                      <div className="text-sm font-semibold text-primary mb-5">
-                        €{calculatePricePerImage(plan.monthlyPrice, plan.credits)} {t('mobileUpgrade.pricing.perImage')}
-                      </div>
-
-                      {/* CTA */}
-                      <Button
-                        onClick={() => handlePlanSelect(plan.id)}
-                        className="w-full h-12 text-base font-bold mb-5"
-                        variant={plan.popular ? "default" : "outline"}
-                        disabled={loading}
-                      >
-                        {loading ? t('pricing.loading') : t(`pricing.cta.${plan.id === 'starter' ? 'start' : plan.id === 'plus' ? 'goPlus' : 'goPro'}`)}
-                      </Button>
-
-                      {/* Divider */}
-                      <Separator className="mb-4" />
-
-                      {/* What's included */}
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                        {t('pricing.whatsIncluded', "What's included")}
-                      </p>
-
-                      <ul className="space-y-2 flex-1">
-                        {plan.features.map((featureKey, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                            <span className="text-xs text-foreground">{t(`pricing.plans.${plan.id}.features.${featureKey}`)}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                {/* Price with strikethrough */}
+                <div className="mb-1">
+                  {isYearly && (
+                    <span className="text-lg text-muted-foreground line-through mr-2">€{plan.monthlyPrice}</span>
+                  )}
+                  <span className="text-4xl font-bold text-foreground">{getDisplayPrice(plan)}</span>
+                  <span className="text-muted-foreground text-sm">{t(`pricing.plans.${plan.id}.period`)}</span>
+                </div>
+                {isYearly && plan.yearlyPrice && (
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {t('pricing.billedAnnually', { amount: (plan.yearlyPrice * 12).toFixed(0) })}
                   </div>
-                ))}
-              </div>
-            </div>
+                )}
 
-            {/* Dot indicators */}
-            <div className="flex justify-center gap-2 mt-4">
-              {plans.map((_, idx) => (
-                <button
-                  key={idx}
-                  className={`h-2 rounded-full transition-all ${
-                    idx === selectedIndex ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/30'
-                  }`}
-                  onClick={() => emblaApi?.scrollTo(idx)}
-                  aria-label={`Go to plan ${idx + 1}`}
-                />
-              ))}
-            </div>
+                {/* Savings tag */}
+                {isYearly && (
+                  <div className="mb-2">
+                    <Badge variant="secondary" className="bg-primary/10 text-primary text-xs font-medium">
+                      {t('pricing.saveCompared', { amount: calculateYearlySavings(plan) })}
+                    </Badge>
+                  </div>
+                )}
+
+                {/* Cost per image */}
+                <div className="text-sm font-semibold text-primary mb-5">
+                  €{calculatePricePerImage(plan.monthlyPrice, plan.credits)} {t('mobileUpgrade.pricing.perImage')}
+                </div>
+
+                {/* CTA */}
+                <Button
+                  onClick={() => handlePlanSelect(plan.id)}
+                  className="w-full h-12 text-base font-bold mb-5"
+                  variant={plan.popular ? "default" : "outline"}
+                  disabled={loading}
+                >
+                  {loading ? t('pricing.loading') : t(`pricing.cta.${plan.id === 'starter' ? 'start' : plan.id === 'plus' ? 'goPlus' : 'goPro'}`)}
+                </Button>
+
+                {/* Divider */}
+                <Separator className="mb-4" />
+
+                {/* What's included */}
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                  {t('pricing.whatsIncluded', "What's included")}
+                </p>
+
+                <ul className="space-y-2 flex-1">
+                  {plan.features.map((featureKey, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span className="text-xs text-foreground">{t(`pricing.plans.${plan.id}.features.${featureKey}`)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         ) : (
           /* ===== DESKTOP: Higgsfield-inspired layout ===== */
@@ -341,12 +343,17 @@ const Pricing = () => {
                 }`}
               >
                 <CardHeader className="pb-4">
-                  {/* Plan name + badge */}
-                  <div className="flex items-center justify-between">
+                  {/* Plan name + badges */}
+                  <div className="flex items-center gap-2 flex-wrap">
                     <CardTitle className="text-xl font-bold">{t(`pricing.plans.${plan.id}.name`)}</CardTitle>
                     {plan.popular && (
                       <Badge className="bg-primary text-primary-foreground">
                         {t('pricing.plans.plus.popular')}
+                      </Badge>
+                    )}
+                    {(plan as any).bestValue && (
+                      <Badge variant="secondary">
+                        {t('pricing.bestValue', 'Best Value')}
                       </Badge>
                     )}
                   </div>
@@ -356,8 +363,11 @@ const Pricing = () => {
                     {t(`pricing.plans.${plan.id}.description`)}
                   </CardDescription>
 
-                  {/* Price */}
+                  {/* Price with strikethrough */}
                   <div className="mt-4">
+                    {isYearly && (
+                      <span className="text-lg text-muted-foreground line-through mr-2">€{plan.monthlyPrice}</span>
+                    )}
                     <span className="text-4xl font-bold text-foreground">{getDisplayPrice(plan)}</span>
                     {plan.period && (
                       <span className="text-muted-foreground text-sm">{t(`pricing.plans.${plan.id}.period`)}</span>
@@ -368,6 +378,15 @@ const Pricing = () => {
                       </div>
                     )}
                   </div>
+
+                  {/* Savings tag */}
+                  {isYearly && (
+                    <div className="mt-2">
+                      <Badge variant="secondary" className="bg-primary/10 text-primary text-xs font-medium">
+                        {t('pricing.saveCompared', { amount: calculateYearlySavings(plan) })}
+                      </Badge>
+                    </div>
+                  )}
 
                   {/* Cost per image */}
                   <div className="text-sm font-semibold text-primary mt-1">
