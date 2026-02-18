@@ -462,7 +462,19 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
                       type="button"
                       variant="outline"
                       className={GOOGLE_BUTTON_CLASS}
-                      onClick={async () => { /* keep your existing logic */ }}
+                      onClick={async () => {
+                        try {
+                          setLoading(true);
+                          const { error } = await signInWithGoogle();
+                          if (error) {
+                            toast.error(error.message || t('auth.googleError', 'Failed to sign in with Google'));
+                          }
+                        } catch (err: any) {
+                          toast.error(err?.message || t('auth.googleError', 'An error occurred with Google sign-in'));
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
                       disabled={loading}
                     >
                       <GoogleLogo className="mr-2 h-4 w-4" />
@@ -635,7 +647,19 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
                   type="button"
                   variant="outline"
                   className={GOOGLE_BUTTON_CLASS}
-                  onClick={async () => { /* keep your existing logic */ }}
+                  onClick={async () => {
+                    try {
+                      setLoading(true);
+                      const { error } = await signInWithGoogle();
+                      if (error) {
+                        toast.error(error.message || t('auth.googleError', 'Failed to sign in with Google'));
+                      }
+                    } catch (err: any) {
+                      toast.error(err?.message || t('auth.googleError', 'An error occurred with Google sign-in'));
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
                   disabled={loading}
                 >
                   <GoogleLogo className="mr-2 h-4 w-4" />
