@@ -1,93 +1,114 @@
 
-# Pricing Page Redesign (ProduktPix Palette) + AppSidebar Fix
+# Pricing Page Update: Annual Default, Tags, and Vertical Mobile Scroll
 
-## Part 1: Fix AppSidebar Build Error
+## Summary
 
-**File:** `src/components/AppSidebar.tsx`
+Three changes based on the Higgsfield reference screenshots:
 
-The `mainNavItems` array only has active items without `adminOnly` (it exists in commented-out items). TypeScript cannot infer the property.
-
-**Fix:** Add `adminOnly?: boolean` to the type by adding a type annotation:
-
-```typescript
-const mainNavItems: Array<{ id: string; icon: any; path: string; primary?: boolean; adminOnly?: boolean }> = [
-  ...
-];
-```
+1. **Annual billing as default** -- toggle starts on "Yearly" instead of "Monthly"
+2. **Add tags/badges** to plan cards (like "MOST POPULAR", "BEST VALUE", savings tags like "Save EUR58 compared to monthly")
+3. **Mobile: vertical scroll** instead of horizontal swipe carousel
 
 ---
 
-## Part 2: Pricing Page Redesign (Higgsfield Structure, ProduktPix Colors)
+## 1. Annual as Default
 
-Restructure the desktop pricing cards to follow the Higgsfield layout pattern while using ProduktPix's existing design tokens (primary blue-purple, accent purple, gradients). No lime/green imports.
+**File:** `src/pages/Pricing.tsx` (line 86)
 
-### Desktop Card Redesign
+Change `useState(false)` to `useState(true)` so the yearly toggle is active by default.
 
-Each card follows this structure:
+---
 
-```text
-+----------------------------------+
-|  Plan Name        [Most Popular] |
-|  Short description               |
-|                                  |
-|  EUR49 /month                    |
-|  EUR0.24 per image               |
-|                                  |
-|  [ Subscribe to Plus ]           |
-|                                  |
-|  --------------------------------|
-|                                  |
-|  What's included                 |
-|  [check] 200 credits/month       |
-|  [check] 3 images simultaneously |
-|  [check] Unlimited scenarios     |
-|  [check] Priority support        |
-|  [check] Commercial usage        |
-+----------------------------------+
+## 2. Add Tags/Badges to Plan Cards
+
+Inspired by the Higgsfield screenshots, each plan card will show contextual tags:
+
+| Plan | Tags |
+|---|---|
+| Starter | (none -- cheapest plan, no special tag) |
+| Plus | "MOST POPULAR" badge (already exists), + savings tag: "Save EUR98 compared to monthly" |
+| Pro | "BEST VALUE" badge (new), + savings tag: "Save EUR198 compared to monthly" |
+
+### Savings calculation
+When annual is selected, show a small pill/badge below the price:
+- **Starter:** Save EUR58 (29x12 - 24.17x12 = 348-290 = 58)
+- **Plus:** Save EUR98 (49x12 - 40.83x12 = 588-490 = 98)
+- **Pro:** Save EUR198 (99x12 - 82.50x12 = 1188-990 = 198)
+
+The savings badge will use a subtle primary-tinted background like `bg-primary/10 text-primary` with a small text.
+
+### "BEST VALUE" badge for Pro
+Add a `bestValue` flag to the Pro plan data and render a `Badge` similar to "Most Popular" but with different styling (e.g., `bg-accent text-accent-foreground`).
+
+### Strikethrough monthly price when annual is selected
+Like Higgsfield shows `$29` crossed out next to `$23`, show: `~~EUR49~~ EUR40.83/month` when yearly is active.
+
+### New translation keys needed
+
+Add to all 5 locale files under `pricing`:
+- `pricing.bestValue`: "Best Value"
+- `pricing.saveCompared`: "Save EUR{{amount}} vs monthly"
+
+---
+
+## 3. Mobile: Vertical Scroll Instead of Horizontal Carousel
+
+Replace the Embla carousel mobile section with a simple vertical stack:
+
+```
+<div className="space-y-4 mb-20">
+  {plans.map((plan) => (
+    <div key={plan.id} className="...card styles...">
+      ...same card content...
+    </div>
+  ))}
+</div>
 ```
 
-### Styling (using existing ProduktPix palette)
+This removes:
+- The `emblaRef` div wrapper
+- The `flex` horizontal layout
+- The dot indicators
+- The `flex-[0_0_85%]` sizing
 
-| Element | Style |
-|---|---|
-| Section background | `bg-background` (existing, clean) |
-| Card background | `bg-card border border-border` with subtle hover shadow |
-| Popular card | `border-primary shadow-lg shadow-primary/10 ring-1 ring-primary/20` |
-| Popular badge | `bg-primary text-primary-foreground` (existing blue-purple) |
-| Price text | `text-foreground` large, bold |
-| Cost per image | `text-primary` (blue-purple accent) |
-| CTA (popular) | `bg-gradient-primary text-primary-foreground` (existing gradient) |
-| CTA (others) | `variant="outline"` with `border-border hover:bg-muted` |
-| Feature checkmarks | `text-primary` (blue-purple, NOT lime/green) |
-| Divider | `border-t border-border` |
-| "What's included" label | `text-sm font-semibold text-muted-foreground uppercase tracking-wide` |
+The Embla carousel import can stay (no harm) but its ref will no longer be attached on mobile.
 
-### Changes to Desktop Cards
+---
 
-1. Remove icon circles from card tops
-2. Reorder: name + badge -> description -> price (large) -> cost per image -> CTA -> divider -> "What's included" + feature list
-3. Popular card gets gradient CTA, others get outline
-4. Add "What's included" header above feature list with a `Separator` divider
-5. Cards get equal height with `flex flex-col` and feature list in `flex-1`
-
-### Mobile Cards (same structure update)
-
-Apply the same content reorder to the existing swipeable carousel cards:
-- Name + badge, description, price, cost per image, CTA, divider, features
-- Same color scheme (no lime)
-
-### Comparison Table, Credit System, FAQ
-
-- No structural changes, keep as-is
-- They already use ProduktPix palette
-
-### Technical Changes
+## Technical Changes
 
 | File | Change |
 |---|---|
-| `src/components/AppSidebar.tsx` | Add type annotation to `mainNavItems` array to include `adminOnly?: boolean` |
-| `src/pages/Pricing.tsx` | Restructure desktop and mobile card content order; remove icon circles; add "What's included" divider section; update CTA styles (gradient for popular, outline for others); use `text-primary` for checkmarks |
+| `src/pages/Pricing.tsx` | 1. `isYearly` default to `true`. 2. Add `bestValue` flag to Pro plan. 3. Show strikethrough monthly price when yearly is selected. 4. Add savings badge when yearly is active. 5. Add "Best Value" badge to Pro. 6. Replace mobile carousel with vertical stack of cards. |
+| `src/i18n/locales/en.json` | Add `pricing.bestValue` and `pricing.saveCompared` keys |
+| `src/i18n/locales/pt.json` | Add same keys in Portuguese |
+| `src/i18n/locales/es.json` | Add same keys in Spanish |
+| `src/i18n/locales/fr.json` | Add same keys in French |
+| `src/i18n/locales/de.json` | Add same keys in German |
 
-### No new dependencies
+### Desktop card structure (updated)
 
-All styling uses existing Tailwind classes and ProduktPix design tokens.
+```
++------------------------------------------+
+|  Plan Name     [MOST POPULAR] [BEST VALUE]|
+|  Short description                        |
+|                                           |
+|  ~~EUR49~~ EUR40.83 /month               |
+|  Billed annually (EUR490/year)            |
+|  [Save EUR98 vs monthly]  <-- green tag   |
+|  EUR0.20 per image                        |
+|                                           |
+|  [ Select Plan ]                          |
+|                                           |
+|  -----------------------------------------|
+|                                           |
+|  What's included                          |
+|  [check] 200 credits per month            |
+|  [check] Generate up to 3 simultaneously  |
+|  [check] Unlimited Scenarios              |
+|  [check] Priority + Live chat             |
+|  [check] Commercial usage                 |
++------------------------------------------+
+```
+
+### No new dependencies needed
