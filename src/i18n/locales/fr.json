@@ -426,7 +426,7 @@
     "promoCode": "Vous avez un code promotionnel ? Vous pouvez le saisir au moment du paiement",
     "loadingAccount": "Chargement des informations de votre compte...",
     "includesVideo": "Inclut la Génération de Vidéo",
-    "billedAnnually": "Facturé annuellement (€{amount}/an)",
+    "billedAnnually": "Facturé annuellement (€{{amount}}/an)",
     "creditsPerMonth": "Crédits",
     "loading": "Chargement...",
     "perImage": "(seulement €{{price}} par image)",

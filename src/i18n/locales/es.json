@@ -426,7 +426,7 @@
     "promoCode": "¿Tienes un código promocional? Puedes ingresarlo en el checkout",
     "loadingAccount": "Cargando la información de tu cuenta...",
     "includesVideo": "Incluye Generación de Video",
-    "billedAnnually": "Facturado anualmente (€{amount}/año)",
+    "billedAnnually": "Facturado anualmente (€{{amount}}/año)",
     "creditsPerMonth": "Créditos",
     "loading": "Cargando...",
     "perImage": "(solo €{{price}} por imagen)",

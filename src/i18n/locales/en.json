@@ -422,7 +422,7 @@
     "promoCode": "Have a promotion code? You can enter it at checkout",
     "loadingAccount": "Loading your account information...",
     "includesVideo": "Includes Video Generation",
-    "billedAnnually": "Billed annually (€{amount}/year)",
+    "billedAnnually": "Billed annually (€{{amount}}/year)",
     "creditsPerMonth": "Credits",
     "loading": "Loading...",
     "perImage": "(only €{{price}} per image)",

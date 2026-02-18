@@ -76,7 +76,7 @@ const comparisonFeatures = [
   { featureKey: "commercialUsage", starter: true, plus: true, pro: true },
   { featureKey: "prioritySupport", starter: false, plus: true, pro: true },
   { featureKey: "dedicatedManager", starter: false, plus: false, pro: true },
-  { featureKey: "freeBetaFeatures", starter: false, plus: false, pro: true },
+  // { featureKey: "freeBetaFeatures", starter: false, plus: false, pro: true },
   { featureKey: "earlyAccess", starter: false, plus: false, pro: true },
   { featureKey: "businessConsulting", starter: false, plus: false, pro: true }
 ];
@@ -374,7 +374,7 @@ const Pricing = () => {
                     )}
                     {isYearly && plan.monthlyPrice && plan.yearlyPrice && (
                       <div className="text-xs text-muted-foreground mt-1">
-                        {t('pricing.billedAnnually', { amount: (plan.yearlyPrice * 12).toFixed(0) })}
+                        {t('pricing.billedAnnually', {amount: (plan.yearlyPrice * 12).toFixed(0) })}
                       </div>
                     )}
                   </div>
