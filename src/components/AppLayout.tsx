@@ -38,7 +38,7 @@ const AppLayout = () => {
       {/* Mobile Layout */}
       <div className="lg:hidden">
         {/* <AnnouncementBanner /> */}
-        {showHeader && <NavigationHeader />}
+        {showHeader && user && <NavigationHeader />}
         <main className="pb-20">
           <Outlet />
         </main>
