@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { LogIn } from "lucide-react";
 import logoHorizontal from "@/assets/logos/logo_horizontal.png";
 
 export const MinimalHeader = () => {
@@ -48,13 +49,23 @@ export const MinimalHeader = () => {
           </button>
         </nav>
 
-        {/* CTA Button */}
-        <Button 
-          size="sm"
-          onClick={() => navigate('/signup')}
-        >
-          {t('landingV2.header.getStarted', 'Get Started')}
-        </Button>
+        {/* CTA Buttons */}
+        <div className="flex items-center gap-2">
+          <Button 
+            size="sm"
+            variant="outline"
+            onClick={() => navigate('/signin')}
+          >
+            <LogIn className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">{t('common.signIn', 'Sign In')}</span>
+          </Button>
+          <Button 
+            size="sm"
+            onClick={() => navigate('/signup')}
+          >
+            {t('landingV2.header.getStarted', 'Get Started')}
+          </Button>
+        </div>
       </div>
     </header>
   );
