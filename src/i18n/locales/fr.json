@@ -1960,10 +1960,12 @@
     },
     "hero": {
       "badge": "Photographie de Produit par IA",
-      "title1": "Créez des Images de Produit",
-      "title2": "Qui Vendent Vraiment",
-      "description": "Transformez de simples photos de produits en visuels e-commerce professionnels avec l'IA. Sans photographe.",
+      "title1": "Photos de Produit Professionnelles",
+      "title2": "Sans Studio Photo",
+      "description": "Économisez des milliers en photographie. Obtenez des images produit de qualité studio à partir d'une simple photo de téléphone — prêtes en secondes, pas en jours.",
       "cta": "Commencez Gratuitement",
+      "bookDemo": "Réserver une Démo",
+      "trustLine": "Utilisé par plus de 10 000 entreprises e-commerce dans le monde",
       "noCreditCard": "Sans carte de crédit"
     },
     "logos": {
@@ -2054,6 +2056,52 @@
       },
       "contact": "Vous avez encore des questions ?",
       "contactLink": "Contactez-nous"
+    },
+    "valueProps": {
+      "title": "Pourquoi les Entreprises Choisissent ProduktPix",
+      "subtitle": "Tout ce qu'il faut pour créer des images produit professionnelles — sans les coûts traditionnels",
+      "cost": {
+        "title": "Économisez Jusqu'à 90% sur la Photographie",
+        "description": "Pas de studio, pas de photographe, pas d'équipe de retouche. Des résultats professionnels à partir d'une photo de téléphone."
+      },
+      "speed": {
+        "title": "De la Photo à l'Annonce en 30 Secondes",
+        "description": "Arrêtez d'attendre des jours pour un shooting. Téléchargez, générez, publiez."
+      },
+      "results": {
+        "title": "Augmentez les Ventes avec de Meilleures Images",
+        "description": "Les photos produit professionnelles augmentent les taux de conversion jusqu'à 3x."
+      }
+    },
+    "useCases": {
+      "title": "Conçu pour Votre Type d'Entreprise",
+      "subtitle": "Découvrez comment des entreprises comme la vôtre utilisent ProduktPix au quotidien",
+      "seeHow": "Voir comment ça marche →",
+      "clothing": { "title": "Boutiques de Vêtements en Ligne", "description": "Montrez les vêtements sur des modèles IA dans des décors lifestyle" },
+      "jewelry": { "title": "Bijoux et Accessoires", "description": "Gros plans et photos lifestyle de qualité studio" },
+      "beauty": { "title": "Beauté et Cosmétiques", "description": "Présentations élégantes pour soins et maquillage" },
+      "home": { "title": "Mobilier et Décoration", "description": "Placez les produits dans des intérieurs stylisés" },
+      "handmade": { "title": "Artisanat et Fait Main", "description": "Photos professionnelles pour Etsy, marchés et plus" },
+      "food": { "title": "Alimentation et Boissons", "description": "Photos appétissantes pour emballages et menus" }
+    },
+    "testimonials": {
+      "title": "Adoré par les Entrepreneurs",
+      "subtitle": "Découvrez ce que de vraies entreprises disent de ProduktPix",
+      "t1": {
+        "quote": "Nous dépensions 2 000€ par shooting. Maintenant nous créons de meilleures images en minutes pour une fraction du coût. Un vrai changement pour notre petite équipe.",
+        "name": "Ana R.",
+        "role": "Propriétaire, Boutique de Mode en Ligne"
+      },
+      "t2": {
+        "quote": "Je vends des bijoux artisanaux sur Etsy. ProduktPix me donne le look professionnel d'une grande marque sans embaucher de photographe.",
+        "name": "Marco S.",
+        "role": "Vendeur Etsy, Bijoux Artisanaux"
+      },
+      "t3": {
+        "quote": "Notre taux de conversion a augmenté de 40% après le passage aux images lifestyle générées par IA. Le retour sur investissement a été immédiat.",
+        "name": "Sofia L.",
+        "role": "Responsable E-commerce, Marque de Décoration"
+      }
     },
     "footer": {
       "pricing": "Tarifs",

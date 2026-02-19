@@ -2,9 +2,11 @@ import { useEffect } from "react";
 import { MinimalHeader } from "@/components/landing-v2/MinimalHeader";
 import { MinimalHero } from "@/components/landing-v2/MinimalHero";
 import { LogoMarquee } from "@/components/landing-v2/LogoMarquee";
-import { ImageMarquee } from "@/components/landing-v2/ImageMarquee";
-import { StatsGrid } from "@/components/landing-v2/StatsGrid";
+import { ValuePropsSection } from "@/components/landing-v2/ValuePropsSection";
 import { BeforeAfterShowcase } from "@/components/landing-v2/BeforeAfterShowcase";
+import { UseCasesGrid } from "@/components/landing-v2/UseCasesGrid";
+import { ImageMarquee } from "@/components/landing-v2/ImageMarquee";
+import { TestimonialsSection } from "@/components/landing-v2/TestimonialsSection";
 import { HowItWorksMinimal } from "@/components/landing-v2/HowItWorksMinimal";
 import { PricingComparison } from "@/components/landing-v2/PricingComparison";
 import { FAQAccordion } from "@/components/landing-v2/FAQAccordion";
@@ -48,9 +50,11 @@ const LandingPageV2 = () => {
       <main className="pt-16">
         <MinimalHero />
         <LogoMarquee />
-        <ImageMarquee />
-        <StatsGrid />
+        <ValuePropsSection />
         <BeforeAfterShowcase />
+        <UseCasesGrid />
+        <ImageMarquee />
+        <TestimonialsSection />
         <section id="how-it-works">
           <HowItWorksMinimal />
         </section>

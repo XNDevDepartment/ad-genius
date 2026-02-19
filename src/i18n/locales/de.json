@@ -2108,10 +2108,12 @@
     },
     "hero": {
       "badge": "KI-gestützte Produktfotografie",
-      "title1": "Erstellen Sie Produktbilder",
-      "title2": "Die Wirklich Verkaufen",
-      "description": "Verwandeln Sie einfache Produktfotos in professionelle E-Commerce-Bilder mit KI. Kein Fotograf nötig.",
+      "title1": "Professionelle Produktfotos",
+      "title2": "Ohne Fotostudio",
+      "description": "Sparen Sie Tausende bei der Fotografie. Erhalten Sie Produktbilder in Studioqualität von einem einfachen Handyfoto — fertig in Sekunden, nicht Tagen.",
       "cta": "Kostenlos Starten",
+      "bookDemo": "Demo Buchen",
+      "trustLine": "Von über 10.000 E-Commerce-Unternehmen weltweit genutzt",
       "noCreditCard": "Keine Kreditkarte erforderlich"
     },
     "logos": {
@@ -2202,6 +2204,52 @@
       },
       "contact": "Haben Sie noch Fragen?",
       "contactLink": "Kontaktieren Sie uns"
+    },
+    "valueProps": {
+      "title": "Warum Unternehmen ProduktPix Wählen",
+      "subtitle": "Alles, was Sie brauchen, um professionelle Produktbilder zu erstellen — ohne die traditionellen Kosten",
+      "cost": {
+        "title": "Sparen Sie Bis zu 90% bei der Fotografie",
+        "description": "Kein Studio, kein Fotograf, kein Bearbeitungsteam. Professionelle Ergebnisse von einem Handyfoto."
+      },
+      "speed": {
+        "title": "Vom Foto zum Listing in 30 Sekunden",
+        "description": "Warten Sie nicht mehr tagelang auf ein Fotoshooting. Hochladen, generieren, veröffentlichen."
+      },
+      "results": {
+        "title": "Steigern Sie den Umsatz mit Besseren Bildern",
+        "description": "Professionelle Produktfotos steigern die Conversion-Rate um bis zu 3x."
+      }
+    },
+    "useCases": {
+      "title": "Für Ihr Geschäft Gemacht",
+      "subtitle": "Sehen Sie, wie Unternehmen wie Ihres ProduktPix täglich nutzen",
+      "seeHow": "So funktioniert's →",
+      "clothing": { "title": "Online-Bekleidungsshops", "description": "Zeigen Sie Kleidung an KI-Models in Lifestyle-Settings" },
+      "jewelry": { "title": "Schmuck & Accessoires", "description": "Nahaufnahmen und Lifestyle-Fotos in Studioqualität" },
+      "beauty": { "title": "Beauty & Kosmetik", "description": "Elegante Produktpräsentationen für Hautpflege und Make-up" },
+      "home": { "title": "Möbel & Wohndeko", "description": "Platzieren Sie Produkte in stilvoll eingerichteten Räumen" },
+      "handmade": { "title": "Handgemacht & Kunsthandwerk", "description": "Professionelle Fotos für Etsy, Märkte und mehr" },
+      "food": { "title": "Lebensmittel & Getränke", "description": "Appetitliche Produktfotos für Verpackungen und Speisekarten" }
+    },
+    "testimonials": {
+      "title": "Geliebt von Geschäftsinhabern",
+      "subtitle": "Sehen Sie, was echte Unternehmen über ProduktPix sagen",
+      "t1": {
+        "quote": "Wir haben €2.000 pro Fotoshooting ausgegeben. Jetzt erstellen wir bessere Bilder in Minuten für einen Bruchteil der Kosten. Ein Game Changer für unser kleines Team.",
+        "name": "Ana R.",
+        "role": "Inhaberin, Online-Modeshop"
+      },
+      "t2": {
+        "quote": "Ich verkaufe handgemachten Schmuck auf Etsy. ProduktPix gibt mir den professionellen Look einer großen Marke ohne einen Fotografen zu engagieren.",
+        "name": "Marco S.",
+        "role": "Etsy-Verkäufer, Handgemachter Schmuck"
+      },
+      "t3": {
+        "quote": "Unsere Conversion-Rate stieg um 40% nach dem Wechsel zu KI-generierten Lifestyle-Bildern. Der ROI war sofort da.",
+        "name": "Sofia L.",
+        "role": "E-Commerce-Managerin, Deko-Marke"
+      }
     },
     "footer": {
       "pricing": "Preise",
