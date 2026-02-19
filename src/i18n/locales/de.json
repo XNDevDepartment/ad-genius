@@ -2236,19 +2236,22 @@
       "title": "Geliebt von Geschäftsinhabern",
       "subtitle": "Sehen Sie, was echte Unternehmen über ProduktPix sagen",
       "t1": {
-        "quote": "Wir haben €2.000 pro Fotoshooting ausgegeben. Jetzt erstellen wir bessere Bilder in Minuten für einen Bruchteil der Kosten. Ein Game Changer für unser kleines Team.",
-        "name": "Ana R.",
-        "role": "Inhaberin, Online-Modeshop"
+        "quote": "Ein Werkzeug mit großem Potenzial. Eine wertvolle Ergänzung zur Erstellung einzigartiger, herausragender Bilder.",
+        "name": "Andreia Vieira",
+        "role": "CEO",
+        "company": "OGatoDasFraldas"
       },
       "t2": {
-        "quote": "Ich verkaufe handgemachten Schmuck auf Etsy. ProduktPix gibt mir den professionellen Look einer großen Marke ohne einen Fotografen zu engagieren.",
-        "name": "Marco S.",
-        "role": "Etsy-Verkäufer, Handgemachter Schmuck"
+        "quote": "Wir erzielen bereits sehr, sehr interessante Ergebnisse! Die Ergebnisse waren schockierend! Sie waren so gut!!",
+        "name": "Sofia Santos",
+        "role": "Kreativdirektorin",
+        "company": "Bug Hug"
       },
       "t3": {
-        "quote": "Unsere Conversion-Rate stieg um 40% nach dem Wechsel zu KI-generierten Lifestyle-Bildern. Der ROI war sofort da.",
-        "name": "Sofia L.",
-        "role": "E-Commerce-Managerin, Deko-Marke"
+        "quote": "Die einfache Bedienung ist Fakt, aber das Endergebnis... was für eine Show!",
+        "name": "Luís Alves",
+        "role": "Gründer",
+        "company": "Yonos"
       }
     },
     "footer": {

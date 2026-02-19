@@ -2309,19 +2309,22 @@
       "title": "Loved by Business Owners",
       "subtitle": "See what real businesses say about ProduktPix",
       "t1": {
-        "quote": "We used to spend €2,000 per photoshoot. Now we create better images in minutes for a fraction of the cost. Game changer for our small team.",
-        "name": "Ana R.",
-        "role": "Owner, Online Fashion Store"
+        "quote": "A tool with great potential. A valuable addition for generating stand-out, unique images.",
+        "name": "Andreia Vieira",
+        "role": "CEO",
+        "company": "OGatoDasFraldas"
       },
       "t2": {
-        "quote": "I sell handmade jewelry on Etsy. ProduktPix gives me the professional look of a big brand without hiring a photographer.",
-        "name": "Marco S.",
-        "role": "Etsy Seller, Handmade Jewelry"
+        "quote": "We are already achieving very, very interesting results! The results were shocking! They were so good!!",
+        "name": "Sofia Santos",
+        "role": "Creative Director",
+        "company": "Bug Hug"
       },
       "t3": {
-        "quote": "Our conversion rate increased 40% after switching to AI-generated lifestyle images. The ROI was immediate.",
-        "name": "Sofia L.",
-        "role": "E-commerce Manager, Home Decor Brand"
+        "quote": "Good ease of use is a fact but the end result...what a show",
+        "name": "Luís Alves",
+        "role": "Founder",
+        "company": "Yonos"
       }
     },
     "footer": {

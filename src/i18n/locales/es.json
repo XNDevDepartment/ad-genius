@@ -2236,19 +2236,22 @@
       "title": "Adorado por Empresarios",
       "subtitle": "Mira lo que dicen negocios reales sobre ProduktPix",
       "t1": {
-        "quote": "Gastábamos €2.000 por sesión de fotos. Ahora creamos mejores imágenes en minutos por una fracción del coste. Un cambio total para nuestro pequeño equipo.",
-        "name": "Ana R.",
-        "role": "Propietaria, Tienda de Moda Online"
+        "quote": "Una herramienta con gran potencial. Una adición valiosa para generar imágenes únicas y destacadas.",
+        "name": "Andreia Vieira",
+        "role": "CEO",
+        "company": "OGatoDasFraldas"
       },
       "t2": {
-        "quote": "Vendo joyería artesanal en Etsy. ProduktPix me da el aspecto profesional de una gran marca sin contratar fotógrafo.",
-        "name": "Marco S.",
-        "role": "Vendedor Etsy, Joyería Artesanal"
+        "quote": "¡Ya estamos logrando resultados muy, muy interesantes! ¡Los resultados fueron impactantes! ¡Quedaron geniales!!",
+        "name": "Sofia Santos",
+        "role": "Directora Creativa",
+        "company": "Bug Hug"
       },
       "t3": {
-        "quote": "Nuestra tasa de conversión aumentó un 40% tras cambiar a imágenes lifestyle generadas con IA. El retorno fue inmediato.",
-        "name": "Sofia L.",
-        "role": "Gestora de E-commerce, Marca de Decoración"
+        "quote": "La facilidad de uso es un hecho, pero el resultado final... ¡qué espectáculo!",
+        "name": "Luís Alves",
+        "role": "Fundador",
+        "company": "Yonos"
       }
     },
     "footer": {
