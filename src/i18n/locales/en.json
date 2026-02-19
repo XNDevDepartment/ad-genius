@@ -2181,10 +2181,12 @@
     },
     "hero": {
       "badge": "AI-Powered Product Photography",
-      "title1": "Create Product Images",
-      "title2": "That Actually Sell",
-      "description": "Transform simple product photos into professional e-commerce visuals with AI. No photographer needed.",
+      "title1": "Professional Product Photos",
+      "title2": "Without the Studio",
+      "description": "Save thousands on photography. Get studio-quality product images from a simple phone photo — ready in seconds, not days.",
       "cta": "Start Creating Free",
+      "bookDemo": "Book a Demo",
+      "trustLine": "Trusted by 10,000+ e-commerce businesses worldwide",
       "noCreditCard": "No credit card required"
     },
     "logos": {
@@ -2275,6 +2277,52 @@
       },
       "contact": "Still have questions?",
       "contactLink": "Contact us"
+    },
+    "valueProps": {
+      "title": "Why Businesses Choose ProduktPix",
+      "subtitle": "Everything you need to create professional product images — without the traditional costs",
+      "cost": {
+        "title": "Save Up to 90% on Photography",
+        "description": "No studio, no photographer, no editing team. Get professional results from a phone photo."
+      },
+      "speed": {
+        "title": "From Photo to Listing in 30 Seconds",
+        "description": "Stop waiting days for a photoshoot. Upload, generate, publish."
+      },
+      "results": {
+        "title": "Increase Sales with Better Images",
+        "description": "Professional product photos boost conversion rates by up to 3x."
+      }
+    },
+    "useCases": {
+      "title": "Built for Your Kind of Business",
+      "subtitle": "See how businesses like yours use ProduktPix every day",
+      "seeHow": "See how it works →",
+      "clothing": { "title": "Online Clothing Stores", "description": "Show garments on AI models in lifestyle settings" },
+      "jewelry": { "title": "Jewelry & Accessories", "description": "Studio-quality close-ups and lifestyle shots" },
+      "beauty": { "title": "Beauty & Cosmetics", "description": "Elegant product presentations for skincare and makeup" },
+      "home": { "title": "Furniture & Home Decor", "description": "Place products in beautifully styled room settings" },
+      "handmade": { "title": "Handmade & Craft Sellers", "description": "Professional photos for Etsy, markets, and beyond" },
+      "food": { "title": "Food & Beverage", "description": "Appetizing product shots for packaging and menus" }
+    },
+    "testimonials": {
+      "title": "Loved by Business Owners",
+      "subtitle": "See what real businesses say about ProduktPix",
+      "t1": {
+        "quote": "We used to spend €2,000 per photoshoot. Now we create better images in minutes for a fraction of the cost. Game changer for our small team.",
+        "name": "Ana R.",
+        "role": "Owner, Online Fashion Store"
+      },
+      "t2": {
+        "quote": "I sell handmade jewelry on Etsy. ProduktPix gives me the professional look of a big brand without hiring a photographer.",
+        "name": "Marco S.",
+        "role": "Etsy Seller, Handmade Jewelry"
+      },
+      "t3": {
+        "quote": "Our conversion rate increased 40% after switching to AI-generated lifestyle images. The ROI was immediate.",
+        "name": "Sofia L.",
+        "role": "E-commerce Manager, Home Decor Brand"
+      }
     },
     "footer": {
       "pricing": "Pricing",

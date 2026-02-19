@@ -35,6 +35,18 @@ export const FAQAccordion = () => {
       question: t('landingV2.faq.q6', 'Do you offer refunds?'),
       answer: t('landingV2.faq.a6', 'Yes, we offer a 7-day money-back guarantee on all paid plans. If you\'re not satisfied, contact our support team for a full refund.'),
     },
+    {
+      question: t('landingV2.faq.q7', 'Do I need any design or AI skills?'),
+      answer: t('landingV2.faq.a7', 'Not at all! Just upload a photo of your product — even from your phone — and our AI handles the rest. No technical knowledge required.'),
+    },
+    {
+      question: t('landingV2.faq.q8', 'What kind of businesses use ProduktPix?'),
+      answer: t('landingV2.faq.a8', 'Businesses of all sizes — from solo Etsy sellers to large e-commerce brands. Popular categories include fashion, jewelry, cosmetics, home goods, food & beverage, and more.'),
+    },
+    {
+      question: t('landingV2.faq.q9', 'Can I try it before committing to a paid plan?'),
+      answer: t('landingV2.faq.a9', 'Absolutely! The free plan gives you 10 credits per month with no credit card required. Try it out and upgrade whenever you\'re ready.'),
+    },
   ];
 
   return (
