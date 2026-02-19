@@ -1,114 +1,137 @@
 
-# Pricing Page Update: Annual Default, Tags, and Vertical Mobile Scroll
+# Improve /lp Landing Page for SMB Audiences
 
-## Summary
+## Problem
 
-Three changes based on the Higgsfield reference screenshots:
+The current `/lp` page is optimized for tech-savvy users -- it leads with abstract stats, a marquee of generated images, and jumps to pricing. For small/medium business owners who are **less familiar with AI**, the page needs to:
 
-1. **Annual billing as default** -- toggle starts on "Yearly" instead of "Monthly"
-2. **Add tags/badges** to plan cards (like "MOST POPULAR", "BEST VALUE", savings tags like "Save EUR58 compared to monthly")
-3. **Mobile: vertical scroll** instead of horizontal swipe carousel
-
----
-
-## 1. Annual as Default
-
-**File:** `src/pages/Pricing.tsx` (line 86)
-
-Change `useState(false)` to `useState(true)` so the yearly toggle is active by default.
+1. **Explain the value in business terms** (save money, save time, sell more)
+2. **Show concrete use cases** (what does this look like for MY business?)
+3. **Build trust with social proof** (real testimonials, not just metrics)
+4. **Add a "Book a Demo" CTA** alongside the self-serve flow (per existing conversion strategy)
 
 ---
 
-## 2. Add Tags/Badges to Plan Cards
+## Proposed New Section Order
 
-Inspired by the Higgsfield screenshots, each plan card will show contextual tags:
+Current order:
+```
+Hero -> Logo Marquee -> Image Marquee -> Stats -> Before/After -> How It Works -> Pricing -> FAQ
+```
 
-| Plan | Tags |
+New order:
+```
+Hero (updated copy) -> Logo Marquee -> Pain Point / Value Props -> Before/After -> Use Cases for SMBs (NEW) -> Image Marquee -> Social Proof / Testimonials (NEW) -> How It Works -> Pricing -> FAQ
+```
+
+---
+
+## Changes in Detail
+
+### 1. Update MinimalHero copy for SMBs
+
+**File:** `src/components/landing-v2/MinimalHero.tsx`
+
+Change the headline and description to speak to business outcomes, not tech:
+- Current: "Create Product Images That Actually Sell"
+- New: "Professional Product Photos Without the Studio" (or similar)
+- Description: Focus on cost savings ("Save thousands on photography") and speed ("Ready in seconds, not days")
+- Add a secondary CTA: "Book a Demo" linking to Cal.com (per conversion strategy)
+- Add a trust line: "Trusted by 10,000+ e-commerce businesses"
+
+### 2. New Section: Pain Points / Value Props
+
+**New file:** `src/components/landing-v2/ValuePropsSection.tsx`
+
+A 3-column (desktop) / stacked (mobile) section with business-focused value propositions:
+
+| Prop | Title | Description |
+|---|---|---|
+| Cost icon | Save Up to 90% on Photography | No studio, no photographer, no editing team. Get professional results from a phone photo. |
+| Clock icon | From Photo to Listing in 30 Seconds | Stop waiting days for a photoshoot. Upload, generate, publish. |
+| TrendingUp icon | Increase Sales with Better Images | Professional product photos boost conversion rates by up to 3x. |
+
+Each card has an icon, bold title, and 2-line description. Simple, scannable, non-technical.
+
+### 3. New Section: SMB Use Cases
+
+**New file:** `src/components/landing-v2/UseCasesGrid.tsx`
+
+A visual grid showing **how different business types use ProduktPix**. 4-6 cards, each with:
+- Icon
+- Business type (e.g., "Online Clothing Store", "Handmade & Craft Sellers", "Beauty & Cosmetics Brands", "Furniture & Home Decor")
+- One-line benefit
+- "See how it works" link (scrolls to How It Works)
+
+This directly answers the question: "Is this for MY kind of business?"
+
+### 4. New Section: Social Proof / Testimonials
+
+**New file:** `src/components/landing-v2/TestimonialsSection.tsx`
+
+2-3 testimonial cards with:
+- Quote text
+- Name, role, company
+- Optional star rating
+
+For now, use representative quotes (can be updated with real testimonials later). Styled as cards with subtle borders, matching existing design system.
+
+### 5. Reorder Sections in LandingPageV2.tsx
+
+**File:** `src/pages/LandingPageV2.tsx`
+
+Import and place the 3 new sections in the updated order:
+```
+MinimalHero
+LogoMarquee
+ValuePropsSection (NEW)
+BeforeAfterShowcase
+UseCasesGrid (NEW)
+ImageMarquee
+TestimonialsSection (NEW)
+HowItWorksMinimal
+PricingComparison
+FAQAccordion
+```
+
+### 6. Update FAQ for SMBs
+
+**File:** `src/components/landing-v2/FAQAccordion.tsx`
+
+Add 2-3 SMB-focused FAQs:
+- "Do I need any design or AI skills?" -- No, just upload a photo.
+- "What kind of businesses use ProduktPix?" -- Fashion, jewelry, cosmetics, home goods, food, and more.
+- "Can I try it before committing?" -- Yes, the free plan gives you 10 credits.
+
+### 7. i18n: Add All New Keys
+
+**Files:** `src/i18n/locales/{en,pt,es,fr,de}.json`
+
+Add translation keys under `landingV2` for:
+- Updated hero copy
+- `valueProps` section (3 titles + 3 descriptions)
+- `useCases` section (header + 4-6 card titles/descriptions)
+- `testimonials` section (header + 2-3 quotes)
+- New FAQ entries
+
+---
+
+## Technical Summary
+
+| File | Action |
 |---|---|
-| Starter | (none -- cheapest plan, no special tag) |
-| Plus | "MOST POPULAR" badge (already exists), + savings tag: "Save EUR98 compared to monthly" |
-| Pro | "BEST VALUE" badge (new), + savings tag: "Save EUR198 compared to monthly" |
-
-### Savings calculation
-When annual is selected, show a small pill/badge below the price:
-- **Starter:** Save EUR58 (29x12 - 24.17x12 = 348-290 = 58)
-- **Plus:** Save EUR98 (49x12 - 40.83x12 = 588-490 = 98)
-- **Pro:** Save EUR198 (99x12 - 82.50x12 = 1188-990 = 198)
-
-The savings badge will use a subtle primary-tinted background like `bg-primary/10 text-primary` with a small text.
-
-### "BEST VALUE" badge for Pro
-Add a `bestValue` flag to the Pro plan data and render a `Badge` similar to "Most Popular" but with different styling (e.g., `bg-accent text-accent-foreground`).
-
-### Strikethrough monthly price when annual is selected
-Like Higgsfield shows `$29` crossed out next to `$23`, show: `~~EUR49~~ EUR40.83/month` when yearly is active.
-
-### New translation keys needed
-
-Add to all 5 locale files under `pricing`:
-- `pricing.bestValue`: "Best Value"
-- `pricing.saveCompared`: "Save EUR{{amount}} vs monthly"
-
----
-
-## 3. Mobile: Vertical Scroll Instead of Horizontal Carousel
-
-Replace the Embla carousel mobile section with a simple vertical stack:
-
-```
-<div className="space-y-4 mb-20">
-  {plans.map((plan) => (
-    <div key={plan.id} className="...card styles...">
-      ...same card content...
-    </div>
-  ))}
-</div>
-```
-
-This removes:
-- The `emblaRef` div wrapper
-- The `flex` horizontal layout
-- The dot indicators
-- The `flex-[0_0_85%]` sizing
-
-The Embla carousel import can stay (no harm) but its ref will no longer be attached on mobile.
-
----
-
-## Technical Changes
-
-| File | Change |
-|---|---|
-| `src/pages/Pricing.tsx` | 1. `isYearly` default to `true`. 2. Add `bestValue` flag to Pro plan. 3. Show strikethrough monthly price when yearly is selected. 4. Add savings badge when yearly is active. 5. Add "Best Value" badge to Pro. 6. Replace mobile carousel with vertical stack of cards. |
-| `src/i18n/locales/en.json` | Add `pricing.bestValue` and `pricing.saveCompared` keys |
-| `src/i18n/locales/pt.json` | Add same keys in Portuguese |
-| `src/i18n/locales/es.json` | Add same keys in Spanish |
-| `src/i18n/locales/fr.json` | Add same keys in French |
-| `src/i18n/locales/de.json` | Add same keys in German |
-
-### Desktop card structure (updated)
-
-```
-+------------------------------------------+
-|  Plan Name     [MOST POPULAR] [BEST VALUE]|
-|  Short description                        |
-|                                           |
-|  ~~EUR49~~ EUR40.83 /month               |
-|  Billed annually (EUR490/year)            |
-|  [Save EUR98 vs monthly]  <-- green tag   |
-|  EUR0.20 per image                        |
-|                                           |
-|  [ Select Plan ]                          |
-|                                           |
-|  -----------------------------------------|
-|                                           |
-|  What's included                          |
-|  [check] 200 credits per month            |
-|  [check] Generate up to 3 simultaneously  |
-|  [check] Unlimited Scenarios              |
-|  [check] Priority + Live chat             |
-|  [check] Commercial usage                 |
-+------------------------------------------+
-```
+| `src/components/landing-v2/MinimalHero.tsx` | Update copy, add "Book a Demo" CTA, add trust line |
+| `src/components/landing-v2/ValuePropsSection.tsx` | **New file** -- 3-column value props (cost, speed, results) |
+| `src/components/landing-v2/UseCasesGrid.tsx` | **New file** -- 4-6 business type cards |
+| `src/components/landing-v2/TestimonialsSection.tsx` | **New file** -- 2-3 testimonial cards |
+| `src/components/landing-v2/FAQAccordion.tsx` | Add 3 SMB-focused FAQ entries |
+| `src/pages/LandingPageV2.tsx` | Import new sections, reorder layout |
+| `src/i18n/locales/en.json` | Add all new translation keys |
+| `src/i18n/locales/pt.json` | Add Portuguese translations |
+| `src/i18n/locales/es.json` | Add Spanish translations |
+| `src/i18n/locales/fr.json` | Add French translations |
+| `src/i18n/locales/de.json` | Add German translations |
 
 ### No new dependencies needed
+
+All sections use existing Tailwind, Lucide icons, framer-motion (optional), and the existing component library.
