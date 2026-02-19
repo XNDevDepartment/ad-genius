@@ -1,84 +1,48 @@
 
+# Add Sign-In Button and Fix Navigation Bar
 
-# Upgrade /lp Testimonials with Real Customer Stories + Translations
+## Issues Found
 
-## What Changes
+1. **Missing Sign-In button**: The `MinimalHeader` only has a "Get Started" (signup) button. There is no way for existing users to sign in from the landing page.
 
-Replace the current placeholder testimonials on `/lp` with **real customer quotes** (from the existing SocialProofSection) and enhance the card design with avatars, company names, and scroll-in animations.
+2. **Navigation conflict on mobile**: On the `/` route, `AppLayout` renders the old `NavigationHeader` on mobile (which has Sign In, Pricing, etc.), but it sits above the `MinimalHeader` from `LandingPageV2` -- causing a double header and potential scroll issues. On desktop, the public layout renders without the old header, so only `MinimalHeader` shows.
 
----
+## Changes
 
-## 1. Update TestimonialsSection.tsx
+### 1. Add Sign-In button to MinimalHeader
 
-**File:** `src/components/landing-v2/TestimonialsSection.tsx`
+**File:** `src/components/landing-v2/MinimalHeader.tsx`
 
-Replace the 3 fictional testimonials with the real ones already used on the main landing page:
+- Add a "Sign In" button (outline variant) next to the existing "Get Started" button
+- On mobile, show both buttons but keep them compact (icon-only sign-in on small screens)
+- The Sign In button navigates to `/signin`
 
-| Name | Role | Company | Quote |
-|---|---|---|---|
-| Andreia Vieira | CEO | OGatoDasFraldas | "A tool with great potential. A valuable addition for generating stand-out, unique images." |
-| Sofia Santos | Creative Director | Bug Hug | "We are already achieving very, very interesting results! The results were shocking! They were so good!!" |
-| Luis Alves | Founder | Yonos | "Good ease of use is a fact but the end result...what a show" |
-
-**Card enhancements (matching SocialProofSection style):**
-- Add `Avatar` with initials fallback for each testimonial
-- Add company name below the role
-- Add framer-motion fade-in animations (using `useInView`)
-- Add a subtle hover shadow on cards
-- Keep the existing Quote icon, star rating, and card border styling
-
-**Updated data structure:**
+The right side of the header will become:
 ```
-{ quote, name, role, company, stars }
+[Sign In (outline)]  [Get Started (primary)]
 ```
 
-All text pulled from i18n keys, including the new `company` field.
+### 2. Hide old NavigationHeader on landing page for non-authenticated users
 
----
+**File:** `src/components/AppLayout.tsx`
 
-## 2. Update Translation Files (all 5 languages)
+The old `NavigationHeader` shows on mobile when the path is `/`. Since the landing page now has its own `MinimalHeader`, the old one should only show for authenticated users. Update line 41 from:
 
-Add `company` field to each testimonial and update quotes/names/roles to match the real customers.
-
-**Keys updated under `landingV2.testimonials`:**
-
-```json
-"t1": {
-  "quote": "A tool with great potential...",
-  "name": "Andreia Vieira",
-  "role": "CEO",
-  "company": "OGatoDasFraldas"
-},
-"t2": {
-  "quote": "We are already achieving very interesting results!...",
-  "name": "Sofia Santos",
-  "role": "Creative Director",
-  "company": "Bug Hug"
-},
-"t3": {
-  "quote": "Good ease of use is a fact but the end result...what a show",
-  "name": "Luis Alves",
-  "role": "Founder",
-  "company": "Yonos"
-}
+```
+{showHeader && <NavigationHeader />}
+```
+to:
+```
+{showHeader && user && <NavigationHeader />}
 ```
 
-Since these are real quotes from Portuguese-speaking customers, the quotes will be translated into each language while names/companies stay the same.
+This prevents a double navigation bar and ensures the `MinimalHeader` scroll-to-section buttons work correctly (no competing fixed headers).
 
----
-
-## Files Changed
+## Technical Details
 
 | File | Change |
 |---|---|
-| `src/components/landing-v2/TestimonialsSection.tsx` | Replace fictional testimonials with real ones; add Avatar, company name, framer-motion animations, hover shadow |
-| `src/i18n/locales/en.json` | Update testimonial keys with real customer data |
-| `src/i18n/locales/pt.json` | Same (Portuguese translations of quotes) |
-| `src/i18n/locales/es.json` | Same (Spanish) |
-| `src/i18n/locales/fr.json` | Same (French) |
-| `src/i18n/locales/de.json` | Same (German) |
+| `src/components/landing-v2/MinimalHeader.tsx` | Add Sign In button (outline) linking to `/signin` |
+| `src/components/AppLayout.tsx` | Only show old `NavigationHeader` for authenticated users on mobile |
 
-## No new dependencies
-
-Uses existing Avatar, framer-motion, react-intersection-observer, and Lucide icons already in the project.
-
+No new dependencies or translation keys needed -- the sign-in text can use the existing `common.signIn` key or a simple fallback.
