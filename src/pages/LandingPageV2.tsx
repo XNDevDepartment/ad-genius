@@ -41,7 +41,7 @@ const LandingPageV2 = () => {
       <SEO
         title="AI Product Photos for E-commerce"
         description="Transform your product photos with AI. Generate professional lifestyle images, virtual try-ons, and video ads in seconds. Used by 10,000+ brands worldwide."
-        path="/lp"
+        path="/"
         schema={[buildWebApplicationSchema(), howToSchema, faqSchema]}
       />
       <MinimalHeader />

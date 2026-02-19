@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -373,13 +373,8 @@ const App = () => {
                   </Suspense>
                 </ErrorBoundaryWithReset>
               } />
-              <Route path="/lp" element={
-                <ErrorBoundaryWithReset>
-                  <Suspense fallback={<LoadingFallback />}>
-                    <LandingPageV2 />
-                  </Suspense>
-                </ErrorBoundaryWithReset>
-              } />
+              {/* /lp redirects to home */}
+              <Route path="/lp" element={<Navigate to="/" replace />} />
               <Route path="/promo/first-month" element={
                 <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>

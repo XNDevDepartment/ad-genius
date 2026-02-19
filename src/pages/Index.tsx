@@ -1,7 +1,3 @@
-import HeroSection from "@/components/landing/HeroSection";
-import SecurePublicGallery from "@/components/landing/SecurePublicGallery";
-import SocialProofSection from "@/components/landing/SocialProofSection";
-import Footer from "@/components/landing/Footer";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Coins, Zap, ArrowRight, Video, Shirt, Images, Sparkles, Lock } from "lucide-react";
@@ -10,20 +6,14 @@ import { StickyUpgradeBar } from "@/components/StickyUpgradeBar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import PricingSection from "@/components/landing/PricingSection";
-import HeaderSection from "@/components/landing/HeaderSection";
 import { EmbeddedLibrary } from "@/components/EmbeddedLibrary";
 import { UserStatsPanel } from "@/components/UserStatsPanel";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
-import HowItWorksSection from "@/components/landing/HowItWorksSection";
-import UseCasesSection from "@/components/landing/UseCasesSection";
-import VideoShowcaseSection from "@/components/landing/VideoShowcaseSection";
-import FeatureShowcase from "@/components/landing/FeatureShowcase";
-import FashionCatalogSection from "@/components/landing/FashionCatalogSection";
 import { OnboardingGuard } from "@/components/OnboardingGuard";
 import SEO from "@/components/SEO";
 import { buildOrganizationSchema, buildWebSiteSchema, buildWebApplicationSchema } from "@/lib/schema";
+import LandingPageV2 from "@/pages/LandingPageV2";
 
 const mobileModules = [
   { id: "ugc", titleKey: "createSelection.ugcCreator.title", icon: Zap, path: "/create/ugc" },
@@ -187,43 +177,7 @@ const Index = () => {
       </div>
       </OnboardingGuard>
     :
-    <>
-    {/* Landing Page */}
-
-      <div className="hidden lg:block">
-        <HeaderSection />
-      </div>
-
-      {/* Enhanced Hero Section */}
-      <HeroSection />
-
-      {/* How It Works Section */}
-      <HowItWorksSection />
-
-      {/* Video Showcase Section */}
-      <VideoShowcaseSection />
-
-      {/* Feature Section */}
-      {/* <FeatureShowcase /> */}
-
-      {/* Fashion Catalog Section */}
-      <FashionCatalogSection />
-
-      {/* Public Gallery */}
-      <SecurePublicGallery />
-
-      {/* Use Cases Section */}
-      <UseCasesSection />
-
-      {/* Social Proof and Testimonials */}
-      <SocialProofSection />
-
-      {/* Plans & Pricing */}
-      <PricingSection />
-
-      {/* Footer */}
-      <Footer />
-    </>
+    <LandingPageV2 />
     }
     </div>
   )
