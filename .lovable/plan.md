@@ -1,38 +1,56 @@
 
-# Add Library, URL, and Shopify Import to Bulk Background
 
-## What Changes
+# Add Translations and Paid-Only Access to Bulk Background
 
-Add three import buttons (From Library, From URL, From Shopify) to the product image upload section of the Bulk Background module, matching the pattern already used in the Outfit Swap / UGC Gemini modules.
+## Two changes
 
-## How It Works
+### 1. Make Bulk Background visible to all users, but locked for free tier
 
-The existing `MultiImageUploader` component stays as-is for drag-and-drop file uploads. The three additional import sources are wired directly in `BulkBackground.tsx`, reusing the same modal components already available in the project:
+Currently the module is hidden behind `adminOnly` checks. The change makes it visible to everyone but restricts access to paid users.
 
-- **From Library** -- opens `GarmentLibraryPicker`, fetches selected source images as Files
-- **From URL** -- opens `BulkUrlImportModal`, imports images by URL then fetches them as Files
-- **From Shopify** -- opens `ShopifyImportModal`, imports Shopify product images then fetches them as Files
+**Files affected:**
 
-## Technical Details
+| File | Change |
+|---|---|
+| `src/pages/Index.tsx` | Remove `adminOnly: true` from the `bulk-background` entry in `mobileModules`. Add a `needsPaid: true` flag instead. Update the `MobileModuleGrid` filter to stop hiding it for non-admins, and show a lock icon + redirect to `/pricing` for free users. |
+| `src/pages/ModuleSelection.tsx` | The bulk-background card already has `isBeta: true` and `locked: false`. Change `locked` to use `isFreeTier()` so free users see a lock overlay and get redirected to `/pricing` on click. |
+| `src/pages/BulkBackground.tsx` | Add a paid-access gate at the top of the component: if `isFreeTier()`, show a locked message with a CTA button to `/pricing` instead of the full panel. Uses the `useCredits` hook already imported. |
 
-### File: `src/pages/BulkBackground.tsx`
+### 2. Add missing translation keys across all 5 locales
 
-1. Add imports for `GarmentLibraryPicker`, `BulkUrlImportModal`, `ShopifyImportModal`, and icons (`Images`, `Link`, `Store`)
-2. Add three boolean state variables for modal visibility (`libraryPickerOpen`, `urlImportOpen`, `shopifyImportOpen`)
-3. Add handler functions (same pattern as `MultiGarmentUploader`):
-   - `handleLibrarySelect(images)` -- fetches signed URLs, converts to File objects, appends to `productImages`
-   - `handleUrlImportComplete(imageIds)` -- queries `source_images` table for imported IDs, fetches via signed URLs with smart bucket detection, converts to Files
-   - `handleShopifyImportComplete(imageIds)` -- delegates to URL import handler
-4. Add three `Button` components (outline, sm) above the `MultiImageUploader` in the upload card, disabled when at max capacity
-5. Add the three modal components at the bottom of the JSX
+The bulk background panel already uses `t()` for most strings, but a few keys have inline fallbacks and the import buttons borrow keys from `outfitSwap`. This adds dedicated keys.
 
-### No other files change
+**Keys to add in all 5 locale files** (EN, PT, ES, FR, DE):
 
-All modal components (`GarmentLibraryPicker`, `BulkUrlImportModal`, `ShopifyImportModal`) are already generic and accept `maxImages`/`currentCount` props. No modifications needed.
+```text
+bulkBackground.buttons.photoshoot     -- "Photoshoot"
+bulkBackground.importSources.library  -- "From Library"
+bulkBackground.importSources.url      -- "From URL"
+bulkBackground.importSources.shopify  -- "From Shopify"
+bulkBackground.paidOnly.title         -- "Upgrade Required"
+bulkBackground.paidOnly.description   -- "Upgrade to any paid plan to unlock Bulk Background."
+bulkBackground.paidOnly.cta           -- "View Plans"
+```
+
+**Files affected:**
+
+| File | Change |
+|---|---|
+| `src/i18n/locales/en.json` | Add 6 new keys under `bulkBackground` |
+| `src/i18n/locales/pt.json` | Add 6 translated keys |
+| `src/i18n/locales/es.json` | Add 6 translated keys |
+| `src/i18n/locales/fr.json` | Add 6 translated keys |
+| `src/i18n/locales/de.json` | Add 6 translated keys |
+
+Then update `BulkBackground.tsx` to use the new dedicated keys instead of borrowing from `outfitSwap.garmentUploader.*`.
+
+## Summary
 
 | Item | Detail |
 |---|---|
-| Files changed | 1 (`src/pages/BulkBackground.tsx`) |
+| Files changed | 8 (3 components + 5 locale JSON files) |
 | New dependencies | None |
-| Reused components | `GarmentLibraryPicker`, `BulkUrlImportModal`, `ShopifyImportModal` |
-| Smart bucket detection | Applied when fetching imported images via `public_url` check |
+| Access pattern | `isFreeTier()` from `useCredits` hook |
+| Free users see | Module card with lock icon; clicking goes to `/pricing` |
+| Paid users see | Full bulk background panel, unchanged |
+
