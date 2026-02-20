@@ -4,17 +4,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Check, X, Star, Zap, Shield, Crown, Video as VideoIcon } from "lucide-react";
+import { Check, X, Star, DollarSign, Clock, TrendingUp, Image, Video, Zap } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useAuth } from "@/contexts/AuthContext";
-import HeaderSection from "@/components/landing/HeaderSection";
+import { MinimalHeader } from "@/components/landing-v2/MinimalHeader";
+import { TestimonialsSection } from "@/components/landing-v2/TestimonialsSection";
 import { useEffect, useState, useCallback } from "react";
 import { trackInitiateCheckout, trackViewContent } from "@/lib/metaPixel";
 import { useTranslation } from "react-i18next";
 import SEO from "@/components/SEO";
 import { buildProductSchema } from "@/lib/schema";
-import useEmblaCarousel from "embla-carousel-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { motion } from "framer-motion";
+import { useInView } from "react-intersection-observer";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Quote } from "lucide-react";
 
 const plans = [
   {
@@ -23,14 +28,10 @@ const plans = [
     monthlyPrice: 29,
     yearlyPrice: 24.17,
     period: "/month",
-    description: "Perfect for small businesses and content creators",
     credits: 80,
-    features: ["credits", "images", "maxImages", "scenarios", "support"],
-    limitations: [],
-    cta: "Start Creating",
     popular: false,
-    icon: <Star className="h-6 w-6" />,
-    bgClass: "bg-gradient-to-br from-primary/10 to-primary/5"
+    bestValue: false,
+    featureKeys: ["images", "scenarios", "tryon", "video", "photoshoots", "support", "commercial"],
   },
   {
     id: "plus",
@@ -38,14 +39,10 @@ const plans = [
     monthlyPrice: 49,
     yearlyPrice: 40.83,
     period: "/month",
-    description: "Best for agencies and growing businesses",
     credits: 200,
-    features: ["credits", "images", "maxImages", "scenarios", "support", "commercial"],
-    limitations: [],
-    cta: "Go Plus",
     popular: true,
-    icon: <Crown className="h-6 w-6" />,
-    bgClass: "bg-gradient-primary"
+    bestValue: false,
+    featureKeys: ["images", "scenarios", "tryon", "video", "photoshoots", "support", "commercial"],
   },
   {
     id: "pro",
@@ -53,15 +50,10 @@ const plans = [
     monthlyPrice: 99,
     yearlyPrice: 82.50,
     period: "/month",
-    description: "For high-volume users and enterprises",
     credits: 400,
-    features: ["credits", "images", "maxImages", "scenarios", "support"],
-    limitations: [],
-    cta: "Go Pro",
     popular: false,
     bestValue: true,
-    icon: <Shield className="h-6 w-6" />,
-    bgClass: "bg-gradient-to-br from-accent to-secondary"
+    featureKeys: ["images", "scenarios", "tryon", "video", "photoshoots", "support", "commercial", "earlyAccess"],
   }
 ];
 
@@ -76,7 +68,6 @@ const comparisonFeatures = [
   { featureKey: "commercialUsage", starter: true, plus: true, pro: true },
   { featureKey: "prioritySupport", starter: false, plus: true, pro: true },
   { featureKey: "dedicatedManager", starter: false, plus: false, pro: true },
-  // { featureKey: "freeBetaFeatures", starter: false, plus: false, pro: true },
   { featureKey: "earlyAccess", starter: false, plus: false, pro: true },
   { featureKey: "businessConsulting", starter: false, plus: false, pro: true }
 ];
@@ -87,24 +78,6 @@ const Pricing = () => {
   const [isYearly, setIsYearly] = useState(true);
   const { t } = useTranslation();
   const isMobile = useIsMobile();
-
-  const [emblaRef, emblaApi] = useEmblaCarousel({ 
-    align: 'center',
-    startIndex: 1, // Start on Plus (most popular)
-  });
-  const [selectedIndex, setSelectedIndex] = useState(1);
-
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    setSelectedIndex(emblaApi.selectedScrollSnap());
-  }, [emblaApi]);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-    onSelect();
-    emblaApi.on('select', onSelect);
-    return () => { emblaApi.off('select', onSelect); };
-  }, [emblaApi, onSelect]);
 
   const calculatePricePerImage = (monthlyPrice: number, credits: number): string => {
     if (isYearly) {
@@ -129,18 +102,14 @@ const Pricing = () => {
       navigate('/account');
       return;
     }
-
     if (loading) return;
-
     if (!user) {
       navigate('/account');
       return;
     }
-
     const selectedPlan = plans.find(p => p.id === planId);
     const checkoutValue = selectedPlan ? (isYearly ? selectedPlan.yearlyPrice * 12 : selectedPlan.monthlyPrice) : undefined;
     trackInitiateCheckout(planId, checkoutValue, 'EUR');
-
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { planId, interval: isYearly ? 'year' : 'month' }
@@ -157,14 +126,15 @@ const Pricing = () => {
     }
   };
 
-  const getDisplayPrice = (plan: any) => {
-    if (plan.price === "Free") return "Free";
+  const getDisplayPrice = (plan: typeof plans[0]) => {
     const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
     return `€${price}`;
   };
 
+  const faqKeys = [0, 1, 2, 3, 4, 5, 6];
+
   return (
-    <div className="min-h-screen bg-background lg:mt-0">
+    <div className="min-h-screen bg-background">
       <SEO
         title="Pricing Plans"
         description="Choose the perfect plan for your business. From Starter to Pro, get AI-powered product photos and videos with flexible credits."
@@ -172,32 +142,28 @@ const Pricing = () => {
         type="product"
         schema={buildProductSchema({ name: 'ProduktPix Plans', description: 'AI Product Photography Plans', price: 29, features: ['AI Photos', 'Video Generation', 'Fashion Swaps'] })}
       />
-      {!user &&
-        <div className="lg:block">
-          <HeaderSection />
-        </div>
-      }
+      {!user && <MinimalHeader />}
 
-      {/* Header */}
-      <div className="bg-gradient-hero text-primary-foreground py-20">
-        <div className="container mx-auto px-6 text-center">
-          <h1 className="text-4xl lg:text-6xl font-bold mb-6">
-            {t('pricing.title')}
+      {/* ===== SECTION 1: Hero (Value-Anchored) ===== */}
+      <section className={`py-20 px-4 ${!user ? 'pt-32' : ''}`}>
+        <div className="max-w-6xl mx-auto text-center">
+          <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+            {t('pricing.v2.hero.title')}
           </h1>
-          <p className="text-xl lg:text-2xl text-primary-foreground/90 max-w-3xl mx-auto mb-8">
-            {t('pricing.subtitle')}
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+            {t('pricing.v2.hero.subtitle')}
           </p>
-          
+
           {/* Billing Toggle */}
-          <div className="flex flex-col items-center justify-center gap-2 mb-8">
+          <div className="flex flex-col items-center justify-center gap-3 mb-8">
             <div className="flex items-center gap-4">
-              <span className={`text-sm ${!isYearly ? 'text-primary-foreground' : 'text-primary-foreground/70'}`}>
+              <span className={`text-sm font-medium ${!isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
                 {t('pricing.monthly')}
               </span>
               <button
                 onClick={() => setIsYearly(!isYearly)}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                  isYearly ? 'bg-primary' : 'bg-primary-foreground/20'
+                  isYearly ? 'bg-primary' : 'bg-muted-foreground/30'
                 }`}
               >
                 <span
@@ -206,74 +172,79 @@ const Pricing = () => {
                   }`}
                 />
               </button>
-              <span className={`text-sm ${isYearly ? 'text-primary-foreground' : 'text-primary-foreground/70'}`}>
+              <span className={`text-sm font-medium ${isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
                 {t('pricing.yearly')}
               </span>
-              <Badge variant="secondary" className="ml-2">
+              <Badge className="bg-primary/10 text-primary border-0">
                 {t('pricing.saveMonths')}
               </Badge>
             </div>
-            <p className="text-xs text-primary-foreground/70">
+            <p className="text-xs text-muted-foreground">
               {t('pricing.promoCode')}
             </p>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <Check className="h-4 w-4" />
-              <span>{t('pricing.footer.trial')}</span>
+          {/* Trust chips */}
+          <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <Check className="h-4 w-4 text-primary" />
+              <span>{t('pricing.v2.trustChips.trial')}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Check className="h-4 w-4" />
-              <span>{t('pricing.footer.noCard')}</span>
+            <div className="flex items-center gap-1.5">
+              <Check className="h-4 w-4 text-primary" />
+              <span>{t('pricing.v2.trustChips.noCard')}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Check className="h-4 w-4" />
-              <span>{t('pricing.footer.cancel')}</span>
+            <div className="flex items-center gap-1.5">
+              <Check className="h-4 w-4 text-primary" />
+              <span>{t('pricing.v2.trustChips.cancel')}</span>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Pricing Cards */}
-      <div className="container mx-auto px-6 py-16">
-        {loading && (
-          <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-lg text-center max-w-7xl mx-auto">
-            <div className="flex items-center justify-center gap-2 text-sm">
-              <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
-              <span>{t('pricing.loadingAccount')}</span>
+      {/* ===== SECTION 2: Plan Cards ===== */}
+      <section className="py-10 px-4">
+        <div className="max-w-6xl mx-auto">
+          {loading && (
+            <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-lg text-center">
+              <div className="flex items-center justify-center gap-2 text-sm">
+                <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+                <span>{t('pricing.loadingAccount')}</span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ===== MOBILE: Vertical scroll ===== */}
-        {isMobile ? (
-          <div className="space-y-4 mb-20">
+          <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-3'}`}>
             {plans.map((plan) => (
-              <div key={plan.id} className={`rounded-2xl border p-6 flex flex-col ${
-                plan.popular
-                  ? 'border-primary bg-card shadow-lg shadow-primary/10 ring-1 ring-primary/20'
-                  : 'border-border bg-card'
-              }`}>
+              <div
+                key={plan.id}
+                className={`rounded-2xl border p-6 md:p-8 flex flex-col transition-all duration-300 hover:shadow-lg ${
+                  plan.popular
+                    ? 'border-primary shadow-lg ring-1 ring-primary/20 bg-card'
+                    : 'border-border bg-card hover:border-primary/30'
+                }`}
+              >
                 {/* Plan name + badges */}
                 <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <h3 className="text-lg font-bold text-foreground">{t(`pricing.plans.${plan.id}.name`)}</h3>
+                  <h3 className="text-xl font-bold text-foreground">{t(`pricing.plans.${plan.id}.name`)}</h3>
                   {plan.popular && (
                     <Badge className="bg-primary text-primary-foreground text-xs">
                       {t('pricing.plans.plus.popular')}
                     </Badge>
                   )}
-                  {(plan as any).bestValue && (
+                  {plan.bestValue && (
                     <Badge variant="secondary" className="text-xs">
-                      {t('pricing.bestValue', 'Best Value')}
+                      {t('pricing.bestValue')}
                     </Badge>
                   )}
                 </div>
 
-                {/* Description */}
-                <p className="text-sm text-muted-foreground mb-4">{t(`pricing.plans.${plan.id}.description`)}</p>
+                {/* Best for */}
+                <p className="text-sm text-muted-foreground mb-4">
+                  {t(`pricing.v2.plans.${plan.id}.bestFor`)}
+                </p>
 
-                {/* Price with strikethrough */}
+                {/* Price */}
                 <div className="mb-1">
                   {isYearly && (
                     <span className="text-lg text-muted-foreground line-through mr-2">€{plan.monthlyPrice}</span>
@@ -281,13 +252,13 @@ const Pricing = () => {
                   <span className="text-4xl font-bold text-foreground">{getDisplayPrice(plan)}</span>
                   <span className="text-muted-foreground text-sm">{t(`pricing.plans.${plan.id}.period`)}</span>
                 </div>
-                {isYearly && plan.yearlyPrice && (
+                {isYearly && (
                   <div className="text-xs text-muted-foreground mb-1">
                     {t('pricing.billedAnnually', { amount: (plan.yearlyPrice * 12).toFixed(0) })}
                   </div>
                 )}
 
-                {/* Savings tag */}
+                {/* Savings */}
                 {isYearly && (
                   <div className="mb-2">
                     <Badge variant="secondary" className="bg-primary/10 text-primary text-xs font-medium">
@@ -296,9 +267,12 @@ const Pricing = () => {
                   </div>
                 )}
 
-                {/* Cost per image */}
-                <div className="text-sm font-semibold text-primary mb-5">
-                  €{calculatePricePerImage(plan.monthlyPrice, plan.credits)} {t('mobileUpgrade.pricing.perImage')}
+                {/* Value anchor: cost per image */}
+                <div className="text-sm font-semibold text-primary mb-1">
+                  {t('pricing.v2.costPerImage', { price: calculatePricePerImage(plan.monthlyPrice, plan.credits) })}
+                </div>
+                <div className="text-xs text-muted-foreground mb-5">
+                  {t('pricing.v2.vsPhotographer')}
                 </div>
 
                 {/* CTA */}
@@ -311,127 +285,116 @@ const Pricing = () => {
                   {loading ? t('pricing.loading') : t(`pricing.cta.${plan.id === 'starter' ? 'start' : plan.id === 'plus' ? 'goPlus' : 'goPro'}`)}
                 </Button>
 
-                {/* Divider */}
+                {/* Separator */}
                 <Separator className="mb-4" />
 
                 {/* What's included */}
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                  {t('pricing.whatsIncluded', "What's included")}
+                  {t('pricing.v2.whatsIncluded')}
                 </p>
 
-                <ul className="space-y-2 flex-1">
-                  {plan.features.map((featureKey, index) => (
-                    <li key={index} className="flex items-start gap-2">
+                <ul className="space-y-2.5 flex-1">
+                  {plan.featureKeys.map((featureKey) => (
+                    <li key={featureKey} className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-xs text-foreground">{t(`pricing.plans.${plan.id}.features.${featureKey}`)}</span>
+                      <span className="text-sm text-foreground">
+                        {t(`pricing.v2.plans.${plan.id}.features.${featureKey}`)}
+                      </span>
                     </li>
                   ))}
                 </ul>
               </div>
             ))}
           </div>
-        ) : (
-          /* ===== DESKTOP: Higgsfield-inspired layout ===== */
-          <div className="grid md:grid-cols-3 gap-6 max-w-7xl mx-auto mb-20">
-            {plans.map((plan) => (
-              <Card
-                key={plan.id}
-                className={`relative flex flex-col border transition-all duration-300 hover:shadow-lg ${
-                  plan.popular
-                    ? "border-primary shadow-lg shadow-primary/10 ring-1 ring-primary/20"
-                    : "border-border hover:border-primary/30"
-                }`}
+        </div>
+      </section>
+
+      {/* ===== SECTION 3: Why It's Worth It ===== */}
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              {t('pricing.v2.valueProps.title')}
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              {t('pricing.v2.valueProps.subtitle')}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { icon: DollarSign, key: 'save' },
+              { icon: Clock, key: 'speed' },
+              { icon: TrendingUp, key: 'results' },
+            ].map((prop, index) => (
+              <div
+                key={index}
+                className="relative p-8 rounded-2xl bg-card border border-border hover:border-primary/30 transition-colors group"
               >
-                <CardHeader className="pb-4">
-                  {/* Plan name + badges */}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <CardTitle className="text-xl font-bold">{t(`pricing.plans.${plan.id}.name`)}</CardTitle>
-                    {plan.popular && (
-                      <Badge className="bg-primary text-primary-foreground">
-                        {t('pricing.plans.plus.popular')}
-                      </Badge>
-                    )}
-                    {(plan as any).bestValue && (
-                      <Badge variant="secondary">
-                        {t('pricing.bestValue', 'Best Value')}
-                      </Badge>
-                    )}
-                  </div>
-
-                  {/* Description */}
-                  <CardDescription className="text-sm mt-1">
-                    {t(`pricing.plans.${plan.id}.description`)}
-                  </CardDescription>
-
-                  {/* Price with strikethrough */}
-                  <div className="mt-4">
-                    {isYearly && (
-                      <span className="text-lg text-muted-foreground line-through mr-2">€{plan.monthlyPrice}</span>
-                    )}
-                    <span className="text-4xl font-bold text-foreground">{getDisplayPrice(plan)}</span>
-                    {plan.period && (
-                      <span className="text-muted-foreground text-sm">{t(`pricing.plans.${plan.id}.period`)}</span>
-                    )}
-                    {isYearly && plan.monthlyPrice && plan.yearlyPrice && (
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {t('pricing.billedAnnually', {amount: (plan.yearlyPrice * 12).toFixed(0) })}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Savings tag */}
-                  {isYearly && (
-                    <div className="mt-2">
-                      <Badge variant="secondary" className="bg-primary/10 text-primary text-xs font-medium">
-                        {t('pricing.saveCompared', { amount: calculateYearlySavings(plan) })}
-                      </Badge>
-                    </div>
-                  )}
-
-                  {/* Cost per image */}
-                  <div className="text-sm font-semibold text-primary mt-1">
-                    {t('pricing.perImage', { price: calculatePricePerImage(plan.monthlyPrice, plan.credits) })}
-                  </div>
-                </CardHeader>
-
-                <CardContent className="flex flex-col flex-1 space-y-5">
-                  {/* CTA */}
-                  <Button
-                    onClick={() => handlePlanSelect(plan.id)}
-                    className="w-full"
-                    variant={plan.popular ? "default" : "outline"}
-                    disabled={loading}
-                  >
-                    {loading ? t('pricing.loading') : t(`pricing.cta.${plan.id === 'starter' ? 'start' : plan.id === 'plus' ? 'goPlus' : 'goPro'}`)}
-                  </Button>
-
-                  {/* Divider */}
-                  <Separator />
-
-                  {/* What's included */}
-                  <div className="flex-1">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                      {t('pricing.whatsIncluded', "What's included")}
-                    </p>
-
-                    <ul className="space-y-2.5">
-                      {plan.features.map((featureKey, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                          <span className="text-sm">{t(`pricing.plans.${plan.id}.features.${featureKey}`)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
+                  <prop.icon className="h-7 w-7 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-3">
+                  {t(`pricing.v2.valueProps.${prop.key}.title`)}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {t(`pricing.v2.valueProps.${prop.key}.description`)}
+                </p>
+              </div>
             ))}
           </div>
-        )}
-        {/* Detailed Comparison Table - hidden on mobile */}
-        <div className="max-w-6xl mx-auto hidden lg:block">
+        </div>
+      </section>
+
+      {/* ===== SECTION 4: What 1 Credit Gets You ===== */}
+      <section className="py-20 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              {t('pricing.v2.creditExplainer.title')}
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              {t('pricing.v2.creditExplainer.subtitle')}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { icon: Image, key: 'image' },
+              { icon: Video, key: 'video5' },
+              { icon: Zap, key: 'video10' },
+            ].map((item, index) => (
+              <div key={index} className="text-center p-8 rounded-2xl bg-card border border-border">
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <item.icon className="h-7 w-7 text-primary" />
+                </div>
+                <div className="text-2xl font-bold text-primary mb-2">
+                  {t(`pricing.v2.creditExplainer.${item.key}.credits`)}
+                </div>
+                <div className="text-base font-medium text-foreground mb-1">
+                  {t(`pricing.v2.creditExplainer.${item.key}.label`)}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {t(`pricing.v2.creditExplainer.${item.key}.detail`)}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center text-sm text-muted-foreground mt-8">
+            {t('pricing.v2.creditExplainer.rollover')}
+          </p>
+        </div>
+      </section>
+
+      {/* ===== SECTION 5: Social Proof ===== */}
+      <TestimonialsSection />
+
+      {/* ===== SECTION 6: Comparison Table (Desktop Only) ===== */}
+      <section className="py-20 px-4 hidden lg:block">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">{t('pricing.comparisonTable.title')}</h2>
+            <h2 className="text-3xl font-bold text-foreground mb-4">{t('pricing.comparisonTable.title')}</h2>
             <p className="text-muted-foreground text-lg">
               {t('pricing.comparisonTable.subtitle')}
             </p>
@@ -483,60 +446,57 @@ const Pricing = () => {
             </CardContent>
           </Card>
         </div>
+      </section>
 
-        {/* Credit System Explanation */}
-        <div className="max-w-5xl mx-auto mt-20">
-          <Card>
-            <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-bold mb-2">{t('pricing.creditSystem.title')}</CardTitle>
-              <CardDescription>
-                {t('pricing.creditSystem.subtitle')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-8">
-              <div className="text-center p-8 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg">
-                <div className="text-4xl font-bold text-primary mb-3">{t('pricing.creditSystem.imageCredit')}</div>
-                <div className="text-lg font-medium mb-2">{t('pricing.creditSystem.anyQuality.title')}</div>
-                <div className="text-sm text-muted-foreground max-w-2xl mx-auto">
-                  {t('pricing.creditSystem.description')}
-                </div>
-              </div>
+      {/* ===== SECTION 7: FAQ (Accordion) ===== */}
+      <section className="py-20 px-4" id="faq">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              {t('pricing.v2.faq.title')}
+            </h2>
+          </div>
 
-              <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto">
-                <div className="text-center p-6 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold text-primary mb-2">{t('pricing.creditSystem.video5s')}</div>
-                  <div className="text-sm font-medium">{t('pricing.creditSystem.video5sLabel')}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{t('pricing.creditSystem.imageToVideo')}</div>
-                </div>
-                <div className="text-center p-6 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold text-primary mb-2">{t('pricing.creditSystem.video10s')}</div>
-                  <div className="text-sm font-medium">{t('pricing.creditSystem.video10sLabel')}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{t('pricing.creditSystem.extendedDuration')}</div>
-                </div>
-              </div>
-              
-              <div className="text-center text-sm text-muted-foreground">
-                {t('pricing.creditSystem.rollover')}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* FAQ Section */}
-        <div className="max-w-3xl mx-auto mt-20 text-center">
-          <h2 className="text-2xl font-bold mb-8">{t('pricing.faq.title')}</h2>
-          <div className="space-y-6 text-left">
-            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((index) => (
-              <div key={index}>
-                <h3 className="font-medium mb-2">{t(`pricing.faq.questions.${index}.question`)}</h3>
-                <p className="text-muted-foreground text-sm">
-                  {t(`pricing.faq.questions.${index}.answer`)}
-                </p>
-              </div>
+          <Accordion type="single" collapsible className="space-y-3">
+            {faqKeys.map((index) => (
+              <AccordionItem
+                key={index}
+                value={`item-${index}`}
+                className="rounded-xl border border-border bg-card px-6 data-[state=open]:shadow-sm"
+              >
+                <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
+                  {t(`pricing.v2.faq.questions.${index}.question`)}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground leading-relaxed">
+                  {t(`pricing.v2.faq.questions.${index}.answer`)}
+                </AccordionContent>
+              </AccordionItem>
             ))}
+          </Accordion>
+        </div>
+      </section>
+
+      {/* ===== SECTION 8: Final CTA ===== */}
+      <section className="py-20 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="rounded-2xl bg-card border border-border p-10 md:p-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              {t('pricing.v2.finalCta.title')}
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+              {t('pricing.v2.finalCta.subtitle')}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" onClick={() => navigate('/signup')} className="text-base font-semibold px-8">
+                {t('pricing.v2.finalCta.primary')}
+              </Button>
+              <Button size="lg" variant="outline" onClick={() => window.open('https://calendly.com/produktpix/demo', '_blank')} className="text-base font-semibold px-8">
+                {t('pricing.v2.finalCta.secondary')}
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 };
