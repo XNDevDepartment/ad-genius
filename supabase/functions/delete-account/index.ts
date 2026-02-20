@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
     });
 
     // Delete storage files
-    const storageBuckets = ['generated-images', 'ugc', 'ugc-inputs', 'videos', 'outfit-user-models'];
+    const storageBuckets = ['generated-images', 'ugc', 'ugc-inputs', 'source-images', 'videos', 'outfit-user-models'];
     for (const bucket of storageBuckets) {
       try {
         // List files in user's folder

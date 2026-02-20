@@ -247,7 +247,7 @@ serve(async (req) => {
 
     // Upload to Supabase Storage
     const { data: storageData, error: storageError } = await supabase.storage
-      .from('ugc-inputs')
+      .from('source-images')
       .upload(storagePath, imageBuffer, {
         contentType: contentType,
         upsert: false
@@ -276,7 +276,7 @@ serve(async (req) => {
 
     // Get public URL
     const { data: publicUrlData } = supabase.storage
-      .from('ugc-inputs')
+      .from('source-images')
       .getPublicUrl(storagePath);
 
     if (!publicUrlData?.publicUrl) {
@@ -308,7 +308,7 @@ serve(async (req) => {
     if (dbError) {
       console.error('Database insert error:', dbError);
       // Clean up uploaded file
-      await supabase.storage.from('ugc-inputs').remove([storagePath]);
+      await supabase.storage.from('source-images').remove([storagePath]);
       
       return new Response(
         JSON.stringify({ success: false, error: 'Failed to save image metadata' }),

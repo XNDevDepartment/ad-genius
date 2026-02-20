@@ -363,14 +363,15 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       if (sourceImageIds.length > 0) {
         const { data: sourceImages } = await supabase
           .from('source_images')
-          .select('id, storage_path')
+          .select('id, storage_path, public_url')
           .in('id', sourceImageIds);
 
         if (sourceImages && sourceImages.length > 0) {
           const sourceUrlResults = await Promise.allSettled(
             sourceImages.map(async (sourceImg) => {
+              const bucket = sourceImg.public_url?.includes('/ugc-inputs/') ? 'ugc-inputs' : 'source-images';
               const { data } = await supabase.storage
-                .from('ugc-inputs')
+                .from(bucket)
                 .createSignedUrl(sourceImg.storage_path, 3600);
               return { id: sourceImg.id, signedUrl: data?.signedUrl || null };
             })

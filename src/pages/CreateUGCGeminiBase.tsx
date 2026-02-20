@@ -204,8 +204,9 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
             const imageFiles = await Promise.all(
               sourceImages.map(async (img) => {
                 try {
+                  const bucket = img.public_url?.includes('/ugc-inputs/') ? 'ugc-inputs' : 'source-images';
                   const { data: signedData } = await supabase.storage
-                    .from('ugc-inputs')
+                    .from(bucket)
                     .createSignedUrl(img.storage_path, 3600);
 
                   const imageUrl = signedData?.signedUrl || img.public_url;
