@@ -705,12 +705,12 @@ async function processOutfitSwap(jobId: string) {
       console.log(`[processOutfitSwap] Job ${jobId}: Base model file verified in storage (${personBucket}/${personStoragePath})`);
     } else if (job.source_person_id) {
       console.log(`[processOutfitSwap] Job ${jobId}: Using source image ${job.source_person_id}`);
-      const { data: sourceImage } = await supabase.from("source_images").select("storage_path").eq("id", job.source_person_id).single();
+      const { data: sourceImage } = await supabase.from("source_images").select("storage_path, public_url").eq("id", job.source_person_id).single();
       if (!sourceImage?.storage_path) {
         throw new Error("Source image storage path not found");
       }
       personStoragePath = sourceImage.storage_path;
-      personBucket = "ugc-inputs";
+      personBucket = sourceImage.public_url?.includes("/ugc-inputs/") ? "ugc-inputs" : "source-images";
     } else {
       throw new Error("No person image source specified (neither base_model_id nor source_person_id)");
     }
