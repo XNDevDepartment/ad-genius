@@ -113,7 +113,7 @@ const Pricing = () => {
         body: { planId, interval: isYearly ? 'year' : 'month' }
       });
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.location.href = data.url;
       } else {
         console.error('Error creating checkout:', error);
         navigate('/account');
