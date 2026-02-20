@@ -4,11 +4,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Check, X, Star, DollarSign, Clock, TrendingUp, Image, Video, Zap } from "lucide-react";
+import { Check, X, Star, DollarSign, Clock, TrendingUp, Image, Video, Zap, MessageCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useAuth } from "@/contexts/AuthContext";
 import { MinimalHeader } from "@/components/landing-v2/MinimalHeader";
+import { MinimalFooter } from "@/components/landing-v2/MinimalFooter";
 import { TestimonialsSection } from "@/components/landing-v2/TestimonialsSection";
 import { useEffect, useState, useCallback } from "react";
 import { trackInitiateCheckout, trackViewContent } from "@/lib/metaPixel";
@@ -16,10 +17,7 @@ import { useTranslation } from "react-i18next";
 import SEO from "@/components/SEO";
 import { buildProductSchema } from "@/lib/schema";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { motion } from "framer-motion";
-import { useInView } from "react-intersection-observer";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Quote } from "lucide-react";
 
 const plans = [
   {
@@ -144,11 +142,28 @@ const Pricing = () => {
       />
       {!user && <MinimalHeader />}
 
+      <main className={!user ? 'pt-16' : ''}>
       {/* ===== SECTION 1: Hero (Value-Anchored) ===== */}
-      <section className={`py-20 px-4 ${!user ? 'pt-32' : ''}`}>
-        <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-            {t('pricing.v2.hero.title')}
+      <section className="relative py-20 px-4">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
+        
+        <div className="relative z-10 max-w-6xl mx-auto text-center">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary mb-8">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </span>
+            {t('pricing.v2.hero.badge', 'AI-Powered Product Photography')}
+          </div>
+
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4">
+            <span className="text-foreground">{t('pricing.v2.hero.titleLine1', 'Professional Product Photos')}</span>
+            <br />
+            <span className="bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
+              {t('pricing.v2.hero.titleLine2', 'from €0.20 each')}
+            </span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
             {t('pricing.v2.hero.subtitle')}
@@ -278,7 +293,7 @@ const Pricing = () => {
                 {/* CTA */}
                 <Button
                   onClick={() => handlePlanSelect(plan.id)}
-                  className="w-full h-12 text-base font-bold mb-5"
+                  className={`w-full h-12 text-base font-bold mb-5 rounded-full ${plan.popular ? 'shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30' : ''} transition-all`}
                   variant={plan.popular ? "default" : "outline"}
                   disabled={loading}
                 >
@@ -457,22 +472,39 @@ const Pricing = () => {
             </h2>
           </div>
 
-          <Accordion type="single" collapsible className="space-y-3">
+          <Accordion type="single" collapsible className="space-y-4">
             {faqKeys.map((index) => (
               <AccordionItem
                 key={index}
                 value={`item-${index}`}
-                className="rounded-xl border border-border bg-card px-6 data-[state=open]:shadow-sm"
+                className="bg-card border border-border rounded-xl px-6 data-[state=open]:shadow-lg transition-shadow"
               >
-                <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
+                <AccordionTrigger className="text-left text-foreground hover:no-underline py-5">
                   {t(`pricing.v2.faq.questions.${index}.question`)}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground leading-relaxed">
+                <AccordionContent className="text-muted-foreground pb-5 leading-relaxed">
                   {t(`pricing.v2.faq.questions.${index}.answer`)}
                 </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
+
+          {/* Still have questions? */}
+          <div className="mt-12 text-center p-8 rounded-2xl bg-primary/5 border border-primary/10">
+            <MessageCircle className="h-10 w-10 text-primary mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-foreground mb-2">
+              {t('landingV2.faq.stillHaveQuestions', 'Still have questions?')}
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              {t('landingV2.faq.contactDescription', 'Our team is here to help you get started.')}
+            </p>
+            <a 
+              href="mailto:info@produktpix.com" 
+              className="text-primary hover:underline font-medium"
+            >
+              info@produktpix.com
+            </a>
+          </div>
         </div>
       </section>
 
@@ -487,16 +519,19 @@ const Pricing = () => {
               {t('pricing.v2.finalCta.subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" onClick={() => navigate('/signup')} className="text-base font-semibold px-8">
+              <Button size="lg" onClick={() => navigate('/signup')} className="text-lg px-8 py-6 rounded-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all font-semibold">
                 {t('pricing.v2.finalCta.primary')}
               </Button>
-              <Button size="lg" variant="outline" onClick={() => window.open('https://calendly.com/produktpix/demo', '_blank')} className="text-base font-semibold px-8">
+              <Button size="lg" variant="outline" onClick={() => window.open('https://calendly.com/produktpix/demo', '_blank')} className="text-lg px-8 py-6 rounded-full font-semibold">
                 {t('pricing.v2.finalCta.secondary')}
               </Button>
             </div>
           </div>
         </div>
       </section>
+
+      </main>
+      {!user && <MinimalFooter />}
     </div>
   );
 };
