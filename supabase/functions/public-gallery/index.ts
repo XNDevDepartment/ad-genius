@@ -41,15 +41,16 @@ Deno.serve(async (req) => {
       // Get source images
       const { data: sourceImages, error: sourceError } = await supabaseClient
         .from('source_images')
-        .select('id, storage_path')
+        .select('id, storage_path, public_url')
         .in('id', sourceImageIds);
 
       if (!sourceError && sourceImages) {
         // Generate signed URLs for source images (7 days TTL for public gallery)
         sourceImagesWithUrls = await Promise.all(
           sourceImages.map(async (source) => {
+            const bucket = source.public_url?.includes('/ugc-inputs/') ? 'ugc-inputs' : 'source-images';
             const { data: signedUrlData, error: urlError } = await supabaseClient.storage
-              .from('ugc-inputs')
+              .from(bucket)
               .createSignedUrl(source.storage_path, 604800); // 7 days
 
             return {

@@ -8,7 +8,11 @@ export interface SourceImage {
   fileName: string;
   createdAt: string;
   storage_path: string;
+  publicUrl: string;
 }
+
+const detectBucket = (publicUrl: string): string =>
+  publicUrl?.includes('/ugc-inputs/') ? 'ugc-inputs' : 'source-images';
 
 export const useSourceImages = () => {
   const [sourceImages, setSourceImages] = useState<SourceImage[]>([]);
@@ -63,8 +67,9 @@ export const useSourceImages = () => {
       // Create signed URLs for each unique image (in parallel)
       const imagesWithSignedUrls: SourceImage[] = await Promise.all(
         uniqueImages.map(async (image) => {
+          const bucket = detectBucket(image.public_url);
           const { data: signedUrlData } = await supabase.storage
-            .from('ugc-inputs')
+            .from(bucket)
             .createSignedUrl(image.storage_path, 3600); // 1 hour expiry
 
           if (!signedUrlData?.signedUrl) return null;
@@ -74,6 +79,7 @@ export const useSourceImages = () => {
             fileName: image.file_name,
             createdAt: image.created_at,
             storage_path: image.storage_path,
+            publicUrl: image.public_url,
           } as SourceImage;
         })
       ).then(list => list.filter(Boolean) as SourceImage[]);
@@ -93,8 +99,9 @@ export const useSourceImages = () => {
       if (!image) throw new Error('Image not found');
 
       // Delete from storage
+      const bucket = detectBucket(image.publicUrl);
       const { error: storageError } = await supabase.storage
-        .from('ugc-inputs')
+        .from(bucket)
         .remove([image.storage_path]);
 
       if (storageError) console.warn('Storage delete warning:', storageError);
@@ -128,7 +135,8 @@ export const useSourceImages = () => {
         batch.map(async (imageId) => {
           const image = sourceImages.find(img => img.id === imageId);
           if (image) {
-            await supabase.storage.from('ugc-inputs').remove([image.storage_path]);
+            const bucket = detectBucket(image.publicUrl);
+            await supabase.storage.from(bucket).remove([image.storage_path]);
           }
           const { error } = await supabase
             .from('source_images')

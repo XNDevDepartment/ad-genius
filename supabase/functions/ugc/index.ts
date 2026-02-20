@@ -704,9 +704,10 @@ async function generateSingleImage(job: any, index: number, sourceImageUrl: stri
 // Signed URL for user-provided source image (optional)
 async function getSignedSourceUrl(source_image_id: string | null, supabase: any) {
   if (!source_image_id) return null;
-  const { data: src } = await supabase.from("source_images").select("storage_path").eq("id", source_image_id).single();
+  const { data: src } = await supabase.from("source_images").select("storage_path, public_url").eq("id", source_image_id).single();
   if (!src?.storage_path) return null;
-  const { data: signed } = await supabase.storage.from("ugc-inputs").createSignedUrl(src.storage_path, 3600);
+  const bucket = src.public_url?.includes("/ugc-inputs/") ? "ugc-inputs" : "source-images";
+  const { data: signed } = await supabase.storage.from(bucket).createSignedUrl(src.storage_path, 3600);
   return signed?.signedUrl ?? null;
 }
 // RLS-safe reads

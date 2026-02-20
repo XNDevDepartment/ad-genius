@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Download, Loader2, X, Eye, Camera, Sparkles, Pencil } from "lucide-react";
+import { ArrowLeft, Download, Loader2, X, Eye, Camera, Sparkles, Pencil, Images, Link, Store, Lock } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,10 @@ import { useSourceImageUpload } from "@/hooks/useSourceImageUpload";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductViewsModal } from "@/components/ProductViewsModal";
+import { GarmentLibraryPicker } from "@/components/GarmentLibraryPicker";
+import { BulkUrlImportModal } from "@/components/BulkUrlImportModal";
+import { ShopifyImportModal } from "@/components/ShopifyImportModal";
+import { SourceImage } from "@/hooks/useSourceImages";
 
 const MAX_IMAGES = 20;
 
@@ -35,7 +39,7 @@ const BulkBackground = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { getRemainingCredits, refreshCredits } = useCredits();
+  const { getRemainingCredits, refreshCredits, isFreeTier } = useCredits();
   const { toast } = useToast();
   const { uploadSourceImage, uploading: uploadingSource } = useSourceImageUpload();
 
@@ -68,6 +72,11 @@ const BulkBackground = () => {
   const [editRequest, setEditRequest] = useState("");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [photoshootModal, setPhotoshootModal] = useState<{ resultId: string; resultUrl: string } | null>(null);
+
+  // Import modal states
+  const [libraryPickerOpen, setLibraryPickerOpen] = useState(false);
+  const [urlImportOpen, setUrlImportOpen] = useState(false);
+  const [shopifyImportOpen, setShopifyImportOpen] = useState(false);
 
   // Scroll refs
   const backgroundRef = useRef<HTMLDivElement>(null);
@@ -254,6 +263,62 @@ const BulkBackground = () => {
     }, 100);
   };
 
+  // Handle library selection - convert SourceImages to Files
+  const handleLibrarySelect = async (images: SourceImage[]) => {
+    const newFiles: File[] = [];
+    for (const image of images) {
+      try {
+        const response = await fetch(image.signedUrl);
+        const blob = await response.blob();
+        const fileName = image.fileName || `product-${Date.now()}.jpg`;
+        const file = new File([blob], fileName, { type: blob.type });
+        newFiles.push(file);
+      } catch (error) {
+        console.error('Failed to fetch image:', error);
+      }
+    }
+    if (newFiles.length > 0) {
+      setProductImages(prev => [...prev, ...newFiles].slice(0, MAX_IMAGES));
+    }
+  };
+
+  // Handle URL import completion
+  const handleUrlImportComplete = async (imageIds: string[]) => {
+    setUrlImportOpen(false);
+    const { data: sourceImages, error } = await supabase
+      .from('source_images')
+      .select('id, storage_path, file_name, public_url')
+      .in('id', imageIds);
+    if (error || !sourceImages) return;
+
+    const newFiles: File[] = [];
+    for (const img of sourceImages) {
+      try {
+        const bucket = img.public_url?.includes('/ugc-inputs/') ? 'ugc-inputs' : 'source-images';
+        const { data: signedData } = await supabase.storage
+          .from(bucket)
+          .createSignedUrl(img.storage_path, 3600);
+        if (signedData?.signedUrl) {
+          const response = await fetch(signedData.signedUrl);
+          const blob = await response.blob();
+          const file = new File([blob], img.file_name || `product-${Date.now()}.jpg`, { type: blob.type });
+          newFiles.push(file);
+        }
+      } catch (error) {
+        console.error('Failed to fetch imported image:', error);
+      }
+    }
+    if (newFiles.length > 0) {
+      setProductImages(prev => [...prev, ...newFiles].slice(0, MAX_IMAGES));
+    }
+  };
+
+  // Handle Shopify import completion
+  const handleShopifyImportComplete = async (imageIds: string[]) => {
+    setShopifyImportOpen(false);
+    await handleUrlImportComplete(imageIds);
+  };
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl lg:max-w-7xl mx-auto space-y-6">
@@ -277,6 +342,22 @@ const BulkBackground = () => {
           </div>
         </div>
 
+        {/* Paid-only gate */}
+        {isFreeTier() && (
+          <Card className="rounded-apple shadow-lg border-amber-500/30 bg-amber-500/5">
+            <CardContent className="flex flex-col items-center justify-center py-12 space-y-4">
+              <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center">
+                <Lock className="h-8 w-8 text-amber-500" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">{t("bulkBackground.paidOnly.title")}</h2>
+              <p className="text-muted-foreground text-center max-w-md">{t("bulkBackground.paidOnly.description")}</p>
+              <Button onClick={() => navigate("/pricing")} variant="default" size="lg">
+                {t("bulkBackground.paidOnly.cta")}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Section 1: Upload Products — always visible */}
         <Card className="rounded-apple shadow-lg scroll-mt-6">
           <CardHeader>
@@ -286,6 +367,39 @@ const BulkBackground = () => {
             </p>
           </CardHeader>
           <CardContent>
+            {/* Import source buttons */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setLibraryPickerOpen(true)}
+                disabled={productImages.length >= MAX_IMAGES || isFreeTier()}
+                className="gap-2"
+              >
+                <Images className="h-4 w-4" />
+                {t("bulkBackground.importSources.library")}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setUrlImportOpen(true)}
+                disabled={productImages.length >= MAX_IMAGES || isFreeTier()}
+                className="gap-2"
+              >
+                <Link className="h-4 w-4" />
+                {t("bulkBackground.importSources.url")}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShopifyImportOpen(true)}
+                disabled={productImages.length >= MAX_IMAGES || isFreeTier()}
+                className="gap-2"
+              >
+                <Store className="h-4 w-4" />
+                {t("bulkBackground.importSources.shopify")}
+              </Button>
+            </div>
             <MultiImageUploader
               selectedImages={productImages}
               onImagesSelect={setProductImages}
@@ -618,6 +732,27 @@ const BulkBackground = () => {
           imageUrl={previewImage || ''}
           imageName="Result Image"
           onOpenInNewTab={() => previewImage && window.open(previewImage, '_blank')}
+        />
+
+        {/* Import Modals */}
+        <GarmentLibraryPicker
+          open={libraryPickerOpen}
+          onClose={() => setLibraryPickerOpen(false)}
+          onSelect={handleLibrarySelect}
+          maxImages={MAX_IMAGES}
+          currentCount={productImages.length}
+        />
+        <BulkUrlImportModal
+          open={urlImportOpen}
+          onClose={() => setUrlImportOpen(false)}
+          onImportComplete={handleUrlImportComplete}
+          maxImages={MAX_IMAGES}
+          currentCount={productImages.length}
+        />
+        <ShopifyImportModal
+          open={shopifyImportOpen}
+          onOpenChange={setShopifyImportOpen}
+          onImportComplete={handleShopifyImportComplete}
         />
       </div>
     </div>

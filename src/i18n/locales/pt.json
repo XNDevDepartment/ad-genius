@@ -600,6 +600,141 @@
       "noCard": "Sem necessidade de cartão de crédito",
       "cancel": "Cancele a qualquer momento",
       "fullDetails": "Ver Detalhes Completos de Preços"
+    },
+    "v2": {
+      "hero": {
+        "badge": "Fotografia de Produto com IA",
+        "titleLine1": "Fotos de Produto Profissionais",
+        "titleLine2": "a partir de €0,20 cada",
+        "title": "Fotos de Produto Profissionais a partir de €0,20 cada",
+        "subtitle": "Fotografia tradicional custa €15–50 por imagem. A nossa IA dá-lhe a mesma qualidade, instantaneamente."
+      },
+      "trustChips": {
+        "trial": "10 créditos grátis para começar",
+        "noCard": "Sem necessidade de cartão",
+        "cancel": "Cancele a qualquer momento"
+      },
+      "plans": {
+        "starter": {
+          "bestFor": "Ideal para vendedores individuais e pequenas lojas",
+          "features": {
+            "images": "80 imagens de produto profissionais por mês",
+            "scenarios": "Estilos de cena ilimitados (lifestyle, estúdio, exterior, sazonal…)",
+            "tryon": "Prova Virtual com IA para moda",
+            "video": "Geração de vídeo (5s e 10s)",
+            "photoshoots": "Sessões fotográficas completas para os seus produtos",
+            "support": "Suporte por email em 24h",
+            "commercial": "Direitos comerciais completos — use em qualquer lugar"
+          }
+        },
+        "plus": {
+          "bestFor": "Ideal para marcas em crescimento e agências",
+          "features": {
+            "images": "200 imagens de produto profissionais por mês",
+            "scenarios": "Estilos de cena ilimitados (lifestyle, estúdio, exterior, sazonal…)",
+            "tryon": "Prova Virtual com IA para moda",
+            "video": "Geração de vídeo (5s e 10s)",
+            "photoshoots": "Sessões fotográficas completas para os seus produtos",
+            "support": "Resposta prioritária + chat ao vivo com a nossa equipa",
+            "commercial": "Direitos comerciais completos — use em qualquer lugar"
+          }
+        },
+        "pro": {
+          "bestFor": "Ideal para catálogos de alto volume e empresas",
+          "features": {
+            "images": "400 imagens de produto profissionais por mês",
+            "scenarios": "Estilos de cena ilimitados (lifestyle, estúdio, exterior, sazonal…)",
+            "tryon": "Prova Virtual com IA para moda",
+            "video": "Geração de vídeo (5s e 10s)",
+            "photoshoots": "Sessões fotográficas completas para os seus produtos",
+            "support": "Gestor de conta dedicado",
+            "commercial": "Direitos comerciais completos — use em qualquer lugar",
+            "earlyAccess": "Acesso antecipado a novas funcionalidades"
+          }
+        }
+      },
+      "costPerImage": "Apenas €{{price}} por imagem",
+      "vsPhotographer": "vs. €15–50 com um fotógrafo",
+      "whatsIncluded": "O que está incluído",
+      "valueProps": {
+        "title": "Porque Vale a Pena",
+        "subtitle": "Veja como o ProduktPix se paga sozinho",
+        "save": {
+          "title": "Poupe 90% vs. Fotografia Tradicional",
+          "description": "Uma sessão fotográfica profissional custa €500–2.000. Obtenha centenas de imagens por uma fração do preço."
+        },
+        "speed": {
+          "title": "Pronto em Segundos, Não em Dias",
+          "description": "Sem agendamentos, sem envio de amostras, sem espera por edições. Carregue e gere instantaneamente."
+        },
+        "results": {
+          "title": "Imagens Que Vendem",
+          "description": "Fotos de produto profissionais aumentam as taxas de conversão até 3x. Melhores imagens = mais receita."
+        }
+      },
+      "creditExplainer": {
+        "title": "O Que 1 Crédito Lhe Dá",
+        "subtitle": "Preços simples e transparentes — sem surpresas",
+        "image": {
+          "credits": "1 Crédito",
+          "label": "1 imagem de produto profissional",
+          "detail": "Qualquer qualidade, qualquer cenário"
+        },
+        "video5": {
+          "credits": "5 Créditos",
+          "label": "Vídeo publicitário de 5 segundos",
+          "detail": "Geração de imagem para vídeo"
+        },
+        "video10": {
+          "credits": "10 Créditos",
+          "label": "Vídeo publicitário de 10 segundos",
+          "detail": "Duração de vídeo estendida"
+        },
+        "rollover": "Os créditos transitam mensalmente — nunca perde o que pagou"
+      },
+      "testimonials": {
+        "title": "Adorado por Empresários",
+        "subtitle": "Veja o que empresas reais dizem sobre o ProduktPix"
+      },
+      "faq": {
+        "title": "Perguntas Frequentes",
+        "questions": {
+          "0": {
+            "question": "Como é que o ProduktPix se compara a contratar um fotógrafo?",
+            "answer": "Uma sessão fotográfica tradicional custa €500–2.000, mais dias de agendamento e edição. Com o ProduktPix, obtém resultados profissionais em segundos a partir de €0,20 por imagem — até 90% mais barato."
+          },
+          "1": {
+            "question": "O que posso criar com os meus créditos?",
+            "answer": "Cada crédito gera 1 imagem de produto profissional em qualquer estilo de cena. Também pode criar anúncios em vídeo de 5 segundos (5 créditos) ou 10 segundos (10 créditos). Inclui Prova Virtual com IA e sessões fotográficas completas."
+          },
+          "2": {
+            "question": "Os créditos transitam?",
+            "answer": "Sim! Os créditos não utilizados transitam para o mês seguinte — nunca perde o que pagou."
+          },
+          "3": {
+            "question": "Posso mudar de plano a qualquer momento?",
+            "answer": "Sim, pode fazer upgrade ou downgrade a qualquer momento. As alterações entram em vigor imediatamente."
+          },
+          "4": {
+            "question": "Que métodos de pagamento aceitam?",
+            "answer": "Aceitamos os principais cartões de crédito via Stripe. A faturação é segura e pode gerir o seu método de pagamento a qualquer momento."
+          },
+          "5": {
+            "question": "Posso usar as imagens comercialmente?",
+            "answer": "Sim! Todos os planos pagos incluem direitos comerciais completos. Use as suas imagens em qualquer lugar — website, marketplaces, anúncios, redes sociais."
+          },
+          "6": {
+            "question": "Existe um período de teste gratuito?",
+            "answer": "Cada novo utilizador recebe 10 créditos grátis — sem necessidade de cartão de crédito. Faça upgrade quando estiver pronto."
+          }
+        }
+      },
+      "finalCta": {
+        "title": "Pronto para Transformar a Fotografia dos Seus Produtos?",
+        "subtitle": "Comece com 10 créditos grátis. Sem necessidade de cartão.",
+        "primary": "Começar a Criar Grátis",
+        "secondary": "Agendar uma Demo"
+      }
     }
   },
   "promoCode": {
@@ -782,7 +917,18 @@
       "detailedImage": "Imagem Detalhada",
       "ugcImage": "Imagem UGC",
       "preview": "Pré-visualizar",
-      "download": "Descarregar"
+      "download": "Descarregar",
+      "photoshoot": "Sessão Fotográfica"
+    },
+    "importSources": {
+      "library": "Da Biblioteca",
+      "url": "Por URL",
+      "shopify": "Do Shopify"
+    },
+    "paidOnly": {
+      "title": "Upgrade Necessário",
+      "description": "Faz upgrade para qualquer plano pago para desbloquear o Catálogo Produto.",
+      "cta": "Ver Planos"
     },
     "errors": {
       "signIn": "Inicia sessão",
@@ -1040,11 +1186,21 @@
         "professional": "Profissional",
         "casual": "Casual",
         "minimalist": "Minimalista",
+        "vibrant": "Vibrante",
+        "cinematic": "Cinemático",
+        "natural": "Natural",
         "tooltip": "Define a estética e a ambiência gerais das imagens geradas."
       }
     },
     "generateButton": "Gerar Imagens",
     "generating": "A gerar as suas imagens UGC...",
+    "insufficientCredits": "Créditos insuficientes ({{remaining}} restantes, necessita {{needed}})",
+    "generationTime": "A geração demora tipicamente 7-14 segundos",
+    "upgradeCredits": "Obter Mais Créditos",
+    "freeForTesting": "Grátis para testes",
+    "planLabel": "Plano {{tier}}",
+    "generateWithCredits": "Gerar Imagens ({{credits}} crédito{{plural}})",
+    "generateFree": "Gerar Imagens (Grátis)",
     "results": {
       "title": "Imagens Geradas",
       "downloadAll": "Transferir Tudo",

@@ -543,7 +543,9 @@
         "commercialUsage": "Commercial Usage",
         "prioritySupport": "Priority Support",
         "liveChat": "Live Chat Support",
-        "dedicatedManager": "Dedicated Manager"
+        "dedicatedManager": "Dedicated Manager",
+        "earlyAccess": "Early access to new features",
+        "businessConsulting": "Business implementation support and performance monitoring"
       },
       "values": {
         "unlimited": "unlimited",
@@ -601,6 +603,141 @@
       "noCard": "No credit card required",
       "cancel": "Cancel anytime",
       "fullDetails": "See Full Pricing Details"
+    },
+    "v2": {
+      "hero": {
+        "badge": "AI-Powered Product Photography",
+        "titleLine1": "Professional Product Photos",
+        "titleLine2": "from €0.20 each",
+        "title": "Professional Product Photos from €0.20 Each",
+        "subtitle": "Traditional photography costs €15–50 per image. Our AI gives you the same quality, instantly."
+      },
+      "trustChips": {
+        "trial": "10 free credits to start",
+        "noCard": "No credit card required",
+        "cancel": "Cancel anytime"
+      },
+      "plans": {
+        "starter": {
+          "bestFor": "Best for solo sellers and small shops",
+          "features": {
+            "images": "80 professional product images every month",
+            "scenarios": "Unlimited scene styles (lifestyle, studio, outdoor, seasonal…)",
+            "tryon": "AI Virtual Try-On for fashion",
+            "video": "Video generation (5s and 10s)",
+            "photoshoots": "Complete photoshoots for your products",
+            "support": "Email support within 24h",
+            "commercial": "Full commercial rights — use anywhere"
+          }
+        },
+        "plus": {
+          "bestFor": "Best for growing brands and agencies",
+          "features": {
+            "images": "200 professional product images every month",
+            "scenarios": "Unlimited scene styles (lifestyle, studio, outdoor, seasonal…)",
+            "tryon": "AI Virtual Try-On for fashion",
+            "video": "Video generation (5s and 10s)",
+            "photoshoots": "Complete photoshoots for your products",
+            "support": "Priority response + live chat with our team",
+            "commercial": "Full commercial rights — use anywhere"
+          }
+        },
+        "pro": {
+          "bestFor": "Best for high-volume catalogs and enterprises",
+          "features": {
+            "images": "400 professional product images every month",
+            "scenarios": "Unlimited scene styles (lifestyle, studio, outdoor, seasonal…)",
+            "tryon": "AI Virtual Try-On for fashion",
+            "video": "Video generation (5s and 10s)",
+            "photoshoots": "Complete photoshoots for your products",
+            "support": "Dedicated account manager",
+            "commercial": "Full commercial rights — use anywhere",
+            "earlyAccess": "Early access to new features"
+          }
+        }
+      },
+      "costPerImage": "That's only €{{price}} per image",
+      "vsPhotographer": "vs. €15–50 with a photographer",
+      "whatsIncluded": "What's included",
+      "valueProps": {
+        "title": "Why It's Worth It",
+        "subtitle": "See how ProduktPix pays for itself",
+        "save": {
+          "title": "Save 90% vs. Traditional Photography",
+          "description": "A single professional product shoot costs €500–2,000. Get hundreds of images for a fraction of the price."
+        },
+        "speed": {
+          "title": "Ready in Seconds, Not Days",
+          "description": "No scheduling, no shipping samples, no waiting for edits. Upload and generate instantly."
+        },
+        "results": {
+          "title": "Images That Sell",
+          "description": "Professional product photos boost conversion rates by up to 3x. Better images = more revenue."
+        }
+      },
+      "creditExplainer": {
+        "title": "What 1 Credit Gets You",
+        "subtitle": "Simple, transparent pricing — no surprises",
+        "image": {
+          "credits": "1 Credit",
+          "label": "1 professional product image",
+          "detail": "Any quality, any scene"
+        },
+        "video5": {
+          "credits": "5 Credits",
+          "label": "5-second video ad",
+          "detail": "Image-to-video generation"
+        },
+        "video10": {
+          "credits": "10 Credits",
+          "label": "10-second video ad",
+          "detail": "Extended video duration"
+        },
+        "rollover": "Credits roll over monthly — you never lose what you paid for"
+      },
+      "testimonials": {
+        "title": "Loved by Business Owners",
+        "subtitle": "See what real businesses say about ProduktPix"
+      },
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "questions": {
+          "0": {
+            "question": "How does ProduktPix compare to hiring a photographer?",
+            "answer": "A traditional product photoshoot costs €500–2,000 per session, plus days of scheduling and editing. With ProduktPix, you get professional results in seconds from €0.20 per image — that's up to 90% cheaper."
+          },
+          "1": {
+            "question": "What can I create with my credits?",
+            "answer": "Each credit generates 1 professional product image in any scene style. You can also create 5-second video ads (5 credits) or 10-second video ads (10 credits). Plus, you get AI Virtual Try-On for fashion and complete photoshoots."
+          },
+          "2": {
+            "question": "Do credits roll over?",
+            "answer": "Yes! Unused credits carry over to the next month — you never lose what you paid for."
+          },
+          "3": {
+            "question": "Can I change plans anytime?",
+            "answer": "Yes, you can upgrade or downgrade at any time. Changes take effect immediately."
+          },
+          "4": {
+            "question": "What payment methods do you accept?",
+            "answer": "We accept all major credit cards via Stripe. Billing is secure and you can manage your payment method anytime."
+          },
+          "5": {
+            "question": "Can I use the images commercially?",
+            "answer": "Yes! All paid plans include full commercial rights. Use your generated images anywhere — your website, marketplace listings, ads, social media."
+          },
+          "6": {
+            "question": "Is there a free trial?",
+            "answer": "Every new user gets 10 free credits to try ProduktPix — no credit card required. Upgrade when you're ready."
+          }
+        }
+      },
+      "finalCta": {
+        "title": "Ready to Transform Your Product Photography?",
+        "subtitle": "Start with 10 free credits. No credit card required.",
+        "primary": "Start Creating Free",
+        "secondary": "Book a Demo"
+      }
     }
   },
   "promoCode": {
@@ -783,7 +920,18 @@
       "detailedImage": "Detailed Image",
       "ugcImage": "UGC Image",
       "preview": "Preview",
-      "download": "Download"
+      "download": "Download",
+      "photoshoot": "Photoshoot"
+    },
+    "importSources": {
+      "library": "From Library",
+      "url": "From URL",
+      "shopify": "From Shopify"
+    },
+    "paidOnly": {
+      "title": "Upgrade Required",
+      "description": "Upgrade to any paid plan to unlock Bulk Background Replacement.",
+      "cta": "View Plans"
     },
     "errors": {
       "signIn": "Please sign in",
@@ -1044,11 +1192,21 @@
         "professional": "Professional",
         "casual": "Casual",
         "minimalist": "Minimalist",
+        "vibrant": "Vibrant",
+        "cinematic": "Cinematic",
+        "natural": "Natural",
         "tooltip": "Defines the overall aesthetic and mood of generated images."
       }
     },
     "generateButton": "Generate Images",
     "generating": "Generating your UGC images...",
+    "insufficientCredits": "Insufficient credits ({{remaining}} remaining, need {{needed}})",
+    "generationTime": "Generation typically takes 7-14 seconds",
+    "upgradeCredits": "Upgrade for More Credits",
+    "freeForTesting": "Free for testing",
+    "planLabel": "{{tier}} Plan",
+    "generateWithCredits": "Generate Images ({{credits}} credit{{plural}})",
+    "generateFree": "Generate Images (Free)",
     "results": {
       "title": "Generated Images",
       "downloadAll": "Download All",

@@ -216,8 +216,9 @@ export default function VideoGenerator() {
 
         if (sourceImageData) {
           // Get signed URL
+          const bucket = sourceImageData.public_url?.includes('/ugc-inputs/') ? 'ugc-inputs' : 'source-images';
           const { data: signedUrlData } = await supabase.storage
-            .from('ugc-inputs')
+            .from(bucket)
             .createSignedUrl(sourceImageData.storage_path, 3600);
 
           const sourceImage: SourceImage = {
@@ -226,6 +227,7 @@ export default function VideoGenerator() {
             signedUrl: signedUrlData?.signedUrl || sourceImageData.public_url,
             storage_path: sourceImageData.storage_path,
             createdAt: sourceImageData.created_at,
+            publicUrl: sourceImageData.public_url,
           };
 
           setSelectedImage(sourceImage);

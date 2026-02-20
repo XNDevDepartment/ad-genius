@@ -600,6 +600,141 @@
       "noCard": "Aucune carte de crédit requise",
       "cancel": "Annulez à tout moment",
       "fullDetails": "Voir Tous les Détails Tarifaires"
+    },
+    "v2": {
+      "hero": {
+        "badge": "Photographie de Produits par IA",
+        "titleLine1": "Photos de Produits Professionnelles",
+        "titleLine2": "dès €0,20 pièce",
+        "title": "Photos de Produits Professionnelles dès €0,20 pièce",
+        "subtitle": "La photographie traditionnelle coûte €15–50 par image. Notre IA vous offre la même qualité, instantanément."
+      },
+      "trustChips": {
+        "trial": "10 crédits gratuits pour commencer",
+        "noCard": "Sans carte de crédit",
+        "cancel": "Annulez à tout moment"
+      },
+      "plans": {
+        "starter": {
+          "bestFor": "Idéal pour les vendeurs individuels et petites boutiques",
+          "features": {
+            "images": "80 images de produits professionnelles par mois",
+            "scenarios": "Styles de scène illimités (lifestyle, studio, extérieur, saisonnier…)",
+            "tryon": "Essayage Virtuel IA pour la mode",
+            "video": "Génération de vidéo (5s et 10s)",
+            "photoshoots": "Séances photo complètes pour vos produits",
+            "support": "Support par email sous 24h",
+            "commercial": "Droits commerciaux complets — utilisez partout"
+          }
+        },
+        "plus": {
+          "bestFor": "Idéal pour les marques en croissance et agences",
+          "features": {
+            "images": "200 images de produits professionnelles par mois",
+            "scenarios": "Styles de scène illimités (lifestyle, studio, extérieur, saisonnier…)",
+            "tryon": "Essayage Virtuel IA pour la mode",
+            "video": "Génération de vidéo (5s et 10s)",
+            "photoshoots": "Séances photo complètes pour vos produits",
+            "support": "Réponse prioritaire + chat en direct avec notre équipe",
+            "commercial": "Droits commerciaux complets — utilisez partout"
+          }
+        },
+        "pro": {
+          "bestFor": "Idéal pour les catalogues à volume élevé et entreprises",
+          "features": {
+            "images": "400 images de produits professionnelles par mois",
+            "scenarios": "Styles de scène illimités (lifestyle, studio, extérieur, saisonnier…)",
+            "tryon": "Essayage Virtuel IA pour la mode",
+            "video": "Génération de vidéo (5s et 10s)",
+            "photoshoots": "Séances photo complètes pour vos produits",
+            "support": "Gestionnaire de compte dédié",
+            "commercial": "Droits commerciaux complets — utilisez partout",
+            "earlyAccess": "Accès anticipé aux nouvelles fonctionnalités"
+          }
+        }
+      },
+      "costPerImage": "Soit seulement €{{price}} par image",
+      "vsPhotographer": "vs. €15–50 avec un photographe",
+      "whatsIncluded": "Ce qui est inclus",
+      "valueProps": {
+        "title": "Pourquoi Ça Vaut le Coup",
+        "subtitle": "Découvrez comment ProduktPix se rentabilise",
+        "save": {
+          "title": "Économisez 90% vs. Photographie Traditionnelle",
+          "description": "Une séance photo professionnelle coûte €500–2 000. Obtenez des centaines d'images pour une fraction du prix."
+        },
+        "speed": {
+          "title": "Prêt en Secondes, Pas en Jours",
+          "description": "Pas de planification, pas d'envoi d'échantillons, pas d'attente. Téléchargez et générez instantanément."
+        },
+        "results": {
+          "title": "Des Images Qui Vendent",
+          "description": "Les photos de produits professionnelles augmentent les taux de conversion jusqu'à 3x. Meilleures images = plus de revenus."
+        }
+      },
+      "creditExplainer": {
+        "title": "Ce Que 1 Crédit Vous Offre",
+        "subtitle": "Tarification simple et transparente — sans surprises",
+        "image": {
+          "credits": "1 Crédit",
+          "label": "1 image de produit professionnelle",
+          "detail": "Toute qualité, toute scène"
+        },
+        "video5": {
+          "credits": "5 Crédits",
+          "label": "Publicité vidéo de 5 secondes",
+          "detail": "Génération image vers vidéo"
+        },
+        "video10": {
+          "credits": "10 Crédits",
+          "label": "Publicité vidéo de 10 secondes",
+          "detail": "Durée vidéo étendue"
+        },
+        "rollover": "Les crédits se reportent chaque mois — vous ne perdez jamais ce que vous avez payé"
+      },
+      "testimonials": {
+        "title": "Apprécié par les Entrepreneurs",
+        "subtitle": "Découvrez ce que les entreprises disent de ProduktPix"
+      },
+      "faq": {
+        "title": "Questions Fréquentes",
+        "questions": {
+          "0": {
+            "question": "Comment ProduktPix se compare à un photographe professionnel ?",
+            "answer": "Une séance photo traditionnelle coûte €500–2 000, plus des jours de planification et de retouche. Avec ProduktPix, obtenez des résultats professionnels en secondes à partir de €0,20 par image — jusqu'à 90% moins cher."
+          },
+          "1": {
+            "question": "Que puis-je créer avec mes crédits ?",
+            "answer": "Chaque crédit génère 1 image de produit professionnelle dans n'importe quel style de scène. Vous pouvez aussi créer des publicités vidéo de 5 secondes (5 crédits) ou 10 secondes (10 crédits). Inclut l'Essayage Virtuel IA et les séances photo complètes."
+          },
+          "2": {
+            "question": "Les crédits se reportent-ils ?",
+            "answer": "Oui ! Les crédits inutilisés se reportent au mois suivant — vous ne perdez jamais ce que vous avez payé."
+          },
+          "3": {
+            "question": "Puis-je changer de forfait à tout moment ?",
+            "answer": "Oui, vous pouvez passer à un forfait supérieur ou inférieur à tout moment. Les changements prennent effet immédiatement."
+          },
+          "4": {
+            "question": "Quels moyens de paiement acceptez-vous ?",
+            "answer": "Nous acceptons les principales cartes de crédit via Stripe. La facturation est sécurisée et vous pouvez gérer votre moyen de paiement à tout moment."
+          },
+          "5": {
+            "question": "Puis-je utiliser les images commercialement ?",
+            "answer": "Oui ! Tous les forfaits payants incluent les droits commerciaux complets. Utilisez vos images partout — site web, places de marché, publicités, réseaux sociaux."
+          },
+          "6": {
+            "question": "Y a-t-il un essai gratuit ?",
+            "answer": "Chaque nouvel utilisateur reçoit 10 crédits gratuits — sans carte de crédit. Passez au forfait supérieur quand vous êtes prêt."
+          }
+        }
+      },
+      "finalCta": {
+        "title": "Prêt à Transformer la Photographie de Vos Produits ?",
+        "subtitle": "Commencez avec 10 crédits gratuits. Sans carte de crédit.",
+        "primary": "Commencer à Créer Gratuitement",
+        "secondary": "Réserver une Démo"
+      }
     }
   },
   "promoCode": {
@@ -841,11 +976,21 @@
         "professional": "Professionnel",
         "casual": "Décontracté",
         "minimalist": "Minimaliste",
+        "vibrant": "Vibrant",
+        "cinematic": "Cinématique",
+        "natural": "Naturel",
         "tooltip": "Définit l'esthétique et l'ambiance générales des images générées."
       }
     },
     "generateButton": "Générer des Images",
     "generating": "Génération de vos images UGC...",
+    "insufficientCredits": "Crédits insuffisants ({{remaining}} restants, besoin de {{needed}})",
+    "generationTime": "La génération prend généralement 7-14 secondes",
+    "upgradeCredits": "Obtenir Plus de Crédits",
+    "freeForTesting": "Gratuit pour les tests",
+    "planLabel": "Plan {{tier}}",
+    "generateWithCredits": "Générer des Images ({{credits}} crédit{{plural}})",
+    "generateFree": "Générer des Images (Gratuit)",
     "results": {
       "title": "Images Générées",
       "downloadAll": "Tout Télécharger",
@@ -2437,7 +2582,18 @@
       "detailedImage": "Image Détaillée",
       "ugcImage": "Image UGC",
       "preview": "Aperçu",
-      "download": "Télécharger"
+      "download": "Télécharger",
+      "photoshoot": "Shooting Photo"
+    },
+    "importSources": {
+      "library": "Depuis la Bibliothèque",
+      "url": "Depuis URL",
+      "shopify": "Depuis Shopify"
+    },
+    "paidOnly": {
+      "title": "Upgrade Requis",
+      "description": "Passez à un plan payant pour débloquer le Remplacement de Fond en Masse.",
+      "cta": "Voir les Plans"
     },
     "errors": {
       "signIn": "Veuillez vous connecter",

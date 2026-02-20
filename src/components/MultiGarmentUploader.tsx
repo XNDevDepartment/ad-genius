@@ -122,7 +122,7 @@ export const MultiGarmentUploader = ({
     // Fetch the imported source images
     const { data: sourceImages, error } = await supabase
       .from('source_images')
-      .select('id, storage_path, file_name')
+      .select('id, storage_path, file_name, public_url')
       .in('id', imageIds);
 
     if (error || !sourceImages) return;
@@ -132,9 +132,10 @@ export const MultiGarmentUploader = ({
 
     for (const img of sourceImages) {
       try {
-        // Get signed URL
+        // Get signed URL with smart bucket detection
+        const bucket = img.public_url?.includes('/ugc-inputs/') ? 'ugc-inputs' : 'source-images';
         const { data: signedData } = await supabase.storage
-          .from('ugc-inputs')
+          .from(bucket)
           .createSignedUrl(img.storage_path, 3600);
 
         if (signedData?.signedUrl) {
