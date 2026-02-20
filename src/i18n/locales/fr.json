@@ -603,6 +603,9 @@
     },
     "v2": {
       "hero": {
+        "badge": "Photographie de Produits par IA",
+        "titleLine1": "Photos de Produits Professionnelles",
+        "titleLine2": "dès €0,20 pièce",
         "title": "Photos de Produits Professionnelles dès €0,20 pièce",
         "subtitle": "La photographie traditionnelle coûte €15–50 par image. Notre IA vous offre la même qualité, instantanément."
       },
@@ -973,11 +976,21 @@
         "professional": "Professionnel",
         "casual": "Décontracté",
         "minimalist": "Minimaliste",
+        "vibrant": "Vibrant",
+        "cinematic": "Cinématique",
+        "natural": "Naturel",
         "tooltip": "Définit l'esthétique et l'ambiance générales des images générées."
       }
     },
     "generateButton": "Générer des Images",
     "generating": "Génération de vos images UGC...",
+    "insufficientCredits": "Crédits insuffisants ({{remaining}} restants, besoin de {{needed}})",
+    "generationTime": "La génération prend généralement 7-14 secondes",
+    "upgradeCredits": "Obtenir Plus de Crédits",
+    "freeForTesting": "Gratuit pour les tests",
+    "planLabel": "Plan {{tier}}",
+    "generateWithCredits": "Générer des Images ({{credits}} crédit{{plural}})",
+    "generateFree": "Générer des Images (Gratuit)",
     "results": {
       "title": "Images Générées",
       "downloadAll": "Tout Télécharger",

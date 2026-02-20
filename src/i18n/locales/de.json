@@ -603,6 +603,9 @@
     },
     "v2": {
       "hero": {
+        "badge": "KI-gestützte Produktfotografie",
+        "titleLine1": "Professionelle Produktfotos",
+        "titleLine2": "ab €0,20 pro Stück",
         "title": "Professionelle Produktfotos ab €0,20 pro Stück",
         "subtitle": "Traditionelle Fotografie kostet €15–50 pro Bild. Unsere KI liefert die gleiche Qualität — sofort."
       },
@@ -1132,11 +1135,21 @@
         "professional": "Professionell",
         "casual": "Casual",
         "minimalist": "Minimalistisch",
+        "vibrant": "Lebhaft",
+        "cinematic": "Filmisch",
+        "natural": "Natürlich",
         "tooltip": "Legt die Gesamtästhetik und Stimmung der generierten Bilder fest."
       }
     },
     "generateButton": "Bilder generieren",
     "generating": "Deine UGC-Bilder werden generiert...",
+    "insufficientCredits": "Nicht genügend Credits ({{remaining}} übrig, {{needed}} benötigt)",
+    "generationTime": "Die Generierung dauert normalerweise 7-14 Sekunden",
+    "upgradeCredits": "Für Mehr Credits Upgraden",
+    "freeForTesting": "Kostenlos zum Testen",
+    "planLabel": "{{tier}}-Plan",
+    "generateWithCredits": "Bilder Generieren ({{credits}} Credit{{plural}})",
+    "generateFree": "Bilder Generieren (Kostenlos)",
     "results": {
       "title": "Generierte Bilder",
       "downloadAll": "Alle herunterladen",
