@@ -783,7 +783,18 @@
       "detailedImage": "Detailed Image",
       "ugcImage": "UGC Image",
       "preview": "Preview",
-      "download": "Download"
+      "download": "Download",
+      "photoshoot": "Photoshoot"
+    },
+    "importSources": {
+      "library": "From Library",
+      "url": "From URL",
+      "shopify": "From Shopify"
+    },
+    "paidOnly": {
+      "title": "Upgrade Required",
+      "description": "Upgrade to any paid plan to unlock Bulk Background Replacement.",
+      "cta": "View Plans"
     },
     "errors": {
       "signIn": "Please sign in",

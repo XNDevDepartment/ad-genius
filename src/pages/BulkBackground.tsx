@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Download, Loader2, X, Eye, Camera, Sparkles, Pencil, Images, Link, Store } from "lucide-react";
+import { ArrowLeft, Download, Loader2, X, Eye, Camera, Sparkles, Pencil, Images, Link, Store, Lock } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ const BulkBackground = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { getRemainingCredits, refreshCredits } = useCredits();
+  const { getRemainingCredits, refreshCredits, isFreeTier } = useCredits();
   const { toast } = useToast();
   const { uploadSourceImage, uploading: uploadingSource } = useSourceImageUpload();
 
@@ -342,6 +342,22 @@ const BulkBackground = () => {
           </div>
         </div>
 
+        {/* Paid-only gate */}
+        {isFreeTier() && (
+          <Card className="rounded-apple shadow-lg border-amber-500/30 bg-amber-500/5">
+            <CardContent className="flex flex-col items-center justify-center py-12 space-y-4">
+              <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center">
+                <Lock className="h-8 w-8 text-amber-500" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">{t("bulkBackground.paidOnly.title")}</h2>
+              <p className="text-muted-foreground text-center max-w-md">{t("bulkBackground.paidOnly.description")}</p>
+              <Button onClick={() => navigate("/pricing")} variant="default" size="lg">
+                {t("bulkBackground.paidOnly.cta")}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Section 1: Upload Products — always visible */}
         <Card className="rounded-apple shadow-lg scroll-mt-6">
           <CardHeader>
@@ -357,31 +373,31 @@ const BulkBackground = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => setLibraryPickerOpen(true)}
-                disabled={productImages.length >= MAX_IMAGES}
+                disabled={productImages.length >= MAX_IMAGES || isFreeTier()}
                 className="gap-2"
               >
                 <Images className="h-4 w-4" />
-                {t("outfitSwap.garmentUploader.fromLibrary", "From Library")}
+                {t("bulkBackground.importSources.library")}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setUrlImportOpen(true)}
-                disabled={productImages.length >= MAX_IMAGES}
+                disabled={productImages.length >= MAX_IMAGES || isFreeTier()}
                 className="gap-2"
               >
                 <Link className="h-4 w-4" />
-                {t("outfitSwap.garmentUploader.fromUrl", "From URL")}
+                {t("bulkBackground.importSources.url")}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShopifyImportOpen(true)}
-                disabled={productImages.length >= MAX_IMAGES}
+                disabled={productImages.length >= MAX_IMAGES || isFreeTier()}
                 className="gap-2"
               >
                 <Store className="h-4 w-4" />
-                {t("outfitSwap.garmentUploader.fromShopify", "From Shopify")}
+                {t("bulkBackground.importSources.shopify")}
               </Button>
             </div>
             <MultiImageUploader

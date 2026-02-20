@@ -778,7 +778,18 @@
       "detailedImage": "Imagen Detallada",
       "ugcImage": "Imagen UGC",
       "preview": "Vista Previa",
-      "download": "Descargar"
+      "download": "Descargar",
+      "photoshoot": "Sesión Fotográfica"
+    },
+    "importSources": {
+      "library": "Desde Biblioteca",
+      "url": "Desde URL",
+      "shopify": "Desde Shopify"
+    },
+    "paidOnly": {
+      "title": "Upgrade Necesario",
+      "description": "Mejora a cualquier plan de pago para desbloquear el Fondo Masivo.",
+      "cta": "Ver Planes"
     },
     "errors": {
       "signIn": "Inicia sesión",
