@@ -543,7 +543,9 @@
         "commercialUsage": "Commercial Usage",
         "prioritySupport": "Priority Support",
         "liveChat": "Live Chat Support",
-        "dedicatedManager": "Dedicated Manager"
+        "dedicatedManager": "Dedicated Manager",
+        "earlyAccess": "Early access to new features",
+        "businessConsulting": "Business implementation support and performance monitoring"
       },
       "values": {
         "unlimited": "unlimited",
@@ -604,6 +606,9 @@
     },
     "v2": {
       "hero": {
+        "badge": "AI-Powered Product Photography",
+        "titleLine1": "Professional Product Photos",
+        "titleLine2": "from €0.20 each",
         "title": "Professional Product Photos from €0.20 Each",
         "subtitle": "Traditional photography costs €15–50 per image. Our AI gives you the same quality, instantly."
       },
@@ -1187,11 +1192,21 @@
         "professional": "Professional",
         "casual": "Casual",
         "minimalist": "Minimalist",
+        "vibrant": "Vibrant",
+        "cinematic": "Cinematic",
+        "natural": "Natural",
         "tooltip": "Defines the overall aesthetic and mood of generated images."
       }
     },
     "generateButton": "Generate Images",
     "generating": "Generating your UGC images...",
+    "insufficientCredits": "Insufficient credits ({{remaining}} remaining, need {{needed}})",
+    "generationTime": "Generation typically takes 7-14 seconds",
+    "upgradeCredits": "Upgrade for More Credits",
+    "freeForTesting": "Free for testing",
+    "planLabel": "{{tier}} Plan",
+    "generateWithCredits": "Generate Images ({{credits}} credit{{plural}})",
+    "generateFree": "Generate Images (Free)",
     "results": {
       "title": "Generated Images",
       "downloadAll": "Download All",

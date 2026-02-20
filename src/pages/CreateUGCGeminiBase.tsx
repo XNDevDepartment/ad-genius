@@ -1268,7 +1268,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                     {/* Credits Progress Bar */}
                     <div className="space-y-2 mb-6">
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-muted-foreground">Credits</span>
+                        <span className="text-muted-foreground">{t('ugc.credits')}</span>
                         <span className="font-medium">
                           {modelVersion === 'gemini-v3' ? '∞ (Admin)' : `${remainingCredits} / ${credits}`}
                         </span>
@@ -1277,7 +1277,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                         <Progress value={(remainingCredits / credits) * 100} className="h-2" />
                       )}
                       <div className="text-xs text-muted-foreground">
-                        {modelVersion === 'gemini-v3' ? 'Free for testing' : `${subscriptionData?.subscription_tier || 'Free'} Plan`}
+                        {modelVersion === 'gemini-v3' ? t('ugc.freeForTesting') : t('ugc.planLabel', { tier: subscriptionData?.subscription_tier || 'Free' })}
                       </div>
                     </div>
 
@@ -1339,10 +1339,10 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                       >
                         <ToggleGroupItem key={"lifestyle"} size="sm" className="text-xs px-2 py-1 bg-muted" value="lifestyle">{t('ugc.advancedSettings.style.lifestyle')}</ToggleGroupItem>
                         <ToggleGroupItem key={"minimal"} size="sm" className="text-xs px-2 py-1 bg-muted" value="minimal">{t('ugc.advancedSettings.style.minimalist')}</ToggleGroupItem>
-                        <ToggleGroupItem key={"vibrant"} size="sm" className="text-xs px-2 py-1 bg-muted" value="vibrant">Vibrant</ToggleGroupItem>
+                        <ToggleGroupItem key={"vibrant"} size="sm" className="text-xs px-2 py-1 bg-muted" value="vibrant">{t('ugc.advancedSettings.style.vibrant')}</ToggleGroupItem>
                         <ToggleGroupItem key={"professional"} size="sm" className="text-xs px-2 py-1 bg-muted" value="professional">{t('ugc.advancedSettings.style.professional')}</ToggleGroupItem>
-                        <ToggleGroupItem key={"cinematic"} size="sm" className="text-xs px-2 py-1 bg-muted" value="cinematic">Cinematic</ToggleGroupItem>
-                        <ToggleGroupItem key={"natural"} size="sm" className="text-xs px-2 py-1 bg-muted" value="natural">Natural</ToggleGroupItem>
+                        <ToggleGroupItem key={"cinematic"} size="sm" className="text-xs px-2 py-1 bg-muted" value="cinematic">{t('ugc.advancedSettings.style.cinematic')}</ToggleGroupItem>
+                        <ToggleGroupItem key={"natural"} size="sm" className="text-xs px-2 py-1 bg-muted" value="natural">{t('ugc.advancedSettings.style.natural')}</ToggleGroupItem>
                       </ToggleGroup>
                     </div>
 
@@ -1364,23 +1364,23 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                       onClick={handleGenerate}
                       disabled={productImages.length === 0 || !hasSelectedScenario || isGenerating || (!canGenerateImages(numImages) && modelVersion !== 'gemini-v3')}
                     >
-                      {isGenerating ? (
+                    {isGenerating ? (
                         <>
                           <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                          Generating...
+                          {t('ugc.generating')}
                         </>
                       ) : (
                         <>
                           <Sparkles className="h-5 w-5 mr-2" />
-                          Generate Images ({modelVersion === 'gemini-v3' ? 'Free' : `${numImages} credit${numImages > 1 ? 's' : ''}`})
+                          {modelVersion === 'gemini-v3' ? t('ugc.generateFree') : t('ugc.generateWithCredits', { credits: numImages, plural: numImages > 1 ? 's' : '' })}
                         </>
                       )}
                     </Button>
 
                     <p className="text-xs text-muted-foreground mt-2 text-center">
                       {isGenerating ? t('ugc.generating') :
-                        (!canGenerateImages(numImages) && modelVersion !== 'gemini-v3') ? `Insufficient credits (${remainingCredits} remaining, need ${numImages})` :
-                          'Generation typically takes 7-14 seconds'}
+                        (!canGenerateImages(numImages) && modelVersion !== 'gemini-v3') ? t('ugc.insufficientCredits', { remaining: remainingCredits, needed: numImages }) :
+                          t('ugc.generationTime')}
                     </p>
 
                     {!canGenerateImages(numImages) && modelVersion !== 'gemini-v3' && (
@@ -1390,7 +1390,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                         className="w-full mt-2"
                         onClick={() => window.location.href = '/pricing'}
                       >
-                        Upgrade for More Credits
+                        {t('ugc.upgradeCredits')}
                       </Button>
                     )}
                   </div>
@@ -1406,7 +1406,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                 <div className="flex items-center gap-3">
                   <div className="flex-1 px-3 py-2 bg-muted/40 rounded-full text-xs text-muted-foreground truncate" onClick={() => setSettingsOpen(true)}>
                     <Button className="w-full" variant="ghost">
-                      Open image settings
+                      {t('ugc.settings.openSettings')}
                       <Pencil className="h-3 w-3" />
                     </Button>
                   </div>
@@ -1422,12 +1422,12 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                   {isGenerating ? (
                     <>
                       <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                      Generating...
+                      {t('ugc.generating')}
                     </>
                   ) : (
                     <>
                       <Sparkles className="h-5 w-5 mr-2" />
-                      Generate Images ({modelVersion === 'gemini-v3' ? 'Free' : `${numImages} credit${numImages > 1 ? 's' : ''}`})
+                      {modelVersion === 'gemini-v3' ? t('ugc.generateFree') : t('ugc.generateWithCredits', { credits: numImages, plural: numImages > 1 ? 's' : '' })}
                     </>
                   )}
                 </Button>
