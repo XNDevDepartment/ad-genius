@@ -40,7 +40,7 @@ const LandingPageV2 = () => {
     <div className="min-h-screen bg-background">
       <SEO
         title="AI Product Photos for E-commerce"
-        description="Transform your product photos with AI. Generate professional lifestyle images, virtual try-ons, and video ads in seconds. Used by 10,000+ brands worldwide."
+        description="Transform your product photos with AI. Generate professional lifestyle images, virtual try-ons, and video ads in seconds. Used by 1,000+ brands worldwide."
         path="/"
         schema={[buildWebApplicationSchema(), howToSchema, faqSchema]}
       />
@@ -49,10 +49,10 @@ const LandingPageV2 = () => {
       {/* Add padding for fixed header */}
       <main className="pt-16">
         <MinimalHero />
+        <UseCasesGrid />
         <LogoMarquee />
         <ValuePropsSection />
         <BeforeAfterShowcase />
-        <UseCasesGrid />
         <ImageMarquee />
         <TestimonialsSection />
         <section id="how-it-works">
