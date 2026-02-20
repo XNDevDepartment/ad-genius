@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileImage, Upload, CheckSquare, Trash2, Loader2, Store } from "lucide-react";
+import { FileImage, Upload, CheckSquare, Store } from "lucide-react";
 import { BulkImageUploadModal } from "@/components/BulkImageUploadModal";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,16 +14,6 @@ import { useSourceImages } from "@/hooks/useSourceImages";
 import { GeneratingImagePlaceholders } from "@/components/departments/ugc/GeneratingImagePlaceholders";
 import { ImageLibraryGrid } from "@/components/ImageLibraryGrid";
 import { useTranslation } from "react-i18next";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 type CategoryTab = 'all' | 'ugc' | 'outfit_swap' | 'bulk_background' | 'source';
 
@@ -57,8 +47,6 @@ export const Library = ({ onBack }: LibraryProps) => {
   const [aiSelectedIds, setAiSelectedIds] = useState<Set<string>>(new Set());
   const [sourceSelectionMode, setSourceSelectionMode] = useState(false);
   const [sourceSelectedIds, setSourceSelectedIds] = useState<Set<string>>(new Set());
-  const [showSourceBulkDeleteDialog, setShowSourceBulkDeleteDialog] = useState(false);
-  const [sourceBulkDeleting, setSourceBulkDeleting] = useState(false);
 
   const { toast } = useToast();
   const { user } = useAuth();
@@ -130,25 +118,6 @@ export const Library = ({ onBack }: LibraryProps) => {
     }
   };
 
-  const handleSourceBulkDelete = async () => {
-    if (sourceSelectedIds.size === 0) return;
-    setSourceBulkDeleting(true);
-    try {
-      const result = await deleteSourceImages(Array.from(sourceSelectedIds));
-      if (result.failed === 0) {
-        toast({ title: "Success", description: `Deleted ${result.success} images` });
-      } else {
-        toast({ title: "Partial Success", description: `Deleted ${result.success}, failed ${result.failed}`, variant: "destructive" });
-      }
-      setSourceSelectedIds(new Set());
-      setSourceSelectionMode(false);
-    } catch (err) {
-      toast({ title: "Delete Failed", description: "Failed to delete images", variant: "destructive" });
-    } finally {
-      setSourceBulkDeleting(false);
-      setShowSourceBulkDeleteDialog(false);
-    }
-  };
 
   const handleTabChange = (value: string) => {
     setActiveTab(value as CategoryTab);
@@ -250,32 +219,6 @@ export const Library = ({ onBack }: LibraryProps) => {
             )}
           </div>
 
-          {/* Source Selection Mode Header */}
-          {isSourceTab && sourceSelectionMode && (
-            <div className="flex items-center justify-between mb-4 p-3 bg-muted/50 rounded-lg">
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium">{sourceSelectedIds.size} selected</span>
-                <Button variant="ghost" size="sm" onClick={() => setSourceSelectedIds(new Set(sourceImages.map(img => img.id)))}>
-                  Select All
-                </Button>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  disabled={sourceSelectedIds.size === 0 || sourceBulkDeleting}
-                  onClick={() => setShowSourceBulkDeleteDialog(true)}
-                >
-                  {sourceBulkDeleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Selected
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => { setSourceSelectedIds(new Set()); setSourceSelectionMode(false); }}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          )}
 
           {isLoading && displayImages.length === 0 ? (
             <div className="text-center py-12">
@@ -329,28 +272,6 @@ export const Library = ({ onBack }: LibraryProps) => {
         onUploadComplete={handleUploadComplete}
       />
 
-      {/* Source Bulk Delete Confirmation Dialog */}
-      <AlertDialog open={showSourceBulkDeleteDialog} onOpenChange={setShowSourceBulkDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete {sourceSelectedIds.size} images?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the selected source images.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={sourceBulkDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleSourceBulkDelete}
-              disabled={sourceBulkDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {sourceBulkDeleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };
