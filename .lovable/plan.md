@@ -1,20 +1,38 @@
 
+# Add Library, URL, and Shopify Import to Bulk Background
 
-# Fix Duplicate Selection Bar in Library
+## What Changes
 
-## Problem
+Add three import buttons (From Library, From URL, From Shopify) to the product image upload section of the Bulk Background module, matching the pattern already used in the Outfit Swap / UGC Gemini modules.
 
-When entering select mode on the Source Images tab, two identical selection bars appear stacked on top of each other. This happens because both `LibraryOld.tsx` and `ImageLibraryGrid.tsx` render their own selection mode header.
+## How It Works
 
-## Fix
+The existing `MultiImageUploader` component stays as-is for drag-and-drop file uploads. The three additional import sources are wired directly in `BulkBackground.tsx`, reusing the same modal components already available in the project:
 
-Remove the duplicate selection header from `LibraryOld.tsx` (lines 253-278). The `ImageLibraryGrid` component already handles displaying the selection bar, delete confirmation, and cancel actions -- so the one in `LibraryOld.tsx` is redundant.
+- **From Library** -- opens `GarmentLibraryPicker`, fetches selected source images as Files
+- **From URL** -- opens `BulkUrlImportModal`, imports images by URL then fetches them as Files
+- **From Shopify** -- opens `ShopifyImportModal`, imports Shopify product images then fetches them as Files
 
 ## Technical Details
 
-| File | Change |
+### File: `src/pages/BulkBackground.tsx`
+
+1. Add imports for `GarmentLibraryPicker`, `BulkUrlImportModal`, `ShopifyImportModal`, and icons (`Images`, `Link`, `Store`)
+2. Add three boolean state variables for modal visibility (`libraryPickerOpen`, `urlImportOpen`, `shopifyImportOpen`)
+3. Add handler functions (same pattern as `MultiGarmentUploader`):
+   - `handleLibrarySelect(images)` -- fetches signed URLs, converts to File objects, appends to `productImages`
+   - `handleUrlImportComplete(imageIds)` -- queries `source_images` table for imported IDs, fetches via signed URLs with smart bucket detection, converts to Files
+   - `handleShopifyImportComplete(imageIds)` -- delegates to URL import handler
+4. Add three `Button` components (outline, sm) above the `MultiImageUploader` in the upload card, disabled when at max capacity
+5. Add the three modal components at the bottom of the JSX
+
+### No other files change
+
+All modal components (`GarmentLibraryPicker`, `BulkUrlImportModal`, `ShopifyImportModal`) are already generic and accept `maxImages`/`currentCount` props. No modifications needed.
+
+| Item | Detail |
 |---|---|
-| `src/components/departments/LibraryOld.tsx` | Remove the "Source Selection Mode Header" block (lines 253-278) and the associated `showSourceBulkDeleteDialog` AlertDialog (lines 332-353), since `ImageLibraryGrid` already provides both. Also remove the now-unused state variables `showSourceBulkDeleteDialog`, `sourceBulkDeleting`, and the `handleSourceBulkDelete` function. |
-
-One file change, no new dependencies.
-
+| Files changed | 1 (`src/pages/BulkBackground.tsx`) |
+| New dependencies | None |
+| Reused components | `GarmentLibraryPicker`, `BulkUrlImportModal`, `ShopifyImportModal` |
+| Smart bucket detection | Applied when fetching imported images via `public_url` check |
