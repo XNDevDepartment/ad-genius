@@ -782,7 +782,18 @@
       "detailedImage": "Imagem Detalhada",
       "ugcImage": "Imagem UGC",
       "preview": "Pré-visualizar",
-      "download": "Descarregar"
+      "download": "Descarregar",
+      "photoshoot": "Sessão Fotográfica"
+    },
+    "importSources": {
+      "library": "Da Biblioteca",
+      "url": "Por URL",
+      "shopify": "Do Shopify"
+    },
+    "paidOnly": {
+      "title": "Upgrade Necessário",
+      "description": "Faz upgrade para qualquer plano pago para desbloquear o Catálogo Produto.",
+      "cta": "Ver Planos"
     },
     "errors": {
       "signIn": "Inicia sessão",

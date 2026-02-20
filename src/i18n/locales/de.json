@@ -778,7 +778,18 @@
       "detailedImage": "Detailbild",
       "ugcImage": "UGC-Bild",
       "preview": "Vorschau",
-      "download": "Herunterladen"
+      "download": "Herunterladen",
+      "photoshoot": "Fotoshooting"
+    },
+    "importSources": {
+      "library": "Aus Bibliothek",
+      "url": "Per URL",
+      "shopify": "Aus Shopify"
+    },
+    "paidOnly": {
+      "title": "Upgrade Erforderlich",
+      "description": "Upgrade auf einen beliebigen kostenpflichtigen Plan, um den Massen-Hintergrund freizuschalten.",
+      "cta": "Pläne Ansehen"
     },
     "errors": {
       "signIn": "Bitte anmelden",

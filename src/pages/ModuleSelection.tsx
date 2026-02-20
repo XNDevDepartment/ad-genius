@@ -14,7 +14,7 @@ const ModuleSelection = () => {
   const { user, loading } = useAuth();
   const { t } = useTranslation();
   const { isAdmin, loading: adminLoading } = useAdminAuth();
-  const { canAccessVideos, canAccessOutfitSwap } = useCredits();
+  const { canAccessVideos, canAccessOutfitSwap, isFreeTier } = useCredits();
 
   // Block access if not authenticated
   useEffect(() => {
@@ -70,7 +70,7 @@ const ModuleSelection = () => {
       path: "/create/bulk-background",
       isAdmin: false,
       isBeta: true,
-      locked: false
+      locked: isFreeTier()
     },
     // ...(isAdmin ? [{
     //   id: "magazine-photoshoot",

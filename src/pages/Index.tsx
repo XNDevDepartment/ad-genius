@@ -19,25 +19,23 @@ const mobileModules = [
   { id: "ugc", titleKey: "createSelection.ugcCreator.title", icon: Zap, path: "/create/ugc" },
   { id: "video", titleKey: "createSelection.videoCreator.title", icon: Video, path: "/create/video", needsVideoAccess: true },
   { id: "outfit-swap", titleKey: "createSelection.outfitSwap.title", icon: Shirt, path: "/create/outfit-swap" },
-  { id: "bulk-background", titleKey: "createSelection.bulkBackground.title", icon: Images, path: "/create/bulk-background", adminOnly: true },
+  { id: "bulk-background", titleKey: "createSelection.bulkBackground.title", icon: Images, path: "/create/bulk-background", needsPaid: true },
 ];
 
-const MobileModuleGrid = ({ navigate, t, canAccessVideos, isAdmin, user }: {
+const MobileModuleGrid = ({ navigate, t, canAccessVideos, isAdmin, user, isFreeTier }: {
   navigate: (path: string) => void;
   t: (key: string) => string;
   canAccessVideos: () => boolean;
   isAdmin: boolean;
   user: any;
+  isFreeTier: () => boolean;
 }) => {
-  const visibleModules = mobileModules.filter(m => {
-    if (m.adminOnly) return isAdmin || user?.email === 'bacalhaustore@gmail.com';
-    return true;
-  }).slice(0, 4);
+  const visibleModules = mobileModules.slice(0, 4);
 
   return (
     <div className="grid grid-cols-2 gap-3">
       {visibleModules.map((mod) => {
-        const locked = mod.needsVideoAccess && !canAccessVideos();
+        const locked = (mod.needsVideoAccess && !canAccessVideos()) || (mod.needsPaid && isFreeTier());
         return (
           <div
             key={mod.id}
@@ -64,7 +62,7 @@ const Index = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { tier, canAccessVideos } = useCredits();
+  const { tier, canAccessVideos, isFreeTier } = useCredits();
   const { isAdmin } = useAdminAuth();
   useEffect(() => {
     if(localStorage.getItem("billing") === 'true'){
@@ -127,7 +125,7 @@ const Index = () => {
 
 
           {/* 3. First 4 module cards in 2x2 grid */}
-          <MobileModuleGrid navigate={navigate} t={t} canAccessVideos={canAccessVideos} isAdmin={isAdmin} user={user} />
+          <MobileModuleGrid navigate={navigate} t={t} canAccessVideos={canAccessVideos} isAdmin={isAdmin} user={user} isFreeTier={isFreeTier} />
 
           {/* 4. "Discover Possibilities" button */}
           <Button

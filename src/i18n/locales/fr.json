@@ -2437,7 +2437,18 @@
       "detailedImage": "Image Détaillée",
       "ugcImage": "Image UGC",
       "preview": "Aperçu",
-      "download": "Télécharger"
+      "download": "Télécharger",
+      "photoshoot": "Shooting Photo"
+    },
+    "importSources": {
+      "library": "Depuis la Bibliothèque",
+      "url": "Depuis URL",
+      "shopify": "Depuis Shopify"
+    },
+    "paidOnly": {
+      "title": "Upgrade Requis",
+      "description": "Passez à un plan payant pour débloquer le Remplacement de Fond en Masse.",
+      "cta": "Voir les Plans"
     },
     "errors": {
       "signIn": "Veuillez vous connecter",
