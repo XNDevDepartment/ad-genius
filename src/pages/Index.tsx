@@ -17,7 +17,7 @@ import LandingPageV2 from "@/pages/LandingPageV2";
 
 const mobileModules = [
   { id: "ugc", titleKey: "createSelection.ugcCreator.title", icon: Zap, path: "/create/ugc" },
-  { id: "video", titleKey: "createSelection.videoCreator.title", icon: Video, path: "/create/video", needsVideoAccess: true },
+  { id: "video", titleKey: "createSelection.videoCreator.title", icon: Video, path: "/create/video" },
   { id: "outfit-swap", titleKey: "createSelection.outfitSwap.title", icon: Shirt, path: "/create/outfit-swap" },
   { id: "bulk-background", titleKey: "createSelection.bulkBackground.title", icon: Images, path: "/create/bulk-background", needsPaid: true },
 ];
@@ -35,7 +35,7 @@ const MobileModuleGrid = ({ navigate, t, canAccessVideos, isAdmin, user, isFreeT
   return (
     <div className="grid grid-cols-2 gap-3">
       {visibleModules.map((mod) => {
-        const locked = (mod.needsVideoAccess && !canAccessVideos()) || (mod.needsPaid && isFreeTier());
+        const locked = (mod.needsPaid && isFreeTier());
         return (
           <div
             key={mod.id}

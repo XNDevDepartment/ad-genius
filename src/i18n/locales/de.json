@@ -77,6 +77,12 @@
         "skipCta": "Kostenlos Loslegen"
       },
       "milestones": {
+        "email": {
+          "title": "E-Mail verifizieren",
+          "description": "Bestätigen Sie Ihre E-Mail für die Kontosicherheit",
+          "cta": "E-Mail senden",
+          "sent": "Bestätigungs-E-Mail gesendet!"
+        },
         "ugc": {
           "title": "Erstellen Sie Ihr erstes UGC-Bild",
           "description": "Generieren Sie KI-Produktfotos",

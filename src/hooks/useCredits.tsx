@@ -126,22 +126,11 @@ export const useCredits = () => {
 
   const canAccessVideos = (): boolean => {
     if (!subscriptionData) return false;
-    
-    // NEW: Check if account is activated (required for video access)
-    if (!isActivated) return false;
-    
-    // All tiers can access videos
     return true;
   };
 
   const getVideoAccessMessage = (): string => {
     if (!subscriptionData) return 'Please sign in to access video features.';
-    
-    // NEW: Check activation status first
-    if (!isActivated) {
-      return 'Please verify your email to access video features. Check your inbox for the activation link.';
-    }
-    
     return 'You have access to video generation!';
   };
 
