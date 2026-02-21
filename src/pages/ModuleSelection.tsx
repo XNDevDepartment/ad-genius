@@ -1,4 +1,4 @@
-import { ArrowLeft, Users, Sparkles, Zap, Video, Lock, Shirt, Image as ImageIcon, Images, Camera, UserPlus, Palette } from "lucide-react";
+import { ArrowLeft, Sparkles, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -8,22 +8,24 @@ import { useTranslation } from "react-i18next";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useCredits } from "@/hooks/useCredits";
 
+import demoUgc from "@/assets/demo.webp";
+import demoVideo from "@/assets/catalog_showcase/1.png";
+import demoOutfit from "@/assets/outfit_square_final.png";
+import demoBulk from "@/assets/catalog_showcase/3.png";
 
 const ModuleSelection = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { t } = useTranslation();
   const { isAdmin, loading: adminLoading } = useAdminAuth();
-  const { canAccessVideos, canAccessOutfitSwap, isFreeTier } = useCredits();
+  const { isFreeTier } = useCredits();
 
-  // Block access if not authenticated
   useEffect(() => {
     if (!loading && !user) {
       navigate('/account');
     }
   }, [user, loading, navigate]);
 
-  // Show loading state while auth OR admin check is initializing
   if (loading || adminLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -37,65 +39,43 @@ const ModuleSelection = () => {
       id: "ugc",
       title: t('createSelection.ugcCreator.title'),
       description: t('createSelection.ugcCreator.description'),
-      icon: Zap,
       path: "/create/ugc",
-      isAdmin: false,
+      demoImage: demoUgc,
       isBeta: false,
     },
     {
       id: "video",
       title: t('createSelection.videoCreator.title'),
       description: t('createSelection.videoCreator.description'),
-      icon: Video,
       path: "/create/video",
-      isAdmin: false,
+      demoImage: demoVideo,
       isBeta: false,
-      locked: !canAccessVideos()
+      locked: false,
     },
     {
       id: "outfit-swap",
       title: t('createSelection.outfitSwap.title'),
       description: t('createSelection.outfitSwap.description'),
-      icon: Shirt,
       path: "/create/outfit-swap",
-      isAdmin: false,
+      demoImage: demoOutfit,
       isBeta: false,
-      locked: false
+      locked: false,
     },
     {
       id: "bulk-background",
       title: t('createSelection.bulkBackground.title'),
       description: t('createSelection.bulkBackground.description'),
-      icon: Images,
       path: "/create/bulk-background",
-      isAdmin: false,
+      demoImage: demoBulk,
       isBeta: true,
-      locked: isFreeTier()
+      locked: isFreeTier(),
     },
-    // ...(isAdmin ? [{
-    //   id: "magazine-photoshoot",
-    //   title: "Magazine Photoshoot",
-    //   description: "Transform photos into high-fashion editorial magazine spreads",
-    //   icon: Camera,
-    //   path: "/create/magazine-photoshoot",
-    //   isAdmin: true,
-    //   isBeta: false
-    // }] : []),
-    // ...(isAdmin ? [{
-    //   id: "custom-model",
-    //   title: "Create Your Own Model",
-    //   description: "Train custom base models from your photo sets",
-    //   icon: UserPlus,
-    //   path: "/create/custom-model",
-    //   isAdmin: true
-    // }] : []),
     {
       id: "soon",
       title: "In Progress",
       description: 'We are working daily on improving our platform. You will be the first to know the news!',
-      icon: Sparkles,
       path: "",
-      disabled: true
+      disabled: true,
     },
   ];
 
@@ -125,11 +105,9 @@ const ModuleSelection = () => {
           {workflows.map((workflow) => (
             <Card 
               key={workflow.id}
-              className={`bg-transparent shadow-md cursor-pointer transition-all hover:shadow-lg
-                p-2 md:p-0 aspect-square md:aspect-auto flex flex-col items-center justify-center md:block
+              className={`bg-transparent shadow-md cursor-pointer transition-all hover:shadow-lg overflow-hidden
                 ${workflow.disabled || workflow.locked ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'} 
-                ${workflow.isAdmin ? 'border-2 border-orange-500/30 bg-orange-500/5' : ''} 
-                ${workflow.isBeta && !workflow.isAdmin ? 'border-2 border-purple-500/30 bg-purple-500/5' : ''}`}
+                ${workflow.isBeta ? 'border-2 border-purple-500/30 bg-purple-500/5' : ''}`}
               onClick={() => {
                 if (workflow.locked) {
                   navigate('/pricing');
@@ -138,82 +116,88 @@ const ModuleSelection = () => {
                 }
               }}
             >
-              {/* Mobile: compact icon + title */}
-              <div className="md:hidden flex flex-col items-center justify-center gap-1 w-full">
-                <div className={`relative w-10 h-10 rounded-apple flex items-center justify-center ${
-                  workflow.isAdmin ? 'bg-orange-500/20' : 
-                  workflow.isBeta ? 'bg-purple-500/20' : 
-                  'bg-primary/10'
-                }`}>
-                  <workflow.icon className={`h-5 w-5 ${
-                    workflow.isAdmin ? 'text-orange-500' : 
-                    workflow.isBeta ? 'text-purple-500' : 
-                    'text-primary'
-                  }`} />
-                  {workflow.locked && (
-                    <div className="absolute inset-0 bg-black/50 rounded-apple flex items-center justify-center">
-                      <Lock className="h-4 w-4 text-white" />
+              {/* Mobile layout */}
+              <div className="md:hidden relative">
+                {workflow.demoImage ? (
+                  <div className="relative aspect-square">
+                    <img 
+                      src={workflow.demoImage} 
+                      alt={workflow.title}
+                      className="w-full h-full object-cover"
+                    />
+                    {workflow.locked && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <Lock className="h-6 w-6 text-white" />
+                      </div>
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 pt-6">
+                      <h3 className="text-sm font-semibold text-white leading-tight line-clamp-2">
+                        {workflow.title}
+                      </h3>
+                      {workflow.isBeta && (
+                        <span className="text-[10px] bg-purple-500 text-white px-1.5 py-0.5 rounded-full mt-1 inline-block">NEW</span>
+                      )}
+                      {workflow.locked && (
+                        <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded-full mt-1 inline-block">PLUS+</span>
+                      )}
                     </div>
-                  )}
-                </div>
-                <h3 className="text-md font-semibold text-center leading-tight line-clamp-2 px-1">
-                  {workflow.title}
-                </h3>
-                {workflow.disabled && (
-                  <span className="text-[10px] text-muted-foreground bg-muted px-1 py-0.5 rounded">
-                    Soon
-                  </span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-1 p-4 aspect-square">
+                    <Sparkles className="h-5 w-5 text-muted-foreground" />
+                    <h3 className="text-sm font-semibold text-center leading-tight">{workflow.title}</h3>
+                    <span className="text-[10px] text-muted-foreground bg-muted px-1 py-0.5 rounded">Soon</span>
+                  </div>
                 )}
               </div>
 
-              {/* Desktop: full card */}
-              <CardHeader className="hidden md:block text-center">
-                <div className={`relative w-16 h-16 mx-auto mb-4 rounded-apple flex items-center justify-center ${
-                  workflow.isAdmin ? 'bg-orange-500/20' : 
-                  workflow.isBeta ? 'bg-purple-500/20' : 
-                  'bg-primary/10'
-                }`}>
-                  <workflow.icon className={`h-8 w-8 ${
-                    workflow.isAdmin ? 'text-orange-500' : 
-                    workflow.isBeta ? 'text-purple-500' : 
-                    'text-primary'
-                  }`} />
-                  {workflow.locked && (
-                    <div className="absolute inset-0 bg-black/50 rounded-apple flex items-center justify-center">
-                      <Lock className="h-6 w-6 text-white" />
-                    </div>
-                  )}
-                </div>
-                <CardTitle className="text-xl flex items-center gap-2 justify-center flex-wrap">
-                  {workflow.title}
-                  {workflow.isAdmin && (
-                    <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full">ADMIN</span>
-                  )}
-                  {workflow.isBeta && !workflow.isAdmin && (
-                    <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded-full">NEW</span>
-                  )}
-                  {workflow.locked && (
-                    <span className="text-xs bg-amber-500 text-white px-2 py-1 rounded-full">PLUS+</span>
-                  )}
-                </CardTitle>
-                <CardDescription>
-                  {workflow.locked && workflow.isBeta
-                    ? "Upgrade to any paid plan to access this beta feature. Help us perfect outfit-swap!"
-                    : workflow.locked 
-                    ? "Upgrade to Plus or use Free tier to unlock video generation"
-                    : workflow.description
-                  }
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="hidden md:block">
-                {workflow.disabled && (
-                  <div className="text-center">
-                    <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-apple-sm">
-                      {t('createSelection.comingSoon')}
-                    </span>
+              {/* Desktop layout */}
+              <div className="hidden md:block">
+                {workflow.demoImage ? (
+                  <div className="relative h-40 overflow-hidden">
+                    <img 
+                      src={workflow.demoImage} 
+                      alt={workflow.title}
+                      className="w-full h-full object-cover"
+                    />
+                    {workflow.locked && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <Lock className="h-8 w-8 text-white" />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="h-40 flex items-center justify-center bg-muted/30">
+                    <Sparkles className="h-10 w-10 text-muted-foreground" />
                   </div>
                 )}
-              </CardContent>
+                <CardHeader className="pt-4 pb-2">
+                  <CardTitle className="text-xl flex items-center gap-2 flex-wrap">
+                    {workflow.title}
+                    {workflow.isBeta && (
+                      <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded-full">NEW</span>
+                    )}
+                    {workflow.locked && (
+                      <span className="text-xs bg-amber-500 text-white px-2 py-1 rounded-full">PLUS+</span>
+                    )}
+                  </CardTitle>
+                  <CardDescription>
+                    {workflow.locked
+                      ? "Upgrade to Plus to access this feature"
+                      : workflow.description
+                    }
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {workflow.disabled && (
+                    <div className="text-center">
+                      <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-apple-sm">
+                        {t('createSelection.comingSoon')}
+                      </span>
+                    </div>
+                  )}
+                </CardContent>
+              </div>
             </Card>
           ))}
         </div>

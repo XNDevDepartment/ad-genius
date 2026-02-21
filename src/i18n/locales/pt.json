@@ -77,6 +77,12 @@
         "skipCta": "Começar a Criar (Grátis)"
       },
       "milestones": {
+        "email": {
+          "title": "Verifique o seu email",
+          "description": "Confirme o seu email para segurança da conta",
+          "cta": "Enviar Email",
+          "sent": "Email de verificação enviado!"
+        },
         "ugc": {
           "title": "Crie a sua primeira imagem UGC",
           "description": "Gere fotos de produto com IA",

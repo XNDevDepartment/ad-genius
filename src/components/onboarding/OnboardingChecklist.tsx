@@ -15,9 +15,11 @@ import {
   ChevronDown,
   Crown,
   Loader2,
-  Zap
+  Zap,
+  Mail
 } from "lucide-react";
 import { useOnboardingMilestones } from "@/hooks/useOnboardingMilestones";
+import { useAccountActivation } from "@/hooks/useAccountActivation";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,8 +45,10 @@ export const OnboardingChecklist = ({ onComplete, onCollapse }: OnboardingCheckl
   } = useOnboardingMilestones();
   const { completeOnboarding } = useOnboarding();
   const { user, subscriptionData, loading: authLoading } = useAuth();
+  const { isActivated, requestActivation } = useAccountActivation();
   const [awarding, setAwarding] = useState<string | null>(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   // Check if all credits have been awarded
   const allCreditsAwarded = 
@@ -330,6 +334,55 @@ export const OnboardingChecklist = ({ onComplete, onCollapse }: OnboardingCheckl
       </CardHeader>
 
       <CardContent className="p-4 space-y-3">
+        {/* Email Verification - non-blocking, no credits */}
+        <div 
+          className={cn(
+            "flex items-center gap-4 p-4 rounded-lg border transition-all",
+            isActivated
+              ? "bg-primary/5 border-primary/20" 
+              : "bg-card border-border hover:border-primary/40"
+          )}
+        >
+          <div className={cn(
+            "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center",
+            isActivated 
+              ? "bg-primary text-primary-foreground" 
+              : "bg-secondary text-secondary-foreground"
+          )}>
+            {isActivated ? <Check className="h-5 w-5" /> : <Mail className="h-5 w-5" />}
+          </div>
+          <div className="flex-1 min-w-0 overflow-hidden">
+            <h4 className={cn(
+              "font-medium text-sm",
+              isActivated ? "text-primary" : "text-foreground"
+            )}>
+              {t('onboarding.checklist.milestones.email.title', 'Verify your email')}
+            </h4>
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">
+              {t('onboarding.checklist.milestones.email.description', 'Confirm your email for account security')}
+            </p>
+          </div>
+          {!isActivated && (
+            <Button 
+              size="sm" 
+              variant="ghost"
+              onClick={async () => {
+                const result = await requestActivation();
+                if (result.success) {
+                  setEmailSent(true);
+                  toast.success(t('onboarding.checklist.milestones.email.sent', 'Verification email sent!'));
+                }
+              }}
+              disabled={emailSent}
+              className="flex-shrink-0"
+            >
+              {emailSent 
+                ? t('onboarding.checklist.milestones.email.sent', 'Sent!')
+                : t('onboarding.checklist.milestones.email.cta', 'Send Email')}
+            </Button>
+          )}
+        </div>
+
         <MilestoneItem
           milestone="ugc"
           icon={Image}
