@@ -19,6 +19,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import fotoUgc from '@/assets/landing_gallery/27.webp';
+import fotoVideo from '@/assets/module_icons/ugc.png';
+import fotoFashion from '@/assets/demo_outfit_final.jpg';
+import fotoProduct from '@/assets/photoProduct.webp';
 
 const Promo1Mes = () => {
   const navigate = useNavigate();
@@ -91,21 +95,25 @@ const Promo1Mes = () => {
       icon: Camera,
       title: "Fotos UGC de Produto",
       description: "Cria imagens profissionais com modelos IA em cenários reais. Perfeito para redes sociais e e-commerce.",
+      imgSrc: fotoUgc
     },
     {
       icon: Video,
       title: "Geração de Vídeos",
       description: "Transforma qualquer imagem de produto num vídeo profissional de 5 segundos pronto para anúncios.",
+      imgSrc: fotoVideo
     },
     {
       icon: Shirt,
       title: "Fashion Try-On",
       description: "Coloca as tuas peças de roupa em modelos IA. Escolhe o modelo, pose e cenário.",
+      imgSrc: fotoFashion
     },
     {
       icon: Layers,
       title: "Troca de Fundo em Massa",
       description: "Remove e substitui fundos de dezenas de fotos de uma vez. Cenários profissionais em segundos.",
+      imgSrc: fotoProduct
     },
   ];
 
@@ -214,9 +222,9 @@ const Promo1Mes = () => {
                     {/* Replace with actual screenshot */}
                     <div className="rounded-xl overflow-hidden bg-muted/50 border border-border">
                       <img
-                        src="/placeholder.svg"
+                        src={feature.imgSrc}
                         alt={feature.title}
-                        className="w-full h-48 object-cover"
+                        className="w-full h-80 object-cover"
                       />
                     </div>
                   </CardContent>
