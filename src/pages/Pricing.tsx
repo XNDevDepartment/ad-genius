@@ -73,7 +73,7 @@ const comparisonFeatures = [
 const Pricing = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const [isYearly, setIsYearly] = useState(true);
+  const [isYearly, setIsYearly] = useState(false);
   const { t } = useTranslation();
   const isMobile = useIsMobile();
 
