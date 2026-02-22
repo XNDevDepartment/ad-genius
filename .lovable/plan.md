@@ -1,103 +1,55 @@
 
 
-# Remove Email Activation Block + Add Email Verification to Desktop Onboarding + Module Selection Demo Images
+# Audit Results + Fixes
 
-## Summary
+## Audit Findings
 
-Three related changes:
+### Issue 1: ModuleSelection DemoMedia condition (MINOR - already fixed)
+The last diff changed `isMobile || id !== "video"` to `isMobile && id !== "video"`, but the current file shows `if (isMobile)` without the `id` check at all. This means on mobile, ALL module cards show static PNG images instead of video -- this is correct behavior since hover-to-play doesn't work on touch.
 
-1. **Remove the email activation gate from Image Animator (Video Generator)** -- both frontend and backend
-2. **Add an "Activate Email" step to the desktop onboarding checklist** so users are encouraged (but not forced) to verify their email
-3. **Replace icons with demo images in the Module Selection page** to showcase what each module produces
+**Status: OK, no fix needed.**
 
----
+### Issue 2: AnimateImageModal video not loading on mobile (BUG)
+The `<video>` element in `AnimateImageModal.tsx` (line 141-149) has the correct attributes (`muted`, `playsInline`, `autoPlay`, `controls`). However, there's no `crossOrigin` attribute, which can cause issues when the video URL is hosted on a different domain (Kling CDN). On some mobile browsers, this can silently fail to load.
 
-## 1. Remove Email Activation Block from Video Access
+**Fix: Do NOT add `crossOrigin` (it can break loading from CDNs without CORS). Instead, add a `preload="auto"` attribute and an `onError` handler to show a fallback download link if the video fails to render inline.**
 
-### Frontend: `src/hooks/useCredits.tsx`
+### Issue 3: Activation gate removal (CLEAN)
+- `useCredits.tsx`: `canAccessVideos()` no longer checks activation -- correct
+- `kling-video/index.ts`: Server-side activation block removed -- correct
+- `Index.tsx`: `needsVideoAccess` removed from video module -- correct
+- `ModuleSelection.tsx`: Video module has `locked: false` -- correct
 
-- In `canAccessVideos()` (line 127-135): Remove the `if (!isActivated) return false;` check. All authenticated users can now access videos.
-- In `getVideoAccessMessage()` (line 137-146): Remove the activation-specific message block.
-- The activation-related exports (`isAccountActivated`, `needsActivation`, etc.) can remain for other uses (e.g., the new onboarding step), but they no longer block video access.
+**Status: OK.**
 
-### Backend: `supabase/functions/kling-video/index.ts`
+### Issue 4: OnboardingChecklist email step (CLEAN)
+Non-blocking email verification step added correctly with `useAccountActivation`.
 
-- Remove the server-side activation check block (lines 138-161) that queries `profiles.account_activated` and returns `activation_required: true`. This entire block gets deleted so unactivated accounts can generate videos.
+**Status: OK.**
 
-### Frontend: `src/pages/Index.tsx`
+### Issue 5: Hardcoded "In Progress" strings in ModuleSelection (MINOR)
+Lines 122-126 have untranslated English strings: `"In Progress"` and the description.
 
-- In `mobileModules` array (line 20): Remove `needsVideoAccess: true` from the video module entry so the video tile is no longer locked on mobile.
-
-### Frontend: `src/pages/ModuleSelection.tsx`
-
-- Line 53: Change `locked: !canAccessVideos()` to `locked: false` for the video module.
-
----
-
-## 2. Add "Verify Email" Step to Desktop Onboarding Checklist
-
-### `src/components/onboarding/OnboardingChecklist.tsx`
-
-- Add a new milestone item for email verification, positioned as the first item in the checklist (before UGC)
-- This is a non-blocking, informational step -- it does NOT gate any features
-- When clicked, it triggers the `requestActivation` function from `useAccountActivation` to send/resend the activation email
-- Shows a checkmark when `isActivated` is true
-- No credits are awarded for this step (it's a trust/security encouragement, not a reward milestone)
-- Import `useAccountActivation` hook
-- Add a `Mail` icon import from lucide-react
-
-The milestone item will look like:
-```
-icon: Mail
-title: "Verify your email"
-description: "Confirm your email for account security"
-cta: "Send Email" (if not activated) / checkmark (if activated)
-```
-
-### `src/i18n/locales/*.json` (all 5 locales)
-
-Add translation keys:
-- `onboarding.checklist.milestones.email.title`
-- `onboarding.checklist.milestones.email.description`
-- `onboarding.checklist.milestones.email.cta`
-- `onboarding.checklist.milestones.email.sent`
+**Fix: Use translation keys.**
 
 ---
 
-## 3. Replace Icons with Demo Images in Module Selection
+## Changes to Implement
 
-### `src/pages/ModuleSelection.tsx`
+### File 1: `src/components/AnimateImageModal.tsx`
 
-Replace the icon-based cards with image-showcase cards. Each module card will display a demo image from existing assets instead of a colored icon circle.
+Add mobile-friendly video rendering with error fallback:
+- Add `preload="auto"` to the video element
+- Add an `onError` state that shows a "Download Video" link as fallback when the video fails to load inline on mobile
+- Keep `muted`, `playsInline`, `controls` as-is (they're correct)
 
-**Image mapping using existing assets:**
+### File 2: `src/pages/ModuleSelection.tsx`
 
-| Module | Image Asset |
-|---|---|
-| UGC Creator | `src/assets/demo.webp` |
-| Image Animator | `src/assets/catalog_showcase/1.png` |
-| Outfit Swap | `src/assets/outfit_square_final.png` |
-| Bulk Background | `src/assets/catalog_showcase/3.png` |
-| In Progress | No image (keep sparkle icon) |
+- Translate the hardcoded "In Progress" title and description using `t()` keys
 
-**Card layout changes:**
+### File 3: `src/i18n/locales/[en,pt,es,fr,de].json`
 
-- **Mobile**: Replace the 10x10 icon circle with a rounded image thumbnail (aspect-square, object-cover, w-full) filling most of the card, with the title overlaid at the bottom
-- **Desktop**: Replace the 16x16 icon circle with a larger image preview (aspect-video or fixed height, rounded-lg), title and description below
-
-The card structure changes from:
-```
-[Icon Circle]
-[Title]
-```
-to:
-```
-[Demo Image - rounded, object-cover]
-[Title + Badge]
-[Description (desktop only)]
-```
-
-Import the image assets at the top of the file. Each workflow object gets a new `demoImage` property instead of relying solely on `icon`.
+- Add `createSelection.inProgress.title` and `createSelection.inProgress.description` keys in all locales
 
 ---
 
@@ -105,12 +57,9 @@ Import the image assets at the top of the file. Each workflow object gets a new 
 
 | File | Change |
 |---|---|
-| `src/hooks/useCredits.tsx` | Remove activation check from `canAccessVideos()` and `getVideoAccessMessage()` |
-| `supabase/functions/kling-video/index.ts` | Remove server-side activation block (lines 138-161) |
-| `src/pages/Index.tsx` | Remove `needsVideoAccess` from video module in mobile grid |
-| `src/pages/ModuleSelection.tsx` | Unlock video module + replace icons with demo images |
-| `src/components/onboarding/OnboardingChecklist.tsx` | Add email verification step (non-blocking, no credits) |
-| `src/i18n/locales/en.json` | Add email verification milestone translations |
+| `src/components/AnimateImageModal.tsx` | Add video error fallback for mobile + preload attribute |
+| `src/pages/ModuleSelection.tsx` | Translate "In Progress" strings |
+| `src/i18n/locales/en.json` | Add `createSelection.inProgress.*` keys |
 | `src/i18n/locales/pt.json` | Portuguese translations |
 | `src/i18n/locales/es.json` | Spanish translations |
 | `src/i18n/locales/fr.json` | French translations |
