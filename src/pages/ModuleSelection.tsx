@@ -98,6 +98,16 @@ const ModuleSelection = () => {
       isBeta: false,
     },
     {
+      id: "video",
+      title: t('createSelection.videoCreator.title'),
+      description: t('createSelection.videoCreator.description'),
+      path: "/create/video",
+      demoImage: demoVideo,
+      fallbackImage: demoVideoImg,
+      isBeta: false,
+      locked: false,
+    },
+    {
       id: "outfit-swap",
       title: t('createSelection.outfitSwap.title'),
       description: t('createSelection.outfitSwap.description'),
@@ -116,16 +126,6 @@ const ModuleSelection = () => {
       fallbackImage: demoBulkImg,
       isBeta: true,
       locked: isFreeTier(),
-    },
-    {
-      id: "video",
-      title: t('createSelection.videoCreator.title'),
-      description: t('createSelection.videoCreator.description'),
-      path: "/create/video",
-      demoImage: demoVideo,
-      fallbackImage: demoVideoImg,
-      isBeta: false,
-      locked: false,
     },
     {
       id: "soon",
