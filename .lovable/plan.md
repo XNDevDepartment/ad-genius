@@ -1,63 +1,53 @@
 
 
-# Outfit Swap: Add Quality & Aspect Ratio Settings
+# Fix: Animate Image from Outfit Swap (and other panels)
 
-## Overview
+## Problem
 
-Replace the current review section (showing model name, garment count, and cost) with a settings card matching the Bulk Background pattern -- letting users choose image size (1K/2K/4K) and aspect ratio before starting the batch. The credit cost will be dynamic based on size selection and shown in the "Start Batch" button.
+When clicking "Animate" on an outfit swap result, the user is navigated to `/create/video` with `preselectedImageUrl` set to the result's `public_url`. However:
 
-## Changes
+1. **Frontend**: `onCreate()` requires `selectedImage` to be non-null (line 392), but for outfit swap results only `preselectedImageUrl` is set -- `selectedImage` stays `null`. The image shows visually but the system won't submit.
+2. **Edge function**: The `createVideoJob` handler only resolves images via `source_image_id` or `ugc_image_id` DB lookups. Outfit swap results live in `outfit_swap_results`, which is never checked. There is no `image_url` passthrough.
 
-### 1. `src/pages/OutfitSwap.tsx`
+## Solution
 
-**Replace Section 3 (Review & Start)** -- remove the info rows (selected model, garments, cost) and replace with:
+Add support for a direct `image_url` parameter in both the frontend and edge function.
 
-- **Image Size toggle** (1K / 2K / 4K) using `ToggleGroup`, same as BulkBackground
-- **Aspect Ratio dropdown** using `Select` with visual ratio icons, same 10 options as BulkBackground (1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9)
-- **Start button** with dynamic cost in the label (credits = garments x cost-per-size)
-- Insufficient credits warning below the button
+### 1. `src/pages/VideoGenerator.tsx` -- Fix `onCreate()`
 
-**State additions:**
-- `imageSize: '1K' | '2K' | '4K'` (default `'1K'`)
-- `aspectRatio: string` (default `'1:1'`)
+Update the `onCreate` function to handle the case where `selectedImage` is null but `preselectedImageUrl` exists:
 
-**Cost calculation update:**
-- Add a `getCreditsPerImage(size)` helper (1K=1, 2K=2, 4K=4) -- same as BulkBackground
-- Total cost = `garmentFiles.length * creditsPerImage` (replaces the current `calculateBatchCost` from hook)
-- `canAfford` check uses `getRemainingCredits() >= totalCost`
+- Change the guard at line 392 from `if (!selectedImage || !prompt.trim())` to `if (!selectedImage && !preselectedImageUrl) || !prompt.trim()`
+- When `selectedImage` is null but `preselectedImageUrl` is set, pass `image_url: preselectedImageUrl` in the payload instead of `source_image_id` or `ugc_image_id`
 
-**Pass settings to `createBatch`:**
-- Include `imageSize` and `aspectRatio` in the settings object passed to `createBatch()`
+### 2. `src/api/kling.ts` -- Update payload type
 
-### 2. `src/components/OutfitSwapSettings.tsx`
+Add `image_url?: string` to `CreateVideoJobPayload` interface so the direct URL can be passed through.
 
-No changes needed -- it already returns `null` and can remain as-is (or be removed from the render, since the settings are now inline in the review card).
+### 3. `supabase/functions/kling-video/index.ts` -- Accept `image_url`
 
-## What the New Section 3 Looks Like
+In the `createVideoJob` function (line 126+), add a third fallback after the `source_image_id` and `ugc_image_id` checks:
 
-```
-+------------------------------------------+
-|  Settings                                |
-|                                          |
-|  Image Size                              |
-|  [1K]  [2K]  [4K]                        |
-|                                          |
-|  Aspect Ratio                            |
-|  [ [box] 1:1          v ]                |
-|                                          |
-|  [ Start Batch -- X credits ]            |
-|  (insufficient credits warning)          |
-+------------------------------------------+
-```
+- Extract `image_url` from the payload
+- If neither `source_image_id` nor `ugc_image_id` is provided but `image_url` is, use it directly as the image URL
+- This handles outfit swap results, and any future panel that provides a direct URL
+
+### 4. `src/components/BatchSwapPreview.tsx` -- Also pass `result_id` (already does)
+
+Already passes `result_id` in state -- no change needed.
+
+### 5. `src/components/OutfitSwapPreview.tsx` -- Also pass `result_id`
+
+Add `result_id: results.id` to the navigation state for consistency.
 
 ## Technical Details
 
 | File | Change |
 |---|---|
-| `src/pages/OutfitSwap.tsx` | Add `imageSize`/`aspectRatio` state, replace review card content with size toggle + ratio dropdown + dynamic cost button, pass settings to `createBatch` |
+| `src/pages/VideoGenerator.tsx` | Fix `onCreate` guard to accept `preselectedImageUrl`; pass `image_url` in payload when no `selectedImage` |
+| `src/api/kling.ts` | Add `image_url?: string` to `CreateVideoJobPayload` |
+| `supabase/functions/kling-video/index.ts` | Accept `image_url` as fallback in `createVideoJob` after source/ugc lookups |
+| `src/components/OutfitSwapPreview.tsx` | Add `result_id` to navigate state |
 
-- The `OutfitSwapSettings` component render call (line 296) will be removed since it returns null anyway
-- Imports added: `Select`, `SelectContent`, `SelectItem`, `SelectTrigger`, `SelectValue`, `ToggleGroup`, `ToggleGroupItem` from existing UI components
-- The `useOutfitSwapLimit` hook's `calculateBatchCost` and `getSavings` are no longer used for display; replaced by simple `garments * creditsPerImage`
-- `canAffordBatch` replaced by direct `credits >= totalCost` check
+This approach is generic -- any panel that passes a direct `preselectedImageUrl` (outfit swap, future panels) will work without needing a specific DB record in `ugc_images` or `source_images`.
 
