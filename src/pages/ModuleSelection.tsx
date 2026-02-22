@@ -62,29 +62,29 @@ const ModuleSelection = () => {
         return () => mediaQuery.removeEventListener("change", handler);
       }, []);
 
-      if (isMobile) {
+      // if (isMobile) {
         return <img src={fallbackImage || src} alt={alt} className="w-full h-full object-cover" />;
-      }
+      // }
 
-      return (
-        <video
-          ref={videoRef}
-          className="w-full h-full object-cover"
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          onMouseEnter={() => videoRef.current?.play()}
-          onMouseLeave={() => {
-            if (videoRef.current) {
-              videoRef.current.pause();
-              videoRef.current.currentTime = 0;
-            }
-          }}
-        >
-          <source src={src} type="video/mp4" />
-        </video>
-      );
+      // return (
+      //   <video
+      //     ref={videoRef}
+      //     className="w-full h-full object-cover"
+      //     muted
+      //     loop
+      //     playsInline
+      //     preload="metadata"
+      //     onMouseEnter={() => videoRef.current?.play()}
+      //     onMouseLeave={() => {
+      //       if (videoRef.current) {
+      //         videoRef.current.pause();
+      //         videoRef.current.currentTime = 0;
+      //       }
+      //     }}
+      //   >
+      //     <source src={src} type="video/mp4" />
+      //   </video>
+      // );
     };
 
   const workflows = [
