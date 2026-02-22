@@ -190,7 +190,7 @@ const Pricing = () => {
               <span className={`text-sm font-medium ${isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
                 {t('pricing.yearly')}
               </span>
-              <Badge className="bg-primary/10 text-primary border-0">
+              <Badge onClick={() => setIsYearly(true)} className="bg-primary/10 text-primary border-0">
                 {t('pricing.saveMonths')}
               </Badge>
             </div>
