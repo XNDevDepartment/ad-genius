@@ -1,6 +1,6 @@
 import { ArrowLeft, Sparkles, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
@@ -44,30 +44,42 @@ const ModuleSelection = () => {
       alt: string;
     }) => {
       const videoRef = useRef<HTMLVideoElement | null>(null);
+      const [isMobile, setIsMobile] = useState(false);
 
-      if (id === "video" || id === "outfit-swap" || id === "bulk-background" || id === "ugc") {
-        return (
-          <video
-            ref={videoRef}
-            className="w-full h-full object-cover"
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            onMouseEnter={() => videoRef.current?.play()}
-            onMouseLeave={() => {
-              if (videoRef.current) {
-                videoRef.current.pause();
-                videoRef.current.currentTime = 0; // optional: reset to start
-              }
-            }}
-          >
-            <source src={src} type="video/mp4" />
-          </video>
-        );
+      useEffect(() => {
+        const mediaQuery = window.matchMedia("(max-width: 768px)");
+        setIsMobile(mediaQuery.matches);
+
+        const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+        mediaQuery.addEventListener("change", handler);
+
+        return () => mediaQuery.removeEventListener("change", handler);
+      }, []);
+
+      // 🔥 Force image on mobile
+      if (isMobile || id !== "video") {
+        return <img src={src.replace("mp4","png")} alt={alt} className="w-full h-full object-cover" />;
       }
 
-      return <img src={src} alt={alt} className="w-full h-full object-cover" />;
+      return (
+        <video
+          ref={videoRef}
+          className="w-full h-full object-cover"
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          onMouseEnter={() => videoRef.current?.play()}
+          onMouseLeave={() => {
+            if (videoRef.current) {
+              videoRef.current.pause();
+              videoRef.current.currentTime = 0;
+            }
+          }}
+        >
+          <source src={src} type="video/mp4" />
+        </video>
+      );
     };
 
   const workflows = [
