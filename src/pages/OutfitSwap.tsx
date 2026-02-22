@@ -4,16 +4,17 @@ import { ArrowLeft, Shirt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOutfitSwapBatch } from "@/hooks/useOutfitSwapBatch";
-import { useOutfitSwapLimit } from "@/hooks/useOutfitSwapLimit";
+import { useCredits } from "@/hooks/useCredits";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useToast } from "@/hooks/use-toast";
 import { BaseModelSelector } from "@/components/BaseModelSelector";
 import { MultiGarmentUploader } from "@/components/MultiGarmentUploader";
 import { BatchSwapPreview } from "@/components/BatchSwapPreview";
-import { OutfitSwapSettings } from "@/components/OutfitSwapSettings";
 import { useSourceImageUpload } from "@/hooks/useSourceImageUpload";
 import { BaseModel } from "@/hooks/useBaseModels";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslation } from "react-i18next";
 import { OutfitSwapJob, OutfitSwapResult } from "@/api/outfit-swap-api";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,14 +26,16 @@ const OutfitSwap = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { batch, jobs, loading: batchLoading, createBatch, cancelBatch, reset, refreshBatch, retryJob, retryingJobs } = useOutfitSwapBatch();
-  const { calculateBatchCost, canAffordBatch, getSavings } = useOutfitSwapLimit();
+  const { getRemainingCredits } = useCredits();
+  const { isAdmin } = useAdminAuth();
   const { uploadSourceImage } = useSourceImageUpload();
 
   const [selectedModel, setSelectedModel] = useState<BaseModel | null>(null);
   const [garmentFiles, setGarmentFiles] = useState<File[]>([]);
   const [garmentDetails, setGarmentDetails] = useState<Record<number, string>>({});
   const [uploading, setUploading] = useState(false);
-  const [settings, setSettings] = useState({});
+  const [imageSize, setImageSize] = useState<'1K' | '2K' | '4K'>('1K');
+  const [aspectRatio, setAspectRatio] = useState<string>('1:1');
 
   // Scroll refs for progressive disclosure
   const garmentRef = useRef<HTMLDivElement>(null);
@@ -130,8 +133,8 @@ const OutfitSwap = () => {
       // Prepare garment details array
       const detailsArray = garmentFiles.map((_, index) => garmentDetails[index] || "");
 
-      // Create batch with garment details
-      await createBatch(selectedModel.id, garmentIds, { ...settings, garmentDetails: detailsArray });
+      // Create batch with garment details and settings
+      await createBatch(selectedModel.id, garmentIds, { garmentDetails: detailsArray, imageSize, aspectRatio });
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -154,9 +157,18 @@ const OutfitSwap = () => {
     navigate('/create/outfit-swap', { replace: true });
   };
 
-  const cost = calculateBatchCost(garmentFiles.length);
-  const savings = getSavings(garmentFiles.length);
-  const canAfford = canAffordBatch(garmentFiles.length);
+  const getCreditsPerImage = (size: string): number => {
+    switch (size) {
+      case '4K': return 4;
+      case '2K': return 2;
+      default: return 1;
+    }
+  };
+
+  const credits = getRemainingCredits();
+  const creditsPerImage = getCreditsPerImage(imageSize);
+  const totalCost = garmentFiles.length * creditsPerImage;
+  const canAfford = isAdmin || credits >= totalCost;
 
   return (
     <div className="min-h-screen bg-background">
@@ -267,48 +279,80 @@ const OutfitSwap = () => {
 
             {/* Section 3: Review & Start - visible when garments uploaded */}
             {selectedModel && garmentFiles.length > 0 && (
-              <div ref={reviewRef} className="scroll-mt-6 space-y-6">
-                <Card className="rounded-apple shadow-lg p-6 lg:p-8">
-                  <h3 className="text-lg font-semibold mb-4">{t('outfitSwap.review.title')}</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">{t('outfitSwap.review.selectedModel')}</span>
-                      <span>{selectedModel?.name}</span>
+              <div ref={reviewRef} className="scroll-mt-6">
+                <Card className="rounded-apple shadow-lg">
+                  <CardHeader>
+                    <CardTitle>{t('bulkBackground.settings.title')}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 lg:p-8 space-y-6">
+                    {/* Image Size */}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">{t('bulkBackground.settings.imageSize')}</p>
+                      <ToggleGroup
+                        type="single"
+                        value={imageSize}
+                        onValueChange={(v) => v && setImageSize(v as '1K' | '2K' | '4K')}
+                        className="justify-start"
+                      >
+                        {(['1K', '2K', '4K'] as const).map((size) => (
+                          <ToggleGroupItem key={size} value={size} size="sm" className="px-4 bg-muted">
+                            {size}
+                          </ToggleGroupItem>
+                        ))}
+                      </ToggleGroup>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">{t('outfitSwap.review.garments')}</span>
-                      <span>{t('outfitSwap.review.garmentsCount', { count: garmentFiles.length })}</span>
+
+                    {/* Aspect Ratio */}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">{t('bulkBackground.settings.aspectRatio')}</p>
+                      <Select value={aspectRatio} onValueChange={setAspectRatio}>
+                        <SelectTrigger className="w-44">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {['1:1','2:3','3:2','3:4','4:3','4:5','5:4','9:16','16:9','21:9'].map((ratio) => {
+                            const [w, h] = ratio.split(':').map(Number);
+                            const scale = 16 / Math.max(w, h);
+                            const boxW = Math.round(w * scale);
+                            const boxH = Math.round(h * scale);
+                            return (
+                              <SelectItem key={ratio} value={ratio}>
+                                <span className="flex items-center gap-2">
+                                  <span
+                                    className="border border-foreground/50 shrink-0 inline-block"
+                                    style={{ width: `${boxW}px`, height: `${boxH}px` }}
+                                  />
+                                  {ratio}
+                                </span>
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">{t('outfitSwap.review.cost')}</span>
-                      <div className="text-right">
-                        <span className="text-lg font-bold">{cost} {t('outfitSwap.review.credits')}</span>
-                        {savings > 0 && (
-                          <Badge variant="default" className="ml-2">
-                            {t('outfitSwap.review.saveCredits', { savings })}
-                          </Badge>
-                        )}
-                      </div>
+
+                    {/* Start Button */}
+                    <div className="w-full flex justify-center">
+                      <Button
+                        onClick={handleStartBatch}
+                        disabled={!canAfford || batchLoading || uploading}
+                        className="gap-2 w-full"
+                        variant="alternative"
+                      >
+                        {uploading
+                          ? t('outfitSwap.actions.uploading')
+                          : batchLoading
+                          ? t('outfitSwap.actions.starting')
+                          : <>{t('outfitSwap.actions.startBatch', { cost: totalCost })} — {totalCost} {t('outfitSwap.review.credits')}</>}
+                      </Button>
                     </div>
-                  </div>
+                    {!canAfford && !isAdmin && (
+                      <p className="text-xs text-destructive text-center">
+                        {t('bulkBackground.review.insufficientCredits', { available: credits, needed: totalCost - credits })}
+                      </p>
+                    )}
+                  </CardContent>
                 </Card>
-
-                <OutfitSwapSettings settings={settings} onChange={setSettings} />
-
-                <div className="flex justify-center">
-                  <Button
-                    size="lg"
-                    onClick={handleStartBatch}
-                    disabled={!canAfford || batchLoading || uploading}
-                    className="min-w-[200px]"
-                  >
-                    {uploading
-                      ? t('outfitSwap.actions.uploading')
-                      : batchLoading
-                      ? t('outfitSwap.actions.starting')
-                      : t('outfitSwap.actions.startBatch', { cost })}
-                  </Button>
-                </div>
               </div>
             )}
           </div>
