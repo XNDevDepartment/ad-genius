@@ -783,6 +783,10 @@
       "title": "Massen-Hintergrund",
       "description": "Wende denselben Hintergrund auf mehrere Produktbilder gleichzeitig an"
     },
+    "inProgress": {
+      "title": "In Bearbeitung",
+      "description": "Wir arbeiten täglich daran, unsere Plattform zu verbessern. Du wirst als Erster von den Neuigkeiten erfahren!"
+    },
     "comingSoon": "Demnächst",
     "betaBadge": "BETA",
     "betaLockedDescription": "Upgrade auf einen beliebigen kostenpflichtigen Plan, um auf diese Beta-Funktion zuzugreifen. Hilf uns, das Catalog zu perfektionieren!"

@@ -120,8 +120,8 @@ const ModuleSelection = () => {
     },
     {
       id: "soon",
-      title: "In Progress",
-      description: 'We are working daily on improving our platform. You will be the first to know the news!',
+      title: t('createSelection.inProgress.title'),
+      description: t('createSelection.inProgress.description'),
       path: "",
       disabled: true,
     },

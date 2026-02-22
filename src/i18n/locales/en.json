@@ -790,6 +790,10 @@
       "title": "Product Catalog",
       "description": "Create complete catalogs for your products"
     },
+    "inProgress": {
+      "title": "In Progress",
+      "description": "We are working daily on improving our platform. You will be the first to know the news!"
+    },
     "comingSoon": "Coming soon",
     "betaBadge": "BETA",
     "betaLockedDescription": "Upgrade to any paid plan to access this beta feature. Help us perfect outfit-swap!"
