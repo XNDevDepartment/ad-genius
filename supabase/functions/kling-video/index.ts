@@ -123,7 +123,7 @@ async function isUserAdmin(supabase: any, userId: string): Promise<boolean> {
   return data === true;
 }
 async function createVideoJob(supabase: any, userId: string, payload: any): Promise<any> {
-  const { source_image_id, ugc_image_id, prompt, duration = 5, model, negative_prompt, cfg_scale, static_mask_url, dynamic_masks, tail_image_url } = payload;
+  const { source_image_id, ugc_image_id, image_url: direct_image_url, prompt, duration = 5, model, negative_prompt, cfg_scale, static_mask_url, dynamic_masks, tail_image_url } = payload;
   console.log("[CREATE-JOB] Starting job creation", {
     userId,
     prompt,
@@ -190,6 +190,9 @@ async function createVideoJob(supabase: any, userId: string, payload: any): Prom
     const { data: ugcImage } = await supabase.from("ugc_images").select("public_url").eq("id", ugc_image_id).eq("user_id", userId).single();
     imageUrl = ugcImage?.public_url ?? null;
     imageId = ugc_image_id;
+  } else if (direct_image_url) {
+    // Direct URL fallback (outfit swap results, bulk background, etc.)
+    imageUrl = direct_image_url;
   }
   if (!imageUrl) {
     if (!isAdmin) {

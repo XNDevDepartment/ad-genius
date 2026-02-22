@@ -5,6 +5,7 @@ export type KlingJobStatus = 'queued' | 'processing' | 'completed' | 'failed' | 
 export interface CreateVideoJobPayload {
   source_image_id?: string;
   ugc_image_id?: string;
+  image_url?: string;
   prompt: string;
   duration: 5 | 10;
   model?: string;

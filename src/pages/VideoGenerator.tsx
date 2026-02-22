@@ -389,7 +389,7 @@ export default function VideoGenerator() {
   const onCreate = async () => {
     try {
       setUiError(null);
-      if (!selectedImage || !prompt.trim()) {
+      if ((!selectedImage && !preselectedImageUrl) || !prompt.trim()) {
         setUiError(t('videoGenerator.errors.selectImageAndPrompt'));
         return;
       }
@@ -408,13 +408,17 @@ export default function VideoGenerator() {
         generate_audio: false
       };
 
-      // Detect if selectedImage is a UGC image (has prompt field) or source image
-      const isUgcImage = ugcImageId || 'prompt' in selectedImage;
-
-      if (isUgcImage) {
-        payload.ugc_image_id = ugcImageId || selectedImage.id;
-      } else {
-        payload.source_image_id = selectedImage.id;
+      if (selectedImage) {
+        // Detect if selectedImage is a UGC image (has prompt field) or source image
+        const isUgcImage = ugcImageId || 'prompt' in selectedImage;
+        if (isUgcImage) {
+          payload.ugc_image_id = ugcImageId || selectedImage.id;
+        } else {
+          payload.source_image_id = selectedImage.id;
+        }
+      } else if (preselectedImageUrl) {
+        // Direct URL fallback (outfit swap, bulk background, etc.)
+        payload.image_url = preselectedImageUrl;
       }
 
       const res = await createVideoJob(payload);
