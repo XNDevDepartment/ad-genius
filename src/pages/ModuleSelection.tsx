@@ -1,6 +1,6 @@
 import { ArrowLeft, Sparkles, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,10 +8,10 @@ import { useTranslation } from "react-i18next";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useCredits } from "@/hooks/useCredits";
 
-import demoUgc from "@/assets/demo.webp";
-import demoVideo from "@/assets/module_icons/197f2e74-118b-4dbc-9bcd-c54b2c3a03de.mp4";
-import demoOutfit from "@/assets/outfit_square_final.png";
-import demoBulk from "@/assets/module_icons/macro-view (1).webp";
+import demoUgc from "@/assets/module_icons/ugc.mp4";
+import demoVideo from "@/assets/module_icons/video.mp4";
+import demoOutfit from "@/assets/module_icons/fashion_catalog.mp4";
+import demoBulk from "@/assets/module_icons/product_catalog.mp4";
 
 const ModuleSelection = () => {
   const navigate = useNavigate();
@@ -33,6 +33,42 @@ const ModuleSelection = () => {
       </div>
     );
   }
+
+  const DemoMedia = ({
+      id,
+      src,
+      alt,
+    }: {
+      id: string;
+      src: string;
+      alt: string;
+    }) => {
+      const videoRef = useRef<HTMLVideoElement | null>(null);
+
+      if (id === "video" || id === "outfit-swap" || id === "bulk-background" || id === "ugc") {
+        return (
+          <video
+            ref={videoRef}
+            className="w-full h-full object-cover"
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            onMouseEnter={() => videoRef.current?.play()}
+            onMouseLeave={() => {
+              if (videoRef.current) {
+                videoRef.current.pause();
+                videoRef.current.currentTime = 0; // optional: reset to start
+              }
+            }}
+          >
+            <source src={src} type="video/mp4" />
+          </video>
+        );
+      }
+
+      return <img src={src} alt={alt} className="w-full h-full object-cover" />;
+    };
 
   const workflows = [
     {
@@ -120,11 +156,8 @@ const ModuleSelection = () => {
               <div className="md:hidden relative">
                 {workflow.demoImage ? (
                   <div className="relative aspect-square">
-                    <img 
-                      src={workflow.demoImage} 
-                      alt={workflow.title}
-                      className="w-full h-full object-cover"
-                    />
+                     <DemoMedia id={workflow.id} src={workflow.demoImage} alt={workflow.title} />
+
                     {workflow.locked && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                         <Lock className="h-6 w-6 text-white" />
@@ -154,12 +187,9 @@ const ModuleSelection = () => {
               {/* Desktop layout */}
               <div className="hidden md:block">
                 {workflow.demoImage ? (
-                  <div className="relative h-40 overflow-hidden">
-                    <img 
-                      src={workflow.demoImage} 
-                      alt={workflow.title}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="relative h-80">
+                      <DemoMedia id={workflow.id} src={workflow.demoImage} alt={workflow.title} />
+
                     {workflow.locked && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                         <Lock className="h-8 w-8 text-white" />
