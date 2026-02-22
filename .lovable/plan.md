@@ -1,75 +1,63 @@
 
 
-# Redesign: Promo 1MES Landing Page
+# Outfit Swap: Add Quality & Aspect Ratio Settings
 
 ## Overview
 
-Replace the current minimal promo card at `/promo/1mes` with a full persuasion-rich landing page, matching the style of the Pricing page and Landing Page V2. The page will have multiple sections that clearly communicate the value of the offer, showcase use cases with screenshot placeholders, and include real client testimonials.
+Replace the current review section (showing model name, garment count, and cost) with a settings card matching the Bulk Background pattern -- letting users choose image size (1K/2K/4K) and aspect ratio before starting the batch. The credit cost will be dynamic based on size selection and shown in the "Start Batch" button.
 
-## Page Structure (Top to Bottom)
+## Changes
 
-### Section 1: Hero with Offer
-- Badge: "Oferta Exclusiva - Tempo Limitado"
-- Headline: "Primeiro Mes por 9.99 EUR" with strikethrough of 29 EUR
-- Subtitle explaining this is the Starter plan at 66% off
-- Primary CTA button ("Ativar Oferta") + trust chips (cancel anytime, auto-applied code)
-- Same checkout logic as current page (promoCode: '1MES')
+### 1. `src/pages/OutfitSwap.tsx`
 
-### Section 2: What You Get (Visual Feature Grid)
-- 4 cards in a 2x2 grid (mobile: stacked), each with:
-  - Icon + title + description
-  - A placeholder `<img>` area (300x200 approx) where you can later drop in screenshots
-- Cards: (1) UGC Product Photos, (2) Video Generation, (3) Fashion Try-On, (4) Bulk Background Swap
-- Each card has a `src="/placeholder.svg"` that you can replace with real screenshots
+**Replace Section 3 (Review & Start)** -- remove the info rows (selected model, garments, cost) and replace with:
 
-### Section 3: Before/After Showcase
-- Reuse the existing `BeforeAfterShowcase` component (already built with Sanjo images)
+- **Image Size toggle** (1K / 2K / 4K) using `ToggleGroup`, same as BulkBackground
+- **Aspect Ratio dropdown** using `Select` with visual ratio icons, same 10 options as BulkBackground (1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9)
+- **Start button** with dynamic cost in the label (credits = garments x cost-per-size)
+- Insufficient credits warning below the button
 
-### Section 4: Use Cases Grid
-- Reuse the existing `UseCasesGrid` component (Clothing, Jewelry, Beauty, Home, Handmade, Food)
+**State additions:**
+- `imageSize: '1K' | '2K' | '4K'` (default `'1K'`)
+- `aspectRatio: string` (default `'1:1'`)
 
-### Section 5: What 1 Credit Gets You
-- Same "credit explainer" pattern from the Pricing page (1 credit = 1 image, 5 credits = 5s video, etc.)
-- Clarifies that 35 credits = 35 professional images
+**Cost calculation update:**
+- Add a `getCreditsPerImage(size)` helper (1K=1, 2K=2, 4K=4) -- same as BulkBackground
+- Total cost = `garmentFiles.length * creditsPerImage` (replaces the current `calculateBatchCost` from hook)
+- `canAfford` check uses `getRemainingCredits() >= totalCost`
 
-### Section 6: Client Testimonials
-- Reuse the existing `TestimonialsSection` component (Andreia, Sofia, Luis)
+**Pass settings to `createBatch`:**
+- Include `imageSize` and `aspectRatio` in the settings object passed to `createBatch()`
 
-### Section 7: FAQ (Promo-Specific)
-- 4-5 questions: "What happens after the first month?", "Can I cancel?", "How many images can I create?", "What is a credit?", "Is there a contract?"
-- Uses the Accordion component
+### 2. `src/components/OutfitSwapSettings.tsx`
 
-### Section 8: Final CTA
-- Repeated pricing card with CTA button
-- Trust line: "Cancel anytime, no contract, promo applied automatically"
+No changes needed -- it already returns `null` and can remain as-is (or be removed from the render, since the settings are now inline in the review card).
 
-### Section 9: Footer
-- Reuse `MinimalFooter` component
+## What the New Section 3 Looks Like
 
-## Navigation
-- `MinimalHeader` at the top for unauthenticated users (same as Pricing page)
-- Back arrow to home for authenticated users
+```
++------------------------------------------+
+|  Settings                                |
+|                                          |
+|  Image Size                              |
+|  [1K]  [2K]  [4K]                        |
+|                                          |
+|  Aspect Ratio                            |
+|  [ [box] 1:1          v ]                |
+|                                          |
+|  [ Start Batch -- X credits ]            |
+|  (insufficient credits warning)          |
++------------------------------------------+
+```
 
 ## Technical Details
 
-### Files Changed
-
 | File | Change |
 |---|---|
-| `src/pages/Promo1Mes.tsx` | Full rewrite with multi-section layout, screenshot placeholders, reused landing components |
+| `src/pages/OutfitSwap.tsx` | Add `imageSize`/`aspectRatio` state, replace review card content with size toggle + ratio dropdown + dynamic cost button, pass settings to `createBatch` |
 
-### No new components needed
-All section components already exist (`BeforeAfterShowcase`, `UseCasesGrid`, `TestimonialsSection`, `MinimalHeader`, `MinimalFooter`). The feature grid and FAQ are built inline since they're promo-specific.
-
-### No routing changes
-The route `/promo/1mes` already exists in `App.tsx`.
-
-### Screenshot Placeholders
-Each use-case card will have an `<img>` element with `src="/placeholder.svg"` and a comment like `{/* Replace with actual screenshot */}`. You can swap these with real images later by importing them or using URLs.
-
-### Checkout Logic
-Preserved exactly as-is: `promoCode: '1MES'`, `planId: 'starter'`, redirect to Stripe, toast on error.
-
-### Styling
-Follows the Landing V2 / Pricing page design tokens: `rounded-2xl` cards, `primary/10` accent backgrounds, gradient text for the headline, `max-w-6xl` container, consistent spacing (`py-20 px-4`).
+- The `OutfitSwapSettings` component render call (line 296) will be removed since it returns null anyway
+- Imports added: `Select`, `SelectContent`, `SelectItem`, `SelectTrigger`, `SelectValue`, `ToggleGroup`, `ToggleGroupItem` from existing UI components
+- The `useOutfitSwapLimit` hook's `calculateBatchCost` and `getSavings` are no longer used for display; replaced by simple `garments * creditsPerImage`
+- `canAffordBatch` replaced by direct `credits >= totalCost` check
 
