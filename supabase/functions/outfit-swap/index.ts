@@ -420,16 +420,22 @@ serve(async (req)=>{
   try {
     const { action, ...params } = await req.json();
     console.log("Outfit swap action:", action);
-    // Handle internal processing actions WITHOUT authentication
-    // This is safe because it's only triggered internally by the function itself
-    if (action === "processJob") {
-      return await processOutfitSwap(params.jobId);
-    }
-    if (action === "processPhotoshoot") {
-      return await processPhotoshoot(params.photoshootId);
-    }
-    if (action === "processEcommercePhoto") {
-      return await processEcommercePhoto(params.photoId);
+    // Internal processing actions require service role authentication
+    if (["processJob", "processPhotoshoot", "processEcommercePhoto"].includes(action)) {
+      const authHeader = req.headers.get("authorization") || "";
+      const isServiceRole = authHeader === `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`;
+      if (!isServiceRole) {
+        return jsonResponse({ error: "Forbidden" }, 403);
+      }
+      if (action === "processJob") {
+        return await processOutfitSwap(params.jobId);
+      }
+      if (action === "processPhotoshoot") {
+        return await processPhotoshoot(params.photoshootId);
+      }
+      if (action === "processEcommercePhoto") {
+        return await processEcommercePhoto(params.photoId);
+      }
     }
     // All other actions require authentication
     const authHeader = req.headers.get("authorization");

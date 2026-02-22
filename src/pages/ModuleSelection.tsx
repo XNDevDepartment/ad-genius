@@ -14,7 +14,7 @@ import demoOutfit from "@/assets/module_icons/fashion_catalog.mp4";
 import demoBulk from "@/assets/module_icons/product_catalog.mp4";
 import demoUgcImg from "@/assets/module_icons/ugc.png";
 import demoVideoImg from "@/assets/module_icons/video.png";
-import demoOutfitImg from "@/assets/module_icons/fashion_catalog.png";
+import demoOutfitImg from "@/assets/module_icons/fashion_catalog.jpg";
 import demoBulkImg from "@/assets/module_icons/product_catalog.png";
 
 const ModuleSelection = () => {

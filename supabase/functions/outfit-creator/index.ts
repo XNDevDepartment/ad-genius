@@ -698,8 +698,13 @@ serve(async (req) => {
     const { action, ...params } = await req.json();
     console.log('[outfit-creator] Action:', action);
     
-    // Internal processing action (no auth needed)
+    // Internal processing action requires service role
     if (action === 'processJob') {
+      const authHeader = req.headers.get('authorization') || '';
+      const isServiceRole = authHeader === `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`;
+      if (!isServiceRole) {
+        return jsonResponse({ error: 'Forbidden' }, 403);
+      }
       return await processJob(params.jobId);
     }
     
