@@ -56,6 +56,7 @@ export const OutfitSwapPreview = ({
       state: {
         source: 'outfit_swap',
         preselectedImageUrl: results.public_url,
+        result_id: results.id,
       },
     });
   };
