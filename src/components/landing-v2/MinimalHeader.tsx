@@ -9,9 +9,12 @@ export const MinimalHeader = () => {
   const { t } = useTranslation();
 
   const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    const elements = document.querySelectorAll(`[id="${sectionId}"]`);
+    for (const el of elements) {
+      if ((el as HTMLElement).offsetWidth > 0) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
     }
   };
 
