@@ -9,9 +9,9 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useCredits } from "@/hooks/useCredits";
 
 import demoUgc from "@/assets/demo.webp";
-import demoVideo from "@/assets/catalog_showcase/1.png";
+import demoVideo from "https://dhqdamfisdbbcieqlpvt.supabase.co/storage/v1/object/public/videos/kling/08683258-dabb-4646-9079-9c9c1c32da3b/197f2e74-118b-4dbc-9bcd-c54b2c3a03de.mp4";
 import demoOutfit from "@/assets/outfit_square_final.png";
-import demoBulk from "@/assets/catalog_showcase/3.png";
+import demoBulk from "https://dhqdamfisdbbcieqlpvt.supabase.co/storage/v1/object/public/bulk-background-product-views/4e962775-cb55-4301-bc33-081eacb96c46/6a188a90-00b4-43ae-94ed-56b8b3061f01/macro.webp";
 
 const ModuleSelection = () => {
   const navigate = useNavigate();
