@@ -70,7 +70,7 @@ export function VideoCard({ job, onDelete, onDownload, onView }: VideoCardProps)
         <CardContent className="p-0">
           {/* Video Preview or Placeholder */}
           <div
-            className="relative aspect-video bg-muted"
+            className="relative h-96 bg-muted"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
