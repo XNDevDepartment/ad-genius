@@ -1,55 +1,34 @@
 
 
-# Audit Results + Fixes
+# Fix Module Selection Images + Video Library Mobile Performance
 
-## Audit Findings
+## Problem 1: Module Selection images don't load on mobile
 
-### Issue 1: ModuleSelection DemoMedia condition (MINOR - already fixed)
-The last diff changed `isMobile || id !== "video"` to `isMobile && id !== "video"`, but the current file shows `if (isMobile)` without the `id` check at all. This means on mobile, ALL module cards show static PNG images instead of video -- this is correct behavior since hover-to-play doesn't work on touch.
+The `DemoMedia` component on line 61 does:
+```
+src.replace("mp4","png")
+```
+This tries to swap the extension in the Vite-bundled URL (e.g. `/assets/ugc-a1b2c3.mp4`), but the PNG file has a completely different bundled hash, so the resulting URL is invalid and the image never loads.
 
-**Status: OK, no fix needed.**
+**Fix**: Import the PNG fallback images explicitly and pass them as a separate prop.
 
-### Issue 2: AnimateImageModal video not loading on mobile (BUG)
-The `<video>` element in `AnimateImageModal.tsx` (line 141-149) has the correct attributes (`muted`, `playsInline`, `autoPlay`, `controls`). However, there's no `crossOrigin` attribute, which can cause issues when the video URL is hosted on a different domain (Kling CDN). On some mobile browsers, this can silently fail to load.
+- Import the 4 PNG files: `ugc.png`, `video.png`, `fashion_catalog.png`, `product_catalog.png`
+- Add a `fallbackImage` property to each workflow object
+- In `DemoMedia`, use the `fallbackImage` prop on mobile instead of string-replacing the video URL
 
-**Fix: Do NOT add `crossOrigin` (it can break loading from CDNs without CORS). Instead, add a `preload="auto"` attribute and an `onError` handler to show a fallback download link if the video fails to render inline.**
+## Problem 2: Video Library renders slowly on mobile
 
-### Issue 3: Activation gate removal (CLEAN)
-- `useCredits.tsx`: `canAccessVideos()` no longer checks activation -- correct
-- `kling-video/index.ts`: Server-side activation block removed -- correct
-- `Index.tsx`: `needsVideoAccess` removed from video module -- correct
-- `ModuleSelection.tsx`: Video module has `locked: false` -- correct
+Two locations need fixing:
 
-**Status: OK.**
+### VideoCard.tsx (thumbnail previews)
+- Line 78-86: The `<video>` element has no `preload` attribute, so the browser doesn't start loading until interaction
+- Add `preload="metadata"` so thumbnails load the first frame quickly
+- Add `playsInline` (already present, confirmed OK)
 
-### Issue 4: OnboardingChecklist email step (CLEAN)
-Non-blocking email verification step added correctly with `useAccountActivation`.
-
-**Status: OK.**
-
-### Issue 5: Hardcoded "In Progress" strings in ModuleSelection (MINOR)
-Lines 122-126 have untranslated English strings: `"In Progress"` and the description.
-
-**Fix: Use translation keys.**
-
----
-
-## Changes to Implement
-
-### File 1: `src/components/AnimateImageModal.tsx`
-
-Add mobile-friendly video rendering with error fallback:
-- Add `preload="auto"` to the video element
-- Add an `onError` state that shows a "Download Video" link as fallback when the video fails to load inline on mobile
-- Keep `muted`, `playsInline`, `controls` as-is (they're correct)
-
-### File 2: `src/pages/ModuleSelection.tsx`
-
-- Translate the hardcoded "In Progress" title and description using `t()` keys
-
-### File 3: `src/i18n/locales/[en,pt,es,fr,de].json`
-
-- Add `createSelection.inProgress.title` and `createSelection.inProgress.description` keys in all locales
+### VideoLibrary.tsx (viewer modal)
+- Line 308-314: The modal video player has no `preload`, `playsInline`, or `muted` attributes
+- Add `preload="auto"`, `playsInline`, and `muted` for reliable mobile playback
+- Add a `videoError` state with a fallback download button, matching the pattern in `AnimateImageModal`
 
 ---
 
@@ -57,11 +36,83 @@ Add mobile-friendly video rendering with error fallback:
 
 | File | Change |
 |---|---|
-| `src/components/AnimateImageModal.tsx` | Add video error fallback for mobile + preload attribute |
-| `src/pages/ModuleSelection.tsx` | Translate "In Progress" strings |
-| `src/i18n/locales/en.json` | Add `createSelection.inProgress.*` keys |
-| `src/i18n/locales/pt.json` | Portuguese translations |
-| `src/i18n/locales/es.json` | Spanish translations |
-| `src/i18n/locales/fr.json` | French translations |
-| `src/i18n/locales/de.json` | German translations |
+| `src/pages/ModuleSelection.tsx` | Import PNG fallbacks, add `fallbackImage` prop, use it on mobile instead of string replace |
+| `src/components/VideoCard.tsx` | Add `preload="metadata"` to video element for faster thumbnail loading |
+| `src/pages/VideoLibrary.tsx` | Add `preload="auto"`, `playsInline`, `muted` to modal video; add error fallback with download button |
+
+---
+
+## Technical Details
+
+### ModuleSelection.tsx
+
+Add imports:
+```typescript
+import demoUgcImg from "@/assets/module_icons/ugc.png";
+import demoVideoImg from "@/assets/module_icons/video.png";
+import demoOutfitImg from "@/assets/module_icons/fashion_catalog.png";
+import demoBulkImg from "@/assets/module_icons/product_catalog.png";
+```
+
+Update each workflow entry to include `fallbackImage`:
+```typescript
+{ id: "ugc", demoImage: demoUgc, fallbackImage: demoUgcImg, ... }
+```
+
+Update `DemoMedia` to accept and use `fallbackImage` on mobile:
+```typescript
+if (isMobile) {
+  return <img src={fallbackImage} alt={alt} className="w-full h-full object-cover" />;
+}
+```
+
+### VideoCard.tsx
+
+Add `preload="metadata"` to the video element (line 78-86):
+```tsx
+<video
+  ref={videoRef}
+  src={videoUrl}
+  className="w-full h-full object-cover"
+  muted
+  loop
+  playsInline
+  preload="metadata"
+  onError={() => setVideoError(true)}
+/>
+```
+
+### VideoLibrary.tsx
+
+Update the modal video player (lines 308-314) with mobile-friendly attributes and error fallback:
+```tsx
+const [modalVideoError, setModalVideoError] = useState(false);
+
+// In the modal:
+{videoUrl && !modalVideoError ? (
+  <video
+    key={viewingVideo.id}
+    src={videoUrl}
+    controls
+    playsInline
+    muted
+    preload="auto"
+    className="w-full rounded-lg bg-black"
+    onError={() => setModalVideoError(true)}
+  />
+) : videoUrl && modalVideoError ? (
+  <div className="aspect-video bg-muted rounded-lg flex flex-col items-center justify-center gap-3">
+    <p className="text-sm text-muted-foreground">Video preview unavailable on this device</p>
+    <Button variant="outline" size="sm" onClick={() => downloadVideo(viewingVideo)}>
+      Download Video
+    </Button>
+  </div>
+) : (
+  <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+    <p className="text-muted-foreground">Video not available</p>
+  </div>
+)}
+```
+
+Reset `modalVideoError` when opening a new video.
 
