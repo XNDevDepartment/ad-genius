@@ -1,13 +1,24 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Check, Sparkles, Image, Video, Palette, ShoppingBag, ArrowLeft } from "lucide-react";
+import { Check, Sparkles, Image, Video, Shirt, Layers, Camera, Zap, Shield, Clock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { trackInitiateCheckout, trackViewContent } from "@/lib/metaPixel";
 import { toast } from "sonner";
+import { MinimalHeader } from "@/components/landing-v2/MinimalHeader";
+import { MinimalFooter } from "@/components/landing-v2/MinimalFooter";
+import { BeforeAfterShowcase } from "@/components/landing-v2/BeforeAfterShowcase";
+import { UseCasesGrid } from "@/components/landing-v2/UseCasesGrid";
+import { TestimonialsSection } from "@/components/landing-v2/TestimonialsSection";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const Promo1Mes = () => {
   const navigate = useNavigate();
@@ -36,7 +47,7 @@ const Promo1Mes = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { 
+        body: {
           planId: 'starter',
           interval: 'month',
           promoCode: '1MES'
@@ -55,102 +66,283 @@ const Promo1Mes = () => {
     }
   };
 
+  const CTAButton = ({ className = "" }: { className?: string }) => (
+    <Button
+      onClick={handleGetOffer}
+      disabled={loading || isProcessing}
+      size="lg"
+      className={`h-14 text-lg font-semibold rounded-full shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground ${className}`}
+    >
+      {loading ? (
+        'A carregar...'
+      ) : isProcessing ? (
+        'A processar...'
+      ) : (
+        <>
+          <Sparkles className="h-5 w-5 mr-2" />
+          Ativar Oferta — €{promoPrice}
+        </>
+      )}
+    </Button>
+  );
+
   const features = [
-    { icon: Image, text: "35 créditos no primeiro mês" },
-    { icon: Sparkles, text: "Imagens UGC Reais" },
-    { icon: Video, text: "Geração de vídeos incluída" },
-    { icon: Palette, text: "Cenários ilimitados" },
-    { icon: ShoppingBag, text: "Uso comercial" },
+    {
+      icon: Camera,
+      title: "Fotos UGC de Produto",
+      description: "Cria imagens profissionais com modelos IA em cenários reais. Perfeito para redes sociais e e-commerce.",
+    },
+    {
+      icon: Video,
+      title: "Geração de Vídeos",
+      description: "Transforma qualquer imagem de produto num vídeo profissional de 5 segundos pronto para anúncios.",
+    },
+    {
+      icon: Shirt,
+      title: "Fashion Try-On",
+      description: "Coloca as tuas peças de roupa em modelos IA. Escolhe o modelo, pose e cenário.",
+    },
+    {
+      icon: Layers,
+      title: "Troca de Fundo em Massa",
+      description: "Remove e substitui fundos de dezenas de fotos de uma vez. Cenários profissionais em segundos.",
+    },
+  ];
+
+  const creditExplainer = [
+    { amount: "1 crédito", result: "1 imagem profissional", icon: Image },
+    { amount: "5 créditos", result: "1 vídeo de 5 segundos", icon: Video },
+    { amount: "1 crédito", result: "1 troca de fundo", icon: Layers },
+    { amount: "1 crédito", result: "1 fashion try-on", icon: Shirt },
+  ];
+
+  const faqs = [
+    {
+      question: "O que acontece depois do primeiro mês?",
+      answer: "Após o primeiro mês promocional, a tua subscrição continua ao preço normal de €29/mês. Podes cancelar a qualquer momento antes da renovação.",
+    },
+    {
+      question: "Posso cancelar quando quiser?",
+      answer: "Sim, podes cancelar a tua subscrição a qualquer momento. Não há contratos, compromissos ou taxas de cancelamento. Mantens o acesso até ao final do período pago.",
+    },
+    {
+      question: "Quantas imagens posso criar com 35 créditos?",
+      answer: "Com 35 créditos podes criar até 35 imagens profissionais, ou combinares imagens e vídeos. Por exemplo: 30 imagens + 1 vídeo de 5 segundos.",
+    },
+    {
+      question: "O que é um crédito?",
+      answer: "Um crédito é a unidade que usas para gerar conteúdo. 1 crédito = 1 imagem profissional. Vídeos custam 5 créditos por cada 5 segundos.",
+    },
+    {
+      question: "Existe algum contrato ou fidelização?",
+      answer: "Não. É uma subscrição mensal sem compromisso. Cancelas quando quiseres, sem perguntas.",
+    },
   ];
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 pt-3 pb-12 max-w-2xl">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/')}
-          className="mb-4 -ml-2 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Home
-        </Button>
+      <MinimalHeader />
 
-        <div className="text-center mb-8 space-y-4">
-          <Badge className="text-sm px-3 py-1 bg-primary/10 text-primary border-primary/20">
-            Oferta Exclusiva
-          </Badge>
-          
-          <h1 className="text-4xl md:text-5xl font-bold">
-            Primeiro Mês por{" "}
-            <span className="text-primary">€{promoPrice}</span>
-          </h1>
-          
-          <p className="text-lg text-muted-foreground">
-            Oferta exclusiva para novos subscritores do plano Starter
-          </p>
-        </div>
+      <main className="pt-16">
+        {/* Section 1: Hero */}
+        <section className="py-20 px-4">
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <Badge className="text-sm px-4 py-1.5 bg-primary/10 text-primary border-primary/20">
+              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+              Oferta Exclusiva — Tempo Limitado
+            </Badge>
 
-        <Card className="border-2 border-primary/30 shadow-xl shadow-primary/5">
-          <CardHeader className="text-center pb-4">
-            <div className="flex items-center justify-center gap-3 mb-2">
+            <h1 className="text-4xl md:text-6xl font-bold leading-tight">
+              Primeiro Mês por{" "}
+              <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                €{promoPrice}
+              </span>
+            </h1>
+
+            <div className="flex items-center justify-center gap-3">
               <span className="text-2xl text-muted-foreground line-through">€{regularPrice}/mês</span>
-              <Badge variant="destructive" className="text-sm">
+              <Badge variant="destructive" className="text-sm font-bold">
                 -{discountPercent}%
               </Badge>
             </div>
-            <CardTitle className="text-5xl font-bold text-primary">
-              €{promoPrice}
-              <span className="text-lg font-normal text-muted-foreground">/primeiro mês</span>
-            </CardTitle>
-            <p className="text-sm text-muted-foreground mt-2">
-              Depois €{regularPrice}/mês • Cancela quando quiseres
-            </p>
-          </CardHeader>
 
-          <CardContent className="space-y-6">
-            <div className="space-y-3">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+              Acede ao plano Starter com 35 créditos para criar fotos profissionais, vídeos e muito mais — tudo por menos de €10.
+            </p>
+
+            <div className="pt-2">
+              <CTAButton className="px-10" />
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground pt-2">
+              <span className="flex items-center gap-1.5">
+                <Check className="h-4 w-4 text-primary" /> Código aplicado automaticamente
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Shield className="h-4 w-4 text-primary" /> Cancela quando quiseres
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Clock className="h-4 w-4 text-primary" /> Ativo em segundos
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 2: What You Get — Feature Grid */}
+        <section className="py-20 px-4 bg-muted/30">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-14">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                O Que Inclui o Plano Starter
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Tudo o que precisas para criar conteúdo profissional para o teu negócio
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {features.map((feature, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <div className="rounded-full bg-primary/10 p-2">
-                    <feature.icon className="h-4 w-4 text-primary" />
-                  </div>
-                  <span className="font-medium">{feature.text}</span>
-                  <Check className="h-4 w-4 text-primary ml-auto" />
-                </div>
+                <Card key={index} className="rounded-2xl border border-border overflow-hidden hover:border-primary/30 hover:shadow-lg transition-all">
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <feature.icon className="h-5 w-5 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-semibold">{feature.title}</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                    {/* Replace with actual screenshot */}
+                    <div className="rounded-xl overflow-hidden bg-muted/50 border border-border">
+                      <img
+                        src="/placeholder.svg"
+                        alt={feature.title}
+                        className="w-full h-48 object-cover"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Section 3: Before/After */}
+        <BeforeAfterShowcase />
+
+        {/* Section 4: Use Cases */}
+        <UseCasesGrid />
+
+        {/* Section 5: What 1 Credit Gets You */}
+        <section className="py-20 px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-14">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                O Que Consegues com 1 Crédito
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Com 35 créditos no primeiro mês, podes criar até 35 imagens profissionais
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {creditExplainer.map((item, index) => (
+                <Card key={index} className="rounded-2xl text-center">
+                  <CardContent className="p-6 space-y-3">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                      <item.icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <p className="font-bold text-lg">{item.amount}</p>
+                    <p className="text-sm text-muted-foreground">{item.result}</p>
+                  </CardContent>
+                </Card>
               ))}
             </div>
 
-            <Button
-              onClick={handleGetOffer}
-              disabled={loading || isProcessing}
-              size="lg"
-              className="w-full h-14 text-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
-            >
-              {loading ? (
-                'A carregar...'
-              ) : isProcessing ? (
-                'A processar...'
-              ) : (
-                <>
-                  <Sparkles className="h-5 w-5 mr-2" />
-                  Ativar Oferta
-                </>
-              )}
-            </Button>
+            <div className="text-center mt-8">
+              <p className="text-muted-foreground">
+                <span className="font-semibold text-foreground">35 créditos</span> = até 35 fotos profissionais ou 7 vídeos de produto
+              </p>
+            </div>
+          </div>
+        </section>
 
-            <p className="text-xs text-center text-muted-foreground">
-              ✓ Código promocional aplicado automaticamente · ✓ Cancela quando quiseres
-            </p>
-          </CardContent>
-        </Card>
+        {/* Section 6: Testimonials */}
+        <TestimonialsSection />
 
-        <div className="text-center mt-8">
-          <Button variant="ghost" onClick={() => navigate('/pricing')}>
-            Ver todos os planos
-          </Button>
-        </div>
-      </div>
+        {/* Section 7: FAQ */}
+        <section className="py-20 px-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-14">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Perguntas Frequentes
+              </h2>
+            </div>
+
+            <Accordion type="single" collapsible className="w-full">
+              {faqs.map((faq, index) => (
+                <AccordionItem key={index} value={`item-${index}`}>
+                  <AccordionTrigger className="text-left text-base">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </section>
+
+        {/* Section 8: Final CTA */}
+        <section className="py-20 px-4 bg-muted/30">
+          <div className="max-w-2xl mx-auto text-center space-y-6">
+            <Card className="rounded-2xl border-2 border-primary/30 shadow-xl shadow-primary/5">
+              <CardContent className="p-8 md:p-10 space-y-6">
+                <Badge className="text-sm px-3 py-1 bg-primary/10 text-primary border-primary/20">
+                  Oferta Exclusiva
+                </Badge>
+
+                <div>
+                  <div className="flex items-center justify-center gap-3 mb-2">
+                    <span className="text-xl text-muted-foreground line-through">€{regularPrice}/mês</span>
+                    <Badge variant="destructive">-{discountPercent}%</Badge>
+                  </div>
+                  <p className="text-5xl font-bold text-primary">
+                    €{promoPrice}
+                    <span className="text-lg font-normal text-muted-foreground">/primeiro mês</span>
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Depois €{regularPrice}/mês · Cancela quando quiseres
+                  </p>
+                </div>
+
+                <div className="space-y-2 text-left max-w-sm mx-auto">
+                  {[
+                    "35 créditos no primeiro mês",
+                    "Fotos UGC com modelos IA",
+                    "Geração de vídeos incluída",
+                    "Fashion try-on",
+                    "Uso comercial completo",
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-primary shrink-0" />
+                      <span className="text-sm">{item}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <CTAButton className="w-full" />
+
+                <p className="text-xs text-muted-foreground">
+                  ✓ Código promocional aplicado automaticamente · ✓ Sem contrato · ✓ Cancela quando quiseres
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      </main>
+
+      <MinimalFooter />
     </div>
   );
 };
