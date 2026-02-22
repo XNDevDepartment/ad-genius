@@ -779,6 +779,10 @@
       "title": "Essayage Virtuel",
       "description": "Habille nos modèles avec tes vêtements et obtiens des photos de qualité professionnelle"
     },
+    "inProgress": {
+      "title": "En cours",
+      "description": "Nous travaillons chaque jour pour améliorer notre plateforme. Vous serez les premiers informés des nouveautés !"
+    },
     "comingSoon": "Bientôt disponible",
     "betaBadge": "BÊTA",
     "betaLockedDescription": "Passe à un plan payant pour accéder à cette fonctionnalité bêta. Aide-nous à perfectionner l’outfit-swap !"

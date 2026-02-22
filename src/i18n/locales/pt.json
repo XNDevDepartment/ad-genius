@@ -787,6 +787,10 @@
       "title": "Fotos de Estúdio",
       "description": "Gere fotos de produto profissionais"
     },
+    "inProgress": {
+      "title": "Em Progresso",
+      "description": "Estamos a trabalhar diariamente para melhorar a nossa plataforma. Serás o primeiro a saber as novidades!"
+    },
     "comingSoon": "Brevemente",
     "betaBadge": "BETA",
     "betaLockedDescription": "Faz upgrade para qualquer plano pago para aceder a esta funcionalidade beta. Ajuda-nos a aperfeiçoar o catálogo!"

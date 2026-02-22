@@ -783,6 +783,10 @@
       "title": "Fondo Masivo",
       "description": "Aplica el mismo fondo a múltiples imágenes de producto a la vez"
     },
+    "inProgress": {
+      "title": "En Progreso",
+      "description": "Estamos trabajando a diario para mejorar nuestra plataforma. ¡Serás el primero en conocer las novedades!"
+    },
     "comingSoon": "Próximamente",
     "betaBadge": "BETA",
     "betaLockedDescription": "Haz upgrade a cualquier plan de pago para acceder a esta función beta. ¡Ayúdanos a perfeccionar el catalog!"

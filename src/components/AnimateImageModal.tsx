@@ -27,6 +27,7 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
     animationStyle: "natural",
   });
   const [aiPromptLoading, setAiPromptLoading] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const { job, loading, createVideoJob, clearJob } = useKlingVideo();
 
   // Auto-analyze image for motion prompt when modal opens
@@ -35,6 +36,7 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
     // Reset state when opening with a new image
     setPrompt("");
     clearJob();
+    setVideoError(false);
     analyzeImageForMotion();
   }, [open, imageUrl]);
 
@@ -138,15 +140,29 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
           {/* Completed Video */}
           {isCompleted && job?.video_url && (
             <div className="rounded-xl overflow-hidden bg-black">
-              <video
-                src={job.video_url}
-                controls
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full h-auto max-h-64"
-              />
+              {videoError ? (
+                <div className="flex flex-col items-center justify-center py-8 px-4 space-y-3">
+                  <p className="text-sm text-muted-foreground text-center">
+                    Video preview is not available on this device.
+                  </p>
+                  <Button variant="outline" size="sm" onClick={handleDownloadVideo}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Download Video
+                  </Button>
+                </div>
+              ) : (
+                <video
+                  src={job.video_url}
+                  controls
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
+                  className="w-full h-auto max-h-64"
+                  onError={() => setVideoError(true)}
+                />
+              )}
             </div>
           )}
 
