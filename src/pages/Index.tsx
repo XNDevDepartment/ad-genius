@@ -98,7 +98,7 @@ const Index = () => {
               <Button 
                 variant="default" 
                 size="lg"
-                onClick={() => navigate("/create/ugc")}
+                onClick={() => navigate("/create")}
                 className="bg-white text-primary hover:bg-white/90"
               >
                 {t("index.auth.startCreating")}
