@@ -12,6 +12,10 @@ import demoUgc from "@/assets/module_icons/ugc.mp4";
 import demoVideo from "@/assets/module_icons/video.mp4";
 import demoOutfit from "@/assets/module_icons/fashion_catalog.mp4";
 import demoBulk from "@/assets/module_icons/product_catalog.mp4";
+import demoUgcImg from "@/assets/module_icons/ugc.png";
+import demoVideoImg from "@/assets/module_icons/video.png";
+import demoOutfitImg from "@/assets/module_icons/fashion_catalog.png";
+import demoBulkImg from "@/assets/module_icons/product_catalog.png";
 
 const ModuleSelection = () => {
   const navigate = useNavigate();
@@ -37,10 +41,12 @@ const ModuleSelection = () => {
   const DemoMedia = ({
       id,
       src,
+      fallbackImage,
       alt,
     }: {
       id: string;
       src: string;
+      fallbackImage?: string;
       alt: string;
     }) => {
       const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -56,9 +62,8 @@ const ModuleSelection = () => {
         return () => mediaQuery.removeEventListener("change", handler);
       }, []);
 
-      // 🔥 Force image on mobile
       if (isMobile) {
-        return <img src={src.replace("mp4","png")} alt={alt} className="w-full h-full object-cover" />;
+        return <img src={fallbackImage || src} alt={alt} className="w-full h-full object-cover" />;
       }
 
       return (
@@ -89,6 +94,7 @@ const ModuleSelection = () => {
       description: t('createSelection.ugcCreator.description'),
       path: "/create/ugc",
       demoImage: demoUgc,
+      fallbackImage: demoUgcImg,
       isBeta: false,
     },
     {
@@ -97,6 +103,7 @@ const ModuleSelection = () => {
       description: t('createSelection.videoCreator.description'),
       path: "/create/video",
       demoImage: demoVideo,
+      fallbackImage: demoVideoImg,
       isBeta: false,
       locked: false,
     },
@@ -106,6 +113,7 @@ const ModuleSelection = () => {
       description: t('createSelection.outfitSwap.description'),
       path: "/create/outfit-swap",
       demoImage: demoOutfit,
+      fallbackImage: demoOutfitImg,
       isBeta: false,
       locked: false,
     },
@@ -115,6 +123,7 @@ const ModuleSelection = () => {
       description: t('createSelection.bulkBackground.description'),
       path: "/create/bulk-background",
       demoImage: demoBulk,
+      fallbackImage: demoBulkImg,
       isBeta: true,
       locked: isFreeTier(),
     },
@@ -168,7 +177,7 @@ const ModuleSelection = () => {
               <div className="md:hidden relative">
                 {workflow.demoImage ? (
                   <div className="relative aspect-square">
-                     <DemoMedia id={workflow.id} src={workflow.demoImage} alt={workflow.title} />
+                     <DemoMedia id={workflow.id} src={workflow.demoImage} fallbackImage={workflow.fallbackImage} alt={workflow.title} />
 
                     {workflow.locked && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -200,7 +209,7 @@ const ModuleSelection = () => {
               <div className="hidden md:block">
                 {workflow.demoImage ? (
                   <div className="relative h-80">
-                      <DemoMedia id={workflow.id} src={workflow.demoImage} alt={workflow.title} />
+                      <DemoMedia id={workflow.id} src={workflow.demoImage} fallbackImage={workflow.fallbackImage} alt={workflow.title} />
 
                     {workflow.locked && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
