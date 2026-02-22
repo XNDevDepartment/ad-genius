@@ -2,8 +2,8 @@ import { useTranslation } from "react-i18next";
 import { BeforeAfterSlider } from "@/components/ui/before-after";
 import { Sparkles } from "lucide-react";
 
-import beforeImage from "@/assets/sanjo_origin.webp";
-import afterImage from "@/assets/sanjo_finish.jpeg";
+import beforeImage from "@/assets/demo_lp2.webp";
+import afterImage from "@/assets/demo_lp2.png";
 
 export const BeforeAfterShowcase = () => {
   const { t } = useTranslation();
