@@ -82,6 +82,7 @@ export function VideoCard({ job, onDelete, onDownload, onView }: VideoCardProps)
                 muted
                 loop
                 playsInline
+                preload="metadata"
                 onError={() => setVideoError(true)}
               />
             ) : isProcessing ? (

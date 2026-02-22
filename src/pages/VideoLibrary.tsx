@@ -50,6 +50,7 @@ export default function VideoLibrary() {
   } = useVideoLibrary();
 
   const [viewingVideo, setViewingVideo] = useState<KlingJobRow | null>(null);
+  const [modalVideoError, setModalVideoError] = useState(false);
   
   // Selection mode state
   const [selectionMode, setSelectionMode] = useState(false);
@@ -258,7 +259,7 @@ export default function VideoLibrary() {
                   job={job}
                   onDelete={deleteVideo}
                   onDownload={downloadVideo}
-                  onView={setViewingVideo}
+                  onView={(job) => { setModalVideoError(false); setViewingVideo(job); }}
                 />
               </div>
             ))}
@@ -304,14 +305,24 @@ export default function VideoLibrary() {
             <div className="grid md:grid-cols-3 gap-6">
               {/* Video Player */}
               <div className="md:col-span-2 space-y-4">
-                {videoUrl ? (
+              {videoUrl && !modalVideoError ? (
                   <video
                     key={viewingVideo.id}
                     src={videoUrl}
                     controls
+                    playsInline
+                    muted
+                    preload="auto"
                     className="w-full rounded-lg bg-black"
-                    onError={(e) => console.error("Video load error:", e)}
+                    onError={() => setModalVideoError(true)}
                   />
+                ) : videoUrl && modalVideoError ? (
+                  <div className="aspect-video bg-muted rounded-lg flex flex-col items-center justify-center gap-3">
+                    <p className="text-sm text-muted-foreground">Video preview unavailable on this device</p>
+                    <Button variant="outline" size="sm" onClick={() => downloadVideo(viewingVideo)}>
+                      Download Video
+                    </Button>
+                  </div>
                 ) : (
                   <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
                     <p className="text-muted-foreground">Video not available</p>
