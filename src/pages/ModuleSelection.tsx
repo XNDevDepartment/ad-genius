@@ -1,4 +1,4 @@
-import { ArrowLeft, Sparkles, Lock, Video } from "lucide-react";
+import { ArrowLeft, Sparkles, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -122,7 +122,7 @@ const ModuleSelection = () => {
       title: t('createSelection.videoCreator.title'),
       description: t('createSelection.videoCreator.description'),
       path: "/create/video",
-      demoImage: "",
+      demoImage: demoVideo,
       fallbackImage: demoVideoImg,
       isBeta: false,
       locked: false,
@@ -198,7 +198,7 @@ const ModuleSelection = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center gap-1 p-4 aspect-square">
-                    {workflow.id === 'video' ? <Video className="h-5 w-5 text-muted-foreground" /> : <Sparkles className="h-5 w-5 text-muted-foreground" />}
+                    <Sparkles className="h-5 w-5 text-muted-foreground" />
                     <h3 className="text-sm font-semibold text-center leading-tight">{workflow.title}</h3>
                     <span className="text-[10px] text-muted-foreground bg-muted px-1 py-0.5 rounded">Soon</span>
                   </div>
@@ -219,7 +219,7 @@ const ModuleSelection = () => {
                   </div>
                 ) : (
                   <div className="h-40 flex items-center justify-center bg-muted/30">
-                    {workflow.id === 'video' ? <Video className="h-10 w-10 text-muted-foreground" /> : <Sparkles className="h-10 w-10 text-muted-foreground" />}
+                    <Sparkles className="h-10 w-10 text-muted-foreground" />
                   </div>
                 )}
                 <CardHeader className="pt-4 pb-2">
