@@ -57,7 +57,7 @@ const ModuleSelection = () => {
       }, []);
 
       // 🔥 Force image on mobile
-      if (isMobile || id !== "video") {
+      if (isMobile && id !== "video") {
         return <img src={src.replace("mp4","png")} alt={alt} className="w-full h-full object-cover" />;
       }
 
