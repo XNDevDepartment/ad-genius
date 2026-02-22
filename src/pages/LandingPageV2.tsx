@@ -45,7 +45,6 @@ const LandingPageV2 = () => {
         schema={[buildWebApplicationSchema(), howToSchema, faqSchema]}
       />
       <MinimalHeader />
-      
       {/* Add padding for fixed header */}
       <main className="pt-16">
         <MinimalHero />
