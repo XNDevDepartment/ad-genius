@@ -1,53 +1,30 @@
 
-
-# Fix: Animate Image from Outfit Swap (and other panels)
+# Fix: Browser Extension DOM Errors Crashing the App
 
 ## Problem
 
-When clicking "Animate" on an outfit swap result, the user is navigated to `/create/video` with `preselectedImageUrl` set to the result's `public_url`. However:
+The `insertBefore` error shown is caused by a **browser extension** (e.g., translation, Grammarly, ad blocker) modifying the DOM that React manages. The ErrorBoundary already identifies these as browser-specific errors and skips reporting them, but it still sets `hasError: true` -- which crashes the UI and shows the error page to the user.
 
-1. **Frontend**: `onCreate()` requires `selectedImage` to be non-null (line 392), but for outfit swap results only `preselectedImageUrl` is set -- `selectedImage` stays `null`. The image shows visually but the system won't submit.
-2. **Edge function**: The `createVideoJob` handler only resolves images via `source_image_id` or `ugc_image_id` DB lookups. Outfit swap results live in `outfit_swap_results`, which is never checked. There is no `image_url` passthrough.
+## Root Cause
+
+In `src/components/ErrorBoundary.tsx`, `getDerivedStateFromError` unconditionally sets `hasError: true` for all errors. While `componentDidCatch` correctly skips reporting browser-extension errors, the component still renders the error fallback UI.
 
 ## Solution
 
-Add support for a direct `image_url` parameter in both the frontend and edge function.
+Update `getDerivedStateFromError` to check the error message and **not** set `hasError: true` for known browser-extension DOM manipulation errors (`insertBefore`, `removeChild`, `appendChild`, etc.).
 
-### 1. `src/pages/VideoGenerator.tsx` -- Fix `onCreate()`
+### File: `src/components/ErrorBoundary.tsx`
 
-Update the `onCreate` function to handle the case where `selectedImage` is null but `preselectedImageUrl` exists:
+- Modify `getDerivedStateFromError` to check the error message against the same list of browser-specific patterns already used in `reportError`
+- If the error matches a browser-extension pattern, return `{ hasError: false }` instead of `{ hasError: true, error }`
+- This way the app continues rendering normally instead of showing the error page
 
-- Change the guard at line 392 from `if (!selectedImage || !prompt.trim())` to `if (!selectedImage && !preselectedImageUrl) || !prompt.trim()`
-- When `selectedImage` is null but `preselectedImageUrl` is set, pass `image_url: preselectedImageUrl` in the payload instead of `source_image_id` or `ugc_image_id`
+### What changes
 
-### 2. `src/api/kling.ts` -- Update payload type
+| Aspect | Before | After |
+|---|---|---|
+| `getDerivedStateFromError` | Always sets `hasError: true` | Skips for DOM extension errors |
+| User experience | Sees error page for browser extension issues | App continues working normally |
+| Error reporting | Already skipped for these errors | No change needed |
 
-Add `image_url?: string` to `CreateVideoJobPayload` interface so the direct URL can be passed through.
-
-### 3. `supabase/functions/kling-video/index.ts` -- Accept `image_url`
-
-In the `createVideoJob` function (line 126+), add a third fallback after the `source_image_id` and `ugc_image_id` checks:
-
-- Extract `image_url` from the payload
-- If neither `source_image_id` nor `ugc_image_id` is provided but `image_url` is, use it directly as the image URL
-- This handles outfit swap results, and any future panel that provides a direct URL
-
-### 4. `src/components/BatchSwapPreview.tsx` -- Also pass `result_id` (already does)
-
-Already passes `result_id` in state -- no change needed.
-
-### 5. `src/components/OutfitSwapPreview.tsx` -- Also pass `result_id`
-
-Add `result_id: results.id` to the navigation state for consistency.
-
-## Technical Details
-
-| File | Change |
-|---|---|
-| `src/pages/VideoGenerator.tsx` | Fix `onCreate` guard to accept `preselectedImageUrl`; pass `image_url` in payload when no `selectedImage` |
-| `src/api/kling.ts` | Add `image_url?: string` to `CreateVideoJobPayload` |
-| `supabase/functions/kling-video/index.ts` | Accept `image_url` as fallback in `createVideoJob` after source/ugc lookups |
-| `src/components/OutfitSwapPreview.tsx` | Add `result_id` to navigate state |
-
-This approach is generic -- any panel that passes a direct `preselectedImageUrl` (outfit swap, future panels) will work without needing a specific DB record in `ugc_images` or `source_images`.
-
+This is a minimal, safe fix -- it only affects errors that are already identified as non-actionable browser extension issues.
