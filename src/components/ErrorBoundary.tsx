@@ -85,31 +85,49 @@ const reportError = async (
   }
 };
 
+const isBrowserExtensionError = (error: Error | undefined | null): boolean => {
+  const msg = error?.message || '';
+  return (
+    msg.includes('removeChild') ||
+    msg.includes('insertBefore') ||
+    msg.includes('appendChild') ||
+    msg.includes('The object can not be found here') ||
+    msg.includes('Minified React error #300')
+  );
+};
+
 class ErrorBoundaryClass extends Component<Props, State> {
+  private windowErrorHandler: ((event: ErrorEvent) => void) | null = null;
+
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false };
   }
 
+  componentDidMount() {
+    this.windowErrorHandler = (event: ErrorEvent) => {
+      if (isBrowserExtensionError(event.error)) {
+        console.warn('[ErrorBoundary] Intercepted browser-extension DOM error at window level');
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    window.addEventListener('error', this.windowErrorHandler, true);
+  }
+
+  componentWillUnmount() {
+    if (this.windowErrorHandler) {
+      window.removeEventListener('error', this.windowErrorHandler, true);
+    }
+  }
+
   componentDidUpdate(prevProps: Props) {
-    // Reset error state when route changes
     if (this.state.hasError && prevProps.resetKey !== this.props.resetKey) {
       this.setState({ hasError: false, error: undefined });
     }
   }
 
   static getDerivedStateFromError(error: Error): State {
-    const msg = error.message || '';
-    if (
-      msg.includes('removeChild') ||
-      msg.includes('insertBefore') ||
-      msg.includes('appendChild') ||
-      msg.includes('The object can not be found here') ||
-      msg.includes('Minified React error #300')
-    ) {
-      console.warn('[ErrorBoundary] Suppressing browser-extension DOM error');
-      return { hasError: false };
-    }
     return { hasError: true, error };
   }
 
