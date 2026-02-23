@@ -99,6 +99,17 @@ class ErrorBoundaryClass extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): State {
+    const msg = error.message || '';
+    if (
+      msg.includes('removeChild') ||
+      msg.includes('insertBefore') ||
+      msg.includes('appendChild') ||
+      msg.includes('The object can not be found here') ||
+      msg.includes('Minified React error #300')
+    ) {
+      console.warn('[ErrorBoundary] Suppressing browser-extension DOM error');
+      return { hasError: false };
+    }
     return { hasError: true, error };
   }
 
