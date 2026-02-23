@@ -1,30 +1,28 @@
 
-# Fix: Browser Extension DOM Errors Crashing the App
+# Fix: Inputs Clearing After Browser Extension Error Suppression
 
 ## Problem
 
-The `insertBefore` error shown is caused by a **browser extension** (e.g., translation, Grammarly, ad blocker) modifying the DOM that React manages. The ErrorBoundary already identifies these as browser-specific errors and skips reporting them, but it still sets `hasError: true` -- which crashes the UI and shows the error page to the user.
-
-## Root Cause
-
-In `src/components/ErrorBoundary.tsx`, `getDerivedStateFromError` unconditionally sets `hasError: true` for all errors. While `componentDidCatch` correctly skips reporting browser-extension errors, the component still renders the error fallback UI.
+The previous fix to suppress browser-extension DOM errors in `getDerivedStateFromError` has a side effect: when React catches an error during rendering, it unmounts the component subtree and remounts it -- even if `getDerivedStateFromError` returns `{ hasError: false }`. This causes all `useState` values (uploaded images, audience text, product specs, etc.) to reset, clearing the user's work.
 
 ## Solution
 
-Update `getDerivedStateFromError` to check the error message and **not** set `hasError: true` for known browser-extension DOM manipulation errors (`insertBefore`, `removeChild`, `appendChild`, etc.).
+Instead of suppressing these errors inside the ErrorBoundary (which still triggers React's error recovery and remounting), catch them at the **window level** before they ever reach React's error boundary mechanism.
 
-### File: `src/components/ErrorBoundary.tsx`
+### 1. `src/components/ErrorBoundary.tsx`
 
-- Modify `getDerivedStateFromError` to check the error message against the same list of browser-specific patterns already used in `reportError`
-- If the error matches a browser-extension pattern, return `{ hasError: false }` instead of `{ hasError: true, error }`
-- This way the app continues rendering normally instead of showing the error page
+- **Remove** the browser-extension check from `getDerivedStateFromError` (revert to simple `return { hasError: true, error }`)
+- **Add** a `window.addEventListener('error', ...)` in `componentDidMount` that intercepts these DOM manipulation errors and calls `event.preventDefault()` + `event.stopPropagation()` to prevent them from reaching React
+- **Clean up** the listener in `componentWillUnmount`
 
-### What changes
+The window-level error handler will check for the same patterns (`removeChild`, `insertBefore`, `appendChild`, `The object can not be found here`, `Minified React error #300`) and silently swallow them. This prevents React from ever seeing the error, so no unmount/remount occurs and no user state is lost.
 
-| Aspect | Before | After |
+### Technical Details
+
+| Aspect | Before (broken) | After (fixed) |
 |---|---|---|
-| `getDerivedStateFromError` | Always sets `hasError: true` | Skips for DOM extension errors |
-| User experience | Sees error page for browser extension issues | App continues working normally |
-| Error reporting | Already skipped for these errors | No change needed |
+| Where errors are caught | `getDerivedStateFromError` (React render phase) | `window.addEventListener('error')` (before React) |
+| React subtree behavior | Unmounts and remounts children (clears state) | No unmount, children remain intact |
+| User experience | Inputs cleared silently | No visible effect |
 
-This is a minimal, safe fix -- it only affects errors that are already identified as non-actionable browser extension issues.
+This is the standard approach for handling non-React DOM errors that shouldn't trigger React's error recovery.
