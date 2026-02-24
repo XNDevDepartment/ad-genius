@@ -103,7 +103,7 @@ const ModuleSelection = () => {
       title: t('createSelection.videoCreator.title'),
       description: t('createSelection.videoCreator.description'),
       path: "/create/video",
-      demoImage: demoVideo,
+      demoImage: demoVideo2,
       fallbackImage: demoVideo2,
       isBeta: false,
       locked: false,
