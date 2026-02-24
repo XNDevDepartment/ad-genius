@@ -853,6 +853,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const allImages = [...currentBatchImages, ...previousImages];
 
   // Move completed tracked jobs' images to previousImages
+  const completedIdsKey = tracker.completedJobIds.join(',');
   useEffect(() => {
     if (tracker.completedJobIds.length === 0) return;
     tracker.completedJobIds.forEach(jobId => {
@@ -877,7 +878,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       }
       tracker.removeJob(jobId);
     });
-  }, [tracker.completedJobIds]);
+  }, [completedIdsKey]);
 
   const handleStartFromScratch = () => {
     clearJob();

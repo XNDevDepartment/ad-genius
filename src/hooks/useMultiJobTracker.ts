@@ -92,11 +92,15 @@ export function useMultiJobTracker(modelVersion: ModelVersion) {
 
   // Polling fallback for active jobs
   useEffect(() => {
-    const activeJobIds = Array.from(jobs.values())
-      .filter(j => j.status === 'queued' || j.status === 'processing')
+    const unresolvedJobIds = Array.from(jobs.values())
+      .filter(j => {
+        const isDone = j.status === 'completed' || j.status === 'failed' || j.status === 'canceled';
+        const allImagesReceived = j.images.filter(img => Boolean(img.public_url)).length >= j.totalSlots && j.totalSlots > 0;
+        return !isDone || !allImagesReceived;
+      })
       .map(j => j.jobId);
 
-    if (activeJobIds.length === 0) {
+    if (unresolvedJobIds.length === 0) {
       if (pollIntervalRef.current) {
         clearInterval(pollIntervalRef.current);
         pollIntervalRef.current = null;
@@ -214,12 +218,17 @@ export function useMultiJobTracker(modelVersion: ModelVersion) {
     (a, b) => b.createdAt - a.createdAt
   );
 
-  const isAnyJobActive = trackedJobs.some(
-    j => j.status === 'queued' || j.status === 'processing'
-  );
+  const isAnyJobActive = trackedJobs.some(j => {
+    const isDone = j.status === 'completed' || j.status === 'failed' || j.status === 'canceled';
+    const allImagesReceived = j.images.filter(img => Boolean(img.public_url)).length >= j.totalSlots && j.totalSlots > 0;
+    return !isDone || !allImagesReceived;
+  });
 
   const completedJobIds = trackedJobs
-    .filter(j => j.status === 'completed' || j.status === 'failed' || j.status === 'canceled')
+    .filter(j =>
+      j.status === 'completed' || j.status === 'failed' || j.status === 'canceled' ||
+      (j.images.filter(img => Boolean(img.public_url)).length >= j.totalSlots && j.totalSlots > 0)
+    )
     .map(j => j.jobId);
 
   return {
