@@ -1,91 +1,82 @@
 
 
-# Multi-Job Tracking for UGC Image Generation
+# Fix: Multi-Job Tracking Not Retrieving Images for All Jobs
 
-## Problem
+## Root Cause
 
-Currently, the system tracks only **one job** at a time via `useGeminiImageJobUnified`. When the user starts a new generation, `clearJob()` is called, which kills the previous job's realtime subscription and clears its placeholders. This makes it look like the previous job was canceled.
+**Channel name collision between `useGeminiImageJobUnified` and `useMultiJobTracker`.**
 
-## Solution
+Both hooks call `api.subscribeJob()` and `api.subscribeJobImages()` for the same job IDs, which create Supabase realtime channels with identical names:
+- `${modelVersion}-image-job:${jobId}`
+- `${modelVersion}-job-images:${jobId}`
 
-Replace the single-job model with a **multi-job tracking system**. Each job gets its own set of generating placeholders, and completed images replace their corresponding placeholders as they arrive via realtime subscriptions.
+When `useGeminiImageJobUnified` creates job B, it:
+1. Cleans up its subscriptions for job A — calling `supabase.removeChannel()` on `gemini-v3-image-job:jobA`
+2. This **also kills** the tracker's subscription for job A, because it's the same channel
+3. Job A's images keep arriving in the database, but the frontend never receives them
 
-## Architecture
+The same happens for job C when the unified hook moves on.
 
-```text
-Before:                          After:
-┌──────────────┐                 ┌──────────────────────┐
-│  Single job  │                 │  activeJobs Map      │
-│  + images    │                 │  ├─ job-A (3 slots)  │
-│              │                 │  ├─ job-B (2 slots)  │
-└──────────────┘                 │  └─ job-C (4 slots)  │
-                                 └──────────────────────┘
+## Fix
+
+### 1. `src/hooks/useMultiJobTracker.ts` — Use unique channel names
+
+Instead of calling `api.subscribeJob()` / `api.subscribeJobImages()` (which use the same channel names as the unified hook), create Supabase channels directly with a `tracker-` prefix to avoid collisions.
+
+Replace the `addJob` subscription setup:
+
+```typescript
+// Instead of:
+const jobUnsub = api.subscribeJob(jobId, ...);
+const imgUnsub = api.subscribeJobImages(jobId, ...);
+
+// Use direct Supabase channels with unique names:
+const jobChannel = supabase
+  .channel(`tracker-${modelVersion}-job:${jobId}`)
+  .on('postgres_changes', {
+    event: '*', schema: 'public', table: 'image_jobs',
+    filter: `id=eq.${jobId}`
+  }, (payload) => { /* update job status */ })
+  .subscribe();
+
+const imgChannel = supabase
+  .channel(`tracker-${modelVersion}-images:${jobId}`)
+  .on('postgres_changes', {
+    event: '*', schema: 'public', table: 'ugc_images',
+    filter: `job_id=eq.${jobId}`
+  }, async () => {
+    // Fetch fresh images via API
+    const result = await api.getJobImages(jobId);
+    // Update tracker state
+  })
+  .subscribe();
 ```
 
-## Changes
+The cleanup functions will call `supabase.removeChannel()` on these tracker-specific channels, leaving the unified hook's channels untouched.
 
-### 1. New hook: `src/hooks/useMultiJobTracker.ts`
+### 2. Initial data fetch on subscribe
 
-A new hook that manages **multiple concurrent jobs**. Each tracked job entry contains:
-- `jobId`: string
-- `totalSlots`: number (how many images were requested)
-- `status`: job status
-- `images`: array of completed images for that job
-- `orientation`: aspect ratio for placeholder sizing
-- `progress`: number
+When each tracker channel reaches `SUBSCRIBED` status, perform an initial fetch of:
+- Job status (via direct Supabase query or `api.getJob()`)
+- Job images (via `api.getJobImages()`)
 
-The hook will:
-- Maintain a `Map<string, TrackedJob>` in state
-- For each tracked job, set up a Supabase realtime subscription on `image_jobs` and `ugc_images`
-- When images arrive for a job, merge them into that job's entry
-- When a job completes/fails, mark it accordingly but keep showing its images
-- Provide `addJob(jobId, totalSlots, orientation)` and `removeJob(jobId)` methods
-- Clean up subscriptions on unmount or when jobs are removed
+This ensures no data is missed between job creation and subscription setup.
 
-### 2. `src/pages/CreateUGCGeminiBase.tsx`
+### 3. Add a polling fallback in the tracker
 
-- Import and use `useMultiJobTracker` alongside the existing hook
-- After `createJob` succeeds, call `tracker.addJob(jobId, numImages, aspectRatio)` to register the new job
-- **Remove** `clearJob()` call at the start of `handleGenerate` -- instead, just add a new job to the tracker
-- Remove `currentBatchImages` and `pendingSlots` state -- replaced by the tracker's per-job data
-- The `previousImages` array remains for fully completed images
-- When a tracked job completes, move its images to `previousImages` and remove it from the tracker
-- Derive `isAnyJobGenerating` from the tracker (for progress bar visibility) -- separate from `isGenerating` which controls button state
+As a safety net, add a simple polling interval (every 5s) for active tracked jobs. If a realtime event is missed, the poll catches up. Stop polling when the job completes.
 
-### 3. `src/components/GeneratedImagesRows.tsx`
+## What This Fixes
 
-- Add a new prop `trackedJobs: TrackedJob[]` (array of active jobs with their slots/images)
-- Render each tracked job as a group: first its completed images, then its remaining placeholder slots
-- Keep `previousImages` rendering below all tracked jobs
-- Each job group shows a small label like "Generating batch..." with its own progress
+| Before | After |
+|---|---|
+| Job A subscriptions killed when job B starts | Each job has independent, uniquely-named channels |
+| Only first job's images appear | All jobs' images stream in independently |
+| No fallback if realtime missed | Polling fallback ensures all images are captured |
 
-### 4. `src/hooks/useGeminiImageJobUnified.ts`
+## Files Changed
 
-- No structural changes needed -- it continues to handle a single job's API calls (create, cancel, resume)
-- The multi-job subscriptions are handled by the new `useMultiJobTracker` hook directly via Supabase channels
+- `src/hooks/useMultiJobTracker.ts` — rewrite subscription logic with unique channel names + polling fallback
 
-## Visual Result
-
-When the user generates 3 images, then immediately generates 2 more:
-
-```text
-┌─ Batch 2 (generating) ──────────────┐
-│ [placeholder] [placeholder]          │
-└──────────────────────────────────────┘
-┌─ Batch 1 (generating) ──────────────┐
-│ [ready img 1] [placeholder] [placeholder] │
-└──────────────────────────────────────┘
-┌─ Previous results ──────────────────┐
-│ [completed img] [completed img]      │
-└──────────────────────────────────────┘
-```
-
-Newest jobs appear at the top. As images complete, they replace their job's placeholders. When all images in a job are done, the job's images move to `previousImages`.
-
-### Technical Details
-
-- Subscriptions: Each tracked job creates 2 Supabase channels (job status + images). Max ~6 channels for 3 concurrent jobs.
-- Cleanup: Jobs that complete are auto-removed from the tracker after their images are moved to `previousImages`.
-- The `useGeminiImageJobUnified` hook's `job` and `images` state will still exist but mainly used for the *latest* job's API interaction. The tracker independently subscribes to all jobs.
-- `isGenerating` (button state) remains `loading` (only during API call). A separate `isAnyJobActive` derived from the tracker controls progress UI visibility.
+No other files need changes.
 
