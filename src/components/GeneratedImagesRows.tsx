@@ -3,10 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, PlusCircle, ExternalLink, RotateCcw, ImageIcon, Video, Images } from "lucide-react";
+import { Download, PlusCircle, ExternalLink, RotateCcw, ImageIcon, Video, Images, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import "./../costumn.css";
 import { toast } from "@/hooks/use-toast";
+import { Progress } from "@/components/ui/progress";
+import type { TrackedJob } from "@/hooks/useMultiJobTracker";
 
 /* Types */
 export type Orientation = "1:1" | "2:3" | "3:2";
@@ -17,7 +19,7 @@ export type GeneratedImage = {
   prompt?: string;
   created_at?: string;
   format?: string;
-  orientation?: Orientation | string; // <-- per-image
+  orientation?: Orientation | string;
 };
 
 type AIScenario = {
@@ -34,12 +36,12 @@ type Props = {
   onCreateNewScenario: (imageId: string) => void;
   onOpenInLibrary: (imageId?: string) => void;
   onStartFromScratch: () => void;
-  /** lock placeholders per job (not per thread) */
   jobId?: string | null;
-  /** job-level default, used only for placeholders */
   imageOrientation?: Orientation | string;
   aiScenarios?: AIScenario[];
   onAnimateImage?: (imageId: string, imageUrl: string) => void;
+  /** Multi-job tracked jobs (newest first) */
+  trackedJobs?: TrackedJob[];
 };
 
 /* UI helpers */
@@ -98,7 +100,6 @@ function downloadBlob(url: string, filename?: string) {
 }
 
 const handleDownload = async (image: GeneratedImage) => {
-
   try {
     const response = await fetch(image.url);
     const blob = await response.blob();
@@ -126,6 +127,124 @@ function classesFor(orientation?: string) {
   return "relative rounded-xl overflow-hidden w-full sm:w-[22rem] aspect-[3/2]";
 }
 
+/** Render action buttons for a ready image */
+function ImageActions({ img, i, onOpenInLibrary, onAnimateImage }: {
+  img: GeneratedImage;
+  i: number;
+  onOpenInLibrary: (imageId?: string) => void;
+  onAnimateImage?: (imageId: string, imageUrl: string) => void;
+}) {
+  return (
+    <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-2 sm:grid-cols-1 gap-2">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="w-full justify-center"
+        disabled={!img?.url}
+        onClick={() => { if (img?.url) window.open(img.url, '_blank'); }}
+        title={!img?.url ? "Available when ready" : "Open in new tab"}
+      >
+        <ExternalLink className="h-4 w-4 mr-2" />
+        <span className="hidden sm:inline">Open in New Tab</span>
+      </Button>
+
+      {onAnimateImage && (
+        <Button
+          variant="default"
+          size="sm"
+          className="w-full justify-center"
+          disabled={!img?.url}
+          onClick={() => { if (img?.url) onAnimateImage(img.id, img.url); }}
+          title={!img?.url ? "Available when ready" : "Animate image"}
+        >
+          <Video className="h-4 w-4 mr-2" />
+          <span className="hidden sm:inline">Animate Image</span>
+        </Button>
+      )}
+
+      <Button
+        variant="outline"
+        size="sm"
+        className="w-full justify-center"
+        disabled={!img?.url}
+        onClick={() => {
+          if (!img?.url) return;
+          const ext = (img?.format || "png").replace(/^\./, "");
+          downloadBlob(img.url!, `produktpix-${img.id || i + 1}.${ext}`);
+        }}
+        title={!img?.url ? "Available when ready" : "Download image"}
+      >
+        <Download className="h-4 w-4 mr-2" />
+        <span className="hidden sm:inline">Download</span>
+      </Button>
+
+      <Button
+        variant="ghost"
+        size="sm"
+        className="w-full justify-center"
+        onClick={() => onOpenInLibrary(img?.id)}
+      >
+        <Images className="h-4 w-4 mr-2" />
+        <span className="hidden sm:inline">Library</span>
+      </Button>
+    </div>
+  );
+}
+
+/** Render a single image card (ready or placeholder) */
+function ImageCard({ img, orientation, onOpenInLibrary, onAnimateImage, index }: {
+  img?: GeneratedImage;
+  orientation?: string;
+  onOpenInLibrary: (imageId?: string) => void;
+  onAnimateImage?: (imageId: string, imageUrl: string) => void;
+  index: number;
+}) {
+  const isReady = img?.url;
+  return (
+    <Card className="rounded-apple shadow-sm">
+      <CardContent className="p-4">
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="shrink-0 w-full sm:w-auto">
+            {isReady ? (
+              <img
+                src={img!.url}
+                alt={img!.prompt || "Generated image"}
+                className={classesFor(img!.orientation || orientation)}
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <GrainPlaceholder
+                label="Generating..."
+                THUMB_CLASSES={classesFor(orientation)}
+              />
+            )}
+          </div>
+          {isReady ? (
+            <ImageActions
+              img={img!}
+              i={index}
+              onOpenInLibrary={onOpenInLibrary}
+              onAnimateImage={onAnimateImage}
+            />
+          ) : (
+            <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-2 sm:grid-cols-1 gap-2">
+              <Button variant="default" size="sm" className="w-full justify-center" disabled>
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+              <Button variant="ghost" size="sm" className="w-full justify-center" onClick={() => onOpenInLibrary()}>
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Library
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function GeneratedImagesRows({
   currentBatchImages,
   previousImages,
@@ -137,7 +256,8 @@ export default function GeneratedImagesRows({
   jobId,
   imageOrientation,
   aiScenarios,
-  onAnimateImage
+  onAnimateImage,
+  trackedJobs = [],
 }: Props) {
   // Lock placeholder shape for *this job only*
   const [jobAspectRatio, setJobAspectRatio] = useState<string | null>(null);
@@ -146,209 +266,100 @@ export default function GeneratedImagesRows({
     else setJobAspectRatio(null);
   }, [jobId, imageOrientation]);
 
-  const readyCount = useMemo(
-    () => currentBatchImages.filter((img) => Boolean(img.url)).length,
-    [currentBatchImages]
-  );
-  const pendingSlots = isGenerating
-    ? Math.max(0, (totalSlots || 0) - readyCount)
-    : 0;
+  /* ── Multi-job tracked batches (newest first) ── */
+  const hasTrackedJobs = trackedJobs.length > 0;
 
   return (
     <div className="space-y-4">
-      {/* Placeholders for the active job */}
-      {isGenerating &&
-        Array.from({ length: pendingSlots }).map((_, i) => (
-          <Card key={`pending-${jobId ?? "none"}-${i}`} className="rounded-apple shadow-sm">
-            <CardContent className="p-4">
-              <div className="flex flex-col sm:flex-row items-center gap-4">
-                <div className="shrink-0 w-full sm:w-auto">
-                  <GrainPlaceholder
-                    label="Generating..."
-                    THUMB_CLASSES={classesFor(jobAspectRatio || imageOrientation)}
-                  />
-                </div>
-                <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-2 sm:grid-cols-1 gap-2">
-                  <Button variant="default" size="sm" className="w-full justify-center" disabled aria-disabled>
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
-                  </Button>
-                  <Button variant="ghost" size="sm" className="w-full justify-center" onClick={() => onOpenInLibrary()}>
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Library
-                  </Button>
-                </div>
+
+      {/* ── Tracked jobs (multi-job) ── */}
+      {trackedJobs.map((tj) => {
+        const readyImages = tj.images.filter(img => Boolean(img.public_url));
+        const pendingCount = Math.max(0, tj.totalSlots - readyImages.length);
+        const isActive = tj.status === 'queued' || tj.status === 'processing';
+
+        return (
+          <div key={tj.jobId} className="space-y-2">
+            {/* Batch header with progress */}
+            {isActive && (
+              <div className="flex items-center gap-2 mb-1">
+                <RefreshCw className="h-3 w-3 animate-spin text-primary" />
+                <span className="text-xs text-muted-foreground">
+                  Generating batch ({readyImages.length}/{tj.totalSlots})...
+                </span>
+                <Progress value={tj.progress || 0} className="h-1.5 flex-1 max-w-[120px]" />
               </div>
-            </CardContent>
-          </Card>
-        ))}
+            )}
 
-      {/* Newest results */}
-      {currentBatchImages.map((img, i) => (
-        <Card key={img.id ?? `current-${i}`} className="rounded-apple shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <div className="shrink-0 w-full sm:w-auto">
-                {img.url ? (
-                  <img
-                    src={img.url}
-                    alt={img.prompt || "Generated image"}
-                    className={classesFor(img.orientation)}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : (
-                  <GrainPlaceholder
-                    label="Processing..."
-                    THUMB_CLASSES={classesFor(img.orientation || jobAspectRatio || imageOrientation)}
-                  />
-                )}
-              </div>
+            {/* Placeholders for pending slots */}
+            {isActive && Array.from({ length: pendingCount }).map((_, i) => (
+              <ImageCard
+                key={`pending-${tj.jobId}-${i}`}
+                orientation={tj.orientation}
+                onOpenInLibrary={onOpenInLibrary}
+                onAnimateImage={onAnimateImage}
+                index={i}
+              />
+            ))}
 
-              <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-2 sm:grid-cols-1 gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-center"
-                  disabled={!img?.url}
-                  onClick={() => {
-                    if (!img?.url) return;
-                    window.open(img.url, '_blank');
-                  }}
-                  title={!img?.url ? "Available when ready" : "Open in new tab"}
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline"> Open in New Tab </span>
-                </Button>
+            {/* Ready images for this job */}
+            {readyImages.map((img, i) => (
+              <ImageCard
+                key={img.id}
+                img={{
+                  id: img.id,
+                  url: img.public_url,
+                  prompt: img.prompt,
+                  format: (img.meta as any)?.format || 'png',
+                  orientation: (img.meta as any)?.orientation || (img.meta as any)?.aspect_ratio || tj.orientation,
+                }}
+                orientation={tj.orientation}
+                onOpenInLibrary={onOpenInLibrary}
+                onAnimateImage={onAnimateImage}
+                index={i}
+              />
+            ))}
+          </div>
+        );
+      })}
 
-                {onAnimateImage && (
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="w-full justify-center"
-                    disabled={!img?.url}
-                    onClick={() => {
-                      if (!img?.url) return;
-                      onAnimateImage(img.id, img.url);
-                    }}
-                    title={!img?.url ? "Available when ready" : "Animate image"}
-                  >
-                    <Video className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline"> Animate Image </span>
-                  </Button>
-                )}
+      {/* ── Legacy single-job placeholders (only if no tracked jobs) ── */}
+      {!hasTrackedJobs && isGenerating && (() => {
+        const readyCount = currentBatchImages.filter(img => Boolean(img.url)).length;
+        const pendingSlots = Math.max(0, (totalSlots || 0) - readyCount);
+        return Array.from({ length: pendingSlots }).map((_, i) => (
+          <ImageCard
+            key={`pending-${jobId ?? "none"}-${i}`}
+            orientation={jobAspectRatio || imageOrientation}
+            onOpenInLibrary={onOpenInLibrary}
+            onAnimateImage={onAnimateImage}
+            index={i}
+          />
+        ));
+      })()}
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-center"
-                  disabled={!img?.url}
-                  onClick={() => {
-                    if (!img?.url) return;
-                    const ext = (img?.format || "png").replace(/^\./, "");
-                    downloadBlob(img.url!, `produktpix-${img.id || i + 1}.${ext}`);
-                  }}
-                  title={!img?.url ? "Available when ready" : "Download image"}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline"> Download </span>
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-center"
-                  onClick={() => onOpenInLibrary(img?.id)}
-                >
-                  <Images className="h-4 w-4 mr-2" />
-                   <span className="hidden sm:inline"> Library </span>
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* ── Legacy current batch images (only if no tracked jobs) ── */}
+      {!hasTrackedJobs && currentBatchImages.map((img, i) => (
+        <ImageCard
+          key={img.id ?? `current-${i}`}
+          img={img}
+          orientation={img.orientation || jobAspectRatio || imageOrientation}
+          onOpenInLibrary={onOpenInLibrary}
+          onAnimateImage={onAnimateImage}
+          index={i}
+        />
       ))}
 
-      {/* Older results */}
+      {/* ── Previous results ── */}
       {previousImages.map((img, i) => (
-        <Card key={img.id ?? `previous-${i}`} className="rounded-apple shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <div className="shrink-0 w-full sm:w-auto">
-                {img.url ? (
-                  <img
-                    src={img.url}
-                    alt={img.prompt || "Generated image"}
-                    className={classesFor(img.orientation)}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : (
-                  <GrainPlaceholder
-                    label="Processing..."
-                    THUMB_CLASSES={classesFor(img.orientation || jobAspectRatio || imageOrientation)}
-                  />
-                )}
-              </div>
-
-              <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-2 sm:grid-cols-1 gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-center"
-                  disabled={!img?.url}
-                  onClick={() => {
-                    if (!img?.url) return;
-                    window.open(img.url, '_blank');
-                  }}
-                  title={!img?.url ? "Available when ready" : "Open in new tab"}
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline"> Open in New Tab </span>
-                </Button>
-
-                {onAnimateImage && (
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="w-full justify-center"
-                    disabled={!img?.url}
-                    onClick={() => {
-                      if (!img?.url) return;
-                      onAnimateImage(img.id, img.url);
-                    }}
-                    title={!img?.url ? "Available when ready" : "Animate image"}
-                  >
-                    <Video className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline"> Animate Image </span>
-                  </Button>
-                )}
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-center"
-                  disabled={!img?.url}
-                  onClick={() => {
-                    handleDownload(img);
-                  }}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline"> Download </span>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-center"
-                  onClick={() => onOpenInLibrary(img?.id)}
-                >
-                  <Images className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline"> Library </span>
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <ImageCard
+          key={img.id ?? `previous-${i}`}
+          img={img}
+          orientation={img.orientation || jobAspectRatio || imageOrientation}
+          onOpenInLibrary={onOpenInLibrary}
+          onAnimateImage={onAnimateImage}
+          index={i}
+        />
       ))}
 
       {/* Reset CTA */}
