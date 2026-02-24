@@ -1,82 +1,90 @@
 
 
-# Fix: Multi-Job Tracking Not Retrieving Images for All Jobs
+# Fix: Tracked Job Slots Not Disappearing After Completion
 
-## Root Cause
+## Problem
 
-**Channel name collision between `useGeminiImageJobUnified` and `useMultiJobTracker`.**
+From the screenshot: two "Generating batch (0/1)..." slots persist with placeholders even though the actual images finished and appear below (via `previousImages` from the single-job hook). The tracker never cleans up because:
 
-Both hooks call `api.subscribeJob()` and `api.subscribeJobImages()` for the same job IDs, which create Supabase realtime channels with identical names:
-- `${modelVersion}-image-job:${jobId}`
-- `${modelVersion}-job-images:${jobId}`
+1. **Status never reaches `completed` in the tracker** — the realtime subscription on `image_jobs` may not fire reliably, and the polling only checks jobs with status `queued`/`processing`. If the status gets stuck, the job is never marked done.
+2. **Images never arrive in the tracker** — `fetchImages` calls `apiRef.current.getJobImages()` which may return empty if called too early or if the API endpoint filters differently. The polling also only runs for `queued`/`processing` jobs, so if status somehow updates but images don't, there's no retry.
+3. **`completedJobIds` never includes these jobs** — so the cleanup effect in `CreateUGCGeminiBase.tsx` never fires, and `removeJob` is never called.
 
-When `useGeminiImageJobUnified` creates job B, it:
-1. Cleans up its subscriptions for job A — calling `supabase.removeChannel()` on `gemini-v3-image-job:jobA`
-2. This **also kills** the tracker's subscription for job A, because it's the same channel
-3. Job A's images keep arriving in the database, but the frontend never receives them
+## Fix (2 files)
 
-The same happens for job C when the unified hook moves on.
+### 1. `src/hooks/useMultiJobTracker.ts`
 
-## Fix
-
-### 1. `src/hooks/useMultiJobTracker.ts` — Use unique channel names
-
-Instead of calling `api.subscribeJob()` / `api.subscribeJobImages()` (which use the same channel names as the unified hook), create Supabase channels directly with a `tracker-` prefix to avoid collisions.
-
-Replace the `addJob` subscription setup:
+**A. Broaden `completedJobIds` detection** — also consider a job "done" when all its images have arrived, regardless of status:
 
 ```typescript
-// Instead of:
-const jobUnsub = api.subscribeJob(jobId, ...);
-const imgUnsub = api.subscribeJobImages(jobId, ...);
-
-// Use direct Supabase channels with unique names:
-const jobChannel = supabase
-  .channel(`tracker-${modelVersion}-job:${jobId}`)
-  .on('postgres_changes', {
-    event: '*', schema: 'public', table: 'image_jobs',
-    filter: `id=eq.${jobId}`
-  }, (payload) => { /* update job status */ })
-  .subscribe();
-
-const imgChannel = supabase
-  .channel(`tracker-${modelVersion}-images:${jobId}`)
-  .on('postgres_changes', {
-    event: '*', schema: 'public', table: 'ugc_images',
-    filter: `job_id=eq.${jobId}`
-  }, async () => {
-    // Fetch fresh images via API
-    const result = await api.getJobImages(jobId);
-    // Update tracker state
-  })
-  .subscribe();
+const completedJobIds = trackedJobs
+  .filter(j =>
+    j.status === 'completed' || j.status === 'failed' || j.status === 'canceled' ||
+    // Fallback: all images arrived even if status wasn't updated
+    (j.images.filter(img => Boolean(img.public_url)).length >= j.totalSlots && j.totalSlots > 0)
+  )
+  .map(j => j.jobId);
 ```
 
-The cleanup functions will call `supabase.removeChannel()` on these tracker-specific channels, leaving the unified hook's channels untouched.
+**B. Expand polling to cover all non-completed tracked jobs** — instead of only polling `queued`/`processing`, poll any job that hasn't been fully resolved (i.e., still in the tracker with fewer images than expected):
 
-### 2. Initial data fetch on subscribe
+```typescript
+// Change the active-check filter to include ANY tracked job that isn't fully resolved
+const unresolvedJobIds = Array.from(jobs.values())
+  .filter(j => {
+    const isDone = j.status === 'completed' || j.status === 'failed' || j.status === 'canceled';
+    const allImagesReceived = j.images.filter(img => Boolean(img.public_url)).length >= j.totalSlots;
+    return !isDone || !allImagesReceived;
+  })
+  .map(j => j.jobId);
+```
 
-When each tracker channel reaches `SUBSCRIBED` status, perform an initial fetch of:
-- Job status (via direct Supabase query or `api.getJob()`)
-- Job images (via `api.getJobImages()`)
+This ensures that even if status updates to `completed` via realtime but images haven't been fetched yet, the polling continues until all images are received.
 
-This ensures no data is missed between job creation and subscription setup.
+### 2. `src/pages/CreateUGCGeminiBase.tsx`
 
-### 3. Add a polling fallback in the tracker
+**Stabilize the effect dependency** — `tracker.completedJobIds` is a new array reference every render, which can cause the effect to behave unpredictably. Use a serialized comparison:
 
-As a safety net, add a simple polling interval (every 5s) for active tracked jobs. If a realtime event is missed, the poll catches up. Stop polling when the job completes.
+```typescript
+const completedIdsKey = tracker.completedJobIds.join(',');
+
+useEffect(() => {
+  if (tracker.completedJobIds.length === 0) return;
+  tracker.completedJobIds.forEach(jobId => {
+    const tj = tracker.trackedJobs.find(j => j.jobId === jobId);
+    if (!tj) return;
+    const readyImages = tj.images.filter(img => Boolean(img.public_url));
+    if (readyImages.length > 0) {
+      setPreviousImages(prev => {
+        const existingIds = new Set(prev.map(img => img.id));
+        const newImgs = readyImages
+          .filter(img => !existingIds.has(img.id))
+          .map(img => ({
+            id: img.id,
+            url: img.public_url,
+            prompt: img.prompt || '',
+            format: (img.meta as any)?.format || 'png',
+            orientation: (img.meta as any)?.orientation || (img.meta as any)?.aspect_ratio || tj.orientation,
+            selected: false,
+          }));
+        return [...newImgs, ...prev];
+      });
+    }
+    tracker.removeJob(jobId);
+  });
+}, [completedIdsKey]);
+```
 
 ## What This Fixes
 
-| Before | After |
-|---|---|
-| Job A subscriptions killed when job B starts | Each job has independent, uniquely-named channels |
-| Only first job's images appear | All jobs' images stream in independently |
-| No fallback if realtime missed | Polling fallback ensures all images are captured |
+| Issue | Before | After |
+|---|---|---|
+| Job status stuck as `queued` | Slot stays forever | Image-count fallback detects completion |
+| Polling stops when status updates but images missing | Images never fetched | Polling continues until all images received |
+| Effect dependency instability | New array ref every render | Stable string key comparison |
 
 ## Files Changed
 
-- `src/hooks/useMultiJobTracker.ts` — rewrite subscription logic with unique channel names + polling fallback
-
-No other files need changes.
+- `src/hooks/useMultiJobTracker.ts` — broader completion detection + expanded polling scope
+- `src/pages/CreateUGCGeminiBase.tsx` — stable effect dependency for cleanup
 
