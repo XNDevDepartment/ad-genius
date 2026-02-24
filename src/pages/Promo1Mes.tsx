@@ -20,7 +20,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import fotoUgc from '@/assets/landing_gallery/27.webp';
-import fotoVideo from '@/assets/module_icons/ugc.png';
+import fotoVideo from '@/assets/module_icons/ugc.webp';
 import fotoFashion from '@/assets/demo_outfit_final.jpg';
 import fotoProduct from '@/assets/photoProduct.webp';
 
