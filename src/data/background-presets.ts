@@ -1,20 +1,20 @@
 // Studio thumbnails
-import studioWhite from '@/assets/backgrounds/studio/white.png';
-import studioBlack from '@/assets/backgrounds/studio/black.png';
-import studioGray from '@/assets/backgrounds/studio/white-darkgrey.png';
-import studioPink from '@/assets/backgrounds/studio/pink.png';
+import studioWhite from '@/assets/backgrounds/studio/white.webp';
+import studioBlack from '@/assets/backgrounds/studio/black.webp';
+import studioGray from '@/assets/backgrounds/studio/white-darkgrey.webp';
+import studioPink from '@/assets/backgrounds/studio/pink.webp';
 
 // Lifestyle thumbnails
-import lifestyleLiving from '@/assets/backgrounds/lifestyle/livingroom.png';
-import lifestyleKitchen from '@/assets/backgrounds/lifestyle/kitchen.png';
-import lifestyleBedroom from '@/assets/backgrounds/lifestyle/bedroom.png';
-import lifestyleOffice from '@/assets/backgrounds/lifestyle/desk.png';
+import lifestyleLiving from '@/assets/backgrounds/lifestyle/livingroom.webp';
+import lifestyleKitchen from '@/assets/backgrounds/lifestyle/kitchen.webp';
+import lifestyleBedroom from '@/assets/backgrounds/lifestyle/bedroom.webp';
+import lifestyleOffice from '@/assets/backgrounds/lifestyle/desk.webp';
 
 // Magazine thumbnails
-import magazineEditorial from '@/assets/backgrounds/magazine/editorial.png';
-import magazineFashion from '@/assets/backgrounds/magazine/studio.png';
-import magazineMinimal from '@/assets/backgrounds/magazine/minimal.png';
-import magazineVogue from '@/assets/backgrounds/magazine/vogue.png';
+import magazineEditorial from '@/assets/backgrounds/magazine/editorial.webp';
+import magazineFashion from '@/assets/backgrounds/magazine/studio.webp';
+import magazineMinimal from '@/assets/backgrounds/magazine/minimal.webp';
+import magazineVogue from '@/assets/backgrounds/magazine/vogue.webp';
 
 // Nature thumbnails
 import natureBeach from '@/assets/backgrounds/nature/beach.png';
@@ -29,10 +29,10 @@ import urbanRooftop from '@/assets/backgrounds/urban/rooftop.png';
 import urbanSubway from '@/assets/backgrounds/urban/subway.png';
 
 // Seasonal thumbnails
-import seasonalChristmas from '@/assets/backgrounds/seasonal/christmas.png';
-import seasonalSummer from '@/assets/backgrounds/seasonal/summer.png';
-import seasonalAutumn from '@/assets/backgrounds/seasonal/autumn.png';
-import seasonalSpring from '@/assets/backgrounds/seasonal/spring.png';
+import seasonalChristmas from '@/assets/backgrounds/seasonal/christmas.webp';
+import seasonalSummer from '@/assets/backgrounds/seasonal/summer.webp';
+import seasonalAutumn from '@/assets/backgrounds/seasonal/autumn.webp';
+import seasonalSpring from '@/assets/backgrounds/seasonal/spring.webp';
 
 export type BackgroundCategory = 
   | 'lifestyle' 
