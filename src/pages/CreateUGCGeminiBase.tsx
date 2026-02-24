@@ -117,11 +117,11 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [outputFormat, setOutputFormat] = useState<'png' | 'webp'>('png');
 
   // Use unified hook with model version
-  const { job, images: jobImages, createJob, clearJob, loadJob, resumeCurrentJob, storageKeys } = useGeminiImageJobUnified(modelVersion);
+  const { job, images: jobImages, loading, createJob, clearJob, loadJob, resumeCurrentJob, storageKeys } = useGeminiImageJobUnified(modelVersion);
   const { language } = useLanguage();
   const { activeJob, activeImages } = useActiveJob();
 
-  const isGenerating = (stage === 'generating' || job?.status === 'queued' || job?.status === 'processing') && job?.status !== 'completed';
+  const isGenerating = loading; // only true during the createJob API call, unlocks button immediately after submission
 
   const [currentBatchImages, setCurrentBatchImages] = useState<GeneratedImage[]>([]);
   const [previousImages, setPreviousImages] = useState<GeneratedImage[]>([]);
