@@ -1,70 +1,91 @@
 
 
-# Two Issues to Fix
+# Multi-Job Tracking for UGC Image Generation
 
-## 1. Build Error: Missing `ugc.png` in Promo1Mes.tsx
+## Problem
 
-The last diff replaced `.png`/`.jpg` assets with `.webp` versions in `ModuleSelection.tsx`, but `src/pages/Promo1Mes.tsx` still imports the old `ugc.png` file (line 23) which no longer exists.
+Currently, the system tracks only **one job** at a time via `useGeminiImageJobUnified`. When the user starts a new generation, `clearJob()` is called, which kills the previous job's realtime subscription and clears its placeholders. This makes it look like the previous job was canceled.
 
-### Fix
+## Solution
 
-**File: `src/pages/Promo1Mes.tsx` (line 23)**
-- Change `import fotoVideo from '@/assets/module_icons/ugc.png'` to `import fotoVideo from '@/assets/module_icons/ugc.webp'`
+Replace the single-job model with a **multi-job tracking system**. Each job gets its own set of generating placeholders, and completed images replace their corresponding placeholders as they arrive via realtime subscriptions.
 
----
+## Architecture
 
-## 2. Feature: Allow Starting a New Generation While One Is Running
-
-Currently, the generate button is disabled whenever `isGenerating` is true (line 124, used at lines 1365 and 1420). This forces the user to wait until all images finish before starting another batch.
-
-### Approach
-
-The change is conceptual: once a job has been successfully submitted (status moves to `queued` or `processing`), transition the UI back to the `setup` stage and clear the current job reference so the user can configure and launch a new generation. The previous job's results will still appear in `previousImages` when they complete via the realtime subscription.
-
-### Changes
-
-**File: `src/pages/CreateUGCGeminiBase.tsx`**
-
-1. **In the job status monitoring effect (~line 396):** When job status becomes `queued` or `processing`, move current batch images to `previousImages`, then call `clearJob()` and set stage back to `setup`. This frees the generate button immediately.
-
-2. **Adjust `isGenerating` (line 124):** This variable will naturally become `false` once the job is cleared, so the button unlocks without further changes.
-
-3. **Keep the results section visible:** The `previousImages` array already renders in the results card, so in-progress and completed images from prior jobs remain visible below the form.
-
-4. **Remove localStorage persistence of the cleared job:** Since `clearJob()` already handles this, no extra cleanup is needed.
-
-### What changes for the user
-
-| Aspect | Before | After |
-|---|---|---|
-| Generate button | Locked until all images finish | Unlocked ~2s after job starts |
-| Previous results | Only shown after completion | Shown immediately as they arrive |
-| Workflow | Wait → results → new generation | Submit → immediately start another |
-
-### Technical detail
-
-The key change is in the effect that watches `job?.status`. When the status becomes `processing` or stays `queued` for a moment, the component will:
-1. Save current placeholders to `previousImages`
-2. Call `clearJob()` to detach from the running job
-3. Set `stage = 'setup'`
-
-The realtime subscription in `useGeminiImageJobUnified` will be cleaned up when `job` is set to null, but since the images are already being written to the database, they will appear in the library. To keep showing progress, we will instead keep the job reference but only unlock the button -- changing `isGenerating` to only be true during the brief submission phase (`loading` state from the hook), not during the entire job lifecycle.
-
-**Refined approach:**
-
-- Change `isGenerating` from tracking job status to only tracking the `loading` state from `useGeminiImageJobUnified` (the brief period while the API call to create the job is in flight)
-- This way: job subscription stays active, images keep streaming in, progress bar remains visible, but the generate button is unlocked
-
-**Line 124 change:**
-```typescript
-// Before:
-const isGenerating = (stage === 'generating' || job?.status === 'queued' || job?.status === 'processing') && job?.status !== 'completed';
-
-// After:
-const isGenerating = loading; // only true during the createJob API call
+```text
+Before:                          After:
+┌──────────────┐                 ┌──────────────────────┐
+│  Single job  │                 │  activeJobs Map      │
+│  + images    │                 │  ├─ job-A (3 slots)  │
+│              │                 │  ├─ job-B (2 slots)  │
+└──────────────┘                 │  └─ job-C (4 slots)  │
+                                 └──────────────────────┘
 ```
 
-Where `loading` is already returned by `useGeminiImageJobUnified` -- just needs to be destructured on line 120.
+## Changes
 
-This is the minimal, safe change. The progress UI, realtime updates, and results flow all continue working as before.
+### 1. New hook: `src/hooks/useMultiJobTracker.ts`
+
+A new hook that manages **multiple concurrent jobs**. Each tracked job entry contains:
+- `jobId`: string
+- `totalSlots`: number (how many images were requested)
+- `status`: job status
+- `images`: array of completed images for that job
+- `orientation`: aspect ratio for placeholder sizing
+- `progress`: number
+
+The hook will:
+- Maintain a `Map<string, TrackedJob>` in state
+- For each tracked job, set up a Supabase realtime subscription on `image_jobs` and `ugc_images`
+- When images arrive for a job, merge them into that job's entry
+- When a job completes/fails, mark it accordingly but keep showing its images
+- Provide `addJob(jobId, totalSlots, orientation)` and `removeJob(jobId)` methods
+- Clean up subscriptions on unmount or when jobs are removed
+
+### 2. `src/pages/CreateUGCGeminiBase.tsx`
+
+- Import and use `useMultiJobTracker` alongside the existing hook
+- After `createJob` succeeds, call `tracker.addJob(jobId, numImages, aspectRatio)` to register the new job
+- **Remove** `clearJob()` call at the start of `handleGenerate` -- instead, just add a new job to the tracker
+- Remove `currentBatchImages` and `pendingSlots` state -- replaced by the tracker's per-job data
+- The `previousImages` array remains for fully completed images
+- When a tracked job completes, move its images to `previousImages` and remove it from the tracker
+- Derive `isAnyJobGenerating` from the tracker (for progress bar visibility) -- separate from `isGenerating` which controls button state
+
+### 3. `src/components/GeneratedImagesRows.tsx`
+
+- Add a new prop `trackedJobs: TrackedJob[]` (array of active jobs with their slots/images)
+- Render each tracked job as a group: first its completed images, then its remaining placeholder slots
+- Keep `previousImages` rendering below all tracked jobs
+- Each job group shows a small label like "Generating batch..." with its own progress
+
+### 4. `src/hooks/useGeminiImageJobUnified.ts`
+
+- No structural changes needed -- it continues to handle a single job's API calls (create, cancel, resume)
+- The multi-job subscriptions are handled by the new `useMultiJobTracker` hook directly via Supabase channels
+
+## Visual Result
+
+When the user generates 3 images, then immediately generates 2 more:
+
+```text
+┌─ Batch 2 (generating) ──────────────┐
+│ [placeholder] [placeholder]          │
+└──────────────────────────────────────┘
+┌─ Batch 1 (generating) ──────────────┐
+│ [ready img 1] [placeholder] [placeholder] │
+└──────────────────────────────────────┘
+┌─ Previous results ──────────────────┐
+│ [completed img] [completed img]      │
+└──────────────────────────────────────┘
+```
+
+Newest jobs appear at the top. As images complete, they replace their job's placeholders. When all images in a job are done, the job's images move to `previousImages`.
+
+### Technical Details
+
+- Subscriptions: Each tracked job creates 2 Supabase channels (job status + images). Max ~6 channels for 3 concurrent jobs.
+- Cleanup: Jobs that complete are auto-removed from the tracker after their images are moved to `previousImages`.
+- The `useGeminiImageJobUnified` hook's `job` and `images` state will still exist but mainly used for the *latest* job's API interaction. The tracker independently subscribes to all jobs.
+- `isGenerating` (button state) remains `loading` (only during API call). A separate `isAnyJobActive` derived from the tracker controls progress UI visibility.
 
