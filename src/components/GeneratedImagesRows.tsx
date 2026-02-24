@@ -277,22 +277,27 @@ export default function GeneratedImagesRows({
         const readyImages = tj.images.filter(img => Boolean(img.public_url));
         const pendingCount = Math.max(0, tj.totalSlots - readyImages.length);
         const isActive = tj.status === 'queued' || tj.status === 'processing';
+        const isTerminal = ['completed', 'failed', 'canceled'].includes(tj.status);
+        const isFinalizing = isTerminal && pendingCount > 0;
 
         return (
           <div key={tj.jobId} className="space-y-2">
             {/* Batch header with progress */}
-            {isActive && (
+            {(isActive || isFinalizing) && (
               <div className="flex items-center gap-2 mb-1">
                 <RefreshCw className="h-3 w-3 animate-spin text-primary" />
                 <span className="text-xs text-muted-foreground">
-                  Generating batch ({readyImages.length}/{tj.totalSlots})...
+                  {isFinalizing
+                    ? `Finalizing batch… retrieving images (${readyImages.length}/${tj.totalSlots})`
+                    : `Generating batch (${readyImages.length}/${tj.totalSlots})...`
+                  }
                 </span>
-                <Progress value={tj.progress || 0} className="h-1.5 flex-1 max-w-[120px]" />
+                <Progress value={isFinalizing ? 90 : (tj.progress || 0)} className="h-1.5 flex-1 max-w-[120px]" />
               </div>
             )}
 
             {/* Placeholders for pending slots */}
-            {isActive && Array.from({ length: pendingCount }).map((_, i) => (
+            {(isActive || isFinalizing) && Array.from({ length: pendingCount }).map((_, i) => (
               <ImageCard
                 key={`pending-${tj.jobId}-${i}`}
                 orientation={tj.orientation}

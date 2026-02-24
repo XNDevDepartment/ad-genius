@@ -11,6 +11,46 @@ export interface TrackedJob {
   orientation: string;
   progress: number;
   createdAt: number;
+  /** DB-reported completed image count */
+  dbCompleted: number;
+  /** DB-reported failed image count */
+  dbFailed: number;
+  /** DB-reported total image count */
+  dbTotal: number;
+  /** Timestamp when status first became terminal */
+  terminalAt?: number;
+}
+
+/** Terminal statuses */
+const TERMINAL = new Set(['completed', 'failed', 'canceled']);
+
+function isTerminal(status: string) {
+  return TERMINAL.has(status);
+}
+
+/**
+ * Determine if a job is ready to be finalized (removed from tracker).
+ * A job is ready when:
+ *   (terminal AND retrieved >= expected)  OR  (retrieved >= totalSlots)
+ */
+function computeReadyToFinalize(job: TrackedJob): boolean {
+  const retrieved = job.images.filter(img => Boolean(img.public_url)).length;
+  const terminal = isTerminal(job.status);
+
+  // Fallback: all requested images arrived regardless of status
+  if (job.totalSlots > 0 && retrieved >= job.totalSlots) return true;
+
+  if (!terminal) return false;
+
+  // Use dbCompleted if known and > 0, otherwise fallback to totalSlots
+  const expected = job.dbCompleted > 0
+    ? Math.min(job.dbCompleted, job.totalSlots)
+    : job.totalSlots;
+
+  // For failed/canceled jobs with 0 expected, finalize immediately
+  if (expected === 0 && (job.status === 'failed' || job.status === 'canceled')) return true;
+
+  return retrieved >= expected;
 }
 
 const POLL_INTERVAL_MS = 5000;
@@ -65,13 +105,16 @@ export function useMultiJobTracker(modelVersion: ModelVersion) {
           source_image_id: img.source_image_id,
           updated_at: img.updated_at,
         }));
-      updateJob(jobId, existing => ({ ...existing, images: validImages }));
+      updateJob(jobId, existing => {
+        console.log(`[Tracker] Images for ${jobId}: ${validImages.length} (was ${existing.images.length})`);
+        return { ...existing, images: validImages };
+      });
     } catch (e) {
       console.error(`[Tracker] Failed to fetch images for ${jobId}:`, e);
     }
   }, [updateJob]);
 
-  // Fetch and update job status
+  // Fetch and update job status + DB counters
   const fetchJobStatus = useCallback(async (jobId: string) => {
     try {
       const { data, error } = await supabase
@@ -80,27 +123,33 @@ export function useMultiJobTracker(modelVersion: ModelVersion) {
         .eq('id', jobId)
         .maybeSingle();
       if (error || !data) return;
-      updateJob(jobId, existing => ({
-        ...existing,
-        status: data.status,
-        progress: data.progress ?? 0,
-      }));
+      updateJob(jobId, existing => {
+        const newStatus = data.status;
+        const wasTerminal = isTerminal(existing.status);
+        const nowTerminal = isTerminal(newStatus);
+        console.log(`[Tracker] Status for ${jobId}: ${existing.status} -> ${newStatus}, completed=${data.completed}, failed=${data.failed}, total=${data.total}`);
+        return {
+          ...existing,
+          status: newStatus,
+          progress: data.progress ?? 0,
+          dbCompleted: data.completed ?? 0,
+          dbFailed: data.failed ?? 0,
+          dbTotal: data.total ?? existing.totalSlots,
+          terminalAt: nowTerminal && !wasTerminal ? Date.now() : existing.terminalAt,
+        };
+      });
     } catch (e) {
       console.error(`[Tracker] Failed to fetch job status for ${jobId}:`, e);
     }
   }, [updateJob]);
 
-  // Polling fallback for active jobs
+  // Polling fallback — poll ALL jobs that are NOT ready to finalize
   useEffect(() => {
-    const unresolvedJobIds = Array.from(jobs.values())
-      .filter(j => {
-        const isDone = j.status === 'completed' || j.status === 'failed' || j.status === 'canceled';
-        const allImagesReceived = j.images.filter(img => Boolean(img.public_url)).length >= j.totalSlots && j.totalSlots > 0;
-        return !isDone || !allImagesReceived;
-      })
+    const jobsNeedingSync = Array.from(jobs.values())
+      .filter(j => !computeReadyToFinalize(j))
       .map(j => j.jobId);
 
-    if (unresolvedJobIds.length === 0) {
+    if (jobsNeedingSync.length === 0) {
       if (pollIntervalRef.current) {
         clearInterval(pollIntervalRef.current);
         pollIntervalRef.current = null;
@@ -112,10 +161,11 @@ export function useMultiJobTracker(modelVersion: ModelVersion) {
     if (!pollIntervalRef.current) {
       pollIntervalRef.current = setInterval(() => {
         setJobs(currentJobs => {
-          const activeIds = Array.from(currentJobs.values())
-            .filter(j => j.status === 'queued' || j.status === 'processing')
+          const needSync = Array.from(currentJobs.values())
+            .filter(j => !computeReadyToFinalize(j))
             .map(j => j.jobId);
-          activeIds.forEach(id => {
+          console.log(`[Tracker] Polling ${needSync.length} unresolved jobs:`, needSync);
+          needSync.forEach(id => {
             fetchJobStatus(id);
             fetchImages(id);
           });
@@ -133,9 +183,16 @@ export function useMultiJobTracker(modelVersion: ModelVersion) {
   }, [jobs, fetchJobStatus, fetchImages]);
 
   const addJob = useCallback((jobId: string, totalSlots: number, orientation: string) => {
+    // Duplicate protection: skip if already tracked or cleanup exists
+    if (cleanupFnsRef.current.has(jobId)) {
+      console.log(`[Tracker] Skipping duplicate addJob for ${jobId}`);
+      return;
+    }
+
     setJobs(prev => {
       if (prev.has(jobId)) return prev;
       const next = new Map(prev);
+      console.log(`[Tracker] Adding job ${jobId} with ${totalSlots} slots`);
       next.set(jobId, {
         jobId,
         totalSlots,
@@ -144,6 +201,9 @@ export function useMultiJobTracker(modelVersion: ModelVersion) {
         orientation,
         progress: 0,
         createdAt: Date.now(),
+        dbCompleted: 0,
+        dbFailed: 0,
+        dbTotal: totalSlots,
       });
       return next;
     });
@@ -157,17 +217,29 @@ export function useMultiJobTracker(modelVersion: ModelVersion) {
         (payload) => {
           const row = (payload as any).new ?? (payload as any).record ?? null;
           if (row) {
-            updateJob(jobId, existing => ({
-              ...existing,
-              status: row.status,
-              progress: row.progress ?? 0,
-            }));
+            updateJob(jobId, existing => {
+              const wasTerminal = isTerminal(existing.status);
+              const nowTerminal = isTerminal(row.status);
+              console.log(`[Tracker] Realtime status for ${jobId}: ${row.status}, completed=${row.completed}`);
+              return {
+                ...existing,
+                status: row.status,
+                progress: row.progress ?? 0,
+                dbCompleted: row.completed ?? existing.dbCompleted,
+                dbFailed: row.failed ?? existing.dbFailed,
+                dbTotal: row.total ?? existing.dbTotal,
+                terminalAt: nowTerminal && !wasTerminal ? Date.now() : existing.terminalAt,
+              };
+            });
+            // When status becomes terminal, immediately try to fetch images
+            if (isTerminal(row.status)) {
+              fetchImages(jobId);
+            }
           }
         }
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          // Initial fetch to catch anything missed
           fetchJobStatus(jobId);
         }
       });
@@ -195,6 +267,7 @@ export function useMultiJobTracker(modelVersion: ModelVersion) {
   }, [modelVersion, updateJob, fetchJobStatus, fetchImages]);
 
   const removeJob = useCallback((jobId: string) => {
+    console.log(`[Tracker] Removing job ${jobId}`);
     const cleanup = cleanupFnsRef.current.get(jobId);
     if (cleanup) {
       cleanup();
@@ -218,23 +291,22 @@ export function useMultiJobTracker(modelVersion: ModelVersion) {
     (a, b) => b.createdAt - a.createdAt
   );
 
-  const isAnyJobActive = trackedJobs.some(j => {
-    const isDone = j.status === 'completed' || j.status === 'failed' || j.status === 'canceled';
-    const allImagesReceived = j.images.filter(img => Boolean(img.public_url)).length >= j.totalSlots && j.totalSlots > 0;
-    return !isDone || !allImagesReceived;
-  });
+  // Jobs that are NOT ready to finalize = still active from user perspective
+  const isAnyJobActive = trackedJobs.some(j => !computeReadyToFinalize(j));
 
-  const completedJobIds = trackedJobs
-    .filter(j =>
-      j.status === 'completed' || j.status === 'failed' || j.status === 'canceled' ||
-      (j.images.filter(img => Boolean(img.public_url)).length >= j.totalSlots && j.totalSlots > 0)
-    )
+  // Jobs that ARE ready to finalize — safe to move images and remove
+  const readyToFinalizeJobIds = trackedJobs
+    .filter(j => computeReadyToFinalize(j))
     .map(j => j.jobId);
+
+  // Keep legacy completedJobIds pointing to readyToFinalizeJobIds for compatibility
+  const completedJobIds = readyToFinalizeJobIds;
 
   return {
     trackedJobs,
     isAnyJobActive,
     completedJobIds,
+    readyToFinalizeJobIds,
     addJob,
     removeJob,
     clearAllJobs,

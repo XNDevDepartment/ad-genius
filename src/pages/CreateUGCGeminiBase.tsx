@@ -852,14 +852,21 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
 
   const allImages = [...currentBatchImages, ...previousImages];
 
-  // Move completed tracked jobs' images to previousImages
-  const completedIdsKey = tracker.completedJobIds.join(',');
+  // Move finalized tracked jobs' images to previousImages (only when readyToFinalize)
+  const finalizedJobIdsRef = useRef<Set<string>>(new Set());
+  const readyToFinalizeKey = tracker.readyToFinalizeJobIds.join(',');
   useEffect(() => {
-    if (tracker.completedJobIds.length === 0) return;
-    tracker.completedJobIds.forEach(jobId => {
+    if (tracker.readyToFinalizeJobIds.length === 0) return;
+    tracker.readyToFinalizeJobIds.forEach(jobId => {
+      // Idempotent guard: skip if already finalized in this session
+      if (finalizedJobIdsRef.current.has(jobId)) {
+        tracker.removeJob(jobId);
+        return;
+      }
       const tj = tracker.trackedJobs.find(j => j.jobId === jobId);
       if (!tj) return;
       const readyImages = tj.images.filter(img => Boolean(img.public_url));
+      console.log(`[CreateUGCGemini] Finalizing job ${jobId}: ${readyImages.length} images ready, expected ${tj.dbCompleted || tj.totalSlots}`);
       if (readyImages.length > 0) {
         setPreviousImages(prev => {
           const existingIds = new Set(prev.map(img => img.id));
@@ -876,9 +883,10 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
           return [...newImgs, ...prev];
         });
       }
+      finalizedJobIdsRef.current.add(jobId);
       tracker.removeJob(jobId);
     });
-  }, [completedIdsKey]);
+  }, [readyToFinalizeKey]);
 
   const handleStartFromScratch = () => {
     clearJob();
