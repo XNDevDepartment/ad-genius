@@ -10,6 +10,7 @@ import { useCredits } from "@/hooks/useCredits";
 
 import demoUgc from "@/assets/module_icons/ugc.mp4";
 import demoVideo from "@/assets/module_icons/video.mp4";
+import demoVideo2 from "@/assets/module_icons/product_catalog 2.gif";
 import demoOutfit from "@/assets/module_icons/fashion_catalog.mp4";
 import demoBulk from "@/assets/module_icons/product_catalog.mp4";
 import demoUgcImg from "@/assets/module_icons/ugc.png";
@@ -103,7 +104,7 @@ const ModuleSelection = () => {
       description: t('createSelection.videoCreator.description'),
       path: "/create/video",
       demoImage: demoVideo,
-      fallbackImage: demoVideoImg,
+      fallbackImage: demoVideo2,
       isBeta: false,
       locked: false,
     },
