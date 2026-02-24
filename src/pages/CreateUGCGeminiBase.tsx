@@ -16,6 +16,7 @@ import { useConversationStorage } from "@/hooks/useConversationStorage";
 // Removed: startConversationAPI, converse - now using scenario-api
 import { useGeminiImageJobUnified } from '@/hooks/useGeminiImageJobUnified';
 import { useActiveJob } from '@/hooks/useActiveJob';
+import { useMultiJobTracker } from '@/hooks/useMultiJobTracker';
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
 import { useImageLimit } from "@/hooks/useImageLimit";
@@ -120,6 +121,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const { job, images: jobImages, loading, createJob, clearJob, loadJob, resumeCurrentJob, storageKeys } = useGeminiImageJobUnified(modelVersion);
   const { language } = useLanguage();
   const { activeJob, activeImages } = useActiveJob();
+  const tracker = useMultiJobTracker(modelVersion);
 
   const isGenerating = loading; // only true during the createJob API call, unlocks button immediately after submission
 
@@ -814,6 +816,9 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       if (!result) throw new Error('Failed to create job');
 
       const jobId = result.jobId;
+      // Register in multi-job tracker
+      tracker.addJob(jobId, numImages, aspectRatio);
+
       localStorage.setItem(storageKeys.jobId, jobId);
       localStorage.setItem(storageKeys.stage, 'generating');
       localStorage.setItem(storageKeys.metadata, JSON.stringify({
@@ -847,8 +852,36 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
 
   const allImages = [...currentBatchImages, ...previousImages];
 
+  // Move completed tracked jobs' images to previousImages
+  useEffect(() => {
+    if (tracker.completedJobIds.length === 0) return;
+    tracker.completedJobIds.forEach(jobId => {
+      const tj = tracker.trackedJobs.find(j => j.jobId === jobId);
+      if (!tj) return;
+      const readyImages = tj.images.filter(img => Boolean(img.public_url));
+      if (readyImages.length > 0) {
+        setPreviousImages(prev => {
+          const existingIds = new Set(prev.map(img => img.id));
+          const newImgs = readyImages
+            .filter(img => !existingIds.has(img.id))
+            .map(img => ({
+              id: img.id,
+              url: img.public_url,
+              prompt: img.prompt || '',
+              format: (img.meta as any)?.format || 'png',
+              orientation: (img.meta as any)?.orientation || (img.meta as any)?.aspect_ratio || tj.orientation,
+              selected: false,
+            }));
+          return [...newImgs, ...prev];
+        });
+      }
+      tracker.removeJob(jobId);
+    });
+  }, [tracker.completedJobIds]);
+
   const handleStartFromScratch = () => {
     clearJob();
+    tracker.clearAllJobs();
     setCurrentBatchImages([]);
     setPreviousImages([]);
     setPendingSlots(0);
@@ -879,7 +912,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
 
   useEffect(() => {
     const handleScroll = () => {
-      const hasContent = allImages.length > 0 || jobImages.length > 0 || isGenerating || stage === 'results';
+      const hasContent = allImages.length > 0 || jobImages.length > 0 || isGenerating || stage === 'results' || tracker.trackedJobs.length > 0;
       const isScrolledUp = window.scrollY < window.innerHeight * 0.5;
       setShowScrollDown(hasContent && isScrolledUp);
     };
@@ -1211,7 +1244,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
 
               {/* Generated Images */}
               <div ref={resultsRef} className="scroll-mt-6">
-                {(allImages.length > 0 || jobImages.length > 0 || isGenerating || pendingSlots > 0) && (
+                {(allImages.length > 0 || jobImages.length > 0 || isGenerating || pendingSlots > 0 || tracker.trackedJobs.length > 0) && (
                   <Card className="rounded-apple shadow-lg">
                     <CardContent className="p-6 lg:p-8">
                       <div className="flex items-center justify-between mb-4">
@@ -1224,7 +1257,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                         )}
                       </div>
 
-                      {isGenerating && (
+                      {isGenerating && !tracker.isAnyJobActive && (
                         <div className="mb-4">
                           <div className="flex items-center gap-2 mb-2">
                             <RefreshCw className="h-4 w-4 animate-spin text-primary" />
@@ -1246,6 +1279,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                         onStartFromScratch={handleStartFromScratch}
                         jobId={job?.id}
                         imageOrientation={aspectRatio}
+                        trackedJobs={tracker.trackedJobs}
                         onAnimateImage={(imageId, imageUrl) => {
                           setAnimateImageId(imageId);
                           setAnimateImageUrl(imageUrl);
