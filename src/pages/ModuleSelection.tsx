@@ -10,7 +10,7 @@ import { useCredits } from "@/hooks/useCredits";
 
 import demoUgc from "@/assets/module_icons/ugc.mp4";
 import demoVideo from "@/assets/module_icons/video.mp4";
-import demoVideo2 from "@/assets/module_icons/product_catalog 2.gif";
+import demoVideo2 from "@/assets/module_icons/product_catalog.gif";
 import demoOutfit from "@/assets/module_icons/fashion_catalog.mp4";
 import demoBulk from "@/assets/module_icons/product_catalog.mp4";
 import demoUgcImg from "@/assets/module_icons/ugc.webp";
