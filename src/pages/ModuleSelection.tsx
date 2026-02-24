@@ -13,10 +13,10 @@ import demoVideo from "@/assets/module_icons/video.mp4";
 import demoVideo2 from "@/assets/module_icons/product_catalog 2.gif";
 import demoOutfit from "@/assets/module_icons/fashion_catalog.mp4";
 import demoBulk from "@/assets/module_icons/product_catalog.mp4";
-import demoUgcImg from "@/assets/module_icons/ugc.png";
-import demoVideoImg from "@/assets/module_icons/video.png";
-import demoOutfitImg from "@/assets/module_icons/fashion_catalog.jpg";
-import demoBulkImg from "@/assets/module_icons/product_catalog.png";
+import demoUgcImg from "@/assets/module_icons/ugc.webp";
+import demoVideoImg from "@/assets/module_icons/video.webp";
+import demoOutfitImg from "@/assets/module_icons/fashion_catalog.webp";
+import demoBulkImg from "@/assets/module_icons/product_catalog.webp";
 
 const ModuleSelection = () => {
   const navigate = useNavigate();
