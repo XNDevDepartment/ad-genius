@@ -1,20 +1,11 @@
 import React, { useState } from 'react';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
 
@@ -36,13 +27,8 @@ interface AdminDataTableProps<T> {
 }
 
 export function AdminDataTable<T extends Record<string, any>>({
-  data,
-  columns,
-  searchable = true,
-  searchPlaceholder = 'Search...',
-  onSearch,
-  pageSize = 10,
-  loading = false,
+  data, columns, searchable = true, searchPlaceholder = 'Search...',
+  onSearch, pageSize = 10, loading = false,
 }: AdminDataTableProps<T>) {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -50,7 +36,6 @@ export function AdminDataTable<T extends Record<string, any>>({
   const [searchQuery, setSearchQuery] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(pageSize);
 
-  // Filter data based on search
   const filteredData = searchQuery
     ? data.filter((row) =>
         Object.values(row).some((value) =>
@@ -59,7 +44,6 @@ export function AdminDataTable<T extends Record<string, any>>({
       )
     : data;
 
-  // Sort data
   const sortedData = sortKey
     ? [...filteredData].sort((a, b) => {
         const aVal = a[sortKey];
@@ -70,7 +54,6 @@ export function AdminDataTable<T extends Record<string, any>>({
       })
     : filteredData;
 
-  // Paginate data
   const totalPages = Math.ceil(sortedData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = sortedData.slice(startIndex, startIndex + itemsPerPage);
@@ -93,10 +76,10 @@ export function AdminDataTable<T extends Record<string, any>>({
   if (loading) {
     return (
       <div className="space-y-4">
-        <div className="h-10 bg-muted animate-pulse rounded" />
+        <div className="h-10 bg-muted animate-pulse rounded-xl" />
         <div className="space-y-2">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-16 bg-muted animate-pulse rounded" />
+            <div key={i} className="h-14 bg-muted animate-pulse rounded-xl" />
           ))}
         </div>
       </div>
@@ -105,7 +88,6 @@ export function AdminDataTable<T extends Record<string, any>>({
 
   return (
     <div className="space-y-4">
-      {/* Search and Controls */}
       {searchable && (
         <div className="flex items-center gap-4">
           <div className="relative flex-1">
@@ -114,19 +96,16 @@ export function AdminDataTable<T extends Record<string, any>>({
               placeholder={searchPlaceholder}
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10"
+              className="pl-10 rounded-xl border-0 bg-muted/50"
             />
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Show</span>
             <Select
               value={String(itemsPerPage)}
-              onValueChange={(value) => {
-                setItemsPerPage(Number(value));
-                setCurrentPage(1);
-              }}
+              onValueChange={(value) => { setItemsPerPage(Number(value)); setCurrentPage(1); }}
             >
-              <SelectTrigger className="w-20">
+              <SelectTrigger className="w-20 rounded-xl border-0 bg-muted/50">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -140,11 +119,10 @@ export function AdminDataTable<T extends Record<string, any>>({
         </div>
       )}
 
-      {/* Table */}
-      <div className="border rounded-lg overflow-hidden">
+      <div className="rounded-xl overflow-hidden border border-border/50">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="hover:bg-transparent">
               {columns.map((column) => (
                 <TableHead key={column.key}>
                   {column.sortable ? (
@@ -166,7 +144,7 @@ export function AdminDataTable<T extends Record<string, any>>({
           <TableBody>
             {paginatedData.length > 0 ? (
               paginatedData.map((row, index) => (
-                <TableRow key={index}>
+                <TableRow key={index} className="hover:bg-primary/5">
                   {columns.map((column) => (
                     <TableCell key={column.key}>
                       {column.render ? column.render(row) : row[column.key]}
@@ -176,10 +154,7 @@ export function AdminDataTable<T extends Record<string, any>>({
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="text-center text-muted-foreground py-8"
-                >
+                <TableCell colSpan={columns.length} className="text-center text-muted-foreground py-8">
                   No data found
                 </TableCell>
               </TableRow>
@@ -188,46 +163,27 @@ export function AdminDataTable<T extends Record<string, any>>({
         </Table>
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, sortedData.length)} of{' '}
-            {sortedData.length} entries
+            Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, sortedData.length)} of {sortedData.length}
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
+            <Button variant="outline" size="sm" className="rounded-xl" onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>
+              <ChevronLeft className="h-4 w-4" /> Previous
             </Button>
             <div className="flex items-center gap-1">
               {[...Array(Math.min(5, totalPages))].map((_, i) => {
                 const page = i + 1;
                 return (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setCurrentPage(page)}
-                  >
+                  <Button key={page} variant={currentPage === page ? 'default' : 'outline'} size="sm" className="rounded-xl" onClick={() => setCurrentPage(page)}>
                     {page}
                   </Button>
                 );
               })}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Next
-              <ChevronRight className="h-4 w-4" />
+            <Button variant="outline" size="sm" className="rounded-xl" onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages}>
+              Next <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
