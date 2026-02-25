@@ -12,6 +12,9 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Phone, CheckCircle, Loader2, RefreshCw } from 'lucide-react';
 
+// Runtime guard for WebView compatibility (Instagram iOS, etc.)
+const OTP_AVAILABLE = typeof InputOTP === 'function';
+
 interface PhoneVerificationProps {
   onVerified?: () => void;
   initialPhone?: string;
@@ -251,21 +254,35 @@ export const PhoneVerification = ({ onVerified, initialPhone = '' }: PhoneVerifi
           </div>
 
           <div className="flex justify-center">
-            <InputOTP
-              maxLength={6}
-              value={otpCode}
-              onChange={setOtpCode}
-              disabled={isLoading}
-            >
-              <InputOTPGroup>
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-                <InputOTPSlot index={2} />
-                <InputOTPSlot index={3} />
-                <InputOTPSlot index={4} />
-                <InputOTPSlot index={5} />
-              </InputOTPGroup>
-            </InputOTP>
+            {OTP_AVAILABLE ? (
+              <InputOTP
+                maxLength={6}
+                value={otpCode}
+                onChange={setOtpCode}
+                disabled={isLoading}
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+            ) : (
+              <Input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="000000"
+                className="text-center text-2xl tracking-[0.5em] font-mono max-w-[200px]"
+                autoComplete="one-time-code"
+                disabled={isLoading}
+              />
+            )}
           </div>
 
           <Button

@@ -33,7 +33,8 @@ const reportError = async (
     errorMessage.includes('insertBefore') ||
     errorMessage.includes('appendChild') ||
     errorMessage.includes('The object can not be found here') ||  // iOS Safari browser extension error
-    errorMessage.includes('Minified React error #300')  // Hydration mismatch - usually browser extensions
+    errorMessage.includes('Minified React error #300') ||  // Hydration mismatch - usually browser extensions
+    errorMessage.includes('Minified React error #306')  // WebView component resolution failure
   ) {
     console.warn('[ErrorBoundary] Skipping browser-specific error (likely browser extension)');
     return;
@@ -92,7 +93,8 @@ const isBrowserExtensionError = (error: Error | undefined | null): boolean => {
     msg.includes('insertBefore') ||
     msg.includes('appendChild') ||
     msg.includes('The object can not be found here') ||
-    msg.includes('Minified React error #300')
+    msg.includes('Minified React error #300') ||
+    msg.includes('Minified React error #306')  // WebView component resolution failure (e.g. Instagram iOS)
   );
 };
 

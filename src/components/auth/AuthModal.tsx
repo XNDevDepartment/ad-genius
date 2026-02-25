@@ -12,6 +12,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useTranslation } from 'react-i18next';
 
+// Runtime guard: InputOTP may resolve to undefined in restricted WebViews (e.g. Instagram in-app browser on iOS)
+const OTP_AVAILABLE = typeof InputOTP === 'function';
+
 interface AuthModalProps {
   onSuccess?: (email?: string) => void;
   isOpen?: boolean;
@@ -588,20 +591,33 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
                       </p>
                       
                       <div className="flex justify-center">
-                        <InputOTP
-                          maxLength={6}
-                          value={otpCode}
-                          onChange={(value) => setOtpCode(value)}
-                        >
-                          <InputOTPGroup>
-                            <InputOTPSlot index={0} />
-                            <InputOTPSlot index={1} />
-                            <InputOTPSlot index={2} />
-                            <InputOTPSlot index={3} />
-                            <InputOTPSlot index={4} />
-                            <InputOTPSlot index={5} />
-                          </InputOTPGroup>
-                        </InputOTP>
+                        {OTP_AVAILABLE ? (
+                          <InputOTP
+                            maxLength={6}
+                            value={otpCode}
+                            onChange={(value) => setOtpCode(value)}
+                          >
+                            <InputOTPGroup>
+                              <InputOTPSlot index={0} />
+                              <InputOTPSlot index={1} />
+                              <InputOTPSlot index={2} />
+                              <InputOTPSlot index={3} />
+                              <InputOTPSlot index={4} />
+                              <InputOTPSlot index={5} />
+                            </InputOTPGroup>
+                          </InputOTP>
+                        ) : (
+                          <Input
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={6}
+                            value={otpCode}
+                            onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            placeholder="000000"
+                            className="text-center text-2xl tracking-[0.5em] font-mono max-w-[200px]"
+                            autoComplete="one-time-code"
+                          />
+                        )}
                       </div>
                     </div>
 
