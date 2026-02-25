@@ -1,8 +1,9 @@
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Mail, User, Briefcase, Calendar, FileText, Hash, Copy, ExternalLink, CreditCard } from 'lucide-react';
+import { Mail, User, Briefcase, Calendar, FileText, Hash, Copy, ExternalLink, CreditCard, Images } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface UserProfile {
@@ -28,6 +29,8 @@ interface UserProfileModalProps {
 }
 
 export const UserProfileModal = ({ user, isOpen, onClose }: UserProfileModalProps) => {
+  const navigate = useNavigate();
+
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast.success(`${label} copied to clipboard`);
@@ -98,6 +101,17 @@ export const UserProfileModal = ({ user, isOpen, onClose }: UserProfileModalProp
                   <ExternalLink className="w-3 h-3" /> Open in Stripe
                 </Button>
               )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl gap-2"
+                onClick={() => {
+                  navigate(`/admin/content?userId=${user.id}&userEmail=${encodeURIComponent(user.email)}`);
+                  onClose();
+                }}
+              >
+                <Images className="w-3 h-3" /> View Content
+              </Button>
             </div>
           </div>
 
