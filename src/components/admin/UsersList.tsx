@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, User, Calendar } from 'lucide-react';
+import { Eye, User, Calendar, Images, MoreHorizontal } from 'lucide-react';
 import { UserProfileModal } from './UserProfileModal';
 import { AdminDataTable } from './AdminDataTable';
 import { format } from 'date-fns';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface UserProfile {
   id: string;
@@ -23,6 +30,7 @@ interface UserProfile {
 }
 
 export const UsersList = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
@@ -123,15 +131,24 @@ export const UsersList = () => {
       key: 'actions',
       label: '',
       render: (user: UserProfile) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setSelectedUser(user)}
-          className="gap-2 rounded-xl hover:bg-primary/5"
-        >
-          <Eye className="w-4 h-4" />
-          View
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-xl">
+              <MoreHorizontal className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="rounded-xl">
+            <DropdownMenuItem onClick={() => setSelectedUser(user)} className="gap-2 cursor-pointer">
+              <Eye className="w-4 h-4" /> View Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => navigate(`/admin/content?userId=${user.id}&userEmail=${encodeURIComponent(user.email)}`)}
+              className="gap-2 cursor-pointer"
+            >
+              <Images className="w-4 h-4" /> View Content
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       ),
     },
   ];
