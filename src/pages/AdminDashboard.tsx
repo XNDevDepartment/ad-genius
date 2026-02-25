@@ -20,8 +20,8 @@ const AdminDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -32,12 +32,14 @@ const AdminDashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full flex-col">
+      <div className="min-h-screen flex w-full flex-col bg-muted/30">
         <AdminHeader />
         <div className="flex flex-1 w-full">
           <AdminSidebar />
-          <main className="flex-1 overflow-auto p-6">
-            <Outlet />
+          <main className="flex-1 overflow-auto p-6 lg:p-8">
+            <div className="max-w-7xl mx-auto">
+              <Outlet />
+            </div>
           </main>
         </div>
       </div>
