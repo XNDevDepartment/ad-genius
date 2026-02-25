@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Outlet } from 'react-router-dom';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useAuth } from '@/contexts/AuthContext';
-import { AdminOverview } from '@/components/admin/AdminOverview';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { Loader2 } from 'lucide-react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 
@@ -32,11 +32,14 @@ const AdminDashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen w-full flex flex-col">
+      <div className="min-h-screen flex w-full flex-col">
         <AdminHeader />
-        <main className="flex-1 container mx-auto px-4 py-6">
-          <AdminOverview />
-        </main>
+        <div className="flex flex-1 w-full">
+          <AdminSidebar />
+          <main className="flex-1 overflow-auto p-6">
+            <Outlet />
+          </main>
+        </div>
       </div>
     </SidebarProvider>
   );
