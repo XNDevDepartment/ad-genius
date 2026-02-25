@@ -1,163 +1,129 @@
 
 
-# Admin Panel Redesign — Professional Backoffice
+# Admin Panel Improvements: Revenue Fix, Content Redesign & User-Content Linking
 
-## Current Problems
+## Problems Identified
 
-1. **No sidebar navigation** — everything crammed into a single page with 8 horizontal tabs that overflow on smaller screens
-2. **Plain header** — just "Admin Dashboard" with a shield icon, no branding consistency with the landing page
-3. **Redundant data** — Dashboard tab shows EnhancedMetrics + ConversionFunnel + UserGrowthMetrics; the Funnel tab repeats ConversionFunnel; Revenue tab repeats FinancialDashboard data already in RevenueMetrics
-4. **Mock growth data** — EnhancedMetrics uses hardcoded percentages (`0.4, 0.5, 0.6...`) instead of real date-based queries
-5. **No quick-action capability** — to manually fix a user's subscription (like the recent `joeguimareas4` issue), you must leave the admin panel
-6. **Inconsistent styling** — cards use default shadcn styling with no visual hierarchy; Landing V2 uses `rounded-2xl`, `backdrop-blur-lg`, gradient accents, and `bg-background/80` — none of that carries into admin
+### 1. Revenue Calculation is Wrong
+The current `RevenueMetrics.tsx` uses **hardcoded tier prices** (`TIER_PRICES`) instead of querying actual Stripe payment data. Issues:
+- Founders price is hardcoded as `€19.99` but some may have different pricing
+- It counts `subscribed=true` users and multiplies by the hardcoded price, which doesn't reflect actual Stripe charges (discounts, promos, trials)
+- The `credits_transactions` query fetches ALL transactions (could hit the 1000-row Supabase limit), making "Credits Used" inaccurate
+- No distinction between monthly vs annual billing
 
-## Redesign Architecture
+**Fix**: Query Stripe invoices via a new edge function to get **real MRR** from actual paid invoices in the last 30 days. As a fallback (since Stripe queries are slow), keep the subscriber-based calculation but fix the 1000-row limit issue and add a note that it's an estimate. Also add a "Sync from Stripe" button that calls the edge function for accurate data.
 
-```text
-┌─────────────────────────────────────────────────────┐
-│  Fixed Header (backdrop-blur, logo, user, sign out) │
-├────────┬────────────────────────────────────────────┤
-│        │                                            │
-│  Side  │   Main Content Area                        │
-│  bar   │                                            │
-│        │   /admin           → Dashboard overview    │
-│  Nav   │   /admin/users     → Users list            │
-│  icons │   /admin/revenue   → Revenue & subs        │
-│  +     │   /admin/content   → Images/Videos/Swaps   │
-│  labels│   /admin/marketing → Affiliates & Promos   │
-│  +     │   /admin/settings  → Prompts & Admins      │
-│  badge │   /admin/errors    → Error reports          │
-│  counts│   /admin/base-models → (existing page)     │
-│        │   /admin/subscription-audit → (existing)   │
-│        │                                            │
-└────────┴────────────────────────────────────────────┘
+### 2. Content Tab is Basic and Disconnected from Users
+Current content tab has 3 sub-tabs (Images, Videos, Outfit Swaps) but:
+- No way to filter by user
+- No link from Users table to Content
+- Each sub-tab fetches data independently with no shared filtering
+- No summary stats (total images per type, generation trends)
+- No outfit creator results shown
+- Queries hit the 1000-row limit silently
+
+### 3. No User → Content Navigation
+The UsersList has a "View" button that opens a modal, but no way to see that user's generated content.
+
+---
+
+## Plan
+
+### A. Fix Revenue Metrics
+
+**Modify `src/components/admin/RevenueMetrics.tsx`**:
+- Fix the 1000-row limit on `credits_transactions` by using a count/sum approach instead of fetching all rows — use `.select('amount')` with pagination or better yet, compute totals server-side
+- Add a note "(estimate based on tier prices)" next to MRR
+- Create a new edge function `admin-revenue-stats` that queries Stripe for actual invoice totals in the last 30 days, returning real MRR
+- Add a "Refresh from Stripe" button that calls this edge function and shows accurate data
+- Fix subscriber query to also fetch `stripe_customer_id` so we can count truly active Stripe subscribers vs manually-set ones
+
+**Create `supabase/functions/admin-revenue-stats/index.ts`**:
+- Validates admin role
+- Queries Stripe `invoices.list` for the last 30 days with `status: 'paid'`
+- Sums up paid amounts to compute real MRR
+- Returns breakdown by product/plan
+- Returns active subscription count from Stripe
+
+### B. Redesign Content Tab with User Filtering
+
+**Rewrite `src/pages/admin/AdminContentPage.tsx`**:
+- Accept optional `userId` query parameter (`/admin/content?userId=xxx`)
+- Show a unified content view with KPI stats at the top (total images, UGC, videos, outfit swaps, outfit creator results)
+- Add filter bar: content type dropdown, date range, user filter (with clear button showing user email when filtered)
+- Single unified table showing all content types with a "Type" badge column
+- Include `outfit_creator_results` in the content listing (currently missing)
+- Pagination aware of the 1000-row limit — paginate server-side or fetch in batches
+
+**Modify `src/components/admin/AdminImagesList.tsx`** → Replace with a new unified `AdminContentList.tsx`:
+- Single component that fetches from all content tables: `generated_images`, `ugc_images`, `kling_jobs`, `outfit_swap_results`, `outfit_creator_results`, `bulk_background_results`
+- Accepts `userId` prop for filtering
+- Unified columns: Preview thumbnail, Type badge, User (email), Prompt/Description, Status, Date, Actions
+- Grid/Table view toggle (keep existing)
+- Type filter chips instead of dropdown (Generated, UGC, Video, Outfit Swap, Outfit Creator, Background)
+- Date range filter (Today, 7d, 30d, All)
+
+### C. Add "View Content" Action to Users Table
+
+**Modify `src/components/admin/UsersList.tsx`**:
+- Add a new column "Actions" with a dropdown menu containing:
+  - "View Profile" (existing modal)
+  - "View Content" → navigates to `/admin/content?userId={user.id}`
+- Show content count badge next to user (optional, could be expensive — skip for now)
+
+**Modify `src/components/admin/UserProfileModal.tsx`**:
+- Add a "View Content" button in Quick Actions that navigates to `/admin/content?userId={user.id}` and closes the modal
+
+### D. Files Summary
+
+**New files**:
+1. `src/components/admin/AdminContentList.tsx` — unified content browser with user filtering, type chips, date filters
+2. `supabase/functions/admin-revenue-stats/index.ts` — Stripe-based real revenue calculation
+
+**Modified files**:
+1. `src/pages/admin/AdminContentPage.tsx` — read `userId` from URL params, pass to AdminContentList, show user banner when filtered
+2. `src/components/admin/RevenueMetrics.tsx` — fix 1000-row limit, add Stripe sync button, mark estimates
+3. `src/components/admin/UsersList.tsx` — add dropdown actions column with "View Content" navigation
+4. `src/components/admin/UserProfileModal.tsx` — add "View Content" quick action button
+5. `supabase/config.toml` — add `admin-revenue-stats` function config
+
+**Deleted files** (merged into AdminContentList):
+- `src/components/admin/AdminImagesList.tsx` (functionality merged)
+- `src/components/admin/AdminVideosList.tsx` (functionality merged)
+- `src/components/admin/AdminOutfitSwapsList.tsx` (functionality merged)
+
+### E. Technical Details
+
+**Revenue edge function authentication**:
+```sql
+-- Verify caller is admin before returning Stripe data
+SELECT is_admin(auth.uid()) -- reuse existing function
 ```
 
-## What Changes
+**Content query strategy** (avoiding 1000-row limit):
+- Fetch each content type separately with `.limit(200)` per type when unfiltered
+- When filtered by user, fetch all of that user's content (no limit needed, users won't have 1000+)
+- Sort merged results client-side by `created_at`
 
-### 1. Layout: Sidebar + Sub-routes (replaces tabs)
-
-**New file: `src/components/admin/AdminSidebar.tsx`**
-
-A collapsible sidebar using the existing `Sidebar` component with sections:
-- **Overview** (Dashboard icon) — KPI cards + funnel + signups chart
-- **Users** (Users icon) — UsersList with subscriber data merged in
-- **Revenue** (DollarSign icon) — RevenueMetrics + FinancialDashboard (deduplicated)
-- **Content** (Image icon) — Sub-tabs: Images, Videos, Outfit Swaps
-- **Marketing** (Megaphone icon) — Sub-tabs: Affiliates, Promo Codes
-- **Settings** (Settings icon) — Sub-tabs: AI Prompts, Admin Users
-- **Errors** (AlertTriangle icon) — with a red badge showing today's error count
-- **Divider**
-- **Base Models** (link to `/admin/base-models`)
-- **Subscription Audit** (link to `/admin/subscription-audit`)
-
-Each section becomes a nested route under `/admin/*` instead of a tab, so you can deep-link to `/admin/users` directly.
-
-**Modified file: `src/pages/AdminDashboard.tsx`**
-
-Wraps `AdminSidebar` + an `<Outlet />` for sub-routes. No more `AdminOverview` monolith.
-
-**Modified file: `src/App.tsx`**
-
-Replace the single `/admin` route with nested routes:
+**URL parameter flow**:
 ```
-/admin              → AdminDashboardLayout (sidebar + outlet)
-  index             → AdminDashboardOverview
-  users             → AdminUsersPage
-  revenue           → AdminRevenuePage
-  content           → AdminContentPage
-  marketing         → AdminMarketingPage
-  settings          → AdminSettingsPage
-  errors            → AdminErrorsPage
+UsersList → click "View Content" → navigate("/admin/content?userId=xxx")
+AdminContentPage → reads searchParams.get("userId") → passes to AdminContentList
+AdminContentList → adds .eq("user_id", userId) to all queries when userId is present
 ```
 
-### 2. Styling: Landing V2 Design Tokens
-
-Apply across all admin components:
-
-- **Cards**: `rounded-2xl border-0 shadow-apple bg-card/80 backdrop-blur-sm` instead of default `rounded-lg border shadow-sm`
-- **KPI cards**: Colored left-border accent (green for revenue, blue for users, purple for content, orange for alerts)
-- **Header**: `bg-background/80 backdrop-blur-lg border-b border-border/50` matching `MinimalHeader`
-- **Sidebar**: `bg-card/50 backdrop-blur-lg` with subtle hover states
-- **Section headers**: `text-2xl font-bold` with a muted subtitle, no icon prefixes
-- **Tables**: Alternating row tint with `hover:bg-primary/5`
-- **Badges**: `rounded-full` pill style with softer colors
-
-### 3. Dashboard Overview: Real Data + Actionable Widgets
-
-**Modified file: `src/components/admin/EnhancedMetrics.tsx`**
-
-Remove mock growth data. Replace the 7 static KPI cards with 4 primary KPIs in a clean row:
-- **MRR** (green accent, euro value)
-- **Total Users** (blue accent, with today's signup count as delta)
-- **Active Users** (purple accent, percentage badge)
-- **Errors Today** (red accent if > 0, links to errors page)
-
-Below: a single real chart showing daily signups (last 30 days) using actual `profiles.created_at` data (already done in `UserGrowthMetrics` — reuse that query, remove the duplicate component).
-
-Below: the conversion funnel (keep `ConversionFunnel` but restyle bars to use `rounded-xl` with gradient fills instead of raw HSL backgrounds).
-
-### 4. Users Page: Merged Subscriber Data
-
-**Modified file: `src/components/admin/UsersList.tsx`**
-
-Join `profiles` with `subscribers` in the query to show:
-- Email, name, join date (existing)
-- **Subscription tier** badge (color-coded)
-- **Credits balance** 
-- **Subscribed** status (active/free/churned)
-
-Add a "Quick Actions" dropdown per user: View Profile, Copy User ID, Open in Stripe (if `stripe_customer_id` exists).
-
-### 5. Deduplicate Revenue
-
-**Delete overlap**: Remove `FinancialDashboard.tsx` (its 2 cards — credits used / credits balance — are already shown better in `RevenueMetrics`). Merge the credit balance data into `RevenueMetrics`.
-
-### 6. Restyle Error Reports
-
-**Modified file: `src/components/admin/AdminErrorReports.tsx`**
-
-- Replace the 3 stat cards with inline metrics in the section header (e.g., "Error Reports · 47 total · 3 today · 12 unique")
-- Use `rounded-2xl` card wrapper
-- Add severity color dots instead of badge text
-
-### 7. Admin Header Refinement
-
-**Modified file: `src/components/admin/AdminHeader.tsx`**
-
-- Use the product logo from `logo_horizontal.png` (like MinimalHeader)
-- Add `backdrop-blur-lg bg-background/80` 
-- Include `SidebarTrigger` for mobile collapse
-- Show current admin user email
-
-## Files to Create
-1. `src/components/admin/AdminSidebar.tsx` — new sidebar navigation
-2. `src/components/admin/AdminDashboardOverview.tsx` — cleaned-up dashboard (replaces EnhancedMetrics + UserGrowthMetrics combo)
-3. `src/pages/admin/AdminUsersPage.tsx` — wrapper for enhanced UsersList
-4. `src/pages/admin/AdminRevenuePage.tsx` — wrapper for RevenueMetrics (with credits data merged)
-5. `src/pages/admin/AdminContentPage.tsx` — wrapper for Images/Videos/Swaps tabs
-6. `src/pages/admin/AdminMarketingPage.tsx` — wrapper for Affiliates + Promos
-7. `src/pages/admin/AdminSettingsPage.tsx` — wrapper for Prompts + Admins
-8. `src/pages/admin/AdminErrorsPage.tsx` — wrapper for error reports
-
-## Files to Modify
-1. `src/pages/AdminDashboard.tsx` — sidebar layout + `<Outlet />`
-2. `src/App.tsx` — nested admin routes
-3. `src/components/admin/AdminHeader.tsx` — visual refresh + sidebar trigger
-4. `src/components/admin/AdminOverview.tsx` — can be removed (replaced by sub-routes)
-5. `src/components/admin/EnhancedMetrics.tsx` — remove mock data, slim down to 4 KPIs
-6. `src/components/admin/UsersList.tsx` — merge subscriber data
-7. `src/components/admin/RevenueMetrics.tsx` — absorb credits balance from FinancialDashboard
-8. `src/components/admin/AdminErrorReports.tsx` — restyle
-9. `src/components/admin/ConversionFunnel.tsx` — restyle bars
-
-## Implementation Scope
-
-This is a large change touching ~17 files. I recommend breaking it into 3 phases:
-
-**Phase 1**: Layout + routing (sidebar, nested routes, header) — the structural change
-**Phase 2**: Restyle all cards/tables/charts with Landing V2 tokens
-**Phase 3**: Data improvements (merge subscriber data into users, remove mock data, deduplicate revenue)
-
-Shall I start with Phase 1?
+**Content type unification schema**:
+```typescript
+interface UnifiedContent {
+  id: string;
+  type: 'generated' | 'ugc' | 'video' | 'outfit_swap' | 'outfit_creator' | 'background';
+  thumbnail_url: string | null;
+  title: string; // prompt or label
+  status: string;
+  user_id: string;
+  user_email: string;
+  created_at: string;
+  raw: any; // original row for detail view
+}
+```
 
