@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { DollarSign, TrendingUp, Users, Percent, AlertTriangle, CreditCard } from 'lucide-react';
+import { DollarSign, TrendingUp, Users, Percent, AlertTriangle, CreditCard, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface RevenueStats {
   mrr: number;
@@ -11,6 +13,10 @@ interface RevenueStats {
   totalCreditsUsed: number;
   creditsBalance: number;
   tierBreakdown: { tier: string; count: number; revenue: number }[];
+  isEstimate: boolean;
+  stripeMrr: number | null;
+  stripeActiveSubscriptions: number | null;
+  stripeSyncedAt: string | null;
 }
 
 const TIER_PRICES: Record<string, number> = {
@@ -24,9 +30,11 @@ const TIER_PRICES: Record<string, number> = {
 export const RevenueMetrics = () => {
   const [stats, setStats] = useState<RevenueStats>({
     mrr: 0, totalPaying: 0, arpu: 0, ltv: 0, churnRisk: 0,
-    totalCreditsUsed: 0, creditsBalance: 0, tierBreakdown: []
+    totalCreditsUsed: 0, creditsBalance: 0, tierBreakdown: [],
+    isEstimate: true, stripeMrr: null, stripeActiveSubscriptions: null, stripeSyncedAt: null,
   });
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     fetchRevenueData();
@@ -34,13 +42,11 @@ export const RevenueMetrics = () => {
 
   const fetchRevenueData = async () => {
     try {
-      const [subscribersRes, transactionsRes] = await Promise.all([
-        supabase.from('subscribers').select('subscription_tier, subscribed, payment_failed_at, credits_balance'),
-        supabase.from('credits_transactions').select('amount'),
-      ]);
+      // Fetch subscribers with stripe_customer_id
+      const { data: subscribers } = await supabase
+        .from('subscribers')
+        .select('subscription_tier, subscribed, payment_failed_at, credits_balance, stripe_customer_id');
 
-      const subscribers = subscribersRes.data;
-      const transactions = transactionsRes.data;
       if (!subscribers) return;
 
       const tierCounts: Record<string, { count: number; revenue: number }> = {};
@@ -74,15 +80,55 @@ export const RevenueMetrics = () => {
       const arpu = totalPaying > 0 ? totalMrr / totalPaying : 0;
       const ltv = arpu * 6;
 
-      const totalCreditsUsed = transactions
-        ?.filter(t => t.amount < 0)
-        .reduce((sum, t) => sum + Math.abs(t.amount), 0) || 0;
+      // Use DB function for credits used (avoids 1000-row limit)
+      let totalCreditsUsed = 0;
+      try {
+        const { data } = await supabase.rpc('admin_sum_credits_used');
+        totalCreditsUsed = Number(data) || 0;
+      } catch {
+        totalCreditsUsed = 0;
+      }
 
-      setStats({ mrr: totalMrr, totalPaying, arpu, ltv, churnRisk: churnRiskCount, totalCreditsUsed, creditsBalance: totalCreditsBalance, tierBreakdown });
+      setStats(prev => ({
+        ...prev,
+        mrr: totalMrr, totalPaying, arpu, ltv, churnRisk: churnRiskCount,
+        totalCreditsUsed, creditsBalance: totalCreditsBalance, tierBreakdown,
+        isEstimate: prev.stripeMrr === null,
+      }));
     } catch (error) {
       console.error('Error fetching revenue data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const syncFromStripe = async () => {
+    setSyncing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error('Not authenticated'); return; }
+
+      const { data, error } = await supabase.functions.invoke('admin-revenue-stats', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (error) throw error;
+
+      setStats(prev => ({
+        ...prev,
+        stripeMrr: data.stripe_mrr,
+        stripeActiveSubscriptions: data.active_subscriptions,
+        stripeSyncedAt: data.synced_at,
+        totalCreditsUsed: data.credits_used_total || prev.totalCreditsUsed,
+        creditsBalance: data.credits_balance_total || prev.creditsBalance,
+        isEstimate: false,
+      }));
+      toast.success('Synced from Stripe successfully');
+    } catch (error: any) {
+      console.error('Stripe sync error:', error);
+      toast.error(error.message || 'Failed to sync from Stripe');
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -98,11 +144,23 @@ export const RevenueMetrics = () => {
     );
   }
 
+  const displayMrr = stats.stripeMrr !== null ? stats.stripeMrr : stats.mrr;
+  const displayPayingCount = stats.stripeActiveSubscriptions !== null ? stats.stripeActiveSubscriptions : stats.totalPaying;
+  const displayArpu = displayPayingCount > 0 ? displayMrr / displayPayingCount : 0;
+
   const kpis = [
-    { label: 'Monthly Recurring Revenue', value: `€${stats.mrr.toFixed(2)}`, sub: 'From active subscriptions', icon: DollarSign, accent: 'border-l-green-500', iconColor: 'text-green-500 bg-green-500/10', valueColor: 'text-green-500' },
-    { label: 'Paying Subscribers', value: stats.totalPaying.toString(), sub: 'Active paid accounts', icon: Users, accent: 'border-l-blue-500', iconColor: 'text-blue-500 bg-blue-500/10' },
-    { label: 'ARPU', value: `€${stats.arpu.toFixed(2)}`, sub: 'Average Revenue Per User', icon: TrendingUp, accent: 'border-l-purple-500', iconColor: 'text-purple-500 bg-purple-500/10' },
-    { label: 'Est. LTV', value: `€${stats.ltv.toFixed(2)}`, sub: 'Lifetime Value (6mo avg)', icon: Percent, accent: 'border-l-amber-500', iconColor: 'text-amber-500 bg-amber-500/10' },
+    {
+      label: 'Monthly Recurring Revenue',
+      value: `€${displayMrr.toFixed(2)}`,
+      sub: stats.isEstimate ? '⚠️ Estimate (tier prices)' : `Stripe data · ${stats.stripeSyncedAt ? new Date(stats.stripeSyncedAt).toLocaleTimeString() : ''}`,
+      icon: DollarSign,
+      accent: 'border-l-green-500',
+      iconColor: 'text-green-500 bg-green-500/10',
+      valueColor: 'text-green-500',
+    },
+    { label: 'Paying Subscribers', value: displayPayingCount.toString(), sub: stats.isEstimate ? 'From DB (estimate)' : 'Active Stripe subscriptions', icon: Users, accent: 'border-l-blue-500', iconColor: 'text-blue-500 bg-blue-500/10' },
+    { label: 'ARPU', value: `€${displayArpu.toFixed(2)}`, sub: 'Average Revenue Per User', icon: TrendingUp, accent: 'border-l-purple-500', iconColor: 'text-purple-500 bg-purple-500/10' },
+    { label: 'Est. LTV', value: `€${(displayArpu * 6).toFixed(2)}`, sub: 'Lifetime Value (6mo avg)', icon: Percent, accent: 'border-l-amber-500', iconColor: 'text-amber-500 bg-amber-500/10' },
   ];
 
   const creditKpis = [
@@ -120,6 +178,22 @@ export const RevenueMetrics = () => {
 
   return (
     <div className="space-y-6">
+      {/* Stripe sync bar */}
+      <div className="flex items-center justify-between">
+        <div>
+          {stats.isEstimate && (
+            <p className="text-sm text-amber-500 flex items-center gap-1.5">
+              <AlertTriangle className="w-3.5 h-3.5" />
+              Revenue figures are estimates based on tier prices. Sync from Stripe for accurate data.
+            </p>
+          )}
+        </div>
+        <Button variant="outline" size="sm" onClick={syncFromStripe} disabled={syncing} className="rounded-xl gap-2">
+          <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
+          {syncing ? 'Syncing...' : 'Sync from Stripe'}
+        </Button>
+      </div>
+
       {/* Revenue KPIs */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {kpis.map((kpi) => (
