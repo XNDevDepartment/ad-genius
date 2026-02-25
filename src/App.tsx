@@ -32,6 +32,13 @@ const SignUp = lazyWithRetry(() => import("./pages/SignUp"));
 const ResetPassword = lazyWithRetry(() => import("./pages/ResetPassword"));
 const EmailConfirmation = lazyWithRetry(() => import("./pages/EmailConfirmation"));
 const AdminDashboard = lazyWithRetry(() => import("./pages/AdminDashboard"));
+const AdminDashboardOverview = lazyWithRetry(() => import("./pages/admin/AdminDashboardOverviewPage"));
+const AdminUsersPage = lazyWithRetry(() => import("./pages/admin/AdminUsersPage"));
+const AdminRevenuePage = lazyWithRetry(() => import("./pages/admin/AdminRevenuePage"));
+const AdminContentPage = lazyWithRetry(() => import("./pages/admin/AdminContentPage"));
+const AdminMarketingPage = lazyWithRetry(() => import("./pages/admin/AdminMarketingPage"));
+const AdminSettingsPage = lazyWithRetry(() => import("./pages/admin/AdminSettingsPage"));
+const AdminErrorsPage = lazyWithRetry(() => import("./pages/admin/AdminErrorsPage"));
 const BaseModelManager = lazyWithRetry(() => import("./pages/admin/BaseModelManager"));
 const SubscriptionAudit = lazyWithRetry(() => import("./pages/admin/SubscriptionAudit"));
 const GettingStartedGuide = lazyWithRetry(() => import("./pages/help/GettingStartedGuide"));
@@ -344,28 +351,18 @@ const App = () => {
                     <AdminDashboard />
                   </Suspense>
                 </ErrorBoundaryWithReset>
-              } />
-              <Route path="/admin/base-models" element={
-                <ErrorBoundaryWithReset>
-                  <Suspense fallback={<LoadingFallback />}>
-                    <BaseModelManager />
-                  </Suspense>
-                </ErrorBoundaryWithReset>
-              } />
-              <Route path="/admin/subscription-audit" element={
-                <ErrorBoundaryWithReset>
-                  <Suspense fallback={<LoadingFallback />}>
-                    <SubscriptionAudit />
-                  </Suspense>
-                </ErrorBoundaryWithReset>
-              } />
-              <Route path="/admin/genius-agent" element={
-                <ErrorBoundaryWithReset>
-                  <Suspense fallback={<LoadingFallback />}>
-                    <GeniusAgentAdmin />
-                  </Suspense>
-                </ErrorBoundaryWithReset>
-              } />
+              }>
+                <Route index element={<Suspense fallback={<LoadingFallback />}><AdminDashboardOverview /></Suspense>} />
+                <Route path="users" element={<Suspense fallback={<LoadingFallback />}><AdminUsersPage /></Suspense>} />
+                <Route path="revenue" element={<Suspense fallback={<LoadingFallback />}><AdminRevenuePage /></Suspense>} />
+                <Route path="content" element={<Suspense fallback={<LoadingFallback />}><AdminContentPage /></Suspense>} />
+                <Route path="marketing" element={<Suspense fallback={<LoadingFallback />}><AdminMarketingPage /></Suspense>} />
+                <Route path="settings" element={<Suspense fallback={<LoadingFallback />}><AdminSettingsPage /></Suspense>} />
+                <Route path="errors" element={<Suspense fallback={<LoadingFallback />}><AdminErrorsPage /></Suspense>} />
+                <Route path="base-models" element={<Suspense fallback={<LoadingFallback />}><BaseModelManager /></Suspense>} />
+                <Route path="subscription-audit" element={<Suspense fallback={<LoadingFallback />}><SubscriptionAudit /></Suspense>} />
+                <Route path="genius-agent" element={<Suspense fallback={<LoadingFallback />}><GeniusAgentAdmin /></Suspense>} />
+              </Route>
               <Route path="/genius-agent" element={
                 <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
