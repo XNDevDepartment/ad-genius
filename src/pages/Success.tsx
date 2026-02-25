@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { trackPurchase } from '@/lib/metaPixel';
+import { supabase } from '@/integrations/supabase/client';
 
 // Plan prices for tracking
 const PLAN_PRICES: Record<string, { monthly: number; yearly: number }> = {
@@ -22,22 +23,58 @@ export default function Success() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [purchaseTracked, setPurchaseTracked] = useState(false);
+  const pollRef = useRef<boolean>(false);
 
+  // Poll for subscription activation with retries + direct Stripe sync fallback
   useEffect(() => {
-    // Webhook has already processed the payment and updated the database
-    // Just refresh to show the latest data
-    const loadSubscription = async () => {
+    if (pollRef.current) return;
+    pollRef.current = true;
+
+    let attempts = 0;
+    const maxAttempts = 10;
+    let cancelled = false;
+
+    const poll = async () => {
+      if (cancelled) return;
+
       try {
-        await refreshSubscription();
-        setLoading(false);
+        // First attempt: try direct Stripe sync via check-subscription
+        if (attempts === 0 || attempts === 3) {
+          const { data } = await supabase.functions.invoke('check-subscription');
+          if (data?.subscribed) {
+            await refreshSubscription();
+            setLoading(false);
+            return;
+          }
+        } else {
+          await refreshSubscription();
+        }
       } catch (error) {
-        console.error('Error loading subscription:', error);
+        console.error('Error polling subscription:', error);
+      }
+
+      attempts++;
+
+      // Check if subscription is now active via subscriptionData
+      // We need to re-check after refreshSubscription updates context
+      if (attempts < maxAttempts) {
+        setTimeout(poll, 3000);
+      } else {
         setLoading(false);
       }
     };
 
-    loadSubscription();
-  }, [refreshSubscription]);
+    poll();
+
+    return () => { cancelled = true; };
+  }, []);
+
+  // Stop polling once subscription is confirmed active
+  useEffect(() => {
+    if (subscriptionData?.subscribed && loading) {
+      setLoading(false);
+    }
+  }, [subscriptionData?.subscribed, loading]);
 
   // Track purchase after subscription data is loaded
   useEffect(() => {
@@ -45,7 +82,6 @@ export default function Success() {
       const tier = subscriptionData.subscription_tier?.toLowerCase() || 'starter';
       const planPrices = PLAN_PRICES[tier] || PLAN_PRICES.starter;
       
-      // Determine if yearly based on subscription_end (yearly plans have end date ~1 year out)
       const subscriptionEnd = subscriptionData.subscription_end ? new Date(subscriptionData.subscription_end) : null;
       const now = new Date();
       const monthsUntilEnd = subscriptionEnd ? (subscriptionEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30) : 1;
@@ -58,11 +94,9 @@ export default function Success() {
   }, [loading, subscriptionData, purchaseTracked]);
 
   useEffect(() => {
-    // Auto-redirect after 5 seconds
     const timer = setTimeout(() => {
       navigate('/account');
     }, 5000);
-
     return () => clearTimeout(timer);
   }, [navigate]);
 
@@ -83,7 +117,7 @@ export default function Success() {
           <CardDescription>
             {loading 
               ? 'Please wait while we activate your subscription.'
-              : 'Your Pro subscription has been activated successfully.'
+              : 'Your subscription has been activated successfully.'
             }
           </CardDescription>
         </CardHeader>
@@ -131,7 +165,7 @@ export default function Success() {
           </div>
 
           <p className="text-sm text-muted-foreground">
-            Redirecting to your account in 5 seconds...
+            {loading ? 'Checking subscription status...' : 'Redirecting to your account in 5 seconds...'}
           </p>
         </CardContent>
       </Card>

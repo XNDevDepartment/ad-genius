@@ -59,13 +59,17 @@ serve(async (req) => {
     }
 
     const customerId = customers.data[0].id;
-    const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
-    const active = subscriptions.data.length > 0;
+    // Fetch all subscriptions (not just active) to catch trialing, incomplete, past_due
+    const subscriptions = await stripe.subscriptions.list({ customer: customerId, limit: 5 });
+    const activeSub = subscriptions.data.find(s => ['active', 'trialing'].includes(s.status));
+    const pendingSub = subscriptions.data.find(s => ['incomplete', 'past_due'].includes(s.status));
+    const subscription = activeSub || pendingSub;
+    const active = !!activeSub;
+    const pending = !activeSub && !!pendingSub;
     let subscriptionEnd: string | null = null;
     let subscriptionTier = "Free";
 
-    if (active) {
-      const subscription = subscriptions.data[0];
+    if (subscription) {
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       
       // Determine tier based on price amount
@@ -184,7 +188,8 @@ serve(async (req) => {
     return new Response(JSON.stringify({ 
       subscribed: active, 
       subscription_tier: subscriptionTier, 
-      subscription_end: subscriptionEnd 
+      subscription_end: subscriptionEnd,
+      pending: pending
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
