@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, UserCheck, Image, CreditCard, ShoppingCart, ArrowDown } from 'lucide-react';
 
@@ -9,7 +8,7 @@ interface FunnelStage {
   count: number;
   percentage: number;
   icon: React.ReactNode;
-  color: string;
+  gradient: string;
 }
 
 type TimePeriod = '7d' | '30d' | '90d' | 'all';
@@ -36,7 +35,6 @@ export const ConversionFunnel = () => {
     try {
       const cutoff = getDateCutoff();
 
-      // Parallel queries for each stage
       const [
         { count: accountsCount },
         { count: onboardingCount },
@@ -44,57 +42,19 @@ export const ConversionFunnel = () => {
         { count: exhaustedCount },
         { count: purchasedCount }
       ] = await Promise.all([
-        // 1. Accounts created
-        supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', cutoff || '1970-01-01'),
-        
-        // 2. Onboarding completed
-        supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true })
-          .eq('onboarding_completed', true)
-          .gte('created_at', cutoff || '1970-01-01'),
-        
-        // 3. Tested product (users who have generated images OR ugc images)
-        supabase
-          .from('profiles')
-          .select('id')
-          .gte('created_at', cutoff || '1970-01-01'),
-        
-        // 4. Exhausted credits (free users with 0 or less credits)
-        supabase
-          .from('subscribers')
-          .select('*', { count: 'exact', head: true })
-          .eq('subscription_tier', 'Free')
-          .lte('credits_balance', 0)
-          .gte('created_at', cutoff || '1970-01-01'),
-        
-        // 5. Purchased (subscribed users)
-        supabase
-          .from('subscribers')
-          .select('*', { count: 'exact', head: true })
-          .eq('subscribed', true)
-          .gte('created_at', cutoff || '1970-01-01'),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).gte('created_at', cutoff || '1970-01-01'),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('onboarding_completed', true).gte('created_at', cutoff || '1970-01-01'),
+        supabase.from('profiles').select('id').gte('created_at', cutoff || '1970-01-01'),
+        supabase.from('subscribers').select('*', { count: 'exact', head: true }).eq('subscription_tier', 'Free').lte('credits_balance', 0).gte('created_at', cutoff || '1970-01-01'),
+        supabase.from('subscribers').select('*', { count: 'exact', head: true }).eq('subscribed', true).gte('created_at', cutoff || '1970-01-01'),
       ]);
 
-      // For "tested product", we need to check if users have any generated images or ugc images
       const profileIds = testedData.data?.map(p => p.id) || [];
       let testedCount = 0;
       
       if (profileIds.length > 0) {
-        // Check for users who have generated any content
-        const { data: usersWithContent } = await supabase
-          .from('generated_images')
-          .select('user_id')
-          .in('user_id', profileIds);
-        
-        const { data: usersWithUgc } = await supabase
-          .from('ugc_images')
-          .select('user_id')
-          .in('user_id', profileIds);
-        
+        const { data: usersWithContent } = await supabase.from('generated_images').select('user_id').in('user_id', profileIds);
+        const { data: usersWithUgc } = await supabase.from('ugc_images').select('user_id').in('user_id', profileIds);
         const uniqueUsers = new Set([
           ...(usersWithContent?.map(u => u.user_id) || []),
           ...(usersWithUgc?.map(u => u.user_id) || [])
@@ -105,41 +65,11 @@ export const ConversionFunnel = () => {
       const total = accountsCount || 0;
       
       const newStages: FunnelStage[] = [
-        {
-          name: 'Accounts Created',
-          count: total,
-          percentage: 100,
-          icon: <Users className="h-5 w-5" />,
-          color: 'hsl(var(--primary))'
-        },
-        {
-          name: 'Onboarding Complete',
-          count: onboardingCount || 0,
-          percentage: total > 0 ? ((onboardingCount || 0) / total) * 100 : 0,
-          icon: <UserCheck className="h-5 w-5" />,
-          color: 'hsl(217, 91%, 60%)'
-        },
-        {
-          name: 'Tested Product',
-          count: testedCount,
-          percentage: total > 0 ? (testedCount / total) * 100 : 0,
-          icon: <Image className="h-5 w-5" />,
-          color: 'hsl(262, 83%, 58%)'
-        },
-        {
-          name: 'Exhausted Credits',
-          count: exhaustedCount || 0,
-          percentage: total > 0 ? ((exhaustedCount || 0) / total) * 100 : 0,
-          icon: <CreditCard className="h-5 w-5" />,
-          color: 'hsl(25, 95%, 53%)'
-        },
-        {
-          name: 'Converted',
-          count: purchasedCount || 0,
-          percentage: total > 0 ? ((purchasedCount || 0) / total) * 100 : 0,
-          icon: <ShoppingCart className="h-5 w-5" />,
-          color: 'hsl(142, 76%, 36%)'
-        }
+        { name: 'Accounts Created', count: total, percentage: 100, icon: <Users className="h-4 w-4" />, gradient: 'from-blue-500 to-blue-600' },
+        { name: 'Onboarding Complete', count: onboardingCount || 0, percentage: total > 0 ? ((onboardingCount || 0) / total) * 100 : 0, icon: <UserCheck className="h-4 w-4" />, gradient: 'from-indigo-500 to-indigo-600' },
+        { name: 'Tested Product', count: testedCount, percentage: total > 0 ? (testedCount / total) * 100 : 0, icon: <Image className="h-4 w-4" />, gradient: 'from-purple-500 to-purple-600' },
+        { name: 'Exhausted Credits', count: exhaustedCount || 0, percentage: total > 0 ? ((exhaustedCount || 0) / total) * 100 : 0, icon: <CreditCard className="h-4 w-4" />, gradient: 'from-amber-500 to-amber-600' },
+        { name: 'Converted', count: purchasedCount || 0, percentage: total > 0 ? ((purchasedCount || 0) / total) * 100 : 0, icon: <ShoppingCart className="h-4 w-4" />, gradient: 'from-green-500 to-green-600' },
       ];
 
       setStages(newStages);
@@ -160,103 +90,85 @@ export const ConversionFunnel = () => {
 
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Conversion Funnel</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="animate-pulse space-y-4">
-            {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="h-12 bg-muted rounded" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="rounded-2xl border-0 bg-card/80 backdrop-blur-sm shadow-apple p-6">
+        <div className="h-6 w-48 bg-muted rounded-lg mb-6" />
+        <div className="space-y-4">
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="h-12 bg-muted rounded-xl animate-pulse" />
+          ))}
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Conversion Funnel</CardTitle>
+    <div className="rounded-2xl border-0 bg-card/80 backdrop-blur-sm shadow-apple p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="text-lg font-semibold">Conversion Funnel</h3>
+          <p className="text-sm text-muted-foreground">User journey stages</p>
+        </div>
         <Tabs value={period} onValueChange={(v) => setPeriod(v as TimePeriod)}>
-          <TabsList>
-            <TabsTrigger value="7d">7 Days</TabsTrigger>
-            <TabsTrigger value="30d">30 Days</TabsTrigger>
-            <TabsTrigger value="90d">90 Days</TabsTrigger>
-            <TabsTrigger value="all">All Time</TabsTrigger>
+          <TabsList className="rounded-xl bg-muted/50">
+            <TabsTrigger value="7d" className="rounded-lg text-xs">7D</TabsTrigger>
+            <TabsTrigger value="30d" className="rounded-lg text-xs">30D</TabsTrigger>
+            <TabsTrigger value="90d" className="rounded-lg text-xs">90D</TabsTrigger>
+            <TabsTrigger value="all" className="rounded-lg text-xs">All</TabsTrigger>
           </TabsList>
         </Tabs>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          {stages.map((stage, index) => {
-            const dropOff = getDropOff(index);
-            const maxWidth = 100;
-            const barWidth = Math.max(stage.percentage, 5); // minimum 5% for visibility
-            
-            return (
-              <div key={stage.name}>
-                {index > 0 && dropOff !== null && (
-                  <div className="flex items-center justify-center py-1 text-xs text-muted-foreground">
-                    <ArrowDown className="h-3 w-3 mr-1" />
-                    <span className={dropOff > 50 ? 'text-destructive' : dropOff > 30 ? 'text-yellow-500' : 'text-green-500'}>
-                      {dropOff.toFixed(1)}% drop-off
-                    </span>
+      </div>
+
+      <div className="space-y-2">
+        {stages.map((stage, index) => {
+          const dropOff = getDropOff(index);
+          const barWidth = Math.max(stage.percentage, 8);
+          
+          return (
+            <div key={stage.name}>
+              {index > 0 && dropOff !== null && (
+                <div className="flex items-center justify-center py-1 text-xs text-muted-foreground">
+                  <ArrowDown className="h-3 w-3 mr-1" />
+                  <span className={dropOff > 50 ? 'text-destructive' : dropOff > 30 ? 'text-amber-500' : 'text-green-500'}>
+                    {dropOff.toFixed(1)}% drop-off
+                  </span>
+                </div>
+              )}
+              <div className="relative">
+                <div
+                  className={`flex items-center justify-between px-4 py-3 rounded-xl bg-gradient-to-r ${stage.gradient} transition-all`}
+                  style={{ width: `${barWidth}%`, minWidth: '220px' }}
+                >
+                  <div className="flex items-center gap-2 text-white font-medium text-sm">
+                    {stage.icon}
+                    <span>{stage.name}</span>
                   </div>
-                )}
-                <div className="relative">
-                  <div
-                    className="flex items-center justify-between px-4 py-3 rounded-lg transition-all"
-                    style={{
-                      width: `${barWidth}%`,
-                      backgroundColor: stage.color,
-                      minWidth: '200px'
-                    }}
-                  >
-                    <div className="flex items-center gap-2 text-white font-medium">
-                      {stage.icon}
-                      <span>{stage.name}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-white">
-                      <span className="font-bold text-lg">{stage.count}</span>
-                      <span className="text-white/80 text-sm">({stage.percentage.toFixed(1)}%)</span>
-                    </div>
+                  <div className="flex items-center gap-2 text-white">
+                    <span className="font-bold">{stage.count}</span>
+                    <span className="text-white/70 text-xs">({stage.percentage.toFixed(1)}%)</span>
                   </div>
                 </div>
               </div>
-            );
-          })}
-        </div>
-        
-        {/* Conversion Summary */}
-        <div className="mt-6 pt-4 border-t grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="text-sm text-muted-foreground">Onboarding Rate</div>
-            <div className="text-xl font-bold">
-              {stages[1]?.percentage.toFixed(1) || 0}%
+            </div>
+          );
+        })}
+      </div>
+      
+      {/* Summary */}
+      <div className="mt-6 pt-4 border-t border-border/50 grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'Onboarding Rate', value: stages[1]?.percentage },
+          { label: 'Product Test Rate', value: stages[2]?.percentage },
+          { label: 'Credit Exhaustion', value: stages[3]?.percentage },
+          { label: 'Conversion Rate', value: stages[4]?.percentage, highlight: true },
+        ].map((item) => (
+          <div key={item.label} className="text-center">
+            <div className="text-xs text-muted-foreground mb-1">{item.label}</div>
+            <div className={`text-xl font-bold ${item.highlight ? 'text-green-500' : ''}`}>
+              {(item.value || 0).toFixed(1)}%
             </div>
           </div>
-          <div className="text-center">
-            <div className="text-sm text-muted-foreground">Product Test Rate</div>
-            <div className="text-xl font-bold">
-              {stages[2]?.percentage.toFixed(1) || 0}%
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-sm text-muted-foreground">Credit Exhaustion</div>
-            <div className="text-xl font-bold">
-              {stages[3]?.percentage.toFixed(1) || 0}%
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-sm text-muted-foreground">Conversion Rate</div>
-            <div className="text-xl font-bold text-green-600">
-              {stages[4]?.percentage.toFixed(1) || 0}%
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        ))}
+      </div>
+    </div>
   );
 };
