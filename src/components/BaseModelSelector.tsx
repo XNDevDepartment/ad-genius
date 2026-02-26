@@ -326,11 +326,11 @@ export const BaseModelSelector = ({
               )}
               onClick={() => onSelectModel(model)}
             >
-              <div className="aspect-[3/4] relative overflow-hidden rounded-t-lg">
+              <div className="aspect-[3/4] relative overflow-hidden rounded-t-lg bg-muted">
                 <img
                   src={model.thumbnail_url || model.public_url}
                   alt={model.name}
-                  className="w-full h-full object-cover object-top"
+                  className="w-full h-full object-contain"
                 />
                 {selectedModel?.id === model.id && (
                   <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
@@ -376,11 +376,11 @@ export const BaseModelSelector = ({
               )}
               onClick={() => onSelectModel(model)}
             >
-              <div className="aspect-[3/4] relative overflow-hidden rounded-t-lg">
+              <div className="aspect-[3/4] relative overflow-hidden rounded-t-lg bg-muted">
                 <img
                   src={model.thumbnail_url || model.public_url}
                   alt={model.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
                 {selectedModel?.id === model.id && (
                   <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
