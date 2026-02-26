@@ -122,7 +122,7 @@ serve(async (req) => {
         "X-Title": "ProduktPix UGC Generator"
       },
       body: JSON.stringify({
-        model: "anthropic/claude-sonnet-4",
+        model: "anthropic/claude-sonnet-4.6",
         messages,
         tools: [scenarioTool],
         tool_choice: { type: "function", function: { name: "generate_scenarios" } },
