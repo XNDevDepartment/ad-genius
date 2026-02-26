@@ -1,48 +1,24 @@
 
 
-# CRITICAL: Stripe Webhook is Completely Broken
+# Fix Model Image Cropping on iOS Mobile
 
-## What's happening right now
+## Problem
+The model card images use `object-cover` in an `aspect-[3/4]` container. For full-body portrait images (like Amanda's), `object-cover` crops aggressively — on iOS it shows only the forehead/top of head because the image is much taller than the container.
 
-The user paid for the Plus plan, but **nothing happened** because the Stripe webhook is crashing on every single request. The logs show repeated errors:
+## Fix
+Change system model images (line 383) and user model images (line 333) from `object-cover` to `object-contain`. This displays the full body within the card with a neutral background, which is correct for model selection where seeing the full pose matters.
 
-```text
-SubtleCryptoProvider cannot be used in a synchronous context.
-Use `await constructEventAsync(...)` instead of `constructEvent(...)`
+### `src/components/BaseModelSelector.tsx`
+
+**Line 333** (user models):
+```
+object-cover object-top  →  object-contain
 ```
 
-This affects **ALL** Stripe events — not just this user. No subscriptions, cancellations, or payments are being processed by the webhook.
-
-### User's current DB state:
-- `subscription_tier: Free`, `subscribed: false`, `credits_balance: 0`
-- The webhook never activated her account
-
-## Root cause
-
-Line 97 of `stripe-webhook/index.ts` uses `stripe.webhooks.constructEvent()` (synchronous), but Deno's `SubtleCrypto` only supports async operations. The fix is to use `await stripe.webhooks.constructEventAsync()`.
-
-## Fix plan
-
-### 1. Fix the webhook signature verification
-Change line 97 from:
-```typescript
-event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+**Line 383** (system models):
 ```
-to:
-```typescript
-event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
+object-cover  →  object-contain
 ```
 
-### 2. Manually fix the user's record via migration
-Since the webhook failed, manually activate the user:
-- Set `subscription_tier = 'Plus'`, `subscribed = true`, `payment_type = 'one_time'`
-- Set `subscription_end` to 30 days from now
-- Allocate 200 credits (Plus tier)
-
-### Files to modify
-1. **`supabase/functions/stripe-webhook/index.ts`** — line 97: `constructEvent` → `constructEventAsync`
-2. **New migration** — fix user record and allocate credits
-
-### After deploying
-You should re-send the failed webhook events from the Stripe Dashboard (Developers → Webhooks → select the endpoint → find the failed events → click "Resend"). This will re-process any other payments that were missed.
+Also add a `bg-muted` class to the `aspect-[3/4]` container divs (lines 329 and 379) so the letterbox area has a clean background instead of being transparent.
 
