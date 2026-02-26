@@ -61,8 +61,8 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     // Fetch all subscriptions (not just active) to catch trialing, incomplete, past_due
     const subscriptions = await stripe.subscriptions.list({ customer: customerId, limit: 5 });
-    const activeSub = subscriptions.data.find(s => ['active', 'trialing'].includes(s.status));
-    const pendingSub = subscriptions.data.find(s => ['incomplete', 'past_due'].includes(s.status));
+  const activeSub = subscriptions.data.find((s: any) => ['active', 'trialing'].includes(s.status));
+    const pendingSub = subscriptions.data.find((s: any) => ['incomplete', 'past_due'].includes(s.status));
     const subscription = activeSub || pendingSub;
     const active = !!activeSub;
     const pending = !activeSub && !!pendingSub;
