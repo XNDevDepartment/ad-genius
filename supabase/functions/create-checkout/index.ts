@@ -45,9 +45,9 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
     // Get request body
-    const { planId, interval = 'month', promoCode } = await req.json();
+    const { planId, interval = 'month', promoCode, paymentMode } = await req.json();
     
-    console.log('[create-checkout] Checkout params:', { planId, interval, promoCode: promoCode || 'none' });
+    console.log('[create-checkout] Checkout params:', { planId, interval, promoCode: promoCode || 'none', paymentMode: paymentMode || 'subscription' });
 
     // Define plan pricing
     const planPricing = {
@@ -143,11 +143,12 @@ serve(async (req) => {
 
     // Create checkout session
     const origin = req.headers.get("origin") || "http://localhost:3000";
-    const session = await stripe.checkout.sessions.create({
+    const isOneTime = paymentMode === 'one_time';
+
+    const sessionParams: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email!,
       ...(customerId ? { customer_update: { name: 'auto' } } : {}),
-      // Use discounts if promo code / ad-hoc coupon found, otherwise allow manual entry
       ...(adHocCouponId
         ? { discounts: [{ coupon: adHocCouponId }] }
         : promotionCodeId 
@@ -156,36 +157,38 @@ serve(async (req) => {
       ),
       tax_id_collection: { enabled: true },
       billing_address_collection: 'required',
-      // custom_fields: [
-      //   { key: 'nif', label: { type: 'custom', custom: 'NIF (optional)' }, type: 'text', optional: true }
-      // ],
       line_items: [
         {
           price_data: {
             currency: "eur",
             product_data: { 
               name: planName,
-              description: planId === 'founders' 
-                ? `Limited-time Founders subscription with lifetime pricing guarantee! (Billed ${interval === 'year' ? 'annually' : 'monthly'})` 
-                : interval === 'year' 
-                  ? 'Annual subscription (2 months free! Billed annually)' 
-                  : 'Monthly subscription (Billed monthly)',
+              description: isOneTime
+                ? 'One-time payment — 30 days access'
+                : planId === 'founders' 
+                  ? `Limited-time Founders subscription with lifetime pricing guarantee! (Billed ${interval === 'year' ? 'annually' : 'monthly'})` 
+                  : interval === 'year' 
+                    ? 'Annual subscription (2 months free! Billed annually)' 
+                    : 'Monthly subscription (Billed monthly)',
             },
             unit_amount: unitAmount,
-            recurring: { interval: interval as 'month' | 'year' },
+            ...(isOneTime ? {} : { recurring: { interval: interval as 'month' | 'year' } }),
           },
           quantity: 1,
         },
       ],
-      mode: "subscription",
+      mode: isOneTime ? "payment" : "subscription",
       success_url: `${origin}/success`,
       cancel_url: `${origin}/cancel`,
       metadata: {
         plan_id: planId,
         user_id: user.id,
-        promo_code: promoCode || null
+        promo_code: promoCode || null,
+        ...(isOneTime ? { payment_mode: 'one_time' } : {})
       }
-    });
+    };
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     console.log('[create-checkout] Session created:', { 
       sessionId: session.id, 
