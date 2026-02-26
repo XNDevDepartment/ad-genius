@@ -124,15 +124,20 @@ serve(async (req) => {
           break;
         }
 
-        // Get subscription details from Stripe
-        if (!session.subscription) {
-          console.error("[WEBHOOK] No subscription in checkout session");
+        // Check if this is a one-time payment
+        const isOneTimePayment = session.metadata?.payment_mode === 'one_time';
+
+        if (!session.subscription && !isOneTimePayment) {
+          console.error("[WEBHOOK] No subscription in checkout session and not a one-time payment");
           break;
         }
 
-        const subscription = await stripe.subscriptions.retrieve(
-          session.subscription as string
-        );
+        let subscription: Stripe.Subscription | null = null;
+        if (session.subscription) {
+          subscription = await stripe.subscriptions.retrieve(
+            session.subscription as string
+          );
+        }
         
         // Retrieve session with discount details expanded to detect promo codes
         let promoCodeUsed: string | null = null;
@@ -199,14 +204,25 @@ serve(async (req) => {
         
         console.log(`[WEBHOOK] Activating ${tier} subscription with ${credits} credits${promoCodeUsed ? ` (promo: ${promoCodeUsed})` : ''}`);
         
+        // Calculate subscription end date
+        let subscriptionEndDate: string;
+        if (isOneTimePayment) {
+          const endDate = new Date();
+          endDate.setDate(endDate.getDate() + 30);
+          subscriptionEndDate = endDate.toISOString();
+        } else {
+          subscriptionEndDate = new Date(subscription!.current_period_end * 1000).toISOString();
+        }
+
         // Update subscriber in database
         const { error: updateError } = await supabase
           .from("subscribers")
           .update({
             subscribed: true,
             subscription_tier: tier,
-            subscription_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            subscription_end: subscriptionEndDate,
             stripe_customer_id: session.customer as string,
+            payment_type: isOneTimePayment ? 'one_time' : 'subscription',
             updated_at: new Date().toISOString(),
             last_reset_at: new Date().toISOString()
           })
@@ -288,10 +304,13 @@ serve(async (req) => {
             const prices = planPrices[tier] || planPrices.Starter;
             
             // Determine if yearly based on subscription period
-            const periodEnd = subscription.current_period_end;
-            const periodStart = subscription.current_period_start;
-            const daysInPeriod = (periodEnd - periodStart) / (60 * 60 * 24);
-            const isYearly = daysInPeriod > 60; // Yearly subscriptions have 365 days
+            let isYearly = false;
+            if (subscription) {
+              const periodEnd = subscription.current_period_end;
+              const periodStart = subscription.current_period_start;
+              const daysInPeriod = (periodEnd - periodStart) / (60 * 60 * 24);
+              isYearly = daysInPeriod > 60;
+            }
             
             const purchaseValue = isYearly ? prices.yearly : prices.monthly;
             const hashedEmail = await hashEmail(profileData.email);
