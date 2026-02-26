@@ -1,50 +1,48 @@
 
 
-# Fix Build Error + Add One-Time Payment for Plus & Pro Plans
+# CRITICAL: Stripe Webhook is Completely Broken
 
-## 1. Fix Build Error in `check-subscription/index.ts`
-The TypeScript error is on lines 64-65 where `s` has implicit `any` type. Add explicit type annotation: `(s: any)`.
+## What's happening right now
 
-## 2. The `create-checkout` Already Supports One-Time Payments
-The existing code already handles `paymentMode: 'one_time'` — it sets `mode: "payment"`, removes `recurring`, and stores `payment_mode: 'one_time'` in metadata. The `stripe-webhook` and `check-subscription` also already handle this flow. So Plus and Pro one-time payments work **out of the box** by calling:
+The user paid for the Plus plan, but **nothing happened** because the Stripe webhook is crashing on every single request. The logs show repeated errors:
 
-```typescript
-// Plus one-time (€49)
-await supabase.functions.invoke('create-checkout', {
-  body: { planId: 'plus', interval: 'month', paymentMode: 'one_time' }
-});
-
-// Pro one-time (€99)
-await supabase.functions.invoke('create-checkout', {
-  body: { planId: 'pro', interval: 'month', paymentMode: 'one_time' }
-});
+```text
+SubtleCryptoProvider cannot be used in a synchronous context.
+Use `await constructEventAsync(...)` instead of `constructEvent(...)`
 ```
 
-No backend changes needed for Plus/Pro one-time — the system maps `planId` to the correct price and tier automatically.
+This affects **ALL** Stripe events — not just this user. No subscriptions, cancellations, or payments are being processed by the webhook.
 
-## 3. Optionally: Enable Multibanco as Payment Method
-Stripe Checkout supports Multibanco for one-time payments in EUR. To enable it, add `payment_method_types` to the session when `isOneTime` is true. However, Multibanco can also be enabled directly in the Stripe Dashboard under Settings → Payment Methods — no code change needed. The simpler approach is to enable it in the Stripe Dashboard.
+### User's current DB state:
+- `subscription_tier: Free`, `subscribed: false`, `credits_balance: 0`
+- The webhook never activated her account
 
-## Implementation Steps
+## Root cause
 
-### A. Fix build error (`check-subscription/index.ts`, lines 64-65)
+Line 97 of `stripe-webhook/index.ts` uses `stripe.webhooks.constructEvent()` (synchronous), but Deno's `SubtleCrypto` only supports async operations. The fix is to use `await stripe.webhooks.constructEventAsync()`.
+
+## Fix plan
+
+### 1. Fix the webhook signature verification
+Change line 97 from:
 ```typescript
-const activeSub = subscriptions.data.find((s: any) => ['active', 'trialing'].includes(s.status));
-const pendingSub = subscriptions.data.find((s: any) => ['incomplete', 'past_due'].includes(s.status));
+event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+```
+to:
+```typescript
+event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
 ```
 
-### B. No changes needed to `create-checkout` or `stripe-webhook`
-Plus and Pro one-time payments already work. The webhook will:
-- Detect `payment_mode: 'one_time'` in metadata
-- Set `subscription_tier` to "Plus" or "Pro" based on `plan_id`
-- Calculate 30-day `subscription_end`
-- Allocate 200 credits (Plus) or 400 credits (Pro)
+### 2. Manually fix the user's record via migration
+Since the webhook failed, manually activate the user:
+- Set `subscription_tier = 'Plus'`, `subscribed = true`, `payment_type = 'one_time'`
+- Set `subscription_end` to 30 days from now
+- Allocate 200 credits (Plus tier)
 
-### C. Enable Multibanco in Stripe Dashboard
-Go to Stripe Dashboard → Settings → Payment Methods → Enable "Multibanco". This applies to all Checkout sessions in `payment` mode automatically.
+### Files to modify
+1. **`supabase/functions/stripe-webhook/index.ts`** — line 97: `constructEvent` → `constructEventAsync`
+2. **New migration** — fix user record and allocate credits
 
-### Technical Note
-To create a direct checkout link for the client wanting Plus one-time, you can either:
-1. Use the existing Promo1MesCheckout pattern to create a dedicated route
-2. Or manually invoke the edge function with the right params from admin
+### After deploying
+You should re-send the failed webhook events from the Stripe Dashboard (Developers → Webhooks → select the endpoint → find the failed events → click "Resend"). This will re-process any other payments that were missed.
 
