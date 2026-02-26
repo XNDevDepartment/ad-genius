@@ -1,129 +1,121 @@
+# Fix: One-Time Payment Support & User [marisaisabelnevesribeiro@gmail.com](mailto:marisaisabelnevesribeiro@gmail.com)
 
+## Root Cause Analysis
 
-# Admin Panel Improvements: Revenue Fix, Content Redesign & User-Content Linking
+The user paid but her subscriber record shows:
 
-## Problems Identified
+- `stripe_customer_id: null` — webhook never linked her Stripe customer
+- `subscribed: false`, `subscription_tier: Free` — payment was never activated
+- 9 credits remaining (Free tier default of 10 minus 1 used)
 
-### 1. Revenue Calculation is Wrong
-The current `RevenueMetrics.tsx` uses **hardcoded tier prices** (`TIER_PRICES`) instead of querying actual Stripe payment data. Issues:
-- Founders price is hardcoded as `€19.99` but some may have different pricing
-- It counts `subscribed=true` users and multiplies by the hardcoded price, which doesn't reflect actual Stripe charges (discounts, promos, trials)
-- The `credits_transactions` query fetches ALL transactions (could hit the 1000-row Supabase limit), making "Credits Used" inaccurate
-- No distinction between monthly vs annual billing
+The system has **zero support for one-time payments**. Every checkout uses `mode: "subscription"` with `recurring` pricing. The webhook at line 128 does `if (!session.subscription) break;` — meaning if a payment somehow came through without a subscription object, the webhook silently ignores it and the user is never activated.
 
-**Fix**: Query Stripe invoices via a new edge function to get **real MRR** from actual paid invoices in the last 30 days. As a fallback (since Stripe queries are slow), keep the subscriber-based calculation but fix the 1000-row limit issue and add a note that it's an estimate. Also add a "Sync from Stripe" button that calls the edge function for accurate data.
-
-### 2. Content Tab is Basic and Disconnected from Users
-Current content tab has 3 sub-tabs (Images, Videos, Outfit Swaps) but:
-- No way to filter by user
-- No link from Users table to Content
-- Each sub-tab fetches data independently with no shared filtering
-- No summary stats (total images per type, generation trends)
-- No outfit creator results shown
-- Queries hit the 1000-row limit silently
-
-### 3. No User → Content Navigation
-The UsersList has a "View" button that opens a modal, but no way to see that user's generated content.
-
----
+Video generation itself has no tier restriction (both frontend `canAccessVideos()` and backend tier check are wide open). The user's actual blocker is likely **insufficient credits** — a 5-second video costs 5 credits (she has 9), but a 10-second video costs 10 (she can't afford it). She may also see Free-tier UI messaging that discourages her.
 
 ## Plan
 
-### A. Fix Revenue Metrics
+### 1. Immediate: Fix this user via DB migration
 
-**Modify `src/components/admin/RevenueMetrics.tsx`**:
-- Fix the 1000-row limit on `credits_transactions` by using a count/sum approach instead of fetching all rows — use `.select('amount')` with pagination or better yet, compute totals server-side
-- Add a note "(estimate based on tier prices)" next to MRR
-- Create a new edge function `admin-revenue-stats` that queries Stripe for actual invoice totals in the last 30 days, returning real MRR
-- Add a "Refresh from Stripe" button that calls this edge function and shows accurate data
-- Fix subscriber query to also fetch `stripe_customer_id` so we can count truly active Stripe subscribers vs manually-set ones
+Add a migration to:
 
-**Create `supabase/functions/admin-revenue-stats/index.ts`**:
-- Validates admin role
-- Queries Stripe `invoices.list` for the last 30 days with `status: 'paid'`
-- Sums up paid amounts to compute real MRR
-- Returns breakdown by product/plan
-- Returns active subscription count from Stripe
+- Update her `subscribers` record: set `subscription_tier = 'Starter'`, `subscribed = true`, `subscription_end` to 30 days from 23/02/2026, because admin has allocated manually 80 credits already
 
-### B. Redesign Content Tab with User Filtering
+### 2. Add `payment_type` column to `subscribers`
 
-**Rewrite `src/pages/admin/AdminContentPage.tsx`**:
-- Accept optional `userId` query parameter (`/admin/content?userId=xxx`)
-- Show a unified content view with KPI stats at the top (total images, UGC, videos, outfit swaps, outfit creator results)
-- Add filter bar: content type dropdown, date range, user filter (with clear button showing user email when filtered)
-- Single unified table showing all content types with a "Type" badge column
-- Include `outfit_creator_results` in the content listing (currently missing)
-- Pagination aware of the 1000-row limit — paginate server-side or fetch in batches
+New column `payment_type TEXT DEFAULT 'subscription'` to distinguish:
 
-**Modify `src/components/admin/AdminImagesList.tsx`** → Replace with a new unified `AdminContentList.tsx`:
-- Single component that fetches from all content tables: `generated_images`, `ugc_images`, `kling_jobs`, `outfit_swap_results`, `outfit_creator_results`, `bulk_background_results`
-- Accepts `userId` prop for filtering
-- Unified columns: Preview thumbnail, Type badge, User (email), Prompt/Description, Status, Date, Actions
-- Grid/Table view toggle (keep existing)
-- Type filter chips instead of dropdown (Generated, UGC, Video, Outfit Swap, Outfit Creator, Background)
-- Date range filter (Today, 7d, 30d, All)
+- `'subscription'` — recurring Stripe subscription (current default)
+- `'one_time'` — single payment, no auto-renewal
 
-### C. Add "View Content" Action to Users Table
+### 3. Modify `create-checkout` edge function
 
-**Modify `src/components/admin/UsersList.tsx`**:
-- Add a new column "Actions" with a dropdown menu containing:
-  - "View Profile" (existing modal)
-  - "View Content" → navigates to `/admin/content?userId={user.id}`
-- Show content count badge next to user (optional, could be expensive — skip for now)
+Add a new `paymentMode` parameter. When `paymentMode === 'one_time'`:
 
-**Modify `src/components/admin/UserProfileModal.tsx`**:
-- Add a "View Content" button in Quick Actions that navigates to `/admin/content?userId={user.id}` and closes the modal
+- Use `mode: "payment"` instead of `mode: "subscription"`
+- Remove `recurring` from `price_data`
+- Store `payment_mode: 'one_time'` in session metadata
 
-### D. Files Summary
+### 4. Modify `stripe-webhook` edge function
 
-**New files**:
-1. `src/components/admin/AdminContentList.tsx` — unified content browser with user filtering, type chips, date filters
-2. `supabase/functions/admin-revenue-stats/index.ts` — Stripe-based real revenue calculation
+In the `checkout.session.completed` handler:
 
-**Modified files**:
-1. `src/pages/admin/AdminContentPage.tsx` — read `userId` from URL params, pass to AdminContentList, show user banner when filtered
-2. `src/components/admin/RevenueMetrics.tsx` — fix 1000-row limit, add Stripe sync button, mark estimates
-3. `src/components/admin/UsersList.tsx` — add dropdown actions column with "View Content" navigation
-4. `src/components/admin/UserProfileModal.tsx` — add "View Content" quick action button
-5. `supabase/config.toml` — add `admin-revenue-stats` function config
+- When `session.subscription` is null (one-time payment), read `session.metadata.payment_mode`
+- Calculate `subscription_end` as 30 days from now
+- Set `payment_type = 'one_time'`, `subscribed = true`, tier from `plan_id`
+- Allocate credits normally
 
-**Deleted files** (merged into AdminContentList):
-- `src/components/admin/AdminImagesList.tsx` (functionality merged)
-- `src/components/admin/AdminVideosList.tsx` (functionality merged)
-- `src/components/admin/AdminOutfitSwapsList.tsx` (functionality merged)
+### 5. Modify `check-subscription` edge function
 
-### E. Technical Details
+Add logic for one-time payment users:
 
-**Revenue edge function authentication**:
-```sql
--- Verify caller is admin before returning Stripe data
-SELECT is_admin(auth.uid()) -- reuse existing function
-```
+- If `payment_type === 'one_time'` and `subscription_end` is in the future → keep tier active
+- If `payment_type === 'one_time'` and `subscription_end` is past → downgrade to Free
+- Skip Stripe subscription lookup for one-time users (they have no Stripe subscription)
 
-**Content query strategy** (avoiding 1000-row limit):
-- Fetch each content type separately with `.limit(200)` per type when unfiltered
-- When filtered by user, fetch all of that user's content (no limit needed, users won't have 1000+)
-- Sort merged results client-side by `created_at`
+### Files to modify
 
-**URL parameter flow**:
-```
-UsersList → click "View Content" → navigate("/admin/content?userId=xxx")
-AdminContentPage → reads searchParams.get("userId") → passes to AdminContentList
-AdminContentList → adds .eq("user_id", userId) to all queries when userId is present
-```
+1. **New migration** — add `payment_type` column, fix Marisa's record
+2. `**supabase/functions/create-checkout/index.ts**` — add one-time payment mode
+3. `**supabase/functions/stripe-webhook/index.ts**` — handle null subscription in checkout.session.completed
+4. `**supabase/functions/check-subscription/index.ts**` — respect one-time payment expiry
+5. `**src/integrations/supabase/types.ts**` — auto-updated after migration
 
-**Content type unification schema**:
+### Technical details
+
+**create-checkout one-time path:**
+
 ```typescript
-interface UnifiedContent {
-  id: string;
-  type: 'generated' | 'ugc' | 'video' | 'outfit_swap' | 'outfit_creator' | 'background';
-  thumbnail_url: string | null;
-  title: string; // prompt or label
-  status: string;
-  user_id: string;
-  user_email: string;
-  created_at: string;
-  raw: any; // original row for detail view
+if (paymentMode === 'one_time') {
+  session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    line_items: [{
+      price_data: {
+        currency: "eur",
+        product_data: { name: planName },
+        unit_amount: unitAmount,
+        // NO recurring
+      },
+      quantity: 1,
+    }],
+    metadata: { plan_id: planId, user_id: user.id, payment_mode: 'one_time' },
+    // ...
+  });
 }
 ```
 
+**stripe-webhook one-time handler:**
+
+```typescript
+if (!session.subscription && session.metadata?.payment_mode === 'one_time') {
+  const subscriptionEnd = new Date();
+  subscriptionEnd.setDate(subscriptionEnd.getDate() + 30);
+  
+  await supabase.from("subscribers").update({
+    subscribed: true,
+    subscription_tier: tier,
+    subscription_end: subscriptionEnd.toISOString(),
+    stripe_customer_id: session.customer,
+    payment_type: 'one_time',
+    last_reset_at: new Date().toISOString(),
+  }).eq("user_id", userId);
+  
+  // Allocate credits
+  await supabase.rpc("refund_user_credits", { ... });
+}
+```
+
+**check-subscription one-time handling:**
+
+```typescript
+// Early return for one-time payment users
+if (existingSubscriber?.payment_type === 'one_time') {
+  if (existingSubscriber.subscription_end && new Date(existingSubscriber.subscription_end) > new Date()) {
+    // Still active
+    return Response({ subscribed: true, subscription_tier: existingSubscriber.subscription_tier });
+  } else {
+    // Expired — downgrade
+    await supabase.from("subscribers").update({ subscribed: false, subscription_tier: 'Free' });
+    return Response({ subscribed: false, subscription_tier: 'Free' });
+  }
+}
+```
