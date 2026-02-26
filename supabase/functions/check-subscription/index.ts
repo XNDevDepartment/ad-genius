@@ -99,9 +99,48 @@ serve(async (req) => {
     // Check if tier changed to allocate credits
     const { data: existingSubscriber } = await supabaseService
       .from("subscribers")
-      .select("subscription_tier, credits_balance, last_reset_at, updated_at")
+      .select("subscription_tier, credits_balance, last_reset_at, updated_at, payment_type, subscription_end")
       .eq("user_id", user.id)
       .single();
+
+    // Handle one-time payment users — skip Stripe subscription lookup
+    if (existingSubscriber?.payment_type === 'one_time') {
+      const isStillActive = existingSubscriber.subscription_end && 
+        new Date(existingSubscriber.subscription_end) > new Date();
+      
+      if (isStillActive) {
+        log("One-time payment user still active", { 
+          tier: existingSubscriber.subscription_tier, 
+          expires: existingSubscriber.subscription_end 
+        });
+        return new Response(JSON.stringify({ 
+          subscribed: true, 
+          subscription_tier: existingSubscriber.subscription_tier,
+          subscription_end: existingSubscriber.subscription_end,
+          payment_type: 'one_time'
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      } else {
+        log("One-time payment expired, downgrading to Free");
+        await supabaseService.from("subscribers").update({
+          subscribed: false,
+          subscription_tier: "Free",
+          payment_type: 'one_time',
+          updated_at: new Date().toISOString(),
+        }).eq("user_id", user.id);
+        
+        return new Response(JSON.stringify({ 
+          subscribed: false, 
+          subscription_tier: "Free",
+          payment_type: 'one_time'
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+    }
 
     let shouldAllocateCredits = false;
     

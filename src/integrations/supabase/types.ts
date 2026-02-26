@@ -2084,6 +2084,7 @@ export type Database = {
           id: string
           last_reset_at: string | null
           payment_failed_at: string | null
+          payment_type: string | null
           stripe_customer_id: string | null
           subscribed: boolean
           subscription_end: string | null
@@ -2099,6 +2100,7 @@ export type Database = {
           id?: string
           last_reset_at?: string | null
           payment_failed_at?: string | null
+          payment_type?: string | null
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null
@@ -2114,6 +2116,7 @@ export type Database = {
           id?: string
           last_reset_at?: string | null
           payment_failed_at?: string | null
+          payment_type?: string | null
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null
