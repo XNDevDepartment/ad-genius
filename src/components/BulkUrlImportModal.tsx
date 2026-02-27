@@ -91,11 +91,12 @@ export const BulkUrlImportModal = ({
               throw new Error(data?.error || error?.message || 'Upload failed');
             }
 
-            importedIds.push(data.id);
+            const imageId = data.sourceImage?.id || data.id;
+            importedIds.push(imageId);
 
             setImportStatuses((prev) => {
               const updated = [...prev];
-              updated[index] = { ...updated[index], status: 'success', imageId: data.id };
+              updated[index] = { ...updated[index], status: 'success', imageId };
               return updated;
             });
           } catch (err: any) {
