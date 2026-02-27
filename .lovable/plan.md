@@ -1,29 +1,40 @@
 
 
-# Plan: 2 Fixes
+# Fix: Photoshoot Shows "Completed" With Missing Images
 
-## 1. Photoshoot stuck: Auth mismatch on self-call
+## Root Cause
+The database table `outfit_swap_photoshoots` only has **4 image columns** (`image_1_url` through `image_4_url`), but the redesigned photoshoot allows up to **7 angles**. When the edge function writes `image_5_url`, `image_6_url`, `image_7_url`, those columns don't exist — the update silently succeeds but stores nothing. The frontend then reads `null` for those keys and shows "Pendente" even though the job is marked "completed".
 
-**Root cause:** In `supabase/functions/outfit-swap/index.ts`, line 1504 triggers `processPhotoshoot` using `SUPABASE_ANON_KEY`, but line 424-428 requires `SUPABASE_SERVICE_ROLE_KEY` for processing actions. The call gets a 403 Forbidden, so the photoshoot stays "queued" forever.
+## Solution
+Switch from fixed columns to a **JSONB array** approach: store all image URLs in the existing `metadata` column, and read them from there in the frontend. This avoids needing a DB migration to add more columns.
 
-**Fix in `supabase/functions/outfit-swap/index.ts` line 1504:**
-Change `Deno.env.get("SUPABASE_ANON_KEY")` to `SUPABASE_SERVICE_ROLE_KEY` (which is already a const at the top of the file).
+## Changes
 
-## 2. Missing translations for new photoshoot categories and poses
+### 1. `supabase/functions/outfit-swap/index.ts`
+**In `processPhotoshoot` (around line 1624):** Instead of writing to `image_${imageNum}_url` columns (which fail for indices > 4), accumulate all successful image URLs and store them as a `generated_images` array in the metadata field at the end.
 
-The `en.json` has the full `photoshootModal` section with categories + new angle keys (`armsCrossed`, `handOnHip`, `overShoulder`, `seated`, `crossLegged`, `lowerBodyDetail`). The other 4 locale files (`pt.json`, `es.json`, `fr.json`, `de.json`) are missing:
+- After all `Promise.allSettled` results are collected, build an array like:
+  ```
+  [{ angleId: "three_quarter", imageNum: 1, url: "...", path: "..." }, ...]
+  ```
+- Write this array into `metadata.generated_images` in the final status update (line 1662-1673)
+- Still write to `image_1_url` through `image_4_url` for backward compatibility with the first 4 images
 
-- `categorySelectionDescription` key
-- `selectCategoryLabel` key
-- The entire `categories` object (top, bottom, footwear, fullBody)
-- New angle keys: `armsCrossed`, `handOnHip`, `overShoulder`, `seated`, `crossLegged`, `lowerBodyDetail`
+### 2. `src/components/PhotoshootModal.tsx`
+**In the processing stage (line 533):** Instead of reading `photoshoot.image_${index+1}_url`, read from `photoshoot.metadata.generated_images[index]?.url`.
 
-**Fix:** Add the missing keys to all 4 locale files with proper translations inside their existing `photoshootModal` sections.
+- Update the image URL lookup:
+  ```typescript
+  const generatedImages = (photoshoot?.metadata as any)?.generated_images || [];
+  // Then in the map:
+  const imageUrl = generatedImages[index]?.url || photoshoot?.[`image_${index + 1}_url` as keyof PhotoshootJob] as string | null;
+  ```
+- Update `handleDownloadAll` to also read from metadata
+
+### 3. `src/api/photoshoot-api.ts`
+- No schema change needed — `metadata` is already typed as `any`
 
 ### Files to modify
-1. `supabase/functions/outfit-swap/index.ts` -- fix auth key on line 1504
-2. `src/i18n/locales/pt.json` -- add missing photoshoot translations
-3. `src/i18n/locales/es.json` -- add missing photoshoot translations
-4. `src/i18n/locales/fr.json` -- add missing photoshoot translations
-5. `src/i18n/locales/de.json` -- add missing photoshoot translations
+1. `supabase/functions/outfit-swap/index.ts` — store generated images in metadata array
+2. `src/components/PhotoshootModal.tsx` — read images from metadata instead of fixed columns
 
