@@ -1620,15 +1620,20 @@ async function processPhotoshoot(photoshootId: string) {
         }
         // Get public URL
         const { data: urlData } = supabase.storage.from("outfit-swap-photoshoots").getPublicUrl(storagePath);
-        // Update photoshoot record for this specific image
-        await supabase.from("outfit_swap_photoshoots").update({
-          [`image_${imageNum}_url`]: urlData.publicUrl,
-          [`image_${imageNum}_path`]: storagePath
-        }).eq("id", photoshootId);
+        // Update photoshoot record for this specific image (only for first 4 — backward compat)
+        if (imageNum <= 4) {
+          await supabase.from("outfit_swap_photoshoots").update({
+            [`image_${imageNum}_url`]: urlData.publicUrl,
+            [`image_${imageNum}_path`]: storagePath
+          }).eq("id", photoshootId);
+        }
         console.log(`[processPhotoshoot] Image ${imageNum} completed successfully`);
         return {
           success: true,
-          imageNum
+          imageNum,
+          angleId,
+          url: urlData.publicUrl,
+          path: storagePath
         };
       } catch (error) {
         console.error(`[processPhotoshoot] Image ${imageNum} error:`, error);
@@ -1640,12 +1645,19 @@ async function processPhotoshoot(photoshootId: string) {
     });
     // Wait for all selected images to complete
     const results = await Promise.allSettled(imageGenerationPromises);
-    // Count successes and failures
+    // Count successes and failures, and collect generated images for metadata
     let successfulImages = 0;
     let failedImages = 0;
+    const generatedImages: Array<{ angleId: string; imageNum: number; url: string; path: string }> = [];
     results.forEach((result, index)=>{
       if (result.status === 'fulfilled' && result.value.success) {
         successfulImages++;
+        generatedImages.push({
+          angleId: result.value.angleId,
+          imageNum: result.value.imageNum,
+          url: result.value.url,
+          path: result.value.path
+        });
       } else {
         failedImages++;
       }
@@ -1655,6 +1667,8 @@ async function processPhotoshoot(photoshootId: string) {
         progress: progressPercent
       }).eq("id", photoshootId);
     });
+    // Sort by imageNum so they appear in order
+    generatedImages.sort((a, b) => a.imageNum - b.imageNum);
     console.log(`[processPhotoshoot] Generation complete - ${successfulImages} succeeded, ${failedImages} failed out of ${angleCount}`);
     // Determine final status
     const finalStatus = successfulImages === 0 ? "failed" : "completed";
@@ -1668,6 +1682,7 @@ async function processPhotoshoot(photoshootId: string) {
         ...photoshoot.metadata,
         successful_images: successfulImages,
         failed_images: failedImages,
+        generated_images: generatedImages,
         back_angle_used_custom_image: !!(photoshoot.back_image_url && selectedAngles.includes('back'))
       }
     }).eq("id", photoshootId);
