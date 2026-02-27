@@ -150,7 +150,7 @@ export const EcommerceIdeasModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl h-full">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t('ecommerceIdeasModal.title')}</DialogTitle>
           <DialogDescription>
