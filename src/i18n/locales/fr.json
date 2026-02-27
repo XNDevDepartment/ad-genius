@@ -1525,6 +1525,7 @@
   "photoshootModal": {
     "title": "Séance Photo Professionnelle",
     "setupDescription": "Configurez votre séance photo avec image arrière optionnelle",
+    "categorySelectionDescription": "Quel type de produit photographiez-vous ?",
     "angleSelectionDescription": "Sélectionnez les angles à générer ({{count}} crédit{{plural}})",
     "processingDescription": "Génération de vos angles professionnels...",
     "originalImage": "Image Originale",
@@ -1534,9 +1535,10 @@
     "cancel": "Annuler",
     "continue": "Continuer",
     "back": "Retour",
+    "selectCategoryLabel": "Que photographiez-vous ?",
     "selectAllAngles": "Tout Sélectionner",
     "deselectAllAngles": "Tout Désélectionner",
-    "selectAnglesLabel": "Sélectionner les Angles à Générer",
+    "selectAnglesLabel": "Sélectionner les Angles et Poses",
     "costLabel": "Coût",
     "anglesLabel": "Angles",
     "anglesCount": "{{count}} sur {{total}}",
@@ -1559,50 +1561,92 @@
     "failedToCancel": "Échec de l'annulation : {{message}}",
     "backImageUploaded": "Image arrière téléchargée",
     "failedToUpload": "Échec du téléchargement de l'image arrière : {{message}}",
+    "categories": {
+      "top": {
+        "label": "Haut",
+        "description": "T-shirts, chemises, vestes, sweats, pulls"
+      },
+      "bottom": {
+        "label": "Bas",
+        "description": "Pantalons, jeans, jupes, shorts"
+      },
+      "footwear": {
+        "label": "Chaussures",
+        "description": "Chaussures, baskets, bottes, sandales"
+      },
+      "fullBody": {
+        "label": "Corps Entier",
+        "description": "Robes, combinaisons, tenues complètes"
+      }
+    },
     "angles": {
       "threeQuarter": {
         "label": "Vue Trois Quarts",
-        "description": "Vue angulaire montrant la profondeur"
+        "description": "Rotation éditoriale à 45° montrant la ligne d'épaule et la profondeur"
       },
       "back": {
         "label": "Vue Arrière",
-        "description": "Vue complète de l'arrière"
+        "description": "Photo arrière nette montrant les détails de construction"
       },
       "side": {
         "label": "Profil Latéral",
-        "description": "Angle latéral pur"
+        "description": "Photo silhouette soulignant la coupe et la forme"
       },
       "detail": {
         "label": "Gros Plan Détaillé",
-        "description": "Gros plan des caractéristiques clés"
+        "description": "Recadrage texture montrant tissu et couture"
       },
-      "lowerBodyFront": {
-        "label": "Avant du Bas du Corps",
-        "description": "Vue de face centrée sur pantalons/bas"
+      "armsCrossed": {
+        "label": "Pose Bras Croisés",
+        "description": "Pose confiante montrant comment le vêtement tombe sur le torse"
       },
-      "lowerBodyBack": {
-        "label": "Arrière du Bas du Corps",
-        "description": "Vue arrière des pantalons/bas"
+      "handOnHip": {
+        "label": "Pose Main sur la Hanche",
+        "description": "Posture éditoriale montrant l'ajustement à la taille et le drapé"
       },
-      "lowerBodySide": {
-        "label": "Côté du Bas du Corps",
-        "description": "Profil latéral des pantalons/bas"
+      "overShoulder": {
+        "label": "Regard Par-dessus l'Épaule",
+        "description": "Modèle regardant en arrière, ambiance éditoriale"
       },
       "walkingPose": {
         "label": "Pose en Marche",
-        "description": "Mouvement de marche dynamique"
+        "description": "Mouvement dynamique montrant le mouvement du tissu"
+      },
+      "seated": {
+        "label": "Pose Assise",
+        "description": "Assise sur tabouret montrant le drapé et le pli au genou"
+      },
+      "crossLegged": {
+        "label": "Pose Jambes Croisées",
+        "description": "Un pied croisé montrant le dessus et la semelle"
+      },
+      "lowerBodyFront": {
+        "label": "Debout de Face",
+        "description": "Vue frontale complète de la taille aux pieds, posture naturelle"
+      },
+      "lowerBodyDetail": {
+        "label": "Gros Plan Détaillé",
+        "description": "Recadrage taille/hanche montrant ceinture et tissu"
+      },
+      "lowerBodyBack": {
+        "label": "Arrière du Bas du Corps",
+        "description": "Vue arrière montrant détails des poches et assise"
+      },
+      "lowerBodySide": {
+        "label": "Côté du Bas du Corps",
+        "description": "Silhouette latérale montrant cuisse/genou/fuselage"
       },
       "shoeFront": {
-        "label": "Avant de la Chaussure",
-        "description": "Vue de face de la chaussure"
+        "label": "Debout de Face",
+        "description": "Genou aux pieds, les deux chaussures visibles"
       },
       "shoeSide": {
-        "label": "Côté de la Chaussure",
-        "description": "Profil latéral de la chaussure"
+        "label": "Profil Latéral",
+        "description": "Silhouette complète de la chaussure, semelle et talon"
       },
       "shoeBack": {
-        "label": "Arrière de la Chaussure",
-        "description": "Vue arrière/talon de la chaussure"
+        "label": "Vue Arrière",
+        "description": "Les deux talons visibles, construction arrière"
       }
     }
   },
