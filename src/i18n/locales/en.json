@@ -1741,6 +1741,7 @@
   "photoshootModal": {
     "title": "Professional Photoshoot",
     "setupDescription": "Set up your photoshoot with optional back image",
+    "categorySelectionDescription": "What type of product are you photographing?",
     "angleSelectionDescription": "Select angles to generate ({{count}} credit{{plural}})",
     "processingDescription": "Generating your professional angles...",
     "originalImage": "Original Image",
@@ -1750,9 +1751,10 @@
     "cancel": "Cancel",
     "continue": "Continue",
     "back": "Back",
+    "selectCategoryLabel": "What are you photographing?",
     "selectAllAngles": "Select All",
     "deselectAllAngles": "Deselect All",
-    "selectAnglesLabel": "Select Angles to Generate",
+    "selectAnglesLabel": "Select Angles & Poses",
     "costLabel": "Cost",
     "anglesLabel": "Angles",
     "anglesCount": "{{count}} of {{total}}",
@@ -1775,26 +1777,72 @@
     "failedToCancel": "Failed to cancel: {{message}}",
     "backImageUploaded": "Back image uploaded",
     "failedToUpload": "Failed to upload back image: {{message}}",
+    "categories": {
+      "top": {
+        "label": "Top",
+        "description": "T-shirts, shirts, jackets, hoodies, sweaters"
+      },
+      "bottom": {
+        "label": "Bottom",
+        "description": "Pants, jeans, skirts, shorts"
+      },
+      "footwear": {
+        "label": "Footwear",
+        "description": "Shoes, sneakers, boots, sandals"
+      },
+      "fullBody": {
+        "label": "Full Body",
+        "description": "Dresses, jumpsuits, full outfits"
+      }
+    },
     "angles": {
       "threeQuarter": {
-        "label": "Three-Quarter View",
-        "description": "Angled view showing depth"
+        "label": "Three-Quarter Turn",
+        "description": "45° editorial turn showing shoulder line and depth"
       },
       "back": {
         "label": "Back View",
-        "description": "Full back view"
+        "description": "Clean back shot showing construction details"
       },
       "side": {
         "label": "Side Profile",
-        "description": "Pure side angle"
+        "description": "Silhouette shot emphasizing fit and shape"
       },
       "detail": {
         "label": "Detail Close-Up",
-        "description": "Close-up of key features"
+        "description": "Texture crop showing fabric and stitching"
+      },
+      "armsCrossed": {
+        "label": "Arms Crossed Pose",
+        "description": "Confident pose showing how garment sits on torso"
+      },
+      "handOnHip": {
+        "label": "Hand on Hip Pose",
+        "description": "Editorial stance showing waist fit and drape"
+      },
+      "overShoulder": {
+        "label": "Over-the-Shoulder Look",
+        "description": "Model looking back, editorial feel"
+      },
+      "walkingPose": {
+        "label": "Walking Pose",
+        "description": "Dynamic mid-stride showing fabric movement"
+      },
+      "seated": {
+        "label": "Seated Pose",
+        "description": "Seated on stool showing knee break and drape"
+      },
+      "crossLegged": {
+        "label": "Cross-Legged Pose",
+        "description": "One foot crossed showing top and sole detail"
       },
       "lowerBodyFront": {
-        "label": "Lower Body Front",
-        "description": "Front view focusing on pants/bottoms"
+        "label": "Front Standing",
+        "description": "Full front view waist to feet, natural stance"
+      },
+      "lowerBodyDetail": {
+        "label": "Detail Close-Up",
+        "description": "Waist/hip crop showing waistband and fabric"
       },
       "lowerBodyBack": {
         "label": "Lower Body Back",
@@ -1804,21 +1852,17 @@
         "label": "Lower Body Side",
         "description": "Side profile of pants/bottoms"
       },
-      "walkingPose": {
-        "label": "Walking Pose",
-        "description": "Dynamic walking movement"
-      },
       "shoeFront": {
-        "label": "Shoe Front",
-        "description": "Front view of footwear"
+        "label": "Front Standing",
+        "description": "Knee to feet, both shoes visible"
       },
       "shoeSide": {
-        "label": "Shoe Side",
-        "description": "Side profile of footwear"
+        "label": "Side Profile",
+        "description": "Full shoe silhouette, sole and heel"
       },
       "shoeBack": {
-        "label": "Shoe Back",
-        "description": "Back/heel view of footwear"
+        "label": "Back View",
+        "description": "Both heels visible, back construction"
       }
     }
   },
