@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import AnimateImageModal from "@/components/AnimateImageModal";
 
 interface BatchSwapPreviewProps {
   batch: OutfitSwapBatch;
@@ -67,6 +68,11 @@ export const BatchSwapPreview = ({
     photoId: string | null;
     originalImageUrl: string | null;
   }>({ isOpen: false, photoId: null, originalImageUrl: null });
+  const [animateModal, setAnimateModal] = useState<{
+    open: boolean;
+    imageUrl: string | null;
+    imageId: string | null;
+  }>({ open: false, imageUrl: null, imageId: null });
 
   const progress = batch.total_jobs > 0
     ? Math.round(((batch.completed_jobs + batch.failed_jobs) / batch.total_jobs) * 100)
@@ -213,12 +219,10 @@ export const BatchSwapPreview = ({
   };
 
   const handleAnimate = (imageUrl: string, result: any) => {
-    navigate("/create/video", {
-      state: {
-        preselectedImageUrl: imageUrl,
-        source: 'outfit_swap',
-        result_id: result.id,
-      },
+    setAnimateModal({
+      open: true,
+      imageUrl,
+      imageId: result.id,
     });
   };
 
@@ -520,6 +524,13 @@ export const BatchSwapPreview = ({
           originalImageUrl={ecommercePhotoModal.originalImageUrl || ""}
         />
       )}
+
+      <AnimateImageModal
+        open={animateModal.open}
+        onClose={() => setAnimateModal({ open: false, imageUrl: null, imageId: null })}
+        imageUrl={animateModal.imageUrl}
+        imageId={animateModal.imageId}
+      />
 
       {/* Mobile Sticky Footer */}
       {isMobile && (isCompleted || isFailed) && (
