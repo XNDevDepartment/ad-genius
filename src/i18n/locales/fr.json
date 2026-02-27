@@ -1738,6 +1738,7 @@
       "startBatch": "Démarrer le Lot ({{cost}} crédits)",
       "uploading": "Téléversement...",
       "starting": "Démarrage...",
+      "cancel": "Annuler",
       "cancelBatch": "Annuler le Lot",
       "refresh": "Actualiser",
       "downloadAll": "Tout Télécharger",

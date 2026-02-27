@@ -1897,6 +1897,7 @@
       "startBatch": "Batch Starten ({{cost}} Credits)",
       "uploading": "Wird hochgeladen...",
       "starting": "Wird gestartet...",
+      "cancel": "Abbrechen",
       "cancelBatch": "Batch Abbrechen",
       "refresh": "Aktualisieren",
       "downloadAll": "Alle Herunterladen",

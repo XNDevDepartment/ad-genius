@@ -1897,6 +1897,7 @@
       "startBatch": "Iniciar Lote ({{cost}} créditos)",
       "uploading": "Subiendo...",
       "starting": "Iniciando...",
+      "cancel": "Cancelar",
       "cancelBatch": "Cancelar Lote",
       "refresh": "Actualizar",
       "downloadAll": "Descargar Todo",
