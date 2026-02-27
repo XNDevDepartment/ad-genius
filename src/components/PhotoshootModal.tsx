@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Download, X, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { Download, X, Loader2, CheckCircle2, XCircle, Shirt, Footprints, Scissors } from "lucide-react";
 import { photoshootApi, PhotoshootJob } from "@/api/photoshoot-api";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,66 +10,74 @@ import ImageUploader from "@/components/ImageUploader";
 import { Label } from "@/components/ui/label";
 import { useTranslation } from "react-i18next";
 
-type GarmentCategory = 'TOP' | 'BOTTOM' | 'FOOTWEAR' | 'FULL_OUTFIT' | 'ACCESSORY';
+type GarmentCategory = 'TOP' | 'BOTTOM' | 'FOOTWEAR' | 'FULL_BODY';
 
-interface PhotoshootModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  resultId: string;
-  originalImageUrl: string;
-  garmentCategory?: GarmentCategory;
-}
+const CATEGORY_OPTIONS: { id: GarmentCategory; iconName: string; labelKey: string; descKey: string }[] = [
+  { id: 'TOP', iconName: 'shirt', labelKey: 'photoshootModal.categories.top.label', descKey: 'photoshootModal.categories.top.description' },
+  { id: 'BOTTOM', iconName: 'scissors', labelKey: 'photoshootModal.categories.bottom.label', descKey: 'photoshootModal.categories.bottom.description' },
+  { id: 'FOOTWEAR', iconName: 'footprints', labelKey: 'photoshootModal.categories.footwear.label', descKey: 'photoshootModal.categories.footwear.description' },
+  { id: 'FULL_BODY', iconName: 'full', labelKey: 'photoshootModal.categories.fullBody.label', descKey: 'photoshootModal.categories.fullBody.description' },
+];
 
 const CATEGORY_ANGLES: Record<GarmentCategory, { id: string; labelKey: string; descKey: string }[]> = {
   TOP: [
     { id: 'three_quarter', labelKey: 'photoshootModal.angles.threeQuarter.label', descKey: 'photoshootModal.angles.threeQuarter.description' },
     { id: 'back', labelKey: 'photoshootModal.angles.back.label', descKey: 'photoshootModal.angles.back.description' },
     { id: 'side', labelKey: 'photoshootModal.angles.side.label', descKey: 'photoshootModal.angles.side.description' },
+    { id: 'arms_crossed', labelKey: 'photoshootModal.angles.armsCrossed.label', descKey: 'photoshootModal.angles.armsCrossed.description' },
+    { id: 'hand_on_hip', labelKey: 'photoshootModal.angles.handOnHip.label', descKey: 'photoshootModal.angles.handOnHip.description' },
     { id: 'detail', labelKey: 'photoshootModal.angles.detail.label', descKey: 'photoshootModal.angles.detail.description' },
   ],
   BOTTOM: [
     { id: 'lower_body_front', labelKey: 'photoshootModal.angles.lowerBodyFront.label', descKey: 'photoshootModal.angles.lowerBodyFront.description' },
-    { id: 'lower_body_back', labelKey: 'photoshootModal.angles.lowerBodyBack.label', descKey: 'photoshootModal.angles.lowerBodyBack.description' },
-    { id: 'lower_body_side', labelKey: 'photoshootModal.angles.lowerBodySide.label', descKey: 'photoshootModal.angles.lowerBodySide.description' },
+    { id: 'back', labelKey: 'photoshootModal.angles.back.label', descKey: 'photoshootModal.angles.back.description' },
+    { id: 'side', labelKey: 'photoshootModal.angles.side.label', descKey: 'photoshootModal.angles.side.description' },
     { id: 'walking_pose', labelKey: 'photoshootModal.angles.walkingPose.label', descKey: 'photoshootModal.angles.walkingPose.description' },
+    { id: 'seated', labelKey: 'photoshootModal.angles.seated.label', descKey: 'photoshootModal.angles.seated.description' },
+    { id: 'lower_body_detail', labelKey: 'photoshootModal.angles.lowerBodyDetail.label', descKey: 'photoshootModal.angles.lowerBodyDetail.description' },
   ],
   FOOTWEAR: [
     { id: 'shoe_front', labelKey: 'photoshootModal.angles.shoeFront.label', descKey: 'photoshootModal.angles.shoeFront.description' },
     { id: 'shoe_side', labelKey: 'photoshootModal.angles.shoeSide.label', descKey: 'photoshootModal.angles.shoeSide.description' },
     { id: 'shoe_back', labelKey: 'photoshootModal.angles.shoeBack.label', descKey: 'photoshootModal.angles.shoeBack.description' },
     { id: 'walking_pose', labelKey: 'photoshootModal.angles.walkingPose.label', descKey: 'photoshootModal.angles.walkingPose.description' },
+    { id: 'cross_legged', labelKey: 'photoshootModal.angles.crossLegged.label', descKey: 'photoshootModal.angles.crossLegged.description' },
   ],
-  FULL_OUTFIT: [
+  FULL_BODY: [
     { id: 'three_quarter', labelKey: 'photoshootModal.angles.threeQuarter.label', descKey: 'photoshootModal.angles.threeQuarter.description' },
     { id: 'back', labelKey: 'photoshootModal.angles.back.label', descKey: 'photoshootModal.angles.back.description' },
     { id: 'side', labelKey: 'photoshootModal.angles.side.label', descKey: 'photoshootModal.angles.side.description' },
+    { id: 'walking_pose', labelKey: 'photoshootModal.angles.walkingPose.label', descKey: 'photoshootModal.angles.walkingPose.description' },
+    { id: 'hand_on_hip', labelKey: 'photoshootModal.angles.handOnHip.label', descKey: 'photoshootModal.angles.handOnHip.description' },
+    { id: 'over_shoulder', labelKey: 'photoshootModal.angles.overShoulder.label', descKey: 'photoshootModal.angles.overShoulder.description' },
     { id: 'detail', labelKey: 'photoshootModal.angles.detail.label', descKey: 'photoshootModal.angles.detail.description' },
-  ],
-  ACCESSORY: [
-    { id: 'detail', labelKey: 'photoshootModal.angles.detail.label', descKey: 'photoshootModal.angles.detail.description' },
-    { id: 'three_quarter', labelKey: 'photoshootModal.angles.threeQuarter.label', descKey: 'photoshootModal.angles.threeQuarter.description' },
-    { id: 'side', labelKey: 'photoshootModal.angles.side.label', descKey: 'photoshootModal.angles.side.description' },
-    { id: 'back', labelKey: 'photoshootModal.angles.back.label', descKey: 'photoshootModal.angles.back.description' },
   ],
 };
 
-export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, garmentCategory = 'FULL_OUTFIT' }: PhotoshootModalProps) => {
+interface PhotoshootModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  resultId: string;
+  originalImageUrl: string;
+}
+
+export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }: PhotoshootModalProps) => {
   const { t } = useTranslation();
-  const [stage, setStage] = useState<'setup' | 'angle-selection' | 'processing'>('setup');
+  const [stage, setStage] = useState<'setup' | 'category-selection' | 'angle-selection' | 'processing'>('setup');
   const [photoshoot, setPhotoshoot] = useState<PhotoshootJob | null>(null);
   const [loading, setLoading] = useState(false);
   const [backImageFile, setBackImageFile] = useState<File | null>(null);
   const [backImageUrl, setBackImageUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  
-  const categoryAnglesConfig = CATEGORY_ANGLES[garmentCategory] || CATEGORY_ANGLES.FULL_OUTFIT;
+  const [selectedCategory, setSelectedCategory] = useState<GarmentCategory | null>(null);
+  const [selectedAngles, setSelectedAngles] = useState<string[]>([]);
+
+  const categoryAnglesConfig = selectedCategory ? CATEGORY_ANGLES[selectedCategory] : [];
   const AVAILABLE_ANGLES = categoryAnglesConfig.map(angle => ({
     id: angle.id,
     label: t(angle.labelKey, { defaultValue: angle.id.replace(/_/g, ' ') }),
     description: t(angle.descKey, { defaultValue: `${angle.id} view` })
   }));
-  
-  const [selectedAngles, setSelectedAngles] = useState<string[]>(categoryAnglesConfig.map(a => a.id));
 
   const handleBackImageUpload = async (file: File | null) => {
     if (!file) {
@@ -111,16 +119,24 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
     }
   };
 
-  const handleContinueToAngleSelection = () => {
+  const handleContinueToCategorySelection = () => {
+    setStage('category-selection');
+  };
+
+  const handleCategorySelected = (category: GarmentCategory) => {
+    setSelectedCategory(category);
+    const angles = CATEGORY_ANGLES[category].map(a => a.id);
+    setSelectedAngles(angles);
     setStage('angle-selection');
   };
 
   const handleStartPhotoshoot = async () => {
+    if (!selectedCategory) return;
     setLoading(true);
     setStage('processing');
 
     try {
-      const createdPhotoshoot = await photoshootApi.createPhotoshoot(resultId, selectedAngles, backImageUrl || undefined);
+      const createdPhotoshoot = await photoshootApi.createPhotoshoot(resultId, selectedAngles, backImageUrl || undefined, selectedCategory);
       setPhotoshoot(createdPhotoshoot);
 
       const unsubscribe = photoshootApi.subscribeToPhotoshoot(createdPhotoshoot.id, (updatedPhotoshoot) => {
@@ -154,9 +170,10 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
       setPhotoshoot(null);
       setBackImageFile(null);
       setBackImageUrl(null);
-      setSelectedAngles(categoryAnglesConfig.map(a => a.id));
+      setSelectedCategory(null);
+      setSelectedAngles([]);
     }
-  }, [isOpen, categoryAnglesConfig]);
+  }, [isOpen]);
 
   const toggleAngle = (angleId: string) => {
     setSelectedAngles(prev => {
@@ -174,7 +191,9 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
   };
 
   const deselectAllAngles = () => {
-    setSelectedAngles([AVAILABLE_ANGLES[0].id]);
+    if (AVAILABLE_ANGLES.length > 0) {
+      setSelectedAngles([AVAILABLE_ANGLES[0].id]);
+    }
   };
 
   useEffect(() => {
@@ -249,11 +268,22 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
   const isComplete = photoshoot?.status === "completed";
   const isFailed = photoshoot?.status === "failed";
 
-  const angleLabelsMap: Record<string, string> = {
-    'three_quarter': t('photoshootModal.angles.threeQuarter.label'),
-    'back': t('photoshootModal.angles.back.label'),
-    'side': t('photoshootModal.angles.side.label'),
-    'detail': t('photoshootModal.angles.detail.label')
+  const getCategoryIcon = (iconName: string) => {
+    switch (iconName) {
+      case 'shirt': return <Shirt className="w-6 h-6" />;
+      case 'scissors': return <Scissors className="w-6 h-6" />;
+      case 'footprints': return <Footprints className="w-6 h-6" />;
+      default: return <Shirt className="w-6 h-6" />;
+    }
+  };
+
+  const getStepNumber = () => {
+    switch (stage) {
+      case 'setup': return 1;
+      case 'category-selection': return 2;
+      case 'angle-selection': return 3;
+      case 'processing': return 4;
+    }
   };
 
   return (
@@ -263,9 +293,16 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
           <DialogTitle>{t('photoshootModal.title')}</DialogTitle>
           <DialogDescription>
             {stage === 'setup' && t('photoshootModal.setupDescription')}
+            {stage === 'category-selection' && t('photoshootModal.categorySelectionDescription')}
             {stage === 'angle-selection' && t('photoshootModal.angleSelectionDescription', { count: selectedAngles.length, plural: selectedAngles.length !== 1 ? 's' : '' })}
             {stage === 'processing' && t('photoshootModal.processingDescription')}
           </DialogDescription>
+          {/* Progress indicator */}
+          <div className="flex items-center gap-2 pt-2">
+            {[1, 2, 3, 4].map(step => (
+              <div key={step} className={`h-1.5 flex-1 rounded-full transition-colors ${step <= getStepNumber() ? 'bg-primary' : 'bg-muted'}`} />
+            ))}
+          </div>
         </DialogHeader>
 
         {stage === 'setup' ? (
@@ -297,7 +334,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
                   {t('photoshootModal.cancel')}
                 </Button>
                 <Button 
-                  onClick={handleContinueToAngleSelection}
+                  onClick={handleContinueToCategorySelection}
                   disabled={isUploading}
                   size="lg"
                 >
@@ -305,7 +342,48 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
                 </Button>
               </div>
             </div>
+          </>
+        ) : stage === 'category-selection' ? (
+          <>
+            <div className="flex-1 overflow-y-auto px-6 pb-2 space-y-6">
+              <div className="space-y-2">
+                <Label>{t('photoshootModal.originalImage')}</Label>
+                <img
+                  src={originalImageUrl} 
+                  alt="Original outfit swap"
+                  className="w-full rounded-lg border max-h-32 sm:max-h-48 object-contain"
+                />
+              </div>
 
+              <div className="space-y-4">
+                <Label>{t('photoshootModal.selectCategoryLabel')}</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {CATEGORY_OPTIONS.map((cat) => (
+                    <div
+                      key={cat.id}
+                      className="p-4 border-2 rounded-xl cursor-pointer transition-all hover:border-primary/50 hover:bg-primary/5 flex flex-col items-center text-center gap-2"
+                      onClick={() => handleCategorySelected(cat.id)}
+                    >
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        {getCategoryIcon(cat.iconName)}
+                      </div>
+                      <h4 className="font-semibold text-sm">
+                        {t(cat.labelKey, { defaultValue: cat.id })}
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        {t(cat.descKey, { defaultValue: '' })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="sticky bottom-0 border-t bg-background p-4 flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setStage('setup')}>
+                  {t('photoshootModal.back')}
+                </Button>
+              </div>
+            </div>
           </>
         ) : stage === 'angle-selection' ? (
           <>
@@ -381,7 +459,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
                 </div>
               </div>
             <div className="sticky bottom-0 border-t bg-background p-4 flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setStage('setup')}>
+              <Button variant="outline" onClick={() => setStage('category-selection')}>
                 {t('photoshootModal.back')}
               </Button>
               <Button 
@@ -459,11 +537,14 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
                       photoshoot.progress >= index * progressPerAngle && 
                       photoshoot.progress < (index + 1) * progressPerAngle;
 
+                    const angleConfig = categoryAnglesConfig.find(a => a.id === angleId);
+                    const angleLabel = angleConfig ? t(angleConfig.labelKey, { defaultValue: angleId }) : angleId;
+
                     return (
                       <div key={angleId} className="space-y-2">
                         <div className="relative aspect-square w-full rounded-lg overflow-hidden border bg-muted">
                           {isGenerated ? (
-                            <img src={imageUrl} alt={`${angleLabelsMap[angleId]}`} className="w-full h-full object-cover" />
+                            <img src={imageUrl} alt={angleLabel} className="w-full h-full object-cover" />
                           ) : isCurrentlyGenerating ? (
                             <div className="w-full h-full flex items-center justify-center">
                               <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
@@ -475,7 +556,7 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl, g
                           )}
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground">{angleLabelsMap[angleId]}</span>
+                          <span className="text-xs text-muted-foreground">{angleLabel}</span>
                           {isGenerated && (
                             <Button
                               size="sm"

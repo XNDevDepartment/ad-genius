@@ -1330,29 +1330,41 @@ async function cancelBatch(userId1: string, batchId: string) {
   }, 200);
 }
 // Category-specific angle definitions
-const CATEGORY_ANGLES: Record<GarmentCategory, string[]> = {
-  TOP: ['three_quarter', 'back', 'side', 'detail'],
-  BOTTOM: ['lower_body_front', 'lower_body_back', 'lower_body_side', 'walking_pose'],
-  FOOTWEAR: ['shoe_front', 'shoe_side', 'shoe_back', 'walking_pose'],
-  FULL_OUTFIT: ['three_quarter', 'back', 'side', 'detail'],
+const CATEGORY_ANGLES: Record<string, string[]> = {
+  TOP: ['three_quarter', 'back', 'side', 'arms_crossed', 'hand_on_hip', 'detail'],
+  BOTTOM: ['lower_body_front', 'back', 'side', 'walking_pose', 'seated', 'lower_body_detail'],
+  FOOTWEAR: ['shoe_front', 'shoe_side', 'shoe_back', 'walking_pose', 'cross_legged'],
+  FULL_BODY: ['three_quarter', 'back', 'side', 'walking_pose', 'hand_on_hip', 'over_shoulder', 'detail'],
+  // Legacy mappings
+  FULL_OUTFIT: ['three_quarter', 'back', 'side', 'walking_pose', 'hand_on_hip', 'over_shoulder', 'detail'],
   ACCESSORY: ['detail', 'three_quarter', 'side', 'back']
 };
 
-// Angle-specific prompts for photoshoot - organized by category
+// Angle-specific prompts for photoshoot
 const ANGLE_PROMPTS: Record<string, string> = {
-  // TOP / FULL_OUTFIT angles (upper body focus)
+  // Upper body / general angles
   'three_quarter': `Create a high-quality e-commerce product photo: On-body three-quarter view (45° turn), head to mid-thigh framing, one foot slightly forward to show torso depth and shoulder line. Seamless light-grey background, soft key, subtle rim light to separate from background, controlled specularity on knit. 50mm lens look, f/8, ISO 100. Emphasize side seam, sleeve length, and hem fall. Clean, editorial retail lighting. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
   'back': `Create a high-quality e-commerce product photo: On-body back view, shoulders level, arms relaxed, straight posture. Seamless light-grey background, balanced key/fill to avoid hotspots, faint floor shadow. 50–70mm lens look, f/8, ISO 100. Capture yoke/neck ribbing, back drape, and hem alignment. Centered, color-accurate, luxury e-commerce finish. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is. ###RULES - Image must not infringe any System Safety margins and rules.`,
   'side': `Create a high-quality e-commerce product photo: On-body true side profile, chin parallel to floor, arms relaxed (small air gap at elbow), head to mid-thigh framing. Seamless light-grey background, soft key from camera front, gentle fill to preserve knit detail, micro-shadow under hem. 70mm equivalent look, f/8, ISO 100. Prioritize silhouette, shoulder slope, sleeve taper, and ribbed cuff definition. Premium catalog style. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is. ###RULES - Image must not infringe any System Safety margins and rules.`,
   'detail': `Create a high-quality e-commerce product photo: Upper-torso close-up crop from shoulders to mid-torso, camera perpendicular to garment. Soft, even light to reveal rib-knit texture and stitching. 85–100mm look, f/8. High sharpness, no moiré, color-accurate wool tone. Background remains seamless light grey. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is. ###RULES - Image must not infringe any System Safety margins and rules.`,
   
-  // BOTTOM angles (lower body focus)
+  // New poses
+  'arms_crossed': `Create a high-quality e-commerce product photo: Full body (head to toe), model standing with arms crossed confidently on chest. Seamless light-grey background, editorial fashion lighting with soft key and fill. 50mm lens look, f/8, ISO 100. Show how the garment sits on the torso with arms crossed — emphasize shoulder line, chest fit, and sleeve structure. Confident, editorial pose. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
+  'hand_on_hip': `Create a high-quality e-commerce product photo: Full body (head to toe), model standing with one hand on hip, weight shifted to one side. Seamless light-grey background, editorial fashion lighting. 50mm lens look, f/8, ISO 100. Show waist fit, sleeve drape, and garment silhouette in this classic editorial stance. Dynamic yet controlled pose. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
+  'over_shoulder': `Create a high-quality e-commerce product photo: Full body (head to toe), model looking back over shoulder with a three-quarter back view. Seamless light-grey background, editorial lighting with rim light on shoulder. 50-70mm lens look, f/8, ISO 100. Show back of garment while face is visible in profile. Classic fashion editorial pose. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
+  'walking_pose': `Create a high-quality e-commerce product photo: FULL BODY in natural walking pose. Model mid-stride showing movement and fabric drape. One leg forward, one back. Seamless light-grey background. 50mm lens look, f/8. Capture how garment moves with the body, fabric swing, and natural creasing. Dynamic but controlled pose. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
+  'seated': `Create a high-quality e-commerce product photo: Model seated on a minimal stool or cube, legs crossed or angled naturally. Seamless light-grey background, soft editorial lighting. 50-70mm lens look, f/8, ISO 100. Show how the garment drapes when seated — knee break, fabric flow, and waist fit. Natural, relaxed editorial pose. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
+  'cross_legged': `Create a high-quality e-commerce product photo: KNEE TO FEET framing. Model standing with one foot crossed in front of the other, showing both the top and sole detail of the footwear. Seamless light-grey background, soft even lighting. 85mm lens look, f/8. Emphasize shoe design from a dynamic angle. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
+  
+  // Bottom-specific angles
   'lower_body_front': `Create a high-quality e-commerce product photo: WAIST TO FEET FRAMING. Front view of model from waist down to feet, showing full pant/skirt length. Natural stance with weight balanced. Seamless light-grey background, soft even lighting to show fabric drape and texture. 50mm lens look, f/8. Emphasize leg line, hem fall, and fit through hips and thighs. Show how the garment fits the body. Natural floor shadow. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
+  'lower_body_detail': `Create a high-quality e-commerce product photo: WAIST TO MID-THIGH close-up crop. Front view showing waistband construction, fabric texture, pocket details, and hip fit. Seamless light-grey background, soft even lighting. 85-100mm lens look, f/8. High sharpness, color-accurate fabric tones. Show construction quality and material. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
+  
+  // Legacy bottom angles (keep for backwards compatibility)
   'lower_body_back': `Create a high-quality e-commerce product photo: WAIST TO FEET FRAMING from behind. Back view of model from waist down to feet. Standing straight, shoulders level. Seamless light-grey background, balanced lighting. 50-70mm lens look, f/8. Capture back pocket details, seat fit, back seam, and hem alignment. Show how fabric drapes from behind. Natural floor shadow. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
   'lower_body_side': `Create a high-quality e-commerce product photo: WAIST TO FEET side profile. True side view from waist to feet showing silhouette. Natural pose with one leg slightly forward. Seamless light-grey background, soft lighting. 70mm lens look, f/8. Emphasize thigh fit, knee break, and leg taper. Show fabric flow and movement. Natural shadow. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
-  'walking_pose': `Create a high-quality e-commerce product photo: FULL BODY in natural walking pose. Model mid-stride showing movement and fabric drape. One leg forward, one back. Seamless light-grey background. 50mm lens look, f/8. Capture how garment moves with the body, fabric swing, and natural creasing. Dynamic but controlled pose. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
   
-  // FOOTWEAR angles (feet focus)
+  // Footwear angles
   'shoe_front': `Create a high-quality e-commerce product photo: KNEE TO FEET framing. Front view of model's feet and lower legs showing both shoes clearly. Natural standing pose, feet shoulder-width apart. Seamless light-grey background, soft even lighting. 85mm lens look, f/8. Show full shoe design, toe box, upper construction. Natural floor shadow under shoes. Shoe details must be crisp and clear. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
   'shoe_side': `Create a high-quality e-commerce product photo: KNEE TO FEET framing from side. Side profile showing one shoe clearly with full silhouette. Model in natural stance. Seamless light-grey background. 85-100mm lens look, f/8. Emphasize sole, heel height, arch, and shoe profile. Show materials and construction details. Natural shadow on floor. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`,
   'shoe_back': `Create a high-quality e-commerce product photo: KNEE TO FEET framing from behind. Back view showing both shoe heels and back construction. Natural stance. Seamless light-grey background. 70mm lens look, f/8. Capture heel design, back tab, Achilles notch, and sole edge. Show how shoes look from behind when walking away. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.###RULES - Image must not infringe any System Safety margins and rules.`
@@ -1373,18 +1385,12 @@ OUTPUT: A cohesive back view photograph where the model from Image 1 is wearing 
 Create a high-quality e-commerce product photo: On-body back view, shoulders level, arms relaxed, straight posture. Seamless light-grey background, balanced key/fill to avoid hotspots, faint floor shadow. 50–70mm lens look, f/8, ISO 100. Capture yoke/neck ribbing, back drape, and hem alignment. Centered, color-accurate, luxury e-commerce finish. ###IMPORTANT: Don't change the clothes of the model. Keep the model exactly as it is.
 `;
 async function createPhotoshootJob(userId1: string, params: any) {
-  const { resultId, backImageUrl, selectedAngles } = params;
+  const { resultId, backImageUrl, selectedAngles, selectedCategory } = params;
   const supabase = serviceClient();
   
-  // First, get the result to check garment category
-  const { data: resultData } = await supabase
-    .from("outfit_swap_results")
-    .select("metadata")
-    .eq("id", resultId)
-    .single();
-  
-  const garmentCategory = (resultData?.metadata?.garment_category || 'FULL_OUTFIT') as GarmentCategory;
-  const categoryAngles = CATEGORY_ANGLES[garmentCategory] || CATEGORY_ANGLES.FULL_OUTFIT;
+  // Use selectedCategory from params (user-chosen) instead of auto-detection
+  const garmentCategory = selectedCategory || 'FULL_BODY';
+  const categoryAngles = CATEGORY_ANGLES[garmentCategory] || CATEGORY_ANGLES.FULL_BODY;
   
   // Use provided angles or default to category-specific angles
   const defaultAngles = selectedAngles || categoryAngles;
@@ -1392,7 +1398,8 @@ async function createPhotoshootJob(userId1: string, params: any) {
   // Validate selectedAngles - allow all valid angle types
   const validAngles = [
     'front', 'three_quarter', 'back', 'side', 'detail',
-    'lower_body_front', 'lower_body_back', 'lower_body_side', 'walking_pose',
+    'arms_crossed', 'hand_on_hip', 'over_shoulder', 'walking_pose', 'seated', 'cross_legged',
+    'lower_body_front', 'lower_body_back', 'lower_body_side', 'lower_body_detail',
     'shoe_front', 'shoe_side', 'shoe_back'
   ];
   const angles = defaultAngles.filter((angle: string) => validAngles.includes(angle));
