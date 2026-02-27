@@ -233,15 +233,14 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
     document.body.removeChild(link);
   };
 
-  const handleDownloadAll = () => {
+   const handleDownloadAll = () => {
     if (!photoshoot) return;
     
-    const images = [
-      photoshoot.image_1_url,
-      photoshoot.image_2_url,
-      photoshoot.image_3_url,
-      photoshoot.image_4_url,
-    ].filter(Boolean);
+    // Read from metadata.generated_images first, fallback to fixed columns
+    const metaImages = (photoshoot?.metadata as any)?.generated_images as Array<{ url: string }> | undefined;
+    const images: string[] = metaImages
+      ? metaImages.map(img => img.url).filter(Boolean)
+      : [photoshoot.image_1_url, photoshoot.image_2_url, photoshoot.image_3_url, photoshoot.image_4_url].filter(Boolean) as string[];
 
     images.forEach((url, index) => {
       if (url) {
@@ -530,7 +529,8 @@ export const PhotoshootModal = ({ isOpen, onClose, resultId, originalImageUrl }:
 
                 <div className="grid grid-cols-2 gap-4">
                   {selectedAngles.map((angleId, index) => {
-                    const imageUrl = photoshoot?.[`image_${index + 1}_url` as keyof PhotoshootJob] as string | null;
+                    const metaImages = (photoshoot?.metadata as any)?.generated_images as Array<{ angleId: string; url: string }> | undefined;
+                    const imageUrl = metaImages?.[index]?.url || photoshoot?.[`image_${index + 1}_url` as keyof PhotoshootJob] as string | null;
                     const isGenerated = !!imageUrl;
                     const progressPerAngle = 100 / selectedAngles.length;
                     const isCurrentlyGenerating = isProcessing && photoshoot && 
