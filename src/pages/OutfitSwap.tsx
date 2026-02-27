@@ -18,6 +18,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useTranslation } from "react-i18next";
 import { OutfitSwapJob, OutfitSwapResult } from "@/api/outfit-swap-api";
 import { supabase } from "@/integrations/supabase/client";
+import OutfitSwapBackgroundPicker from "@/components/outfit-swap/OutfitSwapBackgroundPicker";
+import { backgroundPresets } from "@/data/background-presets";
 
 const OutfitSwap = () => {
   const navigate = useNavigate();
@@ -36,6 +38,13 @@ const OutfitSwap = () => {
   const [uploading, setUploading] = useState(false);
   const [imageSize, setImageSize] = useState<'1K' | '2K' | '4K'>('1K');
   const [aspectRatio, setAspectRatio] = useState<string>('1:1');
+
+  // Background picker state
+  const defaultPreset = backgroundPresets.find(p => p.id === 'white-seamless');
+  const [selectedPreset, setSelectedPreset] = useState<string | null>('white-seamless');
+  const [customBackground, setCustomBackground] = useState<File | null>(null);
+  const [backgroundPrompt, setBackgroundPrompt] = useState<string>(defaultPreset?.prompt || '');
+  const backgroundRef = useRef<HTMLDivElement>(null);
 
   // Scroll refs for progressive disclosure
   const garmentRef = useRef<HTMLDivElement>(null);
@@ -133,8 +142,28 @@ const OutfitSwap = () => {
       // Prepare garment details array
       const detailsArray = garmentFiles.map((_, index) => garmentDetails[index] || "");
 
-      // Create batch with garment details and settings
-      await createBatch(selectedModel.id, garmentIds, { garmentDetails: detailsArray, imageSize, aspectRatio });
+      // Upload custom background if provided
+      let backgroundImageUrl: string | undefined;
+      if (customBackground) {
+        const ext = customBackground.name.split('.').pop() || 'jpg';
+        const path = `${user!.id}/bg-${Date.now()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('bulk-backgrounds')
+          .upload(path, customBackground, { contentType: customBackground.type });
+        if (uploadError) throw new Error('Failed to upload background image');
+        const { data: urlData } = supabase.storage.from('bulk-backgrounds').getPublicUrl(path);
+        backgroundImageUrl = urlData.publicUrl;
+      }
+
+      // Create batch with garment details, settings, and background
+      await createBatch(selectedModel.id, garmentIds, {
+        garmentDetails: detailsArray,
+        imageSize,
+        aspectRatio,
+        backgroundPrompt: backgroundPrompt || undefined,
+        backgroundImageUrl,
+        backgroundPresetId: selectedPreset || undefined,
+      });
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -151,6 +180,9 @@ const OutfitSwap = () => {
     setSelectedModel(null);
     setGarmentFiles([]);
     setGarmentDetails({});
+    setSelectedPreset('white-seamless');
+    setCustomBackground(null);
+    setBackgroundPrompt(defaultPreset?.prompt || '');
     setReplicateMode(false);
     setReplicatedJob(null);
     setReplicatedResult(null);
@@ -277,7 +309,22 @@ const OutfitSwap = () => {
               </Card>
             )}
 
-            {/* Section 3: Review & Start - visible when garments uploaded */}
+            {/* Section 3: Select Background - visible when garments uploaded */}
+            {selectedModel && garmentFiles.length > 0 && (
+              <Card ref={backgroundRef} className="rounded-apple shadow-lg scroll-mt-6 p-6 lg:p-8">
+                <h2 className="text-xl font-semibold mb-4">{t('bulkBackground.selectBackground.title')}</h2>
+                <OutfitSwapBackgroundPicker
+                  selectedPreset={selectedPreset}
+                  customBackground={customBackground}
+                  promptValue={backgroundPrompt}
+                  onPresetSelect={setSelectedPreset}
+                  onCustomUpload={setCustomBackground}
+                  onPromptChange={setBackgroundPrompt}
+                />
+              </Card>
+            )}
+
+            {/* Section 4: Review & Start - visible when garments uploaded */}
             {selectedModel && garmentFiles.length > 0 && (
               <div ref={reviewRef} className="scroll-mt-6">
                 <Card className="rounded-apple shadow-lg">

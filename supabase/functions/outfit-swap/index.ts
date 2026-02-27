@@ -806,7 +806,14 @@ async function processOutfitSwap(jobId: string) {
     const startTime = Date.now();
     // Use category-specific prompt
     const categoryPrompt = CATEGORY_SWAP_PROMPTS.FULL_OUTFIT;
-    const prompt = categoryPrompt.replace('{garment_description}', garmentAnalysis.description);
+    let prompt = categoryPrompt.replace('{garment_description}', garmentAnalysis.description);
+    
+    // Append background requirement if provided
+    const bgPrompt = (job.settings as any)?.backgroundPrompt;
+    if (bgPrompt) {
+      prompt += `\n\nBACKGROUND REQUIREMENT:\n${bgPrompt}`;
+      console.log(`[processOutfitSwap] Job ${jobId}: Appending background prompt`);
+    }
     console.log(`[processOutfitSwap] Job ${jobId}: Using ${garmentAnalysis.category} prompt template`);
     
     await supabase.from("outfit_swap_jobs").update({
@@ -851,7 +858,31 @@ async function processOutfitSwap(jobId: string) {
                   mimeType: garmentMimeType,
                   data: garmentBase64
                 }
-              }
+              },
+              // Add custom background image if provided
+              ...await (async () => {
+                const bgImageUrl = (job.settings as any)?.backgroundImageUrl;
+                if (!bgImageUrl) return [];
+                try {
+                  console.log(`[processOutfitSwap] Job ${jobId}: Fetching custom background image`);
+                  const bgResponse = await fetch(bgImageUrl);
+                  if (!bgResponse.ok) return [];
+                  const bgBuffer = await bgResponse.arrayBuffer();
+                  const bgBase64 = bufferToBase64(new Uint8Array(bgBuffer));
+                  const bgMime = bgResponse.headers.get('content-type') ?? 'image/jpeg';
+                  return [{
+                    text: "Use this image as the background environment for the final result. Place the model in this scene:"
+                  }, {
+                    inlineData: {
+                      mimeType: bgMime,
+                      data: bgBase64
+                    }
+                  }];
+                } catch (e) {
+                  console.error(`[processOutfitSwap] Job ${jobId}: Failed to fetch background image:`, e);
+                  return [];
+                }
+              })()
             ]
           }
         ],
