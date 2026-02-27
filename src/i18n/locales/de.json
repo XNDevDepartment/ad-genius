@@ -1684,6 +1684,7 @@
   "photoshootModal": {
     "title": "Professionelles Fotoshooting",
     "setupDescription": "Richten Sie Ihr Fotoshooting mit optionalem Rückenbild ein",
+    "categorySelectionDescription": "Welche Art von Produkt fotografieren Sie?",
     "angleSelectionDescription": "Winkel zum Generieren auswählen ({{count}} Kredit{{plural}})",
     "processingDescription": "Generiere Ihre professionellen Winkel...",
     "originalImage": "Originalbild",
@@ -1693,9 +1694,10 @@
     "cancel": "Abbrechen",
     "continue": "Weiter",
     "back": "Zurück",
+    "selectCategoryLabel": "Was fotografieren Sie?",
     "selectAllAngles": "Alle Auswählen",
     "deselectAllAngles": "Alle Abwählen",
-    "selectAnglesLabel": "Winkel zum Generieren Auswählen",
+    "selectAnglesLabel": "Winkel und Posen Auswählen",
     "costLabel": "Kosten",
     "anglesLabel": "Winkel",
     "anglesCount": "{{count}} von {{total}}",
@@ -1718,50 +1720,92 @@
     "failedToCancel": "Abbruch fehlgeschlagen: {{message}}",
     "backImageUploaded": "Rückenbild hochgeladen",
     "failedToUpload": "Hochladen des Rückenbilds fehlgeschlagen: {{message}}",
+    "categories": {
+      "top": {
+        "label": "Oberteil",
+        "description": "T-Shirts, Hemden, Jacken, Hoodies, Pullover"
+      },
+      "bottom": {
+        "label": "Unterteil",
+        "description": "Hosen, Jeans, Röcke, Shorts"
+      },
+      "footwear": {
+        "label": "Schuhe",
+        "description": "Schuhe, Sneaker, Stiefel, Sandalen"
+      },
+      "fullBody": {
+        "label": "Ganzer Körper",
+        "description": "Kleider, Overalls, komplette Outfits"
+      }
+    },
     "angles": {
       "threeQuarter": {
         "label": "Dreiviertelansicht",
-        "description": "Winklige Ansicht, die Tiefe zeigt"
+        "description": "45°-Drehung mit Schulterlinie und Tiefe"
       },
       "back": {
         "label": "Rückansicht",
-        "description": "Vollständige Rückansicht"
+        "description": "Saubere Rückaufnahme mit Konstruktionsdetails"
       },
       "side": {
         "label": "Seitenprofil",
-        "description": "Reiner Seitenwinkel"
+        "description": "Silhouettenaufnahme mit Betonung auf Passform und Form"
       },
       "detail": {
         "label": "Detailnahaufnahme",
-        "description": "Nahaufnahme wichtiger Merkmale"
+        "description": "Texturausschnitt mit Stoff und Naht"
       },
-      "lowerBodyFront": {
-        "label": "Unterkörper Vorderseite",
-        "description": "Frontansicht mit Fokus auf Hosen/Unterteile"
+      "armsCrossed": {
+        "label": "Pose Arme Verschränkt",
+        "description": "Selbstbewusste Pose, die zeigt wie das Kleidungsstück am Torso sitzt"
       },
-      "lowerBodyBack": {
-        "label": "Unterkörper Rückseite",
-        "description": "Rückansicht von Hosen/Unterteilen"
+      "handOnHip": {
+        "label": "Pose Hand an der Hüfte",
+        "description": "Editoriale Haltung mit Taillenpassform und Fall"
       },
-      "lowerBodySide": {
-        "label": "Unterkörper Seite",
-        "description": "Seitenprofil von Hosen/Unterteilen"
+      "overShoulder": {
+        "label": "Blick Über die Schulter",
+        "description": "Model schaut zurück, editoriales Gefühl"
       },
       "walkingPose": {
         "label": "Gehende Pose",
-        "description": "Dynamische Gehbewegung"
+        "description": "Dynamische Schrittbewegung mit Stoffbewegung"
+      },
+      "seated": {
+        "label": "Sitzende Pose",
+        "description": "Auf Hocker sitzend mit Kniebruch und Fall"
+      },
+      "crossLegged": {
+        "label": "Überkreuzte Beine Pose",
+        "description": "Ein Fuß überkreuzt, Oberseite und Sohle sichtbar"
+      },
+      "lowerBodyFront": {
+        "label": "Stehend von Vorne",
+        "description": "Vollständige Frontansicht von Taille bis Füße, natürliche Haltung"
+      },
+      "lowerBodyDetail": {
+        "label": "Detailnahaufnahme",
+        "description": "Taillen-/Hüftausschnitt mit Bund und Stoff"
+      },
+      "lowerBodyBack": {
+        "label": "Unterkörper Rückseite",
+        "description": "Rückansicht mit Taschendetails und Sitzpassform"
+      },
+      "lowerBodySide": {
+        "label": "Unterkörper Seite",
+        "description": "Seitensilhouette mit Oberschenkel/Knie/Verjüngung"
       },
       "shoeFront": {
-        "label": "Schuh Vorderseite",
-        "description": "Frontansicht des Schuhs"
+        "label": "Stehend von Vorne",
+        "description": "Knie bis Füße, beide Schuhe sichtbar"
       },
       "shoeSide": {
-        "label": "Schuh Seite",
-        "description": "Seitenprofil des Schuhs"
+        "label": "Seitenprofil",
+        "description": "Vollständige Schuhsilhouette, Sohle und Absatz"
       },
       "shoeBack": {
-        "label": "Schuh Rückseite",
-        "description": "Rückansicht/Absatz des Schuhs"
+        "label": "Rückansicht",
+        "description": "Beide Fersen sichtbar, hintere Konstruktion"
       }
     }
   },
