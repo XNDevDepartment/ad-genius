@@ -330,7 +330,7 @@ export const BaseModelSelector = ({
                 <img
                   src={model.thumbnail_url || model.public_url}
                   alt={model.name}
-                  className="w-full h-full object-contain"
+                  className="h-full object-cover"
                 />
                 {selectedModel?.id === model.id && (
                   <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
@@ -380,7 +380,7 @@ export const BaseModelSelector = ({
                 <img
                   src={model.thumbnail_url || model.public_url}
                   alt={model.name}
-                  className="w-full h-full object-contain"
+                  className="h-full object-cover"
                 />
                 {selectedModel?.id === model.id && (
                   <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
