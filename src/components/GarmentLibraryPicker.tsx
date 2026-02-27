@@ -69,7 +69,7 @@ export const GarmentLibraryPicker = ({
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col">
+      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ImageIcon className="w-5 h-5" />
@@ -97,7 +97,7 @@ export const GarmentLibraryPicker = ({
         </div>
 
         {/* Image Grid */}
-        <ScrollArea className="flex-1 min-h-[300px]">
+        <ScrollArea className="flex-1 min-h-[300px] max-h-[60vh]">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />

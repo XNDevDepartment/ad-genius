@@ -47,7 +47,8 @@ export const useBaseModels = () => {
         .select("*")
         .eq("is_system", true)
         .eq("is_active", true)
-        .order("display_order", { ascending: true });
+        .order("gender", { ascending: true })
+        .order("created_at", { ascending: false });
 
       if (filters?.gender) {
         query = query.eq("gender", filters.gender);
