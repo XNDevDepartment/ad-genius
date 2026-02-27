@@ -75,7 +75,7 @@ CRITICAL REQUIREMENTS:
    - LOWER BODY: Simple, neutral pants/jeans/skirt
    - FEET: Simple appropriate shoes
 
-4. FRAMING: Upper body focus (head to hips) - showcase the TOP
+4. FRAMING: Full body (head to toe) - showcase the TOP
 
 FORBIDDEN: Creating new model, changing identity, underwear visible, bare legs, barefoot, focusing on other clothing instead of the TOP
 
@@ -108,7 +108,7 @@ CRITICAL REQUIREMENTS:
    - LOWER BODY: Wear THE PRODUCT (the bottom from IMAGE 2)
    - FEET: Appropriate shoes that complement
 
-4. FRAMING: Lower body focus (waist to feet) - showcase the BOTTOM
+4. FRAMING: Full body (head to toe) - showcase the BOTTOM
 
 FORBIDDEN: Creating new model, changing identity, underwear visible, bare torso, focusing on the top instead of the BOTTOM
 
@@ -805,7 +805,7 @@ async function processOutfitSwap(jobId: string) {
     // STEP 2: Generate category-specific prompt with garment analysis
     const startTime = Date.now();
     // Use category-specific prompt
-    const categoryPrompt = CATEGORY_SWAP_PROMPTS[garmentAnalysis.category] || CATEGORY_SWAP_PROMPTS.FULL_OUTFIT;
+    const categoryPrompt = CATEGORY_SWAP_PROMPTS.FULL_OUTFIT;
     const prompt = categoryPrompt.replace('{garment_description}', garmentAnalysis.description);
     console.log(`[processOutfitSwap] Job ${jobId}: Using ${garmentAnalysis.category} prompt template`);
     
