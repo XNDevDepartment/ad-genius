@@ -326,7 +326,7 @@ export const BaseModelSelector = ({
               )}
               onClick={() => onSelectModel(model)}
             >
-              <div className="aspect-[9/16] sm:aspect-square relative overflow-hidden rounded-t-lg bg-muted">
+              <div className="aspect-[9/16] sm:aspect-square md:aspect-[9/16] relative overflow-hidden rounded-t-lg bg-muted">
                 <img
                   src={model.thumbnail_url || model.public_url}
                   alt={model.name}
@@ -376,7 +376,7 @@ export const BaseModelSelector = ({
               )}
               onClick={() => onSelectModel(model)}
             >
-              <div className="aspect-[9/16] sm:aspect-square relative overflow-hidden rounded-t-lg bg-muted">
+              <div className="aspect-[9/16] sm:aspect-square md:aspect-[9/16] relative overflow-hidden rounded-t-lg bg-muted">
                 <img
                   src={model.thumbnail_url || model.public_url}
                   alt={model.name}
