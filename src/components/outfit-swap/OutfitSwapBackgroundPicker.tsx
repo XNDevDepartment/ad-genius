@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import {
   BackgroundCategory,
   backgroundCategories,
-  backgroundPresets,
+  modelBackgroundPresets,
   getPresetsByCategory,
 } from "@/data/background-presets";
 
