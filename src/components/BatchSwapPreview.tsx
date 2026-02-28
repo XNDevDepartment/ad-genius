@@ -349,7 +349,7 @@ export const BatchSwapPreview = ({
 
               return (
                 <Card key={job.id} className="overflow-hidden h-max">
-                  <div className="aspect-square relative bg-muted">
+                  <div className="aspect-[9/16] sm:aspect-square md:aspect-[3/4] relative bg-muted">
                     {result && (
                       <img
                         src={result.public_url}
@@ -424,7 +424,7 @@ export const BatchSwapPreview = ({
                             {t('outfitSwap.buttons.createPhotoshoot')}
                           </span>
                           <Badge variant="secondary" className="ml-2 text-xs bg-white/20 text-white border-0">
-                            4 {t('outfitSwap.buttons.angles')}
+                            7 {t('outfitSwap.buttons.angles')}
                           </Badge>
                         </Button>
 
