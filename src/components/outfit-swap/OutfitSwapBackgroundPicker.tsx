@@ -75,7 +75,7 @@ const OutfitSwapBackgroundPicker = ({
     onCustomUpload(null);
     setCustomPreview(null);
     // Auto-populate prompt from preset
-    const preset = backgroundPresets.find((p) => p.id === presetId);
+    const preset = modelBackgroundPresets.find((p) => p.id === presetId);
     if (preset) {
       onPromptChange(preset.prompt);
     }
