@@ -10,7 +10,7 @@ import {
   BackgroundCategory,
   backgroundCategories,
   modelBackgroundPresets,
-  getPresetsByCategory,
+  getModelPresetsByCategory,
 } from "@/data/background-presets";
 
 // const ALLOWED_CATEGORIES: BackgroundCategory[] = ["studio", "magazine", "seasonal"];
@@ -124,7 +124,7 @@ const OutfitSwapBackgroundPicker = ({
           {filteredCategories.map(({ key }) => (
             <TabsContent key={key} value={key} className="mt-4">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {getPresetsByCategory(key).map((preset) => (
+                {getModelPresetsByCategory(key).map((preset) => (
                   <Card
                     key={preset.id}
                     onClick={() => handlePresetSelect(preset.id)}

@@ -166,3 +166,7 @@ export const getCategoryIcon = (category: BackgroundCategory): string => {
 export const getPresetsByCategory = (category: BackgroundCategory): BackgroundPreset[] => {
   return backgroundPresets.filter(preset => preset.category === category);
 };
+
+export const getModelPresetsByCategory = (category: BackgroundCategory): BackgroundPreset[] => {
+  return modelBackgroundPresets.filter(preset => preset.category === category);
+};
