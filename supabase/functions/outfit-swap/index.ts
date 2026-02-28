@@ -2098,30 +2098,35 @@ async function processEcommercePhoto(photoId: string) {
     const base64Image = bufferToBase64(imageBuffer);
     // Check for custom style prompt from metadata
     const stylePrompt = photo.metadata?.style_prompt;
-    let prompt = `Generate a professional fashion magazine photograph featuring the model and outfit shown in the reference image.`;
-    if (stylePrompt) {
-      prompt += `\n\nSTYLE DIRECTION: ${stylePrompt}`;
-    }
-    prompt += `\n\nCreate a complete fashion scene where:
+    let prompt = `TASK: Create authentic UGC photo featuring this product.
 
-            GARMENT ANALYSIS - Match environment to style:
-            - Casual wear → Urban street, coffee shop, park setting
-            - Formal wear → Modern office, elegant venue, city backdrop
-            - Athletic wear → Gym, outdoor track, yoga studio
-            - Evening wear → Upscale restaurant, gala venue
-            - Outerwear → City street, outdoor scene
+SCENARIO: ${stylePrompt || 'Natural lifestyle moment'}
+AUDIENCE: General consumer who appreciates good quality garments and likes fashion. Final image for e-commerce store. Preferable magazine photography but with UGC context
 
-            PHOTOGRAPHY REQUIREMENTS:
-            - Magazine-quality professional photography
-            - Natural lighting that complements the environment
-            - Proper depth of field with soft background blur
-            - Environment enhances but doesn't distract from outfit
-            - Model positioned naturally within the scene
-            - Cohesive color palette between outfit and setting
+MANDATORY RULES:
+1. PRODUCT INTEGRITY:
+   - Use EXACT product from reference image
+   - Keep all labels, colors, shapes, branding unchanged
+   - Product is hero - 60-75% of frame
 
-            OUTPUT: A polished, magazine-ready fashion photograph where model, outfit, and environment create a unified, professional presentation. The model must pose for the photograph giving a sence of naturality and involvement with the scenary around.
-            
-            ###RULE: Don't add new elements to the image, like text, barcodes, logos, etc. Just focus on recreating the photograph.`;
+2. AUTHENTICITY:
+   - 4k-professional-quality photography
+   - Natural lighting, real environments
+   - Slight imperfections (soft focus, natural shadows)
+   - Casual, off-center framing
+
+3. STYLE:
+   - lifestyle photography aesthetic
+   - natural lighting
+
+4. QUALITY:
+   - No AI artifacts, watermarks, text
+   - Natural human anatomy if people appear
+   - No invented branding
+
+--negative "AI artifacts, text overlays, watermark, distorted faces, extra limbs, blurry, low quality, cartoon, illustration, painting, drawing, bad anatomy"
+
+OUTPUT: Single authentic UGC photo ready for social media.`;
     await supabase.from("outfit_swap_ecommerce_photos").update({
       progress: 40
     }).eq("id", photoId);
