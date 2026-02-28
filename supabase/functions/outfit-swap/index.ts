@@ -2107,7 +2107,7 @@ MANDATORY RULES:
 1. PRODUCT INTEGRITY:
    - Use EXACT product from reference image
    - Keep all labels, colors, shapes, branding unchanged
-   - Product is hero - 60-75% of frame
+   - Model is hero - 60-75% of frame
 
 2. AUTHENTICITY:
    - 4k-professional-quality photography
