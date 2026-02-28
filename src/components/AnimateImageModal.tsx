@@ -59,7 +59,7 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
         }
       );
       const data = await res.json();
-      if (data?.prompt) setPrompt(data.prompt);
+      if (data?.suggestedPrompt) setPrompt(data.suggestedPrompt);
     } catch (err) {
       console.error("Failed to analyze image for motion:", err);
     } finally {
@@ -78,7 +78,7 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
     enhancedPrompt += ` Motion: ${videoSettings.motionIntensity}. Style: ${videoSettings.animationStyle}.`;
 
     await createVideoJob({
-      ugc_image_id: imageId || undefined,
+      image_url: imageUrl || undefined,
       prompt: enhancedPrompt,
       duration,
     });
