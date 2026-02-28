@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Pencil, Sparkles } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTranslation } from "react-i18next";
+import { generateScenarios, AIScenario } from "@/api/scenario-api";
 
 interface EcommerceIdea {
   title: string;
@@ -55,21 +56,16 @@ export const EcommerceIdeasModal = ({
   const generateIdeas = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("outfit-swap", {
-        body: {
-          action: "generateEcommerceIdeas",
-          imageUrl,
-          language
-        },
+      const scenarios = await generateScenarios({
+        audience: "General consumer who appreciates good quality garments and likes fashion. Final image for e-commerce store. Preferable magazine photography but with UGC context",
+        language: language || "en",
+        imageUrl,
       });
 
-      if (error) throw error;
-
-      if (data?.ideas && Array.isArray(data.ideas)) {
-        setIdeas(data.ideas);
-      } else {
-        throw new Error("Invalid response format");
-      }
+      setIdeas(scenarios.map((s: AIScenario) => ({
+        title: s.idea,
+        description: s.description,
+      })));
     } catch (error: any) {
       console.error("Failed to generate ideas:", error);
       toast({
@@ -77,7 +73,6 @@ export const EcommerceIdeasModal = ({
         title: t('ecommerceIdeasModal.failedToGenerate'),
         description: error.message || t('ecommerceIdeasModal.pleaseTryAgain'),
       });
-      // Set fallback ideas
       setIdeas([
         {
           title: t('ecommerceIdeasModal.fallbackIdeas.cleanStudio.title'),
@@ -245,11 +240,11 @@ export const EcommerceIdeasModal = ({
                     key={index}
                     className={cn(
                       "p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md",
-                      selectedIdea === idea.title
+                      selectedIdea === idea.description
                         ? "border-primary bg-primary/5 shadow-md"
                         : "border-border hover:border-primary/50"
                     )}
-                    onClick={() => setSelectedIdea(idea.title)}
+                    onClick={() => setSelectedIdea(idea.description)}
                   >
                     <h4 className="font-semibold text-base mb-1">{idea.title}</h4>
                     <p className="text-sm text-muted-foreground">{idea.description}</p>
