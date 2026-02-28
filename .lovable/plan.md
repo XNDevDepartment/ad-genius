@@ -1,25 +1,21 @@
 
 
-# Fix: Photoshoot Must Preserve Original Image Background
+# Fix: Ecommerce Photo Job Stuck on "Queued"
 
-## Problem
-All `ANGLE_PROMPTS` hardcode "Seamless light-grey background", so generated photoshoot angles always get a grey background — ignoring whatever background the source/hero image has (e.g., black studio, outdoor scene, etc.).
+## Root Cause
+In `createEcommercePhotoJob` (line 2064), the self-invocation that triggers async processing uses `SUPABASE_ANON_KEY`:
+```
+"Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`
+```
 
-## Solution
-Append a background preservation instruction to every photoshoot prompt at runtime, and remove the hardcoded background references from the angle prompts.
+But the processing gate (line 424-426) requires `SUPABASE_SERVICE_ROLE_KEY`. The anon key fails the check, returns 403, and the job stays in "queued" forever.
 
-### 1. `supabase/functions/outfit-swap/index.ts`
+## Fix
+In `supabase/functions/outfit-swap/index.ts`, line 2064:
+- Change `SUPABASE_ANON_KEY` to `SUPABASE_SERVICE_ROLE_KEY`
 
-**A. Update all `ANGLE_PROMPTS` entries** (~lines 1375-1401):
-- Replace every occurrence of "Seamless light-grey background" with "SAME background as the source image"
-- Same for `BACK_WITH_REFERENCE_PROMPT` (~line 1416)
+This is a one-line fix. The same pattern is already used correctly for `processJob` and `processPhotoshoot` self-invocations elsewhere in the file.
 
-**B. In `processPhotoshoot`** (~line 1616, after selecting the prompt):
-- Append a mandatory background instruction to every prompt:
-  ```
-  prompt += "\n\nBACKGROUND RULE: You MUST keep the EXACT SAME background, lighting, and environment as the source image. Do NOT change the background color, texture, or setting. If the source has a black background, the output MUST have a black background. NEVER default to grey or white.";
-  ```
-
-### Files to modify
-1. `supabase/functions/outfit-swap/index.ts` — update angle prompts and add runtime background rule
+## Files to modify
+1. `supabase/functions/outfit-swap/index.ts` — fix auth header in ecommerce photo self-invocation
 
