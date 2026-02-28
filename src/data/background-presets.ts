@@ -4,6 +4,11 @@ import studioBlack from '@/assets/backgrounds/studio/black.webp';
 import studioGray from '@/assets/backgrounds/studio/white-darkgrey.webp';
 import studioPink from '@/assets/backgrounds/studio/pink.webp';
 
+import modelStudioWhite from '@/assets/backgrounds/studio/modelWhite.webp';
+import modelStudioBlack from '@/assets/backgrounds/studio/modelBlack.webp';
+import modelStudioGray from '@/assets/backgrounds/studio/modelWhite-darkgrey.webp';
+import modelStudioPink from '@/assets/backgrounds/studio/modelPink.webp';
+
 // Lifestyle thumbnails
 import lifestyleLiving from '@/assets/backgrounds/lifestyle/livingroom.webp';
 import lifestyleKitchen from '@/assets/backgrounds/lifestyle/kitchen.webp';
@@ -15,6 +20,10 @@ import magazineEditorial from '@/assets/backgrounds/magazine/editorial.webp';
 import magazineFashion from '@/assets/backgrounds/magazine/studio.webp';
 import magazineMinimal from '@/assets/backgrounds/magazine/minimal.webp';
 import magazineVogue from '@/assets/backgrounds/magazine/vogue.webp';
+import modelMagazineEditorial from '@/assets/backgrounds/magazine/editorial.webp';
+import modelMagazineFashion from '@/assets/backgrounds/magazine/studio.webp';
+import modelMagazineMinimal from '@/assets/backgrounds/magazine/minimal.webp';
+import modelMagazineVogue from '@/assets/backgrounds/magazine/vogue.webp';
 
 // Nature thumbnails
 import natureBeach from '@/assets/backgrounds/nature/beach.png';
@@ -33,6 +42,10 @@ import seasonalChristmas from '@/assets/backgrounds/seasonal/christmas.webp';
 import seasonalSummer from '@/assets/backgrounds/seasonal/summer.webp';
 import seasonalAutumn from '@/assets/backgrounds/seasonal/autumn.webp';
 import seasonalSpring from '@/assets/backgrounds/seasonal/spring.webp';
+import modelSeasonalChristmas from '@/assets/backgrounds/seasonal/christmas.webp';
+import modelSeasonalSummer from '@/assets/backgrounds/seasonal/summer.webp';
+import modelSeasonalAutumn from '@/assets/backgrounds/seasonal/autumn.webp';
+import modelSeasonalSpring from '@/assets/backgrounds/seasonal/spring.webp';
 
 export type BackgroundCategory = 
   | 'lifestyle' 
@@ -125,6 +138,25 @@ export const backgroundPresets: BackgroundPreset[] = [
   { id: 'summer', name: 'Summer Vibes', nameKey: 'bulkBackground.presets.summer', promptKey: 'bulkBackground.prompts.summer', category: 'seasonal', thumbnail: seasonalSummer, prompt: 'Place the product in a bright summer setting with tropical vibes, sunshine, and vacation atmosphere' },
   { id: 'autumn', name: 'Autumn Leaves', nameKey: 'bulkBackground.presets.autumn', promptKey: 'bulkBackground.prompts.autumn', category: 'seasonal', thumbnail: seasonalAutumn, prompt: 'Place the product surrounded by colorful autumn leaves with warm fall lighting and cozy seasonal feel' },
   { id: 'spring', name: 'Spring Garden', nameKey: 'bulkBackground.presets.spring', promptKey: 'bulkBackground.prompts.spring', category: 'seasonal', thumbnail: seasonalSpring, prompt: 'Place the product in a fresh spring garden with blooming flowers, soft pastel colors, and new growth' }
+];
+export const modelBackgroundPresets: BackgroundPreset[] = [
+  // Studio
+  { id: 'white-seamless', name: 'White Seamless', nameKey: 'bulkBackground.presets.white-seamless', promptKey: 'bulkBackground.prompts.white-seamless', category: 'studio', thumbnail: modelStudioWhite, prompt: 'Place the model on a clean white seamless paper studio background with soft even lighting, professional product photography style' },
+  { id: 'black-studio', name: 'Black Studio', nameKey: 'bulkBackground.presets.black-studio', promptKey: 'bulkBackground.prompts.black-studio', category: 'studio', thumbnail: modelStudioBlack, prompt: 'Place the model on a matte black studio background with dramatic rim lighting, high-end product photography' },
+  { id: 'gradient-gray', name: 'Gray Gradient', nameKey: 'bulkBackground.presets.gradient-gray', promptKey: 'bulkBackground.prompts.gradient-gray', category: 'studio', thumbnail: modelStudioGray, prompt: 'Place the model on a smooth gray gradient backdrop fading from light to dark, professional catalog photography' },
+  { id: 'soft-pink', name: 'Soft Pink', nameKey: 'bulkBackground.presets.soft-pink', promptKey: 'bulkBackground.prompts.soft-pink', category: 'studio', thumbnail: modelStudioPink, prompt: 'Place the model on a soft pastel pink backdrop with feminine aesthetic, beauty product photography style' },
+
+  // Magazine
+  { id: 'editorial', name: 'Editorial Setup', nameKey: 'bulkBackground.presets.editorial', promptKey: 'bulkBackground.prompts.editorial', category: 'magazine', thumbnail: magazineEditorial, prompt: 'Place the model in a high-fashion editorial setup with dramatic lighting and artistic composition, magazine cover quality' },
+  { id: 'fashion', name: 'Fashion Studio', nameKey: 'bulkBackground.presets.fashion', promptKey: 'bulkBackground.prompts.fashion', category: 'magazine', thumbnail: magazineFashion, prompt: 'Place the model in a fashion photography studio with seamless background and professional studio lighting' },
+  { id: 'minimal', name: 'Minimalist', nameKey: 'bulkBackground.presets.minimal', promptKey: 'bulkBackground.prompts.minimal', category: 'magazine', thumbnail: magazineMinimal, prompt: 'Place the model in an ultra-minimalist setting with lots of negative space, clean Scandinavian aesthetic' },
+  { id: 'vogue', name: 'Vogue Style', nameKey: 'bulkBackground.presets.vogue', promptKey: 'bulkBackground.prompts.vogue', category: 'magazine', thumbnail: magazineVogue, prompt: 'Place the model in a luxurious Vogue-inspired setting with high-end aesthetic and dramatic fashion lighting' },
+
+  // Seasonal
+  { id: 'christmas', name: 'Christmas Scene', nameKey: 'bulkBackground.presets.christmas', promptKey: 'bulkBackground.prompts.christmas', category: 'seasonal', thumbnail: seasonalChristmas, prompt: 'Place the model in a festive Christmas setting with decorated tree, warm lights, and cozy holiday atmosphere' },
+  { id: 'summer', name: 'Summer Vibes', nameKey: 'bulkBackground.presets.summer', promptKey: 'bulkBackground.prompts.summer', category: 'seasonal', thumbnail: seasonalSummer, prompt: 'Place the model in a bright summer setting with tropical vibes, sunshine, and vacation atmosphere' },
+  { id: 'autumn', name: 'Autumn Leaves', nameKey: 'bulkBackground.presets.autumn', promptKey: 'bulkBackground.prompts.autumn', category: 'seasonal', thumbnail: seasonalAutumn, prompt: 'Place the model surrounded by colorful autumn leaves with warm fall lighting and cozy seasonal feel' },
+  { id: 'spring', name: 'Spring Garden', nameKey: 'bulkBackground.presets.spring', promptKey: 'bulkBackground.prompts.spring', category: 'seasonal', thumbnail: seasonalSpring, prompt: 'Place the model in a fresh spring garden with blooming flowers, soft pastel colors, and new growth' }
 ];
 
 export const getCategoryIcon = (category: BackgroundCategory): string => {

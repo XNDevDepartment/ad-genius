@@ -13,7 +13,8 @@ import {
   getPresetsByCategory,
 } from "@/data/background-presets";
 
-const ALLOWED_CATEGORIES: BackgroundCategory[] = ["studio", "magazine", "seasonal"];
+// const ALLOWED_CATEGORIES: BackgroundCategory[] = ["studio", "magazine", "seasonal"];
+const ALLOWED_CATEGORIES: BackgroundCategory[] = ["studio"];
 
 const categoryIcons: Record<string, React.ReactNode> = {
   Camera: <Camera className="h-4 w-4" />,
