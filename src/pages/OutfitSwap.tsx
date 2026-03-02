@@ -19,7 +19,7 @@ import { useTranslation } from "react-i18next";
 import { OutfitSwapJob, OutfitSwapResult } from "@/api/outfit-swap-api";
 import { supabase } from "@/integrations/supabase/client";
 import OutfitSwapBackgroundPicker from "@/components/outfit-swap/OutfitSwapBackgroundPicker";
-import { backgroundPresets } from "@/data/background-presets";
+import { modelBackgroundPresetsbackgroundPresets } from "@/data/background-presets";
 
 const OutfitSwap = () => {
   const navigate = useNavigate();
