@@ -373,7 +373,6 @@ async function generateImageWithRetry(prompt: string, base64Image: string, mimeT
           ],
           generationConfig: {
             responseModalities: [
-              'TEXT',
               'IMAGE'
             ]
           }
@@ -916,7 +915,6 @@ async function processOutfitSwap(jobId: string) {
         ],
         generationConfig: {
           responseModalities: [
-            'TEXT',
             'IMAGE'
           ],
           imageConfig: {
