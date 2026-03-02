@@ -77,6 +77,12 @@ CRITICAL REQUIREMENTS:
 
 4. FRAMING: Full body (head to toe) - showcase the TOP
 
+5. PATTERN FIDELITY - CRITICAL:
+   - You MUST reproduce the EXACT fabric pattern, print, and texture from IMAGE 2
+   - Do NOT interpret or reimagine the pattern - copy it PRECISELY
+   - Small dots must remain small dots, stripes must remain stripes
+   - The pattern scale, spacing, and colors must match IMAGE 2 exactly
+
 FORBIDDEN: Creating new model, changing identity, underwear visible, bare legs, barefoot, focusing on other clothing instead of the TOP
 
 OUTPUT: The SAME model wearing THE PRODUCT (top) as the clear visual focus.`,
@@ -109,6 +115,12 @@ CRITICAL REQUIREMENTS:
    - FEET: Appropriate shoes that complement
 
 4. FRAMING: Full body (head to toe) - showcase the BOTTOM
+
+5. PATTERN FIDELITY - CRITICAL:
+   - You MUST reproduce the EXACT fabric pattern, print, and texture from IMAGE 2
+   - Do NOT interpret or reimagine the pattern - copy it PRECISELY
+   - Small dots must remain small dots, stripes must remain stripes
+   - The pattern scale, spacing, and colors must match IMAGE 2 exactly
 
 FORBIDDEN: Creating new model, changing identity, underwear visible, bare torso, focusing on the top instead of the BOTTOM
 
@@ -144,6 +156,11 @@ CRITICAL REQUIREMENTS:
 
 4. FRAMING: Full body or knee-to-feet, ensuring SHOES are clearly visible and prominent
 
+5. PATTERN FIDELITY - CRITICAL:
+   - You MUST reproduce the EXACT design, pattern, and texture of the footwear from IMAGE 2
+   - Do NOT interpret or reimagine the design - copy it PRECISELY
+   - The colors, materials, sole design, and details must match IMAGE 2 exactly
+
 FORBIDDEN: Creating new model, changing identity, barefoot, focusing on shirt/top, making upper body the focus, underwear visible
 
 OUTPUT: The SAME model with THE PRODUCT (footwear) clearly visible as the main focus of the image.`,
@@ -177,6 +194,12 @@ CRITICAL REQUIREMENTS:
 
 4. FRAMING: Full body (head to toe) - showcase the complete outfit
 
+5. PATTERN FIDELITY - CRITICAL:
+   - You MUST reproduce the EXACT fabric pattern, print, and texture from IMAGE 2
+   - Do NOT interpret or reimagine the pattern - copy it PRECISELY
+   - Small dots must remain small dots, stripes must remain stripes, plaids must remain plaids
+   - The pattern scale, spacing, and colors must match IMAGE 2 exactly
+
 FORBIDDEN: Creating new model, changing identity, appearing in underwear, shapewear worn alone, bikini-like appearance
 
 OUTPUT: The SAME model wearing THE PRODUCT (outfit) as a complete, styled look.`,
@@ -209,6 +232,11 @@ CRITICAL REQUIREMENTS:
    - NEVER add accessory to someone in underwear
 
 4. FRAMING: Frame appropriately to showcase the accessory clearly
+
+5. PATTERN FIDELITY - CRITICAL:
+   - You MUST reproduce the EXACT design, pattern, texture, and details of the accessory from IMAGE 2
+   - Do NOT interpret or reimagine any design elements - copy them PRECISELY
+   - The colors, materials, hardware, and details must match IMAGE 2 exactly
 
 FORBIDDEN: Creating new model, changing identity, model in underwear, accessory not visible, clothing overshadowing the accessory
 
