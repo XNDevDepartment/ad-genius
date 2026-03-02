@@ -19,7 +19,7 @@ import { useTranslation } from "react-i18next";
 import { OutfitSwapJob, OutfitSwapResult } from "@/api/outfit-swap-api";
 import { supabase } from "@/integrations/supabase/client";
 import OutfitSwapBackgroundPicker from "@/components/outfit-swap/OutfitSwapBackgroundPicker";
-import { modelBackgroundPresetsbackgroundPresets } from "@/data/background-presets";
+import { modelBackgroundPresets } from "@/data/background-presets";
 
 const OutfitSwap = () => {
   const navigate = useNavigate();
@@ -40,7 +40,7 @@ const OutfitSwap = () => {
   const [aspectRatio, setAspectRatio] = useState<string>('1:1');
 
   // Background picker state
-  const defaultPreset = backgroundPresets.find(p => p.id === 'white-seamless');
+  const defaultPreset = modelBackgroundPresets.find(p => p.id === 'white-seamless');
   const [selectedPreset, setSelectedPreset] = useState<string | null>('white-seamless');
   const [customBackground, setCustomBackground] = useState<File | null>(null);
   const [backgroundPrompt, setBackgroundPrompt] = useState<string>(defaultPreset?.prompt || '');
