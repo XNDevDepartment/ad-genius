@@ -10,6 +10,7 @@ import { useKlingVideo } from "@/hooks/useKlingVideo";
 import { supabase } from "@/integrations/supabase/client";
 import { Video, Sparkles, Download, RefreshCw, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AnimateImageModalProps {
   open: boolean;
@@ -29,6 +30,7 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
   const [aiPromptLoading, setAiPromptLoading] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const { job, loading, createVideoJob, clearJob } = useKlingVideo();
+  const { language } = useLanguage();
 
   // Auto-analyze image for motion prompt when modal opens
   useEffect(() => {
@@ -55,7 +57,7 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
             "Content-Type": "application/json",
             Authorization: `Bearer ${session.access_token}`,
           },
-          body: JSON.stringify({ imageUrl }),
+          body: JSON.stringify({ imageUrl, language }),
         }
       );
       const data = await res.json();
@@ -65,7 +67,7 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
     } finally {
       setAiPromptLoading(false);
     }
-  }, [imageUrl]);
+  }, [imageUrl, language]);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
