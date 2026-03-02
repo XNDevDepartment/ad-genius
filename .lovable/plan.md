@@ -1,20 +1,38 @@
 
 
-# Fix: AI Motion Prompt Should Match User's Language
+# Pass Quality & Aspect Ratio to Gemini in Outfit Swap
 
-## Root Cause
-The `analyze-image-for-motion` edge function already supports a `language` parameter and uses it in the system prompt (`Write in ${language}`). However, `AnimateImageModal.tsx` never sends it — the request body only includes `{ imageUrl }`, so it defaults to `"en"`.
+## Problem
+The OutfitSwap page sends `imageSize` and `aspectRatio` in `settings`, and these are correctly stored in `job.settings` in the database. However, the `processOutfitSwap` function in the edge function ignores them when calling the Gemini API — the `generationConfig` at line 889 only has `responseModalities` but no `imageConfig`.
 
-## Fix
+The bulk-background module already does this correctly at line 117:
+```
+generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: settings?.aspectRatio, imageSize: settings?.imageSize } }
+```
 
-### `src/components/AnimateImageModal.tsx`
-1. Import `useLanguage` from `@/contexts/LanguageContext`
-2. Get `const { language } = useLanguage()` inside the component
-3. On line 58, change `body: JSON.stringify({ imageUrl })` to `body: JSON.stringify({ imageUrl, language })`
-4. Add `language` to the `useCallback` dependency array (line 68)
+Additionally, the credit calculation at line 1199 is hardcoded to 1 credit per garment, ignoring the `imageSize` (should be 1/2/4 for 1K/2K/4K).
 
-That's it — the edge function already handles the `language` param correctly, generating the prompt in the specified language.
+## Changes
+
+### `supabase/functions/outfit-swap/index.ts`
+
+**1. Fix Gemini API call (line 889-894)** — Add `imageConfig` with `aspectRatio` and `imageSize` from `job.settings`:
+```typescript
+generationConfig: {
+  responseModalities: ['TEXT', 'IMAGE'],
+  imageConfig: {
+    aspectRatio: (job.settings as any)?.aspectRatio || undefined,
+    imageSize: (job.settings as any)?.imageSize || undefined,
+  }
+}
+```
+
+**2. Fix credit calculation (line 1198-1201)** — Use `imageSize` from settings to determine per-image cost (matching bulk-background pattern):
+```typescript
+const sizeMultiplier = settings?.imageSize === '4K' ? 4 : settings?.imageSize === '2K' ? 2 : 1;
+const baseCreditsNeeded = garmentIds.length * sizeMultiplier;
+```
 
 ### Files to modify
-1. `src/components/AnimateImageModal.tsx` — 4 small changes (import, hook, body, deps)
+1. `supabase/functions/outfit-swap/index.ts` — two changes: add imageConfig to generationConfig, fix credit calculation
 
