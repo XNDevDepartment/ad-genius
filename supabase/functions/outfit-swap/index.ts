@@ -890,7 +890,11 @@ async function processOutfitSwap(jobId: string) {
           responseModalities: [
             'TEXT',
             'IMAGE'
-          ]
+          ],
+          imageConfig: {
+            aspectRatio: (job.settings as any)?.aspectRatio || undefined,
+            imageSize: (job.settings as any)?.imageSize || undefined,
+          }
         }
       })
     });
@@ -1195,8 +1199,9 @@ async function createBatchJob(userId1: string, params: any) {
     }, 400);
   }
   console.log(`[createBatchJob] Creating batch for ${garmentIds.length} garments`);
-  // Calculate credits: 1 per garment, with 10% batch discount for 5+
-  const baseCreditsNeeded = garmentIds.length * 1;
+  // Calculate credits based on image size: 1K=1, 2K=2, 4K=4 per garment
+  const sizeMultiplier = settings?.imageSize === '4K' ? 4 : settings?.imageSize === '2K' ? 2 : 1;
+  const baseCreditsNeeded = garmentIds.length * sizeMultiplier;
   const discount = garmentIds.length >= 5 ? 0.1 : 0;
   const creditsNeeded = Math.ceil(baseCreditsNeeded * (1 - discount));
   console.log(`[createBatchJob] Credits needed: ${creditsNeeded}`);
