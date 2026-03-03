@@ -96,7 +96,7 @@ serve(async (req) => {
       log("Determined subscription tier", { amount, subscriptionTier });
     }
 
-    // Check if tier changed to allocate credits
+    // Check for one-time payment users
     const { data: existingSubscriber } = await supabaseService
       .from("subscribers")
       .select("subscription_tier, credits_balance, last_reset_at, updated_at, payment_type, subscription_end")
@@ -142,49 +142,15 @@ serve(async (req) => {
       }
     }
 
-    let shouldAllocateCredits = false;
-    
-    // Priority 1: New subscriber with active subscription
-    if (!existingSubscriber) {
-      shouldAllocateCredits = active;
-      log("New subscriber detected", { active, subscriptionTier });
-    } 
-    // Priority 2: Free → Paid transition (ALWAYS allocate, ignore time check)
-    else if (existingSubscriber.subscription_tier === 'Free' && subscriptionTier !== 'Free' && active) {
-      shouldAllocateCredits = true;
-      log("Free to paid upgrade detected - allocating credits immediately", {
-        from: existingSubscriber.subscription_tier,
-        to: subscriptionTier
-      });
-    }
-    // Priority 3: Paid tier change (use time safeguard)
-    else if (existingSubscriber.subscription_tier !== subscriptionTier && active) {
-      const lastAllocation = existingSubscriber.last_reset_at || existingSubscriber.updated_at;
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      
-      if (!lastAllocation || new Date(lastAllocation) < oneHourAgo) {
-        shouldAllocateCredits = true;
-        log("Tier change detected", { 
-          from: existingSubscriber.subscription_tier, 
-          to: subscriptionTier,
-          lastAllocation 
-        });
-      } else {
-        log("Tier change detected but skipping allocation (too recent)", { 
-          lastAllocation,
-          timeSinceLastAllocation: Date.now() - new Date(lastAllocation).getTime()
-        });
-      }
-    }
-    
-    log("Credit allocation decision", {
-      shouldAllocate: shouldAllocateCredits,
+    // Sync subscription status only — NO credit allocation here
+    // Credits are allocated exclusively by the stripe-webhook function
+    log("Syncing subscription status (no credit allocation)", {
       existingTier: existingSubscriber?.subscription_tier,
       newTier: subscriptionTier,
       isActive: active
     });
 
-    // Update subscriber record
+    // Update subscriber record (status sync only)
     await supabaseService.from("subscribers").upsert({
       email: user.email!,
       user_id: user.id,
@@ -193,36 +159,7 @@ serve(async (req) => {
       subscription_tier: subscriptionTier,
       subscription_end: subscriptionEnd,
       updated_at: new Date().toISOString(),
-      // Update last_reset_at when allocating credits
-      ...(shouldAllocateCredits ? { last_reset_at: new Date().toISOString() } : {})
     }, { onConflict: "email" });
-
-    // Allocate credits if needed (Option B: Add to existing balance)
-    if (shouldAllocateCredits) {
-      const tierCredits = {
-        'Free': 0, // Don't add credits for free tier
-        'Starter': 80,
-        'Plus': 200,
-        'Pro': 400,
-        'Founders': 80
-      };
-      
-      const creditsToAdd = tierCredits[subscriptionTier as keyof typeof tierCredits] || 0;
-      
-      if (creditsToAdd > 0) {
-        const { error: creditError } = await supabaseService.rpc('refund_user_credits', {
-          p_user_id: user.id,
-          p_amount: creditsToAdd,
-          p_reason: `subscription_upgrade_${subscriptionTier.toLowerCase()}`
-        });
-        
-        if (creditError) {
-          log("Credit allocation error", creditError);
-        } else {
-          log("Credits allocated", { userId: user.id, tier: subscriptionTier, credits: creditsToAdd });
-        }
-      }
-    }
 
     return new Response(JSON.stringify({ 
       subscribed: active, 
