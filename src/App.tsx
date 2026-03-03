@@ -63,6 +63,8 @@ const LandingPageV2 = lazyWithRetry(() => import("./pages/LandingPageV2"));
 const PromoFirstMonth = lazyWithRetry(() => import("./pages/PromoFirstMonth"));
 const Promo1Mes = lazyWithRetry(() => import("./pages/Promo1Mes"));
 const Promo1MesCheckout = lazyWithRetry(() => import("./pages/Promo1MesCheckout"));
+const Promo3Meses = lazyWithRetry(() => import("./pages/Promo3Meses"));
+const Promo3MesCheckout = lazyWithRetry(() => import("./pages/Promo3MesCheckout"));
 const OneTimeCheckout = lazyWithRetry(() => import("./pages/OneTimeCheckout"));
 const AffiliateLanding = lazyWithRetry(() => import("./pages/AffiliateLanding"));
 const AffiliateDashboard = lazyWithRetry(() => import("./pages/AffiliateDashboard"));
@@ -391,6 +393,20 @@ const App = () => {
                 <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
                     <Promo1MesCheckout />
+                  </Suspense>
+                </ErrorBoundaryWithReset>
+              } />
+              <Route path="/promo/3meses" element={
+                <ErrorBoundaryWithReset>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <Promo3Meses />
+                  </Suspense>
+                </ErrorBoundaryWithReset>
+              } />
+              <Route path="/promo/3meses/checkout" element={
+                <ErrorBoundaryWithReset>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <Promo3MesCheckout />
                   </Suspense>
                 </ErrorBoundaryWithReset>
               } />
