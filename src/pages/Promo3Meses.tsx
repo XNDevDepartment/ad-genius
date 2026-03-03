@@ -150,9 +150,9 @@ const Promo3Meses = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <MinimalHeader />
+      {!user && <MinimalHeader />}
 
-      <main className="pt-16">
+      <main className={user ? "pt-4" : "pt-16"}>
         {/* Section 1: Hero */}
         <section className="py-20 px-4">
           <div className="max-w-4xl mx-auto text-center space-y-6">
