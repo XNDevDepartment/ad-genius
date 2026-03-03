@@ -1,37 +1,27 @@
 
 
-# Oferta €19.99/mês por 3 meses
+# Use Existing Stripe Promotion Code for 3MESES
 
-## Abordagem
+## Change
 
-A forma mais simples, usando a infraestrutura existente (padrão do `1MES`), é criar um cupão Stripe programático que aplique um desconto de €9.01 (€29.00 - €19.99) nos primeiros 3 meses da subscrição Starter.
+In `supabase/functions/create-checkout/index.ts`, replace the ad-hoc coupon creation block for `3MESES` with a direct reference to the Stripe promotion code ID `promo_1T6ghXCdNWwdXCd8mF7Z2C7V`.
 
-## Implementação
+### `supabase/functions/create-checkout/index.ts`
 
-### 1. `supabase/functions/create-checkout/index.ts`
+Replace the `else if (promoCode === '3MESES')` block (lines ~80-91) that creates an ad-hoc coupon with:
 
-Adicionar detecção de um novo código promo (ex: `3MESES`) que cria um cupão ad-hoc Stripe com:
-- `amount_off: 901` (€9.01 de desconto)
-- `currency: 'eur'`
-- `duration: 'repeating'`
-- `duration_in_months: 3`
+```typescript
+} else if (promoCode === '3MESES') {
+  promotionCodeId = 'promo_1T6ghXCdNWwdXCd8mF7Z2C7V';
+  console.log('[create-checkout] Using existing 3MESES promotion code');
+}
+```
 
-Isto faz com que o utilizador pague €19.99/mês durante 3 meses e depois passa automaticamente para €29/mês (Starter normal).
+### Pre-requisite (Stripe Dashboard)
 
-### 2. `supabase/functions/stripe-webhook/index.ts`
+The coupon shown in the screenshot is restricted to the "Starter 1 month" product. Since checkout uses dynamic `price_data`, the promotion code will fail unless you **remove the product restriction** from the coupon in Stripe Dashboard → Coupons → 3MESES → Edit → remove "Applies to specific products".
 
-Opcionalmente, limitar os créditos nos 3 primeiros meses (como o `1MES` que limita a 35). Se quiseres manter os 80 créditos completos do Starter, não é necessária alteração aqui.
+### Redeploy
 
-### 3. Landing page e checkout direto (opcional)
-
-Criar uma página `/promo/3meses` e `/promo/3meses/checkout` seguindo o padrão do `Promo1Mes` e `Promo1MesCheckout`, com o código `3MESES` pré-aplicado.
-
-### 4. Rota no `App.tsx`
-
-Registar as novas rotas.
-
-## Decisão necessária
-
-- Queres que os utilizadores desta oferta recebam os **80 créditos completos** do Starter ou um valor reduzido (como os 35 do `1MES`)?
-- Queres uma landing page dedicada ou apenas usar o código promo no checkout normal?
+Redeploy the `create-checkout` edge function.
 
