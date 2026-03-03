@@ -113,7 +113,7 @@ serve(async (req) => {
         console.error('[create-checkout] Failed to create ad-hoc coupon for 1MES:', err);
       }
   } else if (promoCode === '3MESES') {
-      promotionCodeId = 'promo_1T6ghXCdNWwdXCd8mF7Z2C7V';
+      promotionCodeId = 'promo_1T6h1JCdNWwdXCd81janpcy5';
       console.log('[create-checkout] Using existing 3MESES promotion code');
     } else if (promoCode) {
       try {
