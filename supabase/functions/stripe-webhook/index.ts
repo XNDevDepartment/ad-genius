@@ -233,20 +233,42 @@ serve(async (req) => {
           throw updateError;
         }
         
-        // Allocate credits via RPC function
-        const { data: creditResult, error: creditError } = await supabase.rpc("refund_user_credits", {
-          p_user_id: userId,
-          p_amount: credits,
-          p_reason: `${tier} subscription activated via webhook`
-        });
+        // Idempotency check: skip credit allocation if already done for this session
+        const { data: existingAllocation } = await supabase
+          .from("credits_transactions")
+          .select("id")
+          .eq("user_id", userId)
+          .gt("amount", 0)
+          .contains("metadata", { stripe_session_id: session.id })
+          .limit(1);
         
-        if (creditError) {
-          console.error("[WEBHOOK] Failed to allocate credits:", creditError);
-          throw creditError;
+        if (existingAllocation && existingAllocation.length > 0) {
+          console.log(`[WEBHOOK] ⚠ Credits already allocated for session ${session.id}, skipping duplicate`);
+        } else {
+          // Allocate credits via RPC function
+          const { data: creditResult, error: creditError } = await supabase.rpc("refund_user_credits", {
+            p_user_id: userId,
+            p_amount: credits,
+            p_reason: `${tier} subscription activated via webhook`
+          });
+          
+          if (creditError) {
+            console.error("[WEBHOOK] Failed to allocate credits:", creditError);
+            throw creditError;
+          }
+          
+          // Update the transaction metadata with session ID for idempotency
+          await supabase
+            .from("credits_transactions")
+            .update({ metadata: { stripe_session_id: session.id, tier, promo: promoCodeUsed } })
+            .eq("user_id", userId)
+            .eq("reason", `${tier} subscription activated via webhook`)
+            .order("created_at", { ascending: false })
+            .limit(1);
+          
+          console.log(`[WEBHOOK] ✓ Subscription activated for user ${userId}: ${tier} tier with ${credits} credits`);
+          console.log(`[WEBHOOK] Credit allocation result:`, creditResult);
         }
-        
-        console.log(`[WEBHOOK] ✓ Subscription activated for user ${userId}: ${tier} tier with ${credits} credits`);
-        console.log(`[WEBHOOK] Credit allocation result:`, creditResult);
         
         // Sync tier change to MailerLite
         try {
