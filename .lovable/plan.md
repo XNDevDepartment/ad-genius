@@ -1,63 +1,49 @@
 
 
-# Fix Maria's 3MESES Checkout — Two Issues Found
+# 3MESES Users Missing Credits — Root Cause & Fix
 
-## Problem Analysis
+## Root Cause
 
-**Issue 1 — Corrupted subscriber record:**  
-Maria (`maria.peixoto2000@hotmail.com`, user_id `f787f7db-498b-4733-89ee-1d0aa11e2e9a`) has `subscription_tier = 'Starter'` but `subscribed = false` and `credits_balance = 0`. This inconsistent state was likely set by the webhook or a previous failed attempt. Since `tier` returns `'Starter'` (not `'Free'`), the promo banner won't even show for her. She also has 0 credits.
+The Stripe webhook (`stripe-webhook` edge function) is **not firing** for these checkout sessions. Evidence:
 
-**Issue 2 — 3MESES still uses the restricted promotion code:**  
-The `create-checkout` edge function (line 115-117) still uses `promotionCodeId = 'promo_1T6h1JCdNWwdXCd81janpcy5'` for 3MESES. This promotion code has a "first-time customer" restriction in Stripe, so it fails for users with prior transactions (like Maria, who has `stripe_customer_id: cus_U5TruFSYJf4d2t`). The approved ad-hoc coupon fix was never implemented.
+- All 3 affected users have `last_reset_at: NULL` — the webhook sets this field during `checkout.session.completed`
+- Zero `credits_transactions` records exist for these users — the webhook is the only place that allocates credits
+- Their subscriber records WERE updated to `subscribed: true` / `Starter` — but this was done by `check-subscription` (polled from the Success page), not the webhook
 
-## Plan
+**Affected users:**
+| Email | Credits | Should Have |
+|---|---|---|
+| geral.patriciavieira@hotmail.com | 10 | 80 |
+| sapatariatrindade1951@gmail.com | 17 | 80 |
+| maria.peixoto2000@hotmail.com | 3 | 80 |
 
-### 1. Reset Maria's subscriber record to Free tier (SQL migration)
+## Immediate Fix — Grant Missing Credits
 
-```sql
-UPDATE public.subscribers 
-SET subscription_tier = 'Free',
-    subscribed = false,
-    subscription_status = 'inactive',
-    credits_balance = 10,
-    updated_at = now()
-WHERE user_id = 'f787f7db-498b-4733-89ee-1d0aa11e2e9a';
-```
+Run a data update to set `credits_balance` to 80 and `last_reset_at` to now for all 3 affected users using the insert/update tool.
 
-This gives her a clean Free state with 10 credits so she can properly go through the 3MESES checkout flow.
+## Structural Fix — Fallback Credit Allocation in check-subscription
 
-### 2. Fix create-checkout to use ad-hoc coupon for 3MESES
+The current architecture has a single point of failure: if the webhook doesn't fire, users never get credits. Add a safety net in `check-subscription`:
 
-In `supabase/functions/create-checkout/index.ts`, replace lines 115-117:
+In `supabase/functions/check-subscription/index.ts`, after the subscriber upsert (line 154-162), add logic:
 
-```typescript
-} else if (promoCode === '3MESES') {
-    promotionCodeId = 'promo_1T6h1JCdNWwdXCd81janpcy5';
-    console.log('[create-checkout] Using existing 3MESES promotion code');
-```
+1. If the user is now `subscribed = true` AND `last_reset_at IS NULL` (meaning webhook never ran)
+2. Check if a credit transaction already exists for the current period
+3. If not, allocate the tier-appropriate credits via `refund_user_credits` RPC and set `last_reset_at`
 
-With the ad-hoc coupon approach (same pattern as 1MES):
+This ensures that even if the webhook fails, credits are allocated the first time the user loads the app.
 
-```typescript
-} else if (promoCode === '3MESES') {
-    try {
-      const coupon = await stripe.coupons.create({
-        amount_off: 901,
-        currency: 'eur',
-        duration: 'repeating',
-        duration_in_months: 3,
-        name: '3MESES — 3 Months Promo',
-      });
-      adHocCouponId = coupon.id;
-      console.log('[create-checkout] Created ad-hoc coupon for 3MESES:', adHocCouponId);
-    } catch (err) {
-      console.error('[create-checkout] Failed to create ad-hoc coupon for 3MESES:', err);
-    }
-```
+## Action Required (Manual)
 
-Then redeploy the `create-checkout` edge function.
+You need to verify your Stripe webhook configuration in the Stripe Dashboard:
+- Go to Developers → Webhooks
+- Confirm the endpoint URL points to `https://dhqdamfisdbbcieqlpvt.supabase.co/functions/v1/stripe-webhook`
+- Confirm `checkout.session.completed` is in the list of events
+- Check for any failed delivery attempts in the webhook logs
 
-### Summary of changes
-- **1 SQL migration** — reset Maria to Free tier
-- **1 edge function edit + deploy** — fix 3MESES to bypass Stripe restrictions
+## Summary of Changes
+
+- **Data fix**: Update 3 users' `credits_balance` to 80 and set `last_reset_at`
+- **Edge function**: Add fallback credit allocation in `check-subscription` + redeploy
+- **Manual**: Verify Stripe webhook endpoint configuration
 
