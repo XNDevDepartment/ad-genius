@@ -113,8 +113,19 @@ serve(async (req) => {
         console.error('[create-checkout] Failed to create ad-hoc coupon for 1MES:', err);
       }
   } else if (promoCode === '3MESES') {
-      promotionCodeId = 'promo_1T6h1JCdNWwdXCd81janpcy5';
-      console.log('[create-checkout] Using existing 3MESES promotion code');
+      try {
+        const coupon = await stripe.coupons.create({
+          amount_off: 901,   // 29.00 − 9.01 = 19.99 EUR for 3 months
+          currency: 'eur',
+          duration: 'repeating',
+          duration_in_months: 3,
+          name: '3MESES — 3 Months Promo',
+        });
+        adHocCouponId = coupon.id;
+        console.log('[create-checkout] Created ad-hoc coupon for 3MESES:', adHocCouponId);
+      } catch (err) {
+        console.error('[create-checkout] Failed to create ad-hoc coupon for 3MESES:', err);
+      }
     } else if (promoCode) {
       try {
         const promoCodes = await stripe.promotionCodes.list({
