@@ -161,6 +161,45 @@ serve(async (req) => {
       updated_at: new Date().toISOString(),
     }, { onConflict: "email" });
 
+    // FALLBACK: If user is now subscribed but webhook never fired (last_reset_at is NULL),
+    // allocate credits as a safety net to prevent users from paying but getting no credits.
+    if (active && subscriptionTier !== "Free") {
+      const { data: freshSub } = await supabaseService
+        .from("subscribers")
+        .select("last_reset_at")
+        .eq("user_id", user.id)
+        .single();
+
+      if (freshSub && !freshSub.last_reset_at) {
+        // Double-check: no credit transaction exists for this user recently
+        const recentAllocation = await supabaseService.rpc("check_recent_credit_allocation", {
+          p_user_id: user.id,
+          p_reason: "subscription_activation",
+          p_hours_threshold: 24,
+        });
+
+        if (!recentAllocation.data) {
+          log("FALLBACK: Webhook never fired, allocating credits now", { userId: user.id, tier: subscriptionTier });
+          const { data: refundResult, error: refundError } = await supabaseService.rpc("refund_user_credits", {
+            p_user_id: user.id,
+            p_amount: subscriptionTier === "Pro" ? 400 : subscriptionTier === "Plus" ? 200 : 80,
+            p_reason: "subscription_activation",
+          });
+
+          if (refundError) {
+            log("FALLBACK: Failed to allocate credits", { error: refundError.message });
+          } else {
+            log("FALLBACK: Credits allocated successfully", { result: refundResult });
+            // Set last_reset_at so this doesn't trigger again
+            await supabaseService.from("subscribers").update({
+              last_reset_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }).eq("user_id", user.id);
+          }
+        }
+      }
+    }
+
     return new Response(JSON.stringify({ 
       subscribed: active, 
       subscription_tier: subscriptionTier, 
