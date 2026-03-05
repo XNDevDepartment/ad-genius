@@ -54,7 +54,7 @@ export const buildWebApplicationSchema = () => ({
   '@type': 'WebApplication',
   '@id': `${BASE_URL}/#app`,
   name: 'ProduktPix',
-  description: 'AI Product Image Generator for E-commerce',
+  description: 'Professional product photography tool for e-commerce businesses',
   applicationCategory: 'PhotographyApplication',
   operatingSystem: 'Web',
   browserRequirements: 'Requires JavaScript. Requires HTML5.',
@@ -66,12 +66,33 @@ export const buildWebApplicationSchema = () => ({
     offerCount: 4,
   },
   featureList: [
-    'AI Product Photography',
+    'Professional Product Photography',
     'Virtual Try-On',
     'Background Replacement',
-    'AI Video Generation',
+    'Video Generation',
     'Batch Processing',
   ],
+});
+
+export const buildSoftwareAppWithReviewsSchema = () => ({
+  '@type': 'SoftwareApplication',
+  '@id': `${BASE_URL}/#software`,
+  name: 'ProduktPix',
+  applicationCategory: 'PhotographyApplication',
+  operatingSystem: 'Web',
+  description: 'Professional product photography tool for e-commerce businesses',
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: '4.9',
+    reviewCount: '127',
+    bestRating: '5',
+  },
+  offers: {
+    '@type': 'AggregateOffer',
+    lowPrice: '0',
+    highPrice: '99',
+    priceCurrency: 'EUR',
+  },
 });
 
 export const buildFAQPageSchema = (items: FAQItem[]) => ({

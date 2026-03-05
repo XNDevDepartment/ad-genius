@@ -13,7 +13,7 @@ export const FAQAccordion = () => {
   const faqs = [
     {
       question: t('landingV2.faq.q1', 'What types of products work best with ProduktPix?'),
-      answer: t('landingV2.faq.a1', 'ProduktPix works great with fashion, accessories, jewelry, home goods, electronics, and virtually any physical product. Our AI is trained on millions of e-commerce images to handle diverse product categories.'),
+      answer: t('landingV2.faq.a1', 'ProduktPix works great with fashion, accessories, jewelry, home goods, electronics, and virtually any physical product. Our platform is trained on millions of e-commerce images to handle diverse product categories.'),
     },
     {
       question: t('landingV2.faq.q2', 'How many images can I generate with the free plan?'),
@@ -29,15 +29,15 @@ export const FAQAccordion = () => {
     },
     {
       question: t('landingV2.faq.q5', 'How long does it take to generate an image?'),
-      answer: t('landingV2.faq.a5', 'Most images are generated in under 30 seconds. Complex scenes or batch processing may take slightly longer, but our AI is optimized for speed without sacrificing quality.'),
+      answer: t('landingV2.faq.a5', 'Most images are generated in under 30 seconds. Complex scenes or batch processing may take slightly longer, but the platform is optimized for speed without sacrificing quality.'),
     },
     {
       question: t('landingV2.faq.q6', 'Do you offer refunds?'),
       answer: t('landingV2.faq.a6', 'Yes, we offer a 7-day money-back guarantee on all paid plans. If you\'re not satisfied, contact our support team for a full refund.'),
     },
     {
-      question: t('landingV2.faq.q7', 'Do I need any design or AI skills?'),
-      answer: t('landingV2.faq.a7', 'Not at all! Just upload a photo of your product — even from your phone — and our AI handles the rest. No technical knowledge required.'),
+      question: t('landingV2.faq.q7', 'Do I need any design or technical skills?'),
+      answer: t('landingV2.faq.a7', 'Not at all! Just upload a photo of your product — even from your phone — and the platform handles the rest. No technical knowledge required.'),
     },
     {
       question: t('landingV2.faq.q8', 'What kind of businesses use ProduktPix?'),
@@ -46,6 +46,26 @@ export const FAQAccordion = () => {
     {
       question: t('landingV2.faq.q9', 'Can I try it before committing to a paid plan?'),
       answer: t('landingV2.faq.a9', 'Absolutely! The free plan gives you 10 credits per month with no credit card required. Try it out and upgrade whenever you\'re ready.'),
+    },
+    {
+      question: t('landingV2.faq.q10', 'How much does professional product photography cost?'),
+      answer: t('landingV2.faq.a10', 'Traditional product photography typically costs €15–50 per image, with minimum orders of 50+ images. With ProduktPix, professional product photos start from just €0.20 per image — saving you up to 95% on photography costs.'),
+    },
+    {
+      question: t('landingV2.faq.q11', 'Do I need a studio for professional product photos?'),
+      answer: t('landingV2.faq.a11', 'No! That\'s the whole point of ProduktPix. You just need a phone photo of your product. The platform handles lighting, backgrounds, and styling — delivering studio-quality results without a studio.'),
+    },
+    {
+      question: t('landingV2.faq.q12', 'What makes a good product photo for Shopify or Amazon?'),
+      answer: t('landingV2.faq.a12', 'Great product photos for e-commerce need consistent lighting, clean backgrounds, multiple angles, and lifestyle context. ProduktPix generates all of these automatically — helping your listings meet marketplace guidelines and convert more shoppers.'),
+    },
+    {
+      question: t('landingV2.faq.q13', 'Can I create professional photos with my phone?'),
+      answer: t('landingV2.faq.a13', 'Yes! Upload any phone photo of your product and ProduktPix transforms it into a professional product image. No expensive camera equipment needed — your smartphone is all you need to get started.'),
+    },
+    {
+      question: t('landingV2.faq.q14', 'What is the best tool for professional product photos?'),
+      answer: t('landingV2.faq.a14', 'ProduktPix is purpose-built for e-commerce product photography. It combines studio-quality backgrounds, lifestyle scenes, virtual try-on, and batch processing — all from a simple phone photo. Trusted by 10,000+ online stores on Shopify, Amazon, and Etsy.'),
     },
   ];
 
