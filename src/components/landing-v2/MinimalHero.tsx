@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Calendar } from "lucide-react";
+import { ArrowRight, Calendar, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -19,7 +19,7 @@ export const MinimalHero = () => {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
           </span>
-          {t('landingV2.hero.badge', 'AI-Powered Product Photography')}
+          {t('landingV2.hero.badge', 'Trusted by 10,000+ Online Stores')}
         </div>
 
         {/* Headline */}
@@ -27,13 +27,13 @@ export const MinimalHero = () => {
           <span className="text-foreground">{t('landingV2.hero.title1', 'Professional Product Photos')}</span>
           <br />
           <span className="bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
-            {t('landingV2.hero.title2', 'Without the Studio')}
+            {t('landingV2.hero.title2', 'Ready in Seconds, Not Days')}
           </span>
         </h1>
 
         {/* Description */}
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-          {t('landingV2.hero.description', 'Save thousands on photography. Get studio-quality product images from a simple phone photo — ready in seconds, not days.')}
+          {t('landingV2.hero.description', 'Stop spending thousands on photographers. Upload a phone photo of your product and get studio-quality images for your Shopify, Amazon, or Etsy store — in under 30 seconds.')}
         </p>
 
         {/* CTAs */}
@@ -43,7 +43,7 @@ export const MinimalHero = () => {
             className="text-lg px-8 py-6 rounded-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all"
             onClick={() => navigate('/signup')}
           >
-            {t('landingV2.hero.cta', 'Start Creating Free')}
+            {t('landingV2.hero.cta', 'Try It Free — No Credit Card')}
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
           <Button
@@ -57,10 +57,17 @@ export const MinimalHero = () => {
           </Button>
         </div>
 
-        {/* Trust line */}
-        <p className="text-sm text-muted-foreground">
-          {t('landingV2.hero.trustLine', 'Trusted by 10,000+ e-commerce businesses worldwide')}
-        </p>
+        {/* Trust badge with stars */}
+        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <div className="flex gap-0.5">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star key={i} className="h-4 w-4 fill-primary text-primary" />
+            ))}
+          </div>
+          <span className="font-medium text-foreground">4.9/5</span>
+          <span>—</span>
+          <span>{t('landingV2.hero.trustLine', 'Rated by 127+ e-commerce businesses')}</span>
+        </div>
       </div>
     </section>
   );

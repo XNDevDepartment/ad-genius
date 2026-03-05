@@ -79,6 +79,7 @@ const ActivateAccount = lazyWithRetry(() => import("./pages/ActivateAccount"));
 const GeniusAgent = lazyWithRetry(() => import("./pages/GeniusAgent"));
 const GeniusAgentAdmin = lazyWithRetry(() => import("./pages/admin/GeniusAgentAdmin"));
 const BulkBackground = lazyWithRetry(() => import("./pages/BulkBackground"));
+const CaseStudyPage = lazyWithRetry(() => import("./pages/CaseStudy"));
 const queryClient = new QueryClient();
 
 // Wrapper component to provide resetKey and user context to ErrorBoundary
@@ -470,6 +471,13 @@ const App = () => {
                 <ErrorBoundaryWithReset>
                   <Suspense fallback={<LoadingFallback />}>
                     <OneTimeCheckout />
+                  </Suspense>
+                </ErrorBoundaryWithReset>
+              } />
+              <Route path="/case-studies/:slug" element={
+                <ErrorBoundaryWithReset>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <CaseStudyPage />
                   </Suspense>
                 </ErrorBoundaryWithReset>
               } />

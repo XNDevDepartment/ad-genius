@@ -14,7 +14,7 @@ export const BeforeAfterShowcase = () => {
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
             <Sparkles className="h-4 w-4" />
-            {t('landingV2.beforeAfter.badge', 'AI Magic')}
+            {t('landingV2.beforeAfter.badge', 'See the Difference')}
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             {t('landingV2.beforeAfter.title', 'From Simple Photo to Pro Shot')}

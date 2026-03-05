@@ -11,6 +11,7 @@ Allow: /
 
 User-agent: *
 Allow: /
+Crawl-delay: 1
 
 # Block authenticated routes
 Disallow: /account
