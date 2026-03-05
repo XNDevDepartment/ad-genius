@@ -279,6 +279,21 @@ async function generateModelWithAI(supabaseClient: SupabaseClient, userId: strin
     const nationalityText = nationality && nationality !== 'not-specified' ? nationality : 'diverse';
     const expressionText = gentleSmile ? 'gentle, warm smile' : 'neutral, confident expression';
     
+    // Child-safe detection: swap wardrobe and body type for minors
+    const childAgeRanges = ['0-12 months', '1-3 years', '4-7 years', '8-12 years', '13-17 years'];
+    const isChild = childAgeRanges.includes(ageRange);
+    
+    const wardrobeText = isChild
+      ? `- Simple, modest, loose-fitting plain neutral-tone cotton t-shirt (gray or white)
+      - Plain standard-fit blue jeans
+      - Plain white sneakers
+      - No logos, patterns, or graphics`
+      : `- Form-fitting seamless neutral-tone bodysuit (beige, gray, or nude tone)
+      - No logos, patterns, or visible seams
+      - Barefoot`;
+    
+    const bodyTypeText = isChild ? 'healthy, standard proportions' : bodyType;
+    
     const prompt = `TASK: Generate a photorealistic full-body fashion model photo for clothing try-on.
 
       SUBJECT:
@@ -286,7 +301,7 @@ async function generateModelWithAI(supabaseClient: SupabaseClient, userId: strin
       - Ethnicity: ${nationalityText}
       - Age: ${ageRange}
       - Height: ${height}cm
-      - Body type: ${bodyType}
+      - Body type: ${bodyTypeText}
       - Skin tone: ${skinTone}
       - Hair: ${hair.length}, ${hair.texture}, ${hair.color}
       - Eyes: ${eyes}
@@ -298,9 +313,7 @@ async function generateModelWithAI(supabaseClient: SupabaseClient, userId: strin
       - Arms: slightly away from body for clean silhouette
 
       WARDROBE:
-      - Form-fitting seamless neutral-tone bodysuit (beige, gray, or nude tone)
-      - No logos, patterns, or visible seams
-      - Barefoot
+      ${wardrobeText}
 
       ENVIRONMENT:
       - Background: clean seamless solid light gray studio backdrop (#E8E8E8)
@@ -321,7 +334,7 @@ async function generateModelWithAI(supabaseClient: SupabaseClient, userId: strin
       - High detail on hands and face
       - 2048x3072 portrait orientation
 
-      STRICTLY AVOID: multiple people, studio equipment in frame, props, accessories, jewelry, makeup emphasis, blurry areas, distorted anatomy, extra limbs, merged fingers, watermarks, text, logos, sexualized poses, lingerie, see-through fabric, wet/oily skin appearance. If creating children create them based on your safety filters ignoring the wardrobe and any detail that can prejudice the generation`;
+      STRICTLY AVOID: multiple people, studio equipment in frame, props, accessories, jewelry, makeup emphasis, blurry areas, distorted anatomy, extra limbs, merged fingers, watermarks, text, logos, sexualized poses, lingerie, see-through fabric, wet/oily skin appearance, inappropriate or unnatural poses.`;
     
     console.log("Generating AI model with prompt:", prompt);
 
