@@ -1,49 +1,49 @@
 
 
-# 3MESES Users Missing Credits — Root Cause & Fix
+# Child-Safe AI Base Model Generation
 
-## Root Cause
+## Problem
 
-The Stripe webhook (`stripe-webhook` edge function) is **not firing** for these checkout sessions. Evidence:
+The `generateModelWithAI` function in `supabase/functions/create-base-model/index.ts` uses a single prompt template with "Form-fitting seamless neutral-tone bodysuit" and "Barefoot" for all age ranges. When generating children (age ranges like "0-12 months", "1-3 years", "4-7 years", "8-12 years", "13-17 years"), Gemini's safety filters reject the request as potentially inappropriate content. The current workaround — a trailing instruction "If creating children create them based on your safety filters..." — is ineffective because image models try to render text rather than follow conditional logic.
 
-- All 3 affected users have `last_reset_at: NULL` — the webhook sets this field during `checkout.session.completed`
-- Zero `credits_transactions` records exist for these users — the webhook is the only place that allocates credits
-- Their subscriber records WERE updated to `subscribed: true` / `Starter` — but this was done by `check-subscription` (polled from the Success page), not the webhook
+## Solution
 
-**Affected users:**
-| Email | Credits | Should Have |
-|---|---|---|
-| geral.patriciavieira@hotmail.com | 10 | 80 |
-| sapatariatrindade1951@gmail.com | 17 | 80 |
-| maria.peixoto2000@hotmail.com | 3 | 80 |
+Add conditional logic in the `generateModelWithAI` function to dynamically swap wardrobe and body type descriptions when the age range indicates a child (under 18).
 
-## Immediate Fix — Grant Missing Credits
+## Technical Changes
 
-Run a data update to set `credits_balance` to 80 and `last_reset_at` to now for all 3 affected users using the insert/update tool.
+### File: `supabase/functions/create-base-model/index.ts`
 
-## Structural Fix — Fallback Credit Allocation in check-subscription
+In the `generateModelWithAI` function (around line 278-324):
 
-The current architecture has a single point of failure: if the webhook doesn't fire, users never get credits. Add a safety net in `check-subscription`:
+1. **Add child detection** before prompt construction:
+```typescript
+const childAgeRanges = ['0-12 months', '1-3 years', '4-7 years', '8-12 years', '13-17 years'];
+const isChild = childAgeRanges.includes(ageRange);
+```
 
-In `supabase/functions/check-subscription/index.ts`, after the subscriber upsert (line 154-162), add logic:
+2. **Conditional wardrobe text:**
+```typescript
+const wardrobeText = isChild
+  ? `- Simple, modest, loose-fitting plain neutral-tone cotton t-shirt (gray or white)
+      - Plain standard-fit blue jeans
+      - Plain white sneakers
+      - No logos, patterns, or graphics`
+  : `- Form-fitting seamless neutral-tone bodysuit (beige, gray, or nude tone)
+      - No logos, patterns, or visible seams
+      - Barefoot`;
+```
 
-1. If the user is now `subscribed = true` AND `last_reset_at IS NULL` (meaning webhook never ran)
-2. Check if a credit transaction already exists for the current period
-3. If not, allocate the tier-appropriate credits via `refund_user_credits` RPC and set `last_reset_at`
+3. **Conditional body type** (avoid adult body descriptors for children):
+```typescript
+const bodyTypeText = isChild ? 'healthy, standard proportions' : bodyType;
+```
 
-This ensures that even if the webhook fails, credits are allocated the first time the user loads the app.
+4. **Use `wardrobeText` and `bodyTypeText`** in the prompt template, replacing the hardcoded wardrobe block and `${bodyType}`.
 
-## Action Required (Manual)
+5. **Remove the confusing meta-instruction** from the STRICTLY AVOID section: delete "If creating children create them based on your safety filters ignoring the wardrobe and any detail that can prejudice the generation".
 
-You need to verify your Stripe webhook configuration in the Stripe Dashboard:
-- Go to Developers → Webhooks
-- Confirm the endpoint URL points to `https://dhqdamfisdbbcieqlpvt.supabase.co/functions/v1/stripe-webhook`
-- Confirm `checkout.session.completed` is in the list of events
-- Check for any failed delivery attempts in the webhook logs
+### Deployment
 
-## Summary of Changes
-
-- **Data fix**: Update 3 users' `credits_balance` to 80 and set `last_reset_at`
-- **Edge function**: Add fallback credit allocation in `check-subscription` + redeploy
-- **Manual**: Verify Stripe webhook endpoint configuration
+Redeploy the `create-base-model` edge function.
 
