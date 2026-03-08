@@ -148,6 +148,18 @@ function ImageActions({ img, i, onOpenInLibrary, onAnimateImage }: {
         <span className="hidden sm:inline">Open in New Tab</span>
       </Button>
 
+      <Button
+        variant="ghost"
+        size="sm"
+        className="w-full justify-center"
+        disabled={!img?.url}
+        onClick={() => { if (img?.url) onEditImage?.(img.id, img.url); }}
+        title={!img?.url ? "Available when ready" : "Edit image"}
+      >
+        <Pencil className="h-4 w-4 mr-2" />
+        <span className="hidden sm:inline">Edit</span>
+      </Button>
+
       {onAnimateImage && (
         <Button
           variant="default"
