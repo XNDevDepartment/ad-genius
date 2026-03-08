@@ -62,37 +62,47 @@ export default function EditImageModal({
   }, [isOpen]);
 
   // Initialize canvas when image loads
+  const initCanvas = useCallback((img: HTMLImageElement) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    // Use getBoundingClientRect for actual rendered pixel dimensions
+    const rect = img.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    const ctx = canvas.getContext("2d");
+    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }, []);
+
   const handleImageLoad = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement>) => {
       const img = e.currentTarget;
       imgRef.current = img;
       setNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
-      setImgLoaded(true);
-
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      canvas.width = img.clientWidth;
-      canvas.height = img.clientHeight;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }
+      // Wait a tick so the dialog layout is fully painted before measuring
+      requestAnimationFrame(() => {
+        initCanvas(img);
+        setImgLoaded(true);
+      });
     },
-    []
+    [initCanvas]
   );
 
-  // Drawing helpers
+  // Drawing helpers — scale mouse coords by CSS-size vs buffer-size ratio
   const getPos = (
     e: React.MouseEvent | React.TouchEvent
   ): { x: number; y: number } | null => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
     const rect = canvas.getBoundingClientRect();
-    const clientX =
-      "touches" in e ? e.touches[0]?.clientX ?? 0 : e.clientX;
-    const clientY =
-      "touches" in e ? e.touches[0]?.clientY ?? 0 : e.clientY;
-    return { x: clientX - rect.left, y: clientY - rect.top };
+    const clientX = "touches" in e ? e.touches[0]?.clientX ?? 0 : e.clientX;
+    const clientY = "touches" in e ? e.touches[0]?.clientY ?? 0 : e.clientY;
+    // Scale from CSS pixels to canvas buffer pixels
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY,
+    };
   };
 
   const draw = useCallback(
