@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, PlusCircle, ExternalLink, RotateCcw, ImageIcon, Video, Images, RefreshCw } from "lucide-react";
+import { Download, PlusCircle, ExternalLink, RotateCcw, ImageIcon, Video, Images, RefreshCw, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import "./../costumn.css";
 import { toast } from "@/hooks/use-toast";

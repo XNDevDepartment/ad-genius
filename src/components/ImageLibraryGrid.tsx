@@ -325,6 +325,15 @@ export const ImageLibraryGrid = ({
                     </div>
 
                     <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20 flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={(e) => { e.stopPropagation(); setEditingImage(image); }}
+                        className="bg-background/90 hover:bg-background"
+                        title="Edit image"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button
