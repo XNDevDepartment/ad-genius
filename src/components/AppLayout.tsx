@@ -8,7 +8,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import PaymentFailedBanner from "./PaymentFailedBanner";
 
 import { FloatingOnboardingCard } from "./onboarding/FloatingOnboardingCard";
-import PromoBanner3Meses from "./PromoBanner3Meses";
 
 const AppLayout = () => {
   const location = useLocation();
@@ -38,7 +37,6 @@ const AppLayout = () => {
 
       {/* Mobile Layout */}
       <div className="lg:hidden">
-        {user && <PromoBanner3Meses />}
         {/* <AnnouncementBanner /> */}
         {showHeader && user && <NavigationHeader />}
         <main className="pb-20">
@@ -58,7 +56,6 @@ const AppLayout = () => {
             <div className="flex min-h-screen w-full">
               <AppSidebar />
               <div className="flex-1 flex flex-col">
-                <PromoBanner3Meses />
                 <main className="flex-1">
                   <Outlet />
                 </main>
