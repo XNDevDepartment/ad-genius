@@ -449,6 +449,16 @@ export const ImageLibraryGrid = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Image Modal */}
+      {editingImage && (
+        <EditImageModal
+          isOpen={!!editingImage}
+          onClose={() => setEditingImage(null)}
+          imageUrl={editingImage.url}
+          imageId={editingImage.id}
+        />
+      )}
     </div>
   );
 };
