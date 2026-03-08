@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Download, Trash2, ExternalLink, Eye, FileImage, Loader2, Copy, CheckSquare, Square, X } from 'lucide-react';
+import { Download, Trash2, ExternalLink, Eye, FileImage, Loader2, Copy, CheckSquare, Square, X, Pencil } from 'lucide-react';
+import EditImageModal from '@/components/EditImageModal';
 import { LazyImage } from '@/components/ui/lazy-image';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
@@ -70,6 +71,7 @@ export const ImageLibraryGrid = ({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<LibraryImage | null>(null);
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [editingImage, setEditingImage] = useState<LibraryImage | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -323,6 +325,15 @@ export const ImageLibraryGrid = ({
                     </div>
 
                     <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20 flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={(e) => { e.stopPropagation(); setEditingImage(image); }}
+                        className="bg-background/90 hover:bg-background"
+                        title="Edit image"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button
@@ -438,6 +449,16 @@ export const ImageLibraryGrid = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Image Modal */}
+      {editingImage && (
+        <EditImageModal
+          isOpen={!!editingImage}
+          onClose={() => setEditingImage(null)}
+          imageUrl={editingImage.url}
+          imageId={editingImage.id}
+        />
+      )}
     </div>
   );
 };
