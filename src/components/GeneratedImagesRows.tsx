@@ -9,6 +9,7 @@ import "./../costumn.css";
 import { toast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import type { TrackedJob } from "@/hooks/useMultiJobTracker";
+import EditImageModal from "@/components/EditImageModal";
 
 /* Types */
 export type Orientation = "1:1" | "2:3" | "3:2";
@@ -128,11 +129,12 @@ function classesFor(orientation?: string) {
 }
 
 /** Render action buttons for a ready image */
-function ImageActions({ img, i, onOpenInLibrary, onAnimateImage }: {
+function ImageActions({ img, i, onOpenInLibrary, onAnimateImage, onEditImage }: {
   img: GeneratedImage;
   i: number;
   onOpenInLibrary: (imageId?: string) => void;
   onAnimateImage?: (imageId: string, imageUrl: string) => void;
+  onEditImage?: (imageId: string, imageUrl: string) => void;
 }) {
   return (
     <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-2 sm:grid-cols-1 gap-2">
@@ -204,11 +206,12 @@ function ImageActions({ img, i, onOpenInLibrary, onAnimateImage }: {
 }
 
 /** Render a single image card (ready or placeholder) */
-function ImageCard({ img, orientation, onOpenInLibrary, onAnimateImage, index }: {
+function ImageCard({ img, orientation, onOpenInLibrary, onAnimateImage, onEditImage, index }: {
   img?: GeneratedImage;
   orientation?: string;
   onOpenInLibrary: (imageId?: string) => void;
   onAnimateImage?: (imageId: string, imageUrl: string) => void;
+  onEditImage?: (imageId: string, imageUrl: string) => void;
   index: number;
 }) {
   const isReady = img?.url;
@@ -238,6 +241,7 @@ function ImageCard({ img, orientation, onOpenInLibrary, onAnimateImage, index }:
               i={index}
               onOpenInLibrary={onOpenInLibrary}
               onAnimateImage={onAnimateImage}
+              onEditImage={onEditImage}
             />
           ) : (
             <div className="w-full sm:w-[220px] sm:ml-auto grid grid-cols-2 sm:grid-cols-1 gap-2">
@@ -273,10 +277,16 @@ export default function GeneratedImagesRows({
 }: Props) {
   // Lock placeholder shape for *this job only*
   const [jobAspectRatio, setJobAspectRatio] = useState<string | null>(null);
+  const [editingImage, setEditingImage] = useState<{ id: string; url: string } | null>(null);
+
   useEffect(() => {
     if (jobId) setJobAspectRatio(imageOrientation ?? null);
     else setJobAspectRatio(null);
   }, [jobId, imageOrientation]);
+
+  const handleEditImage = (imageId: string, imageUrl: string) => {
+    setEditingImage({ id: imageId, url: imageUrl });
+  };
 
   /* ── Multi-job tracked batches (newest first) ── */
   const hasTrackedJobs = trackedJobs.length > 0;
@@ -315,6 +325,7 @@ export default function GeneratedImagesRows({
                 orientation={tj.orientation}
                 onOpenInLibrary={onOpenInLibrary}
                 onAnimateImage={onAnimateImage}
+                onEditImage={handleEditImage}
                 index={i}
               />
             ))}
@@ -333,6 +344,7 @@ export default function GeneratedImagesRows({
                 orientation={tj.orientation}
                 onOpenInLibrary={onOpenInLibrary}
                 onAnimateImage={onAnimateImage}
+                onEditImage={handleEditImage}
                 index={i}
               />
             ))}
@@ -350,6 +362,7 @@ export default function GeneratedImagesRows({
             orientation={jobAspectRatio || imageOrientation}
             onOpenInLibrary={onOpenInLibrary}
             onAnimateImage={onAnimateImage}
+            onEditImage={handleEditImage}
             index={i}
           />
         ));
@@ -363,6 +376,7 @@ export default function GeneratedImagesRows({
           orientation={img.orientation || jobAspectRatio || imageOrientation}
           onOpenInLibrary={onOpenInLibrary}
           onAnimateImage={onAnimateImage}
+          onEditImage={handleEditImage}
           index={i}
         />
       ))}
@@ -375,6 +389,7 @@ export default function GeneratedImagesRows({
           orientation={img.orientation || jobAspectRatio || imageOrientation}
           onOpenInLibrary={onOpenInLibrary}
           onAnimateImage={onAnimateImage}
+          onEditImage={handleEditImage}
           index={i}
         />
       ))}
@@ -397,6 +412,16 @@ export default function GeneratedImagesRows({
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit Image Modal */}
+      {editingImage && (
+        <EditImageModal
+          isOpen={!!editingImage}
+          onClose={() => setEditingImage(null)}
+          imageUrl={editingImage.url}
+          imageId={editingImage.id}
+        />
+      )}
     </div>
   );
 }
