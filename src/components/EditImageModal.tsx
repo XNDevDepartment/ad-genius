@@ -266,29 +266,31 @@ export default function EditImageModal({
           {/* Image + Canvas area */}
           <div
             ref={containerRef}
-            className="relative inline-block w-full rounded-lg overflow-hidden border border-border bg-muted/20"
+            className="flex justify-center rounded-lg overflow-hidden border border-border bg-muted/20"
           >
-            <img
-              src={resultUrl || imageUrl}
-              alt="Image to edit"
-              className="w-full h-auto max-h-[50vh] object-contain"
-              crossOrigin="anonymous"
-              onLoad={handleImageLoad}
-              draggable={false}
-            />
-            {!resultUrl && imgLoaded && (
-              <canvas
-                ref={canvasRef}
-                className="absolute top-0 left-0 w-full h-full cursor-crosshair touch-none"
-                onMouseDown={onPointerDown}
-                onMouseMove={onPointerMove}
-                onMouseUp={onPointerUp}
-                onMouseLeave={onPointerUp}
-                onTouchStart={onPointerDown}
-                onTouchMove={onPointerMove}
-                onTouchEnd={onPointerUp}
+            <div className="relative">
+              <img
+                src={resultUrl || imageUrl}
+                alt="Image to edit"
+                className="max-w-full max-h-[50vh] block"
+                crossOrigin="anonymous"
+                onLoad={handleImageLoad}
+                draggable={false}
               />
-            )}
+              {!resultUrl && imgLoaded && (
+                <canvas
+                  ref={canvasRef}
+                  className="absolute top-0 left-0 w-full h-full cursor-crosshair touch-none"
+                  onMouseDown={onPointerDown}
+                  onMouseMove={onPointerMove}
+                  onMouseUp={onPointerUp}
+                  onMouseLeave={onPointerUp}
+                  onTouchStart={onPointerDown}
+                  onTouchMove={onPointerMove}
+                  onTouchEnd={onPointerUp}
+                />
+              )}
+            </div>
           </div>
 
           {/* Result actions */}
