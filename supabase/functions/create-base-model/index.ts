@@ -109,8 +109,16 @@ async function uploadAndProcessModel(supabaseClient: SupabaseClient, userId: str
   }
 
   try {
+    // Child-safe detection: swap wardrobe for minors (same logic as generateModelWithAI)
+    const childAgeRanges = ['0-12 months', '1-3 years', '4-7 years', '8-12 years', '13-17 years'];
+    const isChild = childAgeRanges.includes(metadata?.ageRange);
+    
+    const wardrobeText = isChild
+      ? 'Simple, modest, loose-fitting plain neutral-tone cotton t-shirt (gray or white), plain standard-fit blue jeans, plain white sneakers. No logos, patterns, or graphics.'
+      : 'seamless neutral-tone fitted bodysuit (no logos/patterns), barefoot';
+
     // Process image with Gemini - remove background and replace with studio
-    const prompt = `Remove the background from this image and replace it with Background: seamless light gray studio. Camera 50mm f/4 ISO200 1/125. Lighting: softbox 45° key + reflector fill, even exposure. ###IMPORTANT: New wardrobe baseline: seamless neutral-tone fitted bodysuit (no logos/patterns), barefoot. Neutral expression, hands relaxed, fingers natural, head to toe visible, clean silhouette. One subject only. Lips Smiling slightly. Insert "GeniusAI" watermark on bottom right, almost non existent. Output 2048x3072, sRGB, 300dpi. Negative: only produce model and no more elements in the picture, lowres, blurry, jpeg artifacts, extra limbs, extra fingers, fused fingers, disfigured, distorted proportions, wet/oily skin, cleavage emphasis, lingerie, underwear straps, see-through fabric, strong face shadows, color cast, watermark, logo, text, border. ### RULE: NEVER PRODUCE SEXUALISE CONTENT`;
+    const prompt = `Remove the background from this image and replace it with Background: seamless light gray studio. Camera 50mm f/4 ISO200 1/125. Lighting: softbox 45° key + reflector fill, even exposure. ###IMPORTANT: New wardrobe baseline: ${wardrobeText}. Neutral expression, hands relaxed, fingers natural, head to toe visible, clean silhouette. One subject only. Lips Smiling slightly. Insert "GeniusAI" watermark on bottom right, almost non existent. Output 2048x3072, sRGB, 300dpi. Negative: only produce model and no more elements in the picture, lowres, blurry, jpeg artifacts, extra limbs, extra fingers, fused fingers, disfigured, distorted proportions, wet/oily skin, cleavage emphasis, lingerie, underwear straps, see-through fabric, strong face shadows, color cast, watermark, logo, text, border. ### RULE: NEVER PRODUCE SEXUALISE CONTENT`;
     
     // Extract base64 data from data URL
     const base64Match = imageDataUrl.match(/^data:image\/(.*?);base64,(.*)$/);
