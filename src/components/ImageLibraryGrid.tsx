@@ -71,6 +71,7 @@ export const ImageLibraryGrid = ({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<LibraryImage | null>(null);
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [editingImage, setEditingImage] = useState<LibraryImage | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const { toast } = useToast();
   const { t } = useTranslation();
