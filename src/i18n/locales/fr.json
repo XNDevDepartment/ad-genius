@@ -2713,5 +2713,23 @@
       "perImage": "/image",
       "credits": "crédits"
     }
+  },
+  "editImage": {
+    "title": "Modifier l'Image",
+    "description": "Décrivez les modifications que vous souhaitez apporter à l'image.",
+    "imageAlt": "Image à modifier",
+    "instructionRequired": "Instruction nécessaire",
+    "instructionRequiredDesc": "Décrivez les modifications souhaitées.",
+    "instructionLabel": "Instruction de modification",
+    "instructionPlaceholder": "Ex : Changez le fond pour une plage au coucher du soleil, supprimez le logo, mettez le t-shirt en rouge...",
+    "editing": "Modification...",
+    "applyEdit": "Appliquer la Modification (1 crédit)",
+    "success": "Image modifiée !",
+    "successDesc": "Votre image modifiée est prête.",
+    "failed": "Modification échouée",
+    "failedDesc": "Quelque chose s'est mal passé. Réessayez.",
+    "openResult": "Ouvrir le Résultat",
+    "editAgain": "Modifier à Nouveau",
+    "historyTitle": "Historique des modifications ({{count}})"
   }
 }

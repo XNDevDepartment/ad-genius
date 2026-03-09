@@ -2717,5 +2717,23 @@
       "perImage": "/Bild",
       "credits": "Credits"
     }
+  },
+  "editImage": {
+    "title": "Bild Bearbeiten",
+    "description": "Beschreibe die Änderungen, die du am Bild vornehmen möchtest.",
+    "imageAlt": "Bild zum Bearbeiten",
+    "instructionRequired": "Anweisung erforderlich",
+    "instructionRequiredDesc": "Beschreibe die gewünschten Änderungen.",
+    "instructionLabel": "Bearbeitungsanweisung",
+    "instructionPlaceholder": "Z.B.: Ändere den Hintergrund zu einem Sonnenuntergang am Strand, entferne das Logo, mache das T-Shirt rot...",
+    "editing": "Wird bearbeitet...",
+    "applyEdit": "Bearbeitung Anwenden (1 Credit)",
+    "success": "Bild bearbeitet!",
+    "successDesc": "Dein bearbeitetes Bild ist fertig.",
+    "failed": "Bearbeitung fehlgeschlagen",
+    "failedDesc": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    "openResult": "Ergebnis Öffnen",
+    "editAgain": "Erneut Bearbeiten",
+    "historyTitle": "Bearbeitungsverlauf ({{count}})"
   }
 }

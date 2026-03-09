@@ -2717,5 +2717,23 @@
       "perImage": "/imagen",
       "credits": "créditos"
     }
+  },
+  "editImage": {
+    "title": "Editar Imagen",
+    "description": "Describe los cambios que quieres hacer a la imagen.",
+    "imageAlt": "Imagen a editar",
+    "instructionRequired": "Instrucción necesaria",
+    "instructionRequiredDesc": "Describe los cambios que quieres hacer.",
+    "instructionLabel": "Instrucción de edición",
+    "instructionPlaceholder": "Ej: Cambia el fondo a una playa al atardecer, elimina el logotipo, pon la camiseta roja...",
+    "editing": "Editando...",
+    "applyEdit": "Aplicar Edición (1 crédito)",
+    "success": "¡Imagen editada!",
+    "successDesc": "Tu imagen editada está lista.",
+    "failed": "Edición fallida",
+    "failedDesc": "Algo salió mal. Inténtalo de nuevo.",
+    "openResult": "Abrir Resultado",
+    "editAgain": "Editar de Nuevo",
+    "historyTitle": "Historial de ediciones ({{count}})"
   }
 }

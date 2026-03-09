@@ -2713,5 +2713,23 @@
       "perImage": "/imagem",
       "credits": "créditos"
     }
+  },
+  "editImage": {
+    "title": "Editar Imagem",
+    "description": "Descreve as alterações que queres fazer à imagem.",
+    "imageAlt": "Imagem a editar",
+    "instructionRequired": "Instrução necessária",
+    "instructionRequiredDesc": "Descreve as alterações que queres fazer.",
+    "instructionLabel": "Instrução de edição",
+    "instructionPlaceholder": "Ex: Muda o fundo para uma praia ao pôr do sol, remove o logótipo, coloca a camisola vermelha...",
+    "editing": "A editar...",
+    "applyEdit": "Aplicar Edição (1 crédito)",
+    "success": "Imagem editada!",
+    "successDesc": "A tua imagem editada está pronta.",
+    "failed": "Edição falhou",
+    "failedDesc": "Algo correu mal. Tenta novamente.",
+    "openResult": "Abrir Resultado",
+    "editAgain": "Editar Novamente",
+    "historyTitle": "Histórico de edições ({{count}})"
   }
 }
