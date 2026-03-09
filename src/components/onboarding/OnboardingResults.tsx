@@ -129,7 +129,7 @@ export const OnboardingResults = ({ data }: OnboardingResultsProps) => {
     setIsCheckingOut(true);
     try {
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
-        body: { planId: 'starter', interval: 'month', promoCode: 'ONB1ST' },
+        body: { planId: 'starter', interval: 'month', promoCode: '1MES' },
       });
       if (error) throw new Error(error.message || 'Checkout failed');
       if (!checkoutData?.url) throw new Error('No checkout URL received');

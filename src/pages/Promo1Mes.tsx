@@ -84,7 +84,7 @@ const Promo1Mes = () => {
       ) : (
         <>
           <Sparkles className="h-5 w-5 mr-2" />
-          Ativar Oferta — €{promoPrice}
+          Experimentar por €{promoPrice}
         </>
       )}
     </Button>
