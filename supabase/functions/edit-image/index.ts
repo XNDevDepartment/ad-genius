@@ -24,20 +24,28 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const googleApiKey = Deno.env.get("GOOGLE_AI_API_KEY");
+
+    if (!googleApiKey) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Google AI API key not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token);
+    if (userError || !userData?.user) {
       return new Response(
         JSON.stringify({ success: false, error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    const userId = claimsData.claims.sub as string;
+    const userId = userData.user.id;
 
     // Service-role client for DB operations
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
@@ -70,9 +78,9 @@ Deno.serve(async (req) => {
     }
 
     // ── Download original image ──
+    console.log("Downloading original image:", imageUrl);
     const imgResponse = await fetch(imageUrl);
     if (!imgResponse.ok) {
-      // Refund on failure
       await supabaseAdmin.rpc("refund_user_credits", {
         p_user_id: userId,
         p_amount: 1,
@@ -83,54 +91,110 @@ Deno.serve(async (req) => {
     const originalImageBytes = new Uint8Array(await imgResponse.arrayBuffer());
     const originalImageBase64 = btoa(String.fromCharCode(...originalImageBytes));
 
-    // ──────────────────────────────────────────────────────────────
-    // ██  PLACEHOLDER: Call your image editing model here         ██
-    // ██                                                          ██
-    // ██  Available inputs:                                       ██
-    // ██    - originalImageBase64 (string): base64 of the image   ██
-    // ██    - maskBase64 (string|null): white-on-black mask PNG   ██
-    // ██    - instruction (string): user's edit instruction        ██
-    // ██                                                          ██
-    // ██  Expected output:                                        ██
-    // ██    - editedImageBytes (Uint8Array): the resulting image   ██
-    // ██                                                          ██
-    // ██  Replace the block below with your API call.             ██
-    // ──────────────────────────────────────────────────────────────
+    // Determine mime type from response
+    const contentType = imgResponse.headers.get("content-type") || "image/png";
+    const mimeType = contentType.includes("jpeg") || contentType.includes("jpg") 
+      ? "image/jpeg" 
+      : "image/png";
 
-    // TODO: Replace with real model endpoint call
-    // Example structure for Gemini / Imagen:
-    //
-    // const apiKey = Deno.env.get("GOOGLE_AI_API_KEY");
-    // const modelResponse = await fetch(`https://...model-endpoint...`, {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-    //   body: JSON.stringify({
-    //     image: originalImageBase64,
-    //     mask: maskBase64 || undefined,
-    //     prompt: instruction,
-    //   }),
-    // });
-    // const modelResult = await modelResponse.json();
-    // const editedImageBase64 = modelResult.image; // base64 result
-    // const editedImageBytes = Uint8Array.from(atob(editedImageBase64), c => c.charCodeAt(0));
+    // ── Build prompt with mask context ──
+    let editPrompt = instruction;
+    if (maskBase64) {
+      editPrompt = `Edit only the areas marked in white in the mask image. ${instruction}. Keep all other areas exactly the same.`;
+    }
 
-    // Temporary: return error since model is not yet configured
-    await supabaseAdmin.rpc("refund_user_credits", {
-      p_user_id: userId,
-      p_amount: 1,
-      p_reason: "image_edit_refund_model_not_configured",
-    });
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: "Image editing model not yet configured. Please set up the model endpoint.",
-      }),
-      { status: 501, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    // ── Call Gemini API for image editing ──
+    console.log("Calling Gemini API for image editing...");
+    
+    const parts: any[] = [
+      {
+        inline_data: {
+          mime_type: mimeType,
+          data: originalImageBase64,
+        },
+      },
+    ];
+
+    // Add mask if provided
+    if (maskBase64) {
+      parts.push({
+        inline_data: {
+          mime_type: "image/png",
+          data: maskBase64,
+        },
+      });
+      parts.push({
+        text: `This is the mask where white areas indicate regions to edit. ${editPrompt}`,
+      });
+    } else {
+      parts.push({
+        text: `Edit this image: ${editPrompt}. Generate the edited version of the image.`,
+      });
+    }
+
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${googleApiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts }],
+          generationConfig: {
+            responseModalities: ["image", "text"],
+            responseMimeType: "image/png",
+          },
+        }),
+      }
     );
 
-    // ── After model call: upload result ──
-    // Uncomment the following once the model endpoint is set up:
-    /*
+    if (!geminiResponse.ok) {
+      const errorText = await geminiResponse.text();
+      console.error("Gemini API error:", geminiResponse.status, errorText);
+      await supabaseAdmin.rpc("refund_user_credits", {
+        p_user_id: userId,
+        p_amount: 1,
+        p_reason: "image_edit_refund_api_failed",
+      });
+      throw new Error(`Gemini API error: ${geminiResponse.status}`);
+    }
+
+    const geminiResult = await geminiResponse.json();
+    console.log("Gemini response received");
+
+    // Extract generated image from response
+    let editedImageBase64: string | null = null;
+    const candidates = geminiResult.candidates || [];
+    for (const candidate of candidates) {
+      const candidateParts = candidate.content?.parts || [];
+      for (const part of candidateParts) {
+        if (part.inline_data?.data) {
+          editedImageBase64 = part.inline_data.data;
+          break;
+        }
+      }
+      if (editedImageBase64) break;
+    }
+
+    if (!editedImageBase64) {
+      console.error("No image in Gemini response:", JSON.stringify(geminiResult).slice(0, 500));
+      await supabaseAdmin.rpc("refund_user_credits", {
+        p_user_id: userId,
+        p_amount: 1,
+        p_reason: "image_edit_refund_no_image",
+      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Failed to generate edited image. The AI could not process your request.",
+        }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Convert base64 to bytes
+    const editedImageBytes = Uint8Array.from(atob(editedImageBase64), c => c.charCodeAt(0));
+
+    // ── Upload result to storage ──
     const fileName = `edit-${userId}-${Date.now()}.png`;
     const storagePath = `${userId}/${fileName}`;
 
@@ -142,6 +206,7 @@ Deno.serve(async (req) => {
       });
 
     if (uploadError) {
+      console.error("Upload error:", uploadError);
       await supabaseAdmin.rpc("refund_user_credits", {
         p_user_id: userId,
         p_amount: 1,
@@ -170,11 +235,12 @@ Deno.serve(async (req) => {
       },
     });
 
+    console.log("Edit complete, returning URL:", publicUrl);
+
     return new Response(
       JSON.stringify({ success: true, imageUrl: publicUrl }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-    */
   } catch (err) {
     console.error("edit-image error:", err);
     return new Response(
