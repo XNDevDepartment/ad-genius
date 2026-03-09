@@ -1,4 +1,4 @@
-import { ArrowLeft, Home, HelpCircle, BookOpen, Video, Code } from "lucide-react";
+import { ArrowLeft, Home, HelpCircle, BookOpen, Video, Code, Globe } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,20 +20,20 @@ const helpNavItems = [
     path: "/help/faq",
     description: "Common questions"
   },
-  // {
-  //   id: "tutorials",
-  //   label: "Video Tutorials",
-  //   icon: Video,
-  //   path: "/help/tutorials",
-  //   description: "Learn with videos"
-  // },
-  // {
-  //   id: "api-docs",
-  //   label: "API Documentation",
-  //   icon: Code,
-  //   path: "/help/api-docs",
-  //   description: "Technical reference"
-  // },
+  {
+    id: "api-docs",
+    label: "API Documentation",
+    icon: Code,
+    path: "/help/api-docs",
+    description: "Technical reference"
+  },
+  {
+    id: "integrations",
+    label: "Integrations",
+    icon: Globe,
+    path: "/help/integrations",
+    description: "Shopify, Zapier & more"
+  },
 ];
 
 interface HelpLayoutProps {

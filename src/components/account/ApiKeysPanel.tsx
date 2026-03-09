@@ -58,7 +58,8 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
   const [newKeyPermissions, setNewKeyPermissions] = useState({
     ugc: true,
     video: true,
-    fashion_catalog: true
+    fashion_catalog: true,
+    product_background: true
   });
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState(false);
@@ -119,7 +120,7 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
 
       setNewlyCreatedKey(data.api_key);
       setNewKeyName("");
-      setNewKeyPermissions({ ugc: true, video: true, fashion_catalog: true });
+      setNewKeyPermissions({ ugc: true, video: true, fashion_catalog: true, product_background: true });
       fetchApiKeys();
       
       toast({
@@ -296,7 +297,8 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
     const labels: Record<string, string> = {
       ugc: 'UGC Images',
       video: 'Video',
-      fashion_catalog: 'Fashion'
+      fashion_catalog: 'Fashion',
+      product_background: 'Product Background'
     };
     
     return permissions.map(p => (
@@ -318,7 +320,7 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
         <div>
           <h3 className="text-lg font-semibold">API Keys</h3>
           <p className="text-sm text-muted-foreground">
-            Manage API keys for programmatic access to Genius UGC
+            Manage API keys for programmatic access to ProduktPix
           </p>
         </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -332,7 +334,7 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
             <DialogHeader>
               <DialogTitle>Create New API Key</DialogTitle>
               <DialogDescription>
-                Create a new API key to access Genius UGC programmatically.
+                Create a new API key to access ProduktPix programmatically.
               </DialogDescription>
             </DialogHeader>
             
@@ -413,6 +415,16 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
                         />
                         <Label htmlFor="perm-fashion" className="text-sm">Fashion Catalog</Label>
                       </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="perm-product-bg"
+                          checked={newKeyPermissions.product_background}
+                          onCheckedChange={(checked) => 
+                            setNewKeyPermissions(p => ({ ...p, product_background: !!checked }))
+                          }
+                        />
+                        <Label htmlFor="perm-product-bg" className="text-sm">Product Background</Label>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -441,7 +453,7 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
             <Key className="h-12 w-12 text-muted-foreground mb-4" />
             <h4 className="text-lg font-medium mb-2">No API Keys</h4>
             <p className="text-sm text-muted-foreground text-center max-w-sm mb-4">
-              Create an API key to start using Genius UGC programmatically. 
+              Create an API key to start using ProduktPix programmatically. 
               Check the API documentation for usage examples.
             </p>
             <Button onClick={() => setShowCreateDialog(true)}>

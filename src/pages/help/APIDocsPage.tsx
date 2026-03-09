@@ -18,49 +18,118 @@ const endpoints = [
     endpoint: "/v1/ugc/generate",
     description: "Generate AI-powered UGC product images",
     parameters: ["source_image_url (required)", "prompt", "settings.number (1-4)", "settings.aspect_ratio"],
-    credits: "1 credit per image"
+    credits: "1 credit per image",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "queued",
+  "message": "Image generation job created successfully",
+  "credits_used": 2
+}`
   },
   {
     method: "GET",
     endpoint: "/v1/ugc/jobs/{job_id}",
     description: "Get status and results of a UGC generation job",
     parameters: ["job_id in endpoint path"],
-    credits: "Free"
+    credits: "Free",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "completed",
+  "progress": 100,
+  "total": 2,
+  "completed": 2,
+  "images": [
+    { "id": "uuid", "url": "https://...", "created_at": "..." }
+  ]
+}`
   },
   {
     method: "POST",
     endpoint: "/v1/video/create",
     description: "Create animated video from an image",
     parameters: ["source_image_url (required)", "prompt", "duration (5 or 10)"],
-    credits: "5 credits (5s) / 10 credits (10s)"
+    credits: "5 credits (5s) / 10 credits (10s)",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "queued",
+  "credits_used": 5
+}`
   },
   {
     method: "GET",
     endpoint: "/v1/video/jobs/{job_id}",
     description: "Get status and video URL of a video job",
     parameters: ["job_id in endpoint path"],
-    credits: "Free"
+    credits: "Free",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "completed",
+  "video_url": "https://...",
+  "video_duration": 5
+}`
   },
   {
     method: "POST",
     endpoint: "/v1/fashion/swap",
     description: "Generate fashion catalog photos with outfit swap",
     parameters: ["garment_image_url (required)", "base_model_id (required)", "settings"],
-    credits: "1 credit per swap"
+    credits: "1 credit per swap",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "queued",
+  "credits_used": 1
+}`
   },
   {
     method: "GET",
     endpoint: "/v1/fashion/jobs/{job_id}",
     description: "Get status and results of a fashion swap job",
     parameters: ["job_id in endpoint path"],
-    credits: "Free"
+    credits: "Free",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "completed",
+  "results": [
+    { "id": "uuid", "url": "https://...", "created_at": "..." }
+  ]
+}`
+  },
+  {
+    method: "POST",
+    endpoint: "/v1/product/background",
+    description: "Swap product background — remove & replace with preset or custom background",
+    parameters: ["source_image_url (required)", "background_preset_id or background_image_url (required)", "settings"],
+    credits: "1 credit",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "queued",
+  "credits_used": 1
+}`
+  },
+  {
+    method: "GET",
+    endpoint: "/v1/product/background/jobs/{job_id}",
+    description: "Get status and result of a product background job",
+    parameters: ["job_id in endpoint path"],
+    credits: "Free",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "completed",
+  "results": [
+    { "id": "uuid", "result_url": "https://...", "source_url": "https://..." }
+  ]
+}`
   },
   {
     method: "GET",
     endpoint: "/v1/credits/balance",
     description: "Get current credit balance and subscription tier",
     parameters: [],
-    credits: "Free"
+    credits: "Free",
+    responseExample: `{
+  "credits_balance": 42,
+  "subscription_tier": "Starter"
+}`
   }
 ];
 
@@ -226,7 +295,7 @@ const APIDocsPage = () => {
       <div className="space-y-8">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold">Genius UGC API</h2>
+            <h2 className="text-2xl font-bold">ProduktPix API</h2>
             <Badge className="bg-green-100 text-green-700">
               <CheckCircle className="h-3 w-3 mr-1" />
               v1.0 Live
@@ -285,11 +354,21 @@ const APIDocsPage = () => {
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">{ep.description}</p>
                   {ep.parameters.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1 mb-3">
                       {ep.parameters.map((param, i) => (
                         <Badge key={i} variant="secondary" className="text-xs">{param}</Badge>
                       ))}
                     </div>
+                  )}
+                  {ep.responseExample && (
+                    <details className="mt-2">
+                      <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
+                        Response example
+                      </summary>
+                      <pre className="bg-muted p-3 rounded-md overflow-x-auto text-xs mt-2">
+                        <code>{ep.responseExample}</code>
+                      </pre>
+                    </details>
                   )}
                 </CardContent>
               </Card>

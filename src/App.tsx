@@ -45,6 +45,7 @@ const GettingStartedGuide = lazyWithRetry(() => import("./pages/help/GettingStar
 const FAQPage = lazyWithRetry(() => import("./pages/help/FAQPage"));
 const VideoTutorialsPage = lazyWithRetry(() => import("./pages/help/VideoTutorialsPage"));
 const APIDocsPage = lazyWithRetry(() => import("./pages/help/APIDocsPage"));
+const IntegrationsDocsPage = lazyWithRetry(() => import("./pages/help/IntegrationsDocsPage"));
 const Pricing = lazyWithRetry(() => import("./pages/Pricing"));
 const FoundersPlan = lazyWithRetry(() => import("./pages/FoundersPlan"));
 const Success = lazyWithRetry(() => import("./pages/Success"));
@@ -317,6 +318,13 @@ const App = () => {
                   <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>
                       <APIDocsPage />
+                    </Suspense>
+                  </ErrorBoundaryWithReset>
+                } />
+                <Route path="help/integrations" element={
+                  <ErrorBoundaryWithReset>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <IntegrationsDocsPage />
                     </Suspense>
                   </ErrorBoundaryWithReset>
                 } />
