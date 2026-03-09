@@ -255,20 +255,29 @@ export const OnboardingResults = ({ data }: OnboardingResultsProps) => {
                 <Crown className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-lg">{t('onboarding.offer.firstMonth')}</h3>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-2xl font-bold">€19.99</span>
+                <h3 className="font-bold text-lg">{t('onboarding.offer.title')}</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">{t('onboarding.offer.subtitle')}</p>
+                <div className="flex items-baseline gap-2 mt-1.5">
+                  <span className="text-2xl font-bold">€9.99</span>
                   <span className="text-sm text-muted-foreground line-through">€29</span>
                   <span className="text-xs px-2 py-0.5 bg-primary/20 text-primary rounded-full font-medium">
                     {t('onboarding.offer.saveAmount')}
                   </span>
                 </div>
-                {getCountdown() && (
-                  <p className="text-xs text-muted-foreground mt-1">{getCountdown()}</p>
-                )}
               </div>
             </div>
-            <Button onClick={handleGetOffer} disabled={isCheckingOut} className="w-full mt-4" size="lg">
+            {/* Trust badges */}
+            <div className="flex flex-wrap gap-2 mt-3">
+              {['oneTimePayment', 'noSubscription', 'noAutoRenewal'].map((key) => (
+                <span key={key} className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-medium">
+                  ✓ {t(`onboarding.offer.${key}`)}
+                </span>
+              ))}
+            </div>
+            {getCountdown() && (
+              <p className="text-xs text-muted-foreground mt-2">{getCountdown()}</p>
+            )}
+            <Button onClick={handleGetOffer} disabled={isCheckingOut} className="w-full mt-3" size="lg">
               {isCheckingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : t('onboarding.offer.getOffer')}
             </Button>
           </Card>
