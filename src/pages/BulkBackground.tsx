@@ -20,6 +20,7 @@ import { useSourceImageUpload } from "@/hooks/useSourceImageUpload";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductViewsModal } from "@/components/ProductViewsModal";
+import EditImageModal from "@/components/EditImageModal";
 import { GarmentLibraryPicker } from "@/components/GarmentLibraryPicker";
 import { BulkUrlImportModal } from "@/components/BulkUrlImportModal";
 import { ShopifyImportModal } from "@/components/ShopifyImportModal";
@@ -72,6 +73,7 @@ const BulkBackground = () => {
   const [editRequest, setEditRequest] = useState("");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [photoshootModal, setPhotoshootModal] = useState<{ resultId: string; resultUrl: string } | null>(null);
+  const [editingBgImage, setEditingBgImage] = useState<{ url: string; id: string } | null>(null);
 
   // Import modal states
   const [libraryPickerOpen, setLibraryPickerOpen] = useState(false);
@@ -668,6 +670,15 @@ const BulkBackground = () => {
                                   <Download className="h-4 w-4" />
                                   <span className="hidden sm:inline">{t("bulkBackground.buttons.download")}</span>
                                 </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-1"
+                                  onClick={() => setEditingBgImage({ url: result.result_url!, id: result.id })}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                  <span className="hidden sm:inline">Edit</span>
+                                </Button>
                               </div>
                             </div>
                           )}
@@ -754,6 +765,15 @@ const BulkBackground = () => {
           onOpenChange={setShopifyImportOpen}
           onImportComplete={handleShopifyImportComplete}
         />
+
+        {editingBgImage && (
+          <EditImageModal
+            isOpen={!!editingBgImage}
+            onClose={() => setEditingBgImage(null)}
+            imageUrl={editingBgImage.url}
+            imageId={editingBgImage.id}
+          />
+        )}
       </div>
     </div>
   );

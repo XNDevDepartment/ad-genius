@@ -9,9 +9,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, Download, RotateCcw } from "lucide-react";
+import { Loader2, Download, RotateCcw, History } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+
+interface EditVersion {
+  id: string;
+  public_url: string;
+  created_at: string;
+}
 
 interface EditImageModalProps {
   isOpen: boolean;
@@ -31,13 +37,39 @@ export default function EditImageModal({
   const [instruction, setInstruction] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState(imageUrl);
+  const [editHistory, setEditHistory] = useState<EditVersion[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setInstruction("");
       setResultUrl(null);
+      setCurrentImageUrl(imageUrl);
+      fetchEditHistory(imageUrl);
     }
-  }, [isOpen]);
+  }, [isOpen, imageUrl]);
+
+  const fetchEditHistory = async (url: string) => {
+    setLoadingHistory(true);
+    try {
+      const { data, error } = await supabase
+        .from('ugc_images')
+        .select('id, public_url, created_at')
+        .filter('meta->>source', 'eq', 'edit')
+        .filter('meta->>original_image_url', 'eq', url)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (!error && data) {
+        setEditHistory(data as EditVersion[]);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!instruction.trim()) {
@@ -53,7 +85,7 @@ export default function EditImageModal({
     try {
       const { data, error } = await supabase.functions.invoke("edit-image", {
         body: {
-          imageUrl,
+          imageUrl: currentImageUrl,
           maskBase64: null,
           instruction: instruction.trim(),
           originalImageId: imageId || null,
@@ -65,6 +97,8 @@ export default function EditImageModal({
 
       setResultUrl(data.imageUrl);
       onEditComplete?.(data.imageUrl);
+      // Refresh history to include the new edit
+      fetchEditHistory(imageUrl);
       toast({ title: "Imagem editada!", description: "A tua imagem editada está pronta." });
     } catch (err: any) {
       console.error("Edit image error:", err);
@@ -83,6 +117,12 @@ export default function EditImageModal({
     window.open(resultUrl, "_blank", "noopener");
   };
 
+  const handleSelectVersion = (version: EditVersion) => {
+    setCurrentImageUrl(version.public_url);
+    setResultUrl(null);
+    setInstruction("");
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -97,7 +137,7 @@ export default function EditImageModal({
           {/* Image preview */}
           <div className="flex justify-center rounded-lg overflow-hidden border border-border bg-muted/20">
             <img
-              src={resultUrl || imageUrl}
+              src={resultUrl || currentImageUrl}
               alt="Imagem a editar"
               className="max-w-full max-h-[50vh] block object-contain"
               draggable={false}
@@ -151,6 +191,35 @@ export default function EditImageModal({
                 )}
               </Button>
             </>
+          )}
+
+          {/* Edit History Strip */}
+          {editHistory.length > 0 && (
+            <div className="space-y-2 pt-2 border-t border-border">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <History className="h-4 w-4" />
+                <span>Histórico de edições ({editHistory.length})</span>
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {editHistory.map((version) => (
+                  <button
+                    key={version.id}
+                    onClick={() => handleSelectVersion(version)}
+                    className={`shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 transition-colors ${
+                      currentImageUrl === version.public_url
+                        ? 'border-primary'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <img
+                      src={version.public_url}
+                      alt="Edit version"
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       </DialogContent>

@@ -20,6 +20,8 @@ import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import AnimateImageModal from "@/components/AnimateImageModal";
+import EditImageModal from "@/components/EditImageModal";
+import { Pencil } from "lucide-react";
 
 interface BatchSwapPreviewProps {
   batch: OutfitSwapBatch;
@@ -73,6 +75,7 @@ export const BatchSwapPreview = ({
     imageUrl: string | null;
     imageId: string | null;
   }>({ open: false, imageUrl: null, imageId: null });
+  const [editingSwapImage, setEditingSwapImage] = useState<{ url: string; id: string } | null>(null);
 
   const progress = batch.total_jobs > 0
     ? Math.round(((batch.completed_jobs + batch.failed_jobs) / batch.total_jobs) * 100)
@@ -463,6 +466,15 @@ export const BatchSwapPreview = ({
                             <Button
                               size="sm"
                               variant="outline"
+                              onClick={() => setEditingSwapImage({ url: result.public_url, id: result.id })}
+                              className="flex-col h-auto py-2"
+                            >
+                              <Pencil className="w-4 h-4 mb-1" />
+                              <span className="text-xs">Edit</span>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
                               onClick={() => handleAnimate(result.public_url, result)}
                               className="flex-col h-auto py-2"
                             >
@@ -531,6 +543,15 @@ export const BatchSwapPreview = ({
         imageUrl={animateModal.imageUrl}
         imageId={animateModal.imageId}
       />
+
+      {editingSwapImage && (
+        <EditImageModal
+          isOpen={!!editingSwapImage}
+          onClose={() => setEditingSwapImage(null)}
+          imageUrl={editingSwapImage.url}
+          imageId={editingSwapImage.id}
+        />
+      )}
 
       {/* Mobile Sticky Footer */}
       {isMobile && (isCompleted || isFailed) && (

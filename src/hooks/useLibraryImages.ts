@@ -24,6 +24,7 @@ export interface LibraryImage {
   angle_type?: 'front' | 'three_quarter' | 'back' | 'side';
   style_prompt?: string;
   original_result_id?: string;
+  meta?: any;
 }
 
 interface PaginationOptions {
@@ -229,7 +230,8 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
           desiredAudience: jobData?.desiredAudience,
           prodSpecs: jobData?.prodSpecs,
           source_image_ids: jobData?.source_image_ids,
-          source_type: 'ugc' as const
+          source_type: 'ugc' as const,
+          meta: img.meta as any
         };
       });
 
