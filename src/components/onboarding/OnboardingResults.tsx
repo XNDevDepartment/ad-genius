@@ -220,7 +220,7 @@ export const OnboardingResults = ({ data }: OnboardingResultsProps) => {
                     />
                     {/* Style label badge */}
                     <div className="absolute bottom-1.5 left-1.5 right-1.5">
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/60 text-white backdrop-blur-sm">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-background/70 text-foreground backdrop-blur-sm">
                         {label}
                       </span>
                     </div>
