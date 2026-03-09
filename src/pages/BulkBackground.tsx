@@ -20,6 +20,7 @@ import { useSourceImageUpload } from "@/hooks/useSourceImageUpload";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductViewsModal } from "@/components/ProductViewsModal";
+import EditImageModal from "@/components/EditImageModal";
 import { GarmentLibraryPicker } from "@/components/GarmentLibraryPicker";
 import { BulkUrlImportModal } from "@/components/BulkUrlImportModal";
 import { ShopifyImportModal } from "@/components/ShopifyImportModal";
