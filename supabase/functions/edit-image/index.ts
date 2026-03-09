@@ -97,51 +97,30 @@ Deno.serve(async (req) => {
       ? "image/jpeg" 
       : "image/png";
 
-    // ── Build prompt with mask context ──
-    let editPrompt = instruction;
-    if (maskBase64) {
-      editPrompt = `Edit only the areas marked in white in the mask image. ${instruction}. Keep all other areas exactly the same.`;
-    }
-
     // ── Call Gemini API for image editing ──
     console.log("Calling Gemini API for image editing...");
-    
-    const parts: any[] = [
+
+    const parts = [
       {
         inline_data: {
           mime_type: mimeType,
           data: originalImageBase64,
         },
       },
+      {
+        text: `Edit this image: ${instruction}. Return only the edited image.`,
+      },
     ];
 
-    // Add mask if provided
-    if (maskBase64) {
-      parts.push({
-        inline_data: {
-          mime_type: "image/png",
-          data: maskBase64,
-        },
-      });
-      parts.push({
-        text: `This is the mask where white areas indicate regions to edit. ${editPrompt}`,
-      });
-    } else {
-      parts.push({
-        text: `Edit this image: ${editPrompt}. Generate the edited version of the image.`,
-      });
-    }
-
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${googleApiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${googleApiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ parts }],
           generationConfig: {
-            responseModalities: ["image", "text"],
-            responseMimeType: "image/png",
+            responseModalities: ["IMAGE"],
           },
         }),
       }
