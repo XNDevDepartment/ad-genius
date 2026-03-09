@@ -89,7 +89,15 @@ Deno.serve(async (req) => {
       throw new Error("Failed to download original image");
     }
     const originalImageBytes = new Uint8Array(await imgResponse.arrayBuffer());
-    const originalImageBase64 = btoa(String.fromCharCode(...originalImageBytes));
+    let binary = '';
+    const chunkSize = 8192;
+    for (let i = 0; i < originalImageBytes.length; i += chunkSize) {
+      const chunk = originalImageBytes.subarray(i, i + chunkSize);
+      for (let j = 0; j < chunk.length; j++) {
+        binary += String.fromCharCode(chunk[j]);
+      }
+    }
+    const originalImageBase64 = btoa(binary);
 
     // Determine mime type from response
     const contentType = imgResponse.headers.get("content-type") || "image/png";
