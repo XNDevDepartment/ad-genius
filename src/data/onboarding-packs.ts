@@ -237,19 +237,21 @@ export function buildPackPrompt(pack: Pack, isFashion: boolean): string {
   const rules = isFashion ? FASHION_RULES : PRODUCT_RULES;
   
   const stylePrompts = pack.styles
-    .map((style, i) => `IMAGE ${i + 1} (${style.id}): ${style.prompt}`)
-    .join('\n\n');
+    .map((style, i) => `STYLE OPTION ${i + 1} (${style.id}): ${style.prompt}`)
+    .join('\n');
 
-  return `TASK: Generate 4 distinct professional product images from the reference product photo.
-Each image MUST show the EXACT same product from the reference image.
+  return `TASK: Generate a SINGLE professional product image from the reference product photo.
+The image MUST show the EXACT same product from the reference image.
+IMPORTANT: Output exactly ONE image, NOT a collage, NOT a grid, NOT multiple images combined.
 
+Choose one of the following styles for this image:
 ${stylePrompts}
 
 ${rules}
 
 QUALITY RULES:
+- Output MUST be a single standalone photograph, never a grid or montage.
 - No AI artifacts, watermarks, or text overlays.
 - Natural human anatomy if people appear.
-- Each image must be visually distinct in composition and setting.
 - Product integrity is the highest priority — exact colors, branding, shape.`;
 }
