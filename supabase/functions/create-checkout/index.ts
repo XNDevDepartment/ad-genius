@@ -56,7 +56,8 @@ serve(async (req) => {
       plus: { monthly: 4900, yearly: 49000 },   // €49/month, €490.00/year (€40.83/month × 12)
       pro: { monthly: 9900, yearly: 99000 },     // €99/month, €990/year (€82.50/month × 12)
       // christmas: { monthly: 1999, yearly: 19988 }, // €19.99/month, €199.88/year (Christmas 2025 promo)
-      onboarding_first_month: { monthly: 1999, yearly: null } // €19.99 first month special (Starter tier)
+      onboarding_first_month: { monthly: 1999, yearly: null }, // €19.99 first month special (Starter tier)
+      experiment: { monthly: 999, yearly: null } // €9.99 one-time purchase (prod_U7RlMZUJGKXGza)
     };
 
     // Validate pricing to prevent future bugs
@@ -76,7 +77,8 @@ serve(async (req) => {
       plus: 'Plus Plan', 
       pro: 'Pro Plan',
       christmas: 'Promoção de Natal 2025',
-      onboarding_first_month: 'First Month Special - Starter'
+      onboarding_first_month: 'First Month Special - Starter',
+      experiment: 'OneTimeExperiment'
     };
 
     if (!planPricing[planId as keyof typeof planPricing]) {
@@ -159,20 +161,13 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "http://localhost:3000";
     const isOneTime = paymentMode === 'one_time';
 
-    const sessionParams: any = {
-      customer: customerId,
-      customer_email: customerId ? undefined : user.email!,
-      ...(customerId ? { customer_update: { name: 'auto' } } : {}),
-      ...(adHocCouponId
-        ? { discounts: [{ coupon: adHocCouponId }] }
-        : promotionCodeId 
-          ? { discounts: [{ promotion_code: promotionCodeId }] }
-          : { allow_promotion_codes: true }
-      ),
-      tax_id_collection: { enabled: true },
-      billing_address_collection: 'required',
-      line_items: [
-        {
+    // For 'experiment' plan, use the existing Stripe product directly
+    const useExistingProduct = planId === 'experiment' && isOneTime;
+    const experimentProductId = 'prod_U7RlMZUJGKXGza';
+
+    const lineItems = useExistingProduct
+      ? [{ price_data: { currency: 'eur', product: experimentProductId, unit_amount: unitAmount! }, quantity: 1 }]
+      : [{
           price_data: {
             currency: "eur",
             product_data: { 
@@ -189,8 +184,23 @@ serve(async (req) => {
             ...(isOneTime ? {} : { recurring: { interval: interval as 'month' | 'year' } }),
           },
           quantity: 1,
-        },
-      ],
+        }];
+
+    const sessionParams: any = {
+      customer: customerId,
+      customer_email: customerId ? undefined : user.email!,
+      ...(customerId ? { customer_update: { name: 'auto' } } : {}),
+      ...(useExistingProduct
+        ? {}  // No discounts needed for experiment — price is already €9.99
+        : adHocCouponId
+          ? { discounts: [{ coupon: adHocCouponId }] }
+          : promotionCodeId 
+            ? { discounts: [{ promotion_code: promotionCodeId }] }
+            : { allow_promotion_codes: true }
+      ),
+      tax_id_collection: { enabled: true },
+      billing_address_collection: 'required',
+      line_items: lineItems,
       mode: isOneTime ? "payment" : "subscription",
       success_url: `${origin}/success`,
       cancel_url: `${origin}/cancel`,
