@@ -84,6 +84,7 @@ const Index = () => {
       )}
     {user ?
       <OnboardingGuard>
+      <PromoBanner3Meses />
       <div className="container-responsive px-4 py-8">
         {/* ===== MOBILE LAYOUT ===== */}
         <div className="lg:hidden space-y-4">
