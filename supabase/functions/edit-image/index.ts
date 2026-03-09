@@ -157,8 +157,8 @@ Deno.serve(async (req) => {
     for (const candidate of candidates) {
       const candidateParts = candidate.content?.parts || [];
       for (const part of candidateParts) {
-        if (part.inline_data?.data) {
-          editedImageBase64 = part.inline_data.data;
+        if (part.inlineData?.data) {
+          editedImageBase64 = part.inlineData.data;
           break;
         }
       }
