@@ -277,6 +277,15 @@ export const ImageLibraryGrid = ({
                   </div>
                 )}
 
+                {/* Edited badge */}
+                {image.meta?.source === 'edit' && (
+                  <div className="absolute top-2 left-2 z-20">
+                    <span className="bg-primary/90 text-primary-foreground text-[10px] font-semibold px-1.5 py-0.5 rounded">
+                      Edited
+                    </span>
+                  </div>
+                )}
+
                 {/* Source image thumbnail overlay */}
                 {viewMode === "ai" && showSourceThumbnails && image.sourceSignedUrl && !selectionMode && (
                   <div className="absolute bottom-2 left-2 w-20 h-20 rounded-lg overflow-hidden border-2 border-white shadow-lg z-20">

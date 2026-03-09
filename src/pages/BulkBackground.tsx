@@ -765,6 +765,15 @@ const BulkBackground = () => {
           onOpenChange={setShopifyImportOpen}
           onImportComplete={handleShopifyImportComplete}
         />
+
+        {editingBgImage && (
+          <EditImageModal
+            isOpen={!!editingBgImage}
+            onClose={() => setEditingBgImage(null)}
+            imageUrl={editingBgImage.url}
+            imageId={editingBgImage.id}
+          />
+        )}
       </div>
     </div>
   );

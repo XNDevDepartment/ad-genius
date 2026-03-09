@@ -544,6 +544,15 @@ export const BatchSwapPreview = ({
         imageId={animateModal.imageId}
       />
 
+      {editingSwapImage && (
+        <EditImageModal
+          isOpen={!!editingSwapImage}
+          onClose={() => setEditingSwapImage(null)}
+          imageUrl={editingSwapImage.url}
+          imageId={editingSwapImage.id}
+        />
+      )}
+
       {/* Mobile Sticky Footer */}
       {isMobile && (isCompleted || isFailed) && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t shadow-lg z-50">
