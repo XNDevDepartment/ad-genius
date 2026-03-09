@@ -1929,7 +1929,8 @@
       "angles": "angles",
       "download": "Herunterladen",
       "retry": "Wiederholen",
-      "retrying": "Wiederhole..."
+      "retrying": "Wiederhole...",
+      "edit": "Bearbeiten"
     },
     "warnings": {
       "stuckJob": "⚠️ Dieser Job scheint festzustecken. Versuche auf Aktualisieren zu klicken."

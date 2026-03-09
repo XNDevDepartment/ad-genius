@@ -1769,7 +1769,8 @@
       "angles": "angles",
       "download": "Télécharger",
       "retry": "Réessayer",
-      "retrying": "Réessai..."
+      "retrying": "Réessai...",
+      "edit": "Modifier"
     },
     "warnings": {
       "stuckJob": "⚠️ Ce travail semble bloqué. Essayez de cliquer sur Actualiser."

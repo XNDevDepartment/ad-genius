@@ -1980,7 +1980,8 @@
       "angles": "ângulos",
       "download": "Transferir",
       "retry": "Tentar Novamente",
-      "retrying": "Tentando..."
+      "retrying": "Tentando...",
+      "edit": "Editar"
     },
     "warnings": {
       "stuckJob": "⚠️ Esta tarefa parece bloqueada. Tente clicar em Atualizar."

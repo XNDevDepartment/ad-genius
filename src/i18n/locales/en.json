@@ -2011,7 +2011,8 @@
       "angles": "angles",
       "download": "Download",
       "retry": "Retry",
-      "retrying": "Retrying..."
+      "retrying": "Retrying...",
+      "edit": "Edit"
     },
     "warnings": {
       "stuckJob": "⚠️ This job seems stuck. Try clicking Refresh."

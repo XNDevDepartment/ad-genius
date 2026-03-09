@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Download, RotateCcw, History } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface EditVersion {
   id: string;
@@ -34,6 +35,7 @@ export default function EditImageModal({
   imageId,
   onEditComplete,
 }: EditImageModalProps) {
+  const { t } = useTranslation();
   const [instruction, setInstruction] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
@@ -74,8 +76,8 @@ export default function EditImageModal({
   const handleSubmit = async () => {
     if (!instruction.trim()) {
       toast({
-        title: "Instrução necessária",
-        description: "Descreve as alterações que queres fazer.",
+        title: t("editImage.instructionRequired"),
+        description: t("editImage.instructionRequiredDesc"),
         variant: "destructive",
       });
       return;
@@ -97,14 +99,13 @@ export default function EditImageModal({
 
       setResultUrl(data.imageUrl);
       onEditComplete?.(data.imageUrl);
-      // Refresh history to include the new edit
       fetchEditHistory(imageUrl);
-      toast({ title: "Imagem editada!", description: "A tua imagem editada está pronta." });
+      toast({ title: t("editImage.success"), description: t("editImage.successDesc") });
     } catch (err: any) {
       console.error("Edit image error:", err);
       toast({
-        title: "Edição falhou",
-        description: err.message || "Algo correu mal. Tenta novamente.",
+        title: t("editImage.failed"),
+        description: err.message || t("editImage.failedDesc"),
         variant: "destructive",
       });
     } finally {
@@ -127,9 +128,9 @@ export default function EditImageModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Editar Imagem</DialogTitle>
+          <DialogTitle>{t("editImage.title")}</DialogTitle>
           <DialogDescription>
-            Descreve as alterações que queres fazer à imagem.
+            {t("editImage.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -138,7 +139,7 @@ export default function EditImageModal({
           <div className="flex justify-center rounded-lg overflow-hidden border border-border bg-muted/20">
             <img
               src={resultUrl || currentImageUrl}
-              alt="Imagem a editar"
+              alt={t("editImage.imageAlt")}
               className="max-w-full max-h-[50vh] block object-contain"
               draggable={false}
             />
@@ -149,7 +150,7 @@ export default function EditImageModal({
             <div className="flex gap-2">
               <Button onClick={handleOpenResult} variant="outline" size="sm">
                 <Download className="h-4 w-4 mr-2" />
-                Abrir Resultado
+                {t("editImage.openResult")}
               </Button>
               <Button
                 onClick={() => { setResultUrl(null); setInstruction(""); }}
@@ -157,7 +158,7 @@ export default function EditImageModal({
                 size="sm"
               >
                 <RotateCcw className="h-4 w-4 mr-2" />
-                Editar Novamente
+                {t("editImage.editAgain")}
               </Button>
             </div>
           )}
@@ -166,10 +167,10 @@ export default function EditImageModal({
           {!resultUrl && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="edit-instruction">Instrução de edição</Label>
+                <Label htmlFor="edit-instruction">{t("editImage.instructionLabel")}</Label>
                 <Textarea
                   id="edit-instruction"
-                  placeholder="Ex: Muda o fundo para uma praia ao pôr do sol, remove o logótipo, coloca a camisola vermelha..."
+                  placeholder={t("editImage.instructionPlaceholder")}
                   value={instruction}
                   onChange={(e) => setInstruction(e.target.value)}
                   rows={3}
@@ -184,10 +185,10 @@ export default function EditImageModal({
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    A editar...
+                    {t("editImage.editing")}
                   </>
                 ) : (
-                  "Aplicar Edição (1 crédito)"
+                  t("editImage.applyEdit")
                 )}
               </Button>
             </>
@@ -198,7 +199,7 @@ export default function EditImageModal({
             <div className="space-y-2 pt-2 border-t border-border">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <History className="h-4 w-4" />
-                <span>Histórico de edições ({editHistory.length})</span>
+                <span>{t("editImage.historyTitle", { count: editHistory.length })}</span>
               </div>
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {editHistory.map((version) => (

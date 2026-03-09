@@ -1929,7 +1929,8 @@
       "angles": "angles",
       "download": "Descargar",
       "retry": "Reintentar",
-      "retrying": "Reintentando..."
+      "retrying": "Reintentando...",
+      "edit": "Editar"
     },
     "warnings": {
       "stuckJob": "⚠️ Este trabajo puede estar atascado. Intenta hacer clic en Actualizar."
