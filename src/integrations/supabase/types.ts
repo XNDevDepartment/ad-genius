@@ -2305,6 +2305,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_count_active_users: { Args: { p_since?: string }; Returns: number }
       admin_sum_credits_balance: { Args: never; Returns: number }
       admin_sum_credits_used: { Args: never; Returns: number }
       award_milestone_credits: {
