@@ -25,9 +25,8 @@ const Promo1MesCheckout = () => {
       try {
         const { data, error } = await supabase.functions.invoke('create-checkout', {
           body: {
-            planId: 'starter',
-            interval: 'month',
-            promoCode: '1MES'
+            planId: 'experiment',
+            paymentMode: 'one_time'
           },
         });
 

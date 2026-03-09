@@ -161,20 +161,13 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "http://localhost:3000";
     const isOneTime = paymentMode === 'one_time';
 
-    const sessionParams: any = {
-      customer: customerId,
-      customer_email: customerId ? undefined : user.email!,
-      ...(customerId ? { customer_update: { name: 'auto' } } : {}),
-      ...(adHocCouponId
-        ? { discounts: [{ coupon: adHocCouponId }] }
-        : promotionCodeId 
-          ? { discounts: [{ promotion_code: promotionCodeId }] }
-          : { allow_promotion_codes: true }
-      ),
-      tax_id_collection: { enabled: true },
-      billing_address_collection: 'required',
-      line_items: [
-        {
+    // For 'experiment' plan, use the existing Stripe product directly
+    const useExistingProduct = planId === 'experiment' && isOneTime;
+    const experimentProductId = 'prod_U7RlMZUJGKXGza';
+
+    const lineItems = useExistingProduct
+      ? [{ price_data: { currency: 'eur', product: experimentProductId, unit_amount: unitAmount! }, quantity: 1 }]
+      : [{
           price_data: {
             currency: "eur",
             product_data: { 
@@ -191,8 +184,23 @@ serve(async (req) => {
             ...(isOneTime ? {} : { recurring: { interval: interval as 'month' | 'year' } }),
           },
           quantity: 1,
-        },
-      ],
+        }];
+
+    const sessionParams: any = {
+      customer: customerId,
+      customer_email: customerId ? undefined : user.email!,
+      ...(customerId ? { customer_update: { name: 'auto' } } : {}),
+      ...(useExistingProduct
+        ? {}  // No discounts needed for experiment — price is already €9.99
+        : adHocCouponId
+          ? { discounts: [{ coupon: adHocCouponId }] }
+          : promotionCodeId 
+            ? { discounts: [{ promotion_code: promotionCodeId }] }
+            : { allow_promotion_codes: true }
+      ),
+      tax_id_collection: { enabled: true },
+      billing_address_collection: 'required',
+      line_items: lineItems,
       mode: isOneTime ? "payment" : "subscription",
       success_url: `${origin}/success`,
       cancel_url: `${origin}/cancel`,
