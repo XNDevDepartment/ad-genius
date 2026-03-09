@@ -677,7 +677,7 @@ const BulkBackground = () => {
                                   onClick={() => setEditingBgImage({ url: result.result_url!, id: result.id })}
                                 >
                                   <Pencil className="h-4 w-4" />
-                                  <span className="hidden sm:inline">Edit</span>
+                                  <span className="hidden sm:inline">{t("bulkBackground.buttons.edit")}</span>
                                 </Button>
                               </div>
                             </div>

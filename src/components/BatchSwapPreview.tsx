@@ -470,7 +470,7 @@ export const BatchSwapPreview = ({
                               className="flex-col h-auto py-2"
                             >
                               <Pencil className="w-4 h-4 mb-1" />
-                              <span className="text-xs">Edit</span>
+                              <span className="text-xs">{t('outfitSwap.buttons.edit')}</span>
                             </Button>
                             <Button
                               size="sm"
