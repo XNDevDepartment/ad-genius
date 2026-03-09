@@ -384,6 +384,7 @@
       "description": "Erzeuge UGC-Inhalte, um sie hier zu sehen",
       "searchDescription": "Passe deine Suchbegriffe an"
     },
+    "editedBadge": "Bearbeitet",
     "bulkUpload": {
       "title": "Quellbilder Hochladen",
       "uploadButton": "Bilder Hochladen",
@@ -924,7 +925,8 @@
       "ugcImage": "UGC-Bild",
       "preview": "Vorschau",
       "download": "Herunterladen",
-      "photoshoot": "Fotoshooting"
+      "photoshoot": "Fotoshooting",
+      "edit": "Bearbeiten"
     },
     "importSources": {
       "library": "Aus Bibliothek",
@@ -1928,7 +1930,8 @@
       "angles": "angles",
       "download": "Herunterladen",
       "retry": "Wiederholen",
-      "retrying": "Wiederhole..."
+      "retrying": "Wiederhole...",
+      "edit": "Bearbeiten"
     },
     "warnings": {
       "stuckJob": "⚠️ Dieser Job scheint festzustecken. Versuche auf Aktualisieren zu klicken."
@@ -2714,5 +2717,23 @@
       "perImage": "/Bild",
       "credits": "Credits"
     }
+  },
+  "editImage": {
+    "title": "Bild Bearbeiten",
+    "description": "Beschreibe die Änderungen, die du am Bild vornehmen möchtest.",
+    "imageAlt": "Bild zum Bearbeiten",
+    "instructionRequired": "Anweisung erforderlich",
+    "instructionRequiredDesc": "Beschreibe die gewünschten Änderungen.",
+    "instructionLabel": "Bearbeitungsanweisung",
+    "instructionPlaceholder": "Z.B.: Ändere den Hintergrund zu einem Sonnenuntergang am Strand, entferne das Logo, mache das T-Shirt rot...",
+    "editing": "Wird bearbeitet...",
+    "applyEdit": "Bearbeitung Anwenden (1 Credit)",
+    "success": "Bild bearbeitet!",
+    "successDesc": "Dein bearbeitetes Bild ist fertig.",
+    "failed": "Bearbeitung fehlgeschlagen",
+    "failedDesc": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    "openResult": "Ergebnis Öffnen",
+    "editAgain": "Erneut Bearbeiten",
+    "historyTitle": "Bearbeitungsverlauf ({{count}})"
   }
 }

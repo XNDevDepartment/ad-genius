@@ -380,6 +380,7 @@
       "description": "Generate UGC to display it here",
       "searchDescription": "Try adjusting your search terms"
     },
+    "editedBadge": "Edited",
     "bulkUpload": {
       "title": "Upload Source Images",
       "uploadButton": "Upload Images",
@@ -931,7 +932,8 @@
       "ugcImage": "UGC Image",
       "preview": "Preview",
       "download": "Download",
-      "photoshoot": "Photoshoot"
+      "photoshoot": "Photoshoot",
+      "edit": "Edit"
     },
     "importSources": {
       "library": "From Library",
@@ -2010,7 +2012,8 @@
       "angles": "angles",
       "download": "Download",
       "retry": "Retry",
-      "retrying": "Retrying..."
+      "retrying": "Retrying...",
+      "edit": "Edit"
     },
     "warnings": {
       "stuckJob": "⚠️ This job seems stuck. Try clicking Refresh."
@@ -2733,5 +2736,23 @@
       "perImage": "/image",
       "credits": "credits"
     }
+  },
+  "editImage": {
+    "title": "Edit Image",
+    "description": "Describe the changes you want to make to the image.",
+    "imageAlt": "Image to edit",
+    "instructionRequired": "Instruction required",
+    "instructionRequiredDesc": "Describe the changes you want to make.",
+    "instructionLabel": "Edit instruction",
+    "instructionPlaceholder": "E.g.: Change the background to a sunset beach, remove the logo, make the shirt red...",
+    "editing": "Editing...",
+    "applyEdit": "Apply Edit (1 credit)",
+    "success": "Image edited!",
+    "successDesc": "Your edited image is ready.",
+    "failed": "Edit failed",
+    "failedDesc": "Something went wrong. Please try again.",
+    "openResult": "Open Result",
+    "editAgain": "Edit Again",
+    "historyTitle": "Edit history ({{count}})"
   }
 }

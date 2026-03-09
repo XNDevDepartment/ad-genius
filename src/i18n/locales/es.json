@@ -384,6 +384,7 @@
       "description": "Genera contenido UGC para verlo aquí",
       "searchDescription": "Prueba a ajustar tus términos de búsqueda"
     },
+    "editedBadge": "Editada",
     "bulkUpload": {
       "title": "Subir Imágenes de Origen",
       "uploadButton": "Subir Imágenes",
@@ -924,7 +925,8 @@
       "ugcImage": "Imagen UGC",
       "preview": "Vista Previa",
       "download": "Descargar",
-      "photoshoot": "Sesión Fotográfica"
+      "photoshoot": "Sesión Fotográfica",
+      "edit": "Editar"
     },
     "importSources": {
       "library": "Desde Biblioteca",
@@ -1928,7 +1930,8 @@
       "angles": "angles",
       "download": "Descargar",
       "retry": "Reintentar",
-      "retrying": "Reintentando..."
+      "retrying": "Reintentando...",
+      "edit": "Editar"
     },
     "warnings": {
       "stuckJob": "⚠️ Este trabajo puede estar atascado. Intenta hacer clic en Actualizar."
@@ -2714,5 +2717,23 @@
       "perImage": "/imagen",
       "credits": "créditos"
     }
+  },
+  "editImage": {
+    "title": "Editar Imagen",
+    "description": "Describe los cambios que quieres hacer a la imagen.",
+    "imageAlt": "Imagen a editar",
+    "instructionRequired": "Instrucción necesaria",
+    "instructionRequiredDesc": "Describe los cambios que quieres hacer.",
+    "instructionLabel": "Instrucción de edición",
+    "instructionPlaceholder": "Ej: Cambia el fondo a una playa al atardecer, elimina el logotipo, pon la camiseta roja...",
+    "editing": "Editando...",
+    "applyEdit": "Aplicar Edición (1 crédito)",
+    "success": "¡Imagen editada!",
+    "successDesc": "Tu imagen editada está lista.",
+    "failed": "Edición fallida",
+    "failedDesc": "Algo salió mal. Inténtalo de nuevo.",
+    "openResult": "Abrir Resultado",
+    "editAgain": "Editar de Nuevo",
+    "historyTitle": "Historial de ediciones ({{count}})"
   }
 }

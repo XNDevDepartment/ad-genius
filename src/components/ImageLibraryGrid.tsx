@@ -281,7 +281,7 @@ export const ImageLibraryGrid = ({
                 {image.meta?.source === 'edit' && (
                   <div className="absolute top-2 left-2 z-20">
                     <span className="bg-primary/90 text-primary-foreground text-[10px] font-semibold px-1.5 py-0.5 rounded">
-                      Edited
+                      {t('library.editedBadge')}
                     </span>
                   </div>
                 )}
