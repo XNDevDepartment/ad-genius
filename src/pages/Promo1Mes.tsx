@@ -84,7 +84,7 @@ const Promo1Mes = () => {
       ) : (
         <>
           <Sparkles className="h-5 w-5 mr-2" />
-          Ativar Oferta — €{promoPrice}
+          Experimentar por €{promoPrice}
         </>
       )}
     </Button>
@@ -126,12 +126,8 @@ const Promo1Mes = () => {
 
   const faqs = [
     {
-      question: "O que acontece depois do primeiro mês?",
-      answer: "Após o primeiro mês promocional, a tua subscrição continua ao preço normal de €29/mês. Podes cancelar a qualquer momento antes da renovação.",
-    },
-    {
-      question: "Posso cancelar quando quiser?",
-      answer: "Sim, podes cancelar a tua subscrição a qualquer momento. Não há contratos, compromissos ou taxas de cancelamento. Mantens o acesso até ao final do período pago.",
+      question: "É mesmo pagamento único?",
+      answer: "Sim! Pagas €9.99 uma única vez e recebes 35 créditos. Não há subscrição, não há renovação automática, não há surpresas.",
     },
     {
       question: "Quantas imagens posso criar com 35 créditos?",
@@ -142,8 +138,12 @@ const Promo1Mes = () => {
       answer: "Um crédito é a unidade que usas para gerar conteúdo. 1 crédito = 1 imagem profissional. Vídeos custam 5 créditos por cada 5 segundos.",
     },
     {
-      question: "Existe algum contrato ou fidelização?",
-      answer: "Não. É uma subscrição mensal sem compromisso. Cancelas quando quiseres, sem perguntas.",
+      question: "E se quiser mais créditos depois?",
+      answer: "Podes subscrever um dos nossos planos mensais a qualquer momento, ou comprar outro pack avulso quando precisares.",
+    },
+    {
+      question: "Os créditos expiram?",
+      answer: "Os créditos ficam disponíveis durante 30 dias após a compra. Usa-os para criar o conteúdo que precisares nesse período.",
     },
   ];
 
@@ -157,25 +157,25 @@ const Promo1Mes = () => {
           <div className="max-w-4xl mx-auto text-center space-y-6">
             <Badge className="text-sm px-4 py-1.5 bg-primary/10 text-primary border-primary/20">
               <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-              Oferta Exclusiva — Tempo Limitado
+              Pagamento Único — Sem Subscrição
             </Badge>
 
             <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-              Primeiro Mês por{" "}
+              Experimenta por{" "}
               <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                 €{promoPrice}
               </span>
             </h1>
 
             <div className="flex items-center justify-center gap-3">
-              <span className="text-2xl text-muted-foreground line-through">€{regularPrice}/mês</span>
+              <span className="text-2xl text-muted-foreground line-through">€{regularPrice}</span>
               <Badge variant="destructive" className="text-sm font-bold">
                 -{discountPercent}%
               </Badge>
             </div>
 
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Acede ao plano Starter com 35 créditos para criar fotos profissionais, vídeos e muito mais — tudo por menos de €10.
+              35 créditos para criar fotos profissionais, vídeos e muito mais — pagamento único, sem compromisso.
             </p>
 
             <div className="pt-2">
@@ -184,13 +184,13 @@ const Promo1Mes = () => {
 
             <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground pt-2">
               <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 text-primary" /> Código aplicado automaticamente
+                <Check className="h-4 w-4 text-primary" /> Pagamento único
               </span>
               <span className="flex items-center gap-1.5">
-                <Shield className="h-4 w-4 text-primary" /> Cancela quando quiseres
+                <Shield className="h-4 w-4 text-primary" /> Sem renovação automática
               </span>
               <span className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4 text-primary" /> Ativo em segundos
+                <Clock className="h-4 w-4 text-primary" /> Acesso imediato
               </span>
             </div>
           </div>
@@ -248,7 +248,7 @@ const Promo1Mes = () => {
                 O Que Consegues com 1 Crédito
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Com 35 créditos no primeiro mês, podes criar até 35 imagens profissionais
+                Com 35 créditos, podes criar até 35 imagens profissionais
               </p>
             </div>
 
@@ -307,26 +307,25 @@ const Promo1Mes = () => {
             <Card className="rounded-2xl border-2 border-primary/30 shadow-xl shadow-primary/5">
               <CardContent className="p-8 md:p-10 space-y-6">
                 <Badge className="text-sm px-3 py-1 bg-primary/10 text-primary border-primary/20">
-                  Oferta Exclusiva
+                  Pagamento Único
                 </Badge>
 
                 <div>
                   <div className="flex items-center justify-center gap-3 mb-2">
-                    <span className="text-xl text-muted-foreground line-through">€{regularPrice}/mês</span>
+                    <span className="text-xl text-muted-foreground line-through">€{regularPrice}</span>
                     <Badge variant="destructive">-{discountPercent}%</Badge>
                   </div>
                   <p className="text-5xl font-bold text-primary">
                     €{promoPrice}
-                    <span className="text-lg font-normal text-muted-foreground">/primeiro mês</span>
                   </p>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Depois €{regularPrice}/mês · Cancela quando quiseres
+                    Pagamento único · Sem subscrição · Sem renovação
                   </p>
                 </div>
 
                 <div className="space-y-2 text-left max-w-sm mx-auto">
                   {[
-                    "35 créditos no primeiro mês",
+                    "35 créditos para usar em 30 dias",
                     "Fotos UGC com modelos IA",
                     "Geração de vídeos incluída",
                     "Fashion try-on",
@@ -342,7 +341,7 @@ const Promo1Mes = () => {
                 <CTAButton className="w-full" />
 
                 <p className="text-xs text-muted-foreground">
-                  ✓ Código promocional aplicado automaticamente · ✓ Sem contrato · ✓ Cancela quando quiseres
+                  ✓ Pagamento único · ✓ Sem renovação automática · ✓ Acesso imediato
                 </p>
               </CardContent>
             </Card>
