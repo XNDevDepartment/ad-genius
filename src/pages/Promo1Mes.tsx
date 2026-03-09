@@ -157,25 +157,25 @@ const Promo1Mes = () => {
           <div className="max-w-4xl mx-auto text-center space-y-6">
             <Badge className="text-sm px-4 py-1.5 bg-primary/10 text-primary border-primary/20">
               <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-              Oferta Exclusiva — Tempo Limitado
+              Pagamento Único — Sem Subscrição
             </Badge>
 
             <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-              Primeiro Mês por{" "}
+              Experimenta por{" "}
               <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                 €{promoPrice}
               </span>
             </h1>
 
             <div className="flex items-center justify-center gap-3">
-              <span className="text-2xl text-muted-foreground line-through">€{regularPrice}/mês</span>
+              <span className="text-2xl text-muted-foreground line-through">€{regularPrice}</span>
               <Badge variant="destructive" className="text-sm font-bold">
                 -{discountPercent}%
               </Badge>
             </div>
 
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Acede ao plano Starter com 35 créditos para criar fotos profissionais, vídeos e muito mais — tudo por menos de €10.
+              35 créditos para criar fotos profissionais, vídeos e muito mais — pagamento único, sem compromisso.
             </p>
 
             <div className="pt-2">
@@ -184,13 +184,13 @@ const Promo1Mes = () => {
 
             <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground pt-2">
               <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 text-primary" /> Código aplicado automaticamente
+                <Check className="h-4 w-4 text-primary" /> Pagamento único
               </span>
               <span className="flex items-center gap-1.5">
-                <Shield className="h-4 w-4 text-primary" /> Cancela quando quiseres
+                <Shield className="h-4 w-4 text-primary" /> Sem renovação automática
               </span>
               <span className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4 text-primary" /> Ativo em segundos
+                <Clock className="h-4 w-4 text-primary" /> Acesso imediato
               </span>
             </div>
           </div>
