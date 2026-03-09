@@ -924,7 +924,8 @@
       "ugcImage": "UGC-Bild",
       "preview": "Vorschau",
       "download": "Herunterladen",
-      "photoshoot": "Fotoshooting"
+      "photoshoot": "Fotoshooting",
+      "edit": "Bearbeiten"
     },
     "importSources": {
       "library": "Aus Bibliothek",
