@@ -415,6 +415,16 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
                         />
                         <Label htmlFor="perm-fashion" className="text-sm">Fashion Catalog</Label>
                       </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="perm-product-bg"
+                          checked={newKeyPermissions.product_background}
+                          onCheckedChange={(checked) => 
+                            setNewKeyPermissions(p => ({ ...p, product_background: !!checked }))
+                          }
+                        />
+                        <Label htmlFor="perm-product-bg" className="text-sm">Product Background</Label>
+                      </div>
                     </div>
                   </div>
                 </div>
