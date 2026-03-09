@@ -116,7 +116,12 @@ Deno.serve(async (req) => {
         },
       },
       {
-        text: `Edit this image: ${instruction}. Return only the edited image.`,
+        text: `MANDATORY RULES:
+- KEEP the entire image exactly as it is
+- DO NOT change any elements, objects, backgrounds, colors, or composition
+- The ONLY modifications allowed are: ${instruction}
+- PRESERVE all product details, proportions, and image quality
+- Return only the edited image with minimal changes`,
       },
     ];
 
