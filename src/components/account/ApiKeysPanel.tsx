@@ -334,7 +334,7 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
             <DialogHeader>
               <DialogTitle>Create New API Key</DialogTitle>
               <DialogDescription>
-                Create a new API key to access Genius UGC programmatically.
+                Create a new API key to access ProduktPix programmatically.
               </DialogDescription>
             </DialogHeader>
             
