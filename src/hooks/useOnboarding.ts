@@ -16,6 +16,8 @@ export interface OnboardingData {
   selectedScenario?: AIScenario;
   generatedImages?: string[];
   generatedVideoUrl?: string;
+  isFashion?: boolean;
+  selectedPack?: string;
 }
 
 export interface OnboardingState {

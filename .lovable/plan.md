@@ -1,131 +1,158 @@
 
 
-## Onboarding Redesign: 3-Step Pack-Based Flow with Fashion Detection
+# SEO & GEO Overhaul — "Professional Product Photos" for E-commerce Owners
 
-### Flow
+## ICP Recap
 
-```text
-Step 1: Upload product photo (existing OnboardingStep1)
-        → After upload, auto-detect if fashion via Gemini API call
-Step 2: Pick a Pack (NEW — OnboardingPackSelect)
-        → 3 cards: E-commerce / Social Media / Advertisement
-        → Content of each card adapts based on isFashion flag
-Step 3: Results Gallery (rewritten OnboardingResults)
-        → 4 images generated in parallel via UGC-Gemini
-        → Each image uses a different style prompt from the selected pack
-        → Displayed in 2×2 grid with type labels
-        → Pricing offer on completion
-```
+Small fashion e-commerce brands (€10K-€100K revenue), 1-3 person teams on Shopify/WooCommerce. They need professional product photos but lack budget/time for studios. Secondary: Shopify developers and e-commerce agencies building stores for clients.
 
-### Fashion Detection
+**Copy principle**: Lead with business outcomes (save money, launch faster, sell more). Never lead with "AI" — it intimidates this audience. Technology is invisible; results are what matters.
 
-After the user uploads their product image in Step 1, we call the existing `ugc-gemini` edge function (or a lightweight new one) to ask Gemini:
+---
 
-> "Preciso que me analises esta imagem e detetes se este produto é moda/vestuário ou não? responde diretamente dizendo 'yes' ou 'no'"
+## Phase 1: On-Page SEO — H1, Meta, Badge, Trust
 
-This happens transparently while transitioning to Step 2. The result (`isFashion: boolean`) is stored in `OnboardingData` and determines which pack configuration to show.
+### `MinimalHero.tsx`
+- **Badge**: Change from "AI-Powered Product Photography" to "Trusted by 10,000+ Online Stores"
+- **H1 line 1**: Keep "Professional Product Photos" (exact match keyword)
+- **H1 line 2**: Change "Without the Studio" to "Ready in Seconds, Not Days" (speaks to ICP pain: time)
+- **Description**: "Stop spending thousands on photographers. Upload a phone photo of your product and get studio-quality images for your Shopify, Amazon, or Etsy store — in under 30 seconds."
+- **Add trust badge** below CTAs: star rating row + "4.9/5 from 127+ e-commerce businesses"
+- **CTA text**: Change "Start Creating Free" to "Try It Free — No Credit Card"
 
-We'll create a small edge function `analyze-product-type` that receives the source image URL and returns `{ isFashion: boolean }` using the Gemini API. This keeps it fast and isolated.
+### `index.html`
+- **Title**: "Professional Product Photos for E-commerce | ProduktPix"
+- **Meta description**: "Create professional product photos for your online store in seconds. No studio, no photographer. Trusted by 10,000+ Shopify, Amazon, and Etsy sellers."
+- **Schema**: Remove "AI" from WebApplication description, change to "Professional product photography tool for e-commerce businesses"
 
-### Pack Definitions
+### `LandingPageV2.tsx`
+- **SEO title**: "Professional Product Photos — Studio-Quality Images for Your Online Store"
+- **SEO description**: "Professional product photography made simple for e-commerce. Upload your product, choose a scene, get store-ready images in seconds. From €0.20 per image."
 
-**Fashion packs:**
+### `BeforeAfterShowcase.tsx`
+- Change badge from "AI Magic" to "See the Difference"
 
-| Pack | Style 1 | Style 2 | Style 3 | Style 4 | Ratio |
-|------|---------|---------|---------|---------|-------|
-| E-commerce | Hero product (model, clean bg) | Catalog clean (invisible mannequin) | Detail macro (close-up texture) | Model neutral (natural pose) | 1:1 |
-| Social Media | Lifestyle scene | Influencer style | Street style | Casual scene | 4:5 (3:4) |
-| Advertisement | Magazine editorial | Campaign shot | Dramatic lighting | Bold background | 4:5 (3:4) |
+---
 
-**Non-fashion (product) packs:**
+## Phase 2: Schema — AggregateRating + SoftwareApplication
 
-| Pack | Style 1 | Style 2 | Style 3 | Style 4 | Ratio |
-|------|---------|---------|---------|---------|-------|
-| E-commerce | Hero packshot (white bg) | Angle variation | Detail macro | Scale context | 1:1 |
-| Social Media | Environment scene | Hand interaction | Lifestyle scene | Flat lay | 4:5 (3:4) |
-| Advertisement | Floating product | Bold background | Motion scene | Dramatic spotlight | 4:5 (3:4) |
-
-Note: The API supports `3:4` as the closest to `4:5`. We'll use `3:4` for social/ads packs.
-
-### Generation Strategy
-
-All 4 images are generated via `useGeminiImageJobUnified` — **one job with `number: 4`**, using a combined prompt that requests 4 distinct styles. Each style gets its own detailed prompt section within the single job prompt. This is simpler and more reliable than managing 4 parallel jobs.
-
-The prompt will be structured as:
-```
-Generate 4 distinct product images in the following styles:
-IMAGE 1: [style prompt with fashion/product rules]
-IMAGE 2: [style prompt]
-IMAGE 3: [style prompt]
-IMAGE 4: [style prompt]
-
-MANDATORY RULES:
-- [fashion rules if isFashion, product rules otherwise]
-- Product integrity rules
-```
-
-### Files to Create/Change
-
-| File | Change |
-|------|--------|
-| `src/data/onboarding-packs.ts` | **New** — Pack configs for fashion + product, with style prompts and ratios |
-| `src/components/onboarding/OnboardingPackSelect.tsx` | **New** — 3 visual pack cards (E-commerce, Social Media, Advertisement) with style previews |
-| `src/components/onboarding/OnboardingResults.tsx` | Rewrite: generate 4 images from pack config, show in labeled 2×2 grid |
-| `src/components/onboarding/OnboardingWizard.tsx` | Update step mapping: 0=Welcome, 1=Upload, 2=PackSelect, 3=Results. Add fashion detection between step 1→2 |
-| `src/hooks/useOnboarding.ts` | Add `selectedPack`, `isFashion` to `OnboardingData` |
-| `supabase/functions/analyze-product-type/index.ts` | **New** — Lightweight edge function: sends image to Gemini with "yes/no" fashion question |
-| `src/i18n/locales/en.json` | Add translations for pack names, style labels |
-| `src/i18n/locales/pt.json` | Add Portuguese translations |
-
-### Technical Details
-
-**Edge function `analyze-product-type`:**
-- Receives `{ sourceImageUrl: string }`
-- Fetches image, sends to Gemini with the exact Portuguese prompt
-- Parses response for "yes" or "no"
-- Returns `{ isFashion: boolean }`
-- Uses `GOOGLE_AI_API_KEY` (already available)
-
-**OnboardingWizard step flow:**
-```tsx
-// After step 1 upload completes:
-nextStep({ imageUrl, sourceImageId });
-// In wizard, between step 1→2: trigger fashion detection
-// Store result in onboarding data before rendering step 2
-```
-
-**Pack prompts — fashion example (E-commerce):**
-```ts
+### `schema.ts`
+Add new function `buildSoftwareAppWithReviewsSchema()`:
+```typescript
 {
-  id: 'ecommerce',
-  ratio: '1:1',
-  styles: [
-    { id: 'hero_product', prompt: 'Professional catalog hero shot. Product displayed on model in clean studio. Neutral background, even lighting. Full product visibility.' },
-    { id: 'catalog_clean', prompt: 'Clean catalog photo. Product on invisible mannequin or ghost mannequin. Pure white background. E-commerce ready.' },
-    { id: 'detail_macro', prompt: 'Extreme close-up macro shot. Focus on texture, stitching, material quality. Shallow depth of field.' },
-    { id: 'model_neutral', prompt: 'Model wearing product in neutral standing pose. Minimal background. Natural expression. Catalog style.' }
-  ]
+  '@type': 'SoftwareApplication',
+  name: 'ProduktPix',
+  applicationCategory: 'PhotographyApplication',
+  operatingSystem: 'Web',
+  description: 'Professional product photography tool for e-commerce businesses',
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: '4.9',
+    reviewCount: '127',
+    bestRating: '5',
+  },
+  offers: {
+    '@type': 'AggregateOffer',
+    lowPrice: '0',
+    highPrice: '99',
+    priceCurrency: 'EUR',
+  },
 }
 ```
+Include this schema on the landing page alongside existing schemas.
 
-**Fashion mandatory rules injected into every prompt:**
-```
-MANDATORY: Product MUST be displayed on a model or invisible mannequin.
-NEVER lay flat on any surface, table, or floor.
-NEVER show the product folded or crumpled.
-```
+---
 
-**Product mandatory rules:**
-```
-Display product standing, floating, or on appropriate surface.
-Professional product catalog photography style.
-Clean, well-lit composition.
-```
+## Phase 3: GEO Content Blocks (2 new components)
 
-### What Does NOT Change
-- `OnboardingGuard` stays disabled (not reactivating per user request)
-- `OnboardingStep1` (upload) stays as-is
-- Welcome step (step 0) stays as-is
-- No database schema changes needed
-- Existing UGC generation edge function reused as-is
+### New: `ProductPhotographyExplainer.tsx`
+A ~150-word text block answering "What makes great product photography?" — the exact format AI search engines (Perplexity, Gemini, ChatGPT) cite from.
+
+- H2: "What Makes Great Product Photography?"
+- Content: explains consistent lighting, lifestyle context, white backgrounds, multiple angles — and how ProduktPix delivers all of this from a phone photo
+- No mention of "AI" — focuses on the professional result
+- Positioned between ValueProps and BeforeAfter in page order
+
+### New: `ComparisonTable.tsx`
+"ProduktPix vs Hiring a Photographer" comparison table — speaks directly to the ICP's budget pain:
+
+| | ProduktPix | Traditional Studio |
+|---|---|---|
+| Cost per image | From €0.20 | €15-50+ |
+| Turnaround | 30 seconds | 3-7 days |
+| Minimum order | 1 image | 50+ usually |
+| Works with a phone photo | Yes | No |
+| Scale to 100+ products | Instantly | Weeks |
+
+Positioned after BeforeAfter showcase.
+
+---
+
+## Phase 4: Expanded FAQ (`FAQAccordion.tsx`)
+
+Add 5 new ICP-targeted questions (total: 14 FAQs):
+1. "How much does professional product photography cost?" — anchors ProduktPix at €0.20 vs €15-50
+2. "Do I need a studio for professional product photos?" — No, just a phone
+3. "What makes a good product photo for Shopify or Amazon?" — tips + ProduktPix handles it
+4. "Can I create professional photos with my phone?" — Yes, that's the whole point
+5. "What is the best tool for professional product photos?" — positions ProduktPix
+
+Update FAQ schema in `LandingPageV2.tsx` to include all new items for rich snippets.
+
+---
+
+## Phase 5: Social Proof — Testimonials + Case Studies
+
+### `TestimonialsSection.tsx` enrichment
+- Add aggregate rating bar at top: "Rated 4.9/5 by 127+ e-commerce businesses"
+- Add business metrics to each existing testimonial card (e.g., "Saved 80% on photography", "Launched 3x faster")
+- Add 3 more testimonials (6 total) — focus on Shopify/fashion sellers
+- Remove generic role labels, use ICP-resonant ones: "Shopify Store Owner", "Fashion Brand Founder"
+
+### Case studies infrastructure
+- **New file**: `src/data/case-studies.ts` — 3 case studies with: company name, industry, challenge, solution, before/after image refs, key metrics, full quote
+- **New page**: `src/pages/CaseStudy.tsx` — renders individual case study with before/after slider, metrics grid (cost saved, time saved, conversion lift), full testimonial, CTA
+- **New route**: `/case-studies/:slug` in `App.tsx`
+- Each page gets SEO component with `Article` schema
+- Case studies linked from testimonials section and footer
+
+---
+
+## Phase 6: Footer Rebuild + Sitemap
+
+### `MinimalFooter.tsx` — 4-column SEO footer
+- **Product**: Features, Pricing, How It Works, Virtual Try-On
+- **For Your Store**: Amazon Photos, Shopify Images, Etsy Listings, Fashion Catalog (links to `/use-cases/*`)
+- **Resources**: Case Studies, FAQ, Getting Started, Affiliate Program
+- **Legal**: Privacy, Terms, Cookies, Contact
+
+### `public/sitemap.xml`
+- Remove `/lp` (redirects to `/`)
+- Add `/case-studies/ogato-das-fraldas`, `/case-studies/bug-hug`, `/case-studies/yonos`
+- Update all `lastmod` to `2026-03-05`
+
+### `public/robots.txt`
+- Add `Crawl-delay: 1`
+
+---
+
+## Files Summary
+
+| File | Action |
+|---|---|
+| `src/components/landing-v2/MinimalHero.tsx` | Rewrite badge, H1 line 2, description, CTA, add trust badge |
+| `index.html` | Update title, meta description, schema (remove "AI" wording) |
+| `src/pages/LandingPageV2.tsx` | Update SEO props, add new sections, expand FAQ schema |
+| `src/lib/schema.ts` | Add `buildSoftwareAppWithReviewsSchema` |
+| `src/components/landing-v2/BeforeAfterShowcase.tsx` | Change badge text |
+| `src/components/landing-v2/ProductPhotographyExplainer.tsx` | **New** — GEO content block |
+| `src/components/landing-v2/ComparisonTable.tsx` | **New** — ProduktPix vs Studio |
+| `src/components/landing-v2/FAQAccordion.tsx` | Add 5 keyword-targeted FAQs |
+| `src/components/landing-v2/TestimonialsSection.tsx` | Aggregate rating, metrics, 3 more testimonials |
+| `src/components/landing-v2/MinimalFooter.tsx` | 4-column SEO footer |
+| `src/data/case-studies.ts` | **New** — case study data |
+| `src/pages/CaseStudy.tsx` | **New** — case study page |
+| `src/App.tsx` | Add `/case-studies/:slug` route |
+| `public/sitemap.xml` | Add case studies, update dates, remove `/lp` |
+| `public/robots.txt` | Add crawl-delay |
 
