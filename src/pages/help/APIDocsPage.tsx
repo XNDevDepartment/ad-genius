@@ -18,49 +18,118 @@ const endpoints = [
     endpoint: "/v1/ugc/generate",
     description: "Generate AI-powered UGC product images",
     parameters: ["source_image_url (required)", "prompt", "settings.number (1-4)", "settings.aspect_ratio"],
-    credits: "1 credit per image"
+    credits: "1 credit per image",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "queued",
+  "message": "Image generation job created successfully",
+  "credits_used": 2
+}`
   },
   {
     method: "GET",
     endpoint: "/v1/ugc/jobs/{job_id}",
     description: "Get status and results of a UGC generation job",
     parameters: ["job_id in endpoint path"],
-    credits: "Free"
+    credits: "Free",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "completed",
+  "progress": 100,
+  "total": 2,
+  "completed": 2,
+  "images": [
+    { "id": "uuid", "url": "https://...", "created_at": "..." }
+  ]
+}`
   },
   {
     method: "POST",
     endpoint: "/v1/video/create",
     description: "Create animated video from an image",
     parameters: ["source_image_url (required)", "prompt", "duration (5 or 10)"],
-    credits: "5 credits (5s) / 10 credits (10s)"
+    credits: "5 credits (5s) / 10 credits (10s)",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "queued",
+  "credits_used": 5
+}`
   },
   {
     method: "GET",
     endpoint: "/v1/video/jobs/{job_id}",
     description: "Get status and video URL of a video job",
     parameters: ["job_id in endpoint path"],
-    credits: "Free"
+    credits: "Free",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "completed",
+  "video_url": "https://...",
+  "video_duration": 5
+}`
   },
   {
     method: "POST",
     endpoint: "/v1/fashion/swap",
     description: "Generate fashion catalog photos with outfit swap",
     parameters: ["garment_image_url (required)", "base_model_id (required)", "settings"],
-    credits: "1 credit per swap"
+    credits: "1 credit per swap",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "queued",
+  "credits_used": 1
+}`
   },
   {
     method: "GET",
     endpoint: "/v1/fashion/jobs/{job_id}",
     description: "Get status and results of a fashion swap job",
     parameters: ["job_id in endpoint path"],
-    credits: "Free"
+    credits: "Free",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "completed",
+  "results": [
+    { "id": "uuid", "url": "https://...", "created_at": "..." }
+  ]
+}`
+  },
+  {
+    method: "POST",
+    endpoint: "/v1/product/background",
+    description: "Swap product background — remove & replace with preset or custom background",
+    parameters: ["source_image_url (required)", "background_preset_id or background_image_url (required)", "settings"],
+    credits: "1 credit",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "queued",
+  "credits_used": 1
+}`
+  },
+  {
+    method: "GET",
+    endpoint: "/v1/product/background/jobs/{job_id}",
+    description: "Get status and result of a product background job",
+    parameters: ["job_id in endpoint path"],
+    credits: "Free",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "completed",
+  "results": [
+    { "id": "uuid", "result_url": "https://...", "source_url": "https://..." }
+  ]
+}`
   },
   {
     method: "GET",
     endpoint: "/v1/credits/balance",
     description: "Get current credit balance and subscription tier",
     parameters: [],
-    credits: "Free"
+    credits: "Free",
+    responseExample: `{
+  "credits_balance": 42,
+  "subscription_tier": "Starter"
+}`
   }
 ];
 
