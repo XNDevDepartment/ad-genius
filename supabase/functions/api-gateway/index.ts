@@ -150,6 +150,11 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Check permissions
+    if (endpoint.startsWith('/v1/product')) {
+      requiredPermission = 'product_background'
+    }
+
     // Route to appropriate handler
     let response: any
     let statusCode = 200
@@ -172,6 +177,11 @@ Deno.serve(async (req) => {
           creditsUsed = 1
           break
 
+        case '/v1/product/background':
+          response = await handleProductBackground(supabase, apiKeyInfo.user_id, body, apiKeyInfo.api_key_id)
+          creditsUsed = 1
+          break
+
         case '/v1/credits/balance':
           response = await handleCreditsBalance(supabase, apiKeyInfo.user_id)
           break
@@ -187,6 +197,9 @@ Deno.serve(async (req) => {
           } else if (endpoint.match(/^\/v1\/fashion\/jobs\/[\w-]+$/)) {
             const jobId = endpoint.split('/').pop()!
             response = await handleGetFashionJob(supabase, apiKeyInfo.user_id, jobId)
+          } else if (endpoint.match(/^\/v1\/product\/background\/jobs\/[\w-]+$/)) {
+            const jobId = endpoint.split('/').pop()!
+            response = await handleGetProductBackgroundJob(supabase, apiKeyInfo.user_id, jobId)
           } else {
             statusCode = 404
             response = { error: 'Endpoint not found', code: 'NOT_FOUND' }
