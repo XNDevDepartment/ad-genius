@@ -110,8 +110,8 @@ Deno.serve(async (req) => {
 
     const parts = [
       {
-        inline_data: {
-          mime_type: mimeType,
+        inlineData: {
+          mimeType: mimeType,
           data: originalImageBase64,
         },
       },
@@ -121,14 +121,17 @@ Deno.serve(async (req) => {
     ];
 
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${googleApiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": googleApiKey,
+        },
         body: JSON.stringify({
           contents: [{ parts }],
           generationConfig: {
-            responseModalities: ["IMAGE"],
+            responseModalities: ["TEXT", "IMAGE"],
           },
         }),
       }
