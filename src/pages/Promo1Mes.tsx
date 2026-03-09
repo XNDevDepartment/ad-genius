@@ -126,12 +126,8 @@ const Promo1Mes = () => {
 
   const faqs = [
     {
-      question: "O que acontece depois do primeiro mês?",
-      answer: "Após o primeiro mês promocional, a tua subscrição continua ao preço normal de €29/mês. Podes cancelar a qualquer momento antes da renovação.",
-    },
-    {
-      question: "Posso cancelar quando quiser?",
-      answer: "Sim, podes cancelar a tua subscrição a qualquer momento. Não há contratos, compromissos ou taxas de cancelamento. Mantens o acesso até ao final do período pago.",
+      question: "É mesmo pagamento único?",
+      answer: "Sim! Pagas €9.99 uma única vez e recebes 35 créditos. Não há subscrição, não há renovação automática, não há surpresas.",
     },
     {
       question: "Quantas imagens posso criar com 35 créditos?",
@@ -142,8 +138,12 @@ const Promo1Mes = () => {
       answer: "Um crédito é a unidade que usas para gerar conteúdo. 1 crédito = 1 imagem profissional. Vídeos custam 5 créditos por cada 5 segundos.",
     },
     {
-      question: "Existe algum contrato ou fidelização?",
-      answer: "Não. É uma subscrição mensal sem compromisso. Cancelas quando quiseres, sem perguntas.",
+      question: "E se quiser mais créditos depois?",
+      answer: "Podes subscrever um dos nossos planos mensais a qualquer momento, ou comprar outro pack avulso quando precisares.",
+    },
+    {
+      question: "Os créditos expiram?",
+      answer: "Os créditos ficam disponíveis durante 30 dias após a compra. Usa-os para criar o conteúdo que precisares nesse período.",
     },
   ];
 
