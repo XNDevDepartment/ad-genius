@@ -63,6 +63,48 @@
       "checkoutError": "Falha ao iniciar checkout. Por favor tente novamente.",
       "pleaseWait": "Por favor aguarde..."
     },
+    "packs": {
+      "title": "Escolha o Seu Pack",
+      "subtitle": "Vamos gerar 4 imagens profissionais para si",
+      "analyzing": "A analisar o seu produto...",
+      "generate": "Gerar o Meu Pack",
+      "ecommerce": {
+        "name": "E-commerce",
+        "description": "Catálogo de produto pronto para a sua loja online"
+      },
+      "social": {
+        "name": "Redes Sociais",
+        "description": "Conteúdo que para o scroll no seu feed"
+      },
+      "ads": {
+        "name": "Publicidade",
+        "description": "Visuais impactantes para campanhas e anúncios"
+      },
+      "styles": {
+        "heroProduct": "Foto Principal",
+        "catalogClean": "Catálogo Limpo",
+        "detailMacro": "Detalhe Macro",
+        "modelNeutral": "Modelo Neutro",
+        "lifestyle": "Lifestyle",
+        "influencer": "Influencer",
+        "streetStyle": "Street Style",
+        "casualScene": "Cena Casual",
+        "magazine": "Magazine",
+        "campaign": "Campanha",
+        "dramaticLight": "Luz Dramática",
+        "boldBackground": "Fundo Ousado",
+        "heroPackshot": "Packshot Principal",
+        "angleVariation": "Vista Angular",
+        "scaleContext": "Contexto de Escala",
+        "environmentScene": "Ambiente",
+        "handInteraction": "Interação Manual",
+        "lifestyleScene": "Cena Lifestyle",
+        "flatLay": "Flat Lay",
+        "floatingProduct": "Produto Flutuante",
+        "motionScene": "Cena de Movimento",
+        "dramaticSpotlight": "Spotlight Dramático"
+      }
+    },
     "checklist": {
       "title": "Primeiros Passos",
       "subtitle": "Ganhe 20 créditos grátis",

@@ -63,6 +63,48 @@
       "checkoutError": "Failed to start checkout. Please try again.",
       "pleaseWait": "Please wait..."
     },
+    "packs": {
+      "title": "Choose Your Pack",
+      "subtitle": "We'll generate 4 professional images for you",
+      "analyzing": "Analyzing your product...",
+      "generate": "Generate My Pack",
+      "ecommerce": {
+        "name": "E-commerce",
+        "description": "Product catalog ready for your online store"
+      },
+      "social": {
+        "name": "Social Media",
+        "description": "Scroll-stopping content for your feed"
+      },
+      "ads": {
+        "name": "Advertisement",
+        "description": "Bold visuals for campaigns and ads"
+      },
+      "styles": {
+        "heroProduct": "Hero Shot",
+        "catalogClean": "Catalog Clean",
+        "detailMacro": "Macro Detail",
+        "modelNeutral": "Model Neutral",
+        "lifestyle": "Lifestyle",
+        "influencer": "Influencer",
+        "streetStyle": "Street Style",
+        "casualScene": "Casual Scene",
+        "magazine": "Magazine",
+        "campaign": "Campaign",
+        "dramaticLight": "Dramatic Light",
+        "boldBackground": "Bold Background",
+        "heroPackshot": "Hero Packshot",
+        "angleVariation": "Angle View",
+        "scaleContext": "Scale Context",
+        "environmentScene": "Environment",
+        "handInteraction": "Hand Interaction",
+        "lifestyleScene": "Lifestyle Scene",
+        "flatLay": "Flat Lay",
+        "floatingProduct": "Floating Product",
+        "motionScene": "Motion Scene",
+        "dramaticSpotlight": "Dramatic Spotlight"
+      }
+    },
     "checklist": {
       "title": "Getting Started",
       "subtitle": "Earn 20 free credits",
