@@ -297,7 +297,8 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
     const labels: Record<string, string> = {
       ugc: 'UGC Images',
       video: 'Video',
-      fashion_catalog: 'Fashion'
+      fashion_catalog: 'Fashion',
+      product_background: 'Product Background'
     };
     
     return permissions.map(p => (
