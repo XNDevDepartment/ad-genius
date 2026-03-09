@@ -924,7 +924,8 @@
       "ugcImage": "Imagen UGC",
       "preview": "Vista Previa",
       "download": "Descargar",
-      "photoshoot": "Sesión Fotográfica"
+      "photoshoot": "Sesión Fotográfica",
+      "edit": "Editar"
     },
     "importSources": {
       "library": "Desde Biblioteca",
