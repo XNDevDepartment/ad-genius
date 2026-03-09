@@ -6,29 +6,35 @@ interface FunnelStage {
   name: string;
   count: number;
   percentage: number;
-  stepRate: number | null; // conversion from previous step
+  stepRate: number | null;
   icon: React.ReactNode;
   gradient: string;
 }
 
 interface ConversionFunnelProps {
   dateFrom: string | null;
+  dateTo?: string | null;
 }
 
-export const ConversionFunnel = ({ dateFrom }: ConversionFunnelProps) => {
+export const ConversionFunnel = ({ dateFrom, dateTo }: ConversionFunnelProps) => {
   const [stages, setStages] = useState<FunnelStage[]>([]);
   const [loading, setLoading] = useState(true);
   const [biggestLeak, setBiggestLeak] = useState<{ from: string; to: string; dropOff: number } | null>(null);
 
   useEffect(() => {
     fetchFunnelData();
-  }, [dateFrom]);
+  }, [dateFrom, dateTo]);
+
+  const applyDateRange = (query: any) => {
+    const cutoff = dateFrom || '1970-01-01';
+    let q = query.gte('created_at', cutoff);
+    if (dateTo) q = q.lte('created_at', dateTo);
+    return q;
+  };
 
   const fetchFunnelData = async () => {
     setLoading(true);
     try {
-      const cutoff = dateFrom || '1970-01-01';
-
       const [
         { count: accountsCount },
         { count: onboardingCount },
@@ -36,11 +42,11 @@ export const ConversionFunnel = ({ dateFrom }: ConversionFunnelProps) => {
         { count: exhaustedCount },
         { count: purchasedCount },
       ] = await Promise.all([
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).gte('created_at', cutoff),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('onboarding_completed', true).gte('created_at', cutoff),
+        applyDateRange(supabase.from('profiles').select('*', { count: 'exact', head: true })),
+        applyDateRange(supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('onboarding_completed', true)),
         supabase.rpc('admin_count_active_users', { p_since: dateFrom }),
-        supabase.from('subscribers').select('*', { count: 'exact', head: true }).eq('subscription_tier', 'Free').lte('credits_balance', 0).gte('created_at', cutoff),
-        supabase.from('subscribers').select('*', { count: 'exact', head: true }).eq('subscribed', true).gte('created_at', cutoff),
+        applyDateRange(supabase.from('subscribers').select('*', { count: 'exact', head: true }).eq('subscription_tier', 'Free').lte('credits_balance', 0)),
+        applyDateRange(supabase.from('subscribers').select('*', { count: 'exact', head: true }).eq('subscribed', true)),
       ]);
 
       const total = accountsCount || 0;
@@ -75,7 +81,6 @@ export const ConversionFunnel = ({ dateFrom }: ConversionFunnelProps) => {
         gradient: gradients[i],
       }));
 
-      // Find biggest leak
       let maxDrop = 0;
       let leak: typeof biggestLeak = null;
       for (let i = 1; i < counts.length; i++) {
@@ -115,7 +120,6 @@ export const ConversionFunnel = ({ dateFrom }: ConversionFunnelProps) => {
         <p className="text-sm text-muted-foreground">User journey stages with step-to-step conversion</p>
       </div>
 
-      {/* Biggest leak highlight */}
       {biggestLeak && biggestLeak.dropOff > 20 && (
         <div className="mb-5 rounded-xl bg-destructive/10 border border-destructive/20 p-4 flex items-start gap-3">
           <AlertTriangle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
@@ -168,7 +172,6 @@ export const ConversionFunnel = ({ dateFrom }: ConversionFunnelProps) => {
         })}
       </div>
 
-      {/* Step-to-step summary */}
       <div className="mt-6 pt-4 border-t border-border/50 grid grid-cols-2 md:grid-cols-5 gap-3">
         {stages.map((stage, i) => (
           <div key={stage.name} className="text-center">
