@@ -14,6 +14,7 @@ import { OnboardingGuard } from "@/components/OnboardingGuard";
 import SEO from "@/components/SEO";
 import { buildOrganizationSchema, buildWebSiteSchema, buildWebApplicationSchema } from "@/lib/schema";
 import LandingPageV2 from "@/pages/LandingPageV2";
+import PromoBanner3Meses from "@/components/PromoBanner3Meses";
 
 const mobileModules = [
   { id: "ugc", titleKey: "createSelection.ugcCreator.title", icon: Zap, path: "/create/ugc" },
