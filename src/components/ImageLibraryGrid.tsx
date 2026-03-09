@@ -32,6 +32,7 @@ interface LibraryImage {
   angle_type?: 'front' | 'three_quarter' | 'back' | 'side';
   style_prompt?: string;
   original_result_id?: string;
+  meta?: any;
 }
 
 interface ImageLibraryGridProps {
