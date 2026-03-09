@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, UserCheck, TrendingUp, AlertCircle, ArrowUpRight } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+
+interface UserGrowthMetricsProps {
+  dateFrom: string | null;
+}
 
 interface SignupData { date: string; count: number }
 interface TierBreakdown { tier: string; count: number }
 
 interface UserGrowthData {
-  signupsToday: number;
-  signupsThisWeek: number;
-  signupsThisMonth: number;
+  signupsInPeriod: number;
   totalAccounts: number;
   signupsByDate: SignupData[];
   totalFreeUsers: number;
@@ -26,36 +27,31 @@ const chartConfig = {
   count: { label: "Signups", color: "hsl(var(--primary))" },
 };
 
-export const UserGrowthMetrics = () => {
+export const UserGrowthMetrics = ({ dateFrom }: UserGrowthMetricsProps) => {
   const [data, setData] = useState<UserGrowthData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
   useEffect(() => {
     fetchMetrics();
-  }, [timeframe]);
+  }, [dateFrom]);
 
   const fetchMetrics = async () => {
     try {
       setLoading(true);
-      const now = new Date();
-      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const cutoff = dateFrom || '1970-01-01';
 
       const [
-        totalAccountsResult, signupsTodayResult, signupsWeekResult, signupsMonthResult,
-        freeUsersResult, exhaustedUsersResult, paidUsersResult, tierBreakdownResult, signupsByDateResult
+        totalAccountsResult, signupsResult,
+        freeUsersResult, exhaustedUsersResult, paidUsersResult,
+        tierBreakdownResult, signupsByDateResult
       ] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', todayStart),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', weekAgo),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', monthAgo),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', cutoff),
         supabase.from('subscribers').select('id', { count: 'exact', head: true }).eq('subscription_tier', 'Free'),
         supabase.from('subscribers').select('id', { count: 'exact', head: true }).eq('subscription_tier', 'Free').lte('credits_balance', 0),
         supabase.from('subscribers').select('id', { count: 'exact', head: true }).neq('subscription_tier', 'Free').eq('subscribed', true),
         supabase.from('subscribers').select('subscription_tier').neq('subscription_tier', 'Free').eq('subscribed', true),
-        supabase.from('profiles').select('created_at').gte('created_at', monthAgo).order('created_at', { ascending: true })
+        supabase.from('profiles').select('created_at').gte('created_at', cutoff).order('created_at', { ascending: true }),
       ]);
 
       const signupsByDate: SignupData[] = [];
@@ -65,8 +61,9 @@ export const UserGrowthMetrics = () => {
           const date = new Date(profile.created_at!).toISOString().split('T')[0];
           groupedByDate[date] = (groupedByDate[date] || 0) + 1;
         });
-        const startDate = new Date(monthAgo);
-        for (let d = startDate; d <= now; d.setDate(d.getDate() + 1)) {
+        const startDate = new Date(cutoff);
+        const now = new Date();
+        for (let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
           const dateStr = d.toISOString().split('T')[0];
           signupsByDate.push({ date: dateStr, count: groupedByDate[dateStr] || 0 });
         }
@@ -89,9 +86,7 @@ export const UserGrowthMetrics = () => {
       const totalPaidUsers = paidUsersResult.count || 0;
 
       setData({
-        signupsToday: signupsTodayResult.count || 0,
-        signupsThisWeek: signupsWeekResult.count || 0,
-        signupsThisMonth: signupsMonthResult.count || 0,
+        signupsInPeriod: signupsResult.count || 0,
         totalAccounts,
         signupsByDate,
         totalFreeUsers,
@@ -99,7 +94,7 @@ export const UserGrowthMetrics = () => {
         exhaustionRate: totalFreeUsers > 0 ? (exhaustedFreeUsers / totalFreeUsers) * 100 : 0,
         totalPaidUsers,
         conversionRate: totalAccounts > 0 ? (totalPaidUsers / totalAccounts) * 100 : 0,
-        tierBreakdown
+        tierBreakdown,
       });
     } catch (error) {
       console.error('Error fetching user growth metrics:', error);
@@ -131,62 +126,55 @@ export const UserGrowthMetrics = () => {
     }
   };
 
-  const signupCards = [
-    { label: 'Today', value: data.signupsToday, icon: Users, accent: 'border-l-blue-500' },
-    { label: 'This Week', value: data.signupsThisWeek, icon: Users, accent: 'border-l-indigo-500' },
-    { label: 'This Month', value: data.signupsThisMonth, icon: Users, accent: 'border-l-purple-500' },
-    { label: 'Total Accounts', value: data.totalAccounts, icon: UserCheck, accent: 'border-l-green-500' },
-  ];
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">User Acquisition & Conversion</h3>
-          <p className="text-sm text-muted-foreground">Track signups, credit usage, and conversions</p>
-        </div>
-        <Tabs value={timeframe} onValueChange={(v) => setTimeframe(v as typeof timeframe)}>
-          <TabsList className="rounded-xl bg-muted/50">
-            <TabsTrigger value="daily" className="rounded-lg text-xs">Daily</TabsTrigger>
-            <TabsTrigger value="weekly" className="rounded-lg text-xs">Weekly</TabsTrigger>
-            <TabsTrigger value="monthly" className="rounded-lg text-xs">Monthly</TabsTrigger>
-          </TabsList>
-        </Tabs>
+      <div>
+        <h3 className="text-lg font-semibold">User Acquisition & Conversion</h3>
+        <p className="text-sm text-muted-foreground">Track signups, credit usage, and conversions</p>
       </div>
 
       {/* Signup Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {signupCards.map((card) => (
-          <div key={card.label} className={`rounded-2xl border-0 bg-card/80 backdrop-blur-sm shadow-apple p-5 border-l-4 ${card.accent}`}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-muted-foreground">{card.label}</span>
-              <card.icon className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="text-2xl font-bold">{card.value}</div>
-            <p className="text-xs text-muted-foreground">new signups</p>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="rounded-2xl border-0 bg-card/80 backdrop-blur-sm shadow-apple p-5 border-l-4 border-l-blue-500">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-muted-foreground">Signups in Period</span>
+            <Users className="h-4 w-4 text-muted-foreground" />
           </div>
-        ))}
+          <div className="text-2xl font-bold">{data.signupsInPeriod}</div>
+        </div>
+        <div className="rounded-2xl border-0 bg-card/80 backdrop-blur-sm shadow-apple p-5 border-l-4 border-l-green-500">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-muted-foreground">Total Accounts</span>
+            <UserCheck className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="text-2xl font-bold">{data.totalAccounts}</div>
+        </div>
+        <div className="rounded-2xl border-0 bg-card/80 backdrop-blur-sm shadow-apple p-5 border-l-4 border-l-purple-500">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-muted-foreground">Paid Users</span>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="text-2xl font-bold text-primary">{data.totalPaidUsers}</div>
+        </div>
       </div>
 
       {/* Chart */}
-      <div className="rounded-2xl border-0 bg-card/80 backdrop-blur-sm shadow-apple p-6">
-        <h4 className="text-base font-semibold mb-4">Signups Over Time (Last 30 Days)</h4>
-        <ChartContainer config={chartConfig} className="h-[200px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data.signupsByDate}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted/30" />
-              <XAxis
-                dataKey="date"
-                tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
-              />
-              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} allowDecimals={false} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="count" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartContainer>
-      </div>
+      {data.signupsByDate.length > 0 && (
+        <div className="rounded-2xl border-0 bg-card/80 backdrop-blur-sm shadow-apple p-6">
+          <h4 className="text-base font-semibold mb-4">Signups Over Time</h4>
+          <ChartContainer config={chartConfig} className="h-[200px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.signupsByDate}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted/30" />
+                <XAxis dataKey="date" tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
+                <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} allowDecimals={false} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="count" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </div>
+      )}
 
       {/* Free User Funnel & Conversion */}
       <div className="grid md:grid-cols-2 gap-4">
@@ -245,9 +233,7 @@ export const UserGrowthMetrics = () => {
                 <span className="text-sm font-medium">{tier.count}</span>
               </div>
             ))}
-            {data.tierBreakdown.length === 0 && (
-              <p className="text-sm text-muted-foreground">No paid users yet</p>
-            )}
+            {data.tierBreakdown.length === 0 && <p className="text-sm text-muted-foreground">No paid users yet</p>}
           </div>
         </div>
       </div>
