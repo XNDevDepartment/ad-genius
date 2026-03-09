@@ -8,16 +8,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import {
-  Paintbrush,
-  Eraser,
-  Trash2,
-  Loader2,
-  Download,
-  RotateCcw,
-} from "lucide-react";
+import { Loader2, Download, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
