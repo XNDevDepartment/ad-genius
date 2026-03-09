@@ -384,6 +384,7 @@
       "description": "Erzeuge UGC-Inhalte, um sie hier zu sehen",
       "searchDescription": "Passe deine Suchbegriffe an"
     },
+    "editedBadge": "Bearbeitet",
     "bulkUpload": {
       "title": "Quellbilder Hochladen",
       "uploadButton": "Bilder Hochladen",
