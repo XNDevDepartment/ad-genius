@@ -248,7 +248,7 @@ const Promo1Mes = () => {
                 O Que Consegues com 1 Crédito
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Com 35 créditos no primeiro mês, podes criar até 35 imagens profissionais
+                Com 35 créditos, podes criar até 35 imagens profissionais
               </p>
             </div>
 
