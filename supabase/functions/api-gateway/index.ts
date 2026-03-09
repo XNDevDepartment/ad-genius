@@ -572,7 +572,6 @@ async function handleGetFashionJob(supabase: any, userId: string, jobId: string)
     return { error: 'Job not found', code: 'NOT_FOUND' }
   }
 
-  // Get results if completed
   let results: any[] = []
   if (job.status === 'completed') {
     const { data: swapResults } = await supabase
@@ -593,6 +592,132 @@ async function handleGetFashionJob(supabase: any, userId: string, jobId: string)
     results: results.map(r => ({
       id: r.id,
       url: r.public_url,
+      created_at: r.created_at
+    }))
+  }
+}
+
+async function handleProductBackground(supabase: any, userId: string, body: any, apiKeyId?: string) {
+  const { source_image_url, background_preset_id, background_image_url, settings = {} } = body
+
+  if (!source_image_url) {
+    throw new Error('source_image_url is required')
+  }
+
+  if (!background_preset_id && !background_image_url) {
+    throw new Error('Either background_preset_id or background_image_url is required')
+  }
+
+  // Check credits
+  const { data: deductResult, error: deductError } = await supabase
+    .rpc('deduct_user_credits', {
+      p_user_id: userId,
+      p_amount: 1,
+      p_reason: 'api_product_background'
+    })
+
+  if (deductError || !deductResult?.success) {
+    return {
+      error: deductResult?.error || 'Failed to deduct credits',
+      code: 'INSUFFICIENT_CREDITS'
+    }
+  }
+
+  const backgroundType = background_preset_id ? 'preset' : 'custom'
+
+  const { data: job, error: jobError } = await supabase
+    .from('bulk_background_jobs')
+    .insert({
+      user_id: userId,
+      background_type: backgroundType,
+      background_preset_id: background_preset_id || null,
+      background_image_url: background_image_url || null,
+      total_images: 1,
+      status: 'queued',
+      settings: { ...settings, source: 'api', api_key_id: apiKeyId }
+    })
+    .select()
+    .single()
+
+  if (jobError) {
+    await supabase.rpc('refund_user_credits', {
+      p_user_id: userId,
+      p_amount: 1,
+      p_reason: 'api_product_bg_job_creation_failed'
+    })
+    throw jobError
+  }
+
+  // Create the result record for the single image
+  await supabase
+    .from('bulk_background_results')
+    .insert({
+      job_id: job.id,
+      user_id: userId,
+      source_image_url: source_image_url,
+      image_index: 0,
+      status: 'pending'
+    })
+
+  // Trigger background swap
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+
+  fetch(`${supabaseUrl}/functions/v1/bulk-background`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      jobId: job.id
+    })
+  }).catch(console.error)
+
+  return {
+    job_id: job.id,
+    status: 'queued',
+    message: 'Product background swap job created successfully',
+    credits_used: 1
+  }
+}
+
+async function handleGetProductBackgroundJob(supabase: any, userId: string, jobId: string) {
+  const { data: job, error } = await supabase
+    .from('bulk_background_jobs')
+    .select('id, status, progress, completed_images, failed_images, total_images, error, created_at, finished_at')
+    .eq('id', jobId)
+    .eq('user_id', userId)
+    .single()
+
+  if (error || !job) {
+    return { error: 'Job not found', code: 'NOT_FOUND' }
+  }
+
+  let results: any[] = []
+  if (job.status === 'completed' || job.completed_images > 0) {
+    const { data: bgResults } = await supabase
+      .from('bulk_background_results')
+      .select('id, result_url, source_image_url, status, created_at')
+      .eq('job_id', jobId)
+
+    results = bgResults || []
+  }
+
+  return {
+    job_id: job.id,
+    status: job.status,
+    progress: job.progress,
+    completed: job.completed_images,
+    failed: job.failed_images,
+    total: job.total_images,
+    error: job.error,
+    created_at: job.created_at,
+    finished_at: job.finished_at,
+    results: results.map(r => ({
+      id: r.id,
+      result_url: r.result_url,
+      source_url: r.source_image_url,
+      status: r.status,
       created_at: r.created_at
     }))
   }

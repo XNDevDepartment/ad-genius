@@ -321,6 +321,13 @@ const App = () => {
                     </Suspense>
                   </ErrorBoundaryWithReset>
                 } />
+                <Route path="help/integrations" element={
+                  <ErrorBoundaryWithReset>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <IntegrationsDocsPage />
+                    </Suspense>
+                  </ErrorBoundaryWithReset>
+                } />
               </Route>
               <Route path="/email-confirmation" element={
                 <ErrorBoundaryWithReset>

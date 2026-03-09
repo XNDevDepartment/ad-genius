@@ -453,7 +453,7 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
             <Key className="h-12 w-12 text-muted-foreground mb-4" />
             <h4 className="text-lg font-medium mb-2">No API Keys</h4>
             <p className="text-sm text-muted-foreground text-center max-w-sm mb-4">
-              Create an API key to start using Genius UGC programmatically. 
+              Create an API key to start using ProduktPix programmatically. 
               Check the API documentation for usage examples.
             </p>
             <Button onClick={() => setShowCreateDialog(true)}>

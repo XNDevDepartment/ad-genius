@@ -354,11 +354,21 @@ const APIDocsPage = () => {
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">{ep.description}</p>
                   {ep.parameters.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1 mb-3">
                       {ep.parameters.map((param, i) => (
                         <Badge key={i} variant="secondary" className="text-xs">{param}</Badge>
                       ))}
                     </div>
+                  )}
+                  {ep.responseExample && (
+                    <details className="mt-2">
+                      <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
+                        Response example
+                      </summary>
+                      <pre className="bg-muted p-3 rounded-md overflow-x-auto text-xs mt-2">
+                        <code>{ep.responseExample}</code>
+                      </pre>
+                    </details>
                   )}
                 </CardContent>
               </Card>

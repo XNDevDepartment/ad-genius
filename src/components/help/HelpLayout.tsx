@@ -1,4 +1,4 @@
-import { ArrowLeft, Home, HelpCircle, BookOpen, Video, Code } from "lucide-react";
+import { ArrowLeft, Home, HelpCircle, BookOpen, Video, Code, Globe } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
