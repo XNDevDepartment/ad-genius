@@ -20,20 +20,20 @@ const helpNavItems = [
     path: "/help/faq",
     description: "Common questions"
   },
-  // {
-  //   id: "tutorials",
-  //   label: "Video Tutorials",
-  //   icon: Video,
-  //   path: "/help/tutorials",
-  //   description: "Learn with videos"
-  // },
-  // {
-  //   id: "api-docs",
-  //   label: "API Documentation",
-  //   icon: Code,
-  //   path: "/help/api-docs",
-  //   description: "Technical reference"
-  // },
+  {
+    id: "api-docs",
+    label: "API Documentation",
+    icon: Code,
+    path: "/help/api-docs",
+    description: "Technical reference"
+  },
+  {
+    id: "integrations",
+    label: "Integrations",
+    icon: Globe,
+    path: "/help/integrations",
+    description: "Shopify, Zapier & more"
+  },
 ];
 
 interface HelpLayoutProps {
