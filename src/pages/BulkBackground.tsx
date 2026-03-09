@@ -670,6 +670,15 @@ const BulkBackground = () => {
                                   <Download className="h-4 w-4" />
                                   <span className="hidden sm:inline">{t("bulkBackground.buttons.download")}</span>
                                 </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-1"
+                                  onClick={() => setEditingBgImage({ url: result.result_url!, id: result.id })}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                  <span className="hidden sm:inline">Edit</span>
+                                </Button>
                               </div>
                             </div>
                           )}
