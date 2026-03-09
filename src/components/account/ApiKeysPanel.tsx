@@ -320,7 +320,7 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
         <div>
           <h3 className="text-lg font-semibold">API Keys</h3>
           <p className="text-sm text-muted-foreground">
-            Manage API keys for programmatic access to Genius UGC
+            Manage API keys for programmatic access to ProduktPix
           </p>
         </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
