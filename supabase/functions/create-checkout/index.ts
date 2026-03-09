@@ -56,7 +56,8 @@ serve(async (req) => {
       plus: { monthly: 4900, yearly: 49000 },   // €49/month, €490.00/year (€40.83/month × 12)
       pro: { monthly: 9900, yearly: 99000 },     // €99/month, €990/year (€82.50/month × 12)
       // christmas: { monthly: 1999, yearly: 19988 }, // €19.99/month, €199.88/year (Christmas 2025 promo)
-      onboarding_first_month: { monthly: 1999, yearly: null } // €19.99 first month special (Starter tier)
+      onboarding_first_month: { monthly: 1999, yearly: null }, // €19.99 first month special (Starter tier)
+      experiment: { monthly: 999, yearly: null } // €9.99 one-time purchase (prod_U7RlMZUJGKXGza)
     };
 
     // Validate pricing to prevent future bugs
