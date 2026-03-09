@@ -20,6 +20,8 @@ import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import AnimateImageModal from "@/components/AnimateImageModal";
+import EditImageModal from "@/components/EditImageModal";
+import { Pencil } from "lucide-react";
 
 interface BatchSwapPreviewProps {
   batch: OutfitSwapBatch;
