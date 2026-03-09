@@ -73,6 +73,7 @@ const BulkBackground = () => {
   const [editRequest, setEditRequest] = useState("");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [photoshootModal, setPhotoshootModal] = useState<{ resultId: string; resultUrl: string } | null>(null);
+  const [editingBgImage, setEditingBgImage] = useState<{ url: string; id: string } | null>(null);
 
   // Import modal states
   const [libraryPickerOpen, setLibraryPickerOpen] = useState(false);
