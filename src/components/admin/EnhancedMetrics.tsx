@@ -6,6 +6,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 
 interface EnhancedMetricsProps {
   dateFrom: string | null;
+  dateTo?: string | null;
 }
 
 interface MetricsData {
@@ -20,7 +21,7 @@ interface MetricsData {
   growthData: { date: string; users: number; images: number }[];
 }
 
-export const EnhancedMetrics = ({ dateFrom }: EnhancedMetricsProps) => {
+export const EnhancedMetrics = ({ dateFrom, dateTo }: EnhancedMetricsProps) => {
   const [metrics, setMetrics] = useState<MetricsData>({
     totalUsers: 0, activeUsers: 0, totalImages: 0, totalVideos: 0,
     avgImagesPerUser: 0, totalCreditsUsed: 0, creditsBalance: 0,
@@ -30,7 +31,14 @@ export const EnhancedMetrics = ({ dateFrom }: EnhancedMetricsProps) => {
 
   useEffect(() => {
     fetchMetrics();
-  }, [dateFrom]);
+  }, [dateFrom, dateTo]);
+
+  const applyDateRange = (query: any) => {
+    const cutoff = dateFrom || '1970-01-01';
+    let q = query.gte('created_at', cutoff);
+    if (dateTo) q = q.lte('created_at', dateTo);
+    return q;
+  };
 
   const fetchMetrics = async () => {
     try {
@@ -47,10 +55,10 @@ export const EnhancedMetrics = ({ dateFrom }: EnhancedMetricsProps) => {
         creditsBalanceRes,
         activeUsersRes,
       ] = await Promise.all([
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).gte('created_at', cutoff),
-        supabase.from('generated_images').select('*', { count: 'exact', head: true }).gte('created_at', cutoff),
-        supabase.from('ugc_images').select('*', { count: 'exact', head: true }).gte('created_at', cutoff),
-        supabase.from('kling_jobs').select('*', { count: 'exact', head: true }).eq('status', 'completed').gte('created_at', cutoff),
+        applyDateRange(supabase.from('profiles').select('*', { count: 'exact', head: true })),
+        applyDateRange(supabase.from('generated_images').select('*', { count: 'exact', head: true })),
+        applyDateRange(supabase.from('ugc_images').select('*', { count: 'exact', head: true })),
+        applyDateRange(supabase.from('kling_jobs').select('*', { count: 'exact', head: true }).eq('status', 'completed')),
         supabase.rpc('admin_sum_credits_used'),
         supabase.rpc('admin_sum_credits_balance'),
         supabase.rpc('admin_count_active_users', { p_since: dateFrom }),
@@ -63,17 +71,21 @@ export const EnhancedMetrics = ({ dateFrom }: EnhancedMetricsProps) => {
       const users = totalUsers || 0;
 
       // Growth chart — last 30 days of the selected window
-      const chartStart = new Date(dateFrom || Date.now() - 30 * 86400000);
-      const chartCutoff = new Date(Math.max(chartStart.getTime(), Date.now() - 30 * 86400000));
+      const chartEnd = dateTo ? new Date(dateTo) : new Date();
+      const chartStart = new Date(dateFrom || chartEnd.getTime() - 30 * 86400000);
+      const chartCutoff = new Date(Math.max(chartStart.getTime(), chartEnd.getTime() - 30 * 86400000));
 
-      const [{ data: recentProfiles }, { data: recentImages }] = await Promise.all([
-        supabase.from('profiles').select('created_at').gte('created_at', chartCutoff.toISOString()).order('created_at', { ascending: true }),
-        supabase.from('generated_images').select('created_at').gte('created_at', chartCutoff.toISOString()).order('created_at', { ascending: true }),
-      ]);
+      let profilesQuery = supabase.from('profiles').select('created_at').gte('created_at', chartCutoff.toISOString()).order('created_at', { ascending: true });
+      let imagesQuery = supabase.from('generated_images').select('created_at').gte('created_at', chartCutoff.toISOString()).order('created_at', { ascending: true });
+      if (dateTo) {
+        profilesQuery = profilesQuery.lte('created_at', dateTo);
+        imagesQuery = imagesQuery.lte('created_at', dateTo);
+      }
+
+      const [{ data: recentProfiles }, { data: recentImages }] = await Promise.all([profilesQuery, imagesQuery]);
 
       const grouped: Record<string, { users: number; images: number }> = {};
-      const now = new Date();
-      for (let d = new Date(chartCutoff); d <= now; d.setDate(d.getDate() + 1)) {
+      for (let d = new Date(chartCutoff); d <= chartEnd; d.setDate(d.getDate() + 1)) {
         grouped[d.toISOString().split('T')[0]] = { users: 0, images: 0 };
       }
       recentProfiles?.forEach(p => {
@@ -158,7 +170,7 @@ export const EnhancedMetrics = ({ dateFrom }: EnhancedMetricsProps) => {
 
       <div className="rounded-2xl border-0 bg-card/80 backdrop-blur-sm shadow-apple p-6">
         <h3 className="text-lg font-semibold mb-1">Platform Activity</h3>
-        <p className="text-sm text-muted-foreground mb-4">Daily signups & images (last 30 days)</p>
+        <p className="text-sm text-muted-foreground mb-4">Daily signups & images (last 30 days of selected period)</p>
         <ChartContainer
           config={{
             users: { label: 'Signups', color: 'hsl(var(--primary))' },

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import { EnhancedMetrics } from './EnhancedMetrics';
 import { ConversionFunnel } from './ConversionFunnel';
 import { UserGrowthMetrics } from './UserGrowthMetrics';
@@ -6,13 +7,16 @@ import { CohortAnalysis } from './CohortAnalysis';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, Target, CreditCard, DollarSign, Users, TrendingUp, Percent, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Target, CreditCard, DollarSign, Users, TrendingUp, RefreshCw, CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
-type Period = '7d' | '30d' | '90d' | 'all';
+type Period = '7d' | '30d' | '90d' | 'all' | 'custom';
 
-const PERIOD_DAYS: Record<Period, number | null> = { '7d': 7, '30d': 30, '90d': 90, 'all': null };
+const PERIOD_DAYS: Record<string, number | null> = { '7d': 7, '30d': 30, '90d': 90, 'all': null };
 
 const TIER_PRICES: Record<string, number> = {
   Free: 0, Starter: 29, Plus: 49, Pro: 99, Founders: 19.99,
@@ -38,6 +42,8 @@ interface RevenueSummary {
 
 export const AdminDashboardOverview = () => {
   const [period, setPeriod] = useState<Period>('30d');
+  const [customFrom, setCustomFrom] = useState<Date | undefined>();
+  const [customTo, setCustomTo] = useState<Date | undefined>();
   const [quickActions, setQuickActions] = useState<QuickAction[]>([]);
   const [revenue, setRevenue] = useState<RevenueSummary>({
     mrr: 0, payingCount: 0, arpu: 0, churnRisk: 0,
@@ -46,8 +52,17 @@ export const AdminDashboardOverview = () => {
   const [syncing, setSyncing] = useState(false);
   const navigate = useNavigate();
 
-  const days = PERIOD_DAYS[period];
-  const dateFrom = days ? new Date(Date.now() - days * 86400000).toISOString() : null;
+  // Compute dateFrom/dateTo based on period
+  let dateFrom: string | null = null;
+  let dateTo: string | null = null;
+
+  if (period === 'custom') {
+    dateFrom = customFrom ? customFrom.toISOString() : null;
+    dateTo = customTo ? customTo.toISOString() : null;
+  } else {
+    const days = PERIOD_DAYS[period];
+    dateFrom = days ? new Date(Date.now() - days * 86400000).toISOString() : null;
+  }
 
   useEffect(() => {
     fetchQuickActions();
@@ -125,6 +140,10 @@ export const AdminDashboardOverview = () => {
     }
   };
 
+  const handlePeriodChange = (v: string) => {
+    setPeriod(v as Period);
+  };
+
   const displayMrr = revenue.stripeMrr !== null ? revenue.stripeMrr : revenue.mrr;
   const displayArpu = revenue.payingCount > 0 ? displayMrr / revenue.payingCount : 0;
 
@@ -143,14 +162,59 @@ export const AdminDashboardOverview = () => {
           <h2 className="text-2xl font-bold tracking-tight">Sales Funnel Dashboard</h2>
           <p className="text-muted-foreground">Full funnel overview — from signup to revenue</p>
         </div>
-        <Tabs value={period} onValueChange={(v) => setPeriod(v as Period)}>
-          <TabsList className="rounded-xl bg-muted/50">
-            <TabsTrigger value="7d" className="rounded-lg text-xs px-4">7D</TabsTrigger>
-            <TabsTrigger value="30d" className="rounded-lg text-xs px-4">30D</TabsTrigger>
-            <TabsTrigger value="90d" className="rounded-lg text-xs px-4">90D</TabsTrigger>
-            <TabsTrigger value="all" className="rounded-lg text-xs px-4">All</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex flex-wrap items-center gap-2">
+          <Tabs value={period} onValueChange={handlePeriodChange}>
+            <TabsList className="rounded-xl bg-muted/50">
+              <TabsTrigger value="7d" className="rounded-lg text-xs px-4">7D</TabsTrigger>
+              <TabsTrigger value="30d" className="rounded-lg text-xs px-4">30D</TabsTrigger>
+              <TabsTrigger value="90d" className="rounded-lg text-xs px-4">90D</TabsTrigger>
+              <TabsTrigger value="all" className="rounded-lg text-xs px-4">All</TabsTrigger>
+              <TabsTrigger value="custom" className="rounded-lg text-xs px-4">Custom</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {period === 'custom' && (
+            <div className="flex items-center gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className={cn("h-8 rounded-lg gap-1.5 text-xs", !customFrom && "text-muted-foreground")}>
+                    <CalendarIcon className="h-3 w-3" />
+                    {customFrom ? format(customFrom, 'dd MMM yyyy') : 'From'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={customFrom}
+                    onSelect={setCustomFrom}
+                    disabled={(date) => date > new Date() || (customTo ? date > customTo : false)}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              <span className="text-xs text-muted-foreground">→</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className={cn("h-8 rounded-lg gap-1.5 text-xs", !customTo && "text-muted-foreground")}>
+                    <CalendarIcon className="h-3 w-3" />
+                    {customTo ? format(customTo, 'dd MMM yyyy') : 'To'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={customTo}
+                    onSelect={setCustomTo}
+                    disabled={(date) => date > new Date() || (customFrom ? date < customFrom : false)}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Quick Actions */}
@@ -203,13 +267,13 @@ export const AdminDashboardOverview = () => {
       </div>
 
       {/* Platform Metrics */}
-      <EnhancedMetrics dateFrom={dateFrom} />
+      <EnhancedMetrics dateFrom={dateFrom} dateTo={dateTo} />
 
       {/* Sales Funnel */}
-      <ConversionFunnel dateFrom={dateFrom} />
+      <ConversionFunnel dateFrom={dateFrom} dateTo={dateTo} />
 
       {/* User Growth */}
-      <UserGrowthMetrics dateFrom={dateFrom} />
+      <UserGrowthMetrics dateFrom={dateFrom} dateTo={dateTo} />
 
       {/* Cohort Analysis */}
       <CohortAnalysis />

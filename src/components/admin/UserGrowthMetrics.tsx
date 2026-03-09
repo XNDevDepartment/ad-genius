@@ -6,6 +6,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 
 interface UserGrowthMetricsProps {
   dateFrom: string | null;
+  dateTo?: string | null;
 }
 
 interface SignupData { date: string; count: number }
@@ -27,13 +28,20 @@ const chartConfig = {
   count: { label: "Signups", color: "hsl(var(--primary))" },
 };
 
-export const UserGrowthMetrics = ({ dateFrom }: UserGrowthMetricsProps) => {
+export const UserGrowthMetrics = ({ dateFrom, dateTo }: UserGrowthMetricsProps) => {
   const [data, setData] = useState<UserGrowthData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchMetrics();
-  }, [dateFrom]);
+  }, [dateFrom, dateTo]);
+
+  const applyDateRange = (query: any) => {
+    const cutoff = dateFrom || '1970-01-01';
+    let q = query.gte('created_at', cutoff);
+    if (dateTo) q = q.lte('created_at', dateTo);
+    return q;
+  };
 
   const fetchMetrics = async () => {
     try {
@@ -46,14 +54,19 @@ export const UserGrowthMetrics = ({ dateFrom }: UserGrowthMetricsProps) => {
         tierBreakdownResult, signupsByDateResult
       ] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', cutoff),
+        applyDateRange(supabase.from('profiles').select('id', { count: 'exact', head: true })),
         supabase.from('subscribers').select('id', { count: 'exact', head: true }).eq('subscription_tier', 'Free'),
         supabase.from('subscribers').select('id', { count: 'exact', head: true }).eq('subscription_tier', 'Free').lte('credits_balance', 0),
         supabase.from('subscribers').select('id', { count: 'exact', head: true }).neq('subscription_tier', 'Free').eq('subscribed', true),
         supabase.from('subscribers').select('subscription_tier').neq('subscription_tier', 'Free').eq('subscribed', true),
-        supabase.from('profiles').select('created_at').gte('created_at', cutoff).order('created_at', { ascending: true }),
+        (() => {
+          let q = supabase.from('profiles').select('created_at').gte('created_at', cutoff).order('created_at', { ascending: true });
+          if (dateTo) q = q.lte('created_at', dateTo);
+          return q;
+        })(),
       ]);
 
+      const endDate = dateTo ? new Date(dateTo) : new Date();
       const signupsByDate: SignupData[] = [];
       if (signupsByDateResult.data) {
         const groupedByDate: Record<string, number> = {};
@@ -62,8 +75,7 @@ export const UserGrowthMetrics = ({ dateFrom }: UserGrowthMetricsProps) => {
           groupedByDate[date] = (groupedByDate[date] || 0) + 1;
         });
         const startDate = new Date(cutoff);
-        const now = new Date();
-        for (let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
           const dateStr = d.toISOString().split('T')[0];
           signupsByDate.push({ date: dateStr, count: groupedByDate[dateStr] || 0 });
         }
@@ -133,7 +145,6 @@ export const UserGrowthMetrics = ({ dateFrom }: UserGrowthMetricsProps) => {
         <p className="text-sm text-muted-foreground">Track signups, credit usage, and conversions</p>
       </div>
 
-      {/* Signup Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <div className="rounded-2xl border-0 bg-card/80 backdrop-blur-sm shadow-apple p-5 border-l-4 border-l-blue-500">
           <div className="flex items-center justify-between mb-2">
@@ -158,7 +169,6 @@ export const UserGrowthMetrics = ({ dateFrom }: UserGrowthMetricsProps) => {
         </div>
       </div>
 
-      {/* Chart */}
       {data.signupsByDate.length > 0 && (
         <div className="rounded-2xl border-0 bg-card/80 backdrop-blur-sm shadow-apple p-6">
           <h4 className="text-base font-semibold mb-4">Signups Over Time</h4>
@@ -176,7 +186,6 @@ export const UserGrowthMetrics = ({ dateFrom }: UserGrowthMetricsProps) => {
         </div>
       )}
 
-      {/* Free User Funnel & Conversion */}
       <div className="grid md:grid-cols-2 gap-4">
         <div className="rounded-2xl border-0 bg-card/80 backdrop-blur-sm shadow-apple p-6">
           <div className="flex items-center gap-2 mb-4">
