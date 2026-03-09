@@ -77,7 +77,8 @@ serve(async (req) => {
       plus: 'Plus Plan', 
       pro: 'Pro Plan',
       christmas: 'Promoção de Natal 2025',
-      onboarding_first_month: 'First Month Special - Starter'
+      onboarding_first_month: 'First Month Special - Starter',
+      experiment: 'OneTimeExperiment'
     };
 
     if (!planPricing[planId as keyof typeof planPricing]) {
