@@ -187,6 +187,9 @@ verify_jwt = false
 [functions.edit-image]
 verify_jwt = false
 
+[functions.analyze-product-type]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 port = 54327
