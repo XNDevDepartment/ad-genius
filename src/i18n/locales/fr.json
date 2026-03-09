@@ -2638,7 +2638,8 @@
       "ugcImage": "Image UGC",
       "preview": "Aperçu",
       "download": "Télécharger",
-      "photoshoot": "Shooting Photo"
+      "photoshoot": "Shooting Photo",
+      "edit": "Modifier"
     },
     "importSources": {
       "library": "Depuis la Bibliothèque",
