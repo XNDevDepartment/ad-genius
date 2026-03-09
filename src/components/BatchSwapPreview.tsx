@@ -466,6 +466,15 @@ export const BatchSwapPreview = ({
                             <Button
                               size="sm"
                               variant="outline"
+                              onClick={() => setEditingSwapImage({ url: result.public_url, id: result.id })}
+                              className="flex-col h-auto py-2"
+                            >
+                              <Pencil className="w-4 h-4 mb-1" />
+                              <span className="text-xs">Edit</span>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
                               onClick={() => handleAnimate(result.public_url, result)}
                               className="flex-col h-auto py-2"
                             >
