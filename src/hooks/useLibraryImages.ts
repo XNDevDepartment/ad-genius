@@ -257,25 +257,42 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
 
       // Normalize photoshoot images
       const photoshootImages: LibraryImage[] = (photoshootResult.data || []).flatMap((photoshoot: any) => {
-        const images: LibraryImage[] = [];
+        // Prioritize metadata.generated_images (stores ALL images including 5+)
+        const metaImages = photoshoot.metadata?.generated_images as Array<{ angleId: string; url: string; path: string }> | undefined;
+        
+        if (metaImages && metaImages.length > 0) {
+          return metaImages.map((img, index) => ({
+            id: `${photoshoot.id}_${img.angleId || index}`,
+            url: img.url,
+            prompt: `Photoshoot - ${(img.angleId || `image_${index + 1}`).replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())} View`,
+            created_at: photoshoot.created_at,
+            settings: { size: '1024x1024', quality: 'high', numberOfImages: 1, format: 'png' },
+            source_type: 'photoshoot' as const,
+            photoshoot_id: photoshoot.id,
+            angle_type: img.angleId as any,
+            original_result_id: photoshoot.result_id
+          }));
+        }
+        
+        // Fallback: read from fixed columns (backward compat, max 4)
         const selectedAngles = photoshoot.selected_angles || ['front', 'three_quarter', 'back', 'side'];
-        selectedAngles.forEach((angle: string, index: number) => {
-          const imageUrl = photoshoot[`image_${index + 1}_url`];
-          if (imageUrl) {
-            images.push({
+        return selectedAngles
+          .map((angle: string, index: number) => {
+            const imageUrl = photoshoot[`image_${index + 1}_url`];
+            if (!imageUrl) return null;
+            return {
               id: `${photoshoot.id}_${angle}`,
               url: imageUrl,
               prompt: `Photoshoot - ${angle.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())} View`,
               created_at: photoshoot.created_at,
               settings: { size: '1024x1024', quality: 'high', numberOfImages: 1, format: 'png' },
-              source_type: 'photoshoot',
+              source_type: 'photoshoot' as const,
               photoshoot_id: photoshoot.id,
               angle_type: angle as any,
               original_result_id: photoshoot.result_id
-            });
-          }
-        });
-        return images;
+            };
+          })
+          .filter(Boolean) as LibraryImage[];
       });
 
       // Normalize e-commerce photos
