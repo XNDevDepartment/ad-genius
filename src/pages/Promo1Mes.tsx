@@ -307,26 +307,25 @@ const Promo1Mes = () => {
             <Card className="rounded-2xl border-2 border-primary/30 shadow-xl shadow-primary/5">
               <CardContent className="p-8 md:p-10 space-y-6">
                 <Badge className="text-sm px-3 py-1 bg-primary/10 text-primary border-primary/20">
-                  Oferta Exclusiva
+                  Pagamento Único
                 </Badge>
 
                 <div>
                   <div className="flex items-center justify-center gap-3 mb-2">
-                    <span className="text-xl text-muted-foreground line-through">€{regularPrice}/mês</span>
+                    <span className="text-xl text-muted-foreground line-through">€{regularPrice}</span>
                     <Badge variant="destructive">-{discountPercent}%</Badge>
                   </div>
                   <p className="text-5xl font-bold text-primary">
                     €{promoPrice}
-                    <span className="text-lg font-normal text-muted-foreground">/primeiro mês</span>
                   </p>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Depois €{regularPrice}/mês · Cancela quando quiseres
+                    Pagamento único · Sem subscrição · Sem renovação
                   </p>
                 </div>
 
                 <div className="space-y-2 text-left max-w-sm mx-auto">
                   {[
-                    "35 créditos no primeiro mês",
+                    "35 créditos para usar em 30 dias",
                     "Fotos UGC com modelos IA",
                     "Geração de vídeos incluída",
                     "Fashion try-on",
@@ -342,7 +341,7 @@ const Promo1Mes = () => {
                 <CTAButton className="w-full" />
 
                 <p className="text-xs text-muted-foreground">
-                  ✓ Código promocional aplicado automaticamente · ✓ Sem contrato · ✓ Cancela quando quiseres
+                  ✓ Pagamento único · ✓ Sem renovação automática · ✓ Acesso imediato
                 </p>
               </CardContent>
             </Card>
