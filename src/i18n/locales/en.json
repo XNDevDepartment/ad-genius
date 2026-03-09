@@ -380,6 +380,7 @@
       "description": "Generate UGC to display it here",
       "searchDescription": "Try adjusting your search terms"
     },
+    "editedBadge": "Edited",
     "bulkUpload": {
       "title": "Upload Source Images",
       "uploadButton": "Upload Images",
