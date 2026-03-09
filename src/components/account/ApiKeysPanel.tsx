@@ -58,7 +58,8 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
   const [newKeyPermissions, setNewKeyPermissions] = useState({
     ugc: true,
     video: true,
-    fashion_catalog: true
+    fashion_catalog: true,
+    product_background: true
   });
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState(false);
