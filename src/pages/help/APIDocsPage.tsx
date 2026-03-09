@@ -226,7 +226,7 @@ const APIDocsPage = () => {
       <div className="space-y-8">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold">Genius UGC API</h2>
+            <h2 className="text-2xl font-bold">ProduktPix API</h2>
             <Badge className="bg-green-100 text-green-700">
               <CheckCircle className="h-3 w-3 mr-1" />
               v1.0 Live
