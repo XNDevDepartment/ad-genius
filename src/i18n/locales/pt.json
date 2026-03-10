@@ -67,6 +67,14 @@
       "checkoutError": "Falha ao iniciar checkout. Por favor tente novamente.",
       "pleaseWait": "Por favor aguarde..."
     },
+    "productType": {
+      "title": "O que está a vender?",
+      "subtitle": "Isto ajuda-nos a escolher os melhores estilos para si",
+      "fashion": "Moda & Vestuário",
+      "fashionDesc": "Roupa, sapatos, acessórios usados por pessoas",
+      "product": "Produto Geral",
+      "productDesc": "Eletrónica, cosmética, alimentação, casa, etc."
+    },
     "packs": {
       "title": "Escolha o Seu Pack",
       "subtitle": "Vamos gerar 4 imagens profissionais para si",

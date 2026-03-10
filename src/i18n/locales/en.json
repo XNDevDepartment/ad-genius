@@ -67,6 +67,14 @@
       "checkoutError": "Failed to start checkout. Please try again.",
       "pleaseWait": "Please wait..."
     },
+    "productType": {
+      "title": "What are you selling?",
+      "subtitle": "This helps us pick the best styles for you",
+      "fashion": "Fashion & Apparel",
+      "fashionDesc": "Clothing, shoes, accessories worn by people",
+      "product": "General Product",
+      "productDesc": "Electronics, cosmetics, food, home goods, etc."
+    },
     "packs": {
       "title": "Choose Your Pack",
       "subtitle": "We'll generate 4 professional images for you",
