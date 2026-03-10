@@ -63,6 +63,14 @@
       "checkoutError": "Checkout konnte nicht gestartet werden. Bitte versuchen Sie es erneut.",
       "pleaseWait": "Bitte warten..."
     },
+    "productType": {
+      "title": "Was verkaufen Sie?",
+      "subtitle": "Das hilft uns, die besten Stile für Sie auszuwählen",
+      "fashion": "Mode & Bekleidung",
+      "fashionDesc": "Kleidung, Schuhe, Accessoires, die von Personen getragen werden",
+      "product": "Allgemeines Produkt",
+      "productDesc": "Elektronik, Kosmetik, Lebensmittel, Haushalt, etc."
+    },
     "checklist": {
       "title": "Erste Schritte",
       "subtitle": "Verdienen Sie 20 kostenlose Credits",

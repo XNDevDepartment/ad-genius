@@ -63,6 +63,14 @@
       "checkoutError": "Échec du démarrage du paiement. Veuillez réessayer.",
       "pleaseWait": "Veuillez patienter..."
     },
+    "productType": {
+      "title": "Que vendez-vous ?",
+      "subtitle": "Cela nous aide à choisir les meilleurs styles pour vous",
+      "fashion": "Mode & Vêtements",
+      "fashionDesc": "Vêtements, chaussures, accessoires portés par des personnes",
+      "product": "Produit Général",
+      "productDesc": "Électronique, cosmétique, alimentation, maison, etc."
+    },
     "checklist": {
       "title": "Premiers Pas",
       "subtitle": "Gagnez 20 crédits gratuits",

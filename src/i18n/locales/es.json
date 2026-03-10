@@ -63,6 +63,14 @@
       "checkoutError": "Error al iniciar el pago. Por favor intenta de nuevo.",
       "pleaseWait": "Por favor espera..."
     },
+    "productType": {
+      "title": "¿Qué estás vendiendo?",
+      "subtitle": "Esto nos ayuda a elegir los mejores estilos para ti",
+      "fashion": "Moda y Ropa",
+      "fashionDesc": "Ropa, zapatos, accesorios usados por personas",
+      "product": "Producto General",
+      "productDesc": "Electrónica, cosmética, alimentación, hogar, etc."
+    },
     "checklist": {
       "title": "Primeros Pasos",
       "subtitle": "Gana 20 créditos gratis",
