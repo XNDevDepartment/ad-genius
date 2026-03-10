@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { trackSignUp } from '@/lib/metaPixel';
 import { User, Session } from '@supabase/supabase-js';
 
 interface SubscriptionData {
