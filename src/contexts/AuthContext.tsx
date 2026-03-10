@@ -186,6 +186,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   // account_activated === null means new user, false means pending, true means activated
                   const needsActivationSetup = isNewUser && existingProfile?.account_activated === null;
 
+                  // Fire Meta Pixel for new OAuth signups
+                  if (needsActivationSetup) {
+                    const pixelKey = `pixel_signup_fired_${session.user.id}`;
+                    if (!sessionStorage.getItem(pixelKey)) {
+                      trackSignUp();
+                      sessionStorage.setItem(pixelKey, 'true');
+                    }
+                  }
+
                   if (needsActivationSetup) {
                     // Validate domain for new users
                     const { data: domainValidation, error: domainError } = await supabase.functions.invoke('validate-signup-domain', {
