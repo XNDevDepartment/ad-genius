@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { trackSignUp } from '@/lib/metaPixel';
 import { User, Session } from '@supabase/supabase-js';
 
 interface SubscriptionData {
@@ -184,6 +185,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   // Only trigger activation flow for truly NEW users who haven't set activation yet
                   // account_activated === null means new user, false means pending, true means activated
                   const needsActivationSetup = isNewUser && existingProfile?.account_activated === null;
+
+                  // Fire Meta Pixel for new OAuth signups
+                  if (needsActivationSetup) {
+                    const pixelKey = `pixel_signup_fired_${session.user.id}`;
+                    if (!sessionStorage.getItem(pixelKey)) {
+                      trackSignUp();
+                      sessionStorage.setItem(pixelKey, 'true');
+                    }
+                  }
 
                   if (needsActivationSetup) {
                     // Validate domain for new users
@@ -393,6 +403,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Sync to MailerLite after successful signup
     if (!error && data.user) {
+      // Fire Meta Pixel for email/phone signups
+      const pixelKey = `pixel_signup_fired_${data.user.id}`;
+      if (!sessionStorage.getItem(pixelKey)) {
+        trackSignUp();
+        sessionStorage.setItem(pixelKey, 'true');
+      }
+
       setTimeout(async () => {
         try {
           await supabase.functions.invoke('sync-mailerlite', {
