@@ -322,6 +322,8 @@ Deno.serve(async (req) => {
       requiredPermission = 'packs'
     } else if (endpoint.startsWith('/v1/credits')) {
       requiredPermission = '' // No specific permission needed
+    } else if (endpoint.startsWith('/v1/auth')) {
+      requiredPermission = '' // No specific permission needed
     }
 
     if (requiredPermission && !apiKeyInfo.permissions.includes(requiredPermission)) {
