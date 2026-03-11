@@ -59,7 +59,6 @@ const BulkBackground = () => {
     isCanceled,
     isFailed,
     progress,
-    loadLastJob
   } = useBulkBackgroundJob();
 
   // Check for resumable job on mount
