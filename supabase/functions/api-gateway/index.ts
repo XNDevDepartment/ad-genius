@@ -669,6 +669,7 @@ async function handleProductBackground(supabase: any, userId: string, body: any,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
+      action: 'processJob',
       jobId: job.id
     })
   }).catch(console.error)
