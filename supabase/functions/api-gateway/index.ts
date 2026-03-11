@@ -324,6 +324,8 @@ Deno.serve(async (req) => {
       requiredPermission = '' // No specific permission needed
     } else if (endpoint.startsWith('/v1/auth')) {
       requiredPermission = '' // No specific permission needed
+    } else if (endpoint.startsWith('/v1/shopify')) {
+      requiredPermission = '' // No specific permission needed — key auth is sufficient
     }
 
     if (requiredPermission && !apiKeyInfo.permissions.includes(requiredPermission)) {
