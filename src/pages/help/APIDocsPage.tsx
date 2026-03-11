@@ -121,6 +121,38 @@ const endpoints = [
 }`
   },
   {
+    method: "POST",
+    endpoint: "/v1/packs/generate",
+    description: "Generate a ready-made image pack (ecommerce, social media, or ads) — 4 styled images per pack",
+    parameters: ["source_image_url (required)", "pack_id (required: ecommerce | social | ads)", "product_type (required: fashion | product)"],
+    credits: "4 credits per pack",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "queued",
+  "pack": "ecommerce",
+  "styles": ["hero_product", "catalog_clean", "detail_macro", "model_neutral"],
+  "credits_used": 4
+}`
+  },
+  {
+    method: "GET",
+    endpoint: "/v1/packs/jobs/{job_id}",
+    description: "Get status and results of a pack generation job",
+    parameters: ["job_id in endpoint path"],
+    credits: "Free",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "completed",
+  "pack": "ecommerce",
+  "progress": 100,
+  "total": 4,
+  "completed": 4,
+  "images": [
+    { "id": "uuid", "url": "https://...", "style": "hero_product" }
+  ]
+}`
+  },
+  {
     method: "GET",
     endpoint: "/v1/credits/balance",
     description: "Get current credit balance and subscription tier",
