@@ -155,6 +155,25 @@ export const useBulkBackgroundJob = () => {
     }
   }, [job?.id, job?.status, toast]);
 
+  const loadLastJob = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { job: lastJob, results: lastResults } = await bulkBackgroundApi.getLastJob();
+      if (!isMountedRef.current) return null;
+      if (lastJob) {
+        setJob(lastJob);
+        setResults(lastResults);
+        return lastJob;
+      }
+      return null;
+    } catch (err) {
+      console.error('Failed to load last job:', err);
+      return null;
+    } finally {
+      if (isMountedRef.current) setLoading(false);
+    }
+  }, []);
+
   const clearJob = useCallback(() => {
     setJob(null);
     setResults([]);
