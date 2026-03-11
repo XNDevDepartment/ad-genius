@@ -189,6 +189,23 @@ export const ImageLibraryGrid = ({
     });
   };
 
+  const handleReplicateBulkBackground = (image: LibraryImage) => {
+    navigate('/create/bulk-background', {
+      state: {
+        replicateMode: true,
+        resultId: image.id,
+        resultUrl: image.url,
+        sourceImageId: image.source_image_id,
+        jobId: image.job_id
+      }
+    });
+
+    toast({
+      title: "Loading Result",
+      description: "Opening result with action options...",
+    });
+  };
+
   if (images.length === 0 && !loading) {
     return (
       <div className="text-center py-12">
