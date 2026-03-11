@@ -16,6 +16,7 @@ import { PrivacyPanel } from "@/components/account/PrivacyPanel";
 import { BillingPanel } from "@/components/account/BillingPanel";
 import { HelpSupportPanel } from "@/components/account/HelpSupportPanel";
 import { ApiKeysPanel } from "@/components/account/ApiKeysPanel";
+import { IntegrationsPanel } from "@/components/account/IntegrationsPanel";
 import { useTranslation } from "react-i18next";
 
 const Account = () => {
