@@ -322,6 +322,8 @@ Deno.serve(async (req) => {
       requiredPermission = 'packs'
     } else if (endpoint.startsWith('/v1/credits')) {
       requiredPermission = '' // No specific permission needed
+    } else if (endpoint.startsWith('/v1/auth')) {
+      requiredPermission = '' // No specific permission needed
     }
 
     if (requiredPermission && !apiKeyInfo.permissions.includes(requiredPermission)) {
@@ -369,6 +371,10 @@ Deno.serve(async (req) => {
 
         case '/v1/credits/balance':
           response = await handleCreditsBalance(supabase, apiKeyInfo.user_id)
+          break
+
+        case '/v1/auth/verify':
+          response = await handleAuthVerify(supabase, apiKeyInfo)
           break
 
         default:
@@ -953,5 +959,26 @@ async function handleGetPackJob(supabase: any, userId: string, jobId: string) {
       url: img.public_url,
       created_at: img.created_at,
     }))
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// HANDLER: Auth Verify — validate API key and return account info
+// ═══════════════════════════════════════════════════════════
+
+async function handleAuthVerify(supabase: any, apiKeyInfo: ApiKeyValidation) {
+  const { data } = await supabase
+    .from('subscribers')
+    .select('credits_balance, subscription_tier')
+    .eq('user_id', apiKeyInfo.user_id)
+    .single()
+
+  return {
+    authenticated: true,
+    user_id: apiKeyInfo.user_id,
+    permissions: apiKeyInfo.permissions,
+    rate_limit_tier: apiKeyInfo.rate_limit_tier,
+    credits_balance: data?.credits_balance ?? 0,
+    subscription_tier: data?.subscription_tier ?? 'Free',
   }
 }
