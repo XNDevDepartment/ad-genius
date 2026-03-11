@@ -67,7 +67,6 @@ export const useBulkBackgroundJob = () => {
           setJob(updatedJob);
           setResults(updatedResults);
           
-          // Show completion toast if job finished
           if (updatedJob.status === 'completed' && job.status !== 'completed') {
             toast({
               title: "Batch Complete!",
@@ -155,25 +154,6 @@ export const useBulkBackgroundJob = () => {
     }
   }, [job?.id, job?.status, toast]);
 
-  const loadLastJob = useCallback(async () => {
-    try {
-      setLoading(true);
-      const { job: lastJob, results: lastResults } = await bulkBackgroundApi.getLastJob();
-      if (!isMountedRef.current) return null;
-      if (lastJob) {
-        setJob(lastJob);
-        setResults(lastResults);
-        return lastJob;
-      }
-      return null;
-    } catch (err) {
-      console.error('Failed to load last job:', err);
-      return null;
-    } finally {
-      if (isMountedRef.current) setLoading(false);
-    }
-  }, []);
-
   const clearJob = useCallback(() => {
     setJob(null);
     setResults([]);
@@ -188,7 +168,6 @@ export const useBulkBackgroundJob = () => {
           title: "Retry Started",
           description: "Reprocessing image...",
         });
-        // Refresh results
         if (job?.id) {
           const { results: updatedResults } = await bulkBackgroundApi.getJobResults(job.id);
           if (isMountedRef.current) {
@@ -207,7 +186,6 @@ export const useBulkBackgroundJob = () => {
       });
     }
   }, [job?.id, toast]);
-
 
   return {
     job,
