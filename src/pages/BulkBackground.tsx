@@ -59,15 +59,11 @@ const BulkBackground = () => {
     isCanceled,
     isFailed,
     progress,
-    loadLastJob
   } = useBulkBackgroundJob();
 
-  // Check for resumable job on mount
-  const [hasCheckedLastJob, setHasCheckedLastJob] = useState(false);
-  const [lastJobAvailable, setLastJobAvailable] = useState(false);
   const [replicateResult, setReplicateResult] = useState<{ id: string; url: string } | null>(null);
 
-  // Handle replicate mode from library
+  // Handle replicate mode from library - also load source image as File
   useEffect(() => {
     const state = location.state as any;
     if (state?.replicateMode && state?.resultUrl) {
@@ -75,21 +71,35 @@ const BulkBackground = () => {
       setProcessingStarted(true);
       // Clear location state to prevent re-trigger on refresh
       window.history.replaceState({}, document.title);
+
+      // Load source image so the upload/background sections appear
+      if (state?.sourceImageId) {
+        (async () => {
+          try {
+            const { data: srcImg } = await supabase
+              .from('source_images')
+              .select('storage_path, file_name, public_url')
+              .eq('id', state.sourceImageId)
+              .single();
+            if (srcImg) {
+              const bucket = srcImg.public_url?.includes('/ugc-inputs/') ? 'ugc-inputs' : 'source-images';
+              const { data: signedData } = await supabase.storage
+                .from(bucket)
+                .createSignedUrl(srcImg.storage_path, 3600);
+              if (signedData?.signedUrl) {
+                const response = await fetch(signedData.signedUrl);
+                const blob = await response.blob();
+                const file = new File([blob], srcImg.file_name || 'product.jpg', { type: blob.type });
+                setProductImages([file]);
+              }
+            }
+          } catch (err) {
+            console.error('Failed to load source image for replicate:', err);
+          }
+        })();
+      }
     }
   }, [location.state]);
-
-  useEffect(() => {
-    if (!user || hasCheckedLastJob || job || replicateResult) return;
-    const check = async () => {
-      const lastJob = await loadLastJob();
-      if (lastJob) {
-        setLastJobAvailable(true);
-        setProcessingStarted(true);
-      }
-      setHasCheckedLastJob(true);
-    };
-    check();
-  }, [user, hasCheckedLastJob, job, loadLastJob, replicateResult]);
 
   // Data state
   const [productImages, setProductImages] = useState<File[]>([]);
@@ -273,7 +283,6 @@ const BulkBackground = () => {
   const handleNewBatch = () => {
     clearJob();
     setProcessingStarted(false);
-    setLastJobAvailable(false);
     setReplicateResult(null);
     setProductImages([]);
     setCustomBackground(null);
