@@ -379,6 +379,19 @@ Deno.serve(async (req) => {
           response = await handleAuthVerify(supabase, apiKeyInfo)
           break
 
+        // Shopify integration endpoints
+        case '/v1/shopify/connect':
+        case '/v1/shopify/verify':
+        case '/v1/shopify/status':
+        case '/v1/shopify/disconnect':
+        case '/v1/shopify/webhook':
+        case '/v1/shopify/platforms':
+        case '/v1/shopify/attach-job':
+        case '/v1/shopify/job-context':
+        case '/v1/shopify/sync-timestamp':
+          response = await handleShopifyEndpoint(supabase, apiKeyInfo.user_id, apiKeyInfo.api_key_id, endpoint, body, req.headers.get('x-forwarded-for') || 'unknown')
+          break
+
         default:
           // Handle job status endpoints
           if (endpoint.match(/^\/v1\/ugc\/jobs\/[\w-]+$/)) {
