@@ -47,6 +47,7 @@ const contentNavItems = [
   { id: "library", icon: Image, path: "/library" },
   // { id: "models", icon: Users, path: "/create/custom-model" },
   { id: "videos", icon: Video, path: "/videos" },
+  { id: "shopify", icon: Store, path: "/shopify/products" },
 ];
 
 export function AppSidebar() {

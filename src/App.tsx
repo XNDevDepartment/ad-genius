@@ -252,6 +252,15 @@ const App = () => {
                     </Suspense>
                   </ErrorBoundaryWithReset>
                 } />
+                <Route path="shopify/products" element={
+                  <ErrorBoundaryWithReset>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AuthGuard>
+                        <ShopifyProducts />
+                      </AuthGuard>
+                    </Suspense>
+                  </ErrorBoundaryWithReset>
+                } />
                 <Route path="videos" element={
                   <ErrorBoundaryWithReset>
                     <Suspense fallback={<LoadingFallback />}>

@@ -190,6 +190,9 @@ verify_jwt = false
 [functions.analyze-product-type]
 verify_jwt = false
 
+[functions.shopify-sync]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 port = 54327
