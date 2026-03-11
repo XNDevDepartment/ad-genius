@@ -61,9 +61,6 @@ const BulkBackground = () => {
     progress,
   } = useBulkBackgroundJob();
 
-  // Check for resumable job on mount
-  const [hasCheckedLastJob, setHasCheckedLastJob] = useState(false);
-  const [lastJobAvailable, setLastJobAvailable] = useState(false);
   const [replicateResult, setReplicateResult] = useState<{ id: string; url: string } | null>(null);
 
   // Handle replicate mode from library
