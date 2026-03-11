@@ -1,4 +1,4 @@
-import { Home, Plus, Image, User, Sparkles, LogOut, Settings, Video, Layers, Users, Gauge, ChevronDown, UserPlus, Crown } from "lucide-react";
+import { Home, Plus, Image, User, Sparkles, LogOut, Settings, Video, Layers, Users, Gauge, ChevronDown, UserPlus, Crown, Store } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -47,6 +47,7 @@ const contentNavItems = [
   { id: "library", icon: Image, path: "/library" },
   // { id: "models", icon: Users, path: "/create/custom-model" },
   { id: "videos", icon: Video, path: "/videos" },
+  { id: "shopify", icon: Store, path: "/shopify/products" },
 ];
 
 export function AppSidebar() {
