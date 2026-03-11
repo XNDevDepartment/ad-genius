@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Settings, CreditCard, HelpCircle, LogOut, Bell, Shield, AlertTriangle, Key } from "lucide-react";
+import { ArrowLeft, Settings, CreditCard, HelpCircle, LogOut, Bell, Shield, AlertTriangle, Key, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
