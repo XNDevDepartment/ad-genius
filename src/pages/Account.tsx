@@ -323,6 +323,7 @@ const Account = () => {
         {section === "billing" && <BillingPanel onClose={closeSection} />}
         {section === "help" && <HelpSupportPanel onClose={closeSection} />}
         {section === "api-keys" && <ApiKeysPanel onClose={closeSection} />}
+        {section === "integrations" && <IntegrationsPanel onClose={closeSection} />}
         {section === "" && AccountPanel}
       </div>
     </div>
