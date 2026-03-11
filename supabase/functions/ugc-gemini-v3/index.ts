@@ -226,10 +226,23 @@ serve(async (req) => {
     const action = body?.action ?? new URL(req.url).searchParams.get("action");
     const svc = serviceClient();
     const isInternalAction = action === "generateImages" || action === "recoverQueued";
+    const isServiceCreateJob = action === "createImageJob" && isServiceCall && body.source_image_id;
     
     let userId: string | null = null;
     if (isInternalAction && isServiceCall) {
       // ok, internal worker call
+    } else if (isServiceCreateJob) {
+      // API gateway delegates job creation with service auth + userId from body
+      userId = (body as any).user_id || null;
+      if (!userId) {
+        // Resolve userId from source_image ownership
+        const { data: srcImg } = await svc.from("source_images")
+          .select("user_id")
+          .eq("id", body.source_image_id)
+          .single();
+        userId = srcImg?.user_id || null;
+      }
+      if (!userId) return errorJson("Could not resolve user from source image", 400);
     } else {
       if (!authHeader) return errorJson("Missing authorization header", 401);
       userId = await getUserIdFromAuth(authHeader);

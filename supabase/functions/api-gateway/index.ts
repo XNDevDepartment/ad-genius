@@ -24,13 +24,124 @@ interface RateLimitResult {
   remaining_day?: number
 }
 
-// Credit costs for different operations
-const CREDIT_COSTS = {
-  'ugc_generate': 1,
-  'video_create_5': 5,
-  'video_create_10': 10,
-  'fashion_swap': 1,
+// ── Pack Definitions (mirrored from onboarding-packs.ts) ──
+
+const FASHION_RULES = `
+MANDATORY RULES FOR FASHION/CLOTHING:
+1. The EXACT product from the reference image MUST be displayed on a model or invisible mannequin — NEVER flat on any surface, table, or floor.
+2. PATTERN FIDELITY — CRITICAL: Reproduce the EXACT fabric pattern, print, texture, scale, spacing, and colors from the reference image. Do NOT interpret, reimagine, simplify, or replace patterns.
+3. Complete outfit required: if the product is a top, add neutral complementary bottoms (simple jeans/trousers) and basic shoes. If the product is bottoms, add a neutral plain top. NEVER show bare legs, underwear, or incomplete outfits.
+4. Natural human anatomy: correct proportions, natural skin texture, realistic hands and fingers, relaxed natural expression.
+5. Product is the VISUAL HERO — it must be the most prominent, well-lit, and in-focus element in the frame.
+6. Maintain exact product colors, branding, labels, stitching details, and hardware from the reference image.
+FORBIDDEN: Flat-lay, folded product, crumpled fabric, product on surface/table/floor, bare torso, underwear visible, distorted anatomy, extra limbs.
+`;
+
+const PRODUCT_RULES = `
+MANDATORY RULES FOR PRODUCT:
+1. Ultra-realistic studio product photography — the result MUST look like a real photograph taken with a professional camera and lens.
+2. Exact geometric proportions preserved from the reference image — no stretching, warping, or size distortion.
+3. Product is the ONLY subject in the frame — no duplicate products, no extra objects unless specified.
+4. Soft grounded shadow for natural anchoring — NO harsh shadows, NO floating without shadow.
+5. Natural lens perspective with cinematic shallow depth of field drawing the eye to the product.
+6. NO CGI look, NO 3D reconstruction artifacts, NO plastic/synthetic appearance.
+7. Maintain exact product colors, branding, labels, surface texture, and material finish from the reference image.
+FORBIDDEN: Multiple products, text overlays, watermarks, AI artifacts, distorted geometry, unrealistic reflections, CGI aesthetic.
+`;
+
+interface PackStyle { id: string; prompt: string }
+interface PackDef { id: string; ratio: string; styles: PackStyle[] }
+
+const FASHION_PACKS: Record<string, PackDef> = {
+  ecommerce: {
+    id: 'ecommerce', ratio: '1:1',
+    styles: [
+      { id: 'hero_product', prompt: `TASK: Professional catalog hero shot.\nMANDATORY RULES:\n1. The EXACT product from the reference image MUST be worn by a model in a clean studio environment.\n2. Neutral solid background, soft even studio lighting with no harsh shadows.\n3. Full product visibility — the garment is the VISUAL HERO of the composition.\n4. PATTERN FIDELITY: Reproduce the EXACT fabric pattern, print, texture, colors from the reference — do NOT interpret or reimagine.\n5. Model must have natural anatomy, relaxed standing pose, natural expression.\n6. Complete outfit: add neutral complementary pieces (simple jeans/pants, basic shoes) that do NOT distract from the product.\n7. Full body or 3/4 framing, commercial e-commerce photography style.\nFORBIDDEN: Flat-lay, folded product, bare torso, underwear visible, product on surface.` },
+      { id: 'catalog_clean', prompt: `TASK: Clean catalog photo — ghost mannequin technique.\nMANDATORY RULES:\n1. Product displayed using invisible/ghost mannequin technique — garment appears worn but no visible model.\n2. Pure white background, crisp even lighting from all sides, no shadows.\n3. PATTERN FIDELITY: Reproduce the EXACT fabric pattern, colors, texture from the reference — pixel-accurate reproduction.\n4. Product fills 70-80% of the frame, perfectly centered, symmetrical presentation.\n5. All product details visible: stitching, labels, hardware, seams.\n6. E-commerce ready: clean, professional, distraction-free.\nFORBIDDEN: Flat-lay, visible mannequin parts, colored background, product on table.` },
+      { id: 'detail_macro', prompt: `TASK: Extreme close-up macro detail shot.\nMANDATORY RULES:\n1. Tight close-up of the product focusing on texture, stitching, fabric weave, material quality.\n2. Product MUST be the EXACT item from the reference image — same colors, pattern, materials.\n3. Shallow depth of field with the detail area in razor-sharp focus.\n4. Professional studio lighting highlighting surface texture and material characteristics.\n5. Show the craftsmanship: thread count, zipper quality, button details, fabric hand-feel.\n6. Clean neutral background, no distracting elements.\nFORBIDDEN: Full product view, flat-lay, multiple products, blurry focus area.` },
+      { id: 'model_neutral', prompt: `TASK: Model wearing product — neutral catalog pose.\nMANDATORY RULES:\n1. Model wearing the EXACT product from the reference image in a natural standing pose.\n2. PATTERN FIDELITY: Reproduce the EXACT fabric pattern, print, texture, scale from the reference — do NOT simplify or reimagine.\n3. Minimal clean background (light grey or off-white), standard catalog photography lighting.\n4. Natural relaxed expression, arms naturally at sides or one hand in pocket.\n5. Full body or 3/4 view — product must be fully visible and the visual focal point.\n6. Complete outfit with neutral complementary pieces that do NOT compete with the product.\n7. Natural human anatomy: correct proportions, realistic hands, natural skin.\nFORBIDDEN: Dramatic poses, busy backgrounds, bare torso, underwear, flat-lay.` },
+    ],
+  },
+  social: {
+    id: 'social', ratio: '3:4',
+    styles: [
+      { id: 'lifestyle', prompt: `TASK: Authentic lifestyle photo — UGC aesthetic.\nMANDATORY RULES:\n1. Person wearing the EXACT product from the reference image naturally in an everyday setting (café, park, apartment).\n2. PATTERN FIDELITY: Reproduce the EXACT fabric pattern, colors, texture from the reference — no reinterpretation.\n3. Warm natural lighting, candid feel — looks like a friend took the photo with an iPhone.\n4. Natural relaxed pose, genuine smile or candid moment, not overly posed.\n5. Product is clearly visible and the focal point despite the casual setting.\n6. Complete outfit with complementary pieces that enhance but don't distract.\n7. Social media ready composition (3:4 ratio optimized for Instagram).\nFORBIDDEN: Studio lighting, stiff poses, flat-lay, bare torso, product on surface.` },
+      { id: 'influencer', prompt: `TASK: Influencer-style aspirational photo.\nMANDATORY RULES:\n1. Model posing confidently wearing the EXACT product from the reference image in a trendy location.\n2. PATTERN FIDELITY: Reproduce the EXACT fabric pattern, print, colors from the reference — pixel-accurate.\n3. Bright, aspirational aesthetic — clean composition, Instagram-ready golden hour or bright daylight.\n4. Confident pose: hand on hip, mid-stride, or casual lean against a wall.\n5. Product is the HERO — styled to stand out, well-lit, in sharp focus.\n6. Trendy setting: minimalist architecture, café terrace, palm-lined street, modern interior.\n7. Complete styled outfit with curated complementary pieces.\nFORBIDDEN: Flat-lay, studio background, bare torso, product on table, dark moody lighting.` },
+      { id: 'street_style', prompt: `TASK: Street style fashion photography.\nMANDATORY RULES:\n1. Person walking confidently in an urban city setting wearing the EXACT product from the reference image.\n2. PATTERN FIDELITY: Reproduce the EXACT fabric pattern, texture, colors — no creative reinterpretation.\n3. Dynamic angle — slightly low perspective, mid-stride movement, editorial street photography feel.\n4. Natural street lighting with urban bokeh background (city lights, storefronts slightly blurred).\n5. Product MUST be clearly visible and the visual anchor of the composition.\n6. Complete street-style outfit with complementary urban pieces (sneakers, accessories).\n7. Natural human anatomy, confident body language, candid energy.\nFORBIDDEN: Static pose, studio background, flat-lay, bare torso, product on surface.` },
+      { id: 'casual_scene', prompt: `TASK: Casual everyday lifestyle scene.\nMANDATORY RULES:\n1. Person relaxing at a café, park bench, or cozy home setting wearing the EXACT product from the reference image.\n2. PATTERN FIDELITY: Reproduce the EXACT fabric pattern, colors, texture from the reference.\n3. Soft natural lighting, authentic relaxed mood — feels like a real candid moment.\n4. Casual relaxed pose: sitting cross-legged, holding a coffee, reading, or laughing.\n5. Product clearly visible despite the relaxed setting — it's the visual anchor.\n6. Complete casual outfit with lifestyle-appropriate complementary pieces.\n7. Warm color palette, inviting atmosphere, social media lifestyle content quality.\nFORBIDDEN: Stiff poses, studio setting, flat-lay, bare torso, product on table.` },
+    ],
+  },
+  ads: {
+    id: 'ads', ratio: '3:4',
+    styles: [
+      { id: 'magazine', prompt: `TASK: High-end magazine editorial photo — Vogue/Harper's Bazaar aesthetic.\nMANDATORY RULES:\n1. Model in a dramatic editorial pose wearing the EXACT product from the reference image.\n2. PATTERN FIDELITY: Reproduce the EXACT fabric pattern, print, texture from the reference — flawless reproduction.\n3. Professional studio lighting with artistic directional shadows creating depth and drama.\n4. Fashion editorial composition: bold framing, strong visual hierarchy, product as the centerpiece.\n5. Model with striking confident expression, editorial body language — NOT casual.\n6. Complete haute-couture styled outfit with editorial-appropriate complementary pieces.\n7. Cinematic color grading, magazine-cover quality, aspirational luxury feel.\nFORBIDDEN: Casual poses, flat-lay, bare torso, product on surface, snapshot aesthetic.` },
+      { id: 'campaign', prompt: `TASK: Fashion campaign advertising photo.\nMANDATORY RULES:\n1. Model in a powerful confident pose wearing the EXACT product from the reference image.\n2. PATTERN FIDELITY: Reproduce the EXACT fabric pattern, colors, texture — no reinterpretation.\n3. Cinematic lighting with bold composition — the image MUST stop the scroll.\n4. High-fashion advertising aesthetic: dramatic, aspirational, campaign-quality.\n5. Product is the VISUAL HERO — perfectly lit, in sharp focus, prominently displayed.\n6. Complete styled outfit with campaign-appropriate complementary pieces.\n7. Strong color contrast, professional retouching quality, print-ad ready.\nFORBIDDEN: Casual setting, flat-lay, product on surface, bare torso, low-energy pose.` },
+      { id: 'dramatic_light', prompt: `TASK: Dramatic lighting product showcase.\nMANDATORY RULES:\n1. Model wearing the EXACT product from the reference image with strong directional lighting.\n2. PATTERN FIDELITY: Reproduce the EXACT fabric pattern, texture, colors — even in dramatic light the pattern MUST be accurate.\n3. Single strong directional light creating bold shadows and highlights on the garment.\n4. Dark moody background — the product emerges from shadow into light.\n5. High contrast commercial photography — theatrical, premium, attention-grabbing.\n6. Product texture and details enhanced by the dramatic lighting angle.\n7. Complete outfit, natural anatomy, confident pose facing the light source.\nFORBIDDEN: Flat lighting, flat-lay, product on surface, bare torso, washed-out exposure.` },
+      { id: 'bold_background', prompt: `TASK: Bold vibrant background — pop-art advertising style.\nMANDATORY RULES:\n1. Model wearing the EXACT product from the reference image against a striking solid-colored background.\n2. PATTERN FIDELITY: Reproduce the EXACT fabric pattern, print, colors from the reference.\n3. Vibrant contrasting background color that makes the product POP — bold red, electric blue, sunshine yellow, or hot pink.\n4. Clean composition with strong color contrast between product and background.\n5. Modern advertising aesthetic — eye-catching, scroll-stopping, Instagram-ad ready.\n6. Even studio lighting ensuring product colors are accurate despite bold background.\n7. Complete outfit, confident energetic pose, natural anatomy.\nFORBIDDEN: Neutral backgrounds, flat-lay, product on surface, bare torso, muted colors.` },
+    ],
+  },
+};
+
+const PRODUCT_PACKS: Record<string, PackDef> = {
+  ecommerce: {
+    id: 'ecommerce', ratio: '1:1',
+    styles: [
+      { id: 'hero_packshot', prompt: `TASK: Premium hero packshot — ultra-realistic studio product photography.\nMANDATORY RULES:\n1. Product from the reference image is the ONLY object — exact proportions preserved, no stretching or warping.\n2. Pure white seamless background with soft professional studio lighting from multiple angles.\n3. Product standing upright or elegantly floating with soft grounded shadow for natural anchoring.\n4. Cinematic shallow depth of field subtly drawing the eye to the product center.\n5. Natural lens perspective — shot looks like a real photo from a Canon/Sony professional camera.\n6. Exact product colors, branding, labels, and surface details preserved from the reference.\n7. Premium commercial feel: clean, luxurious, hero-image quality for a product landing page.\nFORBIDDEN: Multiple products, text overlays, watermarks, AI artifacts, distorted geometry, CGI look.` },
+      { id: 'angle_variation', prompt: `TASK: Dynamic 3/4 angle product shot — premium catalog photography.\nMANDATORY RULES:\n1. Product from the reference image shot from a 3/4 elevated angle showing depth and dimension.\n2. Exact geometric proportions preserved — no distortion from the angle change.\n3. Clean white or light grey background, soft even studio lighting revealing form and contours.\n4. Cinematic depth of field with the product in crisp focus, background gently falling off.\n5. Soft grounded shadow adding realism and spatial anchoring.\n6. All branding, labels, textures, and surface details from the reference accurately preserved.\n7. Professional product catalog quality — ready for e-commerce listing.\nFORBIDDEN: Flat top-down view, multiple products, CGI aesthetic, harsh shadows, distorted proportions.` },
+      { id: 'detail_macro', prompt: `TASK: Ultra-close macro detail shot — material and craftsmanship showcase.\nMANDATORY RULES:\n1. Extreme close-up of the product from the reference image — focus on material quality, finish, texture.\n2. Razor-sharp focus on the detail area with beautiful bokeh falloff on surrounding areas.\n3. Professional macro lighting revealing surface characteristics: grain, sheen, matte finish, metallic details.\n4. Exact product colors, material finish, and surface texture from the reference.\n5. Studio environment — clean, distraction-free, the detail IS the subject.\n6. Premium feel: this shot should communicate quality and craftsmanship.\nFORBIDDEN: Full product view, multiple products, flat lighting, blurry focus area, CGI look.` },
+      { id: 'scale_context', prompt: `TASK: Product in context — scale and usage demonstration.\nMANDATORY RULES:\n1. Product from the reference image shown being held in a hand or placed next to a common reference object for scale.\n2. Exact product proportions, colors, branding, and details preserved from the reference.\n3. Clean natural setting with soft warm lighting — feels authentic and trustworthy.\n4. Shallow depth of field keeping the product in sharp focus, context elements slightly soft.\n5. Natural skin tones if hands are shown — realistic, not plastic or AI-looking.\n6. The composition helps the customer understand the actual physical size of the product.\n7. Ultra-realistic photography — looks like a real lifestyle product photo.\nFORBIDDEN: Multiple products, cluttered scene, CGI hands, distorted proportions, studio white background.` },
+    ],
+  },
+  social: {
+    id: 'social', ratio: '3:4',
+    styles: [
+      { id: 'environment_scene', prompt: `TASK: Aspirational lifestyle environment — product in its natural habitat.\nMANDATORY RULES:\n1. Product from the reference image placed in a beautiful real-world setting where it would naturally be used.\n2. Exact product proportions, colors, branding preserved — the product is the HERO of the scene.\n3. Warm natural lighting creating an inviting, aspirational atmosphere (golden hour or bright natural light).\n4. Cinematic shallow depth of field — product in sharp focus, environment beautifully blurred.\n5. Scene tells a story: the viewer can imagine owning and using this product in this setting.\n6. Premium lifestyle photography quality — Instagram-worthy, aspirational, scroll-stopping.\n7. Ultra-realistic: no CGI look, natural shadows, realistic materials and reflections.\nFORBIDDEN: White studio background, multiple products, flat lighting, cluttered scene, CGI aesthetic.` },
+      { id: 'hand_interaction', prompt: `TASK: Natural hand interaction — authentic UGC-style product demo.\nMANDATORY RULES:\n1. Person naturally holding, using, or demonstrating the product from the reference image.\n2. Close-up perspective showing the product being interacted with — authentic UGC feel.\n3. Exact product proportions, colors, branding, surface details preserved from the reference.\n4. Natural lighting (window light or soft daylight), casual authentic setting.\n5. Realistic hands with natural skin texture, correct finger proportions, natural nail appearance.\n6. The interaction should feel genuine — not staged or overly posed.\n7. Social media content quality — feels like a real customer sharing their purchase.\nFORBIDDEN: Studio setup, stiff posed hands, CGI/plastic hands, product floating without context, multiple products.` },
+      { id: 'lifestyle_scene', prompt: `TASK: Curated lifestyle scene — aspirational daily moment.\nMANDATORY RULES:\n1. Product from the reference image as the HERO focal point in a beautifully curated setting.\n2. Aspirational daily moment: morning coffee ritual, creative workspace, cozy evening, travel moment.\n3. Exact product proportions, colors, branding preserved — product draws the eye first.\n4. Warm inviting tones, natural lighting, cinematic depth of field.\n5. Complementary props that enhance the story without competing (a cup, a book, a plant — minimal).\n6. Instagram-worthy composition: intentional framing, visual balance, premium lifestyle aesthetic.\n7. Ultra-realistic photography — no CGI, natural shadows and reflections.\nFORBIDDEN: Cluttered scene, multiple hero products, flat lighting, sterile studio look, CGI aesthetic.` },
+      { id: 'flat_lay', prompt: `TASK: Aesthetic flat-lay composition — overhead product showcase.\nMANDATORY RULES:\n1. Product from the reference image as the HERO in an artful overhead flat-lay arrangement.\n2. Exact product proportions, colors, branding, surface details preserved from the reference.\n3. Clean surface (marble, light wood, or linen texture) providing subtle texture contrast.\n4. Balanced composition with 2-3 small complementary props arranged with intentional spacing.\n5. Even soft overhead lighting — no harsh shadows, even illumination across the frame.\n6. Social media content quality: Instagram-ready, aspirational, visually satisfying arrangement.\n7. Product occupies the most prominent position and largest area in the composition.\nFORBIDDEN: Cluttered arrangement, competing products, dark surfaces, harsh directional shadows, CGI look.` },
+    ],
+  },
+  ads: {
+    id: 'ads', ratio: '3:4',
+    styles: [
+      { id: 'floating_product', prompt: `TASK: Dynamic floating product — eye-catching advertising hero shot.\nMANDATORY RULES:\n1. Product from the reference image floating dramatically in mid-air with dynamic energy.\n2. Exact product proportions, colors, branding preserved — no distortion from the dynamic angle.\n3. Bold colored gradient background (deep blue to purple, orange to pink, or teal to emerald).\n4. Subtle motion effects: light particles, soft glow, or gentle splash elements around the product.\n5. Dramatic lighting from below or side creating depth and dimension on the product.\n6. Cinematic feel — this is a premium advertisement hero image that stops the scroll.\n7. Soft shadow or reflection below anchoring the product despite the floating effect.\nFORBIDDEN: Multiple products, text overlays, watermarks, static flat composition, CGI-plastic look.` },
+      { id: 'bold_background', prompt: `TASK: Bold vibrant background — pop-art commercial photography.\nMANDATORY RULES:\n1. Product from the reference image on a bold, vibrant solid-colored background.\n2. Exact product proportions, colors, branding, surface details preserved from the reference.\n3. Strong color contrast between product and background — choose a complementary color that makes it POP.\n4. Clean minimal composition — product is the ONLY subject, centered with breathing room.\n5. Professional studio lighting ensuring product colors read accurately against the bold background.\n6. Modern advertising aesthetic — eye-catching, confident, social-ad ready.\n7. Soft grounded shadow for realism despite the bold artistic background.\nFORBIDDEN: Multiple products, busy patterns on background, text, muted colors, cluttered composition.` },
+      { id: 'motion_scene', prompt: `TASK: High-energy motion scene — dynamic advertising photography.\nMANDATORY RULES:\n1. Product from the reference image in a dynamic scene with motion and energy.\n2. Exact product proportions, colors, branding preserved — product integrity is paramount.\n3. Dynamic elements: water splashes, powder explosions, light streaks, or particle effects surrounding the product.\n4. High-energy cinematic feel — dramatic lighting, bold composition, attention-grabbing.\n5. Product remains in razor-sharp focus while motion elements have natural motion blur.\n6. Dark or gradient background making the product and effects POP.\n7. Premium advertising quality — this image should make someone stop scrolling and look.\nFORBIDDEN: Static composition, multiple products, text overlays, product obscured by effects, CGI-plastic look.` },
+      { id: 'dramatic_spotlight', prompt: `TASK: Dramatic spotlight — luxury product photography.\nMANDATORY RULES:\n1. Product from the reference image under a single dramatic spotlight against a dark background.\n2. Exact product proportions, colors, branding, surface details preserved from the reference.\n3. Strong directional light from above creating a pool of light around the product.\n4. Dark moody background (deep black or very dark grey) — the product EMERGES from darkness.\n5. High contrast revealing product texture, material quality, and premium details.\n6. Luxury advertising feel — premium, exclusive, desirable.\n7. Subtle reflection on a dark glossy surface below the product for added depth.\nFORBIDDEN: Flat even lighting, white background, multiple products, text, cluttered scene, CGI aesthetic.` },
+    ],
+  },
+};
+
+function getPackDef(isFashion: boolean, packId: string): PackDef | null {
+  const packs = isFashion ? FASHION_PACKS : PRODUCT_PACKS;
+  return packs[packId] || null;
 }
+
+function buildPackPrompt(pack: PackDef, isFashion: boolean): string {
+  const rules = isFashion ? FASHION_RULES : PRODUCT_RULES;
+  const stylePrompts = pack.styles
+    .map((style, i) => `--- STYLE OPTION ${i + 1} (${style.id}) ---\n${style.prompt}`)
+    .join('\n\n');
+
+  return `TASK: Generate a SINGLE professional product image from the reference product photo.
+The image MUST show the EXACT same product from the reference image.
+IMPORTANT: Output exactly ONE image, NOT a collage, NOT a grid, NOT multiple images combined.
+
+Choose one of the following styles for this image:
+
+${stylePrompts}
+
+${rules}
+
+ABSOLUTE QUALITY RULES:
+1. Output MUST be a single standalone photograph — NEVER a grid, montage, collage, or split-screen.
+2. No AI artifacts, no watermarks, no text overlays of any kind.
+3. Natural human anatomy if people appear — correct proportions, realistic hands, natural skin.
+4. Product integrity is the HIGHEST priority — exact colors, branding, shape, proportions from the reference.
+5. Ultra-realistic photography quality — the result must look like a real professional photograph.`;
+}
+
+// ── Shared helpers ──
 
 async function hashApiKey(key: string): Promise<string> {
   const encoder = new TextEncoder()
@@ -40,8 +151,80 @@ async function hashApiKey(key: string): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
+/**
+ * Upload a source image from URL into storage and source_images table.
+ * Returns the source_image record (with id, public_url, etc.)
+ */
+async function uploadSourceImageFromUrl(supabase: any, userId: string, imageUrl: string): Promise<{ id: string; public_url: string }> {
+  // Fetch the image
+  const imageResponse = await fetch(imageUrl, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+    },
+    signal: AbortSignal.timeout(30000),
+  });
+
+  if (!imageResponse.ok) {
+    throw new Error(`Failed to fetch image from URL (${imageResponse.status})`)
+  }
+
+  const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+  const imageBuffer = await imageResponse.arrayBuffer();
+
+  // Determine extension
+  const extensionMap: Record<string, string> = {
+    'image/jpeg': 'jpg', 'image/jpg': 'jpg', 'image/png': 'png',
+    'image/webp': 'webp', 'application/octet-stream': 'jpg',
+  };
+  const extension = extensionMap[contentType] || 'jpg';
+
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2);
+  const fileName = `api-import-${timestamp}-${random}.${extension}`;
+  const storagePath = `${userId}/${fileName}`;
+
+  // Upload to storage
+  const { error: storageError } = await supabase.storage
+    .from('source-images')
+    .upload(storagePath, imageBuffer, { contentType, upsert: false });
+
+  if (storageError) throw new Error(`Storage upload failed: ${storageError.message}`);
+
+  // Get public URL
+  const { data: publicUrlData } = supabase.storage
+    .from('source-images')
+    .getPublicUrl(storagePath);
+
+  // Insert into source_images table
+  const { data: dbData, error: dbError } = await supabase
+    .from('source_images')
+    .insert({
+      user_id: userId,
+      storage_path: storagePath,
+      public_url: publicUrlData.publicUrl,
+      file_name: fileName,
+      file_size: imageBuffer.byteLength,
+      mime_type: contentType,
+    })
+    .select('id, public_url')
+    .single();
+
+  if (dbError) {
+    await supabase.storage.from('source-images').remove([storagePath]);
+    throw new Error(`Failed to save image metadata: ${dbError.message}`);
+  }
+
+  return dbData;
+}
+
+// ── Valid settings ──
+const VALID_ASPECT_RATIOS = ['1:1', '3:4', '4:3', '9:16', '16:9', 'source'];
+const VALID_SIZE_TIERS = ['small', 'large'];
+
+// ── Main handler ──
+
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -62,10 +245,8 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Hash the API key for lookup
     const keyHash = await hashApiKey(apiKey)
 
-    // Validate API key
     const { data: keyData, error: keyError } = await supabase
       .rpc('validate_api_key', { p_key_hash: keyHash })
 
@@ -135,6 +316,10 @@ Deno.serve(async (req) => {
       requiredPermission = 'video'
     } else if (endpoint.startsWith('/v1/fashion')) {
       requiredPermission = 'fashion_catalog'
+    } else if (endpoint.startsWith('/v1/product')) {
+      requiredPermission = 'product_background'
+    } else if (endpoint.startsWith('/v1/packs')) {
+      requiredPermission = 'packs'
     } else if (endpoint.startsWith('/v1/credits')) {
       requiredPermission = '' // No specific permission needed
     }
@@ -150,11 +335,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Check permissions
-    if (endpoint.startsWith('/v1/product')) {
-      requiredPermission = 'product_background'
-    }
-
     // Route to appropriate handler
     let response: any
     let statusCode = 200
@@ -163,12 +343,12 @@ Deno.serve(async (req) => {
     try {
       switch (endpoint) {
         case '/v1/ugc/generate':
-          response = await handleUgcGenerate(supabase, apiKeyInfo.user_id, body, apiKeyInfo.api_key_id)
+          response = await handleUgcGenerate(supabase, supabaseUrl, supabaseServiceKey, apiKeyInfo.user_id, body, apiKeyInfo.api_key_id)
           creditsUsed = body.settings?.number || 1
           break
 
         case '/v1/video/create':
-          response = await handleVideoCreate(supabase, apiKeyInfo.user_id, body, apiKeyInfo.api_key_id)
+          response = await handleVideoCreate(supabase, supabaseUrl, supabaseServiceKey, apiKeyInfo.user_id, body, apiKeyInfo.api_key_id)
           creditsUsed = (body.duration === 5) ? 5 : 10
           break
 
@@ -180,6 +360,11 @@ Deno.serve(async (req) => {
         case '/v1/product/background':
           response = await handleProductBackground(supabase, apiKeyInfo.user_id, body, apiKeyInfo.api_key_id)
           creditsUsed = 1
+          break
+
+        case '/v1/packs/generate':
+          response = await handlePackGenerate(supabase, supabaseUrl, supabaseServiceKey, apiKeyInfo.user_id, body, apiKeyInfo.api_key_id)
+          creditsUsed = response?.credits_used || 4
           break
 
         case '/v1/credits/balance':
@@ -200,6 +385,9 @@ Deno.serve(async (req) => {
           } else if (endpoint.match(/^\/v1\/product\/background\/jobs\/[\w-]+$/)) {
             const jobId = endpoint.split('/').pop()!
             response = await handleGetProductBackgroundJob(supabase, apiKeyInfo.user_id, jobId)
+          } else if (endpoint.match(/^\/v1\/packs\/jobs\/[\w-]+$/)) {
+            const jobId = endpoint.split('/').pop()!
+            response = await handleGetPackJob(supabase, apiKeyInfo.user_id, jobId)
           } else {
             statusCode = 404
             response = { error: 'Endpoint not found', code: 'NOT_FOUND' }
@@ -208,8 +396,12 @@ Deno.serve(async (req) => {
     } catch (handlerError) {
       console.error('Handler error:', handlerError)
       statusCode = 500
-      response = { error: 'Internal server error', code: 'INTERNAL_ERROR' }
+      response = { error: handlerError instanceof Error ? handlerError.message : 'Internal server error', code: 'INTERNAL_ERROR' }
     }
+
+    // If handler returned an error code, reflect it
+    if (response?.code === 'INSUFFICIENT_CREDITS') statusCode = 402
+    if (response?.code === 'NOT_FOUND') statusCode = 404
 
     const responseTime = Date.now() - startTime
 
@@ -249,99 +441,92 @@ Deno.serve(async (req) => {
   }
 })
 
-// Handler functions
+// ═══════════════════════════════════════════════════════════
+// HANDLER: UGC Generate — delegates to ugc-gemini-v3 createImageJob
+// ═══════════════════════════════════════════════════════════
 
-async function handleUgcGenerate(supabase: any, userId: string, body: any, apiKeyId?: string) {
+async function handleUgcGenerate(supabase: any, supabaseUrl: string, serviceKey: string, userId: string, body: any, apiKeyId: string) {
   const { source_image_url, prompt, settings = {} } = body
 
   if (!source_image_url) {
     throw new Error('source_image_url is required')
   }
 
-  // Check credits
-  const numberOfImages = settings.number || 1
-  const { data: deductResult, error: deductError } = await supabase
-    .rpc('deduct_user_credits', {
-      p_user_id: userId,
-      p_amount: numberOfImages,
-      p_reason: 'api_ugc_generation'
-    })
-
-  if (deductError || !deductResult?.success) {
-    return {
-      error: deductResult?.error || 'Failed to deduct credits',
-      code: 'INSUFFICIENT_CREDITS'
-    }
+  // Validate settings
+  if (settings.aspectRatio && !VALID_ASPECT_RATIOS.includes(settings.aspectRatio)) {
+    throw new Error(`Invalid aspectRatio. Must be one of: ${VALID_ASPECT_RATIOS.join(', ')}`)
+  }
+  if (settings.size && !VALID_SIZE_TIERS.includes(settings.size)) {
+    throw new Error(`Invalid size. Must be one of: ${VALID_SIZE_TIERS.join(', ')}`)
   }
 
-  // Create job record
-  const contentHash = await hashApiKey(`${userId}-${source_image_url}-${prompt}-${Date.now()}`)
-  
-  const { data: job, error: jobError } = await supabase
-    .from('image_jobs')
-    .insert({
-      user_id: userId,
-      prompt: prompt || 'Professional product photography',
-      settings: {
-        ...settings,
-        source_url: source_image_url,
-        source: 'api',
-        api_key_id: apiKeyId
-      },
-      content_hash: contentHash,
-      status: 'queued',
-      model_type: 'gemini',
-      total: numberOfImages
-    })
-    .select()
-    .single()
+  // Step 1: Upload source image from URL into storage + source_images table
+  console.log('[API-GW] Uploading source image from URL:', source_image_url)
+  const sourceImage = await uploadSourceImageFromUrl(supabase, userId, source_image_url)
+  console.log('[API-GW] Source image uploaded:', sourceImage.id)
 
-  if (jobError) {
-    // Refund credits on failure
-    await supabase.rpc('refund_user_credits', {
-      p_user_id: userId,
-      p_amount: numberOfImages,
-      p_reason: 'api_job_creation_failed'
-    })
-    throw jobError
+  // Step 2: Call ugc-gemini-v3 createImageJob via service auth
+  const jobPayload = {
+    action: 'createImageJob',
+    source_image_id: sourceImage.id,
+    prompt: prompt || 'Professional product photography with clean background',
+    settings: {
+      number: settings.number || 1,
+      quality: settings.quality || 'high',
+      aspectRatio: settings.aspectRatio || '1:1',
+      size: settings.size || 'small',
+      source: 'api',
+      api_key_id: apiKeyId,
+    },
   }
 
-  // Trigger the actual generation (async call to ugc-gemini function)
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-  
-  fetch(`${supabaseUrl}/functions/v1/ugc-gemini-v3`, {
+  console.log('[API-GW] Calling ugc-gemini-v3 createImageJob')
+  const geminiResponse = await fetch(`${supabaseUrl}/functions/v1/ugc-gemini-v3`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
-      'Content-Type': 'application/json'
+      'Authorization': `Bearer ${serviceKey}`,
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      action: 'process_job',
-      jobId: job.id,
-      sourceImageUrl: source_image_url,
-      prompt: prompt,
-      settings: settings
-    })
-  }).catch(console.error) // Fire and forget
+    body: JSON.stringify(jobPayload),
+  })
+
+  const geminiResult = await geminiResponse.json()
+  console.log('[API-GW] ugc-gemini-v3 response:', geminiResult)
+
+  if (geminiResult.error) {
+    return { error: geminiResult.error, code: 'GENERATION_FAILED' }
+  }
 
   return {
-    job_id: job.id,
-    status: 'queued',
+    job_id: geminiResult.jobId,
+    status: geminiResult.status || 'queued',
     message: 'Image generation job created successfully',
-    credits_used: numberOfImages
+    credits_used: settings.number || 1,
+    source_image_id: sourceImage.id,
   }
 }
 
-async function handleVideoCreate(supabase: any, userId: string, body: any, apiKeyId?: string) {
+// ═══════════════════════════════════════════════════════════
+// HANDLER: Video Create — delegates to kling-video createVideoJob
+// ═══════════════════════════════════════════════════════════
+
+async function handleVideoCreate(supabase: any, supabaseUrl: string, serviceKey: string, userId: string, body: any, apiKeyId: string) {
   const { source_image_url, prompt, duration = 5 } = body
 
   if (!source_image_url) {
     throw new Error('source_image_url is required')
   }
 
-  const creditCost = duration === 5 ? 5 : 10
+  // Upload source image
+  console.log('[API-GW] Uploading source image for video')
+  const sourceImage = await uploadSourceImageFromUrl(supabase, userId, source_image_url)
 
-  // Check credits
+  // Call kling-video createVideoJob
+  // Note: kling-video uses user auth and checks it, so we need to create the job directly
+  // since service key auth won't pass getUser(). We'll insert the job directly.
+  const creditCost = Number(duration) === 10 ? 10 : 5
+
+  // Deduct credits
   const { data: deductResult, error: deductError } = await supabase
     .rpc('deduct_user_credits', {
       p_user_id: userId,
@@ -356,15 +541,17 @@ async function handleVideoCreate(supabase: any, userId: string, body: any, apiKe
     }
   }
 
-  // Create kling job record
+  // Create kling job record directly (same as kling-video createVideoJob does)
   const { data: job, error: jobError } = await supabase
     .from('kling_jobs')
     .insert({
       user_id: userId,
       prompt: prompt || 'Gentle camera movement',
-      image_url: source_image_url,
+      image_url: sourceImage.public_url,
+      source_image_id: sourceImage.id,
       duration: duration,
       status: 'queued',
+      model: 'kling-v2',
       metadata: { source: 'api', api_key_id: apiKeyId }
     })
     .select()
@@ -379,20 +566,16 @@ async function handleVideoCreate(supabase: any, userId: string, body: any, apiKe
     throw jobError
   }
 
-  // Trigger video generation
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-  
+  // Trigger the video processing (fire and forget)
   fetch(`${supabaseUrl}/functions/v1/kling-video`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+      'Authorization': `Bearer ${serviceKey}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      jobId: job.id,
-      imageUrl: source_image_url,
-      prompt: prompt,
-      duration: duration
+      action: 'processVideoJob',
+      jobId: job.id
     })
   }).catch(console.error)
 
@@ -404,82 +587,187 @@ async function handleVideoCreate(supabase: any, userId: string, body: any, apiKe
   }
 }
 
+// ═══════════════════════════════════════════════════════════
+// HANDLER: Fashion Swap
+// ═══════════════════════════════════════════════════════════
+
 async function handleFashionSwap(supabase: any, userId: string, body: any, apiKeyId?: string) {
   const { garment_image_url, base_model_id, settings = {} } = body
 
-  if (!garment_image_url) {
-    throw new Error('garment_image_url is required')
-  }
+  if (!garment_image_url) throw new Error('garment_image_url is required')
+  if (!base_model_id) throw new Error('base_model_id is required')
 
-  if (!base_model_id) {
-    throw new Error('base_model_id is required')
-  }
-
-  // Check credits
   const { data: deductResult, error: deductError } = await supabase
-    .rpc('deduct_user_credits', {
-      p_user_id: userId,
-      p_amount: 1,
-      p_reason: 'api_fashion_swap'
-    })
+    .rpc('deduct_user_credits', { p_user_id: userId, p_amount: 1, p_reason: 'api_fashion_swap' })
 
   if (deductError || !deductResult?.success) {
-    return {
-      error: deductResult?.error || 'Failed to deduct credits',
-      code: 'INSUFFICIENT_CREDITS'
-    }
+    return { error: deductResult?.error || 'Failed to deduct credits', code: 'INSUFFICIENT_CREDITS' }
   }
 
-  // Create outfit swap job
   const { data: job, error: jobError } = await supabase
     .from('outfit_swap_jobs')
     .insert({
       user_id: userId,
       base_model_id: base_model_id,
       status: 'queued',
-      metadata: { 
-        source: 'api',
-        api_key_id: apiKeyId,
-        garment_url: garment_image_url 
-      },
+      metadata: { source: 'api', api_key_id: apiKeyId, garment_url: garment_image_url },
       settings: settings
     })
     .select()
     .single()
 
   if (jobError) {
-    await supabase.rpc('refund_user_credits', {
-      p_user_id: userId,
-      p_amount: 1,
-      p_reason: 'api_fashion_job_creation_failed'
-    })
+    await supabase.rpc('refund_user_credits', { p_user_id: userId, p_amount: 1, p_reason: 'api_fashion_job_creation_failed' })
     throw jobError
   }
 
-  // Trigger outfit swap
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-  
   fetch(`${supabaseUrl}/functions/v1/outfit-swap`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({
-      jobId: job.id,
-      garmentUrl: garment_image_url,
-      baseModelId: base_model_id,
-      settings: settings
-    })
+    body: JSON.stringify({ action: 'processJob', jobId: job.id, garmentUrl: garment_image_url, baseModelId: base_model_id, settings })
   }).catch(console.error)
 
-  return {
+  return { job_id: job.id, status: 'queued', message: 'Fashion catalog swap job created successfully', credits_used: 1 }
+}
+
+// ═══════════════════════════════════════════════════════════
+// HANDLER: Product Background
+// ═══════════════════════════════════════════════════════════
+
+async function handleProductBackground(supabase: any, userId: string, body: any, apiKeyId?: string) {
+  const { source_image_url, background_preset_id, background_image_url, settings = {} } = body
+
+  if (!source_image_url) throw new Error('source_image_url is required')
+  if (!background_preset_id && !background_image_url) throw new Error('Either background_preset_id or background_image_url is required')
+
+  const { data: deductResult, error: deductError } = await supabase
+    .rpc('deduct_user_credits', { p_user_id: userId, p_amount: 1, p_reason: 'api_product_background' })
+
+  if (deductError || !deductResult?.success) {
+    return { error: deductResult?.error || 'Failed to deduct credits', code: 'INSUFFICIENT_CREDITS' }
+  }
+
+  const backgroundType = background_preset_id ? 'preset' : 'custom'
+  const { data: job, error: jobError } = await supabase
+    .from('bulk_background_jobs')
+    .insert({
+      user_id: userId,
+      background_type: backgroundType,
+      background_preset_id: background_preset_id || null,
+      background_image_url: background_image_url || null,
+      total_images: 1,
+      status: 'queued',
+      settings: { ...settings, source: 'api', api_key_id: apiKeyId }
+    })
+    .select()
+    .single()
+
+  if (jobError) {
+    await supabase.rpc('refund_user_credits', { p_user_id: userId, p_amount: 1, p_reason: 'api_product_bg_job_creation_failed' })
+    throw jobError
+  }
+
+  await supabase.from('bulk_background_results').insert({
     job_id: job.id,
-    status: 'queued',
-    message: 'Fashion catalog swap job created successfully',
-    credits_used: 1
+    user_id: userId,
+    source_image_url: source_image_url,
+    image_index: 0,
+    status: 'pending'
+  })
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+  fetch(`${supabaseUrl}/functions/v1/bulk-background`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ action: 'processJob', jobId: job.id })
+  }).catch(console.error)
+
+  return { job_id: job.id, status: 'queued', message: 'Product background swap job created successfully', credits_used: 1 }
+}
+
+// ═══════════════════════════════════════════════════════════
+// HANDLER: Pack Generate — uses onboarding pack prompts
+// ═══════════════════════════════════════════════════════════
+
+async function handlePackGenerate(supabase: any, supabaseUrl: string, serviceKey: string, userId: string, body: any, apiKeyId: string) {
+  const { source_image_url, pack_id, product_type } = body
+
+  if (!source_image_url) throw new Error('source_image_url is required')
+  if (!pack_id || !['ecommerce', 'social', 'ads'].includes(pack_id)) {
+    throw new Error('pack_id is required and must be one of: ecommerce, social, ads')
+  }
+  if (!product_type || !['fashion', 'product'].includes(product_type)) {
+    throw new Error('product_type is required and must be one of: fashion, product')
+  }
+
+  const isFashion = product_type === 'fashion'
+  const pack = getPackDef(isFashion, pack_id)
+  if (!pack) throw new Error(`Pack "${pack_id}" not found for product type "${product_type}"`)
+
+  const numberOfImages = pack.styles.length // 4 images per pack
+  const prompt = buildPackPrompt(pack, isFashion)
+
+  // Upload source image
+  console.log('[API-GW] Uploading source image for pack generation')
+  const sourceImage = await uploadSourceImageFromUrl(supabase, userId, source_image_url)
+  console.log('[API-GW] Source image uploaded:', sourceImage.id)
+
+  // Create job via ugc-gemini-v3 with pack settings
+  const jobPayload = {
+    action: 'createImageJob',
+    source_image_id: sourceImage.id,
+    prompt,
+    settings: {
+      number: numberOfImages,
+      quality: 'high',
+      aspectRatio: pack.ratio,
+      size: 'small',
+      source: 'api',
+      api_key_id: apiKeyId,
+      pack_id: pack_id,
+      product_type: product_type,
+    },
+  }
+
+  console.log('[API-GW] Calling ugc-gemini-v3 createImageJob for pack')
+  const geminiResponse = await fetch(`${supabaseUrl}/functions/v1/ugc-gemini-v3`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${serviceKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(jobPayload),
+  })
+
+  const geminiResult = await geminiResponse.json()
+  console.log('[API-GW] ugc-gemini-v3 pack response:', geminiResult)
+
+  if (geminiResult.error) {
+    return { error: geminiResult.error, code: 'GENERATION_FAILED' }
+  }
+
+  return {
+    job_id: geminiResult.jobId,
+    status: geminiResult.status || 'queued',
+    pack: pack_id,
+    product_type,
+    styles: pack.styles.map(s => s.id),
+    message: 'Pack generation job created successfully',
+    credits_used: numberOfImages,
+    source_image_id: sourceImage.id,
   }
 }
+
+// ═══════════════════════════════════════════════════════════
+// HANDLER: Credits Balance
+// ═══════════════════════════════════════════════════════════
 
 async function handleCreditsBalance(supabase: any, userId: string) {
   const { data, error } = await supabase
@@ -496,6 +784,10 @@ async function handleCreditsBalance(supabase: any, userId: string) {
   }
 }
 
+// ═══════════════════════════════════════════════════════════
+// JOB STATUS HANDLERS
+// ═══════════════════════════════════════════════════════════
+
 async function handleGetUgcJob(supabase: any, userId: string, jobId: string) {
   const { data: job, error } = await supabase
     .from('image_jobs')
@@ -504,16 +796,13 @@ async function handleGetUgcJob(supabase: any, userId: string, jobId: string) {
     .eq('user_id', userId)
     .single()
 
-  if (error || !job) {
-    return { error: 'Job not found', code: 'NOT_FOUND' }
-  }
+  if (error || !job) return { error: 'Job not found', code: 'NOT_FOUND' }
 
-  // Get generated images if completed
   let images: any[] = []
-  if (job.status === 'completed') {
+  if (job.status === 'completed' || job.completed > 0) {
     const { data: ugcImages } = await supabase
       .from('ugc_images')
-      .select('id, public_url, created_at')
+      .select('id, public_url, created_at, meta')
       .eq('job_id', jobId)
 
     images = ugcImages || []
@@ -532,7 +821,7 @@ async function handleGetUgcJob(supabase: any, userId: string, jobId: string) {
     images: images.map(img => ({
       id: img.id,
       url: img.public_url,
-      created_at: img.created_at
+      created_at: img.created_at,
     }))
   }
 }
@@ -545,9 +834,7 @@ async function handleGetVideoJob(supabase: any, userId: string, jobId: string) {
     .eq('user_id', userId)
     .single()
 
-  if (error || !job) {
-    return { error: 'Job not found', code: 'NOT_FOUND' }
-  }
+  if (error || !job) return { error: 'Job not found', code: 'NOT_FOUND' }
 
   return {
     job_id: job.id,
@@ -568,9 +855,7 @@ async function handleGetFashionJob(supabase: any, userId: string, jobId: string)
     .eq('user_id', userId)
     .single()
 
-  if (error || !job) {
-    return { error: 'Job not found', code: 'NOT_FOUND' }
-  }
+  if (error || !job) return { error: 'Job not found', code: 'NOT_FOUND' }
 
   let results: any[] = []
   if (job.status === 'completed') {
@@ -578,7 +863,6 @@ async function handleGetFashionJob(supabase: any, userId: string, jobId: string)
       .from('outfit_swap_results')
       .select('id, public_url, created_at')
       .eq('job_id', jobId)
-
     results = swapResults || []
   }
 
@@ -589,96 +873,7 @@ async function handleGetFashionJob(supabase: any, userId: string, jobId: string)
     error: job.error,
     created_at: job.created_at,
     finished_at: job.finished_at,
-    results: results.map(r => ({
-      id: r.id,
-      url: r.public_url,
-      created_at: r.created_at
-    }))
-  }
-}
-
-async function handleProductBackground(supabase: any, userId: string, body: any, apiKeyId?: string) {
-  const { source_image_url, background_preset_id, background_image_url, settings = {} } = body
-
-  if (!source_image_url) {
-    throw new Error('source_image_url is required')
-  }
-
-  if (!background_preset_id && !background_image_url) {
-    throw new Error('Either background_preset_id or background_image_url is required')
-  }
-
-  // Check credits
-  const { data: deductResult, error: deductError } = await supabase
-    .rpc('deduct_user_credits', {
-      p_user_id: userId,
-      p_amount: 1,
-      p_reason: 'api_product_background'
-    })
-
-  if (deductError || !deductResult?.success) {
-    return {
-      error: deductResult?.error || 'Failed to deduct credits',
-      code: 'INSUFFICIENT_CREDITS'
-    }
-  }
-
-  const backgroundType = background_preset_id ? 'preset' : 'custom'
-
-  const { data: job, error: jobError } = await supabase
-    .from('bulk_background_jobs')
-    .insert({
-      user_id: userId,
-      background_type: backgroundType,
-      background_preset_id: background_preset_id || null,
-      background_image_url: background_image_url || null,
-      total_images: 1,
-      status: 'queued',
-      settings: { ...settings, source: 'api', api_key_id: apiKeyId }
-    })
-    .select()
-    .single()
-
-  if (jobError) {
-    await supabase.rpc('refund_user_credits', {
-      p_user_id: userId,
-      p_amount: 1,
-      p_reason: 'api_product_bg_job_creation_failed'
-    })
-    throw jobError
-  }
-
-  // Create the result record for the single image
-  await supabase
-    .from('bulk_background_results')
-    .insert({
-      job_id: job.id,
-      user_id: userId,
-      source_image_url: source_image_url,
-      image_index: 0,
-      status: 'pending'
-    })
-
-  // Trigger background swap
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-
-  fetch(`${supabaseUrl}/functions/v1/bulk-background`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      action: 'processJob',
-      jobId: job.id
-    })
-  }).catch(console.error)
-
-  return {
-    job_id: job.id,
-    status: 'queued',
-    message: 'Product background swap job created successfully',
-    credits_used: 1
+    results: results.map(r => ({ id: r.id, url: r.public_url, created_at: r.created_at }))
   }
 }
 
@@ -690,9 +885,7 @@ async function handleGetProductBackgroundJob(supabase: any, userId: string, jobI
     .eq('user_id', userId)
     .single()
 
-  if (error || !job) {
-    return { error: 'Job not found', code: 'NOT_FOUND' }
-  }
+  if (error || !job) return { error: 'Job not found', code: 'NOT_FOUND' }
 
   let results: any[] = []
   if (job.status === 'completed' || job.completed_images > 0) {
@@ -700,7 +893,6 @@ async function handleGetProductBackgroundJob(supabase: any, userId: string, jobI
       .from('bulk_background_results')
       .select('id, result_url, source_image_url, status, created_at')
       .eq('job_id', jobId)
-
     results = bgResults || []
   }
 
@@ -720,6 +912,46 @@ async function handleGetProductBackgroundJob(supabase: any, userId: string, jobI
       source_url: r.source_image_url,
       status: r.status,
       created_at: r.created_at
+    }))
+  }
+}
+
+async function handleGetPackJob(supabase: any, userId: string, jobId: string) {
+  // Pack jobs are stored as image_jobs — same as UGC but with pack metadata in settings
+  const { data: job, error } = await supabase
+    .from('image_jobs')
+    .select('id, status, progress, total, completed, failed, error, created_at, finished_at, settings')
+    .eq('id', jobId)
+    .eq('user_id', userId)
+    .single()
+
+  if (error || !job) return { error: 'Job not found', code: 'NOT_FOUND' }
+
+  let images: any[] = []
+  if (job.status === 'completed' || job.completed > 0) {
+    const { data: ugcImages } = await supabase
+      .from('ugc_images')
+      .select('id, public_url, created_at')
+      .eq('job_id', jobId)
+    images = ugcImages || []
+  }
+
+  return {
+    job_id: job.id,
+    status: job.status,
+    pack: job.settings?.pack_id || null,
+    product_type: job.settings?.product_type || null,
+    progress: job.progress,
+    total: job.total,
+    completed: job.completed,
+    failed: job.failed,
+    error: job.error,
+    created_at: job.created_at,
+    finished_at: job.finished_at,
+    images: images.map(img => ({
+      id: img.id,
+      url: img.public_url,
+      created_at: img.created_at,
     }))
   }
 }

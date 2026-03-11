@@ -59,7 +59,8 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
     ugc: true,
     video: true,
     fashion_catalog: true,
-    product_background: true
+    product_background: true,
+    packs: true
   });
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState(false);
@@ -120,7 +121,7 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
 
       setNewlyCreatedKey(data.api_key);
       setNewKeyName("");
-      setNewKeyPermissions({ ugc: true, video: true, fashion_catalog: true, product_background: true });
+      setNewKeyPermissions({ ugc: true, video: true, fashion_catalog: true, product_background: true, packs: true });
       fetchApiKeys();
       
       toast({
@@ -316,7 +317,8 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
       ugc: 'UGC Images',
       video: 'Video',
       fashion_catalog: 'Fashion',
-      product_background: 'Product Background'
+      product_background: 'Product Background',
+      packs: 'Packs'
     };
     
     return permissions.map(p => (
@@ -442,6 +444,16 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
                           }
                         />
                         <Label htmlFor="perm-product-bg" className="text-sm">Product Background</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="perm-packs"
+                          checked={newKeyPermissions.packs}
+                          onCheckedChange={(checked) => 
+                            setNewKeyPermissions(p => ({ ...p, packs: !!checked }))
+                          }
+                        />
+                        <Label htmlFor="perm-packs" className="text-sm">Image Packs</Label>
                       </div>
                     </div>
                   </div>
