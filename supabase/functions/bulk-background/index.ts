@@ -178,6 +178,29 @@ async function checkAdmin(ac: any, uid: string) {
   return data === true;
 }
 
+async function checkAndFinalizeProductViews(ac: any, pvId: string, selectedViews: string[], justFinishedView: string, viewError: string | null) {
+  // Re-read the record to check which views have URLs
+  const { data: pv } = await ac.from("bulk_background_product_views").select("*").eq("id", pvId).single();
+  if (!pv) return;
+  const viewFields: Record<string, string> = { macro: "macro_url", environment: "environment_url", angle: "angle_url" };
+  const meta = (pv.metadata as Record<string, unknown>) || {};
+  const viewErrors = (meta.viewErrors as Record<string, string>) || {};
+  let done = 0, failed = 0;
+  for (const v of selectedViews) {
+    if (pv[viewFields[v]]) { done++; }
+    else if (viewErrors[v]) { failed++; }
+    // else still pending
+  }
+  const total = selectedViews.length;
+  const progress = Math.round(((done + failed) / total) * 100);
+  await (ac.from("bulk_background_product_views") as any).update({ progress, updated_at: new Date().toISOString() }).eq("id", pvId);
+  if (done + failed === total) {
+    const fs = done === 0 ? "failed" : "completed";
+    await (ac.from("bulk_background_product_views") as any).update({ status: fs, progress: 100, finished_at: new Date().toISOString(), error: failed > 0 ? `${failed} view(s) failed` : null, updated_at: new Date().toISOString() }).eq("id", pvId);
+    if (failed > 0) { const adm = await checkAdmin(ac, pv.user_id); if (!adm) await ac.rpc("refund_user_credits", { p_user_id: pv.user_id, p_amount: failed, p_reason: "bulk_background_product_views_failed_refund" }); }
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
@@ -378,46 +401,66 @@ Deno.serve(async (req: Request) => {
         if (!pv) return errorResponse("Not found", 404);
         if (pv.status !== "queued") return json({ status: pv.status });
         await (ac.from("bulk_background_product_views") as any).update({ status: "processing", started_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", productViewsId);
-        const { data: srcR } = await ac.from("bulk_background_results").select("result_url").eq("id", pv.result_id).single();
-        if (!srcR?.result_url) { await (ac.from("bulk_background_product_views") as any).update({ status: "failed", error: "Source not found", updated_at: new Date().toISOString() }).eq("id", productViewsId); return errorResponse("Source not found"); }
-        const srcB64 = await fetchImageAsBase64(srcR.result_url);
+        // Dispatch each view as a separate edge function call
+        const selViews = pv.selected_views as string[];
+        for (const vt of selViews) {
+          fetch(`${SUPABASE_URL}/functions/v1/bulk-background`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+            body: JSON.stringify({ action: "processSingleView", productViewsId: pv.id, viewType: vt }),
+          }).catch(e => console.error(`Dispatch ${vt} error:`, e));
+        }
+        return json({ status: "processing", dispatched: selViews.length });
+      }
+
+      case "processSingleView": {
+        if (!isServiceRole) return errorResponse("Forbidden", 403);
+        const { productViewsId: svPvId, viewType: svViewType } = body;
+        if (!svPvId || !svViewType) return errorResponse("Missing productViewsId or viewType");
         const VP: Record<string, string> = {
           macro: `Using this product photo as reference, create a close-up macro shot of the same product in the same setting. Focus on material quality, texture and finish details. Maintain the same background, lighting and color palette. Shallow depth of field, ultra-sharp on product surface.`,
           angle: `Using this product photo as reference, create a 3/4 angled catalog view of the same product. Camera slightly above, 25-35 degree rotation. Keep the exact same background, lighting and environment. Soft studio lighting with realistic contact shadows. No text.`,
           environment: `Using this product photo as reference, create a wide lifestyle shot showing the same product in a premium, realistic environment matching the image style. Soft natural lighting, sophisticated professional photography. Product is the clear focal point. Maintain the same product proportions, textures and branding. No people, no text overlays.`,
         };
-        const PV_BUCKET = "bulk-background-product-views";
-        const VIEW_ORDER = ['macro', 'angle', 'environment'];
-        const selViews = (pv.selected_views as string[]).sort((a, b) => VIEW_ORDER.indexOf(a) - VIEW_ORDER.indexOf(b));
-        const upd: Record<string, string> = {};
-        let ok = 0, fail = 0;
-        for (const vt of selViews) {
-          const { data: cur } = await ac.from("bulk_background_product_views").select("status").eq("id", productViewsId).single();
-          if (cur?.status === "canceled") break;
-          try {
-            const prompt = VP[vt];
-            if (!prompt) { fail++; continue; }
-            const parts = [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: srcB64 } }];
-            const pvAR = (pv.metadata as any)?.aspectRatio || "1:1";
-            const res = await fetch(GEMINI_ENDPOINT, { method: "POST", headers: { "x-goog-api-key": GOOGLE_AI_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: pvAR } } }) });
-            if (!res.ok) { console.error(`PV ${vt} failed:`, await res.text()); fail++; continue; }
-            const img = extractBase64Image(await res.json());
-            if (!img) { fail++; continue; }
-            const bytes = b64ToBytes(img);
-            const sp = `${pv.user_id}/${productViewsId}/${vt}.webp`;
-            const { error: uErr } = await ac.storage.from(PV_BUCKET).upload(sp, bytes, { contentType: "image/webp", upsert: true });
-            if (uErr) { console.error(`Upload ${vt}:`, uErr); fail++; continue; }
-            const { data: ud } = ac.storage.from(PV_BUCKET).getPublicUrl(sp);
-            upd[`${vt}_url`] = ud.publicUrl;
-            upd[`${vt}_storage_path`] = sp;
-            ok++;
-          } catch (e) { console.error(`PV ${vt}:`, e); fail++; }
-          await (ac.from("bulk_background_product_views") as any).update({ ...upd, progress: Math.round(((ok + fail) / selViews.length) * 100), updated_at: new Date().toISOString() }).eq("id", productViewsId);
+        const prompt = VP[svViewType];
+        if (!prompt) return errorResponse("Invalid view type");
+        const { data: pv } = await ac.from("bulk_background_product_views").select("*").eq("id", svPvId).single();
+        if (!pv) return errorResponse("Not found", 404);
+        if (pv.status === "canceled") return json({ status: "canceled" });
+        const { data: srcR } = await ac.from("bulk_background_results").select("result_url").eq("id", pv.result_id).single();
+        if (!srcR?.result_url) {
+          await checkAndFinalizeProductViews(ac, svPvId, pv.selected_views as string[], svViewType, null);
+          return errorResponse("Source not found");
         }
-        const fs = ok === 0 ? "failed" : "completed";
-        await (ac.from("bulk_background_product_views") as any).update({ ...upd, status: fs, progress: 100, finished_at: new Date().toISOString(), error: fail > 0 ? `${fail} view(s) failed` : null, updated_at: new Date().toISOString() }).eq("id", productViewsId);
-        if (fail > 0) { const adm = await checkAdmin(ac, pv.user_id); if (!adm) await ac.rpc("refund_user_credits", { p_user_id: pv.user_id, p_amount: fail, p_reason: "bulk_background_product_views_failed_refund" }); }
-        return json({ status: fs, completed: ok, failed: fail });
+        const PV_BUCKET = "bulk-background-product-views";
+        try {
+          const srcB64 = await fetchImageAsBase64(srcR.result_url);
+          const pvAR = (pv.metadata as any)?.aspectRatio || "1:1";
+          const parts = [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: srcB64 } }];
+          const res = await fetch(GEMINI_ENDPOINT, { method: "POST", headers: { "x-goog-api-key": GOOGLE_AI_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: pvAR } } }) });
+          if (!res.ok) { const errText = await res.text(); console.error(`PV ${svViewType} Gemini error:`, errText); throw new Error(`Gemini error: ${res.status}`); }
+          const img = extractBase64Image(await res.json());
+          if (!img) throw new Error("No image in Gemini response");
+          const bytes = b64ToBytes(img);
+          const sp = `${pv.user_id}/${svPvId}/${svViewType}.webp`;
+          const { error: uErr } = await ac.storage.from(PV_BUCKET).upload(sp, bytes, { contentType: "image/webp", upsert: true });
+          if (uErr) throw new Error(`Upload failed: ${uErr.message}`);
+          const { data: ud } = ac.storage.from(PV_BUCKET).getPublicUrl(sp);
+          // Update this view's URL
+          await (ac.from("bulk_background_product_views") as any).update({ [`${svViewType}_url`]: ud.publicUrl, [`${svViewType}_storage_path`]: sp, updated_at: new Date().toISOString() }).eq("id", svPvId);
+          await checkAndFinalizeProductViews(ac, svPvId, pv.selected_views as string[], svViewType, null);
+          return json({ status: "completed", viewType: svViewType });
+        } catch (e) {
+          const errMsg = e instanceof Error ? e.message : "Unknown error";
+          console.error(`processSingleView ${svViewType} failed:`, errMsg);
+          // Store error in metadata
+          const meta = (pv.metadata as Record<string, unknown>) || {};
+          const viewErrors = (meta.viewErrors as Record<string, string>) || {};
+          viewErrors[svViewType] = errMsg;
+          await (ac.from("bulk_background_product_views") as any).update({ metadata: { ...meta, viewErrors }, updated_at: new Date().toISOString() }).eq("id", svPvId);
+          await checkAndFinalizeProductViews(ac, svPvId, pv.selected_views as string[], svViewType, errMsg);
+          return json({ status: "failed", viewType: svViewType, error: errMsg });
+        }
       }
 
       case "getProductViews": {
