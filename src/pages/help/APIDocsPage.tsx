@@ -121,6 +121,38 @@ const endpoints = [
 }`
   },
   {
+    method: "POST",
+    endpoint: "/v1/packs/generate",
+    description: "Generate a ready-made image pack (ecommerce, social media, or ads) — 4 styled images per pack",
+    parameters: ["source_image_url (required)", "pack_id (required: ecommerce | social | ads)", "product_type (required: fashion | product)"],
+    credits: "4 credits per pack",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "queued",
+  "pack": "ecommerce",
+  "styles": ["hero_product", "catalog_clean", "detail_macro", "model_neutral"],
+  "credits_used": 4
+}`
+  },
+  {
+    method: "GET",
+    endpoint: "/v1/packs/jobs/{job_id}",
+    description: "Get status and results of a pack generation job",
+    parameters: ["job_id in endpoint path"],
+    credits: "Free",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "completed",
+  "pack": "ecommerce",
+  "progress": 100,
+  "total": 4,
+  "completed": 4,
+  "images": [
+    { "id": "uuid", "url": "https://...", "style": "hero_product" }
+  ]
+}`
+  },
+  {
     method: "GET",
     endpoint: "/v1/credits/balance",
     description: "Get current credit balance and subscription tier",
@@ -211,7 +243,38 @@ curl -X POST "${BASE_URL}" \\
 curl -X POST "${BASE_URL}" \\
   -H "X-API-Key: pk_live_YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '{"endpoint": "/v1/ugc/jobs/YOUR_JOB_ID"}'`
+  -d '{"endpoint": "/v1/ugc/jobs/YOUR_JOB_ID"}'`,
+
+  packs: `// Generate an image pack (ecommerce, social, or ads)
+const response = await fetch('${BASE_URL}', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': 'pk_live_YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    endpoint: '/v1/packs/generate',
+    source_image_url: 'https://example.com/product.jpg',
+    pack_id: 'ecommerce',       // ecommerce | social | ads
+    product_type: 'fashion'      // fashion | product
+  })
+});
+
+const { job_id, pack, styles, credits_used } = await response.json();
+console.log(\`Pack "\${pack}" queued — \${credits_used} credits used\`);
+
+// Poll for results
+const checkJob = await fetch('${BASE_URL}', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': 'pk_live_YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ endpoint: \`/v1/packs/jobs/\${job_id}\` })
+});
+
+const result = await checkJob.json();
+console.log('Pack images:', result.images);`
 };
 
 const webhookExample = `// Webhook handler example (Node.js/Express)
@@ -302,7 +365,7 @@ const APIDocsPage = () => {
             </Badge>
           </div>
           <p className="text-muted-foreground">
-            Integrate UGC image generation, video creation, and fashion catalog features into your applications.
+            Integrate UGC image generation, video creation, fashion catalog, and pack-based generation into your applications — perfect for Shopify and other e-commerce integrations.
           </p>
         </div>
 
@@ -380,10 +443,11 @@ const APIDocsPage = () => {
         <div className="space-y-4">
           <h3 className="text-xl font-semibold">Code Examples</h3>
           <Tabs defaultValue="javascript">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="javascript">JavaScript</TabsTrigger>
               <TabsTrigger value="python">Python</TabsTrigger>
               <TabsTrigger value="curl">cURL</TabsTrigger>
+              <TabsTrigger value="packs">Packs</TabsTrigger>
             </TabsList>
             {Object.entries(codeExamples).map(([lang, code]) => (
               <TabsContent key={lang} value={lang}>
@@ -440,7 +504,7 @@ const APIDocsPage = () => {
   "timestamp": "2026-01-08T13:45:00Z",
   "job": {
     "id": "uuid",
-    "type": "ugc",  // ugc | video | fashion
+    "type": "ugc",  // ugc | video | fashion | product_background | packs
     "status": "completed"
   },
   "data": {
