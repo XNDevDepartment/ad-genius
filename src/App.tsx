@@ -73,6 +73,7 @@ const PrivacyPolicy = lazyWithRetry(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazyWithRetry(() => import("./pages/TermsOfService"));
 const CookiePolicy = lazyWithRetry(() => import("./pages/CookiePolicy"));
 const ShopifyImport = lazyWithRetry(() => import("./pages/ShopifyImport"));
+const ShopifyProducts = lazyWithRetry(() => import("./pages/ShopifyProducts"));
 const UseCaseLanding = lazyWithRetry(() => import("./pages/UseCaseLanding"));
 const IntegrationLanding = lazyWithRetry(() => import("./pages/IntegrationLanding"));
 const Bulk = lazyWithRetry(() => import("./pages/Bulk"));
