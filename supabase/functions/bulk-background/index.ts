@@ -420,6 +420,7 @@ Deno.serve(async (req: Request) => {
       case "processSingleView": {
         if (!isServiceRole) return errorResponse("Forbidden", 403);
         const { productViewsId: svPvId, viewType: svViewType } = body;
+        console.log(`[processSingleView] Starting viewType=${svViewType} for pvId=${svPvId}`);
         if (!svPvId || !svViewType) return errorResponse("Missing productViewsId or viewType");
         const VP: Record<string, string> = {
           macro: `Using this product photo as reference, create a close-up macro shot of the same product in the same setting. Focus on material quality, texture and finish details. Maintain the same background, lighting and color palette. Shallow depth of field, ultra-sharp on product surface.`,
