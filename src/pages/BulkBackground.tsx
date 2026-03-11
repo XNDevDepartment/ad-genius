@@ -57,8 +57,26 @@ const BulkBackground = () => {
     isComplete,
     isCanceled,
     isFailed,
-    progress
+    progress,
+    loadLastJob
   } = useBulkBackgroundJob();
+
+  // Check for resumable job on mount
+  const [hasCheckedLastJob, setHasCheckedLastJob] = useState(false);
+  const [lastJobAvailable, setLastJobAvailable] = useState(false);
+
+  useEffect(() => {
+    if (!user || hasCheckedLastJob || job) return;
+    const check = async () => {
+      const lastJob = await loadLastJob();
+      if (lastJob) {
+        setLastJobAvailable(true);
+        setProcessingStarted(true);
+      }
+      setHasCheckedLastJob(true);
+    };
+    check();
+  }, [user, hasCheckedLastJob, job, loadLastJob]);
 
   // Data state
   const [productImages, setProductImages] = useState<File[]>([]);
