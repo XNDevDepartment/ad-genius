@@ -265,6 +265,25 @@ Deno.serve(async (req: Request) => {
           await ac.from("bulk_background_jobs").update({ status: fs, completed_images: cc, failed_images: fc, progress: 100, finished_at: new Date().toISOString(), updated_at: new Date().toISOString(), error: fc > 0 ? `${fc} image(s) failed` : null }).eq("id", jobId);
           // Refund failed images
           if (fc > 0) { const adm = await checkAdmin(ac, job.user_id); if (!adm) await ac.rpc("refund_user_credits", { p_user_id: job.user_id, p_amount: fc * getCreditsPerImage(job.settings || null), p_reason: "bulk_background_failed_images_refund" }); }
+          // Trigger webhook if job was created via API
+          const jobSettings = job.settings as Record<string, unknown> | null;
+          if (jobSettings?.source === 'api' && jobSettings?.api_key_id) {
+            try {
+              const { data: completedResults } = await ac.from("bulk_background_results").select("id, result_url, source_image_url, status").eq("job_id", jobId);
+              await fetch(`${SUPABASE_URL}/functions/v1/api-webhook-dispatcher`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+                body: JSON.stringify({
+                  apiKeyId: jobSettings.api_key_id,
+                  jobId: jobId,
+                  jobType: 'product_background',
+                  eventType: fs === 'completed' ? 'job.completed' : 'job.failed',
+                  userId: job.user_id,
+                  data: { results: (completedResults || []).map((r: any) => ({ id: r.id, result_url: r.result_url, source_url: r.source_image_url, status: r.status })) }
+                }),
+              });
+            } catch (whErr) { console.error("Webhook dispatch error:", whErr); }
+          }
           return json({ status: fs, completed: cc, failed: fc });
         }
 
