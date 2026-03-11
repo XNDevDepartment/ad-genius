@@ -98,6 +98,10 @@ export const bulkBackgroundApi = {
     return callFunction('retryResult', { resultId }) as Promise<{ success: boolean; error?: string }>;
   },
 
+  async getLastJob(): Promise<{ job: BulkBackgroundJob | null; results: BulkBackgroundResult[] }> {
+    return callFunction('getLastJob') as Promise<{ job: BulkBackgroundJob | null; results: BulkBackgroundResult[] }>;
+  },
+
 
 
 

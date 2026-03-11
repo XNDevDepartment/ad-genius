@@ -1,7 +1,7 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Download, Loader2, X, Eye, Camera, Sparkles, Pencil, Images, Link, Store, Lock } from "lucide-react";
+import { ArrowLeft, Download, Loader2, X, Eye, Camera, Sparkles, Pencil, Images, Link, Store, Lock, RotateCcw } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -57,8 +57,26 @@ const BulkBackground = () => {
     isComplete,
     isCanceled,
     isFailed,
-    progress
+    progress,
+    loadLastJob
   } = useBulkBackgroundJob();
+
+  // Check for resumable job on mount
+  const [hasCheckedLastJob, setHasCheckedLastJob] = useState(false);
+  const [lastJobAvailable, setLastJobAvailable] = useState(false);
+
+  useEffect(() => {
+    if (!user || hasCheckedLastJob || job) return;
+    const check = async () => {
+      const lastJob = await loadLastJob();
+      if (lastJob) {
+        setLastJobAvailable(true);
+        setProcessingStarted(true);
+      }
+      setHasCheckedLastJob(true);
+    };
+    check();
+  }, [user, hasCheckedLastJob, job, loadLastJob]);
 
   // Data state
   const [productImages, setProductImages] = useState<File[]>([]);
@@ -242,6 +260,7 @@ const BulkBackground = () => {
   const handleNewBatch = () => {
     clearJob();
     setProcessingStarted(false);
+    setLastJobAvailable(false);
     setProductImages([]);
     setCustomBackground(null);
     setSelectedPreset(null);

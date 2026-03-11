@@ -306,6 +306,15 @@ Deno.serve(async (req: Request) => {
         return json({ job });
       }
 
+      case "getLastJob": {
+        if (!userId) return errorResponse("Unauthorized", 401);
+        const { data: jobs } = await ac.from("bulk_background_jobs").select("*").eq("user_id", userId).in("status", ["completed", "processing", "queued"]).order("created_at", { ascending: false }).limit(1);
+        const lastJob = jobs?.[0] || null;
+        if (!lastJob) return json({ job: null, results: [] });
+        const { data: results } = await ac.from("bulk_background_results").select("*").eq("job_id", lastJob.id).order("image_index");
+        return json({ job: lastJob, results: results || [] });
+      }
+
       case "getJobResults": {
         const { jobId } = body;
         const { data: job } = await ac.from("bulk_background_jobs").select("user_id").eq("id", jobId).single();
