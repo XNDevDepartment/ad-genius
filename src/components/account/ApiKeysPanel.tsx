@@ -121,7 +121,7 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
 
       setNewlyCreatedKey(data.api_key);
       setNewKeyName("");
-      setNewKeyPermissions({ ugc: true, video: true, fashion_catalog: true, product_background: true });
+      setNewKeyPermissions({ ugc: true, video: true, fashion_catalog: true, product_background: true, packs: true });
       fetchApiKeys();
       
       toast({
