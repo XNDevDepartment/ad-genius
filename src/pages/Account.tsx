@@ -311,7 +311,8 @@ const Account = () => {
              section === "privacy" ? t('account.privacy.title') :
              section === "billing" ? t('account.billing.title') :
              section === "help" ? t('account.helpSupport.title') :
-             section === "api-keys" ? t('account.sections.apiKeys', 'API Keys') : t('account.title')}
+             section === "api-keys" ? t('account.sections.apiKeys', 'API Keys') :
+             section === "integrations" ? t('account.sections.integrations', 'Integrations') : t('account.title')}
           </h1>
         </div>
 
