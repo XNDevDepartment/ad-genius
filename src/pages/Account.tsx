@@ -49,6 +49,7 @@ const Account = () => {
       "billing",
       "help",
       "api-keys",
+      "integrations",
     ]);
 
     if (allowed.has(hashSection)) {
