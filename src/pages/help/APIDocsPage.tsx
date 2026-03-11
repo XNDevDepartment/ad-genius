@@ -334,7 +334,7 @@ const APIDocsPage = () => {
             </Badge>
           </div>
           <p className="text-muted-foreground">
-            Integrate UGC image generation, video creation, and fashion catalog features into your applications.
+            Integrate UGC image generation, video creation, fashion catalog, and pack-based generation into your applications — perfect for Shopify and other e-commerce integrations.
           </p>
         </div>
 
