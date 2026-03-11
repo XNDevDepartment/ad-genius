@@ -481,6 +481,7 @@ export type Database = {
           id: string
           progress: number
           settings: Json | null
+          shopify_connection_id: string | null
           started_at: string | null
           status: string
           total_images: number
@@ -499,6 +500,7 @@ export type Database = {
           id?: string
           progress?: number
           settings?: Json | null
+          shopify_connection_id?: string | null
           started_at?: string | null
           status?: string
           total_images?: number
@@ -517,13 +519,22 @@ export type Database = {
           id?: string
           progress?: number
           settings?: Json | null
+          shopify_connection_id?: string | null
           started_at?: string | null
           status?: string
           total_images?: number
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bulk_background_jobs_shopify_connection_id_fkey"
+            columns: ["shopify_connection_id"]
+            isOneToOne: false
+            referencedRelation: "shopify_store_connections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       bulk_background_product_views: {
         Row: {
@@ -1048,6 +1059,7 @@ export type Database = {
           progress: number | null
           prompt: string
           settings: Json
+          shopify_connection_id: string | null
           source_image_id: string | null
           source_image_ids: Json | null
           started_at: string | null
@@ -1071,6 +1083,7 @@ export type Database = {
           progress?: number | null
           prompt: string
           settings?: Json
+          shopify_connection_id?: string | null
           source_image_id?: string | null
           source_image_ids?: Json | null
           started_at?: string | null
@@ -1094,6 +1107,7 @@ export type Database = {
           progress?: number | null
           prompt?: string
           settings?: Json
+          shopify_connection_id?: string | null
           source_image_id?: string | null
           source_image_ids?: Json | null
           started_at?: string | null
@@ -1102,7 +1116,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "image_jobs_shopify_connection_id_fkey"
+            columns: ["shopify_connection_id"]
+            isOneToOne: false
+            referencedRelation: "shopify_store_connections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       kling_jobs: {
         Row: {
@@ -1119,6 +1141,7 @@ export type Database = {
           request_id: string | null
           response_url: string | null
           retry_count: number | null
+          shopify_connection_id: string | null
           source_image_id: string | null
           status: string
           status_url: string | null
@@ -1144,6 +1167,7 @@ export type Database = {
           request_id?: string | null
           response_url?: string | null
           retry_count?: number | null
+          shopify_connection_id?: string | null
           source_image_id?: string | null
           status?: string
           status_url?: string | null
@@ -1169,6 +1193,7 @@ export type Database = {
           request_id?: string | null
           response_url?: string | null
           retry_count?: number | null
+          shopify_connection_id?: string | null
           source_image_id?: string | null
           status?: string
           status_url?: string | null
@@ -1181,6 +1206,13 @@ export type Database = {
           video_url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "kling_jobs_shopify_connection_id_fkey"
+            columns: ["shopify_connection_id"]
+            isOneToOne: false
+            referencedRelation: "shopify_store_connections"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "kling_jobs_source_image_id_fkey"
             columns: ["source_image_id"]
@@ -1644,6 +1676,7 @@ export type Database = {
           metadata: Json | null
           progress: number | null
           settings: Json | null
+          shopify_connection_id: string | null
           source_garment_id: string | null
           source_person_id: string | null
           started_at: string | null
@@ -1664,6 +1697,7 @@ export type Database = {
           metadata?: Json | null
           progress?: number | null
           settings?: Json | null
+          shopify_connection_id?: string | null
           source_garment_id?: string | null
           source_person_id?: string | null
           started_at?: string | null
@@ -1684,6 +1718,7 @@ export type Database = {
           metadata?: Json | null
           progress?: number | null
           settings?: Json | null
+          shopify_connection_id?: string | null
           source_garment_id?: string | null
           source_person_id?: string | null
           started_at?: string | null
@@ -1698,6 +1733,13 @@ export type Database = {
             columns: ["base_model_id"]
             isOneToOne: false
             referencedRelation: "outfit_swap_base_models"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outfit_swap_jobs_shopify_connection_id_fkey"
+            columns: ["shopify_connection_id"]
+            isOneToOne: false
+            referencedRelation: "shopify_store_connections"
             referencedColumns: ["id"]
           },
           {
@@ -2040,6 +2082,62 @@ export type Database = {
         }
         Relationships: []
       }
+      shopify_connection_audit_log: {
+        Row: {
+          action: string
+          connection_id: string | null
+          created_at: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          new_status:
+            | Database["public"]["Enums"]["shopify_connection_status"]
+            | null
+          old_status:
+            | Database["public"]["Enums"]["shopify_connection_status"]
+            | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          connection_id?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          new_status?:
+            | Database["public"]["Enums"]["shopify_connection_status"]
+            | null
+          old_status?:
+            | Database["public"]["Enums"]["shopify_connection_status"]
+            | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          connection_id?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          new_status?:
+            | Database["public"]["Enums"]["shopify_connection_status"]
+            | null
+          old_status?:
+            | Database["public"]["Enums"]["shopify_connection_status"]
+            | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopify_connection_audit_log_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "shopify_store_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shopify_connections: {
         Row: {
           access_token: string
@@ -2131,6 +2229,89 @@ export type Database = {
             columns: ["shopify_connection_id"]
             isOneToOne: false
             referencedRelation: "shopify_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shopify_store_connections: {
+        Row: {
+          api_key_id: string | null
+          connected_at: string | null
+          connection_id: string
+          connection_source: string | null
+          connection_status: Database["public"]["Enums"]["shopify_connection_status"]
+          created_at: string
+          disconnected_at: string | null
+          id: string
+          is_connected: boolean
+          is_verified: boolean
+          last_error: string | null
+          last_sync_at: string | null
+          metadata: Json | null
+          provider: string
+          shop_domain: string
+          shop_name: string | null
+          shopify_store_id: string | null
+          updated_at: string
+          user_id: string
+          verified_at: string | null
+          webhook_secret: string | null
+          webhook_url: string | null
+        }
+        Insert: {
+          api_key_id?: string | null
+          connected_at?: string | null
+          connection_id: string
+          connection_source?: string | null
+          connection_status?: Database["public"]["Enums"]["shopify_connection_status"]
+          created_at?: string
+          disconnected_at?: string | null
+          id?: string
+          is_connected?: boolean
+          is_verified?: boolean
+          last_error?: string | null
+          last_sync_at?: string | null
+          metadata?: Json | null
+          provider?: string
+          shop_domain: string
+          shop_name?: string | null
+          shopify_store_id?: string | null
+          updated_at?: string
+          user_id: string
+          verified_at?: string | null
+          webhook_secret?: string | null
+          webhook_url?: string | null
+        }
+        Update: {
+          api_key_id?: string | null
+          connected_at?: string | null
+          connection_id?: string
+          connection_source?: string | null
+          connection_status?: Database["public"]["Enums"]["shopify_connection_status"]
+          created_at?: string
+          disconnected_at?: string | null
+          id?: string
+          is_connected?: boolean
+          is_verified?: boolean
+          last_error?: string | null
+          last_sync_at?: string | null
+          metadata?: Json | null
+          provider?: string
+          shop_domain?: string
+          shop_name?: string | null
+          shopify_store_id?: string | null
+          updated_at?: string
+          user_id?: string
+          verified_at?: string | null
+          webhook_secret?: string | null
+          webhook_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopify_store_connections_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
             referencedColumns: ["id"]
           },
         ]
@@ -2573,6 +2754,13 @@ export type Database = {
       }
     }
     Enums: {
+      shopify_connection_status:
+        | "disconnected"
+        | "pending"
+        | "connected"
+        | "verified"
+        | "error"
+        | "revoked"
       user_role: "admin" | "user"
     }
     CompositeTypes: {
@@ -2701,6 +2889,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      shopify_connection_status: [
+        "disconnected",
+        "pending",
+        "connected",
+        "verified",
+        "error",
+        "revoked",
+      ],
       user_role: ["admin", "user"],
     },
   },

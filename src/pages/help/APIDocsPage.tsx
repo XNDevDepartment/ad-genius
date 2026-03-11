@@ -177,6 +177,115 @@ const endpoints = [
   "credits_balance": 42,
   "subscription_tier": "Starter"
 }`
+  },
+  {
+    method: "POST",
+    endpoint: "/v1/shopify/connect",
+    description: "Register a Shopify store connection from the Shopify app",
+    parameters: ["shopDomain (required)", "externalConnectionId (required)", "shopName", "shopifyStoreId", "webhookUrl", "metadata"],
+    credits: "Free",
+    responseExample: `{
+  "success": true,
+  "connectionId": "uuid",
+  "shopifyConnected": true,
+  "shopifyVerified": false,
+  "shopifyConnectionStatus": "connected",
+  "shopifyStoreDomain": "my-store.myshopify.com",
+  "webhookSecret": "secret-for-hmac",
+  "message": "Store connected. Call /v1/shopify/verify to complete."
+}`
+  },
+  {
+    method: "POST",
+    endpoint: "/v1/shopify/verify",
+    description: "Verify a Shopify store connection — marks it as verified",
+    parameters: ["connectionId or shopDomain (one required)"],
+    credits: "Free",
+    responseExample: `{
+  "success": true,
+  "connectionId": "uuid",
+  "shopifyVerified": true,
+  "shopifyConnectionStatus": "verified",
+  "verifiedAt": "2026-03-11T..."
+}`
+  },
+  {
+    method: "POST",
+    endpoint: "/v1/shopify/status",
+    description: "Get connection status for one or all connected Shopify stores",
+    parameters: ["connectionId (optional)", "shopDomain (optional)"],
+    credits: "Free",
+    responseExample: `{
+  "connectionId": "uuid",
+  "shopifyConnected": true,
+  "shopifyVerified": true,
+  "shopifyStoreDomain": "my-store.myshopify.com",
+  "shopifyConnectionStatus": "verified",
+  "shopifyWebhookConfigured": true
+}`
+  },
+  {
+    method: "POST",
+    endpoint: "/v1/shopify/disconnect",
+    description: "Revoke a Shopify store connection (historical jobs remain linked)",
+    parameters: ["connectionId or shopDomain (one required)"],
+    credits: "Free",
+    responseExample: `{
+  "success": true,
+  "shopifyConnectionStatus": "revoked",
+  "message": "Store disconnected. Historical jobs remain linked."
+}`
+  },
+  {
+    method: "POST",
+    endpoint: "/v1/shopify/webhook",
+    description: "Configure webhook URL and secret for job completion callbacks",
+    parameters: ["connectionId (required)", "webhookUrl (HTTPS required)"],
+    credits: "Free",
+    responseExample: `{
+  "success": true,
+  "webhookUrl": "https://...",
+  "webhookSecret": "hmac-secret",
+  "webhookConfigured": true
+}`
+  },
+  {
+    method: "POST",
+    endpoint: "/v1/shopify/platforms",
+    description: "List all connected platforms for the account",
+    parameters: [],
+    credits: "Free",
+    responseExample: `{
+  "platforms": [
+    { "platform": "shopify", "storeDomain": "...", "status": "verified", "isVerified": true }
+  ],
+  "total": 1
+}`
+  },
+  {
+    method: "POST",
+    endpoint: "/v1/shopify/attach-job",
+    description: "Link a generation job to a connected Shopify store",
+    parameters: ["jobId (required)", "jobType (required: ugc|packs|video|fashion|product_background)", "connectionId or shopDomain"],
+    credits: "Free",
+    responseExample: `{
+  "success": true,
+  "jobId": "uuid",
+  "connectionId": "uuid",
+  "message": "Job linked to Shopify store."
+}`
+  },
+  {
+    method: "POST",
+    endpoint: "/v1/shopify/job-context",
+    description: "Check if a job belongs to a Shopify-connected store",
+    parameters: ["jobId (required)", "jobType (required)"],
+    credits: "Free",
+    responseExample: `{
+  "jobId": "uuid",
+  "shopifyLinked": true,
+  "connection": { "shopDomain": "...", "status": "verified" }
+}`
   }
 ];
 

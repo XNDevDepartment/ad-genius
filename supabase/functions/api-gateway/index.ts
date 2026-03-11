@@ -141,6 +141,161 @@ ABSOLUTE QUALITY RULES:
 5. Ultra-realistic photography quality — the result must look like a real professional photograph.`;
 }
 
+// ── Shopify integration handler (inline to avoid import issues) ──
+
+async function handleShopifyEndpoint(
+  supabase: any, userId: string, apiKeyId: string, endpoint: string, body: any, ip: string
+): Promise<any> {
+  function sanitizeDomain(domain: string): string | null {
+    if (!domain || typeof domain !== 'string') return null
+    let c = domain.trim().toLowerCase().replace(/^https?:\/\//, '').split('/')[0]
+    if (c.length < 4 || c.length > 255 || !/^[a-z0-9][a-z0-9\-\.]*[a-z0-9]$/.test(c)) return null
+    return c
+  }
+
+  async function audit(connId: string|null, action: string, oldS: string|null, newS: string|null, meta: any = {}) {
+    await supabase.from('shopify_connection_audit_log').insert({
+      connection_id: connId, user_id: userId, action, old_status: oldS, new_status: newS, metadata: meta, ip_address: ip
+    })
+  }
+
+  if (endpoint === '/v1/shopify/connect') {
+    const { shopDomain, shopName, shopifyStoreId, externalConnectionId, webhookUrl, metadata } = body
+    if (!shopDomain || !externalConnectionId) return { error: 'shopDomain and externalConnectionId are required', code: 'VALIDATION_ERROR' }
+    const clean = sanitizeDomain(shopDomain)
+    if (!clean) return { error: 'Invalid shop domain format', code: 'VALIDATION_ERROR' }
+    if (webhookUrl && !webhookUrl.startsWith('https://')) return { error: 'Webhook URL must use HTTPS', code: 'VALIDATION_ERROR' }
+
+    // Check cross-account collision
+    const { data: byConn } = await supabase.from('shopify_store_connections').select('id, user_id').eq('connection_id', externalConnectionId).single()
+    if (byConn && byConn.user_id !== userId) return { error: 'This store is already connected to another ProduktPix account', code: 'CONFLICT' }
+
+    const { data: byDomain } = await supabase.from('shopify_store_connections').select('id, connection_status').eq('user_id', userId).eq('shop_domain', clean).single()
+    const secret = crypto.randomUUID() + '-' + crypto.randomUUID()
+    const now = new Date().toISOString()
+
+    if (byDomain) {
+      const old = byDomain.connection_status
+      const { data: u } = await supabase.from('shopify_store_connections').update({
+        connection_id: externalConnectionId, shop_name: shopName||null, shopify_store_id: shopifyStoreId||null,
+        api_key_id: apiKeyId, connection_source: metadata?.source||'shopify_app', connection_status: 'connected',
+        is_connected: true, is_verified: false, webhook_url: webhookUrl||null, webhook_secret: secret,
+        metadata: metadata||{}, last_error: null, connected_at: now, disconnected_at: null, verified_at: null,
+      }).eq('id', byDomain.id).select('id, shop_domain, shop_name, connected_at').single()
+      await audit(u.id, 'reconnected', old, 'connected', { shopDomain: clean })
+      return { success: true, connectionId: u.id, shopifyConnected: true, shopifyVerified: false, shopifyConnectionStatus: 'connected', shopifyStoreDomain: u.shop_domain, shopifyStoreName: u.shop_name, connectedAt: u.connected_at, verifiedAt: null, webhookSecret: secret, message: 'Store reconnected. Call /v1/shopify/verify to complete verification.' }
+    }
+
+    const { data: n, error: ie } = await supabase.from('shopify_store_connections').insert({
+      user_id: userId, api_key_id: apiKeyId, provider: 'shopify', shop_domain: clean, shop_name: shopName||null,
+      shopify_store_id: shopifyStoreId||null, connection_id: externalConnectionId, connection_source: metadata?.source||'shopify_app',
+      connection_status: 'connected', is_connected: true, is_verified: false, webhook_url: webhookUrl||null,
+      webhook_secret: secret, metadata: metadata||{}, connected_at: now,
+    }).select('id, shop_domain, shop_name, connected_at').single()
+    if (ie) return { error: 'Failed to create connection: ' + ie.message, code: 'INTERNAL_ERROR' }
+    await audit(n.id, 'connected', null, 'connected', { shopDomain: clean })
+    return { success: true, connectionId: n.id, shopifyConnected: true, shopifyVerified: false, shopifyConnectionStatus: 'connected', shopifyStoreDomain: n.shop_domain, shopifyStoreName: n.shop_name, connectedAt: n.connected_at, verifiedAt: null, webhookSecret: secret, message: 'Store connected. Call /v1/shopify/verify to complete verification.' }
+  }
+
+  if (endpoint === '/v1/shopify/verify') {
+    const { connectionId, shopDomain } = body
+    if (!connectionId && !shopDomain) return { error: 'connectionId or shopDomain is required', code: 'VALIDATION_ERROR' }
+    let q = supabase.from('shopify_store_connections').select('*').eq('user_id', userId)
+    if (connectionId) q = q.eq('id', connectionId)
+    else { const c = sanitizeDomain(shopDomain); if (!c) return { error: 'Invalid domain', code: 'VALIDATION_ERROR' }; q = q.eq('shop_domain', c) }
+    const { data: conn } = await q.single()
+    if (!conn) return { error: 'Connection not found', code: 'NOT_FOUND' }
+    if (conn.connection_status === 'revoked') return { error: 'Connection revoked. Reconnect first.', code: 'CONNECTION_REVOKED' }
+    if (conn.is_verified) return { success: true, connectionId: conn.id, shopifyConnected: true, shopifyVerified: true, shopifyConnectionStatus: 'verified', shopifyStoreDomain: conn.shop_domain, verifiedAt: conn.verified_at, message: 'Already verified.' }
+    const now = new Date().toISOString()
+    await supabase.from('shopify_store_connections').update({ connection_status: 'verified', is_verified: true, verified_at: now, last_error: null }).eq('id', conn.id)
+    await audit(conn.id, 'verified', conn.connection_status, 'verified', { shopDomain: conn.shop_domain })
+    return { success: true, connectionId: conn.id, shopifyConnected: true, shopifyVerified: true, shopifyConnectionStatus: 'verified', shopifyStoreDomain: conn.shop_domain, shopifyStoreName: conn.shop_name, connectedAt: conn.connected_at, verifiedAt: now, message: 'Store verified successfully.' }
+  }
+
+  if (endpoint === '/v1/shopify/status') {
+    const { connectionId: cid, shopDomain: sd } = body || {}
+    const fmt = (c: any) => ({
+      connectionId: c.id, shopifyConnected: c.is_connected, shopifyVerified: c.is_verified, shopifyStoreDomain: c.shop_domain,
+      shopifyStoreName: c.shop_name, shopifyStoreId: c.shopify_store_id, shopifyConnectionId: c.connection_id,
+      shopifyConnectionSource: c.connection_source, shopifyConnectionStatus: c.connection_status,
+      shopifyWebhookUrl: c.webhook_url, shopifyWebhookConfigured: !!c.webhook_url, shopifyMetadata: c.metadata,
+      shopifyConnectionError: c.last_error, shopifyConnectedAt: c.connected_at, shopifyVerifiedAt: c.verified_at,
+      shopifyDisconnectedAt: c.disconnected_at, shopifyLastSyncAt: c.last_sync_at, createdAt: c.created_at,
+    })
+    const cols = 'id, shop_domain, shop_name, shopify_store_id, connection_id, connection_source, connection_status, is_connected, is_verified, webhook_url, metadata, last_error, created_at, connected_at, verified_at, disconnected_at, last_sync_at'
+    if (cid) { const { data } = await supabase.from('shopify_store_connections').select(cols).eq('id', cid).eq('user_id', userId).single(); if (!data) return { error: 'Not found', code: 'NOT_FOUND' }; return fmt(data) }
+    if (sd) { const c = sanitizeDomain(sd); if (!c) return { error: 'Invalid domain', code: 'VALIDATION_ERROR' }; const { data } = await supabase.from('shopify_store_connections').select(cols).eq('shop_domain', c).eq('user_id', userId).single(); if (!data) return { error: 'Not found', code: 'NOT_FOUND' }; return fmt(data) }
+    const { data } = await supabase.from('shopify_store_connections').select(cols).eq('user_id', userId).neq('connection_status', 'disconnected').order('created_at', { ascending: false })
+    return { connections: (data||[]).map(fmt), total: data?.length||0 }
+  }
+
+  if (endpoint === '/v1/shopify/disconnect') {
+    const { connectionId: cid, shopDomain: sd } = body
+    if (!cid && !sd) return { error: 'connectionId or shopDomain required', code: 'VALIDATION_ERROR' }
+    let q = supabase.from('shopify_store_connections').select('id, connection_status, shop_domain').eq('user_id', userId)
+    if (cid) q = q.eq('id', cid); else { const c = sanitizeDomain(sd); if (!c) return { error: 'Invalid domain', code: 'VALIDATION_ERROR' }; q = q.eq('shop_domain', c) }
+    const { data: conn } = await q.single()
+    if (!conn) return { error: 'Not found', code: 'NOT_FOUND' }
+    await supabase.from('shopify_store_connections').update({ connection_status: 'revoked', is_connected: false, is_verified: false, webhook_url: null, webhook_secret: null, disconnected_at: new Date().toISOString() }).eq('id', conn.id)
+    await audit(conn.id, 'revoked', conn.connection_status, 'revoked', { shopDomain: conn.shop_domain })
+    return { success: true, connectionId: conn.id, shopifyConnected: false, shopifyVerified: false, shopifyConnectionStatus: 'revoked', message: 'Store disconnected. Historical jobs remain linked.' }
+  }
+
+  if (endpoint === '/v1/shopify/webhook') {
+    const { connectionId: cid, webhookUrl: wUrl } = body
+    if (!cid) return { error: 'connectionId required', code: 'VALIDATION_ERROR' }
+    if (wUrl && !wUrl.startsWith('https://')) return { error: 'Webhook URL must use HTTPS', code: 'VALIDATION_ERROR' }
+    const { data: conn } = await supabase.from('shopify_store_connections').select('id, connection_status, webhook_secret').eq('id', cid).eq('user_id', userId).single()
+    if (!conn) return { error: 'Not found', code: 'NOT_FOUND' }
+    if (['revoked','disconnected'].includes(conn.connection_status)) return { error: 'Cannot update webhook on disconnected store', code: 'CONNECTION_INACTIVE' }
+    const sec = conn.webhook_secret || (crypto.randomUUID() + '-' + crypto.randomUUID())
+    await supabase.from('shopify_store_connections').update({ webhook_url: wUrl||null, webhook_secret: sec }).eq('id', conn.id)
+    await audit(conn.id, 'webhook_updated', conn.connection_status, conn.connection_status, { webhookUrl: wUrl||null })
+    return { success: true, connectionId: conn.id, webhookUrl: wUrl||null, webhookSecret: sec, webhookConfigured: !!wUrl, message: wUrl ? 'Webhook configured.' : 'Webhook removed.' }
+  }
+
+  if (endpoint === '/v1/shopify/platforms') {
+    const { data } = await supabase.from('shopify_store_connections').select('id, provider, shop_domain, shop_name, connection_status, is_connected, is_verified, connected_at, verified_at').eq('user_id', userId).not('connection_status', 'eq', 'disconnected').order('created_at', { ascending: false })
+    return { platforms: (data||[]).map((c: any) => ({ platform: c.provider, connectionId: c.id, storeDomain: c.shop_domain, storeName: c.shop_name, status: c.connection_status, isConnected: c.is_connected, isVerified: c.is_verified, connectedAt: c.connected_at, verifiedAt: c.verified_at })), total: data?.length||0 }
+  }
+
+  if (endpoint === '/v1/shopify/attach-job') {
+    const { jobId, jobType, connectionId: cid, shopDomain: sd } = body
+    if (!jobId || !jobType) return { error: 'jobId and jobType required', code: 'VALIDATION_ERROR' }
+    if (!cid && !sd) return { error: 'connectionId or shopDomain required', code: 'VALIDATION_ERROR' }
+    let cq = supabase.from('shopify_store_connections').select('id').eq('user_id', userId)
+    if (cid) cq = cq.eq('id', cid); else { const c = sanitizeDomain(sd); if (!c) return { error: 'Invalid domain', code: 'VALIDATION_ERROR' }; cq = cq.eq('shop_domain', c) }
+    const { data: conn } = await cq.single()
+    if (!conn) return { error: 'Connection not found', code: 'NOT_FOUND' }
+    const tMap: Record<string,string> = { ugc: 'image_jobs', packs: 'image_jobs', video: 'kling_jobs', fashion: 'outfit_swap_jobs', product_background: 'bulk_background_jobs' }
+    const tbl = tMap[jobType]; if (!tbl) return { error: 'Invalid jobType', code: 'VALIDATION_ERROR' }
+    await supabase.from(tbl).update({ shopify_connection_id: conn.id }).eq('id', jobId).eq('user_id', userId)
+    return { success: true, jobId, jobType, connectionId: conn.id, message: 'Job linked to Shopify store.' }
+  }
+
+  if (endpoint === '/v1/shopify/job-context') {
+    const { jobId, jobType } = body
+    if (!jobId || !jobType) return { error: 'jobId and jobType required', code: 'VALIDATION_ERROR' }
+    const tMap: Record<string,string> = { ugc: 'image_jobs', packs: 'image_jobs', video: 'kling_jobs', fashion: 'outfit_swap_jobs', product_background: 'bulk_background_jobs' }
+    const tbl = tMap[jobType]; if (!tbl) return { error: 'Invalid jobType', code: 'VALIDATION_ERROR' }
+    const { data: job } = await supabase.from(tbl).select('id, shopify_connection_id').eq('id', jobId).eq('user_id', userId).single()
+    if (!job) return { error: 'Job not found', code: 'NOT_FOUND' }
+    if (!job.shopify_connection_id) return { jobId, jobType, shopifyLinked: false, connection: null }
+    const { data: conn } = await supabase.from('shopify_store_connections').select('id, shop_domain, shop_name, connection_status, is_verified').eq('id', job.shopify_connection_id).single()
+    return { jobId, jobType, shopifyLinked: true, connection: conn ? { connectionId: conn.id, shopDomain: conn.shop_domain, shopName: conn.shop_name, status: conn.connection_status, isVerified: conn.is_verified } : null }
+  }
+
+  if (endpoint === '/v1/shopify/sync-timestamp') {
+    const { connectionId: cid } = body
+    if (!cid) return { error: 'connectionId required', code: 'VALIDATION_ERROR' }
+    await supabase.from('shopify_store_connections').update({ last_sync_at: new Date().toISOString() }).eq('id', cid).eq('user_id', userId)
+    return { success: true, message: 'Sync timestamp updated.' }
+  }
+
+  return { error: 'Shopify endpoint not found', code: 'NOT_FOUND' }
+}
+
 // ── Shared helpers ──
 
 async function hashApiKey(key: string): Promise<string> {
@@ -324,6 +479,8 @@ Deno.serve(async (req) => {
       requiredPermission = '' // No specific permission needed
     } else if (endpoint.startsWith('/v1/auth')) {
       requiredPermission = '' // No specific permission needed
+    } else if (endpoint.startsWith('/v1/shopify')) {
+      requiredPermission = '' // No specific permission needed — key auth is sufficient
     }
 
     if (requiredPermission && !apiKeyInfo.permissions.includes(requiredPermission)) {
@@ -375,6 +532,19 @@ Deno.serve(async (req) => {
 
         case '/v1/auth/verify':
           response = await handleAuthVerify(supabase, apiKeyInfo)
+          break
+
+        // Shopify integration endpoints
+        case '/v1/shopify/connect':
+        case '/v1/shopify/verify':
+        case '/v1/shopify/status':
+        case '/v1/shopify/disconnect':
+        case '/v1/shopify/webhook':
+        case '/v1/shopify/platforms':
+        case '/v1/shopify/attach-job':
+        case '/v1/shopify/job-context':
+        case '/v1/shopify/sync-timestamp':
+          response = await handleShopifyEndpoint(supabase, apiKeyInfo.user_id, apiKeyInfo.api_key_id, endpoint, body, req.headers.get('x-forwarded-for') || 'unknown')
           break
 
         default:
