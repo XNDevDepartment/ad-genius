@@ -2040,6 +2040,101 @@ export type Database = {
         }
         Relationships: []
       }
+      shopify_connections: {
+        Row: {
+          access_token: string
+          connected_at: string
+          id: string
+          scopes: string | null
+          shop_domain: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          connected_at?: string
+          id?: string
+          scopes?: string | null
+          shop_domain: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          connected_at?: string
+          id?: string
+          scopes?: string | null
+          shop_domain?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      shopify_products: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          images: Json | null
+          product_type: string | null
+          shopify_connection_id: string
+          shopify_product_id: number
+          sku: string | null
+          status: string
+          synced_at: string
+          title: string
+          updated_at: string
+          user_id: string
+          variants: Json | null
+          vendor: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          images?: Json | null
+          product_type?: string | null
+          shopify_connection_id: string
+          shopify_product_id: number
+          sku?: string | null
+          status?: string
+          synced_at?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          variants?: Json | null
+          vendor?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          images?: Json | null
+          product_type?: string | null
+          shopify_connection_id?: string
+          shopify_product_id?: number
+          sku?: string | null
+          status?: string
+          synced_at?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          variants?: Json | null
+          vendor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopify_products_shopify_connection_id_fkey"
+            columns: ["shopify_connection_id"]
+            isOneToOne: false
+            referencedRelation: "shopify_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       source_images: {
         Row: {
           created_at: string
