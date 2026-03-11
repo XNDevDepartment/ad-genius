@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Download, Loader2, X, Eye, Camera, Sparkles, Pencil, Images, Link, Store, Lock, RotateCcw } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -38,6 +38,7 @@ function getCreditsPerImage(size: string): number {
 
 const BulkBackground = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const { user } = useAuth();
   const { getRemainingCredits, refreshCredits, isFreeTier } = useCredits();
@@ -64,9 +65,21 @@ const BulkBackground = () => {
   // Check for resumable job on mount
   const [hasCheckedLastJob, setHasCheckedLastJob] = useState(false);
   const [lastJobAvailable, setLastJobAvailable] = useState(false);
+  const [replicateResult, setReplicateResult] = useState<{ id: string; url: string } | null>(null);
+
+  // Handle replicate mode from library
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.replicateMode && state?.resultUrl) {
+      setReplicateResult({ id: state.resultId, url: state.resultUrl });
+      setProcessingStarted(true);
+      // Clear location state to prevent re-trigger on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   useEffect(() => {
-    if (!user || hasCheckedLastJob || job) return;
+    if (!user || hasCheckedLastJob || job || replicateResult) return;
     const check = async () => {
       const lastJob = await loadLastJob();
       if (lastJob) {
@@ -76,7 +89,7 @@ const BulkBackground = () => {
       setHasCheckedLastJob(true);
     };
     check();
-  }, [user, hasCheckedLastJob, job, loadLastJob]);
+  }, [user, hasCheckedLastJob, job, loadLastJob, replicateResult]);
 
   // Data state
   const [productImages, setProductImages] = useState<File[]>([]);
@@ -261,6 +274,7 @@ const BulkBackground = () => {
     clearJob();
     setProcessingStarted(false);
     setLastJobAvailable(false);
+    setReplicateResult(null);
     setProductImages([]);
     setCustomBackground(null);
     setSelectedPreset(null);
@@ -614,7 +628,7 @@ const BulkBackground = () => {
                     )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {results.map((result, index) => (
+                      {(replicateResult && results.length === 0 ? [{ id: replicateResult.id, status: 'completed' as const, result_url: replicateResult.url, source_image_url: '', image_index: 0, created_at: '', updated_at: '', job_id: '', user_id: '' }] : results).map((result, index) => (
                         <Card key={result.id || index} className="overflow-hidden">
                           <div className="aspect-square bg-muted relative">
                             {result.status === 'completed' && result.result_url ? (

@@ -315,7 +315,8 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
         created_at: result.created_at,
         settings: { size: '1024x1024', quality: 'high', numberOfImages: 1, format: 'png' },
         source_type: 'bulk_background' as const,
-        source_image_id: result.source_image_id
+        source_image_id: result.source_image_id,
+        job_id: result.job_id
       }));
 
       // Normalize product views images

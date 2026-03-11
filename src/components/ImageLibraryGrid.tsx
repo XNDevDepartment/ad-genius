@@ -27,7 +27,7 @@ interface LibraryImage {
   desiredAudience?: string;
   prodSpecs?: string;
   source_image_ids?: string[];
-  source_type?: 'ugc' | 'outfit_swap' | 'photoshoot' | 'ecommerce';
+  source_type?: 'ugc' | 'outfit_swap' | 'photoshoot' | 'ecommerce' | 'bulk_background' | 'product_views';
   photoshoot_id?: string;
   angle_type?: 'front' | 'three_quarter' | 'back' | 'side';
   style_prompt?: string;
@@ -189,6 +189,23 @@ export const ImageLibraryGrid = ({
     });
   };
 
+  const handleReplicateBulkBackground = (image: LibraryImage) => {
+    navigate('/create/bulk-background', {
+      state: {
+        replicateMode: true,
+        resultId: image.id,
+        resultUrl: image.url,
+        sourceImageId: image.source_image_id,
+        jobId: image.job_id
+      }
+    });
+
+    toast({
+      title: "Loading Result",
+      description: "Opening result with action options...",
+    });
+  };
+
   if (images.length === 0 && !loading) {
     return (
       <div className="text-center py-12">
@@ -321,7 +338,18 @@ export const ImageLibraryGrid = ({
                           <Copy className="h-4 w-4" />
                         </Button>
                       )}
-                      {viewMode === "ai" && image.job_id && image.source_type !== 'outfit_swap' && (
+                      {viewMode === "ai" && image.source_type === 'bulk_background' && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={(e) => { e.stopPropagation(); handleReplicateBulkBackground(image); }}
+                          className="bg-background/90 hover:bg-background"
+                          title="Reuse this result"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {viewMode === "ai" && image.job_id && image.source_type !== 'outfit_swap' && image.source_type !== 'bulk_background' && (
                         <Button
                           size="sm"
                           variant="secondary"
