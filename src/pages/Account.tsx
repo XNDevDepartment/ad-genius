@@ -231,6 +231,22 @@ const Account = () => {
           </CardContent>
         </Card>
 
+        {/* Integrations */}
+        <Card 
+          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none bg-transparent"
+          onClick={() => handleMenuClick("integrations")}
+        >
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Link2 className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium">{t('account.sections.integrations', 'Integrations')}</h3>
+              <p className="text-sm text-muted-foreground">{t('account.sections.integrationsDescription', 'Manage connected platforms like Shopify')}</p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Sign Out */}
         <Card 
           className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none mt-8 bg-transparent"
