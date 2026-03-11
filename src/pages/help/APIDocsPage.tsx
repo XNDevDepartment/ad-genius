@@ -412,10 +412,11 @@ const APIDocsPage = () => {
         <div className="space-y-4">
           <h3 className="text-xl font-semibold">Code Examples</h3>
           <Tabs defaultValue="javascript">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="javascript">JavaScript</TabsTrigger>
               <TabsTrigger value="python">Python</TabsTrigger>
               <TabsTrigger value="curl">cURL</TabsTrigger>
+              <TabsTrigger value="packs">Packs</TabsTrigger>
             </TabsList>
             {Object.entries(codeExamples).map(([lang, code]) => (
               <TabsContent key={lang} value={lang}>
