@@ -628,7 +628,7 @@ const BulkBackground = () => {
                     )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {results.map((result, index) => (
+                      {(replicateResult && results.length === 0 ? [{ id: replicateResult.id, status: 'completed' as const, result_url: replicateResult.url, source_image_url: '', image_index: 0, created_at: '', updated_at: '', job_id: '', user_id: '' }] : results).map((result, index) => (
                         <Card key={result.id || index} className="overflow-hidden">
                           <div className="aspect-square bg-muted relative">
                             {result.status === 'completed' && result.result_url ? (
