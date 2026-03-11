@@ -373,6 +373,10 @@ Deno.serve(async (req) => {
           response = await handleCreditsBalance(supabase, apiKeyInfo.user_id)
           break
 
+        case '/v1/auth/verify':
+          response = await handleAuthVerify(supabase, apiKeyInfo)
+          break
+
         default:
           // Handle job status endpoints
           if (endpoint.match(/^\/v1\/ugc\/jobs\/[\w-]+$/)) {

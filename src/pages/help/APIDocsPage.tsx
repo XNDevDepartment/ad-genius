@@ -162,6 +162,21 @@ const endpoints = [
   "credits_balance": 42,
   "subscription_tier": "Starter"
 }`
+  },
+  {
+    method: "POST",
+    endpoint: "/v1/auth/verify",
+    description: "Verify API key and retrieve account info (user ID, permissions, credits, subscription tier)",
+    parameters: [],
+    credits: "Free",
+    responseExample: `{
+  "authenticated": true,
+  "user_id": "uuid",
+  "permissions": ["ugc", "video", "fashion_catalog", "product_background", "packs"],
+  "rate_limit_tier": "starter",
+  "credits_balance": 42,
+  "subscription_tier": "Starter"
+}`
   }
 ];
 
