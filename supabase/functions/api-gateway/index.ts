@@ -961,3 +961,24 @@ async function handleGetPackJob(supabase: any, userId: string, jobId: string) {
     }))
   }
 }
+
+// ═══════════════════════════════════════════════════════════
+// HANDLER: Auth Verify — validate API key and return account info
+// ═══════════════════════════════════════════════════════════
+
+async function handleAuthVerify(supabase: any, apiKeyInfo: ApiKeyValidation) {
+  const { data } = await supabase
+    .from('subscribers')
+    .select('credits_balance, subscription_tier')
+    .eq('user_id', apiKeyInfo.user_id)
+    .single()
+
+  return {
+    authenticated: true,
+    user_id: apiKeyInfo.user_id,
+    permissions: apiKeyInfo.permissions,
+    rate_limit_tier: apiKeyInfo.rate_limit_tier,
+    credits_balance: data?.credits_balance ?? 0,
+    subscription_tier: data?.subscription_tier ?? 'Free',
+  }
+}
