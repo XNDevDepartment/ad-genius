@@ -283,7 +283,6 @@ const BulkBackground = () => {
   const handleNewBatch = () => {
     clearJob();
     setProcessingStarted(false);
-    setLastJobAvailable(false);
     setReplicateResult(null);
     setProductImages([]);
     setCustomBackground(null);
