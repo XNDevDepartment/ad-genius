@@ -198,13 +198,31 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
       return;
     }
 
+    // Client-side HTTPS validation
+    if (!webhookUrl.trim().startsWith('https://')) {
+      toast({
+        title: "Error",
+        description: "Webhook URL must use HTTPS",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setSavingWebhook(true);
     try {
       const { data, error } = await supabase.functions.invoke('api-keys', {
         body: { action: 'setWebhook', key_id: keyId, webhook_url: webhookUrl.trim() }
       });
 
-      if (error) throw error;
+      // The SDK may resolve with data containing an error on non-2xx
+      if (error) {
+        const errorBody = data?.error || error?.message || "Failed to set webhook";
+        throw new Error(errorBody);
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
 
       setWebhookSecret(data.webhook_secret);
       fetchApiKeys();
