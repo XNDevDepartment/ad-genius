@@ -27,7 +27,7 @@ interface LibraryImage {
   desiredAudience?: string;
   prodSpecs?: string;
   source_image_ids?: string[];
-  source_type?: 'ugc' | 'outfit_swap' | 'photoshoot' | 'ecommerce';
+  source_type?: 'ugc' | 'outfit_swap' | 'photoshoot' | 'ecommerce' | 'bulk_background' | 'product_views';
   photoshoot_id?: string;
   angle_type?: 'front' | 'three_quarter' | 'back' | 'side';
   style_prompt?: string;

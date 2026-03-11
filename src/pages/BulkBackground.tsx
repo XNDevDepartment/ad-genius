@@ -65,9 +65,21 @@ const BulkBackground = () => {
   // Check for resumable job on mount
   const [hasCheckedLastJob, setHasCheckedLastJob] = useState(false);
   const [lastJobAvailable, setLastJobAvailable] = useState(false);
+  const [replicateResult, setReplicateResult] = useState<{ id: string; url: string } | null>(null);
+
+  // Handle replicate mode from library
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.replicateMode && state?.resultUrl) {
+      setReplicateResult({ id: state.resultId, url: state.resultUrl });
+      setProcessingStarted(true);
+      // Clear location state to prevent re-trigger on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   useEffect(() => {
-    if (!user || hasCheckedLastJob || job) return;
+    if (!user || hasCheckedLastJob || job || replicateResult) return;
     const check = async () => {
       const lastJob = await loadLastJob();
       if (lastJob) {
@@ -77,7 +89,7 @@ const BulkBackground = () => {
       setHasCheckedLastJob(true);
     };
     check();
-  }, [user, hasCheckedLastJob, job, loadLastJob]);
+  }, [user, hasCheckedLastJob, job, loadLastJob, replicateResult]);
 
   // Data state
   const [productImages, setProductImages] = useState<File[]>([]);
