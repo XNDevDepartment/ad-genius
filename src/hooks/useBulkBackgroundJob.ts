@@ -219,6 +219,7 @@ export const useBulkBackgroundJob = () => {
     downloadAll,
     clearJob,
     retryResult,
+    loadLastJob,
     isProcessing: job?.status === 'queued' || job?.status === 'processing',
     isComplete: job?.status === 'completed',
     isCanceled: job?.status === 'canceled',
