@@ -253,34 +253,69 @@ Deno.serve(async (req: Request) => {
         if (!job) return errorResponse("Job not found", 404);
         if (["completed", "failed", "canceled"].includes(job.status)) return json({ status: job.status });
         if (job.status === "queued") await ac.from("bulk_background_jobs").update({ status: "processing", started_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", jobId);
-        const { data: results } = await ac.from("bulk_background_results").select("*").eq("job_id", jobId).in("status", ["pending", "processing"]).order("image_index");
+
+        // Fetch the first pending result only (one image per invocation)
+        const { data: results } = await ac.from("bulk_background_results").select("*").eq("job_id", jobId).in("status", ["pending", "processing"]).order("image_index").limit(1);
         if (!results?.length) {
+          // No more pending — finalize job
           const { data: all } = await ac.from("bulk_background_results").select("status").eq("job_id", jobId);
           const fc = all?.filter((r: any) => r.status === "failed").length || 0;
           const cc = all?.filter((r: any) => r.status === "completed").length || 0;
           const fs = cc === 0 ? "failed" : "completed";
-          await ac.from("bulk_background_jobs").update({ status: fs, completed_images: cc, failed_images: fc, progress: 100, finished_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", jobId);
+          await ac.from("bulk_background_jobs").update({ status: fs, completed_images: cc, failed_images: fc, progress: 100, finished_at: new Date().toISOString(), updated_at: new Date().toISOString(), error: fc > 0 ? `${fc} image(s) failed` : null }).eq("id", jobId);
+          // Refund failed images
+          if (fc > 0) { const adm = await checkAdmin(ac, job.user_id); if (!adm) await ac.rpc("refund_user_credits", { p_user_id: job.user_id, p_amount: fc * getCreditsPerImage(job.settings || null), p_reason: "bulk_background_failed_images_refund" }); }
           return json({ status: fs, completed: cc, failed: fc });
         }
-        let bgB64: string | null = null;
-        if (job.background_type === "custom" && job.background_image_url) { try { bgB64 = await fetchImageAsBase64(job.background_image_url); } catch (e) { console.error("Bg fetch failed:", e); } }
-        let cc = job.completed_images || 0, fc = job.failed_images || 0;
-        let refB64: string | null = null;
+
+        // Check if canceled
+        const { data: cur } = await ac.from("bulk_background_jobs").select("status").eq("id", jobId).single();
+        if (cur?.status === "canceled") return json({ status: "canceled" });
+
+        const r = results[0];
         const isPre = job.background_type === "preset";
-        for (const r of results) {
-          const { data: cur } = await ac.from("bulk_background_jobs").select("status").eq("id", jobId).single();
-          if (cur?.status === "canceled") break;
-          const bg = (isPre && refB64) ? refB64 : bgB64;
-          const pr = await processSingleResult(r as BJResult, job as BJJob, ac, bg, isPre && !!refB64);
-          if (pr.success) { cc++; if (isPre && pr.imageData) refB64 = bytesToB64(pr.imageData); } else fc++;
+
+        // Get background: custom image OR last result URL for chained consistency
+        let bgB64: string | null = null;
+        if (job.background_type === "custom" && job.background_image_url) {
+          try { bgB64 = await fetchImageAsBase64(job.background_image_url); } catch (e) { console.error("Bg fetch failed:", e); }
+        } else if (isPre) {
+          // Chained consistency: use lastResultUrl from job settings
+          const lastResultUrl = (job.settings as any)?.lastResultUrl;
+          if (lastResultUrl) {
+            try { bgB64 = await fetchImageAsBase64(lastResultUrl); } catch (e) { console.error("Ref fetch failed:", e); }
+          }
+        }
+
+        const isFollowUp = isPre && !!bgB64;
+        const pr = await processSingleResult(r as BJResult, job as BJJob, ac, bgB64, isFollowUp);
+
+        let cc = job.completed_images || 0;
+        let fc = job.failed_images || 0;
+        if (pr.success) {
+          cc++;
+          // Store last result URL in job settings for chained consistency
+          if (isPre && pr.imageData) {
+            const sp = `${job.user_id}/${job.id}/${r.image_index}-result.webp`;
+            const { data: urlData } = ac.storage.from(STORAGE_BUCKET).getPublicUrl(sp);
+            const updatedSettings = { ...(job.settings as Record<string, unknown> || {}), lastResultUrl: urlData.publicUrl };
+            await ac.from("bulk_background_jobs").update({ completed_images: cc, failed_images: fc, progress: Math.round(((cc + fc) / job.total_images) * 100), settings: updatedSettings, updated_at: new Date().toISOString() }).eq("id", jobId);
+          } else {
+            await ac.from("bulk_background_jobs").update({ completed_images: cc, failed_images: fc, progress: Math.round(((cc + fc) / job.total_images) * 100), updated_at: new Date().toISOString() }).eq("id", jobId);
+          }
+        } else {
+          fc++;
           await ac.from("bulk_background_jobs").update({ completed_images: cc, failed_images: fc, progress: Math.round(((cc + fc) / job.total_images) * 100), updated_at: new Date().toISOString() }).eq("id", jobId);
         }
-        const { data: fj } = await ac.from("bulk_background_jobs").select("status").eq("id", jobId).single();
-        if (fj?.status === "canceled") return json({ status: "canceled" });
-        if (fc > 0) { const adm = await checkAdmin(ac, job.user_id); if (!adm) await ac.rpc("refund_user_credits", { p_user_id: job.user_id, p_amount: fc * getCreditsPerImage(job.settings || null), p_reason: "bulk_background_failed_images_refund" }); }
-        const fs = cc === 0 ? "failed" : "completed";
-        await ac.from("bulk_background_jobs").update({ status: fs, finished_at: new Date().toISOString(), error: fc > 0 ? `${fc} image(s) failed` : null, updated_at: new Date().toISOString() }).eq("id", jobId);
-        return json({ status: fs, completed: cc, failed: fc });
+
+        // Self-invoke for the next image (non-blocking)
+        fetch(`${SUPABASE_URL}/functions/v1/bulk-background`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+          body: JSON.stringify({ action: "processJob", jobId }),
+        }).catch(e => console.error("Self-invoke error:", e));
+
+        return json({ status: "processing", completed: cc, failed: fc });
       }
 
       case "retryResult": {
