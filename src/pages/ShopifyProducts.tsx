@@ -123,7 +123,7 @@ export default function ShopifyProducts() {
   if (!connection) {
     return (
       <>
-        <SEO title="Connect Shopify Store" description="Connect your Shopify store to sync products" />
+        <SEO title="Connect Shopify Store" description="Connect your Shopify store to sync products" path="/shopify/products" />
         <ShopifyConnectCard onConnected={fetchData} />
       </>
     );
