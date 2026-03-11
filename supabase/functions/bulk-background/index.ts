@@ -178,6 +178,29 @@ async function checkAdmin(ac: any, uid: string) {
   return data === true;
 }
 
+async function checkAndFinalizeProductViews(ac: any, pvId: string, selectedViews: string[], justFinishedView: string, viewError: string | null) {
+  // Re-read the record to check which views have URLs
+  const { data: pv } = await ac.from("bulk_background_product_views").select("*").eq("id", pvId).single();
+  if (!pv) return;
+  const viewFields: Record<string, string> = { macro: "macro_url", environment: "environment_url", angle: "angle_url" };
+  const meta = (pv.metadata as Record<string, unknown>) || {};
+  const viewErrors = (meta.viewErrors as Record<string, string>) || {};
+  let done = 0, failed = 0;
+  for (const v of selectedViews) {
+    if (pv[viewFields[v]]) { done++; }
+    else if (viewErrors[v]) { failed++; }
+    // else still pending
+  }
+  const total = selectedViews.length;
+  const progress = Math.round(((done + failed) / total) * 100);
+  await (ac.from("bulk_background_product_views") as any).update({ progress, updated_at: new Date().toISOString() }).eq("id", pvId);
+  if (done + failed === total) {
+    const fs = done === 0 ? "failed" : "completed";
+    await (ac.from("bulk_background_product_views") as any).update({ status: fs, progress: 100, finished_at: new Date().toISOString(), error: failed > 0 ? `${failed} view(s) failed` : null, updated_at: new Date().toISOString() }).eq("id", pvId);
+    if (failed > 0) { const adm = await checkAdmin(ac, pv.user_id); if (!adm) await ac.rpc("refund_user_credits", { p_user_id: pv.user_id, p_amount: failed, p_reason: "bulk_background_product_views_failed_refund" }); }
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
