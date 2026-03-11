@@ -472,7 +472,7 @@ const APIDocsPage = () => {
   "timestamp": "2026-01-08T13:45:00Z",
   "job": {
     "id": "uuid",
-    "type": "ugc",  // ugc | video | fashion
+    "type": "ugc",  // ugc | video | fashion | product_background | packs
     "status": "completed"
   },
   "data": {
