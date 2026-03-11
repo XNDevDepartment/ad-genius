@@ -243,7 +243,38 @@ curl -X POST "${BASE_URL}" \\
 curl -X POST "${BASE_URL}" \\
   -H "X-API-Key: pk_live_YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '{"endpoint": "/v1/ugc/jobs/YOUR_JOB_ID"}'`
+  -d '{"endpoint": "/v1/ugc/jobs/YOUR_JOB_ID"}'`,
+
+  packs: `// Generate an image pack (ecommerce, social, or ads)
+const response = await fetch('${BASE_URL}', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': 'pk_live_YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    endpoint: '/v1/packs/generate',
+    source_image_url: 'https://example.com/product.jpg',
+    pack_id: 'ecommerce',       // ecommerce | social | ads
+    product_type: 'fashion'      // fashion | product
+  })
+});
+
+const { job_id, pack, styles, credits_used } = await response.json();
+console.log(\`Pack "\${pack}" queued — \${credits_used} credits used\`);
+
+// Poll for results
+const checkJob = await fetch('${BASE_URL}', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': 'pk_live_YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ endpoint: \`/v1/packs/jobs/\${job_id}\` })
+});
+
+const result = await checkJob.json();
+console.log('Pack images:', result.images);`
 };
 
 const webhookExample = `// Webhook handler example (Node.js/Express)
