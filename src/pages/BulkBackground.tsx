@@ -38,6 +38,7 @@ function getCreditsPerImage(size: string): number {
 
 const BulkBackground = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const { user } = useAuth();
   const { getRemainingCredits, refreshCredits, isFreeTier } = useCredits();

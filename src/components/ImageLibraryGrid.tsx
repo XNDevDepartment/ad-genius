@@ -338,7 +338,18 @@ export const ImageLibraryGrid = ({
                           <Copy className="h-4 w-4" />
                         </Button>
                       )}
-                      {viewMode === "ai" && image.job_id && image.source_type !== 'outfit_swap' && (
+                      {viewMode === "ai" && image.source_type === 'bulk_background' && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={(e) => { e.stopPropagation(); handleReplicateBulkBackground(image); }}
+                          className="bg-background/90 hover:bg-background"
+                          title="Reuse this result"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {viewMode === "ai" && image.job_id && image.source_type !== 'outfit_swap' && image.source_type !== 'bulk_background' && (
                         <Button
                           size="sm"
                           variant="secondary"
