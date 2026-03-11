@@ -397,19 +397,23 @@ Deno.serve(async (req: Request) => {
       case "processProductViews": {
         if (!isServiceRole) return errorResponse("Forbidden", 403);
         const { productViewsId } = body;
+        console.log(`[processProductViews] Starting for pvId=${productViewsId}`);
         const { data: pv } = await ac.from("bulk_background_product_views").select("*").eq("id", productViewsId).single();
-        if (!pv) return errorResponse("Not found", 404);
-        if (pv.status !== "queued") return json({ status: pv.status });
+        if (!pv) { console.error(`[processProductViews] Record not found: ${productViewsId}`); return errorResponse("Not found", 404); }
+        if (pv.status !== "queued") { console.log(`[processProductViews] Already ${pv.status}, skipping`); return json({ status: pv.status }); }
         await (ac.from("bulk_background_product_views") as any).update({ status: "processing", started_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", productViewsId);
+        console.log(`[processProductViews] Set to processing, dispatching views`);
         // Dispatch each view as a separate edge function call
         const selViews = pv.selected_views as string[];
         for (const vt of selViews) {
+          console.log(`[processProductViews] Dispatching view: ${vt}`);
           fetch(`${SUPABASE_URL}/functions/v1/bulk-background`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
             body: JSON.stringify({ action: "processSingleView", productViewsId: pv.id, viewType: vt }),
-          }).catch(e => console.error(`Dispatch ${vt} error:`, e));
+          }).catch(e => console.error(`[processProductViews] Dispatch ${vt} error:`, e));
         }
+        console.log(`[processProductViews] Dispatched ${selViews.length} views`);
         return json({ status: "processing", dispatched: selViews.length });
       }
 
