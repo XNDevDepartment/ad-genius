@@ -397,25 +397,30 @@ Deno.serve(async (req: Request) => {
       case "processProductViews": {
         if (!isServiceRole) return errorResponse("Forbidden", 403);
         const { productViewsId } = body;
+        console.log(`[processProductViews] Starting for pvId=${productViewsId}`);
         const { data: pv } = await ac.from("bulk_background_product_views").select("*").eq("id", productViewsId).single();
-        if (!pv) return errorResponse("Not found", 404);
-        if (pv.status !== "queued") return json({ status: pv.status });
+        if (!pv) { console.error(`[processProductViews] Record not found: ${productViewsId}`); return errorResponse("Not found", 404); }
+        if (pv.status !== "queued") { console.log(`[processProductViews] Already ${pv.status}, skipping`); return json({ status: pv.status }); }
         await (ac.from("bulk_background_product_views") as any).update({ status: "processing", started_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", productViewsId);
+        console.log(`[processProductViews] Set to processing, dispatching views`);
         // Dispatch each view as a separate edge function call
         const selViews = pv.selected_views as string[];
         for (const vt of selViews) {
+          console.log(`[processProductViews] Dispatching view: ${vt}`);
           fetch(`${SUPABASE_URL}/functions/v1/bulk-background`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
             body: JSON.stringify({ action: "processSingleView", productViewsId: pv.id, viewType: vt }),
-          }).catch(e => console.error(`Dispatch ${vt} error:`, e));
+          }).catch(e => console.error(`[processProductViews] Dispatch ${vt} error:`, e));
         }
+        console.log(`[processProductViews] Dispatched ${selViews.length} views`);
         return json({ status: "processing", dispatched: selViews.length });
       }
 
       case "processSingleView": {
         if (!isServiceRole) return errorResponse("Forbidden", 403);
         const { productViewsId: svPvId, viewType: svViewType } = body;
+        console.log(`[processSingleView] Starting viewType=${svViewType} for pvId=${svPvId}`);
         if (!svPvId || !svViewType) return errorResponse("Missing productViewsId or viewType");
         const VP: Record<string, string> = {
           macro: `Using this product photo as reference, create a close-up macro shot of the same product in the same setting. Focus on material quality, texture and finish details. Maintain the same background, lighting and color palette. Shallow depth of field, ultra-sharp on product surface.`,
@@ -476,7 +481,23 @@ Deno.serve(async (req: Request) => {
         const { resultId: pvRid } = body;
         if (!pvRid) return errorResponse("Missing resultId");
         const { data: pvList } = await ac.from("bulk_background_product_views").select("*").eq("result_id", pvRid).order("created_at", { ascending: false }).limit(1);
-        return json({ productViews: pvList?.[0] || null });
+        const pvRecord = pvList?.[0] || null;
+        // Recovery: auto-fail stale processing records (>5 min)
+        if (pvRecord && pvRecord.status === "processing") {
+          const updatedAt = new Date(pvRecord.updated_at).getTime();
+          const staleMs = Date.now() - updatedAt;
+          if (staleMs > 5 * 60 * 1000) {
+            console.log(`[getProductViewsByResult] Auto-failing stale record ${pvRecord.id} (stale ${Math.round(staleMs/1000)}s)`);
+            await (ac.from("bulk_background_product_views") as any).update({ status: "failed", error: "Processing timed out", finished_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", pvRecord.id);
+            // Refund unfinished views
+            const viewFields: Record<string, string> = { macro: "macro_url", environment: "environment_url", angle: "angle_url" };
+            const unfinished = (pvRecord.selected_views as string[]).filter((v: string) => !pvRecord[viewFields[v]]).length;
+            if (unfinished > 0) { const adm = await checkAdmin(ac, pvRecord.user_id); if (!adm) await ac.rpc("refund_user_credits", { p_user_id: pvRecord.user_id, p_amount: unfinished, p_reason: "bulk_background_product_views_timeout_refund" }); }
+            pvRecord.status = "failed";
+            pvRecord.error = "Processing timed out";
+          }
+        }
+        return json({ productViews: pvRecord });
       }
 
       default: return errorResponse("Unknown action");
