@@ -274,6 +274,7 @@ const BulkBackground = () => {
     clearJob();
     setProcessingStarted(false);
     setLastJobAvailable(false);
+    setReplicateResult(null);
     setProductImages([]);
     setCustomBackground(null);
     setSelectedPreset(null);
