@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { X, Loader2, Download, Eye, Check, Camera } from "lucide-react";
+import { X, Loader2, Download, Eye, Check, Camera, AlertTriangle } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -26,6 +26,9 @@ const VIEW_OPTIONS = [
 
 type ViewType = typeof VIEW_OPTIONS[number]["id"];
 
+const STALE_WARNING_MS = 2 * 60 * 1000; // 2 min
+const STALE_FAIL_MS = 3 * 60 * 1000;    // 3 min
+
 export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspectRatio }: ProductViewsModalProps) => {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -36,12 +39,47 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
   const [loading, setLoading] = useState(false);
   const [checkingExisting, setCheckingExisting] = useState(true);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [staleWarning, setStaleWarning] = useState(false);
   const isMountedRef = useRef(true);
+  const processingStartRef = useRef<number | null>(null);
 
   useEffect(() => {
     isMountedRef.current = true;
     return () => { isMountedRef.current = false; };
   }, []);
+
+  // Track when processing started for stale detection
+  useEffect(() => {
+    if (productViews?.status === 'processing' || productViews?.status === 'queued') {
+      if (!processingStartRef.current) {
+        processingStartRef.current = Date.now();
+      }
+    } else {
+      processingStartRef.current = null;
+      setStaleWarning(false);
+    }
+  }, [productViews?.status]);
+
+  // Stale detection timer
+  useEffect(() => {
+    if (!productViews || !isProcessingStatus(productViews.status)) return;
+
+    const interval = setInterval(() => {
+      if (!processingStartRef.current || !isMountedRef.current) return;
+      const elapsed = Date.now() - processingStartRef.current;
+
+      if (elapsed > STALE_FAIL_MS) {
+        // Auto-fail after 3 minutes
+        setProductViews(prev => prev ? { ...prev, status: 'failed' as const, error: 'Processing timed out. Please try again.' } : null);
+        processingStartRef.current = null;
+        setStaleWarning(false);
+      } else if (elapsed > STALE_WARNING_MS) {
+        setStaleWarning(true);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [productViews?.id, productViews?.status]);
 
   // Check for existing product views when modal opens
   useEffect(() => {
@@ -64,7 +102,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
   // Subscribe to realtime updates
   useEffect(() => {
     if (!productViews?.id) return;
-    if (productViews.status === 'completed' || productViews.status === 'failed') return;
+    if (isTerminalStatus(productViews.status)) return;
 
     const unsub = productViewsApi.subscribeProductViews(productViews.id, (updated) => {
       if (!isMountedRef.current) return;
@@ -82,7 +120,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
 
   // Polling fallback
   useEffect(() => {
-    if (!productViews?.id || productViews.status === 'completed' || productViews.status === 'failed') return;
+    if (!productViews?.id || isTerminalStatus(productViews.status)) return;
     const interval = setInterval(async () => {
       try {
         const { productViews: updated } = await productViewsApi.get(productViews.id);
@@ -120,7 +158,20 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
     } finally {
       if (isMountedRef.current) setLoading(false);
     }
-  }, [resultId, selectedViews, toast, refreshCredits]);
+  }, [resultId, selectedViews, toast, refreshCredits, aspectRatio]);
+
+  const handleRetry = useCallback(() => {
+    setProductViews(null);
+    processingStartRef.current = null;
+    setStaleWarning(false);
+  }, []);
+
+  const handleCancel = useCallback(() => {
+    setProductViews(null);
+    processingStartRef.current = null;
+    setStaleWarning(false);
+    onClose();
+  }, [onClose]);
 
   const handleDownload = async (url: string, name: string) => {
     try {
@@ -140,7 +191,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
   const credits = getRemainingCredits();
   const cost = selectedViews.size;
   const hasEnough = credits >= cost;
-  const isProcessing = productViews?.status === 'queued' || productViews?.status === 'processing';
+  const isProcessing = isProcessingStatus(productViews?.status);
   const isComplete = productViews?.status === 'completed';
 
   const getViewUrl = (viewType: string) => {
@@ -173,6 +224,14 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
             ) : !productViews || productViews.status === 'failed' ? (
               /* SELECTION STAGE */
               <>
+                {/* Show error if failed */}
+                {productViews?.status === 'failed' && productViews.error && (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <span>{productViews.error}</span>
+                  </div>
+                )}
+
                 {/* Source preview */}
                 <div className="flex justify-center">
                   <img src={resultUrl} alt="Source" className="max-h-48 rounded-lg object-contain" />
@@ -208,7 +267,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                     variant="alternative"
                   >
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                    Create Photoshoot — {cost} credit{cost !== 1 ? 's' : ''}
+                    {productViews?.status === 'failed' ? 'Retry Photoshoot' : 'Create Photoshoot'} — {cost} credit{cost !== 1 ? 's' : ''}
                   </Button>
                   {!hasEnough && (
                     <p className="text-xs text-destructive text-center">
@@ -227,6 +286,21 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                 <p className="text-center text-sm text-muted-foreground">
                   Generating product views... {productViews.progress}%
                 </p>
+
+                {staleWarning && (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-sm">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <span>Taking longer than expected... If it doesn't complete soon, it will auto-retry.</span>
+                  </div>
+                )}
+
+                <Button
+                  variant="outline"
+                  onClick={handleCancel}
+                  className="w-full"
+                >
+                  Cancel
+                </Button>
               </div>
             ) : isComplete ? (
               /* RESULTS STAGE */
@@ -292,3 +366,11 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
     </>
   );
 };
+
+function isProcessingStatus(status?: string | null): boolean {
+  return status === 'queued' || status === 'processing';
+}
+
+function isTerminalStatus(status?: string | null): boolean {
+  return status === 'completed' || status === 'failed' || status === 'canceled';
+}

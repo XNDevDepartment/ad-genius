@@ -481,7 +481,23 @@ Deno.serve(async (req: Request) => {
         const { resultId: pvRid } = body;
         if (!pvRid) return errorResponse("Missing resultId");
         const { data: pvList } = await ac.from("bulk_background_product_views").select("*").eq("result_id", pvRid).order("created_at", { ascending: false }).limit(1);
-        return json({ productViews: pvList?.[0] || null });
+        const pvRecord = pvList?.[0] || null;
+        // Recovery: auto-fail stale processing records (>5 min)
+        if (pvRecord && pvRecord.status === "processing") {
+          const updatedAt = new Date(pvRecord.updated_at).getTime();
+          const staleMs = Date.now() - updatedAt;
+          if (staleMs > 5 * 60 * 1000) {
+            console.log(`[getProductViewsByResult] Auto-failing stale record ${pvRecord.id} (stale ${Math.round(staleMs/1000)}s)`);
+            await (ac.from("bulk_background_product_views") as any).update({ status: "failed", error: "Processing timed out", finished_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", pvRecord.id);
+            // Refund unfinished views
+            const viewFields: Record<string, string> = { macro: "macro_url", environment: "environment_url", angle: "angle_url" };
+            const unfinished = (pvRecord.selected_views as string[]).filter((v: string) => !pvRecord[viewFields[v]]).length;
+            if (unfinished > 0) { const adm = await checkAdmin(ac, pvRecord.user_id); if (!adm) await ac.rpc("refund_user_credits", { p_user_id: pvRecord.user_id, p_amount: unfinished, p_reason: "bulk_background_product_views_timeout_refund" }); }
+            pvRecord.status = "failed";
+            pvRecord.error = "Processing timed out";
+          }
+        }
+        return json({ productViews: pvRecord });
       }
 
       default: return errorResponse("Unknown action");
