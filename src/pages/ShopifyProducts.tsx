@@ -65,7 +65,7 @@ export default function ShopifyProducts() {
     );
   }
 
-  const lastSyncAt = dashboard.products.length > 0 ? dashboard.products[0].synced_at : null;
+  
 
   return (
     <>
