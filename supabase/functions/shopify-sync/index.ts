@@ -111,7 +111,12 @@ async function syncProducts(
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "Accept": "application/json",
       },
+      redirect: "manual",
     });
+
+    if (res.status >= 300 && res.status < 400) {
+      throw new Error("Your Shopify store appears to be password-protected. Please remove the storefront password in Shopify Admin → Online Store → Preferences before syncing.");
+    }
 
     if (!res.ok) {
       console.error("Shopify public API error:", res.status, await res.text());
