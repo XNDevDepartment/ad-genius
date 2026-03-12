@@ -152,9 +152,18 @@ export function useShopifyDashboard() {
   const handleDisconnect = async () => {
     if (!connection) return;
     try {
-      const { error } = await supabase.functions.invoke("shopify-integration", {
-        body: { action: "disconnect", connectionId: connection.id },
-      });
+      // Delete synced products first
+      await supabase
+        .from("shopify_products")
+        .delete()
+        .eq("shopify_connection_id", connection.id);
+
+      // Mark connection as disconnected
+      const { error } = await supabase
+        .from("shopify_store_connections")
+        .update({ is_connected: false, connection_status: "disconnected" })
+        .eq("id", connection.id);
+
       if (error) throw error;
       toast.success("Store disconnected");
       setConnection(null);
