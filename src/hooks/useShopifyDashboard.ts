@@ -6,10 +6,15 @@ import { toast } from "sonner";
 export interface ShopifyConnection {
   id: string;
   shop_domain: string;
-  access_token: string;
+  shop_name: string | null;
+  is_connected: boolean;
+  is_verified: boolean;
+  connection_status: string;
   connected_at: string;
+  verified_at: string | null;
+  last_sync_at: string | null;
+  webhook_url: string | null;
   updated_at: string;
-  scopes: string | null;
 }
 
 export interface ShopifyProductImage {
@@ -82,12 +87,14 @@ export function useShopifyDashboard() {
   const fetchConnection = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
-      .from("shopify_connections")
+      .from("shopify_store_connections")
       .select("*")
       .eq("user_id", user.id)
+      .eq("is_connected", true)
       .limit(1);
-    setConnection((data as unknown as ShopifyConnection[])?.[0] || null);
-    return (data as unknown as ShopifyConnection[])?.[0] || null;
+    const conn = (data as unknown as ShopifyConnection[])?.[0] || null;
+    setConnection(conn);
+    return conn;
   }, [user]);
 
   const fetchProducts = useCallback(async (connId?: string) => {
@@ -145,7 +152,7 @@ export function useShopifyDashboard() {
   const handleDisconnect = async () => {
     if (!connection) return;
     try {
-      const { error } = await supabase.functions.invoke("shopify-sync", {
+      const { error } = await supabase.functions.invoke("shopify-integration", {
         body: { action: "disconnect", connectionId: connection.id },
       });
       if (error) throw error;
@@ -174,7 +181,6 @@ export function useShopifyDashboard() {
 
   const loadGeneratedAssets = async (product: ShopifyProduct) => {
     if (!user) return;
-    // Load generated images that reference this product's source image
     const { data } = await supabase
       .from("generated_images")
       .select("id, public_url, prompt, created_at, settings")

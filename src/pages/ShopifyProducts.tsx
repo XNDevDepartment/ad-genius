@@ -65,7 +65,7 @@ export default function ShopifyProducts() {
     );
   }
 
-  const lastSyncAt = dashboard.products.length > 0 ? dashboard.products[0].synced_at : null;
+  
 
   return (
     <>
@@ -75,7 +75,6 @@ export default function ShopifyProducts() {
         <ShopifyStoreHeader
           connection={dashboard.connection}
           productCount={dashboard.products.length}
-          lastSyncAt={lastSyncAt}
           syncStatus={dashboard.syncStatus}
           onSync={dashboard.handleSync}
           onDisconnect={dashboard.handleDisconnect}
