@@ -39,14 +39,10 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { action } = body;
 
-    if (action === "connect") {
-      return await handleConnect(supabase, user.id, body);
-    } else if (action === "sync") {
+    if (action === "sync") {
       return await handleSync(supabase, user.id, body);
-    } else if (action === "disconnect") {
-      return await handleDisconnect(supabase, user.id, body);
     } else {
-      return new Response(JSON.stringify({ error: "Invalid action" }), {
+      return new Response(JSON.stringify({ error: "Invalid action. Only 'sync' is supported." }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -60,104 +56,34 @@ Deno.serve(async (req) => {
   }
 });
 
-async function handleConnect(supabase: any, userId: string, body: any) {
-  const { shopDomain, accessToken } = body;
-  if (!shopDomain || !accessToken) {
-    return new Response(JSON.stringify({ error: "shopDomain and accessToken are required" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
-  // Normalize domain
-  const domain = shopDomain.replace(/^https?:\/\//, "").replace(/\/$/, "");
-
-  // Verify the token works by calling Shopify
-  const verifyRes = await fetch(`https://${domain}/admin/api/2024-01/shop.json`, {
-    headers: { "X-Shopify-Access-Token": accessToken },
-  });
-
-  if (!verifyRes.ok) {
-    return new Response(JSON.stringify({ error: "Invalid Shopify credentials. Could not connect to store." }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
-  // Upsert connection
-  const { data, error } = await supabase
-    .from("shopify_connections")
-    .upsert(
-      { user_id: userId, shop_domain: domain, access_token: accessToken, connected_at: new Date().toISOString() },
-      { onConflict: "user_id,shop_domain" }
-    )
-    .select()
-    .single();
-
-  if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
-  // Trigger initial sync
-  await syncProducts(supabase, userId, data.id, domain, accessToken);
-
-  return new Response(JSON.stringify({ success: true, connection: data }), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
-
 async function handleSync(supabase: any, userId: string, body: any) {
   const { connectionId } = body;
 
-  // Get connection
+  // Query shopify_store_connections (new table)
   const { data: conn, error: connErr } = await supabase
-    .from("shopify_connections")
+    .from("shopify_store_connections")
     .select("*")
     .eq("id", connectionId)
     .eq("user_id", userId)
     .single();
 
   if (connErr || !conn) {
+    console.error("Connection lookup failed:", connErr);
     return new Response(JSON.stringify({ error: "Connection not found" }), {
       status: 404,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
-  const result = await syncProducts(supabase, userId, conn.id, conn.shop_domain, conn.access_token);
+  const result = await syncProducts(supabase, userId, conn.id, conn.shop_domain);
+
+  // Update last_sync_at on the connection
+  await supabase
+    .from("shopify_store_connections")
+    .update({ last_sync_at: new Date().toISOString() })
+    .eq("id", conn.id);
 
   return new Response(JSON.stringify({ success: true, ...result }), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
-
-async function handleDisconnect(supabase: any, userId: string, body: any) {
-  const { connectionId } = body;
-
-  // Delete products first (cascade should handle but be explicit)
-  await supabase
-    .from("shopify_products")
-    .delete()
-    .eq("shopify_connection_id", connectionId)
-    .eq("user_id", userId);
-
-  const { error } = await supabase
-    .from("shopify_connections")
-    .delete()
-    .eq("id", connectionId)
-    .eq("user_id", userId);
-
-  if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
-  return new Response(JSON.stringify({ success: true }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
@@ -166,43 +92,44 @@ async function syncProducts(
   supabase: any,
   userId: string,
   connectionId: string,
-  shopDomain: string,
-  accessToken: string
+  shopDomain: string
 ) {
   let allProducts: any[] = [];
-  let pageInfo: string | null = null;
+  let page = 1;
   let hasMore = true;
 
-  // Paginate through all products
+  // Normalize domain
+  let domain = shopDomain.replace(/^https?:\/\//, "").replace(/\/$/, "");
+
+  // Paginate through all products using public products.json endpoint
   while (hasMore) {
-    const url = pageInfo
-      ? `https://${shopDomain}/admin/api/2024-01/products.json?limit=250&page_info=${pageInfo}`
-      : `https://${shopDomain}/admin/api/2024-01/products.json?limit=250`;
+    const url = `https://${domain}/products.json?limit=250&page=${page}`;
+    console.log(`Fetching products page ${page}:`, url);
 
     const res = await fetch(url, {
-      headers: { "X-Shopify-Access-Token": accessToken },
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Accept": "application/json",
+      },
     });
 
     if (!res.ok) {
-      console.error("Shopify API error:", res.status, await res.text());
+      console.error("Shopify public API error:", res.status, await res.text());
       break;
     }
 
     const data = await res.json();
-    allProducts = allProducts.concat(data.products || []);
+    const products = data.products || [];
+    allProducts = allProducts.concat(products);
 
-    // Check for next page via Link header
-    const linkHeader = res.headers.get("link");
-    if (linkHeader && linkHeader.includes('rel="next"')) {
-      const match = linkHeader.match(/<[^>]*page_info=([^&>]*)[^>]*>;\s*rel="next"/);
-      pageInfo = match ? match[1] : null;
-      hasMore = !!pageInfo;
-    } else {
-      hasMore = false;
-    }
+    // If we got fewer than 250 products, we've reached the last page
+    hasMore = products.length === 250;
+    page++;
   }
 
-  // Upsert products
+  console.log(`Fetched ${allProducts.length} total products from ${domain}`);
+
+  // Map products to shopify_products schema
   const upsertData = allProducts.map((p: any) => {
     const firstVariant = p.variants?.[0];
     return {
