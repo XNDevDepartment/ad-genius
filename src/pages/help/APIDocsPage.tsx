@@ -12,7 +12,51 @@ import { buildTechArticleSchema, buildBreadcrumbSchema } from "@/lib/schema";
 
 const BASE_URL = "https://dhqdamfisdbbcieqlpvt.supabase.co/functions/v1/api-gateway";
 
-const endpoints = [
+const mkJs = (body: string, extra?: string) =>
+  `const response = await fetch('${BASE_URL}', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': 'pk_live_YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(${body})
+});
+
+const data = await response.json();
+console.log(data);${extra ? '\n' + extra : ''}`;
+
+const mkPy = (body: string, extra?: string) =>
+  `import requests
+
+response = requests.post(
+    "${BASE_URL}",
+    headers={
+        "X-API-Key": "pk_live_YOUR_API_KEY",
+        "Content-Type": "application/json"
+    },
+    json=${body}
+)
+
+data = response.json()
+print(data)${extra ? '\n' + extra : ''}`;
+
+const mkCurl = (body: string) =>
+  `curl -X POST "${BASE_URL}" \\
+  -H "X-API-Key: pk_live_YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '${body}'`;
+
+interface EndpointDef {
+  method: string;
+  endpoint: string;
+  description: string;
+  parameters: string[];
+  credits: string;
+  responseExample: string;
+  codeExamples: { javascript: string; python: string; curl: string };
+}
+
+const endpoints: EndpointDef[] = [
   {
     method: "POST",
     endpoint: "/v1/ugc/generate",
@@ -24,7 +68,27 @@ const endpoints = [
   "status": "queued",
   "message": "Image generation job created successfully",
   "credits_used": 2
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/ugc/generate',
+    source_image_url: 'https://example.com/product.jpg',
+    prompt: 'Professional lifestyle photo on marble background',
+    settings: { number: 2, aspect_ratio: '1:1' }
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/ugc/generate",
+        "source_image_url": "https://example.com/product.jpg",
+        "prompt": "Professional lifestyle photo on marble background",
+        "settings": {"number": 2, "aspect_ratio": "1:1"}
+    }`),
+      curl: mkCurl(`{
+    "endpoint": "/v1/ugc/generate",
+    "source_image_url": "https://example.com/product.jpg",
+    "prompt": "Professional lifestyle photo on marble background",
+    "settings": {"number": 2, "aspect_ratio": "1:1"}
+  }`)
+    }
   },
   {
     method: "GET",
@@ -41,7 +105,16 @@ const endpoints = [
   "images": [
     { "id": "uuid", "url": "https://...", "created_at": "..." }
   ]
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/ugc/jobs/YOUR_JOB_ID'
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/ugc/jobs/YOUR_JOB_ID"
+    }`),
+      curl: mkCurl(`{"endpoint": "/v1/ugc/jobs/YOUR_JOB_ID"}`)
+    }
   },
   {
     method: "POST",
@@ -53,7 +126,27 @@ const endpoints = [
   "job_id": "uuid",
   "status": "queued",
   "credits_used": 5
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/video/create',
+    source_image_url: 'https://example.com/product.jpg',
+    prompt: 'Smooth camera pan around the product',
+    duration: 5
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/video/create",
+        "source_image_url": "https://example.com/product.jpg",
+        "prompt": "Smooth camera pan around the product",
+        "duration": 5
+    }`),
+      curl: mkCurl(`{
+    "endpoint": "/v1/video/create",
+    "source_image_url": "https://example.com/product.jpg",
+    "prompt": "Smooth camera pan around the product",
+    "duration": 5
+  }`)
+    }
   },
   {
     method: "GET",
@@ -66,7 +159,16 @@ const endpoints = [
   "status": "completed",
   "video_url": "https://...",
   "video_duration": 5
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/video/jobs/YOUR_JOB_ID'
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/video/jobs/YOUR_JOB_ID"
+    }`),
+      curl: mkCurl(`{"endpoint": "/v1/video/jobs/YOUR_JOB_ID"}`)
+    }
   },
   {
     method: "POST",
@@ -78,7 +180,27 @@ const endpoints = [
   "job_id": "uuid",
   "status": "queued",
   "credits_used": 1
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/fashion/swap',
+    garment_image_url: 'https://example.com/tshirt.jpg',
+    base_model_id: 'model-uuid',
+    settings: { style: 'catalog' }
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/fashion/swap",
+        "garment_image_url": "https://example.com/tshirt.jpg",
+        "base_model_id": "model-uuid",
+        "settings": {"style": "catalog"}
+    }`),
+      curl: mkCurl(`{
+    "endpoint": "/v1/fashion/swap",
+    "garment_image_url": "https://example.com/tshirt.jpg",
+    "base_model_id": "model-uuid",
+    "settings": {"style": "catalog"}
+  }`)
+    }
   },
   {
     method: "GET",
@@ -92,7 +214,16 @@ const endpoints = [
   "results": [
     { "id": "uuid", "url": "https://...", "created_at": "..." }
   ]
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/fashion/jobs/YOUR_JOB_ID'
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/fashion/jobs/YOUR_JOB_ID"
+    }`),
+      curl: mkCurl(`{"endpoint": "/v1/fashion/jobs/YOUR_JOB_ID"}`)
+    }
   },
   {
     method: "POST",
@@ -104,7 +235,27 @@ const endpoints = [
   "job_id": "uuid",
   "status": "queued",
   "credits_used": 1
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/product/background',
+    source_image_url: 'https://example.com/product.jpg',
+    background_preset_id: 'marble-white',
+    settings: { output_format: 'png' }
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/product/background",
+        "source_image_url": "https://example.com/product.jpg",
+        "background_preset_id": "marble-white",
+        "settings": {"output_format": "png"}
+    }`),
+      curl: mkCurl(`{
+    "endpoint": "/v1/product/background",
+    "source_image_url": "https://example.com/product.jpg",
+    "background_preset_id": "marble-white",
+    "settings": {"output_format": "png"}
+  }`)
+    }
   },
   {
     method: "GET",
@@ -118,7 +269,16 @@ const endpoints = [
   "results": [
     { "id": "uuid", "result_url": "https://...", "source_url": "https://..." }
   ]
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/product/background/jobs/YOUR_JOB_ID'
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/product/background/jobs/YOUR_JOB_ID"
+    }`),
+      curl: mkCurl(`{"endpoint": "/v1/product/background/jobs/YOUR_JOB_ID"}`)
+    }
   },
   {
     method: "POST",
@@ -132,7 +292,27 @@ const endpoints = [
   "pack": "ecommerce",
   "styles": ["hero_product", "catalog_clean", "detail_macro", "model_neutral"],
   "credits_used": 4
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/packs/generate',
+    source_image_url: 'https://example.com/product.jpg',
+    pack_id: 'ecommerce',
+    product_type: 'fashion'
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/packs/generate",
+        "source_image_url": "https://example.com/product.jpg",
+        "pack_id": "ecommerce",
+        "product_type": "fashion"
+    }`),
+      curl: mkCurl(`{
+    "endpoint": "/v1/packs/generate",
+    "source_image_url": "https://example.com/product.jpg",
+    "pack_id": "ecommerce",
+    "product_type": "fashion"
+  }`)
+    }
   },
   {
     method: "GET",
@@ -150,7 +330,16 @@ const endpoints = [
   "images": [
     { "id": "uuid", "url": "https://...", "style": "hero_product" }
   ]
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/packs/jobs/YOUR_JOB_ID'
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/packs/jobs/YOUR_JOB_ID"
+    }`),
+      curl: mkCurl(`{"endpoint": "/v1/packs/jobs/YOUR_JOB_ID"}`)
+    }
   },
   {
     method: "GET",
@@ -161,7 +350,16 @@ const endpoints = [
     responseExample: `{
   "credits_balance": 42,
   "subscription_tier": "Starter"
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/credits/balance'
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/credits/balance"
+    }`),
+      curl: mkCurl(`{"endpoint": "/v1/credits/balance"}`)
+    }
   },
   {
     method: "POST",
@@ -176,7 +374,16 @@ const endpoints = [
   "rate_limit_tier": "starter",
   "credits_balance": 42,
   "subscription_tier": "Starter"
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/auth/verify'
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/auth/verify"
+    }`),
+      curl: mkCurl(`{"endpoint": "/v1/auth/verify"}`)
+    }
   },
   {
     method: "POST",
@@ -193,7 +400,41 @@ const endpoints = [
   "shopifyStoreDomain": "my-store.myshopify.com",
   "webhookSecret": "secret-for-hmac",
   "message": "Store connected. Call /v1/shopify/verify to complete."
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/shopify/connect',
+    shopDomain: 'my-store.myshopify.com',
+    shopName: 'My Store',
+    externalConnectionId: 'shopify-install-id',
+    webhookUrl: 'https://my-app.com/webhooks/produktpix',
+    metadata: {
+      platform: 'shopify',
+      appName: 'ProduktPix Shopify App',
+      source: 'shopify_admin'
+    }
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/shopify/connect",
+        "shopDomain": "my-store.myshopify.com",
+        "shopName": "My Store",
+        "externalConnectionId": "shopify-install-id",
+        "webhookUrl": "https://my-app.com/webhooks/produktpix",
+        "metadata": {
+            "platform": "shopify",
+            "appName": "ProduktPix Shopify App",
+            "source": "shopify_admin"
+        }
+    }`),
+      curl: mkCurl(`{
+    "endpoint": "/v1/shopify/connect",
+    "shopDomain": "my-store.myshopify.com",
+    "shopName": "My Store",
+    "externalConnectionId": "shopify-install-id",
+    "webhookUrl": "https://my-app.com/webhooks/produktpix",
+    "metadata": {"platform": "shopify", "appName": "ProduktPix Shopify App", "source": "shopify_admin"}
+  }`)
+    }
   },
   {
     method: "POST",
@@ -207,7 +448,21 @@ const endpoints = [
   "shopifyVerified": true,
   "shopifyConnectionStatus": "verified",
   "verifiedAt": "2026-03-11T..."
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/shopify/verify',
+    connectionId: 'YOUR_CONNECTION_ID'
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/shopify/verify",
+        "connectionId": "YOUR_CONNECTION_ID"
+    }`),
+      curl: mkCurl(`{
+    "endpoint": "/v1/shopify/verify",
+    "connectionId": "YOUR_CONNECTION_ID"
+  }`)
+    }
   },
   {
     method: "POST",
@@ -222,7 +477,21 @@ const endpoints = [
   "shopifyStoreDomain": "my-store.myshopify.com",
   "shopifyConnectionStatus": "verified",
   "shopifyWebhookConfigured": true
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/shopify/status',
+    shopDomain: 'my-store.myshopify.com'
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/shopify/status",
+        "shopDomain": "my-store.myshopify.com"
+    }`),
+      curl: mkCurl(`{
+    "endpoint": "/v1/shopify/status",
+    "shopDomain": "my-store.myshopify.com"
+  }`)
+    }
   },
   {
     method: "POST",
@@ -234,7 +503,21 @@ const endpoints = [
   "success": true,
   "shopifyConnectionStatus": "revoked",
   "message": "Store disconnected. Historical jobs remain linked."
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/shopify/disconnect',
+    connectionId: 'YOUR_CONNECTION_ID'
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/shopify/disconnect",
+        "connectionId": "YOUR_CONNECTION_ID"
+    }`),
+      curl: mkCurl(`{
+    "endpoint": "/v1/shopify/disconnect",
+    "connectionId": "YOUR_CONNECTION_ID"
+  }`)
+    }
   },
   {
     method: "POST",
@@ -247,7 +530,24 @@ const endpoints = [
   "webhookUrl": "https://...",
   "webhookSecret": "hmac-secret",
   "webhookConfigured": true
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/shopify/webhook',
+    connectionId: 'YOUR_CONNECTION_ID',
+    webhookUrl: 'https://my-app.com/webhooks/produktpix'
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/shopify/webhook",
+        "connectionId": "YOUR_CONNECTION_ID",
+        "webhookUrl": "https://my-app.com/webhooks/produktpix"
+    }`),
+      curl: mkCurl(`{
+    "endpoint": "/v1/shopify/webhook",
+    "connectionId": "YOUR_CONNECTION_ID",
+    "webhookUrl": "https://my-app.com/webhooks/produktpix"
+  }`)
+    }
   },
   {
     method: "POST",
@@ -260,7 +560,16 @@ const endpoints = [
     { "platform": "shopify", "storeDomain": "...", "status": "verified", "isVerified": true }
   ],
   "total": 1
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/shopify/platforms'
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/shopify/platforms"
+    }`),
+      curl: mkCurl(`{"endpoint": "/v1/shopify/platforms"}`)
+    }
   },
   {
     method: "POST",
@@ -273,7 +582,27 @@ const endpoints = [
   "jobId": "uuid",
   "connectionId": "uuid",
   "message": "Job linked to Shopify store."
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/shopify/attach-job',
+    jobId: 'YOUR_JOB_ID',
+    jobType: 'ugc',
+    connectionId: 'YOUR_CONNECTION_ID'
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/shopify/attach-job",
+        "jobId": "YOUR_JOB_ID",
+        "jobType": "ugc",
+        "connectionId": "YOUR_CONNECTION_ID"
+    }`),
+      curl: mkCurl(`{
+    "endpoint": "/v1/shopify/attach-job",
+    "jobId": "YOUR_JOB_ID",
+    "jobType": "ugc",
+    "connectionId": "YOUR_CONNECTION_ID"
+  }`)
+    }
   },
   {
     method: "POST",
@@ -285,121 +614,26 @@ const endpoints = [
   "jobId": "uuid",
   "shopifyLinked": true,
   "connection": { "shopDomain": "...", "status": "verified" }
-}`
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/shopify/job-context',
+    jobId: 'YOUR_JOB_ID',
+    jobType: 'ugc'
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/shopify/job-context",
+        "jobId": "YOUR_JOB_ID",
+        "jobType": "ugc"
+    }`),
+      curl: mkCurl(`{
+    "endpoint": "/v1/shopify/job-context",
+    "jobId": "YOUR_JOB_ID",
+    "jobType": "ugc"
+  }`)
+    }
   }
 ];
-
-const codeExamples = {
-  javascript: `// Generate UGC images
-const response = await fetch('${BASE_URL}', {
-  method: 'POST',
-  headers: {
-    'X-API-Key': 'pk_live_YOUR_API_KEY',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    endpoint: '/v1/ugc/generate',
-    source_image_url: 'https://example.com/product.jpg',
-    prompt: 'Professional lifestyle photo on marble background',
-    settings: { number: 2, aspect_ratio: '1:1' }
-  })
-});
-
-const { job_id, status } = await response.json();
-console.log('Job created:', job_id);
-
-// Poll for results
-const checkJob = await fetch('${BASE_URL}', {
-  method: 'POST',
-  headers: {
-    'X-API-Key': 'pk_live_YOUR_API_KEY',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({ endpoint: \`/v1/ugc/jobs/\${job_id}\` })
-});
-
-const result = await checkJob.json();
-console.log('Images:', result.images);`,
-
-  python: `import requests
-import time
-
-BASE_URL = "${BASE_URL}"
-headers = {
-    "X-API-Key": "pk_live_YOUR_API_KEY",
-    "Content-Type": "application/json"
-}
-
-# Generate UGC images
-response = requests.post(BASE_URL, headers=headers, json={
-    "endpoint": "/v1/ugc/generate",
-    "source_image_url": "https://example.com/product.jpg",
-    "prompt": "Professional lifestyle photo on marble background",
-    "settings": {"number": 2, "aspect_ratio": "1:1"}
-})
-
-job_id = response.json()["job_id"]
-print(f"Job created: {job_id}")
-
-# Poll for results
-while True:
-    result = requests.post(BASE_URL, headers=headers, json={
-        "endpoint": f"/v1/ugc/jobs/{job_id}"
-    }).json()
-    
-    if result["status"] == "completed":
-        print("Images:", result["images"])
-        break
-    time.sleep(5)`,
-
-  curl: `# Generate UGC images
-curl -X POST "${BASE_URL}" \\
-  -H "X-API-Key: pk_live_YOUR_API_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "endpoint": "/v1/ugc/generate",
-    "source_image_url": "https://example.com/product.jpg",
-    "prompt": "Professional lifestyle photo",
-    "settings": {"number": 2}
-  }'
-
-# Check job status
-curl -X POST "${BASE_URL}" \\
-  -H "X-API-Key: pk_live_YOUR_API_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{"endpoint": "/v1/ugc/jobs/YOUR_JOB_ID"}'`,
-
-  packs: `// Generate an image pack (ecommerce, social, or ads)
-const response = await fetch('${BASE_URL}', {
-  method: 'POST',
-  headers: {
-    'X-API-Key': 'pk_live_YOUR_API_KEY',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    endpoint: '/v1/packs/generate',
-    source_image_url: 'https://example.com/product.jpg',
-    pack_id: 'ecommerce',       // ecommerce | social | ads
-    product_type: 'fashion'      // fashion | product
-  })
-});
-
-const { job_id, pack, styles, credits_used } = await response.json();
-console.log(\`Pack "\${pack}" queued — \${credits_used} credits used\`);
-
-// Poll for results
-const checkJob = await fetch('${BASE_URL}', {
-  method: 'POST',
-  headers: {
-    'X-API-Key': 'pk_live_YOUR_API_KEY',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({ endpoint: \`/v1/packs/jobs/\${job_id}\` })
-});
-
-const result = await checkJob.json();
-console.log('Pack images:', result.images);`
-};
 
 const webhookExample = `// Webhook handler example (Node.js/Express)
 const crypto = require('crypto');
@@ -448,6 +682,39 @@ const rateLimits = [
 
 const getMethodColor = (method: string) => {
   return method === "GET" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700";
+};
+
+const CodeBlock = ({
+  code,
+  language,
+  copiedCode,
+  onCopy,
+}: {
+  code: string;
+  language: string;
+  copiedCode: string | null;
+  onCopy: (code: string, key: string) => void;
+}) => {
+  const key = `${language}-${code.slice(0, 20)}`;
+  return (
+    <div className="relative">
+      <Button
+        size="sm"
+        variant="ghost"
+        className="absolute top-2 right-2 h-7 w-7 p-0"
+        onClick={() => onCopy(code, key)}
+      >
+        {copiedCode === key ? (
+          <CheckCircle className="h-3.5 w-3.5 text-green-600" />
+        ) : (
+          <Copy className="h-3.5 w-3.5" />
+        )}
+      </Button>
+      <pre className="bg-muted p-3 rounded-md overflow-x-auto text-xs pr-10">
+        <code>{code}</code>
+      </pre>
+    </div>
+  );
 };
 
 const APIDocsPage = () => {
@@ -557,40 +824,34 @@ const APIDocsPage = () => {
                       </pre>
                     </details>
                   )}
+                  <details className="mt-2">
+                    <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground flex items-center gap-1">
+                      <Code className="h-3 w-3" />
+                      Code examples
+                    </summary>
+                    <div className="mt-2">
+                      <Tabs defaultValue="javascript" className="w-full">
+                        <TabsList className="grid w-full grid-cols-3 h-8">
+                          <TabsTrigger value="javascript" className="text-xs py-1">JavaScript</TabsTrigger>
+                          <TabsTrigger value="python" className="text-xs py-1">Python</TabsTrigger>
+                          <TabsTrigger value="curl" className="text-xs py-1">cURL</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="javascript" className="mt-2">
+                          <CodeBlock code={ep.codeExamples.javascript} language="javascript" copiedCode={copiedCode} onCopy={copyCode} />
+                        </TabsContent>
+                        <TabsContent value="python" className="mt-2">
+                          <CodeBlock code={ep.codeExamples.python} language="python" copiedCode={copiedCode} onCopy={copyCode} />
+                        </TabsContent>
+                        <TabsContent value="curl" className="mt-2">
+                          <CodeBlock code={ep.codeExamples.curl} language="curl" copiedCode={copiedCode} onCopy={copyCode} />
+                        </TabsContent>
+                      </Tabs>
+                    </div>
+                  </details>
                 </CardContent>
               </Card>
             ))}
           </div>
-        </div>
-
-        {/* Code Examples */}
-        <div className="space-y-4">
-          <h3 className="text-xl font-semibold">Code Examples</h3>
-          <Tabs defaultValue="javascript">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="javascript">JavaScript</TabsTrigger>
-              <TabsTrigger value="python">Python</TabsTrigger>
-              <TabsTrigger value="curl">cURL</TabsTrigger>
-              <TabsTrigger value="packs">Packs</TabsTrigger>
-            </TabsList>
-            {Object.entries(codeExamples).map(([lang, code]) => (
-              <TabsContent key={lang} value={lang}>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between py-3">
-                    <CardTitle className="text-base">{lang.charAt(0).toUpperCase() + lang.slice(1)}</CardTitle>
-                    <Button size="sm" variant="ghost" onClick={() => copyCode(code, lang)}>
-                      {copiedCode === lang ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                    </Button>
-                  </CardHeader>
-                  <CardContent>
-                    <pre className="bg-muted p-4 rounded-md overflow-x-auto text-sm">
-                      <code>{code}</code>
-                    </pre>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            ))}
-          </Tabs>
         </div>
 
         {/* Webhooks */}
