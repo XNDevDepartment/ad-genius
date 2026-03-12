@@ -1,4 +1,4 @@
-import { Store, RefreshCw, Unlink, CheckCircle, Clock, AlertTriangle } from "lucide-react";
+import { Store, RefreshCw, Unlink, CheckCircle, Clock, AlertTriangle, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,13 +7,12 @@ import type { ShopifyConnection, SyncStatus } from "@/hooks/useShopifyDashboard"
 interface Props {
   connection: ShopifyConnection;
   productCount: number;
-  lastSyncAt: string | null;
   syncStatus: SyncStatus;
   onSync: () => void;
   onDisconnect: () => void;
 }
 
-export function ShopifyStoreHeader({ connection, productCount, lastSyncAt, syncStatus, onSync, onDisconnect }: Props) {
+export function ShopifyStoreHeader({ connection, productCount, syncStatus, onSync, onDisconnect }: Props) {
   return (
     <Card className="border-0 bg-muted/30">
       <CardContent className="p-6">
@@ -24,24 +23,38 @@ export function ShopifyStoreHeader({ connection, productCount, lastSyncAt, syncS
               <Store className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-foreground">{connection.shop_domain}</h2>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-lg font-bold text-foreground">
+                  {connection.shop_name || connection.shop_domain}
+                </h2>
                 <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
                   <CheckCircle className="h-3 w-3 mr-1" />
                   Connected
                 </Badge>
+                {connection.is_verified && (
+                  <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                    <ShieldCheck className="h-3 w-3 mr-1" />
+                    Verified
+                  </Badge>
+                )}
               </div>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground mt-0.5">
+              <div className="flex items-center gap-4 text-sm text-muted-foreground mt-0.5 flex-wrap">
+                {connection.shop_name && (
+                  <>
+                    <span>{connection.shop_domain}</span>
+                    <span>·</span>
+                  </>
+                )}
                 <span>{productCount} products</span>
                 <span>·</span>
                 <span className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   Connected {new Date(connection.connected_at).toLocaleDateString()}
                 </span>
-                {lastSyncAt && (
+                {connection.last_sync_at && (
                   <>
                     <span>·</span>
-                    <span>Last sync {new Date(lastSyncAt).toLocaleString()}</span>
+                    <span>Last sync {new Date(connection.last_sync_at).toLocaleString()}</span>
                   </>
                 )}
               </div>

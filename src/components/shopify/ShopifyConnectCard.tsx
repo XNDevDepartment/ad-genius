@@ -1,44 +1,14 @@
-import { useState } from "react";
-import { Store, Link, Loader2 } from "lucide-react";
+import { Store, Key, ExternalLink, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface ShopifyConnectCardProps {
   onConnected: () => void;
 }
 
 export function ShopifyConnectCard({ onConnected }: ShopifyConnectCardProps) {
-  const [shopDomain, setShopDomain] = useState("");
-  const [accessToken, setAccessToken] = useState("");
-  const [connecting, setConnecting] = useState(false);
-
-  const handleConnect = async () => {
-    if (!shopDomain.trim() || !accessToken.trim()) {
-      toast.error("Please fill in both fields");
-      return;
-    }
-
-    setConnecting(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("shopify-sync", {
-        body: { action: "connect", shopDomain: shopDomain.trim(), accessToken: accessToken.trim() },
-      });
-
-      if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || "Connection failed");
-
-      toast.success("Shopify store connected and products synced!");
-      onConnected();
-    } catch (err: any) {
-      toast.error(err.message || "Failed to connect store");
-    } finally {
-      setConnecting(false);
-    }
-  };
+  const navigate = useNavigate();
 
   return (
     <Card className="max-w-lg mx-auto mt-12">
@@ -48,45 +18,44 @@ export function ShopifyConnectCard({ onConnected }: ShopifyConnectCardProps) {
         </div>
         <CardTitle>Connect Your Shopify Store</CardTitle>
         <CardDescription>
-          Enter your Shopify store domain and an Admin API access token to sync your product catalog.
+          Use the ProduktPix Shopify App to link your store. No manual credentials needed.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="shop-domain">Store Domain</Label>
-          <Input
-            id="shop-domain"
-            placeholder="your-store.myshopify.com"
-            value={shopDomain}
-            onChange={(e) => setShopDomain(e.target.value)}
-          />
+      <CardContent className="space-y-6">
+        <div className="space-y-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">1</div>
+            <div>
+              <p className="font-medium text-foreground">Install the ProduktPix Shopify App</p>
+              <p className="text-sm text-muted-foreground">Find ProduktPix in the Shopify App Store and install it on your store.</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">2</div>
+            <div>
+              <p className="font-medium text-foreground">Enter your ProduktPix API Key</p>
+              <p className="text-sm text-muted-foreground">In the Shopify app, paste your API key to connect your store to ProduktPix.</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">3</div>
+            <div>
+              <p className="font-medium text-foreground">Your products appear here</p>
+              <p className="text-sm text-muted-foreground">Once connected, sync and manage your Shopify products directly from this dashboard.</p>
+            </div>
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="access-token">Admin API Access Token</Label>
-          <Input
-            id="access-token"
-            type="password"
-            placeholder="shpat_..."
-            value={accessToken}
-            onChange={(e) => setAccessToken(e.target.value)}
-          />
-          <p className="text-xs text-muted-foreground">
-            Generate this in your Shopify Admin → Settings → Apps and sales channels → Develop apps.
-          </p>
+
+        <div className="flex flex-col gap-2">
+          <Button variant="outline" onClick={() => navigate("/account/api-keys")} className="w-full">
+            <Key className="h-4 w-4 mr-2" />
+            Go to API Keys
+            <ArrowRight className="h-4 w-4 ml-auto" />
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onConnected} className="text-muted-foreground">
+            I've already connected — refresh
+          </Button>
         </div>
-        <Button onClick={handleConnect} disabled={connecting} className="w-full">
-          {connecting ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              Connecting...
-            </>
-          ) : (
-            <>
-              <Link className="h-4 w-4 mr-2" />
-              Connect Store
-            </>
-          )}
-        </Button>
       </CardContent>
     </Card>
   );

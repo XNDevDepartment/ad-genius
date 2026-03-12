@@ -75,7 +75,6 @@ export default function ShopifyProducts() {
         <ShopifyStoreHeader
           connection={dashboard.connection}
           productCount={dashboard.products.length}
-          lastSyncAt={lastSyncAt}
           syncStatus={dashboard.syncStatus}
           onSync={dashboard.handleSync}
           onDisconnect={dashboard.handleDisconnect}
