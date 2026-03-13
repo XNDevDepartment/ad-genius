@@ -191,7 +191,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.shopify-sync]
-verify_jwt = true
+verify_jwt = false
 
 [functions.shopify-integration]
 verify_jwt = false
