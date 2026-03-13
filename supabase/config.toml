@@ -107,7 +107,7 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.ugc-gemini-v3]
-verify_jwt = true
+verify_jwt = false
 
 [functions.dunning-downgrade]
 verify_jwt = false
