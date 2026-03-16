@@ -83,6 +83,13 @@ const Index = () => {
         />
       )}
     {user ?
+      <>
+      <SEO
+        title="Dashboard"
+        description="Your ProduktPix dashboard"
+        path="/"
+        noindex={true}
+      />
       <OnboardingGuard>
       <PromoBanner3Meses />
       <div className="container-responsive px-4 py-8">
