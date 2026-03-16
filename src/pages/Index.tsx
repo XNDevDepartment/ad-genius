@@ -183,6 +183,7 @@ const Index = () => {
         <StickyUpgradeBar />
       </div>
       </OnboardingGuard>
+      </>
     :
     <LandingPageV2 />
     }
