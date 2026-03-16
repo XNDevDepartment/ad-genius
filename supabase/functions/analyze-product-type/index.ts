@@ -85,7 +85,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("[analyze-product-type] Error:", error);
     return new Response(
-      JSON.stringify({ error: error.message, isFashion: false }),
+      JSON.stringify({ error: (error as Error).message, isFashion: false }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
