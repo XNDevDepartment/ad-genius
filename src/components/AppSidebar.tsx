@@ -205,22 +205,44 @@ export function AppSidebar() {
                     return (
                       <SidebarMenuItem key={item.id}>
                         <SidebarMenuButton asChild>
-                          <NavLink
-                            to={item.path}
-                            className={cn(
-                              "flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200",
-                              "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                              active
-                                ? "bg-sidebar-primary/10 text-sidebar-primary font-medium"
-                                : "text-sidebar-foreground/70 hover:text-sidebar-foreground",
-                              isCollapsed && "justify-center px-3"
-                            )}
-                          >
-                            <Icon className="h-5 w-5" />
-                            {!isCollapsed && (
-                              <span>{t(`navigation.${item.id}`)}</span>
-                            )}
-                          </NavLink>
+                          {item.disabled ? (
+                            <div
+                              className={cn(
+                                "flex items-center gap-3 px-4 py-2.5 rounded-xl opacity-50 cursor-not-allowed",
+                                "text-sidebar-foreground/70",
+                                isCollapsed && "justify-center px-3"
+                              )}
+                            >
+                              <Icon className="h-5 w-5" />
+                              {!isCollapsed && (
+                                <>
+                                  <span>{t(`navigation.${item.id}`)}</span>
+                                  {item.comingSoon && (
+                                    <span className="ml-auto text-[10px] font-bold bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">
+                                      Soon
+                                    </span>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          ) : (
+                            <NavLink
+                              to={item.path}
+                              className={cn(
+                                "flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200",
+                                "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                active
+                                  ? "bg-sidebar-primary/10 text-sidebar-primary font-medium"
+                                  : "text-sidebar-foreground/70 hover:text-sidebar-foreground",
+                                isCollapsed && "justify-center px-3"
+                              )}
+                            >
+                              <Icon className="h-5 w-5" />
+                              {!isCollapsed && (
+                                <span>{t(`navigation.${item.id}`)}</span>
+                              )}
+                            </NavLink>
+                          )}
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     );
