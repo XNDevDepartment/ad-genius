@@ -43,11 +43,11 @@ const mainNavItems: Array<{ id: string; icon: any; path: string; primary?: boole
 ];
 
 // Your Content navigation items
-const contentNavItems = [
+const contentNavItems: Array<{ id: string; icon: any; path: string; disabled?: boolean; comingSoon?: boolean }> = [
   { id: "library", icon: Image, path: "/library" },
   // { id: "models", icon: Users, path: "/create/custom-model" },
   { id: "videos", icon: Video, path: "/videos" },
-  { id: "shopify", icon: Store, path: "/shopify/products" },
+  { id: "shopify", icon: Store, path: "/shopify/products", disabled: true, comingSoon: true },
 ];
 
 export function AppSidebar() {
