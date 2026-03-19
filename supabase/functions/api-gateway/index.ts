@@ -475,6 +475,8 @@ Deno.serve(async (req) => {
       requiredPermission = 'product_background'
     } else if (endpoint.startsWith('/v1/packs')) {
       requiredPermission = 'packs'
+    } else if (endpoint.startsWith('/v1/catalog')) {
+      requiredPermission = 'catalog'
     } else if (endpoint.startsWith('/v1/credits')) {
       requiredPermission = '' // No specific permission needed
     } else if (endpoint.startsWith('/v1/auth')) {
@@ -526,6 +528,11 @@ Deno.serve(async (req) => {
           creditsUsed = response?.credits_used || 4
           break
 
+        case '/v1/catalog/generate':
+          response = await handleCatalogGenerate(supabase, supabaseUrl, supabaseServiceKey, apiKeyInfo.user_id, body, apiKeyInfo.api_key_id)
+          creditsUsed = response?.credits_used || 4
+          break
+
         case '/v1/credits/balance':
           response = await handleCreditsBalance(supabase, apiKeyInfo.user_id)
           break
@@ -564,6 +571,9 @@ Deno.serve(async (req) => {
           } else if (endpoint.match(/^\/v1\/packs\/jobs\/[\w-]+$/)) {
             const jobId = endpoint.split('/').pop()!
             response = await handleGetPackJob(supabase, apiKeyInfo.user_id, jobId)
+          } else if (endpoint.match(/^\/v1\/catalog\/jobs\/[\w-]+$/)) {
+            const jobId = endpoint.split('/').pop()!
+            response = await handleGetCatalogJob(supabase, apiKeyInfo.user_id, jobId)
           } else {
             statusCode = 404
             response = { error: 'Endpoint not found', code: 'NOT_FOUND' }
@@ -1129,6 +1139,272 @@ async function handleGetPackJob(supabase: any, userId: string, jobId: string) {
       url: img.public_url,
       created_at: img.created_at,
     }))
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// HANDLER: Catalog Photoshoot — hero image + 3 product views
+// ═══════════════════════════════════════════════════════════
+
+async function handleCatalogGenerate(supabase: any, supabaseUrl: string, serviceKey: string, userId: string, body: any, apiKeyId: string) {
+  const { source_image_url, product_type, prompt: userPrompt } = body
+
+  if (!source_image_url) throw new Error('source_image_url is required')
+  if (!product_type || !['fashion', 'product'].includes(product_type)) {
+    throw new Error('product_type is required and must be one of: fashion, product')
+  }
+
+  const isFashion = product_type === 'fashion'
+  const totalCredits = 4 // 1 hero + 3 views
+
+  // Deduct all 4 credits upfront
+  const { data: deductResult, error: deductError } = await supabase
+    .rpc('deduct_user_credits', { p_user_id: userId, p_amount: totalCredits, p_reason: 'api_catalog_photoshoot' })
+
+  if (deductError || !deductResult?.success) {
+    return { error: deductResult?.error || 'Failed to deduct credits', code: 'INSUFFICIENT_CREDITS' }
+  }
+
+  // Upload source image
+  console.log('[API-GW] [Catalog] Uploading source image')
+  let sourceImage: { id: string; public_url: string }
+  try {
+    sourceImage = await uploadSourceImageFromUrl(supabase, userId, source_image_url)
+  } catch (err) {
+    // Refund on upload failure
+    await supabase.rpc('refund_user_credits', { p_user_id: userId, p_amount: totalCredits, p_reason: 'api_catalog_upload_failed' })
+    throw err
+  }
+  console.log('[API-GW] [Catalog] Source image uploaded:', sourceImage.id)
+
+  // Build hero prompt — use the hero style from the ecommerce pack
+  const heroStyle = isFashion
+    ? FASHION_PACKS.ecommerce.styles.find(s => s.id === 'hero_product')
+    : PRODUCT_PACKS.ecommerce.styles.find(s => s.id === 'hero_packshot')
+
+  const heroPrompt = userPrompt || heroStyle?.prompt || 'Professional product photography'
+  const rules = isFashion ? FASHION_RULES : PRODUCT_RULES
+
+  const fullHeroPrompt = `${heroPrompt}\n\n${rules}\n\nABSOLUTE QUALITY RULES:\n1. Output MUST be a single standalone photograph — NEVER a grid, montage, collage, or split-screen.\n2. No AI artifacts, no watermarks, no text overlays.\n3. Ultra-realistic photography quality — the result must look like a real professional photograph.`
+
+  // Step 1: Generate hero image via ugc-gemini-v3 (does NOT deduct credits — we already did)
+  const jobPayload = {
+    action: 'createImageJob',
+    source_image_id: sourceImage.id,
+    prompt: fullHeroPrompt,
+    settings: {
+      number: 1,
+      quality: 'high',
+      aspectRatio: '1:1',
+      size: 'small',
+      source: 'api',
+      api_key_id: apiKeyId,
+      catalog_mode: true,
+      product_type,
+      skip_credit_deduction: true, // Credits already deducted
+    },
+  }
+
+  console.log('[API-GW] [Catalog] Creating hero image job via ugc-gemini-v3')
+  const geminiResponse = await fetch(`${supabaseUrl}/functions/v1/ugc-gemini-v3`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(jobPayload),
+  })
+  const geminiResult = await geminiResponse.json()
+
+  if (geminiResult.error) {
+    // Refund all credits on hero failure
+    await supabase.rpc('refund_user_credits', { p_user_id: userId, p_amount: totalCredits, p_reason: 'api_catalog_hero_failed' })
+    return { error: geminiResult.error, code: 'GENERATION_FAILED' }
+  }
+
+  const heroJobId = geminiResult.jobId
+  console.log('[API-GW] [Catalog] Hero job created:', heroJobId)
+
+  // Step 2: Poll for hero completion (max 120s)
+  let heroCompleted = false
+  let heroImageUrl: string | null = null
+  const pollStart = Date.now()
+  const maxPollMs = 120000
+
+  while (Date.now() - pollStart < maxPollMs) {
+    await new Promise(r => setTimeout(r, 3000))
+
+    const { data: jobData } = await supabase
+      .from('image_jobs')
+      .select('status, completed, failed, error')
+      .eq('id', heroJobId)
+      .single()
+
+    if (!jobData) continue
+
+    if (jobData.status === 'failed') {
+      // Refund all credits
+      await supabase.rpc('refund_user_credits', { p_user_id: userId, p_amount: totalCredits, p_reason: 'api_catalog_hero_job_failed' })
+      return { error: jobData.error || 'Hero image generation failed', code: 'GENERATION_FAILED' }
+    }
+
+    if (jobData.status === 'completed' || jobData.completed >= 1) {
+      // Get the hero image URL
+      const { data: images } = await supabase
+        .from('ugc_images')
+        .select('public_url')
+        .eq('job_id', heroJobId)
+        .limit(1)
+
+      if (images && images.length > 0) {
+        heroImageUrl = images[0].public_url
+        heroCompleted = true
+        break
+      }
+    }
+  }
+
+  if (!heroCompleted || !heroImageUrl) {
+    // Refund view credits (3), hero credit (1) was used even if timeout
+    await supabase.rpc('refund_user_credits', { p_user_id: userId, p_amount: 3, p_reason: 'api_catalog_hero_timeout_view_refund' })
+    return {
+      error: 'Hero image generation timed out. The hero image may still complete.',
+      code: 'GENERATION_TIMEOUT',
+      hero_job_id: heroJobId,
+    }
+  }
+
+  console.log('[API-GW] [Catalog] Hero image completed:', heroImageUrl)
+
+  // Step 3: Create a bulk_background_job + result record for the hero
+  const { data: bgJob, error: bgJobError } = await supabase
+    .from('bulk_background_jobs')
+    .insert({
+      user_id: userId,
+      background_type: 'preset',
+      total_images: 1,
+      completed_images: 1,
+      status: 'completed',
+      progress: 100,
+      settings: { source: 'api_catalog', api_key_id: apiKeyId, product_type },
+    })
+    .select('id')
+    .single()
+
+  if (bgJobError) {
+    await supabase.rpc('refund_user_credits', { p_user_id: userId, p_amount: 3, p_reason: 'api_catalog_bg_job_failed' })
+    throw bgJobError
+  }
+
+  const { data: bgResult, error: bgResultError } = await supabase
+    .from('bulk_background_results')
+    .insert({
+      job_id: bgJob.id,
+      user_id: userId,
+      source_image_url: sourceImage.public_url,
+      result_url: heroImageUrl,
+      status: 'completed',
+      image_index: 0,
+    })
+    .select('id')
+    .single()
+
+  if (bgResultError) {
+    await supabase.rpc('refund_user_credits', { p_user_id: userId, p_amount: 3, p_reason: 'api_catalog_result_failed' })
+    throw bgResultError
+  }
+
+  // Step 4: Create product views record and dispatch view processing
+  const selectedViews = ['macro', 'angle', 'environment']
+  const { data: pvRecord, error: pvError } = await supabase
+    .from('bulk_background_product_views')
+    .insert({
+      user_id: userId,
+      result_id: bgResult.id,
+      selected_views: selectedViews,
+      status: 'queued',
+      progress: 0,
+      metadata: { source: 'api_catalog', api_key_id: apiKeyId, product_type, hero_job_id: heroJobId },
+    })
+    .select('id')
+    .single()
+
+  if (pvError) {
+    await supabase.rpc('refund_user_credits', { p_user_id: userId, p_amount: 3, p_reason: 'api_catalog_pv_creation_failed' })
+    throw pvError
+  }
+
+  console.log('[API-GW] [Catalog] Product views record created:', pvRecord.id)
+
+  // Fire-and-forget: dispatch processProductViews to bulk-background
+  fetch(`${supabaseUrl}/functions/v1/bulk-background`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'processProductViews', productViewsId: pvRecord.id }),
+  }).catch(err => console.error('[API-GW] [Catalog] Failed to dispatch processProductViews:', err))
+
+  // Dispatch webhook for the hero completion
+  fetch(`${supabaseUrl}/functions/v1/api-webhook-dispatcher`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userId,
+      jobId: pvRecord.id,
+      jobType: 'catalog',
+      eventType: 'job.processing',
+      payload: { hero_url: heroImageUrl, status: 'processing', views: selectedViews },
+    }),
+  }).catch(err => console.error('[API-GW] [Catalog] Webhook dispatch error:', err))
+
+  return {
+    job_id: pvRecord.id,
+    hero_job_id: heroJobId,
+    hero_url: heroImageUrl,
+    status: 'processing',
+    views: selectedViews,
+    message: 'Catalog photoshoot started. Hero image generated, view images (macro, angle, environment) are being processed.',
+    credits_used: totalCredits,
+    source_image_id: sourceImage.id,
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// HANDLER: Get Catalog Job Status
+// ═══════════════════════════════════════════════════════════
+
+async function handleGetCatalogJob(supabase: any, userId: string, jobId: string) {
+  // The jobId is a bulk_background_product_views ID
+  const { data: pv, error } = await supabase
+    .from('bulk_background_product_views')
+    .select('id, status, progress, selected_views, macro_url, angle_url, environment_url, error, metadata, created_at, updated_at, started_at, finished_at, result_id')
+    .eq('id', jobId)
+    .eq('user_id', userId)
+    .single()
+
+  if (error || !pv) return { error: 'Job not found', code: 'NOT_FOUND' }
+
+  // Get the hero image URL from the linked result
+  let heroUrl: string | null = null
+  if (pv.result_id) {
+    const { data: result } = await supabase
+      .from('bulk_background_results')
+      .select('result_url, source_image_url')
+      .eq('id', pv.result_id)
+      .single()
+    heroUrl = result?.result_url || null
+  }
+
+  return {
+    job_id: pv.id,
+    status: pv.status,
+    progress: pv.progress,
+    hero_url: heroUrl,
+    views: {
+      macro: { url: pv.macro_url, status: pv.macro_url ? 'completed' : (pv.status === 'failed' ? 'failed' : 'processing') },
+      angle: { url: pv.angle_url, status: pv.angle_url ? 'completed' : (pv.status === 'failed' ? 'failed' : 'processing') },
+      environment: { url: pv.environment_url, status: pv.environment_url ? 'completed' : (pv.status === 'failed' ? 'failed' : 'processing') },
+    },
+    error: pv.error,
+    product_type: pv.metadata?.product_type || null,
+    created_at: pv.created_at,
+    finished_at: pv.finished_at,
   }
 }
 
