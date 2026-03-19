@@ -571,6 +571,9 @@ Deno.serve(async (req) => {
           } else if (endpoint.match(/^\/v1\/packs\/jobs\/[\w-]+$/)) {
             const jobId = endpoint.split('/').pop()!
             response = await handleGetPackJob(supabase, apiKeyInfo.user_id, jobId)
+          } else if (endpoint.match(/^\/v1\/catalog\/jobs\/[\w-]+$/)) {
+            const jobId = endpoint.split('/').pop()!
+            response = await handleGetCatalogJob(supabase, apiKeyInfo.user_id, jobId)
           } else {
             statusCode = 404
             response = { error: 'Endpoint not found', code: 'NOT_FOUND' }
