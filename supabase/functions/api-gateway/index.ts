@@ -528,6 +528,11 @@ Deno.serve(async (req) => {
           creditsUsed = response?.credits_used || 4
           break
 
+        case '/v1/catalog/generate':
+          response = await handleCatalogGenerate(supabase, supabaseUrl, supabaseServiceKey, apiKeyInfo.user_id, body, apiKeyInfo.api_key_id)
+          creditsUsed = response?.credits_used || 4
+          break
+
         case '/v1/credits/balance':
           response = await handleCreditsBalance(supabase, apiKeyInfo.user_id)
           break
