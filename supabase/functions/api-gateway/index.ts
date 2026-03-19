@@ -475,6 +475,8 @@ Deno.serve(async (req) => {
       requiredPermission = 'product_background'
     } else if (endpoint.startsWith('/v1/packs')) {
       requiredPermission = 'packs'
+    } else if (endpoint.startsWith('/v1/catalog')) {
+      requiredPermission = 'catalog'
     } else if (endpoint.startsWith('/v1/credits')) {
       requiredPermission = '' // No specific permission needed
     } else if (endpoint.startsWith('/v1/auth')) {
