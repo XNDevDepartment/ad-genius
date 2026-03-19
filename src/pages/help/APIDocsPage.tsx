@@ -425,7 +425,7 @@ const endpoints: EndpointDef[] = [
     responseExample: `{
   "authenticated": true,
   "user_id": "uuid",
-  "permissions": ["ugc", "video", "fashion_catalog", "product_background", "packs"],
+  "permissions": ["ugc", "video", "fashion_catalog", "product_background", "packs", "catalog"],
   "rate_limit_tier": "starter",
   "credits_balance": 42,
   "subscription_tier": "Starter"
