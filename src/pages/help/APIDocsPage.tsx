@@ -342,6 +342,61 @@ const endpoints: EndpointDef[] = [
     }
   },
   {
+    method: "POST",
+    endpoint: "/v1/catalog/generate",
+    description: "Generate a full product catalog photoshoot — 1 hero image + 3 views (macro, angle, environment)",
+    parameters: ["source_image_url (required)", "product_type (required: fashion | product)"],
+    credits: "4 credits (1 hero + 3 views)",
+    responseExample: `{
+  "job_id": "uuid",
+  "hero_job_id": "uuid",
+  "status": "processing",
+  "credits_used": 4
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/catalog/generate',
+    source_image_url: 'https://example.com/product.jpg',
+    product_type: 'product'
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/catalog/generate",
+        "source_image_url": "https://example.com/product.jpg",
+        "product_type": "product"
+    }`),
+      curl: mkCurl(`{
+    "endpoint": "/v1/catalog/generate",
+    "source_image_url": "https://example.com/product.jpg",
+    "product_type": "product"
+  }`)
+    }
+  },
+  {
+    method: "GET",
+    endpoint: "/v1/catalog/jobs/{job_id}",
+    description: "Get status and results of a catalog photoshoot job (hero + macro, angle, environment views)",
+    parameters: ["job_id in endpoint path"],
+    credits: "Free",
+    responseExample: `{
+  "job_id": "uuid",
+  "status": "completed",
+  "progress": 100,
+  "hero_url": "https://...",
+  "macro_url": "https://...",
+  "angle_url": "https://...",
+  "environment_url": "https://..."
+}`,
+    codeExamples: {
+      javascript: mkJs(`{
+    endpoint: '/v1/catalog/jobs/YOUR_JOB_ID'
+  }`),
+      python: mkPy(`{
+        "endpoint": "/v1/catalog/jobs/YOUR_JOB_ID"
+    }`),
+      curl: mkCurl(`{"endpoint": "/v1/catalog/jobs/YOUR_JOB_ID"}`)
+    }
+  },
+  {
     method: "GET",
     endpoint: "/v1/credits/balance",
     description: "Get current credit balance and subscription tier",
@@ -370,7 +425,7 @@ const endpoints: EndpointDef[] = [
     responseExample: `{
   "authenticated": true,
   "user_id": "uuid",
-  "permissions": ["ugc", "video", "fashion_catalog", "product_background", "packs"],
+  "permissions": ["ugc", "video", "fashion_catalog", "product_background", "packs", "catalog"],
   "rate_limit_tier": "starter",
   "credits_balance": 42,
   "subscription_tier": "Starter"
