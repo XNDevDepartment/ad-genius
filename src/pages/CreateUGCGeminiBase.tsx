@@ -591,30 +591,43 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   };
 
   const getScenariosFromConversation = async (desiredText?: string, moreScen?: boolean) => {
-    setIsLoadingScenarios(true);
-
-    if (!imagesAnalysed && uploadedSourceIds.length === 0) {
-      setIsAnalyzingImages(new Array(productImages.length).fill(true));
-
-      for (let i = 0; i < productImages.length; i++) {
-        const file = productImages[i];
-
-        try {
-          const sourceImage = await uploadSourceImage(file);
-          if (sourceImage) {
-            setUploadedSourceIds((old) => [...old, sourceImage.id]);
-            console.log(`Source image ${i + 1} uploaded with ID:`, sourceImage.id);
-          }
-        } catch (error) {
-          console.error(`Failed to upload source image ${i + 1}:`, error);
-        }
-      }
-      setImagesAnalysed(true);
-    } else if (uploadedSourceIds.length > 0) {
-      setImagesAnalysed(true);
-    }
+    // Capture image count at start to avoid race conditions with isAnalyzingImages array
+    const imageCount = productImages.length;
 
     try {
+      setIsLoadingScenarios(true);
+
+      if (!imagesAnalysed && uploadedSourceIds.length === 0) {
+        setIsAnalyzingImages(new Array(imageCount).fill(true));
+
+        const newUploadedIds: string[] = [];
+        for (let i = 0; i < imageCount; i++) {
+          const file = productImages[i];
+          const sourceImage = await uploadSourceImage(file);
+          if (sourceImage) {
+            newUploadedIds.push(sourceImage.id);
+            setUploadedSourceIds((old) => [...old, sourceImage.id]);
+            console.log(`Source image ${i + 1} uploaded with ID:`, sourceImage.id);
+          } else {
+            console.warn(`Source image ${i + 1} upload failed, skipping`);
+          }
+        }
+
+        // If ALL uploads failed, abort early
+        if (newUploadedIds.length === 0 && uploadedSourceIds.length === 0) {
+          setIsAnalyzingImages(new Array(imageCount).fill(false));
+          toast({
+            title: "Upload Failed",
+            description: "Could not upload any images. Please check your connection and try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+        setImagesAnalysed(true);
+      } else if (uploadedSourceIds.length > 0) {
+        setImagesAnalysed(true);
+      }
+
       // Use new stateless scenario API instead of thread-based conversation
       const scenarios = await generateScenarios({
         audience: desiredAudience,
@@ -623,7 +636,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       });
 
       setAiScenarios(scenarios);
-      setIsAnalyzingImages(new Array(productImages.length).fill(false));
+      setIsAnalyzingImages(new Array(imageCount).fill(false));
 
       toast({
         title: "Scenarios Generated",
@@ -631,7 +644,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       });
     } catch (error) {
       console.error('Error getting scenarios:', error);
-      setIsAnalyzingImages(new Array(productImages.length).fill(false));
+      setIsAnalyzingImages(new Array(imageCount).fill(false));
       toast({
         title: "Error",
         description: "Failed to get scenario suggestions. Please try again.",
