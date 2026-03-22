@@ -656,6 +656,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   };
 
   const generateMoreScenarios = async () => {
+    if (isLoadingScenarios) return; // prevent double-tap
     setAiScenarios([]);
     setMoreScenarios(true);
     await getScenariosFromConversation("", true);

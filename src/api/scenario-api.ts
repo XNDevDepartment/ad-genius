@@ -29,6 +29,12 @@ export async function generateScenarios(
     throw new Error(error.message || "Failed to generate scenarios");
   }
 
+  // Guard against null/undefined data (can happen on CORS issues, network timeouts, or empty responses)
+  if (!data) {
+    console.error("[scenario-api] Received null/undefined data from scenario-generate");
+    throw new Error("No response received from scenario generator. Please check your connection and try again.");
+  }
+
   if (data.error) {
     console.error("[scenario-api] API error:", data.error);
     throw new Error(data.error);

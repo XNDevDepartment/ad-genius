@@ -91,7 +91,7 @@ export const useSourceImageUpload = () => {
     } catch (error) {
       console.error('Error uploading source image:', error);
       toast.error('Failed to upload source image');
-      throw error;
+      return null;
     } finally {
       setUploading(false);
     }
