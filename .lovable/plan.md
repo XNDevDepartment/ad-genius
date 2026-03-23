@@ -1,46 +1,42 @@
 
 
-## Fix UGC "Create Scenarios" Crash
+## Replace HTML Prerender with Full Landing Page Content
 
-### Root Cause Analysis
+### Summary
+Replace the minimal SSR fallback in `index.html` (lines 148-171) with a complete static HTML replica of the LandingPageV2 content. This gives crawlers and slow-connection users a full representation of the page before React hydrates.
 
-After thorough investigation of edge function logs, error_reports database, and client-side code, here is what I found:
+### What Changes
 
-**The scenario-generate edge function works correctly** — logs show successful completions (5 scenarios generated each time, no errors logged).
+**File: `index.html`** (lines 148-171 — the `#root` div contents)
 
-**No crash reports exist in error_reports** for UGC pages since March 2026 — meaning the crash happens either before ErrorBoundary can report it, or the report-error fetch itself fails.
+Replace the current sparse fallback with a full static HTML version mirroring every section of the landing page in order:
 
-**There are 3 identified crash vectors in the client-side code:**
+1. **Header** — Fixed top bar with ProduktPix text logo, nav links (How It Works, Pricing, FAQ), Sign In + Get Started links
+2. **Hero** — "Trusted by 10,000+ Online Stores" badge, H1 ("Professional Product Photos / Ready in Seconds, Not Days"), description paragraph, two CTA links (Try It Free, Book a Demo), 4.9/5 trust line
+3. **Use Cases Grid** — H2 "Built for Your Kind of Business", 6 cards (Clothing, Jewelry, Beauty, Furniture, Handmade, Food) with titles and descriptions
+4. **Logo Marquee** — "Trusted by sellers on leading platforms" + platform names (Shopify, Amazon, Etsy, WooCommerce, BigCommerce, Magento) as text
+5. **Value Props** — H2 "Why Businesses Choose ProduktPix", 3 cards (Save 90%, 30 Seconds, Increase Sales)
+6. **Product Photography Explainer** — H2 "What Makes Great Product Photography?", long paragraph, 4 pillar badges
+7. **Before/After** — H2 "From Simple Photo to Pro Shot", description text (images omitted — crawlers get the text)
+8. **Comparison Table** — H2 "ProduktPix vs Hiring a Photographer", full 6-row HTML table with ProduktPix vs Traditional Studio columns
+9. **Testimonials** — H2 "Loved by Business Owners", 6 testimonial cards with quotes, names, roles, companies, and metrics
+10. **How It Works** — H2 "How It Works", 3 steps (Upload, AI Magic, Download & Sell)
+11. **Pricing** — H2 "Simple, Transparent Pricing", 2 plan cards (Free €0 and Starter €29) with feature lists
+12. **FAQ** — H2 "Frequently Asked Questions", all 14 Q&A pairs as `<details>/<summary>` elements
+13. **Footer** — 4 link columns (Product, For Your Store, Resources, Legal) + copyright + tagline
 
-1. **Null data crash in `scenario-api.ts` (line 32)**: `supabase.functions.invoke` can return `{ data: null, error: null }` on CORS issues, network timeouts, or empty response bodies. When this happens, `data.error` on line 32 throws `TypeError: Cannot read properties of null`. While this is inside a try/catch in `getScenariosFromConversation`, the error propagation path isn't clean — it could cause React state corruption.
+All content uses inline styles matching the existing fallback pattern. The `<noscript>` block will also be updated with the same full content plus the JS-required notice.
 
-2. **Upload failure doesn't abort scenario generation (line 596-612)**: If `uploadSourceImage` fails (e.g., expired session, storage error), the error is caught per-image but `imagesAnalysed` is set to `true` anyway (line 612) with potentially zero `uploadedSourceIds`. The flow continues to `generateScenarios` regardless, but later when the user tries to generate images, the missing source IDs cause downstream failures.
+### Technical Details
 
-3. **Memory pressure on mobile devices**: The user's viewport (393x371) suggests a mobile device. Large product images stored as `File` objects + base64 data URLs for previews + simultaneous network requests for upload and scenario generation can cause out-of-memory tab crashes on mobile browsers, which presents as "reload page."
-
-4. **State update race condition**: `setIsAnalyzingImages` is called with `new Array(productImages.length).fill(true)` at line 597, but `productImages` can change during the async upload loop, causing array length mismatches with `isAnalyzing` prop on next render.
-
-### Fix Plan
-
-**File: `src/api/scenario-api.ts`**
-- Add null/undefined guard for `data` before accessing `data.error` and `data.scenarios`
-- Return clear error messages for each null case
-
-**File: `src/pages/CreateUGCGeminiBase.tsx`**
-- In `getScenariosFromConversation`:
-  - Capture `productImages.length` at start to avoid race conditions with `isAnalyzingImages` array
-  - If all image uploads fail (uploadedSourceIds still empty after loop), abort early with a toast and don't call `generateScenarios`
-  - Wrap the entire function body in an additional safety try/catch that always resets `isLoadingScenarios`
-  - Add an `isMounted` ref guard to prevent state updates after unmount
-- In `generateMoreScenarios` (line 645-649):
-  - Add guard: don't clear scenarios and restart if already loading
-- Add defensive rendering for scenario items — check `scenario?.idea` before rendering
-
-**File: `src/hooks/useSourceImageUpload.ts`**
-- Remove the re-throw on line 94 (it throws after already showing a toast). The calling code in `getScenariosFromConversation` catches it, but the re-throw pattern makes error handling fragile. Instead, return `null` on failure so callers can check the result.
+- All text is the English default (same as the `t()` fallback strings already in the components)
+- Images are omitted (crawlers index text; images load after hydration)
+- Links use real `<a href>` tags pointing to actual routes (`/signup`, `/signin`, `/pricing`, `/privacy`, etc.)
+- The comparison table uses a real `<table>` element for semantic richness
+- FAQ uses native `<details>/<summary>` for accordion behavior without JS
+- Inline styles only — no external CSS dependency
+- The entire block is still replaced by React on hydration (same mechanism as today)
 
 ### Files Modified
-1. `src/api/scenario-api.ts` — Null-safe data access
-2. `src/pages/CreateUGCGeminiBase.tsx` — Abort on upload failure, race condition fix, unmount guard
-3. `src/hooks/useSourceImageUpload.ts` — Return null instead of re-throwing
+1. **`index.html`** — Replace SSR fallback content inside `#root` (lines 148-171)
 
