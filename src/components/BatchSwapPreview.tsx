@@ -11,6 +11,7 @@ import { EcommercePhotoModal } from "@/components/EcommercePhotoModal";
 import { EcommerceIdeasModal } from "@/components/EcommerceIdeasModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useCredits } from "@/hooks/useCredits";
 import { useToast } from "@/hooks/use-toast";
 import { ImagePreviewModal } from "./ImagePreviewModal";
 import { PhotoshootModal } from "./PhotoshootModal";
