@@ -4,13 +4,14 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { OutfitSwapBatch, OutfitSwapJob, OutfitSwapResult } from "@/api/outfit-swap-api";
-import { Download, X, CheckCircle2, XCircle, Loader2, AlertCircle, RefreshCw, Eye, Film, ExternalLink, Camera, ShoppingBag, Sparkles } from "lucide-react";
+import { Download, X, CheckCircle2, XCircle, Loader2, AlertCircle, RefreshCw, Eye, Film, ExternalLink, Camera, ShoppingBag, Sparkles, Crown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ecommercePhotoApi, EcommercePhotoJob } from "@/api/ecommerce-photo-api";
 import { EcommercePhotoModal } from "@/components/EcommercePhotoModal";
 import { EcommerceIdeasModal } from "@/components/EcommerceIdeasModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useCredits } from "@/hooks/useCredits";
 import { useToast } from "@/hooks/use-toast";
 import { ImagePreviewModal } from "./ImagePreviewModal";
 import { PhotoshootModal } from "./PhotoshootModal";
@@ -49,6 +50,7 @@ export const BatchSwapPreview = ({
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { isAdmin } = useAdminAuth();
+  const { isFreeTier } = useCredits();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [results, setResults] = useState<Record<string, OutfitSwapResult>>(initialResults || {});
@@ -419,16 +421,25 @@ export const BatchSwapPreview = ({
                       <div className="space-y-3 mt-3">
                         {/* Featured Photoshoot CTA - Full Width, Highlighted */}
                         <Button
-                          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg h-12"
-                          onClick={() => handleCreatePhotoshoot(result)}
+                          className={`w-full ${isFreeTier() ? 'opacity-50 cursor-not-allowed bg-muted' : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg'} h-12`}
+                          disabled={isFreeTier()}
+                          onClick={() => {
+                            if (isFreeTier()) {
+                              navigate('/pricing');
+                            } else {
+                              handleCreatePhotoshoot(result);
+                            }
+                          }}
                         >
-                          <Sparkles className="w-4 h-4 mr-2" />
+                          {isFreeTier() ? <Crown className="w-4 h-4 mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
                           <span className="flex-1 text-left font-semibold">
                             {t('outfitSwap.buttons.createPhotoshoot')}
                           </span>
-                          <Badge variant="secondary" className="ml-2 text-xs bg-white/20 text-white border-0">
-                            7 {t('outfitSwap.buttons.angles')}
-                          </Badge>
+                          {!isFreeTier() && (
+                            <Badge variant="secondary" className="ml-2 text-xs bg-white/20 text-white border-0">
+                              7 {t('outfitSwap.buttons.angles')}
+                            </Badge>
+                          )}
                         </Button>
 
                         {/* Primary actions - compact grid */}

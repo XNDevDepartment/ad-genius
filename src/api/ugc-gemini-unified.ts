@@ -11,8 +11,8 @@ export type CreateJobPayload = {
     number: number;
     size?: '1024x1024' | '2048x2048' | '896x1280' | '1792x2560' | '1280x896' | '2560x1792' | '768x1408' | '1536x2816' | '1408x768' | '2816x1536' | '1536x1024' | '1024x1536';
     quality: 'low' | 'medium' | 'high';
-    orientation?: '1:1' | '3:4' | '4:3' | '9:16' | '16:9';
-    aspectRatio?: '1:1' | '3:4' | '4:3' | '9:16' | '16:9' | 'source';
+    orientation?: string;
+    aspectRatio?: string;
     style?: 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'cinematic' | 'natural';
     timeOfDay?: 'natural' | 'golden' | 'night' | 'morning';
     highlight?: 'yes' | 'no';

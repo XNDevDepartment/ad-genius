@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Coins, Zap, ArrowRight, Video, Shirt, Images, Sparkles, Lock } from "lucide-react";
+import { Coins, Zap, ArrowRight, Video, Shirt, Images, Sparkles, Crown } from "lucide-react";
 import { MobileCreditCard } from "@/components/MobileCreditCard";
 import { StickyUpgradeBar } from "@/components/StickyUpgradeBar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,14 +18,13 @@ import PromoBanner3Meses from "@/components/PromoBanner3Meses";
 
 const mobileModules = [
   { id: "ugc", titleKey: "createSelection.ugcCreator.title", icon: Zap, path: "/create/ugc" },
-  { id: "video", titleKey: "createSelection.videoCreator.title", icon: Video, path: "/create/video" },
+  { id: "video", titleKey: "createSelection.videoCreator.title", icon: Video, path: "/create/video", needsPaid: true },
   { id: "outfit-swap", titleKey: "createSelection.outfitSwap.title", icon: Shirt, path: "/create/outfit-swap" },
   {
     id: "bulk-background",
     titleKey: "createSelection.bulkBackground.title",
     icon: Images,
     path: "/create/bulk-background",
-    needsPaid: true,
   },
 ];
 
@@ -60,7 +59,7 @@ const MobileModuleGrid = ({
               <mod.icon className="h-5 w-5 text-primary" />
               {locked && (
                 <div className="absolute inset-0 bg-black/50 rounded-apple flex items-center justify-center">
-                  <Lock className="h-4 w-4 text-white" />
+                  <Crown className="h-4 w-4 text-white" />
                 </div>
               )}
             </div>

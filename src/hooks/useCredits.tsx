@@ -126,7 +126,7 @@ export const useCredits = () => {
 
   const canAccessVideos = (): boolean => {
     if (!subscriptionData) return false;
-    return true;
+    return !isFreeTier();
   };
 
   const getVideoAccessMessage = (): string => {

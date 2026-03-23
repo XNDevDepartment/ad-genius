@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { Crown } from "lucide-react";
 import { ArrowLeft, Sparkles, RefreshCw, HelpCircle, Pencil, ArrowDown } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -60,10 +61,14 @@ interface CreateUGCGeminiBaseProps {
 
 const ASPECT_INFO: Record<AspectRatio, { label: string; composition: string }> = {
   '1:1': { label: 'Square', composition: 'Balanced square framing; subject slightly off-center for tension.' },
+  '2:3': { label: 'Portrait 2:3', composition: 'Vertical portrait framing with natural headroom.' },
   '3:4': { label: 'Portrait', composition: 'Vertical portrait framing with natural headroom; guide the eye along vertical lines.' },
   '4:3': { label: 'Landscape', composition: 'Classic landscape framing; rule-of-thirds emphasis and stable horizon.' },
+  '4:5': { label: 'Portrait 4:5', composition: 'Slightly vertical framing ideal for Instagram feed.' },
+  '5:4': { label: 'Landscape 5:4', composition: 'Slightly wide framing with balanced composition.' },
   '9:16': { label: 'Vertical', composition: 'Tall story/reel framing; lead lines from foreground to subject.' },
   '16:9': { label: 'Wide', composition: 'Cinematic wide framing; foreground–midground–background depth cues.' },
+  '21:9': { label: 'Ultra Wide', composition: 'Ultra-wide cinematic framing; panoramic depth and scale.' },
   'source': { label: 'Source', composition: 'Original source image aspect ratio preserved; composition matches uploaded image dimensions.' },
 };
 
@@ -116,6 +121,9 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [style, setStyle] = useState<'lifestyle' | 'studio' | 'cinematic' | 'natural' | 'minimal' | 'professional'>("lifestyle");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('source');
   const [outputFormat, setOutputFormat] = useState<'png' | 'webp'>('png');
+  const [imageSize, setImageSize] = useState<'1K' | '2K' | '4K'>('1K');
+  const { isFreeTier } = useCredits();
+  const lockedRatios: AspectRatio[] = isFreeTier() ? ['9:16', '4:5'] : [];
 
   // Use unified hook with model version
   const { job, images: jobImages, loading, createJob, clearJob, loadJob, resumeCurrentJob, storageKeys } = useGeminiImageJobUnified(modelVersion);
@@ -808,7 +816,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
 
       const sizePx = aspectRatio === 'source'
         ? undefined
-        : SIZE_MAP[aspectRatio]['large'];
+        : SIZE_MAP[aspectRatio as Exclude<AspectRatio, 'source'>]?.['large'];
 
       const result = await createJob({
         prompt,
@@ -1409,7 +1417,33 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                       <AspectRatioSelector
                         value={aspectRatio}
                         onChange={setAspectRatio}
+                        lockedRatios={lockedRatios}
                       />
+                    </div>
+
+                    {/* Resolution */}
+                    <div className="space-y-2 mb-6">
+                      <Label className="text-sm font-medium">{t('bulkBackground.settings.imageSize')}</Label>
+                      <ToggleGroup
+                        type="single"
+                        value={imageSize}
+                        onValueChange={(v) => {
+                          if (v && !(isFreeTier() && (v === '2K' || v === '4K'))) {
+                            setImageSize(v as '1K' | '2K' | '4K');
+                          }
+                        }}
+                        className="justify-start"
+                      >
+                        {(['1K', '2K', '4K'] as const).map((size) => {
+                          const locked = isFreeTier() && (size === '2K' || size === '4K');
+                          return (
+                            <ToggleGroupItem key={size} value={size} size="sm" className={`flex-1 bg-muted ${locked ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={locked}>
+                              {size}
+                              {locked && <Crown className="h-3 w-3 ml-1 text-primary" />}
+                            </ToggleGroupItem>
+                          );
+                        })}
+                      </ToggleGroup>
                     </div>
                   </div>
 
@@ -1503,7 +1537,8 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                 imageOrientation,
                 imageQuality,
                 aspectRatio,
-                outputFormat
+                outputFormat,
+                imageSize
               }}
               onSettingsChange={(newSettings) => {
                 if (newSettings.numImages !== undefined) setNumImages(newSettings.numImages);
@@ -1514,6 +1549,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                 if (newSettings.imageQuality !== undefined) setImageQuality(newSettings.imageQuality);
                 if (newSettings.aspectRatio !== undefined) setAspectRatio(newSettings.aspectRatio);
                 if (newSettings.outputFormat !== undefined) setOutputFormat(newSettings.outputFormat);
+                if (newSettings.imageSize !== undefined) setImageSize(newSettings.imageSize);
               }}
               remainingCredits={remainingCredits}
               totalCredits={getTotalCredits()}
