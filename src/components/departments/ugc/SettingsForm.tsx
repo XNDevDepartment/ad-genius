@@ -166,7 +166,33 @@ export const SettingsForm = ({
         <AspectRatioSelector
           value={currentAspectRatio as AspectRatio}
           onChange={(value) => onSettingsChange({ aspectRatio: value, imageOrientation: value })}
+          lockedRatios={isFreeTier() ? (['9:16', '4:5'] as AspectRatio[]) : []}
         />
+      </div>
+
+      {/* Resolution */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">{t('bulkBackground.settings.imageSize')}</Label>
+        <ToggleGroup
+          type="single"
+          value={settings.imageSize || '1K'}
+          onValueChange={(v) => {
+            if (v && !(isFreeTier() && (v === '2K' || v === '4K'))) {
+              onSettingsChange({ imageSize: v as '1K' | '2K' | '4K' });
+            }
+          }}
+          className="justify-start"
+        >
+          {(['1K', '2K', '4K'] as const).map((size) => {
+            const locked = isFreeTier() && (size === '2K' || size === '4K');
+            return (
+              <ToggleGroupItem key={size} value={size} size="sm" className={`flex-1 bg-muted ${locked ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={locked}>
+                {size}
+                {locked && <Crown className="h-3 w-3 ml-1 text-primary" />}
+              </ToggleGroupItem>
+            );
+          })}
+        </ToggleGroup>
       </div>
 
     </div>
