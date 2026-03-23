@@ -386,21 +386,7 @@ const BulkBackground = () => {
           </div>
         </div>
 
-        {/* Paid-only gate */}
-        {isFreeTier() && (
-          <Card className="rounded-apple shadow-lg border-amber-500/30 bg-amber-500/5">
-            <CardContent className="flex flex-col items-center justify-center py-12 space-y-4">
-              <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center">
-                <Lock className="h-8 w-8 text-amber-500" />
-              </div>
-              <h2 className="text-xl font-bold text-foreground">{t("bulkBackground.paidOnly.title")}</h2>
-              <p className="text-muted-foreground text-center max-w-md">{t("bulkBackground.paidOnly.description")}</p>
-              <Button onClick={() => navigate("/pricing")} variant="default" size="lg">
-                {t("bulkBackground.paidOnly.cta")}
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        {/* Paid-only gate removed - catalogs now available to free users */}
 
         {/* Section 1: Upload Products — always visible */}
         <Card className="rounded-apple shadow-lg scroll-mt-6">
