@@ -271,7 +271,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                   </Button>
                   {!hasEnough && (
                     <p className="text-xs text-destructive text-center">
-                      Not enough credits ({credits} available)
+                      {t('productViews.notEnoughCredits', { credits })}
                     </p>
                   )}
                 </div>
