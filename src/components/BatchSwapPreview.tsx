@@ -4,7 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { OutfitSwapBatch, OutfitSwapJob, OutfitSwapResult } from "@/api/outfit-swap-api";
-import { Download, X, CheckCircle2, XCircle, Loader2, AlertCircle, RefreshCw, Eye, Film, ExternalLink, Camera, ShoppingBag, Sparkles } from "lucide-react";
+import { Download, X, CheckCircle2, XCircle, Loader2, AlertCircle, RefreshCw, Eye, Film, ExternalLink, Camera, ShoppingBag, Sparkles, Crown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ecommercePhotoApi, EcommercePhotoJob } from "@/api/ecommerce-photo-api";
 import { EcommercePhotoModal } from "@/components/EcommercePhotoModal";
