@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Shirt } from "lucide-react";
+import { ArrowLeft, Shirt, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOutfitSwapBatch } from "@/hooks/useOutfitSwapBatch";
