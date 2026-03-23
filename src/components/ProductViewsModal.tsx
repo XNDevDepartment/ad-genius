@@ -239,8 +239,8 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
 
                 {/* View selection */}
                 <div className="space-y-3">
-                  <p className="text-sm font-medium">Select views to generate:</p>
-                  {VIEW_OPTIONS.map((view) => (
+                  <p className="text-sm font-medium">{t('productViews.selectViews')}</p>
+                  {VIEW_OPTIONS_KEYS.map((view) => (
                     <label
                       key={view.id}
                       className="flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
@@ -251,8 +251,8 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                         className="mt-0.5"
                       />
                       <div>
-                        <p className="font-medium text-sm">{view.label}</p>
-                        <p className="text-xs text-muted-foreground">{view.description}</p>
+                        <p className="font-medium text-sm">{t(view.labelKey)}</p>
+                        <p className="text-xs text-muted-foreground">{t(view.descKey)}</p>
                       </div>
                     </label>
                   ))}
