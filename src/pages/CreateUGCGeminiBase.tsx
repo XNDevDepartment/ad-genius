@@ -121,6 +121,9 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [style, setStyle] = useState<'lifestyle' | 'studio' | 'cinematic' | 'natural' | 'minimal' | 'professional'>("lifestyle");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('source');
   const [outputFormat, setOutputFormat] = useState<'png' | 'webp'>('png');
+  const [imageSize, setImageSize] = useState<'1K' | '2K' | '4K'>('1K');
+  const { isFreeTier } = useCredits();
+  const lockedRatios: AspectRatio[] = isFreeTier() ? ['9:16', '4:5'] : [];
 
   // Use unified hook with model version
   const { job, images: jobImages, loading, createJob, clearJob, loadJob, resumeCurrentJob, storageKeys } = useGeminiImageJobUnified(modelVersion);
