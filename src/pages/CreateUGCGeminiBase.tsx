@@ -823,7 +823,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
         prompt,
         settings: {
           number: numImages,
-          size: sizePx as "1024x1024" | "1024x1536" | "1536x1024" | undefined,
+          size: sizePx,
           quality: imageQuality,
           style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'cinematic' | 'natural',
           timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',
