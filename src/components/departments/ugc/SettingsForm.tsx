@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Progress } from "@/components/ui/progress";
 import AspectRatioSelector, { AspectRatio } from "@/components/AspectRatioSelector";
-import { Lock } from "lucide-react";
+import { Lock, Crown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useCredits } from "@/hooks/useCredits";
 
@@ -16,6 +16,7 @@ export interface GenerationSettings {
   imageQuality: 'low' | 'medium' | 'high';
   aspectRatio?: AspectRatio;
   outputFormat?: 'png' | 'webp';
+  imageSize?: '1K' | '2K' | '4K';
 }
 
 interface SettingsFormProps {
