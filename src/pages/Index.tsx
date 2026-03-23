@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Coins, Zap, ArrowRight, Video, Shirt, Images, Sparkles, Lock } from "lucide-react";
+import { Coins, Zap, ArrowRight, Video, Shirt, Images, Sparkles, Crown } from "lucide-react";
 import { MobileCreditCard } from "@/components/MobileCreditCard";
 import { StickyUpgradeBar } from "@/components/StickyUpgradeBar";
 import { useAuth } from "@/contexts/AuthContext";
