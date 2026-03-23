@@ -70,7 +70,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
 
       if (elapsed > STALE_FAIL_MS) {
         // Auto-fail after 3 minutes
-        setProductViews(prev => prev ? { ...prev, status: 'failed' as const, error: 'Processing timed out. Please try again.' } : null);
+        setProductViews(prev => prev ? { ...prev, status: 'failed' as const, error: t('productViews.timedOut') } : null);
         processingStartRef.current = null;
         setStaleWarning(false);
       } else if (elapsed > STALE_WARNING_MS) {
