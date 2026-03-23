@@ -338,14 +338,22 @@ const OutfitSwap = () => {
                       <ToggleGroup
                         type="single"
                         value={imageSize}
-                        onValueChange={(v) => v && setImageSize(v as '1K' | '2K' | '4K')}
+                        onValueChange={(v) => {
+                          if (v && !(isFreeTier() && (v === '2K' || v === '4K'))) {
+                            setImageSize(v as '1K' | '2K' | '4K');
+                          }
+                        }}
                         className="justify-start"
                       >
-                        {(['1K', '2K', '4K'] as const).map((size) => (
-                          <ToggleGroupItem key={size} value={size} size="sm" className="px-4 bg-muted">
-                            {size}
-                          </ToggleGroupItem>
-                        ))}
+                        {(['1K', '2K', '4K'] as const).map((size) => {
+                          const locked = isFreeTier() && (size === '2K' || size === '4K');
+                          return (
+                            <ToggleGroupItem key={size} value={size} size="sm" className={`px-4 bg-muted ${locked ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={locked}>
+                              {size}
+                              {locked && <Crown className="h-3 w-3 ml-1 text-primary" />}
+                            </ToggleGroupItem>
+                          );
+                        })}
                       </ToggleGroup>
                     </div>
 
