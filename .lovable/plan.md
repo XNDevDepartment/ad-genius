@@ -1,46 +1,57 @@
 
 
-## Fix SSR Fallback Colors to Match Actual Landing Page
+## Three Changes
 
-### Problem
-The prerendered HTML in `index.html` uses purple (`#6d28d9`) as the primary color throughout, but the actual CSS design system defines `--primary: 225 86% 50%` which is a vivid blue (`#1249ED`). Additionally, borders use visible gray (`#e5e7eb`) but the actual `--border` variable is `0 0% 100%` (white/invisible).
+### 1. Rename "Pricing" tab to "Upgrade" + highlight for free users
 
-### Color Corrections
+**Files:** `AppSidebar.tsx`, `BottomTabBar.tsx`, all 5 locale JSON files
 
-| Token | SSR (wrong) | Actual CSS variable | Correct hex |
-|-------|------------|-------------------|-------------|
-| Primary | `#6d28d9` (purple) | `hsl(225 86% 50%)` | `#1249ED` (blue) |
-| Primary rgba | `rgba(109,40,217,...)` | — | `rgba(18,73,237,...)` |
-| Border | `#e5e7eb` (gray) | `hsl(0 0% 100%)` | `#ffffff` (invisible) |
-| Background | `#fff` | `hsl(0 0% 98%)` | `#fafafa` |
-| Foreground | `#1a1a2e` | `hsl(0 0% 11%)` | `#1c1c1e` |
-| Muted text | `#555` | `hsl(0 0% 43%)` | `#6e6e6e` |
-| Muted bg | `#f9fafb` | `hsl(0 0% 95%)` at 30% | `#f2f2f2` at 30% ≈ `#f8f8f8` |
-| Card | `#fff` | `hsl(0 0% 100%)` | `#ffffff` (correct) |
+- In `AppSidebar.tsx` line 41: change `id: "pricing"` to `id: "upgrade"`
+- In `AppSidebar.tsx` line 177: the label already uses `t('navigation.${item.id}')`, so it will automatically pick up `navigation.upgrade`
+- Add conditional styling: when the user is on a free tier, apply a highlight style (e.g., `bg-primary/10 text-primary font-semibold` or a pulsing dot) to the upgrade nav item
+- In `BottomTabBar.tsx`: add an "Upgrade" tab for free-tier users (replacing or adding alongside existing tabs), with `Crown` icon and highlighted styling
+- In all 5 locale files, add `"upgrade": "Upgrade"` (en), `"upgrade": "Upgrade"` (pt), `"upgrade": "Mejorar"` (es), `"upgrade": "Améliorer"` (fr), `"upgrade": "Upgraden"` (de) under the `navigation` section
 
-### Changes
+### 2. Add translations for ProductViewsModal (the "Photoshoot" modal in Bulk Background)
 
-**File: `index.html`** — Global find-and-replace across the SSR fallback block (lines 148–462):
+**Files:** `ProductViewsModal.tsx`, all 5 locale JSON files
 
-1. Replace all `#6d28d9` → `#1249ED`
-2. Replace all `rgba(109,40,217,` → `rgba(18,73,237,`
-3. Replace `#1a1a2e` → `#1c1c1e`
-4. Replace `background:#fff` (page bg) → `background:#fafafa`
-5. Replace border `#e5e7eb` → very light border `rgba(0,0,0,0.06)` (since the actual border is white/invisible on white, but for SSR readability we keep a very subtle hint)
-6. Replace muted text `#555` → `#6e6e6e`
-7. Replace section backgrounds `#f9fafb` → `#f8f8f8`
-8. Replace table header `#f3f4f6` → `#f5f5f5`
-9. Replace `#dc2626` (red X in table) stays the same (destructive color matches)
-10. Update noscript links from purple to blue as well
+The `ProductViewsModal.tsx` has ~15 hardcoded English strings:
+- "Create Photoshoot" (header title)
+- "Select views to generate:" 
+- View option labels: "Macro View", "Environment View", "3/4 Angle View" and their descriptions
+- "Retry Photoshoot" / "Create Photoshoot" button text
+- "Not enough credits (X available)"
+- "Generating product views... X%"
+- "Taking longer than expected..."
+- "Cancel"
+- "Preview" / "Save"
+- "Product views ready!" / "Generation failed"
+- "Failed to create product views" / "Please try again"
 
-### Technical Notes
-- The popular pricing card background changes from purple to blue (`#1249ED`)
-- The hero gradient text accent changes from purple to blue
-- CTA buttons change from purple to blue
-- Step number circles change from purple to blue
-- Badge backgrounds change from purple-tinted to blue-tinted
-- All shadow colors update from purple to blue (`rgba(18,73,237,0.25)`)
+Replace all with `t('productViews.xxx')` keys and add corresponding entries in all 5 locale files with proper translations.
 
-### Files Modified
-1. `index.html` — Color corrections throughout SSR fallback and noscript blocks
+### 3. Fix onboarding bottom button overlap with device navigation bar
+
+**Files:** `OnboardingWizard.tsx`, `OnboardingWelcome.tsx`, `OnboardingStep1.tsx`, `OnboardingPackSelect.tsx`
+
+The issue: On devices with bottom navigation bars (iOS home indicator, Android gesture bar), the "Next"/"Get Started" button sits at the very bottom of the scrollable content. The system nav bar overlaps it.
+
+Fix approach:
+- In `OnboardingWizard.tsx`: add `pb-[env(safe-area-inset-bottom,16px)]` to the content container to ensure bottom padding accounts for the device's safe area
+- In each step component, the bottom button areas (`OnboardingWelcome` line 94, `OnboardingStep1` line 71, `OnboardingPackSelect` line 73) should use `pb-safe` or explicit `pb-[calc(env(safe-area-inset-bottom)+16px)]` to push the button above the device navigation bar
+
+### Files modified
+1. `src/components/AppSidebar.tsx` — rename pricing to upgrade, add free-tier highlight
+2. `src/components/BottomTabBar.tsx` — add upgrade tab for free users with highlight
+3. `src/components/ProductViewsModal.tsx` — replace hardcoded strings with i18n keys
+4. `src/components/onboarding/OnboardingWizard.tsx` — add safe area bottom padding
+5. `src/components/onboarding/OnboardingWelcome.tsx` — bottom safe area padding
+6. `src/components/onboarding/OnboardingStep1.tsx` — bottom safe area padding
+7. `src/components/onboarding/OnboardingPackSelect.tsx` — bottom safe area padding
+8. `src/i18n/locales/en.json` — add navigation.upgrade + productViews keys
+9. `src/i18n/locales/pt.json` — same translations in Portuguese
+10. `src/i18n/locales/es.json` — same translations in Spanish
+11. `src/i18n/locales/fr.json` — same translations in French
+12. `src/i18n/locales/de.json` — same translations in German
 
