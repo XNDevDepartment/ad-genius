@@ -284,7 +284,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                 </div>
                 <Progress value={productViews.progress} className="h-3" />
                 <p className="text-center text-sm text-muted-foreground">
-                  Generating product views... {productViews.progress}%
+                  {t('productViews.generating', { progress: productViews.progress })}
                 </p>
 
                 {staleWarning && (
