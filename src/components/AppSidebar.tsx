@@ -38,7 +38,7 @@ import {
 const mainNavItems: Array<{ id: string; icon: any; path: string; primary?: boolean; adminOnly?: boolean }> = [
   { id: "home", icon: Home, path: "/" },
   { id: "create", icon: Plus, path: "/create", primary: true },
-  { id: "pricing", icon: Crown, path: "/pricing", primary: true },
+  { id: "upgrade", icon: Crown, path: "/pricing", primary: true },
   // { id: "grupo", icon: Layers, path: "/bulk", adminOnly: true },
 ];
 
@@ -164,7 +164,9 @@ export function AppSidebar() {
                             "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                             active
                               ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
-                              : "text-sidebar-foreground/70 hover:text-sidebar-foreground",
+                              : item.id === 'upgrade' && isFreeTier()
+                                ? "text-primary font-semibold bg-primary/10"
+                                : "text-sidebar-foreground/70 hover:text-sidebar-foreground",
                             isCollapsed && "justify-center px-3",
                             item.primary && !active && "font-medium"
                           )}
@@ -175,6 +177,12 @@ export function AppSidebar() {
                           )} />
                           {!isCollapsed && (
                             <span className="font-medium">{t(`navigation.${item.id}`)}</span>
+                          )}
+                          {item.id === 'upgrade' && isFreeTier() && !active && !isCollapsed && (
+                            <span className="ml-auto relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                            </span>
                           )}
                           {item.adminOnly && !isCollapsed && (
                             <span className="ml-auto px-2 py-0.5 text-[10px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-full">
