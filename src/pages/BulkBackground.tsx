@@ -403,7 +403,7 @@ const BulkBackground = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => setLibraryPickerOpen(true)}
-                disabled={productImages.length >= MAX_IMAGES || isFreeTier()}
+                disabled={productImages.length >= MAX_IMAGES}
                 className="gap-2"
               >
                 <Images className="h-4 w-4" />
