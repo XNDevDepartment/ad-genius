@@ -106,7 +106,7 @@ const ModuleSelection = () => {
       demoImage: demoVideo2,
       fallbackImage: demoVideo2,
       isBeta: false,
-      locked: false,
+      locked: isFreeTier(),
     },
     {
       id: "outfit-swap",
@@ -126,7 +126,7 @@ const ModuleSelection = () => {
       demoImage: demoBulk,
       fallbackImage: demoBulkImg,
       isBeta: true,
-      locked: isFreeTier(),
+      locked: false,
     },
     {
       id: "soon",
