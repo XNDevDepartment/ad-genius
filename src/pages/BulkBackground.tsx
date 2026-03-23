@@ -423,7 +423,7 @@ const BulkBackground = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => setShopifyImportOpen(true)}
-                disabled={productImages.length >= MAX_IMAGES || isFreeTier()}
+                disabled={productImages.length >= MAX_IMAGES}
                 className="gap-2"
               >
                 <Store className="h-4 w-4" />
