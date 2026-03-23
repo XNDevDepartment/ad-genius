@@ -151,8 +151,8 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
       }
     } catch (err) {
       toast({
-        title: "Failed to create product views",
-        description: err instanceof Error ? err.message : "Please try again",
+        title: t('productViews.createFailed'),
+        description: err instanceof Error ? err.message : t('productViews.tryAgain'),
         variant: "destructive",
       });
     } finally {
