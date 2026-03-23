@@ -164,7 +164,9 @@ export function AppSidebar() {
                             "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                             active
                               ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
-                              : "text-sidebar-foreground/70 hover:text-sidebar-foreground",
+                              : item.id === 'upgrade' && isFreeTier()
+                                ? "text-primary font-semibold bg-primary/10"
+                                : "text-sidebar-foreground/70 hover:text-sidebar-foreground",
                             isCollapsed && "justify-center px-3",
                             item.primary && !active && "font-medium"
                           )}

@@ -79,7 +79,7 @@ export const OnboardingWizard = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto overscroll-contain">
+      <div className="flex-1 overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom,16px)]">
         <AnimatePresence mode="wait">
           <motion.div
             key={step}

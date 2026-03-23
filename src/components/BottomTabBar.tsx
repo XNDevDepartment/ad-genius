@@ -49,6 +49,8 @@ const BottomTabBar = () => {
             );
           }
 
+          const isHighlight = 'highlight' in tab && tab.highlight && !isActive;
+
           return (
             <Link
               key={tab.id}
@@ -57,10 +59,20 @@ const BottomTabBar = () => {
                 "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all text-xs min-h-[44px] min-w-[44px] touch-manipulation active:scale-95",
                 isActive 
                   ? "text-primary bg-primary/10" 
-                  : "text-muted-foreground hover:text-foreground"
+                  : isHighlight
+                    ? "text-primary font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Icon className="h-5 w-5" />
+              <div className="relative">
+                <Icon className="h-5 w-5" />
+                {isHighlight && (
+                  <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                  </span>
+                )}
+              </div>
               <span className="font-medium">{tab.label}</span>
             </Link>
           );

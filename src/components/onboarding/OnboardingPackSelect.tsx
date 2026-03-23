@@ -70,7 +70,7 @@ export const OnboardingPackSelect = ({ isFashion, onSelect }: OnboardingPackSele
         ))}
       </div>
 
-      <div className="mt-6 pb-4">
+      <div className="mt-6 pb-[calc(env(safe-area-inset-bottom,0px)+16px)]">
         <Button
           onClick={() => selected && onSelect(selected)}
           disabled={!selected}

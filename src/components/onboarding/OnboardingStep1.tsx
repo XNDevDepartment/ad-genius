@@ -68,7 +68,7 @@ export const OnboardingStep1 = ({ onNext }: OnboardingStep1Props) => {
   }, [user, uploadSourceImage, t, onNext]);
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-80px)] px-4 py-6">
+    <div className="flex flex-col min-h-[calc(100vh-80px)] px-4 py-6 pb-[calc(env(safe-area-inset-bottom,0px)+24px)]">
       {/* Header */}
       <div className="text-center mb-6">
         <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">

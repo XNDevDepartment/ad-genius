@@ -91,7 +91,7 @@ export const OnboardingWelcome = ({ onStart, onSkip }: OnboardingWelcomeProps) =
         </motion.div>
 
         {/* Actions */}
-        <div className="space-y-3 mt-4">
+        <div className="space-y-3 mt-4 pb-[calc(env(safe-area-inset-bottom,0px)+16px)]">
           <Button
             onClick={onStart}
             size="lg"
