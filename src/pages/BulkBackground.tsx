@@ -517,7 +517,11 @@ const BulkBackground = () => {
                 {/* Aspect Ratio */}
                 <div className="space-y-2">
                   <p className="text-sm font-medium">{t("bulkBackground.settings.aspectRatio")}</p>
-                  <Select value={aspectRatio} onValueChange={setAspectRatio}>
+                  <Select value={aspectRatio} onValueChange={(v) => {
+                    if (!(isFreeTier() && (v === '9:16' || v === '4:5'))) {
+                      setAspectRatio(v);
+                    }
+                  }}>
                     <SelectTrigger className="w-44">
                       <SelectValue />
                     </SelectTrigger>
@@ -527,14 +531,16 @@ const BulkBackground = () => {
                         const scale = 16 / Math.max(w, h);
                         const boxW = Math.round(w * scale);
                         const boxH = Math.round(h * scale);
+                        const locked = isFreeTier() && (ratio === '9:16' || ratio === '4:5');
                         return (
-                          <SelectItem key={ratio} value={ratio}>
+                          <SelectItem key={ratio} value={ratio} disabled={locked}>
                             <span className="flex items-center gap-2">
                               <span
                                 className="border border-foreground/50 shrink-0 inline-block"
                                 style={{ width: `${boxW}px`, height: `${boxH}px` }}
                               />
                               {ratio}
+                              {locked && <Crown className="h-3 w-3 ml-1 text-primary" />}
                             </span>
                           </SelectItem>
                         );
