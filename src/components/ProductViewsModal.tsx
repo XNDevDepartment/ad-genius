@@ -330,7 +330,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                               onClick={() => setPreviewImage(url)}
                             >
                               <Eye className="h-3 w-3" />
-                              <span className="text-xs">Preview</span>
+                              <span className="text-xs">{t('productViews.preview')}</span>
                             </Button>
                             <Button
                               variant="outline"
