@@ -1,42 +1,46 @@
 
 
-## Replace HTML Prerender with Full Landing Page Content
+## Fix SSR Fallback Colors to Match Actual Landing Page
 
-### Summary
-Replace the minimal SSR fallback in `index.html` (lines 148-171) with a complete static HTML replica of the LandingPageV2 content. This gives crawlers and slow-connection users a full representation of the page before React hydrates.
+### Problem
+The prerendered HTML in `index.html` uses purple (`#6d28d9`) as the primary color throughout, but the actual CSS design system defines `--primary: 225 86% 50%` which is a vivid blue (`#1249ED`). Additionally, borders use visible gray (`#e5e7eb`) but the actual `--border` variable is `0 0% 100%` (white/invisible).
 
-### What Changes
+### Color Corrections
 
-**File: `index.html`** (lines 148-171 — the `#root` div contents)
+| Token | SSR (wrong) | Actual CSS variable | Correct hex |
+|-------|------------|-------------------|-------------|
+| Primary | `#6d28d9` (purple) | `hsl(225 86% 50%)` | `#1249ED` (blue) |
+| Primary rgba | `rgba(109,40,217,...)` | — | `rgba(18,73,237,...)` |
+| Border | `#e5e7eb` (gray) | `hsl(0 0% 100%)` | `#ffffff` (invisible) |
+| Background | `#fff` | `hsl(0 0% 98%)` | `#fafafa` |
+| Foreground | `#1a1a2e` | `hsl(0 0% 11%)` | `#1c1c1e` |
+| Muted text | `#555` | `hsl(0 0% 43%)` | `#6e6e6e` |
+| Muted bg | `#f9fafb` | `hsl(0 0% 95%)` at 30% | `#f2f2f2` at 30% ≈ `#f8f8f8` |
+| Card | `#fff` | `hsl(0 0% 100%)` | `#ffffff` (correct) |
 
-Replace the current sparse fallback with a full static HTML version mirroring every section of the landing page in order:
+### Changes
 
-1. **Header** — Fixed top bar with ProduktPix text logo, nav links (How It Works, Pricing, FAQ), Sign In + Get Started links
-2. **Hero** — "Trusted by 10,000+ Online Stores" badge, H1 ("Professional Product Photos / Ready in Seconds, Not Days"), description paragraph, two CTA links (Try It Free, Book a Demo), 4.9/5 trust line
-3. **Use Cases Grid** — H2 "Built for Your Kind of Business", 6 cards (Clothing, Jewelry, Beauty, Furniture, Handmade, Food) with titles and descriptions
-4. **Logo Marquee** — "Trusted by sellers on leading platforms" + platform names (Shopify, Amazon, Etsy, WooCommerce, BigCommerce, Magento) as text
-5. **Value Props** — H2 "Why Businesses Choose ProduktPix", 3 cards (Save 90%, 30 Seconds, Increase Sales)
-6. **Product Photography Explainer** — H2 "What Makes Great Product Photography?", long paragraph, 4 pillar badges
-7. **Before/After** — H2 "From Simple Photo to Pro Shot", description text (images omitted — crawlers get the text)
-8. **Comparison Table** — H2 "ProduktPix vs Hiring a Photographer", full 6-row HTML table with ProduktPix vs Traditional Studio columns
-9. **Testimonials** — H2 "Loved by Business Owners", 6 testimonial cards with quotes, names, roles, companies, and metrics
-10. **How It Works** — H2 "How It Works", 3 steps (Upload, AI Magic, Download & Sell)
-11. **Pricing** — H2 "Simple, Transparent Pricing", 2 plan cards (Free €0 and Starter €29) with feature lists
-12. **FAQ** — H2 "Frequently Asked Questions", all 14 Q&A pairs as `<details>/<summary>` elements
-13. **Footer** — 4 link columns (Product, For Your Store, Resources, Legal) + copyright + tagline
+**File: `index.html`** — Global find-and-replace across the SSR fallback block (lines 148–462):
 
-All content uses inline styles matching the existing fallback pattern. The `<noscript>` block will also be updated with the same full content plus the JS-required notice.
+1. Replace all `#6d28d9` → `#1249ED`
+2. Replace all `rgba(109,40,217,` → `rgba(18,73,237,`
+3. Replace `#1a1a2e` → `#1c1c1e`
+4. Replace `background:#fff` (page bg) → `background:#fafafa`
+5. Replace border `#e5e7eb` → very light border `rgba(0,0,0,0.06)` (since the actual border is white/invisible on white, but for SSR readability we keep a very subtle hint)
+6. Replace muted text `#555` → `#6e6e6e`
+7. Replace section backgrounds `#f9fafb` → `#f8f8f8`
+8. Replace table header `#f3f4f6` → `#f5f5f5`
+9. Replace `#dc2626` (red X in table) stays the same (destructive color matches)
+10. Update noscript links from purple to blue as well
 
-### Technical Details
-
-- All text is the English default (same as the `t()` fallback strings already in the components)
-- Images are omitted (crawlers index text; images load after hydration)
-- Links use real `<a href>` tags pointing to actual routes (`/signup`, `/signin`, `/pricing`, `/privacy`, etc.)
-- The comparison table uses a real `<table>` element for semantic richness
-- FAQ uses native `<details>/<summary>` for accordion behavior without JS
-- Inline styles only — no external CSS dependency
-- The entire block is still replaced by React on hydration (same mechanism as today)
+### Technical Notes
+- The popular pricing card background changes from purple to blue (`#1249ED`)
+- The hero gradient text accent changes from purple to blue
+- CTA buttons change from purple to blue
+- Step number circles change from purple to blue
+- Badge backgrounds change from purple-tinted to blue-tinted
+- All shadow colors update from purple to blue (`rgba(18,73,237,0.25)`)
 
 ### Files Modified
-1. **`index.html`** — Replace SSR fallback content inside `#root` (lines 148-171)
+1. `index.html` — Color corrections throughout SSR fallback and noscript blocks
 
