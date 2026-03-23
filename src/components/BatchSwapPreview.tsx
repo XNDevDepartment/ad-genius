@@ -421,16 +421,25 @@ export const BatchSwapPreview = ({
                       <div className="space-y-3 mt-3">
                         {/* Featured Photoshoot CTA - Full Width, Highlighted */}
                         <Button
-                          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg h-12"
-                          onClick={() => handleCreatePhotoshoot(result)}
+                          className={`w-full ${isFreeTier() ? 'opacity-50 cursor-not-allowed bg-muted' : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg'} h-12`}
+                          disabled={isFreeTier()}
+                          onClick={() => {
+                            if (isFreeTier()) {
+                              navigate('/pricing');
+                            } else {
+                              handleCreatePhotoshoot(result);
+                            }
+                          }}
                         >
-                          <Sparkles className="w-4 h-4 mr-2" />
+                          {isFreeTier() ? <Crown className="w-4 h-4 mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
                           <span className="flex-1 text-left font-semibold">
                             {t('outfitSwap.buttons.createPhotoshoot')}
                           </span>
-                          <Badge variant="secondary" className="ml-2 text-xs bg-white/20 text-white border-0">
-                            7 {t('outfitSwap.buttons.angles')}
-                          </Badge>
+                          {!isFreeTier() && (
+                            <Badge variant="secondary" className="ml-2 text-xs bg-white/20 text-white border-0">
+                              7 {t('outfitSwap.buttons.angles')}
+                            </Badge>
+                          )}
                         </Button>
 
                         {/* Primary actions - compact grid */}
