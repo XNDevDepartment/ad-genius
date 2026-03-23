@@ -664,10 +664,17 @@ const BulkBackground = () => {
                             <div className="p-3 space-y-2">
                               <div className="grid grid-cols-2 gap-2">
                                 <Button
-                                  className="gap-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90"
-                                  onClick={() => setPhotoshootModal({ resultId: result.id, resultUrl: result.result_url! })}
+                                  className={`gap-1 ${isFreeTier() ? 'opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90'}`}
+                                  disabled={isFreeTier()}
+                                  onClick={() => {
+                                    if (isFreeTier()) {
+                                      navigate('/pricing');
+                                    } else {
+                                      setPhotoshootModal({ resultId: result.id, resultUrl: result.result_url! });
+                                    }
+                                  }}
                                 >
-                                  <Camera className="h-4 w-4" />
+                                  {isFreeTier() ? <Crown className="h-4 w-4" /> : <Camera className="h-4 w-4" />}
                                   {t("bulkBackground.buttons.photoshoot", "Photoshoot")}
                                 </Button>
                                 <Button
