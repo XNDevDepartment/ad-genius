@@ -1,57 +1,79 @@
 
 
-## Three Changes
+## Feature Gating & UGC Settings Expansion
 
-### 1. Rename "Pricing" tab to "Upgrade" + highlight for free users
+### Summary
+Three areas of work: (1) block videos and gate catalog features for free users, (2) add resolution + missing aspect ratios to the UGC module with same gating, (3) block photoshoot buttons for free users. All locked items show a Crown icon.
 
-**Files:** `AppSidebar.tsx`, `BottomTabBar.tsx`, all 5 locale JSON files
+### 1. Enable Catalogs for Free Users, Block Videos
 
-- In `AppSidebar.tsx` line 41: change `id: "pricing"` to `id: "upgrade"`
-- In `AppSidebar.tsx` line 177: the label already uses `t('navigation.${item.id}')`, so it will automatically pick up `navigation.upgrade`
-- Add conditional styling: when the user is on a free tier, apply a highlight style (e.g., `bg-primary/10 text-primary font-semibold` or a pulsing dot) to the upgrade nav item
-- In `BottomTabBar.tsx`: add an "Upgrade" tab for free-tier users (replacing or adding alongside existing tabs), with `Crown` icon and highlighted styling
-- In all 5 locale files, add `"upgrade": "Upgrade"` (en), `"upgrade": "Upgrade"` (pt), `"upgrade": "Mejorar"` (es), `"upgrade": "Améliorer"` (fr), `"upgrade": "Upgraden"` (de) under the `navigation` section
+**`src/pages/ModuleSelection.tsx`**
+- Remove `locked: false` from video workflow, add `locked: isFreeTier()` instead
+- Remove `locked: isFreeTier()` from bulk-background (product catalog) — make it available to all
+- Remove `locked: false` from outfit-swap — keep available to all
 
-### 2. Add translations for ProductViewsModal (the "Photoshoot" modal in Bulk Background)
+**`src/pages/Index.tsx`** (mobile modules)
+- Add `needsPaid: true` to the video module entry so free users see it locked
+- Remove `needsPaid: true` from bulk-background
 
-**Files:** `ProductViewsModal.tsx`, all 5 locale JSON files
+**`src/hooks/useCredits.tsx`**
+- Change `canAccessVideos()` to return `!isFreeTier()` instead of `true`
 
-The `ProductViewsModal.tsx` has ~15 hardcoded English strings:
-- "Create Photoshoot" (header title)
-- "Select views to generate:" 
-- View option labels: "Macro View", "Environment View", "3/4 Angle View" and their descriptions
-- "Retry Photoshoot" / "Create Photoshoot" button text
-- "Not enough credits (X available)"
-- "Generating product views... X%"
-- "Taking longer than expected..."
-- "Cancel"
-- "Preview" / "Save"
-- "Product views ready!" / "Generation failed"
-- "Failed to create product views" / "Please try again"
+**`src/pages/ModuleSelection.tsx`** — change Lock icon to Crown icon for locked modules
 
-Replace all with `t('productViews.xxx')` keys and add corresponding entries in all 5 locale files with proper translations.
+### 2. Block 2K/4K Resolution + 9:16 & 4:5 Aspect Ratios for Free Users
 
-### 3. Fix onboarding bottom button overlap with device navigation bar
+**`src/pages/BulkBackground.tsx`** (Product Catalog)
+- In image size toggle group: disable 2K and 4K for free users, show Crown icon
+- In aspect ratio Select: disable `9:16` and `4:5` for free users, show Crown icon
+- Block photoshoot button for free users (show Crown + redirect to /pricing)
 
-**Files:** `OnboardingWizard.tsx`, `OnboardingWelcome.tsx`, `OnboardingStep1.tsx`, `OnboardingPackSelect.tsx`
+**`src/pages/OutfitSwap.tsx`** (Fashion Catalog)
+- Same: disable 2K/4K with Crown, disable 9:16 and 4:5 with Crown
+- Already has photoshoot in BatchSwapPreview — block there too
 
-The issue: On devices with bottom navigation bars (iOS home indicator, Android gesture bar), the "Next"/"Get Started" button sits at the very bottom of the scrollable content. The system nav bar overlaps it.
+**`src/components/BatchSwapPreview.tsx`**
+- Block the "Create Photoshoot" button for free users — show Crown + navigate to /pricing
 
-Fix approach:
-- In `OnboardingWizard.tsx`: add `pb-[env(safe-area-inset-bottom,16px)]` to the content container to ensure bottom padding accounts for the device's safe area
-- In each step component, the bottom button areas (`OnboardingWelcome` line 94, `OnboardingStep1` line 71, `OnboardingPackSelect` line 73) should use `pb-safe` or explicit `pb-[calc(env(safe-area-inset-bottom)+16px)]` to push the button above the device navigation bar
+### 3. Add Resolution + Missing Aspect Ratios to UGC Module
 
-### Files modified
-1. `src/components/AppSidebar.tsx` — rename pricing to upgrade, add free-tier highlight
-2. `src/components/BottomTabBar.tsx` — add upgrade tab for free users with highlight
-3. `src/components/ProductViewsModal.tsx` — replace hardcoded strings with i18n keys
-4. `src/components/onboarding/OnboardingWizard.tsx` — add safe area bottom padding
-5. `src/components/onboarding/OnboardingWelcome.tsx` — bottom safe area padding
-6. `src/components/onboarding/OnboardingStep1.tsx` — bottom safe area padding
-7. `src/components/onboarding/OnboardingPackSelect.tsx` — bottom safe area padding
-8. `src/i18n/locales/en.json` — add navigation.upgrade + productViews keys
-9. `src/i18n/locales/pt.json` — same translations in Portuguese
-10. `src/i18n/locales/es.json` — same translations in Spanish
-11. `src/i18n/locales/fr.json` — same translations in French
-12. `src/i18n/locales/de.json` — same translations in German
+The UGC module currently has `AspectRatioSelector` (source, 1:1, 3:4, 9:16, 4:3, 16:9) but no resolution selector and is missing ratios like 2:3, 4:5, 5:4, 21:9.
+
+**`src/pages/CreateUGCGeminiBase.tsx`** (desktop sidebar)
+- Add a resolution toggle (1K / 2K / 4K) above or below the aspect ratio section
+- Add state `imageSize` defaulting to '1K'
+- Gate 2K/4K for free users with Crown icon
+- Pass `imageSize` to the generation API call
+
+**`src/components/AspectRatioSelector.tsx`**
+- Add missing ratios: `2:3`, `4:5`, `5:4`, `21:9`
+- Update the `AspectRatio` type
+- Accept optional `lockedRatios` prop — array of ratio values to show as locked (Crown icon + disabled)
+
+**`src/components/departments/ugc/SettingsForm.tsx`** (mobile settings)
+- Add the same resolution toggle (1K / 2K / 4K)
+- Gate 2K/4K with Crown for free users
+
+**`src/lib/aspectSizes.ts`**
+- Add SIZE_MAP entries for new ratios: `2:3`, `4:5`, `5:4`, `21:9`
+
+### 4. Consistent Crown Icon on All Locked Items
+
+All blocked features use `Crown` from lucide-react (same as the Upgrade tab), shown inline on:
+- Disabled toggle items (2K, 4K resolutions)
+- Disabled aspect ratio options (9:16, 4:5)
+- Disabled photoshoot buttons
+- Locked module cards
+
+### Files Modified
+1. `src/hooks/useCredits.tsx` — block video access for free tier
+2. `src/pages/ModuleSelection.tsx` — unlock catalogs, lock videos, Crown icon
+3. `src/pages/Index.tsx` — mobile module grid: lock video, unlock catalog
+4. `src/pages/BulkBackground.tsx` — gate 2K/4K, 9:16/4:5, photoshoot button
+5. `src/pages/OutfitSwap.tsx` — gate 2K/4K, 9:16/4:5
+6. `src/components/BatchSwapPreview.tsx` — gate photoshoot button
+7. `src/components/AspectRatioSelector.tsx` — add missing ratios + lockedRatios prop
+8. `src/lib/aspectSizes.ts` — add new ratio size entries
+9. `src/pages/CreateUGCGeminiBase.tsx` — add resolution selector, gate 2K/4K
+10. `src/components/departments/ugc/SettingsForm.tsx` — add resolution selector, gate 2K/4K
 
