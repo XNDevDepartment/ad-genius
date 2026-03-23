@@ -212,7 +212,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
           <div className="sticky top-0 bg-background z-10 p-4 border-b flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Camera className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold">Create Photoshoot</h2>
+              <h2 className="text-lg font-semibold">{t('productViews.title')}</h2>
             </div>
           </div>
 
