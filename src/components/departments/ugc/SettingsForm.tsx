@@ -24,7 +24,7 @@ interface SettingsFormProps {
   onSettingsChange: (settings: Partial<GenerationSettings>) => void;
   remainingCredits: number;
   totalCredits: number;
-  calculateImageCost: (quality: 'low' | 'medium' | 'high', count: number) => number;
+  calculateImageCost: (quality: 'low' | 'medium' | 'high', count: number, imageSize?: '1K' | '2K' | '4K') => number;
   compact?: boolean;
 }
 
