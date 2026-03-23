@@ -24,7 +24,7 @@ const VIEW_OPTIONS_KEYS = [
   { id: "angle", labelKey: "productViews.angleView", descKey: "productViews.angleDesc" },
 ] as const;
 
-type ViewType = typeof VIEW_OPTIONS[number]["id"];
+type ViewType = typeof VIEW_OPTIONS_KEYS[number]["id"];
 
 const STALE_WARNING_MS = 2 * 60 * 1000; // 2 min
 const STALE_FAIL_MS = 3 * 60 * 1000;    // 3 min
