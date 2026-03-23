@@ -40,7 +40,7 @@ export const SettingsForm = ({
   const { isFreeTier, getMaxImagesPerGeneration } = useCredits();
 
   const usagePercentage = (remainingCredits / totalCredits) * 100;
-  const creditsNeeded = calculateImageCost(settings.imageQuality, settings.numImages);
+  const creditsNeeded = calculateImageCost(settings.imageQuality, settings.numImages, settings.imageSize || '1K');
   const maxImages = 3;
 
   const freeScenarios = ['lifestyle', 'minimal', 'vibrant', 'professional'];

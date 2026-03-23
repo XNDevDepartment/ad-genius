@@ -1,7 +1,7 @@
 // ResolutionSelector.tsx
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-export type SizeTier = 'small' | 'large';
+export type SizeTier = 'small' | 'medium' | 'large';
 
 export default function ResolutionSelector({
   value,
@@ -18,6 +18,7 @@ export default function ResolutionSelector({
       className="justify-start"
     >
       <ToggleGroupItem value="small" size="sm" className="flex-1 bg-muted">Normal</ToggleGroupItem>
+      <ToggleGroupItem value="medium" size="sm" className="flex-1 bg-muted">Medium</ToggleGroupItem>
       <ToggleGroupItem value="large" size="sm" className="flex-1 bg-muted">Large</ToggleGroupItem>
     </ToggleGroup>
   );
