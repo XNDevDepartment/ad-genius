@@ -313,7 +313,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                       <div key={viewType} className="space-y-2">
                         <div className="aspect-square bg-muted rounded-lg overflow-hidden">
                           {url ? (
-                            <img src={url} alt={label} className="w-full h-full object-cover" />
+                            <img src={url} alt={label ? t(label) : viewType} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <X className="h-6 w-6 text-destructive" />
