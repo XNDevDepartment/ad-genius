@@ -267,7 +267,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                     variant="alternative"
                   >
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                    {productViews?.status === 'failed' ? 'Retry Photoshoot' : 'Create Photoshoot'} — {cost} credit{cost !== 1 ? 's' : ''}
+                    {productViews?.status === 'failed' ? t('productViews.retryPhotoshoot') : t('productViews.createPhotoshoot')} — {cost === 1 ? t('productViews.creditsCost', { cost }) : t('productViews.creditsCostPlural', { cost })}
                   </Button>
                   {!hasEnough && (
                     <p className="text-xs text-destructive text-center">
