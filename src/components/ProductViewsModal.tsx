@@ -108,10 +108,10 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
       if (!isMountedRef.current) return;
       setProductViews(updated);
       if (updated.status === 'completed') {
-        toast({ title: "Product views ready!" });
+        toast({ title: t('productViews.ready') });
         refreshCredits();
       } else if (updated.status === 'failed') {
-        toast({ title: "Generation failed", description: updated.error, variant: "destructive" });
+        toast({ title: t('productViews.failed'), description: updated.error, variant: "destructive" });
       }
     });
 
