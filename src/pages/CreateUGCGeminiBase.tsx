@@ -83,6 +83,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const { credits, getTotalCredits } = useCredits();
   const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
+  const [imageSize, setImageSize] = useState<'1K' | '2K' | '4K'>('1K');
   const { remainingCredits, canGenerateImages, isAtLimit, refreshCount, calculateImageCost } = useImageLimit(imageQuality, imageSize);
   const [imagesAnalysed, setImagesAnalysed] = useState(false);
 
