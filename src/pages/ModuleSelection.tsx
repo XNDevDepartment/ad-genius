@@ -182,7 +182,7 @@ const ModuleSelection = () => {
 
                     {workflow.locked && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <Lock className="h-6 w-6 text-white" />
+                        <Crown className="h-6 w-6 text-white" />
                       </div>
                     )}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 pt-6">
