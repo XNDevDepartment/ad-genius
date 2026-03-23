@@ -2741,5 +2741,30 @@
     "openResult": "Ouvrir le Résultat",
     "editAgain": "Modifier à Nouveau",
     "historyTitle": "Historique des modifications ({{count}})"
+  },
+  "productViews": {
+    "title": "Créer une Séance Photo",
+    "selectViews": "Sélectionnez les vues à générer :",
+    "macroView": "Vue Macro",
+    "macroDesc": "Gros plan sur le matériau et la texture",
+    "environmentView": "Vue d'Environnement",
+    "environmentDesc": "Produit dans un environnement d'utilisation réaliste",
+    "angleView": "Vue 3/4",
+    "angleDesc": "Photo produit en angle pour catalogue",
+    "retryPhotoshoot": "Réessayer",
+    "createPhotoshoot": "Créer la Séance Photo",
+    "creditsCost": "{{cost}} crédit",
+    "creditsCostPlural": "{{cost}} crédits",
+    "notEnoughCredits": "Crédits insuffisants ({{credits}} disponibles)",
+    "generating": "Génération des vues produit... {{progress}}%",
+    "takingLonger": "Cela prend plus de temps que prévu... Si ça ne se termine pas bientôt, ça se relancera automatiquement.",
+    "timedOut": "Le traitement a expiré. Veuillez réessayer.",
+    "cancel": "Annuler",
+    "preview": "Aperçu",
+    "save": "Enregistrer",
+    "ready": "Vues produit prêtes !",
+    "failed": "Génération échouée",
+    "createFailed": "Échec de la création des vues produit",
+    "tryAgain": "Veuillez réessayer"
   }
 }

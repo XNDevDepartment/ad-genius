@@ -2787,5 +2787,30 @@
     "openResult": "Abrir Resultado",
     "editAgain": "Editar Novamente",
     "historyTitle": "Histórico de edições ({{count}})"
+  },
+  "productViews": {
+    "title": "Criar Sessão Fotográfica",
+    "selectViews": "Selecione as vistas a gerar:",
+    "macroView": "Vista Macro",
+    "macroDesc": "Close-up focado no material e textura",
+    "environmentView": "Vista de Ambiente",
+    "environmentDesc": "Produto num ambiente de uso realista",
+    "angleView": "Vista 3/4",
+    "angleDesc": "Foto de produto em ângulo para catálogo",
+    "retryPhotoshoot": "Tentar Novamente",
+    "createPhotoshoot": "Criar Sessão Fotográfica",
+    "creditsCost": "{{cost}} crédito",
+    "creditsCostPlural": "{{cost}} créditos",
+    "notEnoughCredits": "Créditos insuficientes ({{credits}} disponíveis)",
+    "generating": "A gerar vistas do produto... {{progress}}%",
+    "takingLonger": "A demorar mais que o esperado... Se não completar em breve, será refeito automaticamente.",
+    "timedOut": "Processamento expirou. Tente novamente.",
+    "cancel": "Cancelar",
+    "preview": "Pré-visualizar",
+    "save": "Guardar",
+    "ready": "Vistas do produto prontas!",
+    "failed": "Geração falhou",
+    "createFailed": "Falha ao criar vistas do produto",
+    "tryAgain": "Tente novamente"
   }
 }
