@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Download, Loader2, X, Eye, Camera, Sparkles, Pencil, Images, Link, Store, Lock, RotateCcw } from "lucide-react";
+import { ArrowLeft, Download, Loader2, X, Eye, Camera, Sparkles, Pencil, Images, Link, Store, Crown, RotateCcw } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
