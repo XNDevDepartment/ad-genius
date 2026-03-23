@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { Crown } from "lucide-react";
 import { ArrowLeft, Sparkles, RefreshCw, HelpCircle, Pencil, ArrowDown } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
