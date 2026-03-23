@@ -1537,7 +1537,8 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                 imageOrientation,
                 imageQuality,
                 aspectRatio,
-                outputFormat
+                outputFormat,
+                imageSize
               }}
               onSettingsChange={(newSettings) => {
                 if (newSettings.numImages !== undefined) setNumImages(newSettings.numImages);
@@ -1548,6 +1549,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                 if (newSettings.imageQuality !== undefined) setImageQuality(newSettings.imageQuality);
                 if (newSettings.aspectRatio !== undefined) setAspectRatio(newSettings.aspectRatio);
                 if (newSettings.outputFormat !== undefined) setOutputFormat(newSettings.outputFormat);
+                if (newSettings.imageSize !== undefined) setImageSize(newSettings.imageSize);
               }}
               remainingCredits={remainingCredits}
               totalCredits={getTotalCredits()}
