@@ -49,6 +49,7 @@ export const BatchSwapPreview = ({
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { isAdmin } = useAdminAuth();
+  const { isFreeTier } = useCredits();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [results, setResults] = useState<Record<string, OutfitSwapResult>>(initialResults || {});
