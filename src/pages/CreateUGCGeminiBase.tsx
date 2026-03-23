@@ -812,7 +812,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
 
       const sizePx = aspectRatio === 'source'
         ? undefined
-        : SIZE_MAP[aspectRatio]['large'];
+        : SIZE_MAP[aspectRatio as Exclude<AspectRatio, 'source'>]?.['large'];
 
       const result = await createJob({
         prompt,
