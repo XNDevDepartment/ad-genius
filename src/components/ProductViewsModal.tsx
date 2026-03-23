@@ -339,7 +339,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                               onClick={() => handleDownload(url, `${viewType}-view`)}
                             >
                               <Download className="h-3 w-3" />
-                              <span className="text-xs">Save</span>
+                              <span className="text-xs">{t('productViews.save')}</span>
                             </Button>
                           </div>
                         )}
