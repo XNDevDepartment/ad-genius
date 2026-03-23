@@ -320,7 +320,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                             </div>
                           )}
                         </div>
-                        <p className="text-xs font-medium text-center">{label}</p>
+                        <p className="text-xs font-medium text-center">{label ? t(label) : viewType}</p>
                         {url && (
                           <div className="flex gap-1">
                             <Button
