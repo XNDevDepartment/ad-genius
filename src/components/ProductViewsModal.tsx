@@ -18,10 +18,10 @@ interface ProductViewsModalProps {
   aspectRatio?: string;
 }
 
-const VIEW_OPTIONS = [
-  { id: "macro", label: "Macro View", description: "Close-up focusing on material and texture" },
-  { id: "environment", label: "Environment View", description: "Product in realistic use environment" },
-  { id: "angle", label: "3/4 Angle View", description: "Angled catalog-style product photo" },
+const VIEW_OPTIONS_KEYS = [
+  { id: "macro", labelKey: "productViews.macroView", descKey: "productViews.macroDesc" },
+  { id: "environment", labelKey: "productViews.environmentView", descKey: "productViews.environmentDesc" },
+  { id: "angle", labelKey: "productViews.angleView", descKey: "productViews.angleDesc" },
 ] as const;
 
 type ViewType = typeof VIEW_OPTIONS[number]["id"];
