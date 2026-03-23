@@ -60,10 +60,14 @@ interface CreateUGCGeminiBaseProps {
 
 const ASPECT_INFO: Record<AspectRatio, { label: string; composition: string }> = {
   '1:1': { label: 'Square', composition: 'Balanced square framing; subject slightly off-center for tension.' },
+  '2:3': { label: 'Portrait 2:3', composition: 'Vertical portrait framing with natural headroom.' },
   '3:4': { label: 'Portrait', composition: 'Vertical portrait framing with natural headroom; guide the eye along vertical lines.' },
   '4:3': { label: 'Landscape', composition: 'Classic landscape framing; rule-of-thirds emphasis and stable horizon.' },
+  '4:5': { label: 'Portrait 4:5', composition: 'Slightly vertical framing ideal for Instagram feed.' },
+  '5:4': { label: 'Landscape 5:4', composition: 'Slightly wide framing with balanced composition.' },
   '9:16': { label: 'Vertical', composition: 'Tall story/reel framing; lead lines from foreground to subject.' },
   '16:9': { label: 'Wide', composition: 'Cinematic wide framing; foreground–midground–background depth cues.' },
+  '21:9': { label: 'Ultra Wide', composition: 'Ultra-wide cinematic framing; panoramic depth and scale.' },
   'source': { label: 'Source', composition: 'Original source image aspect ratio preserved; composition matches uploaded image dimensions.' },
 };
 
