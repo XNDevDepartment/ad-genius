@@ -83,7 +83,8 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const { credits, getTotalCredits } = useCredits();
   const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
-  const { remainingCredits, canGenerateImages, isAtLimit, refreshCount, calculateImageCost } = useImageLimit(imageQuality);
+  const [imageSize, setImageSize] = useState<'1K' | '2K' | '4K'>('1K');
+  const { remainingCredits, canGenerateImages, isAtLimit, refreshCount, calculateImageCost } = useImageLimit(imageQuality, imageSize);
   const [imagesAnalysed, setImagesAnalysed] = useState(false);
 
   try {
@@ -121,7 +122,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [style, setStyle] = useState<'lifestyle' | 'studio' | 'cinematic' | 'natural' | 'minimal' | 'professional'>("lifestyle");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('source');
   const [outputFormat, setOutputFormat] = useState<'png' | 'webp'>('png');
-  const [imageSize, setImageSize] = useState<'1K' | '2K' | '4K'>('1K');
+  // imageSize state moved above useImageLimit
   const { isFreeTier } = useCredits();
   const lockedRatios: AspectRatio[] = isFreeTier() ? ['9:16', '4:5'] : [];
 
@@ -814,15 +815,16 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
         return;
       }
 
+      const sizeTier = imageSize === '4K' ? 'large' : imageSize === '2K' ? 'medium' : 'small';
       const sizePx = aspectRatio === 'source'
-        ? undefined
-        : SIZE_MAP[aspectRatio as Exclude<AspectRatio, 'source'>]?.['large'];
+        ? (imageSize === '4K' ? '2048x2048' : imageSize === '2K' ? '1536x1536' : '1024x1024')
+        : SIZE_MAP[aspectRatio as Exclude<AspectRatio, 'source'>]?.[sizeTier];
 
       const result = await createJob({
         prompt,
         settings: {
           number: numImages,
-          size: sizePx as "1024x1024" | "1024x1536" | "1536x1024" | undefined,
+          size: sizePx,
           quality: imageQuality,
           style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'cinematic' | 'natural',
           timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',

@@ -24,7 +24,7 @@ interface SettingsFormProps {
   onSettingsChange: (settings: Partial<GenerationSettings>) => void;
   remainingCredits: number;
   totalCredits: number;
-  calculateImageCost: (quality: 'low' | 'medium' | 'high', count: number) => number;
+  calculateImageCost: (quality: 'low' | 'medium' | 'high', count: number, imageSize?: '1K' | '2K' | '4K') => number;
   compact?: boolean;
 }
 
@@ -40,7 +40,7 @@ export const SettingsForm = ({
   const { isFreeTier, getMaxImagesPerGeneration } = useCredits();
 
   const usagePercentage = (remainingCredits / totalCredits) * 100;
-  const creditsNeeded = calculateImageCost(settings.imageQuality, settings.numImages);
+  const creditsNeeded = calculateImageCost(settings.imageQuality, settings.numImages, settings.imageSize || '1K');
   const maxImages = 3;
 
   const freeScenarios = ['lifestyle', 'minimal', 'vibrant', 'professional'];

@@ -9,7 +9,7 @@ export type CreateJobPayload = {
   prompt: string;
   settings: {
     number: number;
-    size?: '1024x1024' | '2048x2048' | '896x1280' | '1792x2560' | '1280x896' | '2560x1792' | '768x1408' | '1536x2816' | '1408x768' | '2816x1536' | '1536x1024' | '1024x1536';
+    size?: string;
     quality: 'low' | 'medium' | 'high';
     orientation?: string;
     aspectRatio?: string;

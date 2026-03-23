@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useCredits } from '@/hooks/useCredits';
 
-export const useImageLimit = (imageQuality: 'low' | 'medium' | 'high' = 'high') => {
+export const useImageLimit = (imageQuality: 'low' | 'medium' | 'high' = 'high', imageSize: '1K' | '2K' | '4K' = '1K') => {
   const { user } = useAuth();
   const { isAdmin, loading: isAdminLoading } = useAdminAuth();
   const { getRemainingCredits, calculateImageCost, canAfford, loading, refreshCredits } = useCredits();
@@ -12,8 +12,7 @@ export const useImageLimit = (imageQuality: 'low' | 'medium' | 'high' = 'high') 
     if (isAdminLoading) return true;
     if (isAdmin) return true;
 
-    // Fixed cost: 1 credit per image
-    const creditsNeeded = count;
+    const creditsNeeded = calculateImageCost(imageQuality, count, imageSize);
     return canAfford(creditsNeeded);
   };
 

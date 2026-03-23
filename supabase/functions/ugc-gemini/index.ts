@@ -73,9 +73,13 @@ function backoffMs(attempt: number): number {
   return 900 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 250);
 }
 
-// Fixed credit cost: 1 credit per image
-function calculateImageCost(_settings: Record<string, unknown>): number {
-  return 1;
+// Resolution-based credit cost: 1 (1K), 2 (2K), 3 (4K)
+function calculateImageCost(settings: Record<string, unknown>): number {
+  const size = (settings?.size as string) ?? '1024x1024';
+  const width = parseInt(size.split('x')[0], 10) || 1024;
+  if (width >= 2800) return 3;  // 4K
+  if (width >= 1700) return 2;  // 2K
+  return 1;                      // 1K
 }
 
 // Crop base64 image to exact aspect ratio
