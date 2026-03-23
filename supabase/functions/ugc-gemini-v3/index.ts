@@ -42,9 +42,14 @@ function backoffMs(attempt: number): number {
   return 900 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 250);
 }
 
-// Fixed credit cost: 1 credit per image
-function calculateImageCost(_settings: unknown): number {
-  return 1;
+// Resolution-based credit cost: 1 (1K), 2 (2K), 3 (4K)
+function calculateImageCost(settings: unknown): number {
+  const s = settings as Record<string, unknown> | null;
+  const size = (s?.size as string) ?? '1024x1024';
+  const width = parseInt(size.split('x')[0], 10) || 1024;
+  if (width >= 2800) return 3;  // 4K
+  if (width >= 1700) return 2;  // 2K
+  return 1;                      // 1K
 }
 
 // Supported native aspect ratios by Gemini 3 Pro

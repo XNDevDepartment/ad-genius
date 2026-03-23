@@ -814,9 +814,10 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
         return;
       }
 
+      const sizeTier = imageSize === '4K' ? 'large' : imageSize === '2K' ? 'medium' : 'small';
       const sizePx = aspectRatio === 'source'
-        ? undefined
-        : SIZE_MAP[aspectRatio as Exclude<AspectRatio, 'source'>]?.['large'];
+        ? (imageSize === '4K' ? '2048x2048' : imageSize === '2K' ? '1536x1536' : '1024x1024')
+        : SIZE_MAP[aspectRatio as Exclude<AspectRatio, 'source'>]?.[sizeTier];
 
       const result = await createJob({
         prompt,
