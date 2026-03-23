@@ -299,7 +299,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                   onClick={handleCancel}
                   className="w-full"
                 >
-                  Cancel
+                  {t('productViews.cancel')}
                 </Button>
               </div>
             ) : isComplete ? (
