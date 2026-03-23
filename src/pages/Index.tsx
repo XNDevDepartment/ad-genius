@@ -18,14 +18,13 @@ import PromoBanner3Meses from "@/components/PromoBanner3Meses";
 
 const mobileModules = [
   { id: "ugc", titleKey: "createSelection.ugcCreator.title", icon: Zap, path: "/create/ugc" },
-  { id: "video", titleKey: "createSelection.videoCreator.title", icon: Video, path: "/create/video" },
+  { id: "video", titleKey: "createSelection.videoCreator.title", icon: Video, path: "/create/video", needsPaid: true },
   { id: "outfit-swap", titleKey: "createSelection.outfitSwap.title", icon: Shirt, path: "/create/outfit-swap" },
   {
     id: "bulk-background",
     titleKey: "createSelection.bulkBackground.title",
     icon: Images,
     path: "/create/bulk-background",
-    needsPaid: true,
   },
 ];
 
