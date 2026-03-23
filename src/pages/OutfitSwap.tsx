@@ -28,7 +28,7 @@ const OutfitSwap = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { batch, jobs, loading: batchLoading, createBatch, cancelBatch, reset, refreshBatch, retryJob, retryingJobs } = useOutfitSwapBatch();
-  const { getRemainingCredits } = useCredits();
+  const { getRemainingCredits, isFreeTier } = useCredits();
   const { isAdmin } = useAdminAuth();
   const { uploadSourceImage } = useSourceImageUpload();
 
