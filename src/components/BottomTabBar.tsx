@@ -1,20 +1,27 @@
-import { Home, Plus, Image, User, Video } from "lucide-react";
+import { Home, Plus, Image, User, Video, Crown } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { useCredits } from "@/hooks/useCredits";
 
 const BottomTabBar = () => {
   const location = useLocation();
   const currentPath = location.pathname;
   const { t } = useTranslation();
+  const { isFreeTier } = useCredits();
+
+  const isFree = isFreeTier();
 
   const tabs = [
     { id: "home", label: t('navigation.home'), icon: Home, path: "/" },
     { id: "library", label: t('navigation.library'), icon: Image, path: "/library" },
     { id: "create", label: t('navigation.create'), icon: Plus, path: "/create", primary: true },
     { id: "videos", label: t('navigation.videos'), icon: Video, path: "/videos" },
-    { id: "account", label: t('navigation.account'), icon: User, path: "/account" },
+    ...(isFree
+      ? [{ id: "upgrade", label: t('navigation.upgrade'), icon: Crown, path: "/pricing", highlight: true }]
+      : [{ id: "account", label: t('navigation.account'), icon: User, path: "/account" }]
+    ),
   ];
 
   return (
