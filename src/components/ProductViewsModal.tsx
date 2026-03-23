@@ -308,7 +308,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {(productViews.selected_views as string[]).map((viewType) => {
                     const url = getViewUrl(viewType);
-                    const label = VIEW_OPTIONS.find(v => v.id === viewType)?.label || viewType;
+                    const label = VIEW_OPTIONS_KEYS.find(v => v.id === viewType)?.labelKey;
                     return (
                       <div key={viewType} className="space-y-2">
                         <div className="aspect-square bg-muted rounded-lg overflow-hidden">
