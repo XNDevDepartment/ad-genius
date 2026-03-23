@@ -413,7 +413,7 @@ const BulkBackground = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => setUrlImportOpen(true)}
-                disabled={productImages.length >= MAX_IMAGES || isFreeTier()}
+                disabled={productImages.length >= MAX_IMAGES}
                 className="gap-2"
               >
                 <Link className="h-4 w-4" />
