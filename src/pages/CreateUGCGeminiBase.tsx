@@ -1494,7 +1494,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
 
           {/* Mobile Floating Action Panel */}
           {(isMobile && !settingsOpen) && (
-            <div className="fixed left-0 right-0 bottom-[10px] sm:bottom-[50px] z-[20] px-4 pb-safe pointer-events-none">
+            <div className="fixed left-0 right-0 bottom-4 z-[20] px-4 pb-safe pointer-events-none">
               <div className="max-w-lg mx-auto bg-card/95 border border-border/50 rounded-2xl shadow-lg p-3 space-y-3 pointer-events-auto backdrop-blur supports-backdrop-blur:bg-background/60">
                 <div className="flex items-center gap-3">
                   <div className="flex-1 px-3 py-2 bg-muted/40 rounded-full text-xs text-muted-foreground truncate" onClick={() => setSettingsOpen(true)}>
