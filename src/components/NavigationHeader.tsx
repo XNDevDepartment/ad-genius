@@ -49,7 +49,7 @@ const NavigationHeader = () => {
           onClick={() => navigate("/pricing")}
           size="sm"
           variant="secondary"
-          className="min-h-[24px] p-3 mt-2 relative bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700 border-0"
+          className="min-h-[44px] p-3 mt-2 relative bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700 border-0"
         >
           <Sparkles className="h-3 w-3 mr-1" />
           <span className="hidden sm:inline">{t('navigation.pricing')}</span>
@@ -58,7 +58,7 @@ const NavigationHeader = () => {
         <Button
           onClick={() => navigate("/signup")}
           size="sm"
-          className="min-h-[24px] p-4 mt-2"
+          className="min-h-[44px] p-4 mt-2"
         >
           {t('common.startNow')}
         </Button>
@@ -66,7 +66,7 @@ const NavigationHeader = () => {
           onClick={() => navigate("/signin")}
           size="sm"
           variant="outline"
-          className="min-h-[24px] p-2 mt-2"
+          className="min-h-[44px] p-2 mt-2"
         >
           <LogIn className="h-4 w-4" />
         </Button>

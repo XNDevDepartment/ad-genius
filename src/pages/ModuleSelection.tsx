@@ -145,7 +145,7 @@ const ModuleSelection = () => {
             variant="ghost"
             size="icon"
             onClick={() => navigate("/")}
-            className="h-10 w-10"
+            className="h-11 w-11"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
