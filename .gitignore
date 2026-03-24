@@ -1,3 +1,6 @@
+# Google service account credentials (never commit)
+gsc-service-account.json
+
 # Logs
 logs
 *.log

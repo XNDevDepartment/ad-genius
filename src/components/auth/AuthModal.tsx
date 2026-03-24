@@ -503,6 +503,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
                       <Input
                         id="name"
                         type="text"
+                        autoComplete="name"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         placeholder={t('auth.namePlaceholder', 'Your name')}
@@ -515,6 +516,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
                       <Input
                         id="email"
                         type="email"
+                        autoComplete="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         placeholder="you@example.com"
@@ -528,6 +530,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
                         <Input
                           id="password"
                           type={showPassword ? 'text' : 'password'}
+                          autoComplete="new-password"
                           value={formData.password}
                           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                           placeholder={t('auth.passwordPlaceholder', 'Min 6 characters')}
@@ -696,6 +699,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
                     <Input
                       id="email"
                       type="email"
+                      autoComplete="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       required
@@ -707,6 +711,7 @@ export const AuthModal = ({ onSuccess, isOpen, onClose, defaultMode = 'signup' }
                       <Input
                         id="password"
                         type={showPassword ? 'text' : 'password'}
+                        autoComplete="current-password"
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         required

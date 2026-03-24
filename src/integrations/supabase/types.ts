@@ -2662,10 +2662,12 @@ export type Database = {
           niche: string
         }[]
       }
-      get_image_credit_cost: {
-        Args: { p_count?: number; p_quality?: string }
-        Returns: number
-      }
+      get_image_credit_cost:
+        | { Args: { p_count?: number; p_quality?: string }; Returns: number }
+        | {
+            Args: { p_count?: number; p_quality?: string; p_size?: string }
+            Returns: number
+          }
       get_public_showcase_images: {
         Args: never
         Returns: {

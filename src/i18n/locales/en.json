@@ -245,6 +245,7 @@
     "videos": "Videos",
     "shopify": "Shopify",
     "pricing": "Pricing",
+    "upgrade": "Upgrade",
     "account": "Account",
     "grupo": "Bulk",
     "designs": "Designs",
@@ -2809,5 +2810,30 @@
     "openResult": "Open Result",
     "editAgain": "Edit Again",
     "historyTitle": "Edit history ({{count}})"
+  },
+  "productViews": {
+    "title": "Create Photoshoot",
+    "selectViews": "Select views to generate:",
+    "macroView": "Macro View",
+    "macroDesc": "Close-up focusing on material and texture",
+    "environmentView": "Environment View",
+    "environmentDesc": "Product in realistic use environment",
+    "angleView": "3/4 Angle View",
+    "angleDesc": "Angled catalog-style product photo",
+    "retryPhotoshoot": "Retry Photoshoot",
+    "createPhotoshoot": "Create Photoshoot",
+    "creditsCost": "{{cost}} credit",
+    "creditsCostPlural": "{{cost}} credits",
+    "notEnoughCredits": "Not enough credits ({{credits}} available)",
+    "generating": "Generating product views... {{progress}}%",
+    "takingLonger": "Taking longer than expected... If it doesn't complete soon, it will auto-retry.",
+    "timedOut": "Processing timed out. Please try again.",
+    "cancel": "Cancel",
+    "preview": "Preview",
+    "save": "Save",
+    "ready": "Product views ready!",
+    "failed": "Generation failed",
+    "createFailed": "Failed to create product views",
+    "tryAgain": "Please try again"
   }
 }

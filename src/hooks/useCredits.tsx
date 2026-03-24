@@ -10,9 +10,9 @@ export const useCredits = () => {
   const { isActivated, needsActivation, refreshActivationStatus, requestActivation } = useAccountActivation();
   const [loading, setLoading] = useState(false);
 
-  const calculateImageCost = (quality: 'low' | 'medium' | 'high', numberOfImages: number = 1): number => {
-    // Fixed cost: 1 credit per image regardless of quality
-    return 1 * numberOfImages;
+  const calculateImageCost = (quality: 'low' | 'medium' | 'high', numberOfImages: number = 1, imageSize: '1K' | '2K' | '4K' = '1K'): number => {
+    const costPerImage = imageSize === '4K' ? 3 : imageSize === '2K' ? 2 : 1;
+    return costPerImage * numberOfImages;
   };
 
   const canAfford = (amount: number): boolean => {
@@ -126,7 +126,7 @@ export const useCredits = () => {
 
   const canAccessVideos = (): boolean => {
     if (!subscriptionData) return false;
-    return true;
+    return !isFreeTier();
   };
 
   const getVideoAccessMessage = (): string => {

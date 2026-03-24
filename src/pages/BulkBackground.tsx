@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Download, Loader2, X, Eye, Camera, Sparkles, Pencil, Images, Link, Store, Lock, RotateCcw } from "lucide-react";
+import { ArrowLeft, Download, Loader2, X, Eye, Camera, Sparkles, Pencil, Images, Link, Store, Crown, RotateCcw } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -386,21 +386,7 @@ const BulkBackground = () => {
           </div>
         </div>
 
-        {/* Paid-only gate */}
-        {isFreeTier() && (
-          <Card className="rounded-apple shadow-lg border-amber-500/30 bg-amber-500/5">
-            <CardContent className="flex flex-col items-center justify-center py-12 space-y-4">
-              <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center">
-                <Lock className="h-8 w-8 text-amber-500" />
-              </div>
-              <h2 className="text-xl font-bold text-foreground">{t("bulkBackground.paidOnly.title")}</h2>
-              <p className="text-muted-foreground text-center max-w-md">{t("bulkBackground.paidOnly.description")}</p>
-              <Button onClick={() => navigate("/pricing")} variant="default" size="lg">
-                {t("bulkBackground.paidOnly.cta")}
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        {/* Paid-only gate removed - catalogs now available to free users */}
 
         {/* Section 1: Upload Products — always visible */}
         <Card className="rounded-apple shadow-lg scroll-mt-6">
@@ -417,7 +403,7 @@ const BulkBackground = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => setLibraryPickerOpen(true)}
-                disabled={productImages.length >= MAX_IMAGES || isFreeTier()}
+                disabled={productImages.length >= MAX_IMAGES}
                 className="gap-2"
               >
                 <Images className="h-4 w-4" />
@@ -427,7 +413,7 @@ const BulkBackground = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => setUrlImportOpen(true)}
-                disabled={productImages.length >= MAX_IMAGES || isFreeTier()}
+                disabled={productImages.length >= MAX_IMAGES}
                 className="gap-2"
               >
                 <Link className="h-4 w-4" />
@@ -437,7 +423,7 @@ const BulkBackground = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => setShopifyImportOpen(true)}
-                disabled={productImages.length >= MAX_IMAGES || isFreeTier()}
+                disabled={productImages.length >= MAX_IMAGES}
                 className="gap-2"
               >
                 <Store className="h-4 w-4" />
@@ -509,21 +495,33 @@ const BulkBackground = () => {
                   <ToggleGroup
                     type="single"
                     value={imageSize}
-                    onValueChange={(v) => v && setImageSize(v as '1K' | '2K' | '4K')}
+                    onValueChange={(v) => {
+                      if (v && !(isFreeTier() && (v === '2K' || v === '4K'))) {
+                        setImageSize(v as '1K' | '2K' | '4K');
+                      }
+                    }}
                     className="justify-start"
                   >
-                    {(['1K', '2K', '4K'] as const).map((size) => (
-                      <ToggleGroupItem key={size} value={size} size="sm" className="px-4 bg-muted">
-                        {size}
-                      </ToggleGroupItem>
-                    ))}
+                    {(['1K', '2K', '4K'] as const).map((size) => {
+                      const locked = isFreeTier() && (size === '2K' || size === '4K');
+                      return (
+                        <ToggleGroupItem key={size} value={size} size="sm" className={`px-4 bg-muted ${locked ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={locked}>
+                          {size}
+                          {locked && <Crown className="h-3 w-3 ml-1 text-primary" />}
+                        </ToggleGroupItem>
+                      );
+                    })}
                   </ToggleGroup>
                 </div>
 
                 {/* Aspect Ratio */}
                 <div className="space-y-2">
                   <p className="text-sm font-medium">{t("bulkBackground.settings.aspectRatio")}</p>
-                  <Select value={aspectRatio} onValueChange={setAspectRatio}>
+                  <Select value={aspectRatio} onValueChange={(v) => {
+                    if (!(isFreeTier() && (v === '9:16' || v === '4:5'))) {
+                      setAspectRatio(v);
+                    }
+                  }}>
                     <SelectTrigger className="w-44">
                       <SelectValue />
                     </SelectTrigger>
@@ -533,14 +531,16 @@ const BulkBackground = () => {
                         const scale = 16 / Math.max(w, h);
                         const boxW = Math.round(w * scale);
                         const boxH = Math.round(h * scale);
+                        const locked = isFreeTier() && (ratio === '9:16' || ratio === '4:5');
                         return (
-                          <SelectItem key={ratio} value={ratio}>
+                          <SelectItem key={ratio} value={ratio} disabled={locked}>
                             <span className="flex items-center gap-2">
                               <span
                                 className="border border-foreground/50 shrink-0 inline-block"
                                 style={{ width: `${boxW}px`, height: `${boxH}px` }}
                               />
                               {ratio}
+                              {locked && <Crown className="h-3 w-3 ml-1 text-primary" />}
                             </span>
                           </SelectItem>
                         );
@@ -664,10 +664,17 @@ const BulkBackground = () => {
                             <div className="p-3 space-y-2">
                               <div className="grid grid-cols-2 gap-2">
                                 <Button
-                                  className="gap-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90"
-                                  onClick={() => setPhotoshootModal({ resultId: result.id, resultUrl: result.result_url! })}
+                                  className={`gap-1 ${isFreeTier() ? 'opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90'}`}
+                                  disabled={isFreeTier()}
+                                  onClick={() => {
+                                    if (isFreeTier()) {
+                                      navigate('/pricing');
+                                    } else {
+                                      setPhotoshootModal({ resultId: result.id, resultUrl: result.result_url! });
+                                    }
+                                  }}
                                 >
-                                  <Camera className="h-4 w-4" />
+                                  {isFreeTier() ? <Crown className="h-4 w-4" /> : <Camera className="h-4 w-4" />}
                                   {t("bulkBackground.buttons.photoshoot", "Photoshoot")}
                                 </Button>
                                 <Button

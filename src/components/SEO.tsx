@@ -47,7 +47,11 @@ export const SEO = ({
       <link rel="canonical" href={canonicalUrl} />
       
       {/* Robots */}
-      {noindex && <meta name="robots" content="noindex, nofollow" />}
+      {noindex ? (
+        <meta name="robots" content="noindex, nofollow" />
+      ) : (
+        <meta name="robots" content="index, follow" />
+      )}
       
       {/* Open Graph */}
       <meta property="og:title" content={fullTitle} />

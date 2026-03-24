@@ -18,13 +18,13 @@ interface ProductViewsModalProps {
   aspectRatio?: string;
 }
 
-const VIEW_OPTIONS = [
-  { id: "macro", label: "Macro View", description: "Close-up focusing on material and texture" },
-  { id: "environment", label: "Environment View", description: "Product in realistic use environment" },
-  { id: "angle", label: "3/4 Angle View", description: "Angled catalog-style product photo" },
+const VIEW_OPTIONS_KEYS = [
+  { id: "macro", labelKey: "productViews.macroView", descKey: "productViews.macroDesc" },
+  { id: "environment", labelKey: "productViews.environmentView", descKey: "productViews.environmentDesc" },
+  { id: "angle", labelKey: "productViews.angleView", descKey: "productViews.angleDesc" },
 ] as const;
 
-type ViewType = typeof VIEW_OPTIONS[number]["id"];
+type ViewType = typeof VIEW_OPTIONS_KEYS[number]["id"];
 
 const STALE_WARNING_MS = 2 * 60 * 1000; // 2 min
 const STALE_FAIL_MS = 3 * 60 * 1000;    // 3 min
@@ -70,7 +70,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
 
       if (elapsed > STALE_FAIL_MS) {
         // Auto-fail after 3 minutes
-        setProductViews(prev => prev ? { ...prev, status: 'failed' as const, error: 'Processing timed out. Please try again.' } : null);
+        setProductViews(prev => prev ? { ...prev, status: 'failed' as const, error: t('productViews.timedOut') } : null);
         processingStartRef.current = null;
         setStaleWarning(false);
       } else if (elapsed > STALE_WARNING_MS) {
@@ -108,10 +108,10 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
       if (!isMountedRef.current) return;
       setProductViews(updated);
       if (updated.status === 'completed') {
-        toast({ title: "Product views ready!" });
+        toast({ title: t('productViews.ready') });
         refreshCredits();
       } else if (updated.status === 'failed') {
-        toast({ title: "Generation failed", description: updated.error, variant: "destructive" });
+        toast({ title: t('productViews.failed'), description: updated.error, variant: "destructive" });
       }
     });
 
@@ -151,8 +151,8 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
       }
     } catch (err) {
       toast({
-        title: "Failed to create product views",
-        description: err instanceof Error ? err.message : "Please try again",
+        title: t('productViews.createFailed'),
+        description: err instanceof Error ? err.message : t('productViews.tryAgain'),
         variant: "destructive",
       });
     } finally {
@@ -212,7 +212,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
           <div className="sticky top-0 bg-background z-10 p-4 border-b flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Camera className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold">Create Photoshoot</h2>
+              <h2 className="text-lg font-semibold">{t('productViews.title')}</h2>
             </div>
           </div>
 
@@ -239,8 +239,8 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
 
                 {/* View selection */}
                 <div className="space-y-3">
-                  <p className="text-sm font-medium">Select views to generate:</p>
-                  {VIEW_OPTIONS.map((view) => (
+                  <p className="text-sm font-medium">{t('productViews.selectViews')}</p>
+                  {VIEW_OPTIONS_KEYS.map((view) => (
                     <label
                       key={view.id}
                       className="flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
@@ -251,8 +251,8 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                         className="mt-0.5"
                       />
                       <div>
-                        <p className="font-medium text-sm">{view.label}</p>
-                        <p className="text-xs text-muted-foreground">{view.description}</p>
+                        <p className="font-medium text-sm">{t(view.labelKey)}</p>
+                        <p className="text-xs text-muted-foreground">{t(view.descKey)}</p>
                       </div>
                     </label>
                   ))}
@@ -267,11 +267,11 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                     variant="alternative"
                   >
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                    {productViews?.status === 'failed' ? 'Retry Photoshoot' : 'Create Photoshoot'} — {cost} credit{cost !== 1 ? 's' : ''}
+                    {productViews?.status === 'failed' ? t('productViews.retryPhotoshoot') : t('productViews.createPhotoshoot')} — {cost === 1 ? t('productViews.creditsCost', { cost }) : t('productViews.creditsCostPlural', { cost })}
                   </Button>
                   {!hasEnough && (
                     <p className="text-xs text-destructive text-center">
-                      Not enough credits ({credits} available)
+                      {t('productViews.notEnoughCredits', { credits })}
                     </p>
                   )}
                 </div>
@@ -284,13 +284,13 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                 </div>
                 <Progress value={productViews.progress} className="h-3" />
                 <p className="text-center text-sm text-muted-foreground">
-                  Generating product views... {productViews.progress}%
+                  {t('productViews.generating', { progress: productViews.progress })}
                 </p>
 
                 {staleWarning && (
                   <div className="flex items-center gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-sm">
                     <AlertTriangle className="h-4 w-4 shrink-0" />
-                    <span>Taking longer than expected... If it doesn't complete soon, it will auto-retry.</span>
+                    <span>{t('productViews.takingLonger')}</span>
                   </div>
                 )}
 
@@ -299,7 +299,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                   onClick={handleCancel}
                   className="w-full"
                 >
-                  Cancel
+                  {t('productViews.cancel')}
                 </Button>
               </div>
             ) : isComplete ? (
@@ -308,19 +308,19 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {(productViews.selected_views as string[]).map((viewType) => {
                     const url = getViewUrl(viewType);
-                    const label = VIEW_OPTIONS.find(v => v.id === viewType)?.label || viewType;
+                    const label = VIEW_OPTIONS_KEYS.find(v => v.id === viewType)?.labelKey;
                     return (
                       <div key={viewType} className="space-y-2">
                         <div className="aspect-square bg-muted rounded-lg overflow-hidden">
                           {url ? (
-                            <img src={url} alt={label} className="w-full h-full object-cover" />
+                            <img src={url} alt={label ? t(label) : viewType} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <X className="h-6 w-6 text-destructive" />
                             </div>
                           )}
                         </div>
-                        <p className="text-xs font-medium text-center">{label}</p>
+                        <p className="text-xs font-medium text-center">{label ? t(label) : viewType}</p>
                         {url && (
                           <div className="flex gap-1">
                             <Button
@@ -330,7 +330,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                               onClick={() => setPreviewImage(url)}
                             >
                               <Eye className="h-3 w-3" />
-                              <span className="text-xs">Preview</span>
+                              <span className="text-xs">{t('productViews.preview')}</span>
                             </Button>
                             <Button
                               variant="outline"
@@ -339,7 +339,7 @@ export const ProductViewsModal = ({ isOpen, onClose, resultId, resultUrl, aspect
                               onClick={() => handleDownload(url, `${viewType}-view`)}
                             >
                               <Download className="h-3 w-3" />
-                              <span className="text-xs">Save</span>
+                              <span className="text-xs">{t('productViews.save')}</span>
                             </Button>
                           </div>
                         )}

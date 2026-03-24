@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { Crown } from "lucide-react";
 import { ArrowLeft, Sparkles, RefreshCw, HelpCircle, Pencil, ArrowDown } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -60,10 +61,14 @@ interface CreateUGCGeminiBaseProps {
 
 const ASPECT_INFO: Record<AspectRatio, { label: string; composition: string }> = {
   '1:1': { label: 'Square', composition: 'Balanced square framing; subject slightly off-center for tension.' },
+  '2:3': { label: 'Portrait 2:3', composition: 'Vertical portrait framing with natural headroom.' },
   '3:4': { label: 'Portrait', composition: 'Vertical portrait framing with natural headroom; guide the eye along vertical lines.' },
   '4:3': { label: 'Landscape', composition: 'Classic landscape framing; rule-of-thirds emphasis and stable horizon.' },
+  '4:5': { label: 'Portrait 4:5', composition: 'Slightly vertical framing ideal for Instagram feed.' },
+  '5:4': { label: 'Landscape 5:4', composition: 'Slightly wide framing with balanced composition.' },
   '9:16': { label: 'Vertical', composition: 'Tall story/reel framing; lead lines from foreground to subject.' },
   '16:9': { label: 'Wide', composition: 'Cinematic wide framing; foreground–midground–background depth cues.' },
+  '21:9': { label: 'Ultra Wide', composition: 'Ultra-wide cinematic framing; panoramic depth and scale.' },
   'source': { label: 'Source', composition: 'Original source image aspect ratio preserved; composition matches uploaded image dimensions.' },
 };
 
@@ -78,7 +83,8 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const { credits, getTotalCredits } = useCredits();
   const { uploadSourceImage, uploading: sourceImageUploading } = useSourceImageUpload();
   const [imageQuality, setImageQuality] = useState<'low' | 'medium' | 'high'>('high');
-  const { remainingCredits, canGenerateImages, isAtLimit, refreshCount, calculateImageCost } = useImageLimit(imageQuality);
+  const [imageSize, setImageSize] = useState<'1K' | '2K' | '4K'>('1K');
+  const { remainingCredits, canGenerateImages, isAtLimit, refreshCount, calculateImageCost } = useImageLimit(imageQuality, imageSize);
   const [imagesAnalysed, setImagesAnalysed] = useState(false);
 
   try {
@@ -116,6 +122,9 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [style, setStyle] = useState<'lifestyle' | 'studio' | 'cinematic' | 'natural' | 'minimal' | 'professional'>("lifestyle");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('source');
   const [outputFormat, setOutputFormat] = useState<'png' | 'webp'>('png');
+  // imageSize state moved above useImageLimit
+  const { isFreeTier } = useCredits();
+  const lockedRatios: AspectRatio[] = isFreeTier() ? ['9:16', '4:5'] : [];
 
   // Use unified hook with model version
   const { job, images: jobImages, loading, createJob, clearJob, loadJob, resumeCurrentJob, storageKeys } = useGeminiImageJobUnified(modelVersion);
@@ -591,30 +600,43 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   };
 
   const getScenariosFromConversation = async (desiredText?: string, moreScen?: boolean) => {
-    setIsLoadingScenarios(true);
-
-    if (!imagesAnalysed && uploadedSourceIds.length === 0) {
-      setIsAnalyzingImages(new Array(productImages.length).fill(true));
-
-      for (let i = 0; i < productImages.length; i++) {
-        const file = productImages[i];
-
-        try {
-          const sourceImage = await uploadSourceImage(file);
-          if (sourceImage) {
-            setUploadedSourceIds((old) => [...old, sourceImage.id]);
-            console.log(`Source image ${i + 1} uploaded with ID:`, sourceImage.id);
-          }
-        } catch (error) {
-          console.error(`Failed to upload source image ${i + 1}:`, error);
-        }
-      }
-      setImagesAnalysed(true);
-    } else if (uploadedSourceIds.length > 0) {
-      setImagesAnalysed(true);
-    }
+    // Capture image count at start to avoid race conditions with isAnalyzingImages array
+    const imageCount = productImages.length;
 
     try {
+      setIsLoadingScenarios(true);
+
+      if (!imagesAnalysed && uploadedSourceIds.length === 0) {
+        setIsAnalyzingImages(new Array(imageCount).fill(true));
+
+        const newUploadedIds: string[] = [];
+        for (let i = 0; i < imageCount; i++) {
+          const file = productImages[i];
+          const sourceImage = await uploadSourceImage(file);
+          if (sourceImage) {
+            newUploadedIds.push(sourceImage.id);
+            setUploadedSourceIds((old) => [...old, sourceImage.id]);
+            console.log(`Source image ${i + 1} uploaded with ID:`, sourceImage.id);
+          } else {
+            console.warn(`Source image ${i + 1} upload failed, skipping`);
+          }
+        }
+
+        // If ALL uploads failed, abort early
+        if (newUploadedIds.length === 0 && uploadedSourceIds.length === 0) {
+          setIsAnalyzingImages(new Array(imageCount).fill(false));
+          toast({
+            title: "Upload Failed",
+            description: "Could not upload any images. Please check your connection and try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+        setImagesAnalysed(true);
+      } else if (uploadedSourceIds.length > 0) {
+        setImagesAnalysed(true);
+      }
+
       // Use new stateless scenario API instead of thread-based conversation
       const scenarios = await generateScenarios({
         audience: desiredAudience,
@@ -623,7 +645,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       });
 
       setAiScenarios(scenarios);
-      setIsAnalyzingImages(new Array(productImages.length).fill(false));
+      setIsAnalyzingImages(new Array(imageCount).fill(false));
 
       toast({
         title: "Scenarios Generated",
@@ -631,7 +653,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       });
     } catch (error) {
       console.error('Error getting scenarios:', error);
-      setIsAnalyzingImages(new Array(productImages.length).fill(false));
+      setIsAnalyzingImages(new Array(imageCount).fill(false));
       toast({
         title: "Error",
         description: "Failed to get scenario suggestions. Please try again.",
@@ -643,6 +665,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   };
 
   const generateMoreScenarios = async () => {
+    if (isLoadingScenarios) return; // prevent double-tap
     setAiScenarios([]);
     setMoreScenarios(true);
     await getScenariosFromConversation("", true);
@@ -792,15 +815,16 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
         return;
       }
 
+      const sizeTier = imageSize === '4K' ? 'large' : imageSize === '2K' ? 'medium' : 'small';
       const sizePx = aspectRatio === 'source'
-        ? undefined
-        : SIZE_MAP[aspectRatio]['large'];
+        ? (imageSize === '4K' ? '2048x2048' : imageSize === '2K' ? '1536x1536' : '1024x1024')
+        : SIZE_MAP[aspectRatio as Exclude<AspectRatio, 'source'>]?.[sizeTier];
 
       const result = await createJob({
         prompt,
         settings: {
           number: numImages,
-          size: sizePx as "1024x1024" | "1024x1536" | "1536x1024" | undefined,
+          size: sizePx,
           quality: imageQuality,
           style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'cinematic' | 'natural',
           timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',
@@ -1395,7 +1419,33 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                       <AspectRatioSelector
                         value={aspectRatio}
                         onChange={setAspectRatio}
+                        lockedRatios={lockedRatios}
                       />
+                    </div>
+
+                    {/* Resolution */}
+                    <div className="space-y-2 mb-6">
+                      <Label className="text-sm font-medium">{t('bulkBackground.settings.imageSize')}</Label>
+                      <ToggleGroup
+                        type="single"
+                        value={imageSize}
+                        onValueChange={(v) => {
+                          if (v && !(isFreeTier() && (v === '2K' || v === '4K'))) {
+                            setImageSize(v as '1K' | '2K' | '4K');
+                          }
+                        }}
+                        className="justify-start"
+                      >
+                        {(['1K', '2K', '4K'] as const).map((size) => {
+                          const locked = isFreeTier() && (size === '2K' || size === '4K');
+                          return (
+                            <ToggleGroupItem key={size} value={size} size="sm" className={`flex-1 bg-muted ${locked ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={locked}>
+                              {size}
+                              {locked && <Crown className="h-3 w-3 ml-1 text-primary" />}
+                            </ToggleGroupItem>
+                          );
+                        })}
+                      </ToggleGroup>
                     </div>
                   </div>
 
@@ -1444,7 +1494,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
 
           {/* Mobile Floating Action Panel */}
           {(isMobile && !settingsOpen) && (
-            <div className="fixed left-0 right-0 bottom-[10px] sm:bottom-[50px] z-[20] px-4 pb-safe pointer-events-none">
+            <div className="fixed left-0 right-0 bottom-4 z-[20] px-4 pb-safe pointer-events-none">
               <div className="max-w-lg mx-auto bg-card/95 border border-border/50 rounded-2xl shadow-lg p-3 space-y-3 pointer-events-auto backdrop-blur supports-backdrop-blur:bg-background/60">
                 <div className="flex items-center gap-3">
                   <div className="flex-1 px-3 py-2 bg-muted/40 rounded-full text-xs text-muted-foreground truncate" onClick={() => setSettingsOpen(true)}>
@@ -1489,7 +1539,8 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                 imageOrientation,
                 imageQuality,
                 aspectRatio,
-                outputFormat
+                outputFormat,
+                imageSize
               }}
               onSettingsChange={(newSettings) => {
                 if (newSettings.numImages !== undefined) setNumImages(newSettings.numImages);
@@ -1500,6 +1551,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                 if (newSettings.imageQuality !== undefined) setImageQuality(newSettings.imageQuality);
                 if (newSettings.aspectRatio !== undefined) setAspectRatio(newSettings.aspectRatio);
                 if (newSettings.outputFormat !== undefined) setOutputFormat(newSettings.outputFormat);
+                if (newSettings.imageSize !== undefined) setImageSize(newSettings.imageSize);
               }}
               remainingCredits={remainingCredits}
               totalCredits={getTotalCredits()}

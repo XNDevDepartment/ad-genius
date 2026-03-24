@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Progress } from "@/components/ui/progress";
 import AspectRatioSelector, { AspectRatio } from "@/components/AspectRatioSelector";
-import { Lock } from "lucide-react";
+import { Lock, Crown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useCredits } from "@/hooks/useCredits";
 
@@ -16,6 +16,7 @@ export interface GenerationSettings {
   imageQuality: 'low' | 'medium' | 'high';
   aspectRatio?: AspectRatio;
   outputFormat?: 'png' | 'webp';
+  imageSize?: '1K' | '2K' | '4K';
 }
 
 interface SettingsFormProps {
@@ -23,7 +24,7 @@ interface SettingsFormProps {
   onSettingsChange: (settings: Partial<GenerationSettings>) => void;
   remainingCredits: number;
   totalCredits: number;
-  calculateImageCost: (quality: 'low' | 'medium' | 'high', count: number) => number;
+  calculateImageCost: (quality: 'low' | 'medium' | 'high', count: number, imageSize?: '1K' | '2K' | '4K') => number;
   compact?: boolean;
 }
 
@@ -39,7 +40,7 @@ export const SettingsForm = ({
   const { isFreeTier, getMaxImagesPerGeneration } = useCredits();
 
   const usagePercentage = (remainingCredits / totalCredits) * 100;
-  const creditsNeeded = calculateImageCost(settings.imageQuality, settings.numImages);
+  const creditsNeeded = calculateImageCost(settings.imageQuality, settings.numImages, settings.imageSize || '1K');
   const maxImages = 3;
 
   const freeScenarios = ['lifestyle', 'minimal', 'vibrant', 'professional'];
@@ -165,7 +166,33 @@ export const SettingsForm = ({
         <AspectRatioSelector
           value={currentAspectRatio as AspectRatio}
           onChange={(value) => onSettingsChange({ aspectRatio: value, imageOrientation: value })}
+          lockedRatios={isFreeTier() ? (['9:16', '4:5'] as AspectRatio[]) : []}
         />
+      </div>
+
+      {/* Resolution */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">{t('bulkBackground.settings.imageSize')}</Label>
+        <ToggleGroup
+          type="single"
+          value={settings.imageSize || '1K'}
+          onValueChange={(v) => {
+            if (v && !(isFreeTier() && (v === '2K' || v === '4K'))) {
+              onSettingsChange({ imageSize: v as '1K' | '2K' | '4K' });
+            }
+          }}
+          className="justify-start"
+        >
+          {(['1K', '2K', '4K'] as const).map((size) => {
+            const locked = isFreeTier() && (size === '2K' || size === '4K');
+            return (
+              <ToggleGroupItem key={size} value={size} size="sm" className={`flex-1 bg-muted ${locked ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={locked}>
+                {size}
+                {locked && <Crown className="h-3 w-3 ml-1 text-primary" />}
+              </ToggleGroupItem>
+            );
+          })}
+        </ToggleGroup>
       </div>
 
     </div>

@@ -317,7 +317,7 @@ export const ImageLibraryGrid = ({
                 {/* Action buttons - hidden in selection mode */}
                 {!selectionMode && (
                   <>
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20 flex gap-1">
+                    <div className="absolute top-2 right-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-20 flex gap-1">
                       <Button
                         size="sm"
                         variant="secondary"
@@ -362,7 +362,7 @@ export const ImageLibraryGrid = ({
                       )}
                     </div>
 
-                    <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20 flex gap-1">
+                    <div className="absolute bottom-2 right-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-20 flex gap-1">
                       <Button
                         size="sm"
                         variant="secondary"
@@ -405,7 +405,7 @@ export const ImageLibraryGrid = ({
                     </div>
 
                     {/* Delete button */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 z-10">
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 z-10">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button

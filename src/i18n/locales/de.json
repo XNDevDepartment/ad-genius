@@ -203,6 +203,7 @@
     "videos": "Videos",
     "shopify": "Shopify",
     "pricing": "Preise",
+    "upgrade": "Upgraden",
     "account": "Konto",
     "grupo": "Gruppe",
     "designs": "Designs",
@@ -2744,5 +2745,30 @@
     "openResult": "Ergebnis Öffnen",
     "editAgain": "Erneut Bearbeiten",
     "historyTitle": "Bearbeitungsverlauf ({{count}})"
+  },
+  "productViews": {
+    "title": "Fotoshooting Erstellen",
+    "selectViews": "Ansichten zum Generieren auswählen:",
+    "macroView": "Makro-Ansicht",
+    "macroDesc": "Nahaufnahme mit Fokus auf Material und Textur",
+    "environmentView": "Umgebungs-Ansicht",
+    "environmentDesc": "Produkt in realistischer Nutzungsumgebung",
+    "angleView": "3/4-Winkel-Ansicht",
+    "angleDesc": "Katalog-Produktfoto aus schrägem Winkel",
+    "retryPhotoshoot": "Erneut Versuchen",
+    "createPhotoshoot": "Fotoshooting Erstellen",
+    "creditsCost": "{{cost}} Credit",
+    "creditsCostPlural": "{{cost}} Credits",
+    "notEnoughCredits": "Nicht genug Credits ({{credits}} verfügbar)",
+    "generating": "Produktansichten werden generiert... {{progress}}%",
+    "takingLonger": "Dauert länger als erwartet... Falls es nicht bald fertig wird, wird es automatisch wiederholt.",
+    "timedOut": "Verarbeitung abgelaufen. Bitte erneut versuchen.",
+    "cancel": "Abbrechen",
+    "preview": "Vorschau",
+    "save": "Speichern",
+    "ready": "Produktansichten fertig!",
+    "failed": "Generierung fehlgeschlagen",
+    "createFailed": "Fehler beim Erstellen der Produktansichten",
+    "tryAgain": "Bitte erneut versuchen"
   }
 }

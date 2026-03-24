@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Shirt } from "lucide-react";
+import { ArrowLeft, Shirt, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOutfitSwapBatch } from "@/hooks/useOutfitSwapBatch";
@@ -28,7 +28,7 @@ const OutfitSwap = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { batch, jobs, loading: batchLoading, createBatch, cancelBatch, reset, refreshBatch, retryJob, retryingJobs } = useOutfitSwapBatch();
-  const { getRemainingCredits } = useCredits();
+  const { getRemainingCredits, isFreeTier } = useCredits();
   const { isAdmin } = useAdminAuth();
   const { uploadSourceImage } = useSourceImageUpload();
 
@@ -338,21 +338,33 @@ const OutfitSwap = () => {
                       <ToggleGroup
                         type="single"
                         value={imageSize}
-                        onValueChange={(v) => v && setImageSize(v as '1K' | '2K' | '4K')}
+                        onValueChange={(v) => {
+                          if (v && !(isFreeTier() && (v === '2K' || v === '4K'))) {
+                            setImageSize(v as '1K' | '2K' | '4K');
+                          }
+                        }}
                         className="justify-start"
                       >
-                        {(['1K', '2K', '4K'] as const).map((size) => (
-                          <ToggleGroupItem key={size} value={size} size="sm" className="px-4 bg-muted">
-                            {size}
-                          </ToggleGroupItem>
-                        ))}
+                        {(['1K', '2K', '4K'] as const).map((size) => {
+                          const locked = isFreeTier() && (size === '2K' || size === '4K');
+                          return (
+                            <ToggleGroupItem key={size} value={size} size="sm" className={`px-4 bg-muted ${locked ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={locked}>
+                              {size}
+                              {locked && <Crown className="h-3 w-3 ml-1 text-primary" />}
+                            </ToggleGroupItem>
+                          );
+                        })}
                       </ToggleGroup>
                     </div>
 
                     {/* Aspect Ratio */}
                     <div className="space-y-2">
                       <p className="text-sm font-medium">{t('bulkBackground.settings.aspectRatio')}</p>
-                      <Select value={aspectRatio} onValueChange={setAspectRatio}>
+                      <Select value={aspectRatio} onValueChange={(v) => {
+                        if (!(isFreeTier() && (v === '9:16' || v === '4:5'))) {
+                          setAspectRatio(v);
+                        }
+                      }}>
                         <SelectTrigger className="w-44">
                           <SelectValue />
                         </SelectTrigger>
@@ -362,14 +374,16 @@ const OutfitSwap = () => {
                             const scale = 16 / Math.max(w, h);
                             const boxW = Math.round(w * scale);
                             const boxH = Math.round(h * scale);
+                            const locked = isFreeTier() && (ratio === '9:16' || ratio === '4:5');
                             return (
-                              <SelectItem key={ratio} value={ratio}>
+                              <SelectItem key={ratio} value={ratio} disabled={locked}>
                                 <span className="flex items-center gap-2">
                                   <span
                                     className="border border-foreground/50 shrink-0 inline-block"
                                     style={{ width: `${boxW}px`, height: `${boxH}px` }}
                                   />
                                   {ratio}
+                                  {locked && <Crown className="h-3 w-3 ml-1 text-primary" />}
                                 </span>
                               </SelectItem>
                             );
