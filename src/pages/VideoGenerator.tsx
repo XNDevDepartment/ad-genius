@@ -80,7 +80,7 @@ export default function VideoGenerator() {
     // Regular users still get checked
     if (!canAccessVideos()) {
       toast({
-        title: "Upgrade Required",
+        title: t('videoGenerator.upgradeRequired'),
         description: getVideoAccessMessage(),
         variant: "destructive",
       });
@@ -525,13 +525,13 @@ export default function VideoGenerator() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertCircle className="h-6 w-6 text-amber-500" />
-                Upgrade Required
+                {t('videoGenerator.upgradeRequired')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p>{getVideoAccessMessage()}</p>
               <Button onClick={() => navigate('/pricing')} className="w-full">
-                View Pricing Plans
+                {t('videoGenerator.viewPricingPlans')}
               </Button>
             </CardContent>
           </Card>

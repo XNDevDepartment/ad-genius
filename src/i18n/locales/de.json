@@ -2693,7 +2693,16 @@
       "perMonth": "/Mo",
       "limitedOffer": "Begrenztes Angebot",
       "seeOffer": "Angebot ansehen"
+    },
+    "banner3Meses": {
+      "message": "Exklusives Angebot — Starter für €19,99/Monat für 3 Monate",
+      "cta": "Angebot ansehen",
+      "close": "Schließen"
     }
+  },
+  "videoGenerator": {
+    "upgradeRequired": "Upgrade Erforderlich",
+    "viewPricingPlans": "Preispläne ansehen"
   },
   "mobileUpgrade": {
     "freePlan": "Kostenloser Plan",

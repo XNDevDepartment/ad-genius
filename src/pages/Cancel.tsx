@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { XCircle, ArrowLeft, CreditCard } from 'lucide-react';
+import { XCircle, ArrowLeft, CreditCard, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEffect } from 'react';
@@ -17,6 +17,10 @@ export default function Cancel() {
     navigate('/pricing');
   };
 
+  const handleGetDiscount = () => {
+    navigate('/promo/3meses');
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md text-center">
@@ -31,9 +35,9 @@ export default function Cancel() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="bg-muted/50 p-4 rounded-lg text-left">
-            <h3 className="font-semibold mb-2">Why upgrade to Pro?</h3>
+            <h3 className="font-semibold mb-2">Why upgrade?</h3>
             <ul className="space-y-1 text-sm text-muted-foreground">
-              <li>• 100 credits per month (vs 10 free)</li>
+              <li>• Up to 400 credits per month (vs 10 free)</li>
               <li>• Priority generation queue</li>
               <li>• Advanced customization options</li>
               <li>• Priority customer support</li>
@@ -41,15 +45,23 @@ export default function Cancel() {
           </div>
           
           <div className="space-y-2">
-            <Button 
-              onClick={handleRetryPayment} 
+            <Button
+              onClick={handleGetDiscount}
+              className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700"
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              Get 3 Months at €19.99/mo
+            </Button>
+            <Button
+              onClick={handleRetryPayment}
+              variant="outline"
               className="w-full"
             >
               <CreditCard className="h-4 w-4 mr-2" />
-              Try Again
+              See All Plans
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="ghost"
               onClick={() => navigate('/')}
               className="w-full"
             >

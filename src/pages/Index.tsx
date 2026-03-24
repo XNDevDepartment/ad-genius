@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Coins, Zap, ArrowRight, Video, Shirt, Images, Sparkles, Crown } from "lucide-react";
 import { MobileCreditCard } from "@/components/MobileCreditCard";
-import { StickyUpgradeBar } from "@/components/StickyUpgradeBar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -181,8 +180,6 @@ const Index = () => {
                 <EmbeddedLibrary />
               </div>
 
-              {/* Sticky upgrade bar - mobile only */}
-              <StickyUpgradeBar />
             </div>
           </OnboardingGuard>
         </>
