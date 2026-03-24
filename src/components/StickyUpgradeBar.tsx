@@ -35,7 +35,7 @@ export const StickyUpgradeBar = () => {
         <Button
           size="sm"
           className="flex-shrink-0 font-bold text-xs"
-          onClick={() => navigate("/pricing")}
+          onClick={() => navigate("/promo/3meses")}
         >
           {t('mobileUpgrade.stickyBar.cta')}
         </Button>
