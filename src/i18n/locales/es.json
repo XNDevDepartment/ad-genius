@@ -1043,6 +1043,11 @@
       "emptyState": "Sube la imagen de tu producto y describe tu audiencia para generar escenarios.",
       "editPlaceholder": "Edita o perfecciona la descripción del escenario seleccionado..."
     },
+    "savedScenarios": {
+      "title": "Escenarios Anteriores",
+      "empty": "Aún no tienes escenarios guardados. Tus escenarios personalizados aparecerán aquí después de usarlos.",
+      "loading": "Cargando escenarios..."
+    },
     "generationSettings": {
       "title": "Ajustes de Imagen",
       "subtitle": "Personaliza tus preferencias de salida",

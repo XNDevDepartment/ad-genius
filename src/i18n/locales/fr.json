@@ -883,6 +883,11 @@
       "emptyState": "Téléversez l'image de votre produit et décrivez votre audience pour générer des scénarios.",
       "editPlaceholder": "Modifiez ou affinez la description du scénario sélectionné..."
     },
+    "savedScenarios": {
+      "title": "Scénarios Précédents",
+      "empty": "Aucun scénario enregistré. Vos scénarios personnalisés apparaîtront ici après utilisation.",
+      "loading": "Chargement des scénarios..."
+    },
     "generationSettings": {
       "title": "Paramètres d'Image",
       "subtitle": "Personnalisez vos préférences de sortie",

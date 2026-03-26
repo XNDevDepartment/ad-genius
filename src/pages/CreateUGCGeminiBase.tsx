@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Crown } from "lucide-react";
-import { ArrowLeft, Sparkles, RefreshCw, HelpCircle, Pencil, ArrowDown } from "lucide-react";
+import { ArrowLeft, Sparkles, RefreshCw, HelpCircle, Pencil, ArrowDown, Clock } from "lucide-react";
+import { useCustomScenarios } from "@/hooks/useCustomScenarios";
+import { SavedScenariosModal } from "@/components/SavedScenariosModal";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -147,6 +149,8 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [shopifyImportOpen, setShopifyImportOpen] = useState(false);
   const [animateModalOpen, setAnimateModalOpen] = useState(false);
   const [animateImageUrl, setAnimateImageUrl] = useState<string | null>(null);
+  const [savedScenariosOpen, setSavedScenariosOpen] = useState(false);
+  const { saveScenario } = useCustomScenarios();
   const [animateImageId, setAnimateImageId] = useState<string | null>(null);
 
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -843,6 +847,13 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       // Register in multi-job tracker
       tracker.addJob(jobId, numImages, aspectRatio);
 
+      // Auto-save custom scenario
+      if (customScenarioMode && selectedScenario?.description?.trim()) {
+        const desc = selectedScenario.description.trim();
+        const title = desc.length > 60 ? desc.substring(0, 60) + '…' : desc;
+        saveScenario({ title, description: desc }).catch(console.error);
+      }
+
       localStorage.setItem(storageKeys.jobId, jobId);
       localStorage.setItem(storageKeys.stage, 'generating');
       localStorage.setItem(storageKeys.metadata, JSON.stringify({
@@ -1199,17 +1210,28 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                         </div>
                         
                         {customScenarioMode && (
-                          <Textarea
-                            className="mt-3 min-h-[100px] text-base md:text-sm"
-                            placeholder={t('ugc.scenarios.customPlaceholder')}
-                            value={selectedScenario?.description || ''}
-                            onClick={(e) => e.stopPropagation()}
-                            onChange={(e) => setSelectedScenario({
-                              idea: t('ugc.scenarios.customScenario'),
-                              "small-description": t('ugc.scenarios.customScenarioDesc'),
-                              description: e.target.value
-                            })}
-                          />
+                          <div className="mt-3 relative">
+                            <Textarea
+                              className="min-h-[100px] text-base md:text-sm pr-10"
+                              placeholder={t('ugc.scenarios.customPlaceholder')}
+                              value={selectedScenario?.description || ''}
+                              onClick={(e) => e.stopPropagation()}
+                              onChange={(e) => setSelectedScenario({
+                                idea: t('ugc.scenarios.customScenario'),
+                                "small-description": t('ugc.scenarios.customScenarioDesc'),
+                                description: e.target.value
+                              })}
+                            />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-1 right-1 h-8 w-8 text-muted-foreground hover:text-primary"
+                              onClick={(e) => { e.stopPropagation(); setSavedScenariosOpen(true); }}
+                              title={t('ugc.savedScenarios.title')}
+                            >
+                              <Clock className="h-4 w-4" />
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -1657,6 +1679,18 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
           imageId={animateImageId}
         />
         <PostGenerationUpgradeModal jobStatus={job?.status} jobId={job?.id} />
+        <SavedScenariosModal
+          open={savedScenariosOpen}
+          onOpenChange={setSavedScenariosOpen}
+          onSelect={(desc) => {
+            setSelectedScenario({
+              idea: t('ugc.scenarios.customScenario'),
+              "small-description": t('ugc.scenarios.customScenarioDesc'),
+              description: desc,
+            });
+            setCustomScenarioMode(true);
+          }}
+        />
       </div>
     </TooltipProvider>
   );
