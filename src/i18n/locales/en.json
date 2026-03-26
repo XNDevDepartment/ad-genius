@@ -1146,6 +1146,11 @@
       "emptyState": "Upload your product image and describe your audience to generate scenarios.",
       "editPlaceholder": "Edit or refine the selected scenario description..."
     },
+    "savedScenarios": {
+      "title": "Previous Scenarios",
+      "empty": "No saved scenarios yet. Your custom scenarios will appear here after you use them.",
+      "loading": "Loading scenarios..."
+    },
     "generationSettings": {
       "title": "Image Settings",
       "subtitle": "Customize your output preferences",
