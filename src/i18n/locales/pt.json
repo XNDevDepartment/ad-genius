@@ -1140,6 +1140,11 @@
       "emptyState": "Carregue a imagem do seu produto e descreva o seu público para gerar cenários.",
       "editPlaceholder": "Edite ou refine a descrição do cenário selecionado..."
     },
+    "savedScenarios": {
+      "title": "Cenários Anteriores",
+      "empty": "Ainda não tem cenários guardados. Os seus cenários personalizados aparecerão aqui depois de os utilizar.",
+      "loading": "A carregar cenários..."
+    },
     "generationSettings": {
       "title": "Definições de Imagem",
       "subtitle": "Personalize as suas preferências de saída",

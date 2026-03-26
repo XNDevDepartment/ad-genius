@@ -1043,6 +1043,11 @@
       "emptyState": "Lade dein Produktbild hoch und beschreibe deine Zielgruppe, um Szenarien zu generieren.",
       "editPlaceholder": "Bearbeite oder verfeinere die Beschreibung des ausgewählten Szenarios..."
     },
+    "savedScenarios": {
+      "title": "Vorherige Szenarien",
+      "empty": "Noch keine gespeicherten Szenarien. Ihre benutzerdefinierten Szenarien erscheinen hier nach der Verwendung.",
+      "loading": "Szenarien werden geladen..."
+    },
     "generationSettings": {
       "title": "Bildeinstellungen",
       "subtitle": "Passe deine Ausgabepräferenzen an",
