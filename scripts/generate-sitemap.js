@@ -31,6 +31,8 @@ const STATIC_ROUTES = [
   { path: '/help/tutorials',        changefreq: 'monthly', priority: '0.6' },
   { path: '/help/api-docs',         changefreq: 'monthly', priority: '0.6' },
   { path: '/help/integrations',     changefreq: 'monthly', priority: '0.6' },
+  { path: '/signin',                changefreq: 'monthly', priority: '0.8' },
+  { path: '/signup',                changefreq: 'monthly', priority: '0.8' },
   { path: '/privacy',               changefreq: 'yearly',  priority: '0.3' },
   { path: '/terms',                 changefreq: 'yearly',  priority: '0.3' },
   { path: '/cookies',               changefreq: 'yearly',  priority: '0.3' },
