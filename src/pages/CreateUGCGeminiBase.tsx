@@ -847,6 +847,13 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       // Register in multi-job tracker
       tracker.addJob(jobId, numImages, aspectRatio);
 
+      // Auto-save custom scenario
+      if (customScenarioMode && selectedScenario?.description?.trim()) {
+        const desc = selectedScenario.description.trim();
+        const title = desc.length > 60 ? desc.substring(0, 60) + '…' : desc;
+        saveScenario({ title, description: desc }).catch(console.error);
+      }
+
       localStorage.setItem(storageKeys.jobId, jobId);
       localStorage.setItem(storageKeys.stage, 'generating');
       localStorage.setItem(storageKeys.metadata, JSON.stringify({
