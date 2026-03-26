@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Crown } from "lucide-react";
-import { ArrowLeft, Sparkles, RefreshCw, HelpCircle, Pencil, ArrowDown } from "lucide-react";
+import { ArrowLeft, Sparkles, RefreshCw, HelpCircle, Pencil, ArrowDown, Clock } from "lucide-react";
+import { useCustomScenarios } from "@/hooks/useCustomScenarios";
+import { SavedScenariosModal } from "@/components/SavedScenariosModal";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
