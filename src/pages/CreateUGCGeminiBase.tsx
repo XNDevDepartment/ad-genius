@@ -149,6 +149,8 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [shopifyImportOpen, setShopifyImportOpen] = useState(false);
   const [animateModalOpen, setAnimateModalOpen] = useState(false);
   const [animateImageUrl, setAnimateImageUrl] = useState<string | null>(null);
+  const [savedScenariosOpen, setSavedScenariosOpen] = useState(false);
+  const { saveScenario } = useCustomScenarios();
   const [animateImageId, setAnimateImageId] = useState<string | null>(null);
 
   const taRef = useRef<HTMLTextAreaElement>(null);
