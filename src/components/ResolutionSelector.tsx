@@ -17,9 +17,9 @@ export default function ResolutionSelector({
       onValueChange={(v) => v && onChange(v as SizeTier)}
       className="justify-start"
     >
-      <ToggleGroupItem value="small" size="sm" className="flex-1 bg-muted">Normal</ToggleGroupItem>
-      <ToggleGroupItem value="medium" size="sm" className="flex-1 bg-muted">Medium</ToggleGroupItem>
-      <ToggleGroupItem value="large" size="sm" className="flex-1 bg-muted">Large</ToggleGroupItem>
+      <ToggleGroupItem value="small" size="sm" className="flex-1 bg-muted">1K</ToggleGroupItem>
+      <ToggleGroupItem value="medium" size="sm" className="flex-1 bg-muted">2K</ToggleGroupItem>
+      <ToggleGroupItem value="large" size="sm" className="flex-1 bg-muted">4K</ToggleGroupItem>
     </ToggleGroup>
   );
 }

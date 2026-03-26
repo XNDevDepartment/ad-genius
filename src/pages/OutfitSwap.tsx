@@ -191,7 +191,7 @@ const OutfitSwap = () => {
 
   const getCreditsPerImage = (size: string): number => {
     switch (size) {
-      case '4K': return 4;
+      case '4K': return 3;
       case '2K': return 2;
       default: return 1;
     }
