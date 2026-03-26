@@ -1679,6 +1679,18 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
           imageId={animateImageId}
         />
         <PostGenerationUpgradeModal jobStatus={job?.status} jobId={job?.id} />
+        <SavedScenariosModal
+          open={savedScenariosOpen}
+          onOpenChange={setSavedScenariosOpen}
+          onSelect={(desc) => {
+            setSelectedScenario({
+              idea: t('ugc.scenarios.customScenario'),
+              "small-description": t('ugc.scenarios.customScenarioDesc'),
+              description: desc,
+            });
+            setCustomScenarioMode(true);
+          }}
+        />
       </div>
     </TooltipProvider>
   );
