@@ -1210,17 +1210,28 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                         </div>
                         
                         {customScenarioMode && (
-                          <Textarea
-                            className="mt-3 min-h-[100px] text-base md:text-sm"
-                            placeholder={t('ugc.scenarios.customPlaceholder')}
-                            value={selectedScenario?.description || ''}
-                            onClick={(e) => e.stopPropagation()}
-                            onChange={(e) => setSelectedScenario({
-                              idea: t('ugc.scenarios.customScenario'),
-                              "small-description": t('ugc.scenarios.customScenarioDesc'),
-                              description: e.target.value
-                            })}
-                          />
+                          <div className="mt-3 relative">
+                            <Textarea
+                              className="min-h-[100px] text-base md:text-sm pr-10"
+                              placeholder={t('ugc.scenarios.customPlaceholder')}
+                              value={selectedScenario?.description || ''}
+                              onClick={(e) => e.stopPropagation()}
+                              onChange={(e) => setSelectedScenario({
+                                idea: t('ugc.scenarios.customScenario'),
+                                "small-description": t('ugc.scenarios.customScenarioDesc'),
+                                description: e.target.value
+                              })}
+                            />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-1 right-1 h-8 w-8 text-muted-foreground hover:text-primary"
+                              onClick={(e) => { e.stopPropagation(); setSavedScenariosOpen(true); }}
+                              title={t('ugc.savedScenarios.title')}
+                            >
+                              <Clock className="h-4 w-4" />
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </div>
