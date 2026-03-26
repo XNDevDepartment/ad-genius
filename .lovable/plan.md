@@ -1,84 +1,74 @@
 
 
-## ProduktPix — Current Project Status Analysis
+## Save & Reuse Custom Scenarios in UGC Module
 
-### Architecture & Stack
-- **Frontend**: Vite + React + TypeScript SPA, Tailwind CSS, shadcn/ui, i18n (5 languages)
-- **Backend**: Supabase Edge Functions (Deno), PostgreSQL with RLS, Stripe billing
-- **AI**: Google Gemini (image gen), OpenAI (chat), Kling (video)
-- **Routes**: 50+ routes, lazy-loaded with error boundaries
+### Summary
+Create a `custom_scenarios` table in Supabase to persist user-written custom scenarios. Add a "Previous Scenarios" button inside the custom scenario textarea area that opens a modal/popover listing saved scenarios for quick selection. Scenarios are auto-saved when used for generation.
 
----
+### Database
 
-### Recent Changes Implemented
+**New table: `custom_scenarios`**
+```sql
+CREATE TABLE public.custom_scenarios (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  used_at TIMESTAMPTZ DEFAULT now()
+);
 
-| Feature | Status |
-|---|---|
-| Shopify tab disabled with "Soon" badge | Done |
-| API gateway `/v1/catalog/generate` endpoint | Done |
-| API docs updated with catalog endpoints | Done |
-| UGC crash fix (null-safe scenario API, race conditions) | Done |
-| HTML prerender SSR fallback for landing page | Done |
-| SSR color corrections (purple → blue) | Done |
-| "Pricing" → "Upgrade" tab rename + Crown highlight for free users | Done |
-| PhotoshootModal i18n translations | Done |
-| Onboarding bottom nav overlap fix | Done |
-| Feature gating: catalogs unlocked, videos locked for free tier | Done |
-| 2K/4K + 9:16/4:5 locked for free users (Crown icon) | Done |
-| Photoshoot button blocked for free users | Done |
-| UGC module: resolution selector + new aspect ratios (2:3, 4:5, 5:4, 21:9) | Done |
-| Edge functions: tiered credit pricing (1K=1, 2K=2, 4K=3) | Done |
-| DB functions updated for tiered pricing | Done |
+ALTER TABLE public.custom_scenarios ENABLE ROW LEVEL SECURITY;
 
----
+-- Users can only manage their own scenarios
+CREATE POLICY "Users manage own scenarios"
+  ON public.custom_scenarios FOR ALL TO authenticated
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
-### Active Issues & Inconsistencies
+CREATE INDEX idx_custom_scenarios_user ON public.custom_scenarios(user_id, used_at DESC);
+```
 
-#### Credit Cost Mismatch
-- **BulkBackground.tsx** line 33: `4K` charges **4 credits** (`return 4`)
-- **OutfitSwap.tsx** line 194: `4K` charges **4 credits** (`return 4`)
-- **useCredits.tsx** line 14: `4K` charges **3 credits** (`costPerImage = 3`)
-- **Edge functions**: `4K` charges **3 credits** (width ≥ 2800)
-- **DB functions**: `4K` charges **3 credits**
-- **Verdict**: BulkBackground and OutfitSwap have stale `getCreditsPerImage` functions charging 4 instead of 3 for 4K images. This means the UI shows a higher cost than what's actually deducted server-side.
+### Frontend Changes
 
-#### ResolutionSelector Component
-- Labels say "Normal", "Medium", "Large" — these are internal tier names, not user-friendly. Should be "1K", "2K", "4K" to match the rest of the app.
-- No free-tier gating (Crown icons) on this component — the gating was added directly in `CreateUGCGeminiBase.tsx` and `SettingsForm.tsx` instead.
+**1. New component: `src/components/SavedScenariosModal.tsx`**
+- Dialog/Sheet listing user's saved scenarios ordered by `used_at DESC`
+- Each item shows title (truncated) + description preview
+- Click fills the parent textarea
+- Swipe-to-delete or trash icon to remove scenarios
+- Empty state with message
 
-#### Promo/Conversion Issues (from agent memory — still unresolved)
-- **PromoBanner3Meses**: Still Portuguese-only (no i18n)
-- **Promo pages** (Promo1Mes, Promo3Meses, PromoFirstMonth): Still Portuguese-only
-- **PostGenerationUpgradeModal**: Still links to `/pricing` instead of a specific offer
-- **Cancel page**: Still has stale copy ("100 credits" instead of 400 for Pro)
-- **Promo1Mes vs Promo1MesCheckout**: Still use different planIds (subscription vs one-time)
-- **PendingActivationBanner**: Still English-only (no i18n)
-- **VideoGenerator upgrade gate**: Still English-only
+**2. Modified: `src/pages/CreateUGCGeminiBase.tsx`**
+- When `customScenarioMode` is active, add a small `History` (clock icon) button next to the textarea
+- On image generation with a custom scenario: upsert the scenario into `custom_scenarios` (deduplicate by description match)
+- When user selects a saved scenario from the modal, populate `selectedScenario.description`
 
-#### Technical Debt
-- `ResolutionSelector.tsx` exists as a standalone component but is barely used — most modules implement their own inline resolution toggles
-- `getCreditsPerImage` is defined locally in 2 files instead of using the centralized `calculateImageCost` from `useCredits`
-- `MobilePromoBanner` and `AnnouncementBanner` remain commented out/dormant
+**3. Hook: `src/hooks/useCustomScenarios.ts`**
+- `fetchScenarios()` — query `custom_scenarios` ordered by `used_at DESC`, limit 20
+- `saveScenario(title, description)` — insert or update `used_at` if description already exists
+- `deleteScenario(id)` — delete by id
+- Uses TanStack Query for caching
 
----
+**4. i18n keys** (all 5 locale files)
+- `ugc.scenarios.savedScenarios` — "Previous Scenarios" / "Cenários Anteriores" / etc.
+- `ugc.scenarios.noSavedScenarios` — empty state message
+- `ugc.scenarios.deleteSavedScenario` — delete confirmation
 
-### Feature Completeness Summary
+### Flow
+1. User enters custom scenario mode → writes description → generates images
+2. On generation, scenario is auto-saved to `custom_scenarios`
+3. Next time user enters custom mode, a clock icon button appears next to the textarea
+4. Clicking it opens modal with saved scenarios
+5. Selecting one fills the textarea; user can edit before generating
 
-| Module | Resolution Selector | Aspect Ratios | Free-tier Gating | i18n |
-|---|---|---|---|---|
-| UGC (Gemini) | 1K/2K/4K ✅ | Full set ✅ | 2K/4K + 9:16/4:5 locked ✅ | ✅ |
-| Product Catalog (Bulk BG) | 1K/2K/4K ✅ | Partial (Select dropdown) | 2K/4K + 9:16/4:5 locked ✅ | Partial |
-| Fashion Catalog (Outfit Swap) | 1K/2K/4K ✅ | Partial (Select dropdown) | 2K/4K + 9:16/4:5 locked ✅ | Partial |
-| Video | N/A | N/A | Module locked ✅ | Partial |
-| Landing/Promo pages | N/A | N/A | N/A | Portuguese-only ❌ |
-
----
-
-### Recommended Next Steps (Priority Order)
-
-1. **Fix 4K credit cost inconsistency** — Change `getCreditsPerImage` in BulkBackground.tsx and OutfitSwap.tsx from `4` to `3` to match edge functions and DB
-2. **i18n promo pages** — PromoBanner3Meses, Promo1Mes, Promo3Meses, PromoFirstMonth are all Portuguese-only
-3. **Fix Cancel page** — Update stale "100 credits" copy, add i18n
-4. **PostGenerationUpgradeModal** — Link to a specific offer instead of generic /pricing
-5. **Centralize credit cost calculation** — Replace local `getCreditsPerImage` functions with `useCredits().calculateImageCost`
+### Files Modified
+1. **Migration** — new `custom_scenarios` table + RLS + index
+2. `src/hooks/useCustomScenarios.ts` — new hook for CRUD
+3. `src/components/SavedScenariosModal.tsx` — new modal component
+4. `src/pages/CreateUGCGeminiBase.tsx` — integrate button + auto-save
+5. `src/i18n/locales/en.json` — new keys
+6. `src/i18n/locales/pt.json` — new keys
+7. `src/i18n/locales/es.json` — new keys
+8. `src/i18n/locales/fr.json` — new keys
+9. `src/i18n/locales/de.json` — new keys
 
