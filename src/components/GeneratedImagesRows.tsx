@@ -420,6 +420,9 @@ export default function GeneratedImagesRows({
           onClose={() => setEditingImage(null)}
           imageUrl={editingImage.url}
           imageId={editingImage.id}
+          onEditComplete={() => {
+            toast({ title: "Edit saved", description: "Your edited image has been saved to the library." });
+          }}
         />
       )}
     </div>

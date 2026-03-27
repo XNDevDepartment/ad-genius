@@ -561,6 +561,9 @@ export const BatchSwapPreview = ({
           onClose={() => setEditingSwapImage(null)}
           imageUrl={editingSwapImage.url}
           imageId={editingSwapImage.id}
+          onEditComplete={() => {
+            toast({ title: t('editImage.success'), description: t('editImage.savedToLibrary', 'Your edited image has been saved to the library.') });
+          }}
         />
       )}
 

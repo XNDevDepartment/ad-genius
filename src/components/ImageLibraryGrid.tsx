@@ -497,6 +497,7 @@ export const ImageLibraryGrid = ({
           onClose={() => setEditingImage(null)}
           imageUrl={editingImage.url}
           imageId={editingImage.id}
+          onEditComplete={() => { setEditingImage(null); onRefresh?.(); }}
         />
       )}
     </div>
