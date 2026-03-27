@@ -1210,28 +1210,30 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                         </div>
                         
                         {customScenarioMode && (
-                          <div className="mt-3 relative">
-                            <Textarea
-                              className="min-h-[100px] text-base md:text-sm pr-10"
-                              placeholder={t('ugc.scenarios.customPlaceholder')}
-                              value={selectedScenario?.description || ''}
-                              onClick={(e) => e.stopPropagation()}
-                              onChange={(e) => setSelectedScenario({
-                                idea: t('ugc.scenarios.customScenario'),
-                                "small-description": t('ugc.scenarios.customScenarioDesc'),
-                                description: e.target.value
-                              })}
-                            />
+                          <div className="mt-3 space-y-2">
+                            <div className="relative">
+                              <Textarea
+                                className="min-h-[100px] text-base md:text-sm"
+                                placeholder={t('ugc.scenarios.customPlaceholder')}
+                                value={selectedScenario?.description || ''}
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={(e) => setSelectedScenario({
+                                  idea: t('ugc.scenarios.customScenario'),
+                                  "small-description": t('ugc.scenarios.customScenarioDesc'),
+                                  description: e.target.value
+                                })}
+                              />
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full border-primary/30 text-primary hover:bg-primary/10 gap-2"
+                              onClick={(e) => { e.stopPropagation(); setSavedScenariosOpen(true); }}
+                            >
+                              <Clock className="h-4 w-4" />
+                              {t('ugc.savedScenarios.title')}
+                            </Button>
                           </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full border-primary/30 text-primary hover:bg-primary/10 gap-2"
-                            onClick={(e) => { e.stopPropagation(); setSavedScenariosOpen(true); }}
-                          >
-                            <Clock className="h-4 w-4" />
-                            {t('ugc.savedScenarios.title')}
-                          </Button>
                         )}
                       </div>
                     </div>
