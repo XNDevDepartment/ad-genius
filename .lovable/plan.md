@@ -1,33 +1,35 @@
 
 
-## Make Custom Scenarios Button More Prominent
+## Fix: Edited Images Not Appearing in Library
 
-### Problem
-The "Previous Scenarios" button is a small ghost icon (`Clock`) absolutely positioned in the corner of the textarea — easy to miss.
+### Root Cause
 
-### Change
+The edge function `edit-image` already inserts edited images into the `ugc_images` table — so they **are** stored in the database. The problem is that none of the components using `EditImageModal` pass the `onEditComplete` callback, so the library view never refreshes after an edit completes. The user has to manually reload the page to see their edited image.
 
-**File: `src/pages/CreateUGCGeminiBase.tsx`** (lines 1225-1233)
+### Fix
 
-Replace the small ghost icon button with a full-width outlined button placed **below the textarea** (outside the `relative` div), styled with the primary color and a clear label:
+Add an `onEditComplete` callback to every `EditImageModal` usage that triggers a data refresh:
 
-```tsx
-<Button
-  variant="outline"
-  size="sm"
-  className="w-full border-primary/30 text-primary hover:bg-primary/10 gap-2"
-  onClick={(e) => { e.stopPropagation(); setSavedScenariosOpen(true); }}
->
-  <Clock className="h-4 w-4" />
-  {t('ugc.savedScenarios.title')}
-</Button>
-```
+**1. `src/components/ImageLibraryGrid.tsx`** (Library page)
+- Add `onRefresh` prop to `ImageLibraryGridProps`
+- Pass `onEditComplete={() => { setEditingImage(null); onRefresh?.(); }}` to the `EditImageModal`
 
-- Remove the `absolute top-1 right-1` positioning from inside the textarea wrapper
-- Place the button as a sibling after the textarea `div`, so it's clearly visible
-- Uses `variant="outline"` with primary color border for visual emphasis
-- Shows the translated label text next to the icon
+**2. `src/components/departments/LibraryOld.tsx`** (parent that renders `ImageLibraryGrid`)
+- Pass the existing `fetchImages` function as `onRefresh` to `ImageLibraryGrid`
+
+**3. `src/components/GeneratedImagesRows.tsx`** (UGC results)
+- Pass `onEditComplete` that triggers a toast confirming the edit was saved to library
+
+**4. `src/components/BatchSwapPreview.tsx`** (Outfit Swap results)
+- Same pattern — close modal + toast confirmation
+
+**5. `src/pages/BulkBackground.tsx`** (Bulk Background results)
+- Same pattern — close modal + toast confirmation
 
 ### Files Modified
-1. `src/pages/CreateUGCGeminiBase.tsx` — restyle and reposition the saved scenarios button
+1. `src/components/ImageLibraryGrid.tsx` — add `onRefresh` prop, wire `onEditComplete`
+2. `src/components/departments/LibraryOld.tsx` — pass `onRefresh` to grid
+3. `src/components/GeneratedImagesRows.tsx` — wire `onEditComplete`
+4. `src/components/BatchSwapPreview.tsx` — wire `onEditComplete`
+5. `src/pages/BulkBackground.tsx` — wire `onEditComplete`
 
