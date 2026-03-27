@@ -51,6 +51,7 @@ interface ImageLibraryGridProps {
   selectedIds?: Set<string>;
   onSelectionChange?: (ids: Set<string>) => void;
   onBulkDelete?: (imageIds: string[]) => Promise<{ success: number; failed: number }>;
+  onRefresh?: () => void;
 }
 
 export const ImageLibraryGrid = ({
