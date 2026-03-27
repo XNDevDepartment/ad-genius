@@ -51,6 +51,7 @@ interface ImageLibraryGridProps {
   selectedIds?: Set<string>;
   onSelectionChange?: (ids: Set<string>) => void;
   onBulkDelete?: (imageIds: string[]) => Promise<{ success: number; failed: number }>;
+  onRefresh?: () => void;
 }
 
 export const ImageLibraryGrid = ({
@@ -68,6 +69,7 @@ export const ImageLibraryGrid = ({
   selectedIds = new Set(),
   onSelectionChange,
   onBulkDelete,
+  onRefresh,
 }: ImageLibraryGridProps) => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<LibraryImage | null>(null);
@@ -495,6 +497,7 @@ export const ImageLibraryGrid = ({
           onClose={() => setEditingImage(null)}
           imageUrl={editingImage.url}
           imageId={editingImage.id}
+          onEditComplete={() => { setEditingImage(null); onRefresh?.(); }}
         />
       )}
     </div>
