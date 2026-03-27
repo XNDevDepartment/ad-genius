@@ -1222,16 +1222,16 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                                 description: e.target.value
                               })}
                             />
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="absolute top-1 right-1 h-8 w-8 text-muted-foreground hover:text-primary"
-                              onClick={(e) => { e.stopPropagation(); setSavedScenariosOpen(true); }}
-                              title={t('ugc.savedScenarios.title')}
-                            >
-                              <Clock className="h-4 w-4" />
-                            </Button>
                           </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full border-primary/30 text-primary hover:bg-primary/10 gap-2"
+                            onClick={(e) => { e.stopPropagation(); setSavedScenariosOpen(true); }}
+                          >
+                            <Clock className="h-4 w-4" />
+                            {t('ugc.savedScenarios.title')}
+                          </Button>
                         )}
                       </div>
                     </div>
