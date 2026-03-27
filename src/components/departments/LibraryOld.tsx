@@ -243,6 +243,7 @@ export const Library = ({ onBack }: LibraryProps) => {
               selectedIds={aiSelectedIds}
               onSelectionChange={setAiSelectedIds}
               onBulkDelete={deleteImages}
+              onRefresh={refetchLibrary}
             />
           ) : (
             <ImageLibraryGrid
