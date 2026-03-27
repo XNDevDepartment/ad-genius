@@ -69,6 +69,7 @@ export const ImageLibraryGrid = ({
   selectedIds = new Set(),
   onSelectionChange,
   onBulkDelete,
+  onRefresh,
 }: ImageLibraryGridProps) => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<LibraryImage | null>(null);
