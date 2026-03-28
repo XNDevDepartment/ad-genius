@@ -1376,7 +1376,9 @@
     "errors": {
       "selectImageAndPrompt": "Veuillez sélectionner une image et saisir des instructions.",
       "videoLoadFailed": "Échec du chargement de la vidéo. Vérifiez la console pour plus de détails."
-    }
+    },
+    "upgradeRequired": "Upgrade Requis",
+    "viewPricingPlans": "Voir les Forfaits"
   },
   "help": {
     "gettingStarted": {
