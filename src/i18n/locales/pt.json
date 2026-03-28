@@ -1633,7 +1633,9 @@
     "errors": {
       "selectImageAndPrompt": "Selecione uma imagem e introduza instruções.",
       "videoLoadFailed": "Falha ao carregar o vídeo. Verifique a consola para mais detalhes."
-    }
+    },
+    "upgradeRequired": "Upgrade Necessário",
+    "viewPricingPlans": "Ver Planos"
   },
   "help": {
     "gettingStarted": {
@@ -2746,10 +2748,6 @@
       "cta": "Ver Oferta",
       "close": "Fechar"
     }
-  },
-  "videoGenerator": {
-    "upgradeRequired": "Upgrade Necessário",
-    "viewPricingPlans": "Ver Planos"
   },
   "mobileUpgrade": {
     "freePlan": "Plano Grátis",

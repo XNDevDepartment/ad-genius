@@ -1536,7 +1536,9 @@
     "errors": {
       "selectImageAndPrompt": "Por favor, selecciona una imagen e ingresa instrucciones.",
       "videoLoadFailed": "Error al cargar el video. Revisa la consola para más detalles."
-    }
+    },
+    "upgradeRequired": "Upgrade Necesario",
+    "viewPricingPlans": "Ver Planes"
   },
   "help": {
     "gettingStarted": {
@@ -2704,10 +2706,6 @@
       "cta": "Ver Oferta",
       "close": "Cerrar"
     }
-  },
-  "videoGenerator": {
-    "upgradeRequired": "Upgrade Necesario",
-    "viewPricingPlans": "Ver Planes"
   },
   "mobileUpgrade": {
     "freePlan": "Plan Gratis",

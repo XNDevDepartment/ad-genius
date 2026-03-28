@@ -1536,7 +1536,9 @@
     "errors": {
       "selectImageAndPrompt": "Bitte wählen Sie ein Bild aus und geben Sie Anweisungen ein.",
       "videoLoadFailed": "Video konnte nicht geladen werden. Überprüfen Sie die Konsole für Details."
-    }
+    },
+    "upgradeRequired": "Upgrade Erforderlich",
+    "viewPricingPlans": "Preispläne ansehen"
   },
   "help": {
     "gettingStarted": {
@@ -2704,10 +2706,6 @@
       "cta": "Angebot ansehen",
       "close": "Schließen"
     }
-  },
-  "videoGenerator": {
-    "upgradeRequired": "Upgrade Erforderlich",
-    "viewPricingPlans": "Preispläne ansehen"
   },
   "mobileUpgrade": {
     "freePlan": "Kostenloser Plan",

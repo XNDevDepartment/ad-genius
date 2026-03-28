@@ -1639,7 +1639,9 @@
     "errors": {
       "selectImageAndPrompt": "Please select an image and enter instructions.",
       "videoLoadFailed": "Failed to load video. Check the console for more details."
-    }
+    },
+    "upgradeRequired": "Upgrade Required",
+    "viewPricingPlans": "View Pricing Plans"
   },
   "help": {
     "gettingStarted": {
@@ -2769,10 +2771,6 @@
       "cta": "View Offer",
       "close": "Close"
     }
-  },
-  "videoGenerator": {
-    "upgradeRequired": "Upgrade Required",
-    "viewPricingPlans": "View Pricing Plans"
   },
   "mobileUpgrade": {
     "freePlan": "Free Plan",
