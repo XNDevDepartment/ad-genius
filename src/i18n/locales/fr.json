@@ -2703,10 +2703,6 @@
       "close": "Fermer"
     }
   },
-  "videoGenerator": {
-    "upgradeRequired": "Upgrade Requis",
-    "viewPricingPlans": "Voir les Forfaits"
-  },
   "mobileUpgrade": {
     "freePlan": "Plan Gratuit",
     "urgency": {

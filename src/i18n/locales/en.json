@@ -2772,10 +2772,6 @@
       "close": "Close"
     }
   },
-  "videoGenerator": {
-    "upgradeRequired": "Upgrade Required",
-    "viewPricingPlans": "View Pricing Plans"
-  },
   "mobileUpgrade": {
     "freePlan": "Free Plan",
     "urgency": {

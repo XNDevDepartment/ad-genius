@@ -2749,10 +2749,6 @@
       "close": "Fechar"
     }
   },
-  "videoGenerator": {
-    "upgradeRequired": "Upgrade Necessário",
-    "viewPricingPlans": "Ver Planos"
-  },
   "mobileUpgrade": {
     "freePlan": "Plano Grátis",
     "urgency": {

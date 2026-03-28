@@ -2707,10 +2707,6 @@
       "close": "Schließen"
     }
   },
-  "videoGenerator": {
-    "upgradeRequired": "Upgrade Erforderlich",
-    "viewPricingPlans": "Preispläne ansehen"
-  },
   "mobileUpgrade": {
     "freePlan": "Kostenloser Plan",
     "urgency": {
