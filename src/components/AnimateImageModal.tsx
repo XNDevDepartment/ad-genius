@@ -226,7 +226,7 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
               {/* Duration & Settings Row */}
               <div className="flex items-end gap-3">
                 <div className="flex-1 space-y-2">
-                  <Label>Duration</Label>
+                  <Label>{t('animateImage.duration')}</Label>
                   <Select
                     value={String(duration)}
                     onValueChange={(v) => setDuration(Number(v) as 5 | 10)}
