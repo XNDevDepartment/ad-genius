@@ -175,11 +175,9 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
             <div className="flex flex-col items-center text-center py-8 space-y-4">
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
               <Progress value={job?.status === "processing" ? 50 : 10} className="h-2 w-full max-w-xs" />
-              <p className="text-sm text-muted-foreground max-w-[280px]">
-                Your video is generating. You may now continue your work. You can find it in your <span className="font-semibold text-foreground">Videos</span> tab.
-              </p>
+              <p className="text-sm text-muted-foreground max-w-[280px]" dangerouslySetInnerHTML={{ __html: t('animateImage.processingMessage') }} />
               <Button variant="outline" onClick={onClose} className="mt-2">
-                Got it
+                {t('animateImage.gotIt')}
               </Button>
             </div>
           )}
