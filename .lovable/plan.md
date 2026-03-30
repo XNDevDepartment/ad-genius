@@ -1,35 +1,50 @@
 
 
-## Fix: Edited Images Not Appearing in Library
+## Fix Image Animator Translation Issues
 
-### Root Cause
+### Problem
+Two issues identified:
 
-The edge function `edit-image` already inserts edited images into the `ugc_images` table — so they **are** stored in the database. The problem is that none of the components using `EditImageModal` pass the `onEditComplete` callback, so the library view never refreshes after an edit completes. The user has to manually reload the page to see their edited image.
+1. **VideoGenerator page showing raw i18n keys** (as shown in the screenshot) — The translation JSON files contain all the correct `videoGenerator.*` keys with no duplicates. The structure is valid. This is most likely a build/cache issue from the previous duplicate-key fix. A rebuild should resolve it, but to be safe we should verify the JSON files parse correctly.
 
-### Fix
+2. **AnimateImageModal has zero i18n** — The modal component (`src/components/AnimateImageModal.tsx`) has every string hardcoded in English: "Animate Image", "Motion Prompt", "AI Suggest", "Duration", "5 seconds", "10 seconds", "Generate Video", "Download", "New Video", "Generating...", etc. This needs full internationalization.
 
-Add an `onEditComplete` callback to every `EditImageModal` usage that triggers a data refresh:
+### Changes
 
-**1. `src/components/ImageLibraryGrid.tsx`** (Library page)
-- Add `onRefresh` prop to `ImageLibraryGridProps`
-- Pass `onEditComplete={() => { setEditingImage(null); onRefresh?.(); }}` to the `EditImageModal`
+#### 1. Add i18n to AnimateImageModal (`src/components/AnimateImageModal.tsx`)
+- Import `useTranslation` from react-i18next
+- Replace all 20+ hardcoded English strings with `t()` calls using `videoGenerator.*` keys that already exist, plus new `animateImage.*` keys for modal-specific strings
 
-**2. `src/components/departments/LibraryOld.tsx`** (parent that renders `ImageLibraryGrid`)
-- Pass the existing `fetchImages` function as `onRefresh` to `ImageLibraryGrid`
+Strings to translate (new keys under `animateImage`):
+- "Animate Image" (title)
+- "Generate a video from your image using AI" (description)
+- "Video preview is not available on this device."
+- "Download Video" / "Download"
+- "Your video is generating..." (processing message)
+- "Got it"
+- "Video generation failed." (error)
+- "Motion Prompt"
+- "AI Suggest"
+- "Describe the motion you want..."
+- "Duration"
+- "5 seconds" / "10 seconds"
+- "Generate Video (Xs)"
+- "Generating..." / "Starting..."
+- "New Video"
 
-**3. `src/components/GeneratedImagesRows.tsx`** (UGC results)
-- Pass `onEditComplete` that triggers a toast confirming the edit was saved to library
-
-**4. `src/components/BatchSwapPreview.tsx`** (Outfit Swap results)
-- Same pattern — close modal + toast confirmation
-
-**5. `src/pages/BulkBackground.tsx`** (Bulk Background results)
-- Same pattern — close modal + toast confirmation
+#### 2. Add translation keys to all 5 locale files
+Add `animateImage` block with all keys to:
+- `src/i18n/locales/en.json`
+- `src/i18n/locales/pt.json`
+- `src/i18n/locales/es.json`
+- `src/i18n/locales/fr.json`
+- `src/i18n/locales/de.json`
 
 ### Files Modified
-1. `src/components/ImageLibraryGrid.tsx` — add `onRefresh` prop, wire `onEditComplete`
-2. `src/components/departments/LibraryOld.tsx` — pass `onRefresh` to grid
-3. `src/components/GeneratedImagesRows.tsx` — wire `onEditComplete`
-4. `src/components/BatchSwapPreview.tsx` — wire `onEditComplete`
-5. `src/pages/BulkBackground.tsx` — wire `onEditComplete`
+1. `src/components/AnimateImageModal.tsx` — add `useTranslation`, replace all hardcoded strings
+2. `src/i18n/locales/en.json` — add `animateImage` keys
+3. `src/i18n/locales/pt.json` — add `animateImage` keys (Portuguese)
+4. `src/i18n/locales/es.json` — add `animateImage` keys (Spanish)
+5. `src/i18n/locales/fr.json` — add `animateImage` keys (French)
+6. `src/i18n/locales/de.json` — add `animateImage` keys (German)
 
