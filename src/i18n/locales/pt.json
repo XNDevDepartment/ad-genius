@@ -1637,6 +1637,26 @@
     "upgradeRequired": "Upgrade Necessário",
     "viewPricingPlans": "Ver Planos"
   },
+  "animateImage": {
+    "title": "Animar Imagem",
+    "description": "Gere um vídeo a partir da sua imagem usando IA",
+    "previewUnavailable": "A pré-visualização do vídeo não está disponível neste dispositivo.",
+    "downloadVideo": "Descarregar Vídeo",
+    "download": "Descarregar",
+    "processingMessage": "O seu vídeo está a ser gerado. Pode continuar o seu trabalho. Encontre-o no separador <strong>Vídeos</strong>.",
+    "gotIt": "Entendido",
+    "failed": "Falha na geração do vídeo.",
+    "motionPrompt": "Prompt de Movimento",
+    "aiSuggest": "Sugestão IA",
+    "promptPlaceholder": "Descreva o movimento que pretende...",
+    "duration": "Duração",
+    "seconds5": "5 segundos",
+    "seconds10": "10 segundos",
+    "generateVideo": "Gerar Vídeo ({{duration}}s)",
+    "generating": "A gerar...",
+    "starting": "A iniciar...",
+    "newVideo": "Novo Vídeo"
+  },
   "help": {
     "gettingStarted": {
       "title": "Guia de Início",

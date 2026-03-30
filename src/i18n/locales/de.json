@@ -1540,6 +1540,26 @@
     "upgradeRequired": "Upgrade Erforderlich",
     "viewPricingPlans": "Preispläne ansehen"
   },
+  "animateImage": {
+    "title": "Bild Animieren",
+    "description": "Erstellen Sie ein Video aus Ihrem Bild mit KI",
+    "previewUnavailable": "Videovorschau ist auf diesem Gerät nicht verfügbar.",
+    "downloadVideo": "Video Herunterladen",
+    "download": "Herunterladen",
+    "processingMessage": "Ihr Video wird generiert. Sie können weiterarbeiten. Finden Sie es im <strong>Videos</strong>-Tab.",
+    "gotIt": "Verstanden",
+    "failed": "Videogenerierung fehlgeschlagen.",
+    "motionPrompt": "Bewegungs-Prompt",
+    "aiSuggest": "KI-Vorschlag",
+    "promptPlaceholder": "Beschreiben Sie die gewünschte Bewegung...",
+    "duration": "Dauer",
+    "seconds5": "5 Sekunden",
+    "seconds10": "10 Sekunden",
+    "generateVideo": "Video Generieren ({{duration}}s)",
+    "generating": "Generierung...",
+    "starting": "Starten...",
+    "newVideo": "Neues Video"
+  },
   "help": {
     "gettingStarted": {
       "title": "Erste Schritte",

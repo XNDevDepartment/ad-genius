@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Video, Sparkles, Download, RefreshCw, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTranslation } from "react-i18next";
 
 interface AnimateImageModalProps {
   open: boolean;
