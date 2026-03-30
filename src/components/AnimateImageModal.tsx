@@ -147,11 +147,11 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
               {videoError ? (
                 <div className="flex flex-col items-center justify-center py-8 px-4 space-y-3">
                   <p className="text-sm text-muted-foreground text-center">
-                    Video preview is not available on this device.
+                    {t('animateImage.previewUnavailable')}
                   </p>
                   <Button variant="outline" size="sm" onClick={handleDownloadVideo}>
                     <Download className="h-4 w-4 mr-2" />
-                    Download Video
+                    {t('animateImage.downloadVideo')}
                   </Button>
                 </div>
               ) : (
