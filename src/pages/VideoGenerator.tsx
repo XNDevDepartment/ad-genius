@@ -525,7 +525,9 @@ export default function VideoGenerator() {
   };
 
   // Show access denied UI if no access (but not for admins)
-  if (!user || (!isAdminLoading && !isAdmin && !canAccessVideos())) {
+  const cachedTier = localStorage.getItem('ppx_subscription_tier');
+  const showAccessDenied = !user || (!isAdminLoading && !isAdmin && !canAccessVideos() && (subscriptionData || !cachedTier || cachedTier === 'Free'));
+  if (showAccessDenied) {
     return (
       <div className="min-h-screen p-4 md:p-8 bg-background">
         <div className="max-w-4xl mx-auto space-y-6">
