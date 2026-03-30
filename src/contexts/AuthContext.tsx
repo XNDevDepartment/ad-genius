@@ -79,6 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
 
       setSubscriptionData(newSubscriptionData);
+      localStorage.setItem('ppx_subscription_tier', newSubscriptionData.subscription_tier);
 
       // Sync to MailerLite if subscription tier changed
       const newTier = newSubscriptionData.subscription_tier;
