@@ -135,7 +135,7 @@ const MultiImageUploader = ({
                 <img
                   src={imagePreviews[index]}
                   alt={`Product preview ${index + 1}`}
-                  className="w-full max-h-64 object-contain"
+                  className="w-full max-h-96 object-contain"
                 />
               )}
 
