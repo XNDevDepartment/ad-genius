@@ -77,7 +77,15 @@ export default function VideoGenerator() {
     if (isAdminLoading) return;
     if (isAdmin) return;
 
-    // Regular users still get checked
+    // Wait for subscription data to load; use cached tier to avoid flash redirect
+    const cachedTier = localStorage.getItem('ppx_subscription_tier');
+    if (!subscriptionData) {
+      // If cached tier exists and is not Free, trust it — don't redirect
+      if (cachedTier && cachedTier !== 'Free') return;
+      // If no cache, wait for data to load
+      if (!cachedTier) return;
+    }
+
     if (!canAccessVideos()) {
       toast({
         title: t('videoGenerator.upgradeRequired'),
@@ -88,7 +96,7 @@ export default function VideoGenerator() {
         navigate('/pricing');
       }, 2000);
     }
-  }, [user, isAdmin, isAdminLoading, canAccessVideos, navigate, toast, getVideoAccessMessage]);
+  }, [user, isAdmin, isAdminLoading, canAccessVideos, subscriptionData, navigate, toast, getVideoAccessMessage]);
 
   // AI image analysis function
   const analyzeImageForMotion = async (imageUrl: string) => {
