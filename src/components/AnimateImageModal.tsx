@@ -260,13 +260,10 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
               </Button>
               <Button
                 className="flex-1"
-                onClick={() => {
-                  clearJob();
-                  setPrompt("");
-                }}
+                onClick={() => { clearJob(); setPrompt(""); }}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                New Video
+                {t('animateImage.newVideo')}
               </Button>
             </div>
           ) : (
