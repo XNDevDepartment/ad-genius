@@ -130,12 +130,12 @@ const MultiImageUploader = ({
       {selectedImages.length > 0 && (
         <>
           {selectedImages.map((file, index) => (
-            <Card key={index} className="relative bg-transparent border-2 border-border rounded-apple overflow-hidden">
+            <Card key={index} className="relative bg-transparent border-2 border-border rounded-apple overflow-hidden flex items-center justify-center">
               {imagePreviews[index] && (
                 <img
-                  src={imagePreviews[index]} 
-                  alt={`Product preview ${index + 1}`} 
-                  className="w-full h-48 object-cover"
+                  src={imagePreviews[index]}
+                  alt={`Product preview ${index + 1}`}
+                  className="w-full max-h-64 object-contain"
                 />
               )}
 
