@@ -236,8 +236,8 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="5">5 seconds</SelectItem>
-                      <SelectItem value="10">10 seconds</SelectItem>
+                      <SelectItem value="5">{t('animateImage.seconds5')}</SelectItem>
+                      <SelectItem value="10">{t('animateImage.seconds10')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
