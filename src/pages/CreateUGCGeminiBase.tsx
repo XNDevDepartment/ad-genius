@@ -651,6 +651,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       setAiScenarios(scenarios);
       setIsAnalyzingImages(new Array(imageCount).fill(false));
 
+      
       toast({
         title: "Scenarios Generated",
         description: `Got ${scenarios.length} UGC scenario ideas for your product.`,
