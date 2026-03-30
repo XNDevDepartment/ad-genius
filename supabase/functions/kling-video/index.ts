@@ -135,7 +135,7 @@ async function createVideoJob(supabase: any, userId: string, payload: any): Prom
   
   // Skip all checks for admins
   if (!isAdmin) {
-    // Check subscription tier - All tiers except Starter can access videos
+    // Free tier users cannot access video generation
     const { data: subscriber, error: subError } = await supabase.from('subscribers').select('subscription_tier').eq('user_id', userId).single();
     if (subError || !subscriber) {
       return {
@@ -143,14 +143,13 @@ async function createVideoJob(supabase: any, userId: string, payload: any): Prom
         error: 'Unable to verify subscription status.'
       };
     }
-    // Only Starter tier is excluded from video generation
-    // if (subscriber.subscription_tier === 'Starter') {
-    //   return {
-    //     success: false,
-    //     error: 'Video generation is not available on the Starter plan. Upgrade to Plus or try our Free tier!',
-    //     upgrade_required: true
-    //   };
-    // }
+    if (subscriber.subscription_tier === 'Free') {
+      return {
+        success: false,
+        error: 'Video generation requires a paid plan. Please upgrade.',
+        upgrade_required: true
+      };
+    }
   }
   // Validate basic inputs
   if (!prompt) return {
