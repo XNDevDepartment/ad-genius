@@ -120,10 +120,10 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Video className="h-5 w-5" />
-              Animate Image
+              {t('animateImage.title')}
             </DialogTitle>
             <DialogDescription>
-              Generate a video from your image using AI
+              {t('animateImage.description')}
             </DialogDescription>
           </DialogHeader>
         </div>
