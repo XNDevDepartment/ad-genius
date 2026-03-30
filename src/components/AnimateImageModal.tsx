@@ -275,12 +275,12 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
               {loading || isProcessing ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {isProcessing ? "Generating..." : "Starting..."}
+                  {isProcessing ? t('animateImage.generating') : t('animateImage.starting')}
                 </>
               ) : (
                 <>
                   <Video className="h-4 w-4 mr-2" />
-                  Generate Video ({duration}s)
+                  {t('animateImage.generateVideo', { duration })}
                 </>
               )}
             </Button>
