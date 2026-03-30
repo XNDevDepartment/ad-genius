@@ -32,6 +32,7 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
   const [videoError, setVideoError] = useState(false);
   const { job, loading, createVideoJob, clearJob } = useKlingVideo();
   const { language } = useLanguage();
+  const { t } = useTranslation();
 
   // Auto-analyze image for motion prompt when modal opens
   useEffect(() => {
