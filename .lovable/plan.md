@@ -1,50 +1,39 @@
 
 
-## Fix Image Animator Translation Issues
+## Block Free Users from Image Animator + Update Edge Function
 
-### Problem
-Two issues identified:
-
-1. **VideoGenerator page showing raw i18n keys** (as shown in the screenshot) — The translation JSON files contain all the correct `videoGenerator.*` keys with no duplicates. The structure is valid. This is most likely a build/cache issue from the previous duplicate-key fix. A rebuild should resolve it, but to be safe we should verify the JSON files parse correctly.
-
-2. **AnimateImageModal has zero i18n** — The modal component (`src/components/AnimateImageModal.tsx`) has every string hardcoded in English: "Animate Image", "Motion Prompt", "AI Suggest", "Duration", "5 seconds", "10 seconds", "Generate Video", "Download", "New Video", "Generating...", etc. This needs full internationalization.
+### Current State
+- **Frontend**: Already correct — `canAccessVideos()` returns `!isFreeTier()`, so Starter/Founders/Plus/Pro all have access. Free users see the locked UI.
+- **Edge Function**: Has NO Free tier check — a Free user could bypass the UI and call the API directly. The old Starter block is commented out (correctly). Need to add a Free tier server-side block.
+- **Comment cleanup**: Line 138 says "All tiers except Starter" which is outdated.
 
 ### Changes
 
-#### 1. Add i18n to AnimateImageModal (`src/components/AnimateImageModal.tsx`)
-- Import `useTranslation` from react-i18next
-- Replace all 20+ hardcoded English strings with `t()` calls using `videoGenerator.*` keys that already exist, plus new `animateImage.*` keys for modal-specific strings
+**File: `supabase/functions/kling-video/index.ts`** (lines 136–154)
 
-Strings to translate (new keys under `animateImage`):
-- "Animate Image" (title)
-- "Generate a video from your image using AI" (description)
-- "Video preview is not available on this device."
-- "Download Video" / "Download"
-- "Your video is generating..." (processing message)
-- "Got it"
-- "Video generation failed." (error)
-- "Motion Prompt"
-- "AI Suggest"
-- "Describe the motion you want..."
-- "Duration"
-- "5 seconds" / "10 seconds"
-- "Generate Video (Xs)"
-- "Generating..." / "Starting..."
-- "New Video"
+1. Update comment from "All tiers except Starter" to "Free tier users cannot access videos"
+2. Add a check: if `subscriber.subscription_tier === 'Free'`, return error with `upgrade_required: true`
+3. Remove the commented-out Starter block (dead code cleanup)
 
-#### 2. Add translation keys to all 5 locale files
-Add `animateImage` block with all keys to:
-- `src/i18n/locales/en.json`
-- `src/i18n/locales/pt.json`
-- `src/i18n/locales/es.json`
-- `src/i18n/locales/fr.json`
-- `src/i18n/locales/de.json`
+```typescript
+if (!isAdmin) {
+  const { data: subscriber, error: subError } = await supabase
+    .from('subscribers').select('subscription_tier')
+    .eq('user_id', userId).single();
+  if (subError || !subscriber) {
+    return { success: false, error: 'Unable to verify subscription status.' };
+  }
+  // Free tier users cannot access video generation
+  if (subscriber.subscription_tier === 'Free') {
+    return {
+      success: false,
+      error: 'Video generation requires a paid plan. Please upgrade.',
+      upgrade_required: true
+    };
+  }
+}
+```
 
 ### Files Modified
-1. `src/components/AnimateImageModal.tsx` — add `useTranslation`, replace all hardcoded strings
-2. `src/i18n/locales/en.json` — add `animateImage` keys
-3. `src/i18n/locales/pt.json` — add `animateImage` keys (Portuguese)
-4. `src/i18n/locales/es.json` — add `animateImage` keys (Spanish)
-5. `src/i18n/locales/fr.json` — add `animateImage` keys (French)
-6. `src/i18n/locales/de.json` — add `animateImage` keys (German)
+1. `supabase/functions/kling-video/index.ts` — add Free tier server-side block, clean up comments
 
