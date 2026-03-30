@@ -1643,6 +1643,26 @@
     "upgradeRequired": "Upgrade Required",
     "viewPricingPlans": "View Pricing Plans"
   },
+  "animateImage": {
+    "title": "Animate Image",
+    "description": "Generate a video from your image using AI",
+    "previewUnavailable": "Video preview is not available on this device.",
+    "downloadVideo": "Download Video",
+    "download": "Download",
+    "processingMessage": "Your video is generating. You may now continue your work. You can find it in your <strong>Videos</strong> tab.",
+    "gotIt": "Got it",
+    "failed": "Video generation failed.",
+    "motionPrompt": "Motion Prompt",
+    "aiSuggest": "AI Suggest",
+    "promptPlaceholder": "Describe the motion you want...",
+    "duration": "Duration",
+    "seconds5": "5 seconds",
+    "seconds10": "10 seconds",
+    "generateVideo": "Generate Video ({{duration}}s)",
+    "generating": "Generating...",
+    "starting": "Starting...",
+    "newVideo": "New Video"
+  },
   "help": {
     "gettingStarted": {
       "title": "Getting Started Guide",

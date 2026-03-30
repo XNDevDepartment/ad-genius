@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Video, Sparkles, Download, RefreshCw, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTranslation } from "react-i18next";
 
 interface AnimateImageModalProps {
   open: boolean;
@@ -31,6 +32,7 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
   const [videoError, setVideoError] = useState(false);
   const { job, loading, createVideoJob, clearJob } = useKlingVideo();
   const { language } = useLanguage();
+  const { t } = useTranslation();
 
   // Auto-analyze image for motion prompt when modal opens
   useEffect(() => {
@@ -118,10 +120,10 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Video className="h-5 w-5" />
-              Animate Image
+              {t('animateImage.title')}
             </DialogTitle>
             <DialogDescription>
-              Generate a video from your image using AI
+              {t('animateImage.description')}
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -145,11 +147,11 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
               {videoError ? (
                 <div className="flex flex-col items-center justify-center py-8 px-4 space-y-3">
                   <p className="text-sm text-muted-foreground text-center">
-                    Video preview is not available on this device.
+                    {t('animateImage.previewUnavailable')}
                   </p>
                   <Button variant="outline" size="sm" onClick={handleDownloadVideo}>
                     <Download className="h-4 w-4 mr-2" />
-                    Download Video
+                    {t('animateImage.downloadVideo')}
                   </Button>
                 </div>
               ) : (
@@ -173,11 +175,9 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
             <div className="flex flex-col items-center text-center py-8 space-y-4">
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
               <Progress value={job?.status === "processing" ? 50 : 10} className="h-2 w-full max-w-xs" />
-              <p className="text-sm text-muted-foreground max-w-[280px]">
-                Your video is generating. You may now continue your work. You can find it in your <span className="font-semibold text-foreground">Videos</span> tab.
-              </p>
+              <p className="text-sm text-muted-foreground max-w-[280px]" dangerouslySetInnerHTML={{ __html: t('animateImage.processingMessage') }} />
               <Button variant="outline" onClick={onClose} className="mt-2">
-                Got it
+                {t('animateImage.gotIt')}
               </Button>
             </div>
           )}
@@ -186,7 +186,7 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
           {isFailed && (
             <div className="text-center py-4 space-y-2">
               <p className="text-sm text-destructive">
-                Video generation failed. {typeof job?.error === 'object' && job?.error?.message ? job.error.message : "Please try again."}
+                {t('animateImage.failed')} {typeof job?.error === 'object' && job?.error?.message ? job.error.message : ""}
               </p>
             </div>
           )}
@@ -196,7 +196,7 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
             <>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>Motion Prompt</Label>
+                  <Label>{t('animateImage.motionPrompt')}</Label>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -209,13 +209,13 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
                     ) : (
                       <Sparkles className="h-3 w-3 mr-1" />
                     )}
-                    AI Suggest
+                    {t('animateImage.aiSuggest')}
                   </Button>
                 </div>
                 <Textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Describe the motion you want..."
+                  placeholder={t('animateImage.promptPlaceholder')}
                   rows={3}
                   disabled={isProcessing}
                   className="resize-none"
@@ -225,7 +225,7 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
               {/* Duration & Settings Row */}
               <div className="flex items-end gap-3">
                 <div className="flex-1 space-y-2">
-                  <Label>Duration</Label>
+                  <Label>{t('animateImage.duration')}</Label>
                   <Select
                     value={String(duration)}
                     onValueChange={(v) => setDuration(Number(v) as 5 | 10)}
@@ -235,8 +235,8 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="5">5 seconds</SelectItem>
-                      <SelectItem value="10">10 seconds</SelectItem>
+                      <SelectItem value="5">{t('animateImage.seconds5')}</SelectItem>
+                      <SelectItem value="10">{t('animateImage.seconds10')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -255,17 +255,14 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={handleDownloadVideo}>
                 <Download className="h-4 w-4 mr-2" />
-                Download
+                {t('animateImage.download')}
               </Button>
               <Button
                 className="flex-1"
-                onClick={() => {
-                  clearJob();
-                  setPrompt("");
-                }}
+                onClick={() => { clearJob(); setPrompt(""); }}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                New Video
+                {t('animateImage.newVideo')}
               </Button>
             </div>
           ) : (
@@ -277,12 +274,12 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
               {loading || isProcessing ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {isProcessing ? "Generating..." : "Starting..."}
+                  {isProcessing ? t('animateImage.generating') : t('animateImage.starting')}
                 </>
               ) : (
                 <>
                   <Video className="h-4 w-4 mr-2" />
-                  Generate Video ({duration}s)
+                  {t('animateImage.generateVideo', { duration })}
                 </>
               )}
             </Button>

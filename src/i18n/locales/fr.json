@@ -1380,6 +1380,26 @@
     "upgradeRequired": "Upgrade Requis",
     "viewPricingPlans": "Voir les Forfaits"
   },
+  "animateImage": {
+    "title": "Animer l'Image",
+    "description": "Générez une vidéo à partir de votre image avec l'IA",
+    "previewUnavailable": "L'aperçu vidéo n'est pas disponible sur cet appareil.",
+    "downloadVideo": "Télécharger la Vidéo",
+    "download": "Télécharger",
+    "processingMessage": "Votre vidéo est en cours de génération. Vous pouvez continuer à travailler. Retrouvez-la dans l'onglet <strong>Vidéos</strong>.",
+    "gotIt": "Compris",
+    "failed": "Échec de la génération vidéo.",
+    "motionPrompt": "Prompt de Mouvement",
+    "aiSuggest": "Suggestion IA",
+    "promptPlaceholder": "Décrivez le mouvement souhaité...",
+    "duration": "Durée",
+    "seconds5": "5 secondes",
+    "seconds10": "10 secondes",
+    "generateVideo": "Générer Vidéo ({{duration}}s)",
+    "generating": "Génération...",
+    "starting": "Démarrage...",
+    "newVideo": "Nouvelle Vidéo"
+  },
   "help": {
     "gettingStarted": {
       "title": "Guide de Démarrage",
