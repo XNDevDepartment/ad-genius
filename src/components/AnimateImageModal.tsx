@@ -197,7 +197,7 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
             <>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>Motion Prompt</Label>
+                  <Label>{t('animateImage.motionPrompt')}</Label>
                   <Button
                     variant="ghost"
                     size="sm"
