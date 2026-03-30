@@ -186,8 +186,9 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
           {isFailed && (
             <div className="text-center py-4 space-y-2">
               <p className="text-sm text-destructive">
-                Video generation failed. {typeof job?.error === 'object' && job?.error?.message ? job.error.message : "Please try again."}
+                {t('animateImage.failed')} {typeof job?.error === 'object' && job?.error?.message ? job.error.message : ""}
               </p>
+            </div>
             </div>
           )}
 
