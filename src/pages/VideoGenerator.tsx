@@ -32,7 +32,7 @@ type Duration = 5 | 10;
 export default function VideoGenerator() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, subscriptionData } = useAuth();
   const { canAccessVideos, getVideoAccessMessage } = useCredits();
   const { isAdmin, loading: isAdminLoading } = useAdminAuth();
   const { t } = useTranslation();
