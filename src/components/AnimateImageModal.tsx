@@ -216,7 +216,7 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
                 <Textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Describe the motion you want..."
+                  placeholder={t('animateImage.promptPlaceholder')}
                   rows={3}
                   disabled={isProcessing}
                   className="resize-none"
