@@ -189,7 +189,6 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
                 {t('animateImage.failed')} {typeof job?.error === 'object' && job?.error?.message ? job.error.message : ""}
               </p>
             </div>
-            </div>
           )}
 
           {/* Prompt */}
