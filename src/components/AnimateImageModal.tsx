@@ -210,7 +210,7 @@ export default function AnimateImageModal({ open, onClose, imageUrl, imageId }: 
                     ) : (
                       <Sparkles className="h-3 w-3 mr-1" />
                     )}
-                    AI Suggest
+                    {t('animateImage.aiSuggest')}
                   </Button>
                 </div>
                 <Textarea
