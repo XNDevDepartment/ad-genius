@@ -1,6 +1,8 @@
 import { ArrowLeft, Sparkles, Crown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { PageTransition } from "@/components/PageTransition";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,6 +19,14 @@ import demoUgcImg from "@/assets/module_icons/ugc.webp";
 import demoVideoImg from "@/assets/module_icons/video.webp";
 import demoOutfitImg from "@/assets/module_icons/fashion_catalog.webp";
 import demoBulkImg from "@/assets/module_icons/product_catalog.webp";
+
+const cardVariants = {
+  hidden: { opacity: 0, scale: 0.95, y: 16 },
+  visible: (i: number) => ({
+    opacity: 1, scale: 1, y: 0,
+    transition: { delay: Math.min(i * 0.06, 0.4), duration: 0.3, ease: [0.25, 0.1, 0.25, 1] as const },
+  }),
+};
 
 const ModuleSelection = () => {
   const navigate = useNavigate();
@@ -138,6 +148,7 @@ const ModuleSelection = () => {
   ];
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-4 mb-8">
@@ -160,11 +171,19 @@ const ModuleSelection = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-          {workflows.map((workflow) => (
-            <Card 
+          {workflows.map((workflow, index) => (
+            <motion.div
               key={workflow.id}
-              className={`bg-transparent shadow-md cursor-pointer transition-all hover:shadow-lg overflow-hidden
-                ${workflow.disabled || workflow.locked ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'} 
+              custom={index}
+              initial="hidden"
+              animate="visible"
+              variants={cardVariants}
+              whileHover={!(workflow.disabled || workflow.locked) ? { scale: 1.03 } : undefined}
+              whileTap={!(workflow.disabled || workflow.locked) ? { scale: 0.97 } : undefined}
+            >
+            <Card
+              className={`bg-transparent shadow-md cursor-pointer transition-shadow hover:shadow-lg overflow-hidden h-full
+                ${workflow.disabled || workflow.locked ? 'opacity-50 cursor-not-allowed' : ''}
                 ${workflow.isBeta ? 'border-2 border-purple-500/30 bg-purple-500/5' : ''}`}
               onClick={() => {
                 if (workflow.locked) {
@@ -251,10 +270,12 @@ const ModuleSelection = () => {
                 </CardContent>
               </div>
             </Card>
+            </motion.div>
           ))}
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

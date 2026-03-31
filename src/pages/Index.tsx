@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Coins, Zap, ArrowRight, Video, Shirt, Images, Sparkles, Crown } from "lucide-react";
+import { PageTransition } from "@/components/PageTransition";
 import { MobileCreditCard } from "@/components/MobileCreditCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/hooks/useCredits";
@@ -14,6 +16,14 @@ import SEO from "@/components/SEO";
 import { buildOrganizationSchema, buildWebSiteSchema, buildWebApplicationSchema } from "@/lib/schema";
 import LandingPageV2 from "@/pages/LandingPageV2";
 import PromoBanner3Meses from "@/components/PromoBanner3Meses";
+
+const cardVariants = {
+  hidden: { opacity: 0, scale: 0.94, y: 12 },
+  visible: (i: number) => ({
+    opacity: 1, scale: 1, y: 0,
+    transition: { delay: Math.min(i * 0.06, 0.4), duration: 0.3, ease: [0.25, 0.1, 0.25, 1] as const },
+  }),
+};
 
 const mobileModules = [
   { id: "ugc", titleKey: "createSelection.ugcCreator.title", icon: Zap, path: "/create/ugc" },
@@ -46,13 +56,18 @@ const MobileModuleGrid = ({
 
   return (
     <div className="grid grid-cols-2 gap-3">
-      {visibleModules.map((mod) => {
+      {visibleModules.map((mod, index) => {
         const locked = mod.needsPaid && isFreeTier();
         return (
-          <div
+          <motion.div
             key={mod.id}
+            custom={index}
+            initial="hidden"
+            animate="visible"
+            variants={cardVariants}
+            whileTap={{ scale: 0.97 }}
             onClick={() => (locked ? navigate("/pricing") : navigate(mod.path))}
-            className={`flex flex-col items-center justify-center gap-2 p-4 rounded-apple bg-card border border-border/50 shadow-sm cursor-pointer active:scale-[0.97] transition-transform ${locked ? "opacity-50" : ""}`}
+            className={`flex flex-col items-center justify-center gap-2 p-4 rounded-apple bg-card border border-border/50 shadow-sm cursor-pointer ${locked ? "opacity-50" : ""}`}
           >
             <div className={`relative w-10 h-10 rounded-apple flex items-center justify-center bg-primary/10`}>
               <mod.icon className="h-5 w-5 text-primary" />
@@ -63,7 +78,7 @@ const MobileModuleGrid = ({
               )}
             </div>
             <span className="text-sm font-semibold text-center leading-tight">{t(mod.titleKey)}</span>
-          </div>
+          </motion.div>
         );
       })}
     </div>
@@ -96,6 +111,7 @@ const Index = () => {
         <>
           <SEO title="Dashboard" description="Your ProduktPix dashboard" path="/" noindex={true} />
           <OnboardingGuard>
+            <PageTransition>
             <PromoBanner3Meses />
             <div className="container-responsive px-4 py-8">
               {/* ===== MOBILE LAYOUT ===== */}
@@ -152,7 +168,12 @@ const Index = () => {
 
               {/* ===== DESKTOP LAYOUT (unchanged) ===== */}
               <div className="hidden lg:grid lg:grid-cols-12 lg:gap-8 lg:items-start">
-                <div className="lg:col-span-7 mb-8 lg:mb-0">
+                <motion.div
+                  className="lg:col-span-7 mb-8 lg:mb-0"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                >
                   <div className="bg-gradient-hero rounded-apple p-8 lg:p-12 shadow-apple-lg text-center lg:text-left text-background relative overflow-hidden">
                     <div className="relative z-10 space-y-4 lg:space-y-6">
                       <h1 className="text-3xl lg:text-5xl font-bold leading-tight">{t("index.auth.title")}</h1>
@@ -169,10 +190,15 @@ const Index = () => {
                       </Button>
                     </div>
                   </div>
-                </div>
-                <div className="lg:col-span-5">
+                </motion.div>
+                <motion.div
+                  className="lg:col-span-5"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+                >
                   <UserStatsPanel />
-                </div>
+                </motion.div>
               </div>
 
               {/* Library Section */}
@@ -181,6 +207,7 @@ const Index = () => {
               </div>
 
             </div>
+            </PageTransition>
           </OnboardingGuard>
         </>
       ) : (

@@ -18,6 +18,7 @@ import { HelpSupportPanel } from "@/components/account/HelpSupportPanel";
 import { ApiKeysPanel } from "@/components/account/ApiKeysPanel";
 import { IntegrationsPanel } from "@/components/account/IntegrationsPanel";
 import { useTranslation } from "react-i18next";
+import { PageTransition } from "@/components/PageTransition";
 
 const Account = () => {
   const navigate = useNavigate();
@@ -266,6 +267,7 @@ const Account = () => {
   );
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background container-responsive px-4 py-4">
       <div className="lg:hidden flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -327,6 +329,7 @@ const Account = () => {
         {section === "" && AccountPanel}
       </div>
     </div>
+    </PageTransition>
   );
 };
 

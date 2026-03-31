@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { PageTransition } from "@/components/PageTransition";
 import { useVideoLibrary } from "@/hooks/useVideoLibrary";
 import { VideoCard } from "@/components/VideoCard";
 import { Button } from "@/components/ui/button";
@@ -109,6 +110,7 @@ export default function VideoLibrary() {
   };
 
   return (
+    <PageTransition>
     <div className="py-8 px-4">
       {/* Header */}
       <div className="mb-8">
@@ -412,5 +414,6 @@ export default function VideoLibrary() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+    </PageTransition>
   );
 }

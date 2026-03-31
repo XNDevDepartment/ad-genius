@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Library as LibraryComponent } from "@/components/departments/LibraryOld";
 import { useTranslation } from "react-i18next";
+import { PageTransition } from "@/components/PageTransition";
 
 const Library = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background px-0 py-4">
       <div className="lg:hidden flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -28,6 +30,7 @@ const Library = () => {
 
       <LibraryComponent onBack={() => navigate("/")} />
     </div>
+    </PageTransition>
   );
 };
 
