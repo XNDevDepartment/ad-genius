@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { useVideoLibrary } from "@/hooks/useVideoLibrary";
 import { VideoCard } from "@/components/VideoCard";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+
+const cardVariants = {
+  hidden: { opacity: 0, scale: 0.94, y: 10 },
+  visible: (i: number) => ({
+    opacity: 1, scale: 1, y: 0,
+    transition: { delay: Math.min(i * 0.04, 0.5), duration: 0.3, ease: [0.25, 0.1, 0.25, 1] as const },
+  }),
+};
 
 export default function VideoLibrary() {
   const {
@@ -100,7 +109,7 @@ export default function VideoLibrary() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-7xl">
+    <div className="py-8 px-4">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
@@ -206,7 +215,7 @@ export default function VideoLibrary() {
 
       {/* Loading State */}
       {loading && videos.length === 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="space-y-3">
               <Skeleton className="aspect-video w-full" />
@@ -234,9 +243,16 @@ export default function VideoLibrary() {
       {/* Videos Grid */}
       {videos.length > 0 && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {videos.map((job) => (
-              <div key={job.id} className={`relative ${selectionMode && selectedIds.has(job.id) ? 'ring-2 ring-primary rounded-lg' : ''}`}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+            {videos.map((job, index) => (
+              <motion.div
+                key={job.id}
+                custom={index}
+                initial="hidden"
+                animate="visible"
+                variants={cardVariants}
+                className={`relative transition-all duration-200 ${selectionMode && selectedIds.has(job.id) ? 'ring-2 ring-primary rounded-lg scale-[0.97]' : ''}`}
+              >
                 {selectionMode && (
                   <div 
                     className="absolute top-2 left-2 z-10 cursor-pointer"
@@ -261,7 +277,7 @@ export default function VideoLibrary() {
                   onDownload={downloadVideo}
                   onView={(job) => { setModalVideoError(false); setViewingVideo(job); }}
                 />
-              </div>
+              </motion.div>
             ))}
           </div>
 
