@@ -50,7 +50,7 @@ export const MinimalHero = () => {
             size="lg"
             variant="outline"
             className="text-lg px-8 py-6 rounded-full"
-            onClick={() => window.open('https://cal.com/genius-clklot/demonstracao-privada', '_blank')}
+            onClick={() => window.open('https://cal.com/produktpix/demonstracao-privada', '_blank')}
           >
             <Calendar className="mr-2 h-5 w-5" />
             {t('landingV2.hero.bookDemo', 'Book a Demo')}
