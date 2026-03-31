@@ -450,15 +450,13 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
     if (!user) return;
 
     try {
-      const isPhotoshootImage = imageId.includes('_front') || imageId.includes('_back') || 
-                                 imageId.includes('_side') || imageId.includes('_three_quarter');
-      
+      const image = images.find(img => img.id === imageId);
+
       let deleteResults;
-      
-      if (isPhotoshootImage) {
-        const photoshootId = imageId.split('_').slice(0, -1).join('_');
+
+      if (image?.source_type === 'photoshoot' && image?.photoshoot_id) {
         deleteResults = await Promise.all([
-          supabase.from('outfit_swap_photoshoots').delete().eq('id', photoshootId).eq('user_id', user.id)
+          supabase.from('outfit_swap_photoshoots').delete().eq('id', image.photoshoot_id).eq('user_id', user.id)
         ]);
       } else {
         deleteResults = await Promise.all([
