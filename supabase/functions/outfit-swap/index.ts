@@ -189,7 +189,7 @@ CRITICAL REQUIREMENTS:
 
 3. COMPLETE LOOK REQUIRED:
    - Wear THE PRODUCT as the main garment
-   - Add appropriate footwear (heels for elegant, sneakers for casual)
+   - MUST wear appropriate footwear — NEVER barefoot (heels for elegant, sneakers for casual)
    - Model must look fashion-ready
 
 4. FRAMING: Full body (head to toe) - showcase the complete outfit
