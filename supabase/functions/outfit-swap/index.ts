@@ -122,7 +122,7 @@ CRITICAL REQUIREMENTS:
    - Small dots must remain small dots, stripes must remain stripes
    - The pattern scale, spacing, and colors must match IMAGE 2 exactly
 
-FORBIDDEN: Creating new model, changing identity, underwear visible, bare torso, focusing on the top instead of the BOTTOM
+FORBIDDEN: Creating new model, changing identity, underwear visible, bare torso, barefoot, focusing on the top instead of the BOTTOM
 
 OUTPUT: The SAME model wearing THE PRODUCT (bottom) as the clear visual focus.`,
 
