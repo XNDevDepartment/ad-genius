@@ -200,7 +200,7 @@ CRITICAL REQUIREMENTS:
    - Small dots must remain small dots, stripes must remain stripes, plaids must remain plaids
    - The pattern scale, spacing, and colors must match IMAGE 2 exactly
 
-FORBIDDEN: Creating new model, changing identity, appearing in underwear, shapewear worn alone, bikini-like appearance
+FORBIDDEN: Creating new model, changing identity, appearing in underwear, shapewear worn alone, bikini-like appearance, barefoot
 
 OUTPUT: The SAME model wearing THE PRODUCT (outfit) as a complete, styled look.`,
 
