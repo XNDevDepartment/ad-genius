@@ -122,7 +122,7 @@ CRITICAL REQUIREMENTS:
    - Small dots must remain small dots, stripes must remain stripes
    - The pattern scale, spacing, and colors must match IMAGE 2 exactly
 
-FORBIDDEN: Creating new model, changing identity, underwear visible, bare torso, focusing on the top instead of the BOTTOM
+FORBIDDEN: Creating new model, changing identity, underwear visible, bare torso, barefoot, focusing on the top instead of the BOTTOM
 
 OUTPUT: The SAME model wearing THE PRODUCT (bottom) as the clear visual focus.`,
 
@@ -189,7 +189,7 @@ CRITICAL REQUIREMENTS:
 
 3. COMPLETE LOOK REQUIRED:
    - Wear THE PRODUCT as the main garment
-   - Add appropriate footwear (heels for elegant, sneakers for casual)
+   - MUST wear appropriate footwear — NEVER barefoot (heels for elegant, sneakers for casual)
    - Model must look fashion-ready
 
 4. FRAMING: Full body (head to toe) - showcase the complete outfit
@@ -200,7 +200,7 @@ CRITICAL REQUIREMENTS:
    - Small dots must remain small dots, stripes must remain stripes, plaids must remain plaids
    - The pattern scale, spacing, and colors must match IMAGE 2 exactly
 
-FORBIDDEN: Creating new model, changing identity, appearing in underwear, shapewear worn alone, bikini-like appearance
+FORBIDDEN: Creating new model, changing identity, appearing in underwear, shapewear worn alone, bikini-like appearance, barefoot
 
 OUTPUT: The SAME model wearing THE PRODUCT (outfit) as a complete, styled look.`,
 
@@ -227,7 +227,7 @@ CRITICAL REQUIREMENTS:
    - Clothing should be neutral/complementary to not distract from the accessory
 
 3. COMPLETE OUTFIT REQUIRED:
-   - Model must be wearing full clothing (top, bottom, shoes)
+   - Model must be wearing full clothing (top, bottom, shoes) — NEVER barefoot
    - Clothing should be simple/neutral to highlight the accessory
    - NEVER add accessory to someone in underwear
 
@@ -238,7 +238,7 @@ CRITICAL REQUIREMENTS:
    - Do NOT interpret or reimagine any design elements - copy them PRECISELY
    - The colors, materials, hardware, and details must match IMAGE 2 exactly
 
-FORBIDDEN: Creating new model, changing identity, model in underwear, accessory not visible, clothing overshadowing the accessory
+FORBIDDEN: Creating new model, changing identity, model in underwear, accessory not visible, clothing overshadowing the accessory, barefoot
 
 OUTPUT: The SAME model with THE PRODUCT (accessory) clearly visible as the main focus.`,
 };
