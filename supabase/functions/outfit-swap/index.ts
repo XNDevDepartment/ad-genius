@@ -227,7 +227,7 @@ CRITICAL REQUIREMENTS:
    - Clothing should be neutral/complementary to not distract from the accessory
 
 3. COMPLETE OUTFIT REQUIRED:
-   - Model must be wearing full clothing (top, bottom, shoes)
+   - Model must be wearing full clothing (top, bottom, shoes) — NEVER barefoot
    - Clothing should be simple/neutral to highlight the accessory
    - NEVER add accessory to someone in underwear
 
