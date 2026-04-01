@@ -238,7 +238,7 @@ CRITICAL REQUIREMENTS:
    - Do NOT interpret or reimagine any design elements - copy them PRECISELY
    - The colors, materials, hardware, and details must match IMAGE 2 exactly
 
-FORBIDDEN: Creating new model, changing identity, model in underwear, accessory not visible, clothing overshadowing the accessory
+FORBIDDEN: Creating new model, changing identity, model in underwear, accessory not visible, clothing overshadowing the accessory, barefoot
 
 OUTPUT: The SAME model with THE PRODUCT (accessory) clearly visible as the main focus.`,
 };
