@@ -323,7 +323,40 @@ async function generateModelWithAI(supabaseClient: SupabaseClient, userId: strin
     
     const bodyTypeText = isChild ? 'healthy, standard proportions' : bodyType;
     
-    const prompt = `TASK: Generate a photorealistic full-body fashion model photo for clothing try-on.
+    let prompt: string;
+    
+    if (isChild) {
+      prompt = `TASK: Generate a photorealistic full-body photo of a child for a children's clothing catalog.
+
+      SUBJECT:
+      - Gender: ${gender}
+      - Ethnicity: ${nationalityText}
+      - Age: ${ageRange}
+      - Height: ${height}cm
+      - Build: healthy, standard proportions
+      - Skin tone: ${skinTone}
+      - Hair: ${hair.length}, ${hair.texture}, ${hair.color}
+      - Eyes: ${eyes}
+
+      POSE & EXPRESSION:
+      - Pose: ${pose}, natural and relaxed
+      - Expression: ${expressionText}
+      - Hands visible and natural
+
+      OUTFIT:
+      - Plain gray cotton t-shirt, blue jeans, white sneakers
+      - No logos or graphics
+
+      SETTING:
+      - Solid light gray studio backdrop
+      - Soft even studio lighting
+      - Full-body framing head to toe
+
+      OUTPUT: 2048x3072, single child centered, professional catalog quality.
+
+      AVOID: multiple people, props, blurry areas, distorted anatomy, extra limbs, watermarks, text.`;
+    } else {
+      prompt = `TASK: Generate a photorealistic full-body fashion model photo for clothing try-on.
 
       SUBJECT:
       - Gender: ${gender}
@@ -364,43 +397,64 @@ async function generateModelWithAI(supabaseClient: SupabaseClient, userId: strin
       - 2048x3072 portrait orientation
 
       STRICTLY AVOID: multiple people, studio equipment in frame, props, accessories, jewelry, makeup emphasis, blurry areas, distorted anatomy, extra limbs, merged fingers, watermarks, text, logos, sexualized poses, lingerie, see-through fabric, wet/oily skin appearance, inappropriate or unnatural poses.`;
-    
-    console.log("Generating AI model with prompt:", prompt);
-
-    const controller = new AbortController();
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent`, {
-      method: "POST",
-      headers: {
-        "x-goog-api-key": googleApiKey,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: prompt }
-            ]
-          }
-        ],
-        generationConfig: {
-          responseModalities: ['IMAGE']
-        }
-      }),
-      signal: controller.signal
-    });
-
-    if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
-      console.error("Gemini API error:", geminiResponse.status, errorText);
-      throw new Error(`Gemini API error: ${geminiResponse.statusText}`);
     }
+    
+    console.log("Generating AI model with prompt (isChild:", isChild, ")");
 
-    const geminiData = await geminiResponse.json();
-    const generatedImageData = geminiData.candidates?.[0]?.content?.parts?.find((part: any) => part.inlineData)?.inlineData?.data;
+    const maxAttempts = 2;
+    let generatedImageData: string | undefined;
+    let lastSafetyBlock = false;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      console.log(`[generateModelWithAI] Gemini attempt ${attempt + 1}/${maxAttempts}`);
+      
+      const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent`, {
+        method: "POST",
+        headers: {
+          "x-goog-api-key": googleApiKey,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: prompt }
+              ]
+            }
+          ],
+          generationConfig: {
+            responseModalities: ['IMAGE']
+          }
+        })
+      });
+
+      if (!geminiResponse.ok) {
+        const errorText = await geminiResponse.text();
+        console.error("Gemini API error:", geminiResponse.status, errorText);
+        throw new Error(`Gemini API error: ${geminiResponse.statusText}`);
+      }
+
+      const geminiData = await geminiResponse.json();
+      
+      // Check for safety filter block
+      const finishReason = geminiData.candidates?.[0]?.finishReason;
+      if (finishReason === 'IMAGE_SAFETY') {
+        console.warn(`[generateModelWithAI] Safety filter triggered on attempt ${attempt + 1}`);
+        lastSafetyBlock = true;
+        continue;
+      }
+
+      generatedImageData = geminiData.candidates?.[0]?.content?.parts?.find((part: any) => part.inlineData)?.inlineData?.data;
+      if (generatedImageData) break;
+      
+      console.warn(`[generateModelWithAI] No image data on attempt ${attempt + 1}:`, JSON.stringify(geminiData));
+    }
     
     if (!generatedImageData) {
-      console.error("No image in Gemini response:", JSON.stringify(geminiData));
-      throw new Error("No image generated by Gemini");
+      if (lastSafetyBlock) {
+        throw new Error("The AI safety filter blocked this combination. Please try adjusting the age range or other settings.");
+      }
+      throw new Error("No image generated by Gemini. Please try again.");
     }
 
     // IF PREVIEW MODE: Return image data without saving
