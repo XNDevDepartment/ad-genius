@@ -112,13 +112,14 @@ async function uploadAndProcessModel(supabaseClient: SupabaseClient, userId: str
     // Child-safe detection: swap wardrobe for minors (same logic as generateModelWithAI)
     const childAgeRanges = ['0-12 months', '1-3 years', '4-7 years', '8-12 years', '13-17 years'];
     const isChild = childAgeRanges.includes(metadata?.ageRange);
-    
-    const wardrobeText = isChild
-      ? 'Simple, modest, loose-fitting plain neutral-tone cotton t-shirt (gray or white), plain standard-fit blue jeans, plain white sneakers. No logos, patterns, or graphics.'
-      : 'seamless neutral-tone fitted bodysuit (no logos/patterns), barefoot';
 
     // Process image with Gemini - remove background and replace with studio
-    const prompt = `Remove the background from this image and replace it with Background: seamless light gray studio. Camera 50mm f/4 ISO200 1/125. Lighting: softbox 45° key + reflector fill, even exposure. ###IMPORTANT: New wardrobe baseline: ${wardrobeText}. Neutral expression, hands relaxed, fingers natural, head to toe visible, clean silhouette. One subject only. Lips Smiling slightly. Insert "GeniusAI" watermark on bottom right, almost non existent. Output 2048x3072, sRGB, 300dpi. Negative: only produce model and no more elements in the picture, lowres, blurry, jpeg artifacts, extra limbs, extra fingers, fused fingers, disfigured, distorted proportions, wet/oily skin, cleavage emphasis, lingerie, underwear straps, see-through fabric, strong face shadows, color cast, watermark, logo, text, border. ### RULE: NEVER PRODUCE SEXUALISE CONTENT`;
+    let prompt: string;
+    if (isChild) {
+      prompt = `Remove the background from this image and replace it with a solid light gray studio backdrop. Camera 50mm f/4 ISO200 1/125. Lighting: softbox 45° key + reflector fill, even exposure. New wardrobe: plain gray cotton t-shirt, blue jeans, white sneakers. No logos or graphics. Neutral expression, hands relaxed, fingers natural, head to toe visible, clean silhouette. One subject only. Output 2048x3072, sRGB, 300dpi. AVOID: multiple people, props, blurry areas, distorted anatomy, extra limbs, watermarks, text.`;
+    } else {
+      prompt = `Remove the background from this image and replace it with Background: seamless light gray studio. Camera 50mm f/4 ISO200 1/125. Lighting: softbox 45° key + reflector fill, even exposure. ###IMPORTANT: New wardrobe baseline: seamless neutral-tone fitted bodysuit (no logos/patterns), barefoot. Neutral expression, hands relaxed, fingers natural, head to toe visible, clean silhouette. One subject only. Lips Smiling slightly. Insert "GeniusAI" watermark on bottom right, almost non existent. Output 2048x3072, sRGB, 300dpi. Negative: only produce model and no more elements in the picture, lowres, blurry, jpeg artifacts, extra limbs, extra fingers, fused fingers, disfigured, distorted proportions, wet/oily skin, cleavage emphasis, lingerie, underwear straps, see-through fabric, strong face shadows, color cast, watermark, logo, text, border. ### RULE: NEVER PRODUCE SEXUALISE CONTENT`;
+    }
     
     // Extract base64 data from data URL
     const base64Match = imageDataUrl.match(/^data:image\/(.*?);base64,(.*)$/);
@@ -128,59 +129,79 @@ async function uploadAndProcessModel(supabaseClient: SupabaseClient, userId: str
     const mimeType = `image/${base64Match[1]}`;
     const base64Image = base64Match[2];
 
-    const controller = new AbortController();
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent`, {
-      method: "POST",
-      headers: {
-        "x-goog-api-key": googleApiKey,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: prompt },
-              {
-                inline_data: {
-                  mime_type: mimeType,
-                  data: base64Image
-                }
-              }
-            ]
-          }
-        ],
-        generationConfig: {
-          responseModalities: ['IMAGE']
-        }
-      }),
-      signal: controller.signal
-    });
+    const maxAttempts = 2;
+    let processedImageData: string | undefined;
+    let lastSafetyBlock = false;
 
-    if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
-      console.error("Gemini API error:", {
-        status: geminiResponse.status,
-        statusText: geminiResponse.statusText,
-        body: errorText,
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      console.log(`[uploadAndProcessModel] Gemini attempt ${attempt + 1}/${maxAttempts}`);
+      
+      const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent`, {
+        method: "POST",
+        headers: {
+          "x-goog-api-key": googleApiKey,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: prompt },
+                {
+                  inline_data: {
+                    mime_type: mimeType,
+                    data: base64Image
+                  }
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            responseModalities: ['IMAGE']
+          }
+        })
       });
-      
-      if (geminiResponse.status === 429) {
-        throw new Error("AI service is currently at capacity. Please wait a moment and try again.");
-      } else if (geminiResponse.status === 402) {
-        throw new Error("AI service quota exceeded. Please contact support.");
-      } else if (geminiResponse.status === 400) {
-        throw new Error("Unsupported image format. Please use PNG, JPG, or JPEG images only. Other formats like WEBP, GIF, or HEIC are not supported.");
+
+      if (!geminiResponse.ok) {
+        const errorText = await geminiResponse.text();
+        console.error("Gemini API error:", {
+          status: geminiResponse.status,
+          statusText: geminiResponse.statusText,
+          body: errorText,
+        });
+        
+        if (geminiResponse.status === 429) {
+          throw new Error("AI service is currently at capacity. Please wait a moment and try again.");
+        } else if (geminiResponse.status === 402) {
+          throw new Error("AI service quota exceeded. Please contact support.");
+        } else if (geminiResponse.status === 400) {
+          throw new Error("Unsupported image format. Please use PNG, JPG, or JPEG images only. Other formats like WEBP, GIF, or HEIC are not supported.");
+        }
+        
+        throw new Error(`Background removal failed (${geminiResponse.status}). Please try a different image or contact support.`);
       }
+
+      const geminiData = await geminiResponse.json();
       
-      throw new Error(`Background removal failed (${geminiResponse.status}). Please try a different image or contact support.`);
+      // Check for safety filter block
+      const finishReason = geminiData.candidates?.[0]?.finishReason;
+      if (finishReason === 'IMAGE_SAFETY') {
+        console.warn(`[uploadAndProcessModel] Safety filter triggered on attempt ${attempt + 1}`);
+        lastSafetyBlock = true;
+        continue;
+      }
+
+      processedImageData = geminiData.candidates?.[0]?.content?.parts?.find((part: any) => part.inlineData)?.inlineData?.data;
+      if (processedImageData) break;
+      
+      console.warn(`[uploadAndProcessModel] No image data on attempt ${attempt + 1}:`, JSON.stringify(geminiData));
     }
 
-    const geminiData = await geminiResponse.json();
-    const processedImageData = geminiData.candidates?.[0]?.content?.parts?.find((part: any) => part.inlineData)?.inlineData?.data;
-    
     if (!processedImageData) {
-      console.error("No image in Gemini response:", JSON.stringify(geminiData));
-      throw new Error("No image generated by Gemini");
+      if (lastSafetyBlock) {
+        throw new Error("The AI safety filter blocked this image. Please try a different photo or adjust the age range settings.");
+      }
+      throw new Error("No image generated by Gemini. Please try again with a different image.");
     }
 
     // IF PREVIEW MODE: Return image data without saving
