@@ -693,13 +693,26 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
         const imageSize = settings?.imageSize as string | undefined;
         const NATIVE_ASPECT_RATIOS = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
         const useNativeAspect = aspectRatio && aspectRatio !== 'source' && NATIVE_ASPECT_RATIOS.includes(aspectRatio);
+        // 4K + non-source aspect ratio causes Gemini API timeouts — generate at 4K without aspect, then crop locally
+        const use4kFallback = imageSize === '4K' && useNativeAspect;
 
         log("Generating image with Gemini 3 Pro (image edit mode)", {
           jobId: job.id,
           aspectRatio: aspectRatio || 'none',
           imageSize: imageSize || 'default',
-          useNativeAspect
+          useNativeAspect,
+          use4kFallback
         });
+
+        // Build imageConfig: avoid sending 4K + aspectRatio together
+        const imageConfig: Record<string, unknown> = {};
+        if (use4kFallback) {
+          imageConfig.imageSize = '4K'; // 4K only, crop aspect locally after
+          log("4K fallback: sending imageSize only, will crop locally", { jobId: job.id, aspectRatio });
+        } else if (useNativeAspect) {
+          imageConfig.aspectRatio = aspectRatio;
+          if (imageSize) imageConfig.imageSize = imageSize;
+        }
 
         res = await fetch(
           "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent",
@@ -726,7 +739,7 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
               ],
               generationConfig: {
                 responseModalities: ["TEXT", "IMAGE"],
-                ...(useNativeAspect && { imageConfig: { aspectRatio, ...(imageSize && { imageSize }) } })
+                ...(Object.keys(imageConfig).length > 0 && { imageConfig })
               },
             }),
             signal: controller.signal,
