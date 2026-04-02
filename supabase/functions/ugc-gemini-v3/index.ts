@@ -651,6 +651,7 @@ async function generateSingleImageWithGemini(
   job: ImageJob,
   index: number,
   sourceImageUrl: string | null,
+  guidelineImageUrls: string[],
   supabase: SupabaseClient
 ): Promise<void> {
   const MAX_ATTEMPTS = 3;
