@@ -294,11 +294,12 @@ serve(async (req)=>{
 // ---------- ACTIONS ----------
 // deno-lint-ignore no-explicit-any
 async function createImageJob(userId: string, payload: Record<string, unknown>, supabase: SupabaseClient<any>): Promise<Response> {
-  const { prompt, settings, source_image_id, source_image_ids, desiredAudience, prodSpecs } = payload as {
+  const { prompt, settings, source_image_id, source_image_ids, guidelineImageIds, desiredAudience, prodSpecs } = payload as {
     prompt?: string;
     settings?: Record<string, unknown>;
     source_image_id?: string;
     source_image_ids?: string[];
+    guidelineImageIds?: string[];
     desiredAudience?: string;
     prodSpecs?: string;
     idempotency_window_minutes?: number;
@@ -399,11 +400,15 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
       return errorJson(deduct?.error ?? deductErr?.message ?? "Failed to reserve credits", 400);
     }
   }
+  // Merge guidelineImageIds into settings so they persist with the job
+  const finalSettings = guidelineImageIds && guidelineImageIds.length > 0
+    ? { ...(settings ?? {}), guidelineImageIds }
+    : settings;
   // create job (queued) with model_type = 'gemini' and source_image_ids
   const { data: job, error: jobErr } = await supabase.from("image_jobs").insert({
     user_id: userId,
     prompt,
-    settings,
+    settings: finalSettings,
     content_hash: contentHash,
     total: totalImages,
     progress: 0,
@@ -414,7 +419,7 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
     source_image_ids: finalSourceIds,
     model_type: "gemini",
     desiredAudience: desiredAudience ?? null,
-    prodSpecs: prodSpecs ?? null // Store the user's product specs
+    prodSpecs: prodSpecs ?? null
   }).select().single() as { data: ImageJob | null; error: Error | null };
   if (jobErr || !job) {
     // Refund credits on failure
@@ -544,9 +549,17 @@ async function generateImages(jobId: string, supabase: SupabaseClient<any>): Pro
       job.source_image_id
     ] : [];
     const sourceImageUrls = await getSignedSourceUrls(sourceImageIds, supabase);
+    
+    // Prepare guideline/reference images (stored in settings)
+    const guidelineIds = (job.settings as Record<string, unknown>)?.guidelineImageIds as string[] | undefined;
+    const guidelineUrls = guidelineIds && guidelineIds.length > 0
+      ? await getSignedSourceUrls(guidelineIds, supabase)
+      : [];
+    
     log("Source images prepared", {
       jobId,
-      sourceImageCount: sourceImageUrls.length
+      sourceImageCount: sourceImageUrls.length,
+      guidelineImageCount: guidelineUrls.length
     });
     // loop images
     for(let i = 0; i < (job.total ?? 1); i++){
@@ -556,9 +569,10 @@ async function generateImages(jobId: string, supabase: SupabaseClient<any>): Pro
         log("Starting image generation", {
           jobId,
           imageIndex: i,
-          usingSourceImage: !!sourceImageUrl
+          usingSourceImage: !!sourceImageUrl,
+          guidelineCount: guidelineUrls.length
         });
-        await generateSingleImageWithGemini(job, i, sourceImageUrl, supabase);
+        await generateSingleImageWithGemini(job, i, sourceImageUrl, guidelineUrls, supabase);
         completed++;
         const progress = Math.floor(completed / (job.total ?? 1) * 100);
         log("Image generation completed", {
@@ -661,7 +675,7 @@ async function generateImages(jobId: string, supabase: SupabaseClient<any>): Pro
 
 // Generate 1 image using Google Gemini (with retries/backoff)
 // deno-lint-ignore no-explicit-any
-async function generateSingleImageWithGemini(job: ImageJob, index: number, sourceImageUrl: string | null, supabase: SupabaseClient<any>): Promise<void> {
+async function generateSingleImageWithGemini(job: ImageJob, index: number, sourceImageUrl: string | null, guidelineImageUrls: string[], supabase: SupabaseClient<any>): Promise<void> {
   const MAX_ATTEMPTS = 3;
   const settings = job?.settings as Record<string, unknown> | null;
   const size = (settings?.size as string) ?? "1024x1024";
@@ -693,7 +707,6 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
         const imageSize = settings?.imageSize as string | undefined;
         const NATIVE_ASPECT_RATIOS = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
         const useNativeAspect = aspectRatio && aspectRatio !== 'source' && NATIVE_ASPECT_RATIOS.includes(aspectRatio);
-        // 4K + non-source aspect ratio causes Gemini API timeouts — generate at 4K without aspect, then crop locally
         const use4kFallback = imageSize === '4K' && useNativeAspect;
 
         log("Generating image with Gemini 3 Pro (image edit mode)", {
@@ -701,17 +714,55 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
           aspectRatio: aspectRatio || 'none',
           imageSize: imageSize || 'default',
           useNativeAspect,
-          use4kFallback
+          use4kFallback,
+          guidelineCount: guidelineImageUrls.length
         });
 
         // Build imageConfig: avoid sending 4K + aspectRatio together
         const imageConfig: Record<string, unknown> = {};
         if (use4kFallback) {
-          imageConfig.imageSize = '4K'; // 4K only, crop aspect locally after
+          imageConfig.imageSize = '4K';
           log("4K fallback: sending imageSize only, will crop locally", { jobId: job.id, aspectRatio });
         } else if (useNativeAspect) {
           imageConfig.aspectRatio = aspectRatio;
           if (imageSize) imageConfig.imageSize = imageSize;
+        }
+
+        // Build parts: prompt + main product image + guideline/reference images
+        const parts: Record<string, unknown>[] = [];
+        
+        // Add prompt with multi-image instructions if guidelines exist
+        if (guidelineImageUrls.length > 0) {
+          parts.push({ text: `${prompt}\n\nIMPORTANT MULTI-IMAGE INSTRUCTIONS:\n- The FIRST image is the MAIN PRODUCT. Reproduce this product EXACTLY in the generated image.\n- The ADDITIONAL image(s) are REFERENCE GUIDELINES showing how the product is used, worn, its scale, or context. Use them to understand the product better (size, how it fits, how it's worn) but ALWAYS feature the product from the FIRST image as the hero product.\n- DO NOT reproduce the reference images — only use them as context and guidance.` });
+        } else {
+          parts.push({ text: prompt });
+        }
+        
+        // Main product image
+        parts.push({ inlineData: { mimeType, data: base64Image } });
+        
+        // Guideline/reference images
+        for (const guidelineUrl of guidelineImageUrls) {
+          try {
+            const gSrc = await fetch(guidelineUrl);
+            if (!gSrc.ok) {
+              log("Failed to fetch guideline image, skipping", { url: guidelineUrl, status: gSrc.status });
+              continue;
+            }
+            const gMimeType = gSrc.headers.get('content-type') ?? 'image/png';
+            const gBuffer = await gSrc.arrayBuffer();
+            const gUint8 = new Uint8Array(gBuffer);
+            let gBinary = '';
+            for (let gi = 0; gi < gUint8.length; gi += chunkSize) {
+              const chunk = gUint8.subarray(gi, gi + chunkSize);
+              gBinary += String.fromCharCode.apply(null, Array.from(chunk));
+            }
+            const gBase64 = btoa(gBinary);
+            parts.push({ inlineData: { mimeType: gMimeType, data: gBase64 } });
+            log("Added guideline image to request", { jobId: job.id });
+          } catch (gErr) {
+            log("Error processing guideline image, skipping", { error: String(gErr) });
+          }
         }
 
         res = await fetch(
@@ -726,15 +777,7 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
               contents: [
                 {
                   role: "user",
-                  parts: [
-                    { text: prompt },
-                    {
-                      inlineData: {
-                        mimeType,
-                        data: base64Image
-                      },
-                    },
-                  ],
+                  parts,
                 },
               ],
               generationConfig: {

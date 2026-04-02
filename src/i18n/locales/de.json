@@ -1006,7 +1006,7 @@
   "ugc": {
     "title": "UGC-Inhalte erstellen",
     "productImage": {
-      "title": "Produktbild",
+      "title": "Hauptproduktbild",
       "subtitle": "Lade ein Bild deines Produkts zur Analyse hoch",
       "analyzing": "Bild wird analysiert...",
       "tooltip": "Lade ein klares, hochauflösendes Bild deines Produkts hoch. Die KI analysiert es, um zu verstehen, was du verkaufst, und schlägt passende Szenarien vor.",
@@ -1016,6 +1016,11 @@
       "supportedFormats": "PNG, JPG bis 30 MB • Klicken oder ziehen & ablegen",
       "preview": "Produktvorschau",
       "remove": "Bild entfernen"
+    },
+    "referenceImages": {
+      "title": "Referenzbilder (optional)",
+      "tooltip": "Lade bis zu 2 zusätzliche Bilder hoch, die zeigen, wie das Produkt verwendet wird, seine Größe oder seinen Kontext. Diese helfen der KI, dein Produkt besser zu verstehen.",
+      "subtitle": "Zeige, wie das Produkt getragen, verwendet wird oder seine Größe"
     },
     "productDetails": {
       "title": "Produkteigenschaften (Optional)",

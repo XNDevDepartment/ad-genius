@@ -1006,7 +1006,7 @@
   "ugc": {
     "title": "Crear Contenido UGC",
     "productImage": {
-      "title": "Imagen del Producto",
+      "title": "Imagen Principal del Producto",
       "subtitle": "Sube una imagen de tu producto para analizarla",
       "analyzing": "Analizando imagen...",
       "tooltip": "Sube una imagen clara y de alta calidad de tu producto. La IA la analizará para entender qué vendes y sugerir escenarios relevantes.",
@@ -1016,6 +1016,11 @@
       "supportedFormats": "PNG, JPG hasta 10MB • Haz clic o arrastra y suelta",
       "preview": "Vista previa del producto",
       "remove": "Quitar imagen"
+    },
+    "referenceImages": {
+      "title": "Imágenes de Referencia (opcional)",
+      "tooltip": "Sube hasta 2 imágenes adicionales que muestren cómo se usa el producto, su escala o contexto. Estas ayudan a la IA a entender mejor tu producto.",
+      "subtitle": "Muestra cómo se usa el producto o su tamaño"
     },
     "productDetails": {
       "title": "Características del producto (Opcional)",

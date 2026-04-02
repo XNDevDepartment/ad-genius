@@ -21,6 +21,7 @@ export type CreateJobPayload = {
   };
   source_image_id?: string;
   source_image_ids?: string[];
+  guidelineImageIds?: string[];
   desiredAudience?: string;
   prodSpecs?: string;
 };

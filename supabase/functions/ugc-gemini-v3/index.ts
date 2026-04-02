@@ -291,7 +291,7 @@ serve(async (req) => {
 
 // Enqueue job, reserve credits, idempotent
 async function createImageJob(userId: string, payload: RequestBody, supabase: SupabaseClient): Promise<Response> {
-  const { prompt, settings, source_image_id, source_image_ids, desiredAudience, prodSpecs } = payload;
+  const { prompt, settings, source_image_id, source_image_ids, guidelineImageIds, desiredAudience, prodSpecs } = payload;
   const idempotency_window_minutes = (payload.idempotency_window_minutes as number) ?? 60;
   
   log("Create job", {
@@ -394,11 +394,17 @@ async function createImageJob(userId: string, payload: RequestBody, supabase: Su
     }
   }
 
+  // Merge guidelineImageIds into settings so they persist with the job
+  const guidelineIds = (payload as any).guidelineImageIds as string[] | undefined;
+  const finalSettings = guidelineIds && guidelineIds.length > 0
+    ? { ...(settings ?? {}), guidelineImageIds: guidelineIds }
+    : settings;
+
   // create job (queued)
   const { data: job, error: jobErr } = await supabase.from("image_jobs").insert({
     user_id: userId,
     prompt,
-    settings,
+    settings: finalSettings,
     content_hash: contentHash,
     total: totalImages,
     progress: 0,
@@ -516,7 +522,14 @@ async function generateImages(jobId: string, supabase: SupabaseClient): Promise<
       : typedJob.source_image_id ? [typedJob.source_image_id] : [];
 
     const sourceImageUrls = await getSignedSourceUrls(sourceImageIds, supabase);
-    log("Source images prepared", { jobId, sourceImageCount: sourceImageUrls.length });
+    
+    // Prepare guideline/reference images (stored in settings)
+    const guidelineIds = (typedJob.settings as Record<string, unknown>)?.guidelineImageIds as string[] | undefined;
+    const guidelineUrls = guidelineIds && guidelineIds.length > 0
+      ? await getSignedSourceUrls(guidelineIds, supabase)
+      : [];
+    
+    log("Source images prepared", { jobId, sourceImageCount: sourceImageUrls.length, guidelineImageCount: guidelineUrls.length });
 
     // loop images
     for (let i = 0; i < (typedJob.total ?? 1); i++) {
@@ -529,10 +542,11 @@ async function generateImages(jobId: string, supabase: SupabaseClient): Promise<
         log("Starting image generation", {
           jobId,
           imageIndex: i,
-          usingSourceImage: !!sourceImageUrl
+          usingSourceImage: !!sourceImageUrl,
+          guidelineCount: guidelineUrls.length
         });
 
-        await generateSingleImageWithGemini(typedJob, i, sourceImageUrl, supabase);
+        await generateSingleImageWithGemini(typedJob, i, sourceImageUrl, guidelineUrls, supabase);
         completed++;
 
         const progress = Math.floor((completed / (typedJob.total ?? 1)) * 100);
@@ -637,6 +651,7 @@ async function generateSingleImageWithGemini(
   job: ImageJob,
   index: number,
   sourceImageUrl: string | null,
+  guidelineImageUrls: string[],
   supabase: SupabaseClient
 ): Promise<void> {
   const MAX_ATTEMPTS = 3;
@@ -700,6 +715,41 @@ async function generateSingleImageWithGemini(
           log("Using native API aspect ratio", { jobId: job.id, index, aspectRatio, imageSize });
         }
 
+        // Build parts: prompt + main product image + guideline/reference images
+        const parts: Record<string, unknown>[] = [];
+        
+        if (guidelineImageUrls.length > 0) {
+          parts.push({ text: `${prompt}\n\nIMPORTANT MULTI-IMAGE INSTRUCTIONS:\n- The FIRST image is the MAIN PRODUCT. Reproduce this product EXACTLY in the generated image.\n- The ADDITIONAL image(s) are REFERENCE GUIDELINES showing how the product is used, worn, its scale, or context. Use them to understand the product better (size, how it fits, how it's worn) but ALWAYS feature the product from the FIRST image as the hero product.\n- DO NOT reproduce the reference images — only use them as context and guidance.` });
+        } else {
+          parts.push({ text: prompt });
+        }
+        
+        parts.push({ inlineData: { mimeType: mimeType, data: base64Image } });
+        
+        // Guideline/reference images
+        for (const guidelineUrl of guidelineImageUrls) {
+          try {
+            const gSrc = await fetch(guidelineUrl);
+            if (!gSrc.ok) {
+              log("Failed to fetch guideline image, skipping", { status: gSrc.status });
+              continue;
+            }
+            const gMimeType = gSrc.headers.get('content-type') ?? 'image/png';
+            const gBuffer = await gSrc.arrayBuffer();
+            const gUint8 = new Uint8Array(gBuffer);
+            let gBinary = '';
+            for (let gi = 0; gi < gUint8.length; gi += chunkSize) {
+              const gChunk = gUint8.subarray(gi, gi + chunkSize);
+              gBinary += String.fromCharCode.apply(null, Array.from(gChunk));
+            }
+            const gBase64 = btoa(gBinary);
+            parts.push({ inlineData: { mimeType: gMimeType, data: gBase64 } });
+            log("Added guideline image to request", { jobId: job.id });
+          } catch (gErr) {
+            log("Error processing guideline image, skipping", { error: String(gErr) });
+          }
+        }
+
         res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`, {
           method: "POST",
           headers: {
@@ -707,12 +757,7 @@ async function generateSingleImageWithGemini(
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: prompt },
-                { inlineData: { mimeType: mimeType, data: base64Image } }
-              ]
-            }],
+            contents: [{ parts }],
             generationConfig
           }),
           signal: controller.signal
