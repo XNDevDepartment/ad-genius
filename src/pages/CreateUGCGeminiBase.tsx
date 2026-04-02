@@ -105,6 +105,9 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [productImages, setProductImages] = useState<File[]>([]);
   const [sourceImageIds, setSourceImageIds] = useState<string[]>([]);
   const [isAnalyzingImages, setIsAnalyzingImages] = useState<boolean[]>([]);
+  const [guidelineImages, setGuidelineImages] = useState<File[]>([]);
+  const [guidelineSourceIds, setGuidelineSourceIds] = useState<string[]>([]);
+  const [isAnalyzingGuidelines, setIsAnalyzingGuidelines] = useState<boolean[]>([]);
   const [desiredAudience, setDesiredAudience] = useState("");
   const [prodSpecs, setProdSpecs] = useState("");
   const [aiScenarios, setAiScenarios] = useState<AIScenario[]>([]);
