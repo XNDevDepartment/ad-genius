@@ -1147,12 +1147,14 @@ async function recoverQueued(supabase: SupabaseClient<any>): Promise<Response> {
       const completedImages = j.completed ?? 0;
       const unusedImages = totalImages - completedImages;
       if (unusedImages > 0) {
+        const costPerImage = calculateImageCost(j.settings ?? {});
+        const refundAmount = unusedImages * costPerImage;
         await supabase.rpc("refund_user_credits", {
           p_user_id: j.user_id,
-          p_amount: unusedImages, // 1 credit per image
+          p_amount: refundAmount,
           p_reason: "stuck_job_auto_recovery"
         });
-        log("Refunded credits for stuck job", { jobId: j.id, refund: unusedImages });
+        log("Refunded credits for stuck job", { jobId: j.id, refund: refundAmount, costPerImage });
       }
     }
     failedCount++;
