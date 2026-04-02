@@ -648,12 +648,16 @@ async function generateSingleImageWithGemini(
 
   // Check if aspect ratio is natively supported by Gemini 3 Pro
   const useNativeAspect = aspectRatio && aspectRatio !== 'source' && NATIVE_ASPECT_RATIOS.includes(aspectRatio);
+  // 4K + non-source aspect ratio causes Gemini API timeouts — generate at 4K without aspect, then crop locally
+  const use4kFallback = imageSize === '4K' && useNativeAspect;
 
   log("Image generation config", {
     jobId: job.id,
     index,
     aspectRatio: aspectRatio || 'none',
+    imageSize: imageSize || 'default',
     useNativeAspect,
+    use4kFallback,
     hasSourceImage: !!sourceImageUrl
   });
 
