@@ -1491,14 +1491,14 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                       ) : (
                         <>
                           <Sparkles className="h-5 w-5 mr-2" />
-                          {modelVersion === 'gemini-v3' ? t('ugc.generateFree') : t('ugc.generateWithCredits', { credits: numImages, plural: numImages > 1 ? 's' : '' })}
+                          {modelVersion === 'gemini-v3' ? t('ugc.generateFree') : t('ugc.generateWithCredits', { credits: calculateImageCost(imageQuality, numImages, imageSize), plural: calculateImageCost(imageQuality, numImages, imageSize) > 1 ? 's' : '' })}
                         </>
                       )}
                     </Button>
 
                     <p className="text-xs text-muted-foreground mt-2 text-center">
                       {isGenerating ? t('ugc.generating') :
-                        (!canGenerateImages(numImages) && modelVersion !== 'gemini-v3') ? t('ugc.insufficientCredits', { remaining: remainingCredits, needed: numImages }) :
+                        (!canGenerateImages(numImages) && modelVersion !== 'gemini-v3') ? t('ugc.insufficientCredits', { remaining: remainingCredits, needed: calculateImageCost(imageQuality, numImages, imageSize) }) :
                           t('ugc.generationTime')}
                     </p>
 
@@ -1546,7 +1546,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                   ) : (
                     <>
                       <Sparkles className="h-5 w-5 mr-2" />
-                      {modelVersion === 'gemini-v3' ? t('ugc.generateFree') : t('ugc.generateWithCredits', { credits: numImages, plural: numImages > 1 ? 's' : '' })}
+                      {modelVersion === 'gemini-v3' ? t('ugc.generateFree') : t('ugc.generateWithCredits', { credits: calculateImageCost(imageQuality, numImages, imageSize), plural: calculateImageCost(imageQuality, numImages, imageSize) > 1 ? 's' : '' })}
                     </>
                   )}
                 </Button>
