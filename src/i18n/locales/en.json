@@ -1120,6 +1120,11 @@
       "preview": "Product preview",
       "remove": "Remove image"
     },
+    "referenceImages": {
+      "title": "Reference Images (optional)",
+      "tooltip": "Upload up to 2 additional images showing how the product is used, its scale, or context. These help the AI better understand your product but won't be the main focus.",
+      "subtitle": "Show how the product is worn, used, or its size"
+    },
     "productDetails": {
       "title": "Product details (optional)",
       "subtitle": "Provide a few details about how your product is used.",
