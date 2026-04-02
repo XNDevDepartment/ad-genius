@@ -522,7 +522,14 @@ async function generateImages(jobId: string, supabase: SupabaseClient): Promise<
       : typedJob.source_image_id ? [typedJob.source_image_id] : [];
 
     const sourceImageUrls = await getSignedSourceUrls(sourceImageIds, supabase);
-    log("Source images prepared", { jobId, sourceImageCount: sourceImageUrls.length });
+    
+    // Prepare guideline/reference images (stored in settings)
+    const guidelineIds = (typedJob.settings as Record<string, unknown>)?.guidelineImageIds as string[] | undefined;
+    const guidelineUrls = guidelineIds && guidelineIds.length > 0
+      ? await getSignedSourceUrls(guidelineIds, supabase)
+      : [];
+    
+    log("Source images prepared", { jobId, sourceImageCount: sourceImageUrls.length, guidelineImageCount: guidelineUrls.length });
 
     // loop images
     for (let i = 0; i < (typedJob.total ?? 1); i++) {
@@ -535,10 +542,11 @@ async function generateImages(jobId: string, supabase: SupabaseClient): Promise<
         log("Starting image generation", {
           jobId,
           imageIndex: i,
-          usingSourceImage: !!sourceImageUrl
+          usingSourceImage: !!sourceImageUrl,
+          guidelineCount: guidelineUrls.length
         });
 
-        await generateSingleImageWithGemini(typedJob, i, sourceImageUrl, supabase);
+        await generateSingleImageWithGemini(typedJob, i, sourceImageUrl, guidelineUrls, supabase);
         completed++;
 
         const progress = Math.floor((completed / (typedJob.total ?? 1)) * 100);
