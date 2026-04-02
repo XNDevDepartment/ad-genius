@@ -204,9 +204,9 @@ export const useGeminiImageJobUnified = (modelVersion: ModelVersion) => {
     };
   }, [job?.id, job?.status, modelVersion]);
 
-  // Watchdog for stuck jobs
+  // Watchdog for stuck jobs (queued > 30s OR processing > 5 min)
   useEffect(() => {
-    if (!job || job.status !== 'queued') {
+    if (!job || (job.status !== 'queued' && job.status !== 'processing')) {
       if (watchdogRef.current) {
         clearTimeout(watchdogRef.current);
         watchdogRef.current = null;
@@ -215,26 +215,34 @@ export const useGeminiImageJobUnified = (modelVersion: ModelVersion) => {
       return;
     }
 
+    const isProcessing = job.status === 'processing';
+    // For queued jobs: 30s watchdog. For processing jobs: 5 min stale detection.
+    const watchdogDelay = isProcessing ? 5 * 60 * 1000 : 30000;
+
     watchdogRef.current = setTimeout(async () => {
-      if (!isMountedRef.current || !job || job.status !== 'queued') return;
+      if (!isMountedRef.current || !job) return;
       
+      // Re-check the job hasn't moved on
+      if (job.status !== 'queued' && job.status !== 'processing') return;
+
       if (resumeAttemptsRef.current >= 2) {
         console.warn(`[${modelVersion.toUpperCase()} JOB] Too many resume attempts, giving up`);
         return;
       }
 
-      console.log(`[${modelVersion.toUpperCase()} JOB] Job ${job.id} stuck in queued state, attempting resume...`);
+      const reason = isProcessing ? 'stuck in processing' : 'stuck in queued state';
+      console.log(`[${modelVersion.toUpperCase()} JOB] Job ${job.id} ${reason}, attempting resume...`);
       try {
         await api.resumeJob(job.id);
         resumeAttemptsRef.current++;
         toast({
           title: "Resuming Generation",
-          description: "Detected stuck job, attempting to resume...",
+          description: `Detected ${reason}, attempting to resume...`,
         });
       } catch (error) {
         console.error(`[${modelVersion.toUpperCase()} JOB] Failed to resume job:`, error);
       }
-    }, 30000);
+    }, watchdogDelay);
 
     return () => {
       if (watchdogRef.current) {

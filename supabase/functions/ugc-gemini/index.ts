@@ -670,7 +670,7 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
   for(let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++){
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(()=>controller.abort(), 120000);
+      const timeout = setTimeout(()=>controller.abort(), 90000); // 90s to fail before edge function kill
       let res: Response | undefined;
       if (sourceImageUrl) {
         // ----- edits (using Gemini's image editing capabilities) -----
@@ -693,13 +693,26 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
         const imageSize = settings?.imageSize as string | undefined;
         const NATIVE_ASPECT_RATIOS = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
         const useNativeAspect = aspectRatio && aspectRatio !== 'source' && NATIVE_ASPECT_RATIOS.includes(aspectRatio);
+        // 4K + non-source aspect ratio causes Gemini API timeouts — generate at 4K without aspect, then crop locally
+        const use4kFallback = imageSize === '4K' && useNativeAspect;
 
         log("Generating image with Gemini 3 Pro (image edit mode)", {
           jobId: job.id,
           aspectRatio: aspectRatio || 'none',
           imageSize: imageSize || 'default',
-          useNativeAspect
+          useNativeAspect,
+          use4kFallback
         });
+
+        // Build imageConfig: avoid sending 4K + aspectRatio together
+        const imageConfig: Record<string, unknown> = {};
+        if (use4kFallback) {
+          imageConfig.imageSize = '4K'; // 4K only, crop aspect locally after
+          log("4K fallback: sending imageSize only, will crop locally", { jobId: job.id, aspectRatio });
+        } else if (useNativeAspect) {
+          imageConfig.aspectRatio = aspectRatio;
+          if (imageSize) imageConfig.imageSize = imageSize;
+        }
 
         res = await fetch(
           "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent",
@@ -726,7 +739,7 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
               ],
               generationConfig: {
                 responseModalities: ["TEXT", "IMAGE"],
-                ...(useNativeAspect && { imageConfig: { aspectRatio, ...(imageSize && { imageSize }) } })
+                ...(Object.keys(imageConfig).length > 0 && { imageConfig })
               },
             }),
             signal: controller.signal,
@@ -738,13 +751,24 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
         const imageSize = settings?.imageSize as string | undefined;
         const NATIVE_ASPECT_RATIOS = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
         const useNativeAspect = aspectRatio && aspectRatio !== 'source' && NATIVE_ASPECT_RATIOS.includes(aspectRatio);
+        const use4kFallback = imageSize === '4K' && useNativeAspect;
 
         log("Generating image with Gemini 3 Pro (text-to-image mode)", {
           jobId: job.id,
           aspectRatio: aspectRatio || 'none',
           imageSize: imageSize || 'default',
-          useNativeAspect
+          useNativeAspect,
+          use4kFallback
         });
+
+        const imageConfig: Record<string, unknown> = {};
+        if (use4kFallback) {
+          imageConfig.imageSize = '4K';
+          log("4K fallback: sending imageSize only, will crop locally", { jobId: job.id, aspectRatio });
+        } else if (useNativeAspect) {
+          imageConfig.aspectRatio = aspectRatio;
+          if (imageSize) imageConfig.imageSize = imageSize;
+        }
 
         res = await fetch(
           "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent",
@@ -758,7 +782,7 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
               contents: [{ parts: [{ text: prompt }] }],
               generationConfig: {
                 responseModalities: ["TEXT", "IMAGE"],
-                ...(useNativeAspect && { imageConfig: { aspectRatio, ...(imageSize && { imageSize }) } })
+                ...(Object.keys(imageConfig).length > 0 && { imageConfig })
               },
             }),
             signal: controller.signal,
@@ -799,12 +823,22 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
         }
         // Check if native aspect ratio was used (no cropping needed)
         const aspectRatioSetting = settings?.aspectRatio as string | undefined;
-        const NATIVE_ASPECT_RATIOS_CHECK = ['1:1', '3:4', '4:3', '9:16', '16:9'];
+        const imageSizeSetting = settings?.imageSize as string | undefined;
+        const NATIVE_ASPECT_RATIOS_CHECK = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
         const usedNativeAspect = aspectRatioSetting && aspectRatioSetting !== 'source' && NATIVE_ASPECT_RATIOS_CHECK.includes(aspectRatioSetting);
+        const was4kFallback = imageSizeSetting === '4K' && usedNativeAspect;
         
         let fileBytes: Uint8Array;
-        if (usedNativeAspect) {
-          // Native aspect ratio was used - no cropping needed, image already has correct dimensions
+        if (was4kFallback && aspectRatioSetting) {
+          // 4K fallback: generated at 4K without aspect ratio, crop to requested ratio now
+          log("4K fallback: cropping to requested aspect ratio", {
+            jobId: job.id,
+            index,
+            aspectRatio: aspectRatioSetting
+          });
+          fileBytes = await cropBase64ToAspect(b64, aspectRatioSetting);
+        } else if (usedNativeAspect) {
+          // Native aspect ratio was used - no cropping needed
           log("Image generated with native aspect ratio, no crop needed", {
             jobId: job.id,
             index,
@@ -1113,12 +1147,14 @@ async function recoverQueued(supabase: SupabaseClient<any>): Promise<Response> {
       const completedImages = j.completed ?? 0;
       const unusedImages = totalImages - completedImages;
       if (unusedImages > 0) {
+        const costPerImage = calculateImageCost(j.settings ?? {});
+        const refundAmount = unusedImages * costPerImage;
         await supabase.rpc("refund_user_credits", {
           p_user_id: j.user_id,
-          p_amount: unusedImages, // 1 credit per image
+          p_amount: refundAmount,
           p_reason: "stuck_job_auto_recovery"
         });
-        log("Refunded credits for stuck job", { jobId: j.id, refund: unusedImages });
+        log("Refunded credits for stuck job", { jobId: j.id, refund: refundAmount, costPerImage });
       }
     }
     failedCount++;
