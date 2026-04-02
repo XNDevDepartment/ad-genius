@@ -30,13 +30,12 @@ const AppLayout = () => {
   return (
     <div className="min-h-screen bg-background">
 
-      {/* Payment Failed Banner - shown on both mobile and desktop */}
-      {user && subscriptionData?.payment_failed_at && (
-        <PaymentFailedBanner paymentFailedAt={subscriptionData.payment_failed_at} />
-      )}
-
       {/* Mobile Layout */}
       <div className="lg:hidden">
+        {/* Payment Failed Banner - Mobile */}
+        {user && subscriptionData?.payment_failed_at && (
+          <PaymentFailedBanner paymentFailedAt={subscriptionData.payment_failed_at} />
+        )}
         {/* <AnnouncementBanner /> */}
         {showHeader && user && <NavigationHeader />}
         <main className="pb-20">
@@ -56,6 +55,10 @@ const AppLayout = () => {
             <div className="flex min-h-screen w-full">
               <AppSidebar />
               <div className="flex-1 flex flex-col">
+                {/* Payment Failed Banner - Desktop */}
+                {subscriptionData?.payment_failed_at && (
+                  <PaymentFailedBanner paymentFailedAt={subscriptionData.payment_failed_at} />
+                )}
                 <main className="flex-1">
                   <Outlet />
                 </main>
