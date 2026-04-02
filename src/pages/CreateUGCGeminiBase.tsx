@@ -855,6 +855,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
           aspectRatio: aspectRatio,
         },
         source_image_ids: idsToUse,
+        guidelineImageIds: guidelineSourceIds.length > 0 ? guidelineSourceIds : undefined,
         desiredAudience: desiredAudience || undefined,
         prodSpecs: prodSpecs || undefined,
       });
