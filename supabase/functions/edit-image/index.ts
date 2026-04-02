@@ -229,7 +229,8 @@ Deno.serve(async (req) => {
     const publicUrl = publicUrlData.publicUrl;
 
     // Insert record into ugc_images
-    await supabaseAdmin.from("ugc_images").insert({
+    const { error: insertError } = await supabaseAdmin.from("ugc_images").insert({
+      job_id: crypto.randomUUID(),
       user_id: userId,
       public_url: publicUrl,
       storage_path: storagePath,
@@ -241,6 +242,10 @@ Deno.serve(async (req) => {
         has_mask: !!maskBase64,
       },
     });
+
+    if (insertError) {
+      console.error("Failed to insert edit record:", insertError);
+    }
 
     console.log("Edit complete, returning URL:", publicUrl);
 
