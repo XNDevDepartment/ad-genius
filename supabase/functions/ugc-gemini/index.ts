@@ -675,7 +675,7 @@ async function generateImages(jobId: string, supabase: SupabaseClient<any>): Pro
 
 // Generate 1 image using Google Gemini (with retries/backoff)
 // deno-lint-ignore no-explicit-any
-async function generateSingleImageWithGemini(job: ImageJob, index: number, sourceImageUrl: string | null, supabase: SupabaseClient<any>): Promise<void> {
+async function generateSingleImageWithGemini(job: ImageJob, index: number, sourceImageUrl: string | null, guidelineImageUrls: string[], supabase: SupabaseClient<any>): Promise<void> {
   const MAX_ATTEMPTS = 3;
   const settings = job?.settings as Record<string, unknown> | null;
   const size = (settings?.size as string) ?? "1024x1024";
