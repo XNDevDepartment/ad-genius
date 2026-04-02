@@ -1,59 +1,68 @@
 
 
-## Fix: Edit Image Not Saving to Database
+## Fix: 4K Image Generation Always Times Out
 
 ### Root Cause
 
-The `ugc_images` table has a **NOT NULL** constraint on `job_id`, but the `edit-image` edge function never provides a `job_id` when inserting the edited image record (line 232). The insert fails silently because the code doesn't check the insert result for errors. The function logs "Edit complete" and returns the URL to the frontend, but the image is orphaned in storage with no database record.
+Database evidence is conclusive:
+- **4K + `source`**: completes (but `imageConfig` is actually empty — no 4K is sent to Gemini)
+- **4K + any aspect ratio**: always times out (all 5 recent attempts failed)
+- **2K + any aspect ratio**: always works (5+ recent successes)
 
-This is why:
-- The edit appeared to succeed in the modal (the URL was returned)
-- But the image is invisible in the Library (no DB record)
-- And searching Supabase tables returns nothing
+The `use4kFallback` pattern (sending `imageSize: '4K'` without aspect ratio, then cropping locally) was the previous fix attempt, but the **model itself hangs on `imageSize: '4K'`** regardless of whether aspect ratio is included. The `gemini-3.1-flash-image-preview` model simply does not handle 4K generation reliably — it causes the request to hang past the 90s timeout.
 
-### Immediate Data Recovery
+### Fix Strategy
 
-Your most recent edit exists in storage. A migration will insert the missing record with a generated `job_id`.
+Since the Gemini model cannot reliably produce 4K images, the edge function should **request 2K from Gemini and then upscale server-side to 4K dimensions** using canvas-based scaling in Deno. This way:
 
-**URL:** `https://dhqdamfisdbbcieqlpvt.supabase.co/storage/v1/object/public/ugc/4e962775-cb55-4301-bc33-081eacb96c46/edit-4e962775-cb55-4301-bc33-081eacb96c46-1775143978094.png`
+1. The Gemini call succeeds (2K works reliably)
+2. The output image is at 4K pixel dimensions
+3. The user gets a noticeably larger image than 2K
+4. No timeout issues
 
-### Code Fix
+**Implementation:**
 
-**File: `supabase/functions/edit-image/index.ts`**
+1. When `imageSize === '4K'`, send `imageSize: '2K'` + native aspect ratio to Gemini
+2. After receiving the image, upscale it to 4K target dimensions using a pure-Deno PNG decode → resize → re-encode pipeline (using `ImageMagick` WASM or simple bilinear resize)
+3. If upscaling fails for any reason, still save the 2K image (graceful degradation)
 
-Two changes:
+Actually, Deno edge functions don't have canvas or ImageMagick. A simpler and honest approach:
 
-1. **Generate a `job_id`** for the insert — use `crypto.randomUUID()` since edits don't have a real job
-2. **Check the insert result** for errors and log them (so future failures aren't silent)
+**Revised strategy — cap at 2K, remove 4K option or relabel:**
 
-```typescript
-// Before (line 232-243):
-await supabaseAdmin.from("ugc_images").insert({
-  user_id: userId,
-  public_url: publicUrl,
-  storage_path: storagePath,
-  prompt: instruction,
-  source_image_id: originalImageId || null,
-  meta: { source: "edit", original_image_url: imageUrl, has_mask: !!maskBase64 },
-});
+Since the Gemini Flash model doesn't support 4K and there's no server-side upscaling available in edge functions, the options are:
 
-// After:
-const { error: insertError } = await supabaseAdmin.from("ugc_images").insert({
-  job_id: crypto.randomUUID(),
-  user_id: userId,
-  public_url: publicUrl,
-  storage_path: storagePath,
-  prompt: instruction,
-  source_image_id: originalImageId || null,
-  meta: { source: "edit", original_image_url: imageUrl, has_mask: !!maskBase64 },
-});
+**Option A (recommended):** When 4K is selected, silently send `2K` to Gemini with native aspect ratio. The image generates successfully. The user gets 2K quality. Adjust credit cost so 4K doesn't overcharge (or keep it as a "premium" tier that provides 2K).
 
-if (insertError) {
-  console.error("Failed to insert edit record:", insertError);
-}
+**Option B:** Remove the 4K option from the UI entirely until a model that supports it is available.
+
+### Proposed Changes (Option A)
+
+**File: `supabase/functions/ugc-gemini/index.ts`**
+
+In both image-edit and text-to-image code paths, replace the 4K fallback logic:
+
+```text
+Before:
+  if (use4kFallback) {
+    imageConfig.imageSize = '4K';
+  }
+
+After:
+  if (use4kFallback) {
+    imageConfig.imageSize = '2K';          // Gemini Flash can't do 4K reliably
+    if (useNativeAspect) imageConfig.aspectRatio = aspectRatio;
+    log("4K requested but downgraded to 2K (model limitation)", ...);
+  }
 ```
 
+This change affects **3 locations** in the file (image-edit mode, text-to-image mode, and the post-generation crop logic which checks `was4kFallback`).
+
+**File: `supabase/functions/ugc-gemini-v3/index.ts`** — same fix applied.
+
+The post-generation crop section (`was4kFallback`) should be updated to skip the special crop path since we're now sending native aspect ratio with 2K.
+
 ### Files Modified
-1. `supabase/functions/edit-image/index.ts` — add `job_id` to insert + error checking
-2. New migration — insert the orphaned edit image record into `ugc_images`
+1. `supabase/functions/ugc-gemini/index.ts` — downgrade 4K requests to 2K + native aspect ratio
+2. `supabase/functions/ugc-gemini-v3/index.ts` — same fix
 
