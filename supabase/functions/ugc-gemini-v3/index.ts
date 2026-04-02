@@ -770,8 +770,9 @@ async function generateSingleImageWithGemini(
         };
 
         if (use4kFallback) {
-          generationConfig.imageConfig = { imageSize: '4K' };
-          log("4K fallback (text-to-image): sending imageSize only, will crop locally", { jobId: job.id, index, aspectRatio });
+          // Gemini Flash can't do 4K reliably — downgrade to 2K with native aspect ratio
+          generationConfig.imageConfig = { imageSize: '2K', aspectRatio };
+          log("4K requested but downgraded to 2K (model limitation)", { jobId: job.id, index, aspectRatio });
         } else if (useNativeAspect) {
           generationConfig.imageConfig = { aspectRatio, ...(imageSize && { imageSize }) };
           log("Using native API aspect ratio (text-to-image)", { jobId: job.id, index, aspectRatio, imageSize });
