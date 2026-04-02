@@ -55,6 +55,10 @@ const AppLayout = () => {
             <div className="flex min-h-screen w-full">
               <AppSidebar />
               <div className="flex-1 flex flex-col">
+                {/* Payment Failed Banner - Desktop */}
+                {subscriptionData?.payment_failed_at && (
+                  <PaymentFailedBanner paymentFailedAt={subscriptionData.payment_failed_at} />
+                )}
                 <main className="flex-1">
                   <Outlet />
                 </main>
