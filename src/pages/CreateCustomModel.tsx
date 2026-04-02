@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { toast } from "@/hooks/use-toast";
 import MultiImageUploader from "@/components/MultiImageUploader";
+import { PageTransition } from "@/components/PageTransition";
 
 type ModelType = "portrait" | "fullbody" | "fashion";
 type TrainingFocus = "face" | "body" | "style";
@@ -85,6 +86,7 @@ const CreateCustomModel = () => {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
@@ -301,6 +303,7 @@ const CreateCustomModel = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

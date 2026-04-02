@@ -8,6 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "@/hooks/use-toast";
 import ImageUploader from "@/components/ImageUploader";
 import { ProductStudioSettings } from "@/components/ProductStudioSettings";
+import { PageTransition } from "@/components/PageTransition";
 
 export type BackgroundType = "white" | "black" | "gradient" | "custom" | "scene";
 export type ShadowStyle = "none" | "soft" | "hard" | "reflection";
@@ -73,6 +74,7 @@ const ProductStudioBackground = () => {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
@@ -217,6 +219,7 @@ const ProductStudioBackground = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

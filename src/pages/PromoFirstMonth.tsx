@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import HeaderSection from "@/components/landing/HeaderSection";
 import { useState, useEffect } from "react";
 import { trackInitiateCheckout, trackViewContent } from "@/lib/metaPixel";
+import { PageTransition } from "@/components/PageTransition";
 
 const PromoFirstMonth = () => {
   const navigate = useNavigate();
@@ -67,6 +68,7 @@ const PromoFirstMonth = () => {
   ];
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       {/* <HeaderSection /> */}
       
@@ -163,6 +165,7 @@ const PromoFirstMonth = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

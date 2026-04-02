@@ -9,6 +9,7 @@ import { MinimalHeader } from '@/components/landing-v2/MinimalHeader';
 import { MinimalFooter } from '@/components/landing-v2/MinimalFooter';
 import { getIntegrationBySlug, integrations } from '@/data/integrations';
 import { buildFAQPageSchema, buildBreadcrumbSchema, buildWebPageSchema } from '@/lib/schema';
+import { PageTransition } from '@/components/PageTransition';
 
 const IntegrationLanding = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -32,7 +33,7 @@ const IntegrationLanding = () => {
   const pageSchema = buildWebPageSchema(integration.title, integration.description, `/integrations/${integration.slug}`);
 
   return (
-    <>
+    <PageTransition>
       <SEO
         title={integration.metaTitle}
         description={integration.metaDescription}
@@ -232,7 +233,7 @@ const IntegrationLanding = () => {
         
         <MinimalFooter />
       </div>
-    </>
+    </PageTransition>
   );
 };
 

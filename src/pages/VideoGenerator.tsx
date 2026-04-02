@@ -24,6 +24,7 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useTranslation } from "react-i18next";
 import { VideoSettingsPanel, VideoSettings } from "@/components/VideoSettings";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { PageTransition } from "@/components/PageTransition";
 
 
 
@@ -551,6 +552,7 @@ export default function VideoGenerator() {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen p-4 md:p-8 bg-background">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center gap-3">
@@ -922,5 +924,6 @@ export default function VideoGenerator() {
         onSelect={handleSourceImageSelect}
       />
     </div>
+    </PageTransition>
   );
 }

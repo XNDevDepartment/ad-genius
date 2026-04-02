@@ -1,6 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
+
+const cardVariants = {
+  hidden: { opacity: 0, scale: 0.94, y: 10 },
+  visible: (i: number) => ({
+    opacity: 1, scale: 1, y: 0,
+    transition: { delay: Math.min(i * 0.04, 0.5), duration: 0.3, ease: [0.25, 0.1, 0.25, 1] as const },
+  }),
+};
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, PlusCircle, ExternalLink, RotateCcw, ImageIcon, Video, Images, RefreshCw, Pencil } from "lucide-react";
@@ -216,6 +225,12 @@ function ImageCard({ img, orientation, onOpenInLibrary, onAnimateImage, onEditIm
 }) {
   const isReady = img?.url;
   return (
+    <motion.div
+      custom={index}
+      initial="hidden"
+      animate="visible"
+      variants={cardVariants}
+    >
     <Card className="rounded-apple shadow-sm">
       <CardContent className="p-4">
         <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -258,6 +273,7 @@ function ImageCard({ img, orientation, onOpenInLibrary, onAnimateImage, onEditIm
         </div>
       </CardContent>
     </Card>
+    </motion.div>
   );
 }
 

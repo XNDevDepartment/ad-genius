@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Lock } from 'lucide-react';
+import { PageTransition } from '@/components/PageTransition';
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -128,6 +129,7 @@ const ResetPassword = () => {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
@@ -239,6 +241,7 @@ const ResetPassword = () => {
         </CardContent>
       </Card>
     </div>
+    </PageTransition>
   );
 };
 

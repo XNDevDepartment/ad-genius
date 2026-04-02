@@ -7,6 +7,7 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { toast } from "@/hooks/use-toast";
 import ImageUploader from "@/components/ImageUploader";
 import { MagazineSettings } from "@/components/MagazineSettings";
+import { PageTransition } from "@/components/PageTransition";
 
 export type MagazineStyle = "vogue" | "street" | "luxury" | "avant-garde" | "classic" | "cinematic";
 export type ColorGrading = "warm" | "cool" | "bw" | "vintage" | "vibrant";
@@ -73,6 +74,7 @@ const MagazinePhotoshoot = () => {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
@@ -227,6 +229,7 @@ const MagazinePhotoshoot = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

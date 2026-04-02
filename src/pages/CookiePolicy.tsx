@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import SEO from "@/components/SEO";
 import { buildWebPageSchema } from "@/lib/schema";
+import { PageTransition } from "@/components/PageTransition";
 
 const CookiePolicy = () => {
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <SEO
         title="Cookie Policy"
@@ -224,6 +226,7 @@ const CookiePolicy = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

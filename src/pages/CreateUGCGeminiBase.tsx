@@ -41,6 +41,7 @@ import AspectRatioSelector, { AspectRatio } from "@/components/AspectRatioSelect
 import { SIZE_MAP } from "@/lib/aspectSizes";
 import { PostGenerationUpgradeModal } from "@/components/PostGenerationUpgradeModal";
 import { ModelVersion } from "@/api/ugc-gemini-unified";
+import { PageTransition } from "@/components/PageTransition";
 
 interface GeneratedImage {
   id: string;
@@ -996,6 +997,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const pageTitle = modelVersion === 'gemini-v3' ? 'UGC Creator (Gemini 3.0 Test)' : t('ugc.title');
 
   return (
+    <PageTransition>
     <TooltipProvider delayDuration={120} skipDelayDuration={400}>
       <div ref={topRef} className="min-h-screen bg-background relative overflow-y-auto">
         {/* Loading overlay removed - no longer needed with stateless scenario API */}
@@ -1747,6 +1749,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
         />
       </div>
     </TooltipProvider>
+    </PageTransition>
   );
 };
 

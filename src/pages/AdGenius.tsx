@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { PageTransition } from "@/components/PageTransition";
 
 const AdGenius = () => {
   const navigate = useNavigate();
@@ -33,6 +34,7 @@ const AdGenius = () => {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
@@ -175,6 +177,7 @@ const AdGenius = () => {
         </Card>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

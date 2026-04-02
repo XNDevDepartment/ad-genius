@@ -32,6 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { PageTransition } from '@/components/PageTransition';
 
 interface Affiliate {
   id: string;
@@ -252,6 +253,7 @@ const AffiliateDashboard = () => {
 
   // Active dashboard
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <MinimalHeader />
       <main className="pt-24 pb-16 px-4">
@@ -508,6 +510,7 @@ const AffiliateDashboard = () => {
       </main>
       <MinimalFooter />
     </div>
+    </PageTransition>
   );
 };
 

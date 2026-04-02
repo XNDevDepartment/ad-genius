@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HelpLayout } from "@/components/help/HelpLayout";
 import { SEO } from "@/components/SEO";
 import { buildTechArticleSchema, buildBreadcrumbSchema } from "@/lib/schema";
+import { PageTransition } from "@/components/PageTransition";
 
 const BASE_URL = "https://dhqdamfisdbbcieqlpvt.supabase.co/functions/v1/api-gateway";
 
@@ -184,6 +185,7 @@ const IntegrationsDocsPage = () => {
   };
 
   return (
+    <PageTransition>
     <HelpLayout title="Integrations" breadcrumbTitle="Integrations">
       <SEO
         title="Integrations — ProduktPix API"
@@ -467,6 +469,7 @@ const IntegrationsDocsPage = () => {
         </Card>
       </div>
     </HelpLayout>
+    </PageTransition>
   );
 };
 

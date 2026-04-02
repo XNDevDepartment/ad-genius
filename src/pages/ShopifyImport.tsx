@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { shopifyImportApi, ShopifyProduct, getProxiedImageUrl } from '@/lib/api/shopify-import';
+import { PageTransition } from '@/components/PageTransition';
 
 export default function ShopifyImport() {
   const { t } = useTranslation();
@@ -160,6 +161,7 @@ export default function ShopifyImport() {
   };
 
   return (
+    <PageTransition>
     <div className="container max-w-6xl mx-auto py-8 px-4">
       {/* Header */}
       <div className="mb-8">
@@ -439,5 +441,6 @@ export default function ShopifyImport() {
           </div>
         )}
     </div>
+    </PageTransition>
   );
 }

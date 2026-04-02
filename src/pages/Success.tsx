@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { trackPurchase } from '@/lib/metaPixel';
 import { supabase } from '@/integrations/supabase/client';
+import { PageTransition } from '@/components/PageTransition';
 
 // Plan prices for tracking
 const PLAN_PRICES: Record<string, { monthly: number; yearly: number }> = {
@@ -101,6 +102,7 @@ export default function Success() {
   }, [navigate]);
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md text-center">
         <CardHeader className="space-y-4">
@@ -170,5 +172,6 @@ export default function Success() {
         </CardContent>
       </Card>
     </div>
+    </PageTransition>
   );
 }

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, Loader2, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { PageTransition } from '@/components/PageTransition';
 
 type ActivationState = 'loading' | 'success' | 'already_activated' | 'expired' | 'invalid' | 'error';
 
@@ -199,6 +200,7 @@ const ActivateAccount = () => {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
@@ -209,6 +211,7 @@ const ActivateAccount = () => {
         </CardContent>
       </Card>
     </div>
+    </PageTransition>
   );
 };
 

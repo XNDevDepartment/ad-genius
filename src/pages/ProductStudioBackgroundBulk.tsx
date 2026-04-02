@@ -8,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import MultiImageUploader from "@/components/MultiImageUploader";
 import { ProductStudioSettings } from "@/components/ProductStudioSettings";
 import { StudioSettings } from "./ProductStudioBackground";
+import { PageTransition } from "@/components/PageTransition";
 
 const ProductStudioBackgroundBulk = () => {
   const navigate = useNavigate();
@@ -73,6 +74,7 @@ const ProductStudioBackgroundBulk = () => {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
@@ -230,6 +232,7 @@ const ProductStudioBackgroundBulk = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

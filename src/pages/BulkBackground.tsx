@@ -25,6 +25,7 @@ import { GarmentLibraryPicker } from "@/components/GarmentLibraryPicker";
 import { BulkUrlImportModal } from "@/components/BulkUrlImportModal";
 import { ShopifyImportModal } from "@/components/ShopifyImportModal";
 import { SourceImage } from "@/hooks/useSourceImages";
+import { PageTransition } from "@/components/PageTransition";
 
 const MAX_IMAGES = 20;
 
@@ -364,6 +365,7 @@ const BulkBackground = () => {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl lg:max-w-7xl mx-auto space-y-6">
         {/* Header */}
@@ -828,6 +830,7 @@ const BulkBackground = () => {
         )}
       </div>
     </div>
+    </PageTransition>
   );
 };
 

@@ -11,6 +11,7 @@ import { MinimalFooter } from '@/components/landing-v2/MinimalFooter';
 import { useTranslation } from 'react-i18next';
 import SEO from '@/components/SEO';
 import { buildOrganizationSchema } from '@/lib/schema';
+import { PageTransition } from '@/components/PageTransition';
 
 const AffiliateLanding = () => {
   const { t } = useTranslation();
@@ -26,6 +27,7 @@ const AffiliateLanding = () => {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <SEO
         title="Affiliate Program - Earn 15% Commission"
@@ -74,6 +76,7 @@ const AffiliateLanding = () => {
       
       <MinimalFooter />
     </div>
+    </PageTransition>
   );
 };
 

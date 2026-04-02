@@ -10,6 +10,7 @@ import { ShopifyGenerationModal, type GenerationType, type GenerationSettings } 
 import { ShopifyGeneratedAssets } from "@/components/shopify/ShopifyGeneratedAssets";
 import { useShopifyDashboard } from "@/hooks/useShopifyDashboard";
 import { toast } from "sonner";
+import { PageTransition } from "@/components/PageTransition";
 
 export default function ShopifyProducts() {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ export default function ShopifyProducts() {
   
 
   return (
-    <>
+    <PageTransition>
       <SEO title="Shopify Dashboard" description="Manage your Shopify products and generate AI images" path="/shopify/products" />
       <div className="p-4 md:p-6 lg:p-8 space-y-6 max-w-[1400px] mx-auto">
         {/* Store Header */}
@@ -132,6 +133,6 @@ export default function ShopifyProducts() {
           />
         )}
       </div>
-    </>
+    </PageTransition>
   );
 }

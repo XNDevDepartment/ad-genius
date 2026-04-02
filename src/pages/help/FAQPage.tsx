@@ -10,6 +10,7 @@ import { HelpLayout } from "@/components/help/HelpLayout";
 import { useTranslation } from "react-i18next";
 import SEO from "@/components/SEO";
 import { buildFAQPageSchema, buildBreadcrumbSchema } from "@/lib/schema";
+import { PageTransition } from "@/components/PageTransition";
 
 const FAQPage = () => {
   const { t } = useTranslation();
@@ -107,6 +108,7 @@ const FAQPage = () => {
   })).filter(category => category.questions.length > 0);
 
   return (
+    <PageTransition>
     <HelpLayout title={t('help.faq.title')} breadcrumbTitle="FAQ">
       <div className="space-y-8">
         {/* Search Section */}
@@ -197,6 +199,7 @@ const FAQPage = () => {
         </Card>
       </div>
     </HelpLayout>
+    </PageTransition>
   );
 };
 

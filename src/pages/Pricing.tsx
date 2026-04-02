@@ -18,6 +18,7 @@ import SEO from "@/components/SEO";
 import { buildProductSchema } from "@/lib/schema";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { PageTransition } from "@/components/PageTransition";
 
 const plans = [
   {
@@ -132,6 +133,7 @@ const Pricing = () => {
   const faqKeys = [0, 1, 2, 3, 4, 5, 6];
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <SEO
         title="Pricing Plans"
@@ -533,6 +535,7 @@ const Pricing = () => {
       </main>
       {!user && <MinimalFooter />}
     </div>
+    </PageTransition>
   );
 };
 

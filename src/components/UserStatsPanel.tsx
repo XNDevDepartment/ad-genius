@@ -5,6 +5,15 @@ import { Button } from "@/components/ui/button";
 import { useUserStats } from "@/hooks/useUserStats";
 import { BarChart3, Image, Heart, Coins } from "lucide-react";
 import { useTranslation } from 'react-i18next';
+import { motion } from "framer-motion";
+
+const statVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: (i: number) => ({
+    opacity: 1, y: 0,
+    transition: { delay: i * 0.06, duration: 0.3, ease: [0.25, 0.1, 0.25, 1] as const },
+  }),
+};
 
 export const UserStatsPanel = () => {
   const { stats, loading, error } = useUserStats();
@@ -83,37 +92,37 @@ export const UserStatsPanel = () => {
 
         {/* Stats Grid - Hidden on mobile */}
         <div className="hidden lg:grid grid-cols-2 gap-4">
-          <div className="space-y-1">
+          <motion.div custom={0} initial="hidden" animate="visible" variants={statVariants} className="space-y-1">
             <div className="flex items-center gap-2">
               <Image className="h-4 w-4 text-primary" />
               <span className="text-xs text-muted-foreground">{t('userStats.totalImages')}</span>
             </div>
             <p className="text-2xl font-bold">{stats.totalImages}</p>
-          </div>
+          </motion.div>
 
-          <div className="space-y-1">
+          <motion.div custom={1} initial="hidden" animate="visible" variants={statVariants} className="space-y-1">
             <div className="flex items-center gap-2">
               <Image className="h-4 w-4 text-primary" />
               <span className="text-xs text-muted-foreground">{t('userStats.thisMonth')}</span>
             </div>
             <p className="text-2xl font-bold">{stats.imagesThisMonth}</p>
-          </div>
+          </motion.div>
 
-          <div className="space-y-1">
+          <motion.div custom={2} initial="hidden" animate="visible" variants={statVariants} className="space-y-1">
             <div className="flex items-center gap-2">
               <Heart className="h-4 w-4 text-primary" />
               <span className="text-xs text-muted-foreground">{t('userStats.favorites')}</span>
             </div>
             <p className="text-2xl font-bold">{stats.favoritesCount}</p>
-          </div>
+          </motion.div>
 
-          <div className="space-y-1">
+          <motion.div custom={3} initial="hidden" animate="visible" variants={statVariants} className="space-y-1">
             <div className="flex items-center gap-2">
               <Coins className="h-4 w-4 text-primary" />
               <span className="text-xs text-muted-foreground">{t('userStats.used')}</span>
             </div>
             <p className="text-2xl font-bold">{stats.creditsUsed}</p>
-          </div>
+          </motion.div>
         </div>
       </CardContent>
     </Card>
