@@ -823,12 +823,22 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
         }
         // Check if native aspect ratio was used (no cropping needed)
         const aspectRatioSetting = settings?.aspectRatio as string | undefined;
-        const NATIVE_ASPECT_RATIOS_CHECK = ['1:1', '3:4', '4:3', '9:16', '16:9'];
+        const imageSizeSetting = settings?.imageSize as string | undefined;
+        const NATIVE_ASPECT_RATIOS_CHECK = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
         const usedNativeAspect = aspectRatioSetting && aspectRatioSetting !== 'source' && NATIVE_ASPECT_RATIOS_CHECK.includes(aspectRatioSetting);
+        const was4kFallback = imageSizeSetting === '4K' && usedNativeAspect;
         
         let fileBytes: Uint8Array;
-        if (usedNativeAspect) {
-          // Native aspect ratio was used - no cropping needed, image already has correct dimensions
+        if (was4kFallback && aspectRatioSetting) {
+          // 4K fallback: generated at 4K without aspect ratio, crop to requested ratio now
+          log("4K fallback: cropping to requested aspect ratio", {
+            jobId: job.id,
+            index,
+            aspectRatio: aspectRatioSetting
+          });
+          fileBytes = await cropBase64ToAspect(b64, aspectRatioSetting);
+        } else if (usedNativeAspect) {
+          // Native aspect ratio was used - no cropping needed
           log("Image generated with native aspect ratio, no crop needed", {
             jobId: job.id,
             index,
