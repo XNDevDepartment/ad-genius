@@ -151,7 +151,8 @@ serve(async (req) => {
     });
 
     // Update subscriber record (status sync only)
-    await supabaseService.from("subscribers").upsert({
+    // Clear stale payment failure flags when an active subscription is detected (cancel-resubscribe fix)
+    const upsertData: Record<string, any> = {
       email: user.email!,
       user_id: user.id,
       stripe_customer_id: customerId,
@@ -159,7 +160,15 @@ serve(async (req) => {
       subscription_tier: subscriptionTier,
       subscription_end: subscriptionEnd,
       updated_at: new Date().toISOString(),
-    }, { onConflict: "email" });
+    };
+    
+    if (active) {
+      upsertData.subscription_status = 'active';
+      upsertData.payment_failed_at = null;
+      log("Clearing stale payment failure flags for active subscription");
+    }
+    
+    await supabaseService.from("subscribers").upsert(upsertData, { onConflict: "email" });
 
     // FALLBACK: If user is now subscribed but webhook never fired (last_reset_at is NULL),
     // allocate credits as a safety net to prevent users from paying but getting no credits.
