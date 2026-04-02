@@ -721,8 +721,10 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
         // Build imageConfig: avoid sending 4K + aspectRatio together
         const imageConfig: Record<string, unknown> = {};
         if (use4kFallback) {
-          imageConfig.imageSize = '4K';
-          log("4K fallback: sending imageSize only, will crop locally", { jobId: job.id, aspectRatio });
+          // Gemini Flash can't do 4K reliably — downgrade to 2K with native aspect ratio
+          imageConfig.imageSize = '2K';
+          imageConfig.aspectRatio = aspectRatio;
+          log("4K requested but downgraded to 2K (model limitation)", { jobId: job.id, aspectRatio });
         } else if (useNativeAspect) {
           imageConfig.aspectRatio = aspectRatio;
           if (imageSize) imageConfig.imageSize = imageSize;
