@@ -1,78 +1,59 @@
 
 
-## Multi-Image Upload for UGC: Main + Reference Images
+## Fix: Edit Image Not Saving to Database
 
-### What Changes
+### Root Cause
 
-Split the single product image upload into two sections:
-- **Left**: Main product image (1 image, required) — this is the product the AI must reproduce
-- **Right**: Reference/guideline images (up to 2, optional) — these help the AI understand usage, scale, context
+The `ugc_images` table has a **NOT NULL** constraint on `job_id`, but the `edit-image` edge function never provides a `job_id` when inserting the edited image record (line 232). The insert fails silently because the code doesn't check the insert result for errors. The function logs "Edit complete" and returns the URL to the frontend, but the image is orphaned in storage with no database record.
 
-All images get uploaded as source images and sent to the edge function. The Gemini prompt is updated to distinguish the "main product" image from "reference/guideline" images.
+This is why:
+- The edit appeared to succeed in the modal (the URL was returned)
+- But the image is invisible in the Library (no DB record)
+- And searching Supabase tables returns nothing
 
-### Frontend Changes
+### Immediate Data Recovery
 
-**1. `src/pages/CreateUGCGeminiBase.tsx`**
+Your most recent edit exists in storage. A migration will insert the missing record with a generated `job_id`.
 
-- Add new state: `guidelineImages: File[]` and `guidelineSourceIds: string[]`
-- Change `maxImages={1}` on the existing `MultiImageUploader` (keep as-is for main image)
-- Add a second upload area to the right of the main uploader for guideline images (using another `MultiImageUploader` with `maxImages={2}`)
-- Layout: on desktop, use a 2-column grid (`grid-cols-2`); on mobile, stack vertically
-- Label the left side "Main Product Image" and the right side "Reference Images (optional)" with a helper tooltip explaining the purpose
-- When generating, merge IDs: `[mainSourceId, ...guidelineSourceIds]` into `source_image_ids`, and pass a new field `mainSourceImageIndex: 0` (or `guidelineImageIds: [...]`) so the edge function knows which is the main image
-- Update `handleStartFromScratch` to also clear guideline state
-- Update replicate mode to restore guideline images
+**URL:** `https://dhqdamfisdbbcieqlpvt.supabase.co/storage/v1/object/public/ugc/4e962775-cb55-4301-bc33-081eacb96c46/edit-4e962775-cb55-4301-bc33-081eacb96c46-1775143978094.png`
 
-**2. `src/api/ugc-gemini-unified.ts`**
+### Code Fix
 
-- Add `guidelineImageIds?: string[]` to `CreateJobPayload`
+**File: `supabase/functions/edit-image/index.ts`**
 
-**3. Add i18n keys** for the new labels in all 5 locale files (en, pt, es, fr, de)
+Two changes:
 
-### Backend Changes
+1. **Generate a `job_id`** for the insert — use `crypto.randomUUID()` since edits don't have a real job
+2. **Check the insert result** for errors and log them (so future failures aren't silent)
 
-**4. `supabase/functions/ugc-gemini/index.ts`**
+```typescript
+// Before (line 232-243):
+await supabaseAdmin.from("ugc_images").insert({
+  user_id: userId,
+  public_url: publicUrl,
+  storage_path: storagePath,
+  prompt: instruction,
+  source_image_id: originalImageId || null,
+  meta: { source: "edit", original_image_url: imageUrl, has_mask: !!maskBase64 },
+});
 
-- In `createImageJob`: pass `guidelineImageIds` into the job settings so it persists
-- In `processImageJob`: fetch ALL source image URLs, but separate main vs. guideline based on `guidelineImageIds` from settings
-- In `generateSingleImageWithGemini`: change signature to accept `mainImageUrl` + `guidelineImageUrls[]`
-- In the Gemini API call body, send multiple `inlineData` parts:
-  ```
-  parts: [
-    { text: prompt },
-    { inlineData: { mimeType, data: mainImageBase64 } },      // main product
-    ...guidelineImages.map(g => ({ inlineData: { ... } }))     // references
-  ]
-  ```
-- Update the prompt text to instruct Gemini:
-  - "The FIRST image is the main product — reproduce it exactly"
-  - "Additional images are reference guidelines showing how the product is used, its scale, or context. Use them to understand the product better but always feature the product from the first image."
+// After:
+const { error: insertError } = await supabaseAdmin.from("ugc_images").insert({
+  job_id: crypto.randomUUID(),
+  user_id: userId,
+  public_url: publicUrl,
+  storage_path: storagePath,
+  prompt: instruction,
+  source_image_id: originalImageId || null,
+  meta: { source: "edit", original_image_url: imageUrl, has_mask: !!maskBase64 },
+});
 
-**5. `supabase/functions/ugc-gemini-v3/index.ts`**
-
-- Apply the same multi-image changes for consistency
-
-### UI Layout Detail
-
-```text
-┌─────────────────────────────────────────────┐
-│  Product & Niche                            │
-│  ┌──────────────┐  ┌──────────────────────┐ │
-│  │ Main Product │  │ Reference Images     │ │
-│  │ Image        │  │ (optional, up to 2)  │ │
-│  │              │  │ ┌────┐ ┌────┐        │ │
-│  │  [uploader]  │  │ │ +  │ │ +  │        │ │
-│  │              │  │ └────┘ └────┘        │ │
-│  └──────────────┘  └──────────────────────┘ │
-│  [Library] [URL] [Shopify]                  │
-│  ...                                        │
-└─────────────────────────────────────────────┘
+if (insertError) {
+  console.error("Failed to insert edit record:", insertError);
+}
 ```
 
 ### Files Modified
-1. `src/pages/CreateUGCGeminiBase.tsx` — split upload UI, new guideline state, merge IDs on generate
-2. `src/api/ugc-gemini-unified.ts` — add `guidelineImageIds` to payload type
-3. `supabase/functions/ugc-gemini/index.ts` — multi-image Gemini call with role-aware prompt
-4. `supabase/functions/ugc-gemini-v3/index.ts` — same multi-image support
-5. `src/i18n/locales/*.json` (5 files) — new labels for reference images section
+1. `supabase/functions/edit-image/index.ts` — add `job_id` to insert + error checking
+2. New migration — insert the orphaned edit image record into `ugc_images`
 
