@@ -291,7 +291,7 @@ serve(async (req) => {
 
 // Enqueue job, reserve credits, idempotent
 async function createImageJob(userId: string, payload: RequestBody, supabase: SupabaseClient): Promise<Response> {
-  const { prompt, settings, source_image_id, source_image_ids, desiredAudience, prodSpecs } = payload;
+  const { prompt, settings, source_image_id, source_image_ids, guidelineImageIds, desiredAudience, prodSpecs } = payload;
   const idempotency_window_minutes = (payload.idempotency_window_minutes as number) ?? 60;
   
   log("Create job", {
