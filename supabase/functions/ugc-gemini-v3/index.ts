@@ -691,8 +691,11 @@ async function generateSingleImageWithGemini(
           responseModalities: ['TEXT', 'IMAGE']
         };
 
-        // Add native aspect ratio and image size via imageConfig if supported
-        if (useNativeAspect) {
+        // Build imageConfig: avoid sending 4K + aspectRatio together (causes API timeout)
+        if (use4kFallback) {
+          generationConfig.imageConfig = { imageSize: '4K' };
+          log("4K fallback: sending imageSize only, will crop locally", { jobId: job.id, index, aspectRatio });
+        } else if (useNativeAspect) {
           generationConfig.imageConfig = { aspectRatio, ...(imageSize && { imageSize }) };
           log("Using native API aspect ratio", { jobId: job.id, index, aspectRatio, imageSize });
         }
