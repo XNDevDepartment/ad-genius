@@ -957,6 +957,9 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
     setPendingSlots(0);
     setIsAnalyzingImages(new Array(productImages.length).fill(false));
     setImagesAnalysed(false);
+    setGuidelineImages([]);
+    setGuidelineSourceIds([]);
+    setIsAnalyzingGuidelines([]);
 
     localStorage.removeItem(storageKeys.jobId);
     localStorage.removeItem(storageKeys.stage);
