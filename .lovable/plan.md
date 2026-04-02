@@ -1,58 +1,29 @@
 
 
-## Fix User Account + PaymentFailedBanner Overlap Issue
+## Fix Build Error + Unstick Stuck Job
 
-### Part 1: Fix User antoniotiago.stessa@gmail.com Account (Database)
+### Part 1: Fix Build Error (`imageSize` not in type)
 
-**Current state:**
-- Tier: Starter, subscribed: true
-- Status: `past_due`, `payment_failed_at: 2026-04-01`
-- Credits: 0.00
-- Subscription end: 2026-05-01 (new subscription is active in Stripe)
+The last diff added `imageSize` to the settings object passed to `createJob()` on line 833, but the `CreateJobPayload` type in `src/api/ugc-gemini-unified.ts` doesn't include `imageSize`. The same type exists in `src/api/ugc.ts`.
 
-**Problem:** User canceled and re-subscribed to reset credits. The new subscription created a new billing cycle (end: May 1), but the old subscription's failed invoice left `payment_failed_at` and `subscription_status: past_due` in the database. Credits were never allocated for the new cycle.
+**Fix:** Add `imageSize?: string` to the `settings` type in both files.
 
-**Fix via migration:**
-- Clear `payment_failed_at` → `NULL`
-- Set `subscription_status` → `'active'`
-- Set `credits_balance` → `90` (80 Starter + 10 bonus for the inconvenience)
-- Update `last_reset_at` to now
-- Insert a `credits_transactions` record for 90 credits with reason `'manual_credit_adjustment'` and metadata noting the bonus
+| File | Line | Change |
+|------|------|--------|
+| `src/api/ugc-gemini-unified.ts` | 12 | Add `imageSize?: string;` after `size?: string;` |
+| `src/api/ugc.ts` | ~8-20 | Add `imageSize?: string;` to matching type |
 
-### Part 2: Fix PaymentFailedBanner Overlapping Sidebar (UI Bug)
+### Part 2: Unstick Job via Migration
 
-**Problem:** The `PaymentFailedBanner` is rendered outside and above the `SidebarProvider` in `AppLayout.tsx` (line 34). On desktop, it renders at the full page width but the sidebar overlaps it because the sidebar has its own stacking context.
+Job `211998ea-97ba-4ca0-b18c-ac33b49fc148` (user `4e962775-cb55-4301-bc33-081eacb96c46`) has been stuck in `processing` since 11:58 UTC with 0 images generated. It needs to be marked as `failed` and credits refunded (3 credits for 4K quality).
 
-**Fix:** Move the `PaymentFailedBanner` inside the desktop sidebar layout, between `AppSidebar` and the main content area — specifically inside the `flex-1 flex flex-col` div, before `<main>`. Also keep it in the mobile layout section. Remove the current top-level placement.
-
-**File: `src/components/AppLayout.tsx`**
-
-```
-// Remove lines 33-36 (top-level banner)
-
-// Desktop: add inside the flex-1 column (line 58-60 area)
-<div className="flex-1 flex flex-col">
-  {subscriptionData?.payment_failed_at && (
-    <PaymentFailedBanner paymentFailedAt={subscriptionData.payment_failed_at} />
-  )}
-  <main className="flex-1">
-    <Outlet />
-  </main>
-</div>
-
-// Mobile: add inside the mobile layout (line 39-49 area)
-<div className="lg:hidden">
-  {user && subscriptionData?.payment_failed_at && (
-    <PaymentFailedBanner paymentFailedAt={subscriptionData.payment_failed_at} />
-  )}
-  {showHeader && user && <NavigationHeader />}
-  ...
-</div>
-```
-
-This ensures the banner sits within the content area, next to (not behind) the sidebar.
+**Migration SQL:**
+- Set job status to `failed`, error to `'Generation timed out — credits refunded'`
+- Add 3 credits back to the user's `credits_balance`
+- Insert a `credits_transactions` record documenting the refund
 
 ### Files Modified
-1. **New migration** — fix user account: clear payment_failed_at, set active, grant 90 credits
-2. `src/components/AppLayout.tsx` — move PaymentFailedBanner inside layout sections
+1. `src/api/ugc-gemini-unified.ts` — add `imageSize` to settings type
+2. `src/api/ugc.ts` — add `imageSize` to settings type
+3. New migration — fail stuck job + refund credits
 
