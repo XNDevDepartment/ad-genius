@@ -715,6 +715,41 @@ async function generateSingleImageWithGemini(
           log("Using native API aspect ratio", { jobId: job.id, index, aspectRatio, imageSize });
         }
 
+        // Build parts: prompt + main product image + guideline/reference images
+        const parts: Record<string, unknown>[] = [];
+        
+        if (guidelineImageUrls.length > 0) {
+          parts.push({ text: `${prompt}\n\nIMPORTANT MULTI-IMAGE INSTRUCTIONS:\n- The FIRST image is the MAIN PRODUCT. Reproduce this product EXACTLY in the generated image.\n- The ADDITIONAL image(s) are REFERENCE GUIDELINES showing how the product is used, worn, its scale, or context. Use them to understand the product better (size, how it fits, how it's worn) but ALWAYS feature the product from the FIRST image as the hero product.\n- DO NOT reproduce the reference images — only use them as context and guidance.` });
+        } else {
+          parts.push({ text: prompt });
+        }
+        
+        parts.push({ inlineData: { mimeType: mimeType, data: base64Image } });
+        
+        // Guideline/reference images
+        for (const guidelineUrl of guidelineImageUrls) {
+          try {
+            const gSrc = await fetch(guidelineUrl);
+            if (!gSrc.ok) {
+              log("Failed to fetch guideline image, skipping", { status: gSrc.status });
+              continue;
+            }
+            const gMimeType = gSrc.headers.get('content-type') ?? 'image/png';
+            const gBuffer = await gSrc.arrayBuffer();
+            const gUint8 = new Uint8Array(gBuffer);
+            let gBinary = '';
+            for (let gi = 0; gi < gUint8.length; gi += chunkSize) {
+              const gChunk = gUint8.subarray(gi, gi + chunkSize);
+              gBinary += String.fromCharCode.apply(null, Array.from(gChunk));
+            }
+            const gBase64 = btoa(gBinary);
+            parts.push({ inlineData: { mimeType: gMimeType, data: gBase64 } });
+            log("Added guideline image to request", { jobId: job.id });
+          } catch (gErr) {
+            log("Error processing guideline image, skipping", { error: String(gErr) });
+          }
+        }
+
         res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`, {
           method: "POST",
           headers: {
@@ -722,12 +757,7 @@ async function generateSingleImageWithGemini(
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: prompt },
-                { inlineData: { mimeType: mimeType, data: base64Image } }
-              ]
-            }],
+            contents: [{ parts }],
             generationConfig
           }),
           signal: controller.signal
