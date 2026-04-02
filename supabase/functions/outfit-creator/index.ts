@@ -220,7 +220,10 @@ async function analyzeWithGemini(
               { text: prompt },
               { inlineData: { mimeType: image.mimeType, data: image.base64 } }
             ]
-          }]
+          }],
+          generationConfig: {
+            responseModalities: ['TEXT']
+          }
         })
       }
     );

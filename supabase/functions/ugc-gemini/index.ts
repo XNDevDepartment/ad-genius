@@ -75,10 +75,17 @@ function backoffMs(attempt: number): number {
 
 // Resolution-based credit cost: 1 (1K), 2 (2K), 3 (4K)
 function calculateImageCost(settings: Record<string, unknown>): number {
+  // Prefer explicit imageSize tier if available
+  const imageSize = settings?.imageSize as string | undefined;
+  if (imageSize === '4K') return 3;
+  if (imageSize === '2K') return 2;
+  if (imageSize === '1K') return 1;
+  // Fallback: derive from pixel dimensions using max dimension (handles portrait ratios)
   const size = (settings?.size as string) ?? '1024x1024';
-  const width = parseInt(size.split('x')[0], 10) || 1024;
-  if (width >= 2800) return 3;  // 4K
-  if (width >= 1700) return 2;  // 2K
+  const parts = size.split('x').map(n => parseInt(n, 10) || 1024);
+  const maxDim = Math.max(...parts);
+  if (maxDim >= 2500) return 3;  // 4K
+  if (maxDim >= 1500) return 2;  // 2K
   return 1;                      // 1K
 }
 
@@ -683,12 +690,14 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
         // Gemini 3 Pro Image Preview
         // Native aspect ratio support for Gemini 3 Pro
         const aspectRatio = settings?.aspectRatio as string | undefined;
-        const NATIVE_ASPECT_RATIOS = ['1:1', '3:4', '4:3', '9:16', '16:9'];
+        const imageSize = settings?.imageSize as string | undefined;
+        const NATIVE_ASPECT_RATIOS = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
         const useNativeAspect = aspectRatio && aspectRatio !== 'source' && NATIVE_ASPECT_RATIOS.includes(aspectRatio);
-        
+
         log("Generating image with Gemini 3 Pro (image edit mode)", {
           jobId: job.id,
           aspectRatio: aspectRatio || 'none',
+          imageSize: imageSize || 'default',
           useNativeAspect
         });
 
@@ -717,7 +726,7 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
               ],
               generationConfig: {
                 responseModalities: ["TEXT", "IMAGE"],
-                ...(useNativeAspect && { imageConfig: { aspectRatio } })
+                ...(useNativeAspect && { imageConfig: { aspectRatio, ...(imageSize && { imageSize }) } })
               },
             }),
             signal: controller.signal,
@@ -726,12 +735,14 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
       } else {
         // ----- Text-to-image mode (no source image) -----
         const aspectRatio = settings?.aspectRatio as string | undefined;
-        const NATIVE_ASPECT_RATIOS = ['1:1', '3:4', '4:3', '9:16', '16:9'];
+        const imageSize = settings?.imageSize as string | undefined;
+        const NATIVE_ASPECT_RATIOS = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
         const useNativeAspect = aspectRatio && aspectRatio !== 'source' && NATIVE_ASPECT_RATIOS.includes(aspectRatio);
-        
+
         log("Generating image with Gemini 3 Pro (text-to-image mode)", {
           jobId: job.id,
           aspectRatio: aspectRatio || 'none',
+          imageSize: imageSize || 'default',
           useNativeAspect
         });
 
@@ -747,7 +758,7 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
               contents: [{ parts: [{ text: prompt }] }],
               generationConfig: {
                 responseModalities: ["TEXT", "IMAGE"],
-                ...(useNativeAspect && { imageConfig: { aspectRatio } })
+                ...(useNativeAspect && { imageConfig: { aspectRatio, ...(imageSize && { imageSize }) } })
               },
             }),
             signal: controller.signal,

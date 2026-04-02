@@ -148,8 +148,8 @@ async function uploadAndProcessModel(supabaseClient: SupabaseClient, userId: str
               parts: [
                 { text: prompt },
                 {
-                  inline_data: {
-                    mime_type: mimeType,
+                  inlineData: {
+                    mimeType: mimeType,
                     data: base64Image
                   }
                 }

@@ -125,53 +125,65 @@ Deno.serve(async (req) => {
       },
     ];
 
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": googleApiKey,
-        },
-        body: JSON.stringify({
-          contents: [{ parts }],
-          generationConfig: {
-            responseModalities: ["TEXT", "IMAGE"],
-          },
-        }),
-      }
-    );
-
-    if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
-      console.error("Gemini API error:", geminiResponse.status, errorText);
-      await supabaseAdmin.rpc("refund_user_credits", {
-        p_user_id: userId,
-        p_amount: 1,
-        p_reason: "image_edit_refund_api_failed",
-      });
-      throw new Error(`Gemini API error: ${geminiResponse.status}`);
-    }
-
-    const geminiResult = await geminiResponse.json();
-    console.log("Gemini response received");
-
-    // Extract generated image from response
     let editedImageBase64: string | null = null;
-    const candidates = geminiResult.candidates || [];
-    for (const candidate of candidates) {
-      const candidateParts = candidate.content?.parts || [];
-      for (const part of candidateParts) {
-        if (part.inlineData?.data) {
-          editedImageBase64 = part.inlineData.data;
-          break;
-        }
+    const maxAttempts = 3;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      if (attempt > 0) {
+        const delay = 900 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 250);
+        await new Promise((r) => setTimeout(r, delay));
       }
+
+      const geminiResponse = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": googleApiKey,
+          },
+          body: JSON.stringify({
+            contents: [{ parts }],
+            generationConfig: {
+              responseModalities: ["TEXT", "IMAGE"],
+            },
+          }),
+        }
+      );
+
+      if (!geminiResponse.ok) {
+        const errorText = await geminiResponse.text();
+        console.error(`Gemini API error (attempt ${attempt + 1}):`, geminiResponse.status, errorText);
+        if (attempt < maxAttempts - 1 && (geminiResponse.status === 429 || geminiResponse.status >= 500)) {
+          continue;
+        }
+        await supabaseAdmin.rpc("refund_user_credits", {
+          p_user_id: userId,
+          p_amount: 1,
+          p_reason: "image_edit_refund_api_failed",
+        });
+        throw new Error(`Gemini API error: ${geminiResponse.status}`);
+      }
+
+      const geminiResult = await geminiResponse.json();
+      console.log("Gemini response received");
+
+      const candidates = geminiResult.candidates || [];
+      for (const candidate of candidates) {
+        const candidateParts = candidate.content?.parts || [];
+        for (const part of candidateParts) {
+          if (part.inlineData?.data) {
+            editedImageBase64 = part.inlineData.data;
+            break;
+          }
+        }
+        if (editedImageBase64) break;
+      }
+
       if (editedImageBase64) break;
+      console.error(`No image in Gemini response (attempt ${attempt + 1}):`, JSON.stringify(geminiResult).slice(0, 500));
     }
 
     if (!editedImageBase64) {
-      console.error("No image in Gemini response:", JSON.stringify(geminiResult).slice(0, 500));
       await supabaseAdmin.rpc("refund_user_credits", {
         p_user_id: userId,
         p_amount: 1,

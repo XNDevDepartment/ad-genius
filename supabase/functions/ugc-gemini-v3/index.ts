@@ -53,7 +53,7 @@ function calculateImageCost(settings: unknown): number {
 }
 
 // Supported native aspect ratios by Gemini 3 Pro
-const NATIVE_ASPECT_RATIOS = ['1:1', '3:4', '4:3', '9:16', '16:9'];
+const NATIVE_ASPECT_RATIOS = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
 
 // Fallback crop for custom aspect ratios not natively supported
 async function cropBase64ToAspect(base64Data: string, aspectRatio: string): Promise<Uint8Array> {
@@ -644,6 +644,7 @@ async function generateSingleImageWithGemini(
   const quality = job?.settings?.quality ?? "high";
   const prompt = String(job?.prompt ?? "");
   const aspectRatio = job?.settings?.aspectRatio as string | undefined;
+  const imageSize = job?.settings?.imageSize as string | undefined;
 
   // Check if aspect ratio is natively supported by Gemini 3 Pro
   const useNativeAspect = aspectRatio && aspectRatio !== 'source' && NATIVE_ASPECT_RATIOS.includes(aspectRatio);
@@ -686,10 +687,10 @@ async function generateSingleImageWithGemini(
           responseModalities: ['TEXT', 'IMAGE']
         };
 
-        // Add native aspect ratio via imageConfig if supported
+        // Add native aspect ratio and image size via imageConfig if supported
         if (useNativeAspect) {
-          generationConfig.imageConfig = { aspectRatio: aspectRatio };
-          log("Using native API aspect ratio", { jobId: job.id, index, aspectRatio });
+          generationConfig.imageConfig = { aspectRatio, ...(imageSize && { imageSize }) };
+          log("Using native API aspect ratio", { jobId: job.id, index, aspectRatio, imageSize });
         }
 
         res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`, {
@@ -716,8 +717,8 @@ async function generateSingleImageWithGemini(
         };
 
         if (useNativeAspect) {
-          generationConfig.imageConfig = { aspectRatio: aspectRatio };
-          log("Using native API aspect ratio (text-to-image)", { jobId: job.id, index, aspectRatio });
+          generationConfig.imageConfig = { aspectRatio, ...(imageSize && { imageSize }) };
+          log("Using native API aspect ratio (text-to-image)", { jobId: job.id, index, aspectRatio, imageSize });
         }
 
         res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`, {
