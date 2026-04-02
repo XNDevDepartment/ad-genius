@@ -294,11 +294,12 @@ serve(async (req)=>{
 // ---------- ACTIONS ----------
 // deno-lint-ignore no-explicit-any
 async function createImageJob(userId: string, payload: Record<string, unknown>, supabase: SupabaseClient<any>): Promise<Response> {
-  const { prompt, settings, source_image_id, source_image_ids, desiredAudience, prodSpecs } = payload as {
+  const { prompt, settings, source_image_id, source_image_ids, guidelineImageIds, desiredAudience, prodSpecs } = payload as {
     prompt?: string;
     settings?: Record<string, unknown>;
     source_image_id?: string;
     source_image_ids?: string[];
+    guidelineImageIds?: string[];
     desiredAudience?: string;
     prodSpecs?: string;
     idempotency_window_minutes?: number;
