@@ -394,11 +394,17 @@ async function createImageJob(userId: string, payload: RequestBody, supabase: Su
     }
   }
 
+  // Merge guidelineImageIds into settings so they persist with the job
+  const guidelineIds = (payload as any).guidelineImageIds as string[] | undefined;
+  const finalSettings = guidelineIds && guidelineIds.length > 0
+    ? { ...(settings ?? {}), guidelineImageIds: guidelineIds }
+    : settings;
+
   // create job (queued)
   const { data: job, error: jobErr } = await supabase.from("image_jobs").insert({
     user_id: userId,
     prompt,
-    settings,
+    settings: finalSettings,
     content_hash: contentHash,
     total: totalImages,
     progress: 0,
