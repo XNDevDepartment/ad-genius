@@ -43,7 +43,7 @@ const PRESET_HINTS: Record<string, string> = {
   'autumn':'autumn, colorful leaves','spring':'spring, blooming flowers'
 };
 
-const FOLLOWUP_PROMPT = `Second image is reference scene. REMOVE any product in it. Extract ONLY background/lighting/surface. Place NEW product (first image) into that scene. Match background exactly. Only first image product visible. Maintain size/proportions.`;
+const FOLLOWUP_PROMPT = `Second image is the anchor reference. Replicate its exact background, lighting, surface, AND product placement as a template. Place the NEW product (first image) into the same position, scale, and orientation as the product shown in the reference image. Match background and lighting exactly. Only the new product is visible — do not include any product from the reference. Preserve the new product's proportions.`;
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -299,10 +299,10 @@ Deno.serve(async (req: Request) => {
         if (job.background_type === "custom" && job.background_image_url) {
           try { bgB64 = await fetchImageAsBase64(job.background_image_url); } catch (e) { console.error("Bg fetch failed:", e); }
         } else if (isPre) {
-          // Chained consistency: use lastResultUrl from job settings
-          const lastResultUrl = (job.settings as any)?.lastResultUrl;
-          if (lastResultUrl) {
-            try { bgB64 = await fetchImageAsBase64(lastResultUrl); } catch (e) { console.error("Ref fetch failed:", e); }
+          // Anchor consistency: always use anchorResultUrl (image 1's output), never drifts
+          const anchorResultUrl = (job.settings as any)?.anchorResultUrl;
+          if (anchorResultUrl) {
+            try { bgB64 = await fetchImageAsBase64(anchorResultUrl); } catch (e) { console.error("Anchor fetch failed:", e); }
           }
         }
 
@@ -313,11 +313,12 @@ Deno.serve(async (req: Request) => {
         let fc = job.failed_images || 0;
         if (pr.success) {
           cc++;
-          // Store last result URL in job settings for chained consistency
+          // Store anchor URL from image 1 only — all subsequent images reference the same anchor
           if (isPre && pr.imageData) {
-            const sp = `${job.user_id}/${job.id}/${r.image_index}-result.webp`;
-            const { data: urlData } = ac.storage.from(STORAGE_BUCKET).getPublicUrl(sp);
-            const updatedSettings = { ...(job.settings as Record<string, unknown> || {}), lastResultUrl: urlData.publicUrl };
+            const existingSettings = (job.settings as Record<string, unknown>) || {};
+            const updatedSettings = existingSettings.anchorResultUrl
+              ? existingSettings
+              : { ...existingSettings, anchorResultUrl: ac.storage.from(STORAGE_BUCKET).getPublicUrl(`${job.user_id}/${job.id}/${r.image_index}-result.webp`).data.publicUrl };
             await ac.from("bulk_background_jobs").update({ completed_images: cc, failed_images: fc, progress: Math.round(((cc + fc) / job.total_images) * 100), settings: updatedSettings, updated_at: new Date().toISOString() }).eq("id", jobId);
           } else {
             await ac.from("bulk_background_jobs").update({ completed_images: cc, failed_images: fc, progress: Math.round(((cc + fc) / job.total_images) * 100), updated_at: new Date().toISOString() }).eq("id", jobId);
