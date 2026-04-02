@@ -660,7 +660,7 @@ async function generateSingleImageWithGemini(
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 120000);
+      const timeout = setTimeout(() => controller.abort(), 90000); // 90s to fail before edge function kill
       
       let res: Response | undefined;
 
