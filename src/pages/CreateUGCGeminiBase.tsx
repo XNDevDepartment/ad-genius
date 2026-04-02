@@ -462,6 +462,19 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
     document.getElementById("desiredAudience")?.focus();
   };
 
+  const handleGuidelineImagesUpload = async (files: File[]) => {
+    setGuidelineImages(files);
+    // Upload guideline images immediately
+    const newGuidelineIds: string[] = [];
+    for (const file of files) {
+      const uploaded = await uploadSourceImage(file);
+      if (uploaded?.id) {
+        newGuidelineIds.push(uploaded.id);
+      }
+    }
+    setGuidelineSourceIds(newGuidelineIds);
+  };
+
   const handleAudienceChange = (audienceText: string) => {
     setDesiredAudience(audienceText);
   };
