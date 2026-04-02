@@ -723,7 +723,10 @@ async function generateSingleImageWithGemini(
           responseModalities: ['TEXT', 'IMAGE']
         };
 
-        if (useNativeAspect) {
+        if (use4kFallback) {
+          generationConfig.imageConfig = { imageSize: '4K' };
+          log("4K fallback (text-to-image): sending imageSize only, will crop locally", { jobId: job.id, index, aspectRatio });
+        } else if (useNativeAspect) {
           generationConfig.imageConfig = { aspectRatio, ...(imageSize && { imageSize }) };
           log("Using native API aspect ratio (text-to-image)", { jobId: job.id, index, aspectRatio, imageSize });
         }
