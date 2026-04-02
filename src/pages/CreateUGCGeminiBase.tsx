@@ -1032,70 +1032,100 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                 <CardContent className="p-6 lg:p-8 space-y-6">
                   <div>
                     <div className="space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Label>{t('ugc.productImage.title')}</Label>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
-                                  <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="max-w-xs">{t('ugc.productImage.tooltip')}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                        <MultiImageUploader
-                          onImagesSelect={handleImagesUpload}
-                          selectedImages={productImages}
-                          setImagesAnalysed={setImagesAnalysed}
-                          isAnalyzing={isAnalyzingImages}
-                          analyzingText="Analyzing product..."
-                          maxImages={1}
-                        />
-
-                        {/* Additional Image Options */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Left: Main Product Image */}
                         <div className="space-y-2">
-                          <div className="flex gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSourceImagePickerOpen(true)}
-                              className="flex-1 p-2"
-                              disabled={false}
-                            >
-                              <Images className="h-4 w-4 mr-2" />
-                              {t('ugc.importOptions.library')}
-                            </Button>
+                          <div className="flex items-center gap-2">
+                            <Label>{t('ugc.productImage.title')}</Label>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                                    <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="max-w-xs">{t('ugc.productImage.tooltip')}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          <MultiImageUploader
+                            onImagesSelect={handleImagesUpload}
+                            selectedImages={productImages}
+                            setImagesAnalysed={setImagesAnalysed}
+                            isAnalyzing={isAnalyzingImages}
+                            analyzingText="Analyzing product..."
+                            maxImages={1}
+                          />
+
+                          {/* Additional Image Options */}
+                          <div className="space-y-2">
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSourceImagePickerOpen(true)}
+                                className="flex-1 p-2"
+                                disabled={false}
+                              >
+                                <Images className="h-4 w-4 mr-2" />
+                                {t('ugc.importOptions.library')}
+                              </Button>
+
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setUrlImportOpen(true)}
+                                className="flex-1 p-2"
+                                disabled={false}
+                              >
+                                <LinkIcon className="h-4 w-4 mr-2" />
+                                {t('ugc.importOptions.url')}
+                              </Button>
+                            </div>
 
                             <Button
                               type="button"
-                              variant="outline"
+                              variant="ghost"
                               size="sm"
-                              onClick={() => setUrlImportOpen(true)}
-                              className="flex-1 p-2"
+                              onClick={() => setShopifyImportOpen(true)}
+                              className="w-full text-muted-foreground hover:text-foreground"
                               disabled={false}
                             >
-                              <LinkIcon className="h-4 w-4 mr-2" />
-                              {t('ugc.importOptions.url')}
+                              <Store className="h-4 w-4 mr-2" />
+                              {t('ugc.importOptions.shopify')}
                             </Button>
                           </div>
+                        </div>
 
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setShopifyImportOpen(true)}
-                            className="w-full text-muted-foreground hover:text-foreground"
-                            disabled={false}
-                          >
-                            <Store className="h-4 w-4 mr-2" />
-                            {t('ugc.importOptions.shopify')}
-                          </Button>
+                        {/* Right: Reference/Guideline Images */}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Label>{t('ugc.referenceImages.title')}</Label>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                                    <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="max-w-xs">{t('ugc.referenceImages.tooltip')}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{t('ugc.referenceImages.subtitle')}</p>
+                          <MultiImageUploader
+                            onImagesSelect={handleGuidelineImagesUpload}
+                            selectedImages={guidelineImages}
+                            isAnalyzing={isAnalyzingGuidelines}
+                            analyzingText="Uploading reference..."
+                            maxImages={2}
+                          />
                         </div>
                       </div>
 
