@@ -1006,7 +1006,7 @@
   "ugc": {
     "title": "Crear Contenido UGC",
     "productImage": {
-      "title": "Imagen del Producto",
+      "title": "Imagen Principal del Producto",
       "subtitle": "Sube una imagen de tu producto para analizarla",
       "analyzing": "Analizando imagen...",
       "tooltip": "Sube una imagen clara y de alta calidad de tu producto. La IA la analizará para entender qué vendes y sugerir escenarios relevantes.",

@@ -1109,7 +1109,7 @@
   "ugc": {
     "title": "Create UGC Content",
     "productImage": {
-      "title": "Product Image",
+      "title": "Main Product Image",
       "subtitle": "Upload an image of your product for analysis",
       "analyzing": "Analyzing image...",
       "tooltip": "Upload a sharp, high-quality image of your product. The AI will analyze it to understand what you sell and suggest relevant scenarios.",

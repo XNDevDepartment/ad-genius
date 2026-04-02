@@ -1006,7 +1006,7 @@
   "ugc": {
     "title": "UGC-Inhalte erstellen",
     "productImage": {
-      "title": "Produktbild",
+      "title": "Hauptproduktbild",
       "subtitle": "Lade ein Bild deines Produkts zur Analyse hoch",
       "analyzing": "Bild wird analysiert...",
       "tooltip": "Lade ein klares, hochauflösendes Bild deines Produkts hoch. Die KI analysiert es, um zu verstehen, was du verkaufst, und schlägt passende Szenarien vor.",
