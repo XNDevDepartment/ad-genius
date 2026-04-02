@@ -772,7 +772,12 @@ async function generateSingleImageWithGemini(
         let fileBytes: Uint8Array;
         let aspectMethod: string;
 
-        if (useNativeAspect) {
+        if (use4kFallback && aspectRatio) {
+          // 4K fallback: generated at 4K without aspect ratio, crop to requested ratio now
+          aspectMethod = '4k-fallback-crop';
+          log("4K fallback: cropping to requested aspect ratio", { jobId: job.id, index, aspectRatio });
+          fileBytes = await cropBase64ToAspect(b64, aspectRatio);
+        } else if (useNativeAspect) {
           // Native aspect ratio from API - no crop needed
           aspectMethod = 'native-api';
           fileBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
