@@ -1,34 +1,58 @@
 
 
-## Fix: Prevent Barefoot Models in Fashion Catalog
+## Fix User Account + PaymentFailedBanner Overlap Issue
 
-### Problem
-The FULL_OUTFIT, BOTTOM, and ACCESSORY prompt templates in the outfit-swap edge function do not explicitly forbid barefoot models. Only the TOP and FOOTWEAR prompts include "barefoot" in their FORBIDDEN lines. The uploaded image confirms the issue — a child model generated barefoot in a dress.
+### Part 1: Fix User antoniotiago.stessa@gmail.com Account (Database)
 
-### Changes
+**Current state:**
+- Tier: Starter, subscribed: true
+- Status: `past_due`, `payment_failed_at: 2026-04-01`
+- Credits: 0.00
+- Subscription end: 2026-05-01 (new subscription is active in Stripe)
 
-**File: `supabase/functions/outfit-swap/index.ts`**
+**Problem:** User canceled and re-subscribed to reset credits. The new subscription created a new billing cycle (end: May 1), but the old subscription's failed invoice left `payment_failed_at` and `subscription_status: past_due` in the database. Credits were never allocated for the new cycle.
 
-Update 3 prompt templates to add "barefoot" to their FORBIDDEN lines and strengthen footwear instructions:
+**Fix via migration:**
+- Clear `payment_failed_at` → `NULL`
+- Set `subscription_status` → `'active'`
+- Set `credits_balance` → `90` (80 Starter + 10 bonus for the inconvenience)
+- Update `last_reset_at` to now
+- Insert a `credits_transactions` record for 90 credits with reason `'manual_credit_adjustment'` and metadata noting the bonus
 
-1. **BOTTOM** (line 125): Add `barefoot` to FORBIDDEN line. Already has "FEET: Appropriate shoes" in requirements.
+### Part 2: Fix PaymentFailedBanner Overlapping Sidebar (UI Bug)
 
-2. **FULL_OUTFIT** (line 192-203):
-   - Line 192: Change "Add appropriate footwear (heels for elegant, sneakers for casual)" to "MUST wear appropriate footwear — NEVER barefoot (heels for elegant, sneakers for casual)"
-   - Line 203: Add `barefoot` to FORBIDDEN line
+**Problem:** The `PaymentFailedBanner` is rendered outside and above the `SidebarProvider` in `AppLayout.tsx` (line 34). On desktop, it renders at the full page width but the sidebar overlaps it because the sidebar has its own stacking context.
 
-3. **ACCESSORY** (line 230-241):
-   - Line 230: Already says "shoes" in requirements — strengthen to "Model must be wearing full clothing (top, bottom, shoes) — NEVER barefoot"
-   - Line 241: Add `barefoot` to FORBIDDEN line
+**Fix:** Move the `PaymentFailedBanner` inside the desktop sidebar layout, between `AppSidebar` and the main content area — specifically inside the `flex-1 flex flex-col` div, before `<main>`. Also keep it in the mobile layout section. Remove the current top-level placement.
 
-### Specific Line Changes
+**File: `src/components/AppLayout.tsx`**
 
-| Line | Current FORBIDDEN | Updated FORBIDDEN |
-|---|---|---|
-| 125 | `...bare torso, focusing on the top instead of the BOTTOM` | `...bare torso, barefoot, focusing on the top instead of the BOTTOM` |
-| 203 | `...shapewear worn alone, bikini-like appearance` | `...shapewear worn alone, bikini-like appearance, barefoot` |
-| 241 | `...clothing overshadowing the accessory` | `...clothing overshadowing the accessory, barefoot` |
+```
+// Remove lines 33-36 (top-level banner)
+
+// Desktop: add inside the flex-1 column (line 58-60 area)
+<div className="flex-1 flex flex-col">
+  {subscriptionData?.payment_failed_at && (
+    <PaymentFailedBanner paymentFailedAt={subscriptionData.payment_failed_at} />
+  )}
+  <main className="flex-1">
+    <Outlet />
+  </main>
+</div>
+
+// Mobile: add inside the mobile layout (line 39-49 area)
+<div className="lg:hidden">
+  {user && subscriptionData?.payment_failed_at && (
+    <PaymentFailedBanner paymentFailedAt={subscriptionData.payment_failed_at} />
+  )}
+  {showHeader && user && <NavigationHeader />}
+  ...
+</div>
+```
+
+This ensures the banner sits within the content area, next to (not behind) the sidebar.
 
 ### Files Modified
-1. `supabase/functions/outfit-swap/index.ts` — add "barefoot" to FORBIDDEN lines + strengthen footwear instructions in FULL_OUTFIT and ACCESSORY prompts
+1. **New migration** — fix user account: clear payment_failed_at, set active, grant 90 credits
+2. `src/components/AppLayout.tsx` — move PaymentFailedBanner inside layout sections
 
