@@ -228,9 +228,28 @@ Deno.serve(async (req) => {
 
     const publicUrl = publicUrlData.publicUrl;
 
+    // Create a placeholder image_jobs record (ugc_images.job_id has FK constraint)
+    const editJobId = crypto.randomUUID();
+    const contentHash = `edit-${userId}-${Date.now()}`;
+
+    const { error: jobInsertError } = await supabaseAdmin.from("image_jobs").insert({
+      id: editJobId,
+      user_id: userId,
+      content_hash: contentHash,
+      prompt: instruction,
+      status: "completed",
+      model_type: "gemini",
+      settings: { source: "edit", original_image_url: imageUrl },
+      finished_at: new Date().toISOString(),
+    });
+
+    if (jobInsertError) {
+      console.error("Failed to insert edit job record:", jobInsertError);
+    }
+
     // Insert record into ugc_images
     const { error: insertError } = await supabaseAdmin.from("ugc_images").insert({
-      job_id: crypto.randomUUID(),
+      job_id: editJobId,
       user_id: userId,
       public_url: publicUrl,
       storage_path: storagePath,
