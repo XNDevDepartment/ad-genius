@@ -708,8 +708,9 @@ async function generateSingleImageWithGemini(
 
         // Build imageConfig: avoid sending 4K + aspectRatio together (causes API timeout)
         if (use4kFallback) {
-          generationConfig.imageConfig = { imageSize: '4K' };
-          log("4K fallback: sending imageSize only, will crop locally", { jobId: job.id, index, aspectRatio });
+          // Gemini Flash can't do 4K reliably — downgrade to 2K with native aspect ratio
+          generationConfig.imageConfig = { imageSize: '2K', aspectRatio };
+          log("4K requested but downgraded to 2K (model limitation)", { jobId: job.id, index, aspectRatio });
         } else if (useNativeAspect) {
           generationConfig.imageConfig = { aspectRatio, ...(imageSize && { imageSize }) };
           log("Using native API aspect ratio", { jobId: job.id, index, aspectRatio, imageSize });
@@ -769,8 +770,9 @@ async function generateSingleImageWithGemini(
         };
 
         if (use4kFallback) {
-          generationConfig.imageConfig = { imageSize: '4K' };
-          log("4K fallback (text-to-image): sending imageSize only, will crop locally", { jobId: job.id, index, aspectRatio });
+          // Gemini Flash can't do 4K reliably — downgrade to 2K with native aspect ratio
+          generationConfig.imageConfig = { imageSize: '2K', aspectRatio };
+          log("4K requested but downgraded to 2K (model limitation)", { jobId: job.id, index, aspectRatio });
         } else if (useNativeAspect) {
           generationConfig.imageConfig = { aspectRatio, ...(imageSize && { imageSize }) };
           log("Using native API aspect ratio (text-to-image)", { jobId: job.id, index, aspectRatio, imageSize });
@@ -818,10 +820,10 @@ async function generateSingleImageWithGemini(
         let aspectMethod: string;
 
         if (use4kFallback && aspectRatio) {
-          // 4K fallback: generated at 4K without aspect ratio, crop to requested ratio now
-          aspectMethod = '4k-fallback-crop';
-          log("4K fallback: cropping to requested aspect ratio", { jobId: job.id, index, aspectRatio });
-          fileBytes = await cropBase64ToAspect(b64, aspectRatio);
+          // 4K was downgraded to 2K with native aspect ratio — no crop needed
+          aspectMethod = '4k-downgraded-native';
+          log("4K downgraded to 2K with native aspect, no crop needed", { jobId: job.id, index, aspectRatio });
+          fileBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
         } else if (useNativeAspect) {
           // Native aspect ratio from API - no crop needed
           aspectMethod = 'native-api';
