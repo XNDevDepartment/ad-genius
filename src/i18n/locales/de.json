@@ -1017,6 +1017,11 @@
       "preview": "Produktvorschau",
       "remove": "Bild entfernen"
     },
+    "referenceImages": {
+      "title": "Referenzbilder (optional)",
+      "tooltip": "Lade bis zu 2 zusätzliche Bilder hoch, die zeigen, wie das Produkt verwendet wird, seine Größe oder seinen Kontext. Diese helfen der KI, dein Produkt besser zu verstehen.",
+      "subtitle": "Zeige, wie das Produkt getragen, verwendet wird oder seine Größe"
+    },
     "productDetails": {
       "title": "Produkteigenschaften (Optional)",
       "subtitle": "Nenne einige Details zu deinem Produkt bei der Nutzung.",

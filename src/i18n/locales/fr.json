@@ -857,6 +857,11 @@
       "preview": "Aperçu du produit",
       "remove": "Retirer l'image"
     },
+    "referenceImages": {
+      "title": "Images de Référence (optionnel)",
+      "tooltip": "Téléversez jusqu'à 2 images supplémentaires montrant comment le produit est utilisé, son échelle ou son contexte. Elles aident l'IA à mieux comprendre votre produit.",
+      "subtitle": "Montrez comment le produit est porté, utilisé ou sa taille"
+    },
     "productDetails": {
       "title": "Caractéristiques du produit (Facultatif)",
       "subtitle": "Indiquez quelques détails sur l’utilisation de votre produit.",
