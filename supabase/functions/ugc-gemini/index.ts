@@ -693,7 +693,7 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
         });
 
         res = await fetch(
-          "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent",
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent",
           {
             method: "POST",
             headers: {
@@ -736,7 +736,7 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
         });
 
         res = await fetch(
-          "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent",
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent",
           {
             method: "POST",
             headers: {
@@ -850,7 +850,7 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
         quality,
         format: storedFormat,
         provider: "gemini",
-        model: "gemini-3-pro-image-preview",
+        model: "gemini-3.1-flash-image-preview",
         aspectRatio: aspectRatioSetting || 'none',
         nativeAspectRatio: usedNativeAspect
       },

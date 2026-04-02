@@ -343,7 +343,7 @@ async function generateImageWithRetry(prompt: string, base64Image: string, mimeT
   for(let attempt = 1; attempt <= maxRetries; attempt++){
     try {
       console.log(`[Attempt ${attempt}/${maxRetries}] Calling Gemini API...`);
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent', {
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent', {
         method: 'POST',
         headers: {
           'x-goog-api-key': GOOGLE_AI_KEY,
@@ -861,7 +861,7 @@ async function processOutfitSwap(jobId: string) {
     const garmentExt = garmentImage.storage_path.split('.').pop()?.toLowerCase() || 'jpg';
     const garmentMimeType = garmentExt === 'png' ? 'image/png' : garmentExt === 'webp' ? 'image/webp' : 'image/jpeg';
     // Call Gemini API with multimodal input
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent', {
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent', {
       method: 'POST',
       headers: {
         'x-goog-api-key': GOOGLE_AI_KEY,

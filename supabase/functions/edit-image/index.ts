@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
     ];
 
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`,
       {
         method: "POST",
         headers: {

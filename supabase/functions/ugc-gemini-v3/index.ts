@@ -692,7 +692,7 @@ async function generateSingleImageWithGemini(
           log("Using native API aspect ratio", { jobId: job.id, index, aspectRatio });
         }
 
-        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent`, {
+        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`, {
           method: "POST",
           headers: {
             "x-goog-api-key": GOOGLE_AI_KEY,
@@ -720,7 +720,7 @@ async function generateSingleImageWithGemini(
           log("Using native API aspect ratio (text-to-image)", { jobId: job.id, index, aspectRatio });
         }
 
-        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent`, {
+        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`, {
           method: "POST",
           headers: {
             "x-goog-api-key": GOOGLE_AI_KEY,
@@ -808,7 +808,7 @@ async function generateSingleImageWithGemini(
             quality,
             format: storedFormat,
             provider: "gemini",
-            model: "gemini-3-pro-image-preview",
+            model: "gemini-3.1-flash-image-preview",
             aspectRatio: aspectRatio || 'none',
             aspectMethod
           },

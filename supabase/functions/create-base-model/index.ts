@@ -136,7 +136,7 @@ async function uploadAndProcessModel(supabaseClient: SupabaseClient, userId: str
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       console.log(`[uploadAndProcessModel] Gemini attempt ${attempt + 1}/${maxAttempts}`);
       
-      const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent`, {
+      const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`, {
         method: "POST",
         headers: {
           "x-goog-api-key": googleApiKey,
@@ -408,7 +408,7 @@ async function generateModelWithAI(supabaseClient: SupabaseClient, userId: strin
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       console.log(`[generateModelWithAI] Gemini attempt ${attempt + 1}/${maxAttempts}`);
       
-      const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent`, {
+      const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`, {
         method: "POST",
         headers: {
           "x-goog-api-key": googleApiKey,

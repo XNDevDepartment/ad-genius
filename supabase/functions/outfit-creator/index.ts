@@ -147,7 +147,7 @@ async function generateWithGemini(
       }
       
       const response = await fetch(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent',
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent',
         {
           method: 'POST',
           headers: {
@@ -207,7 +207,7 @@ async function analyzeWithGemini(
 ): Promise<string | null> {
   try {
     const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent',
       {
         method: 'POST',
         headers: {
