@@ -1027,27 +1027,72 @@ async function getActiveJob(userId: string, supabase: SupabaseClient): Promise<R
   return json({ job: job ?? null });
 }
 
-// Sweep queued Gemini jobs that never got picked up
+// Sweep queued AND stuck processing Gemini V3 jobs
 async function recoverQueued(supabase: SupabaseClient): Promise<Response> {
-  const cutoff = new Date(Date.now() - 3 * 60 * 1000).toISOString(); // older than 3m
+  const queuedCutoff = new Date(Date.now() - 3 * 60 * 1000).toISOString(); // queued > 3m
+  const processingCutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString(); // processing > 10m (stuck)
   
-  const { data: jobs, error } = await supabase.from("image_jobs")
+  // Recover queued jobs that never started
+  const { data: queuedJobs, error } = await supabase.from("image_jobs")
     .select("id,status")
     .eq("status", "queued")
     .eq("model_type", "gemini-v3")
-    .lte("created_at", cutoff)
+    .lte("created_at", queuedCutoff)
     .limit(20);
     
   if (error) return errorJson("Failed to list queued jobs", 400);
 
-  for (const j of jobs ?? []) {
+  // Recover processing jobs that got stuck (timeout/crash)
+  const { data: stuckJobs } = await supabase.from("image_jobs")
+    .select("id,status,user_id,settings,total,completed")
+    .eq("status", "processing")
+    .eq("model_type", "gemini-v3")
+    .lte("updated_at", processingCutoff)
+    .limit(20);
+
+  let recoveredCount = 0;
+  let failedCount = 0;
+
+  for (const j of queuedJobs ?? []) {
     try {
       await serviceClient().functions.invoke("ugc-gemini-v3", {
         body: { action: "generateImages", jobId: j.id },
         headers: { Authorization: `Bearer ${SERVICE_KEY}`, apikey: SERVICE_KEY }
       });
     } catch (_) {}
+    recoveredCount++;
   }
 
-  return json({ recovered: jobs?.length ?? 0 });
+  // Process stuck jobs - mark as failed and refund
+  for (const j of stuckJobs ?? []) {
+    log("Recovering stuck processing job (v3)", { jobId: j.id, completed: j.completed });
+    
+    await supabase.from("image_jobs").update({
+      status: "failed",
+      error: "Job timed out during processing - automatic recovery",
+      finished_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }).eq("id", j.id);
+    
+    // Refund unused credits
+    const { data: isAdmin } = await supabase.rpc("is_user_admin", { check_user_id: j.user_id });
+    if (!isAdmin) {
+      const totalImages = j.total ?? 1;
+      const completedImages = j.completed ?? 0;
+      const unusedImages = totalImages - completedImages;
+      if (unusedImages > 0) {
+        const costPerImage = calculateImageCost(j.settings ?? {});
+        const refundAmount = unusedImages * costPerImage;
+        await supabase.rpc("refund_user_credits", {
+          p_user_id: j.user_id,
+          p_amount: refundAmount,
+          p_reason: "stuck_job_auto_recovery_v3"
+        });
+        log("Refunded credits for stuck v3 job", { jobId: j.id, refund: refundAmount, costPerImage });
+      }
+    }
+    failedCount++;
+  }
+
+  return json({ recovered: recoveredCount, failed_recovered: failedCount });
 }
