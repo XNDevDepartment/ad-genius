@@ -400,11 +400,15 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
       return errorJson(deduct?.error ?? deductErr?.message ?? "Failed to reserve credits", 400);
     }
   }
+  // Merge guidelineImageIds into settings so they persist with the job
+  const finalSettings = guidelineImageIds && guidelineImageIds.length > 0
+    ? { ...(settings ?? {}), guidelineImageIds }
+    : settings;
   // create job (queued) with model_type = 'gemini' and source_image_ids
   const { data: job, error: jobErr } = await supabase.from("image_jobs").insert({
     user_id: userId,
     prompt,
-    settings,
+    settings: finalSettings,
     content_hash: contentHash,
     total: totalImages,
     progress: 0,
@@ -415,7 +419,7 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
     source_image_ids: finalSourceIds,
     model_type: "gemini",
     desiredAudience: desiredAudience ?? null,
-    prodSpecs: prodSpecs ?? null // Store the user's product specs
+    prodSpecs: prodSpecs ?? null
   }).select().single() as { data: ImageJob | null; error: Error | null };
   if (jobErr || !job) {
     // Refund credits on failure
