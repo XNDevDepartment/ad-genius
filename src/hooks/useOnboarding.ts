@@ -10,6 +10,7 @@ export interface AIScenario {
 }
 
 export interface OnboardingData {
+  // legacy fields (kept for compatibility)
   imageUrl?: string;
   sourceImageId?: string;
   audience?: string;
@@ -18,6 +19,17 @@ export interface OnboardingData {
   generatedVideoUrl?: string;
   isFashion?: boolean;
   selectedPack?: string;
+  // new qualification funnel fields
+  name?: string;
+  whatSell?: string;
+  storeType?: 'online' | 'fisica' | 'ambas';
+  usesSupplierPhotos?: boolean;
+  hasPhotoSession?: boolean;
+  canHireModels?: boolean;
+  weeklyVolume?: '<5' | '5-20' | '20-50' | '+50';
+  onboardingJobId?: string;
+  liked?: boolean;
+  dislikeReason?: string;
 }
 
 export interface OnboardingState {
