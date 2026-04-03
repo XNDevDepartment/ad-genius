@@ -75,7 +75,7 @@ export const OnboardingRecovery = ({ onComplete }: Props) => {
             variant="outline"
             className="w-full gap-2 text-base"
           >
-            <a href="https://cal.com/produktpix/demo" target="_blank" rel="noopener noreferrer">
+            <a href="https://cal.com/produktpix/demonstracao-privada" target="_blank" rel="noopener noreferrer">
               Marcar demonstração gratuita
               <ArrowRight className="w-4 h-4" />
             </a>
