@@ -20,6 +20,7 @@ import { OutfitSwapJob, OutfitSwapResult } from "@/api/outfit-swap-api";
 import { supabase } from "@/integrations/supabase/client";
 import OutfitSwapBackgroundPicker from "@/components/outfit-swap/OutfitSwapBackgroundPicker";
 import { modelBackgroundPresets } from "@/data/background-presets";
+import { PageTransition } from "@/components/PageTransition";
 
 const OutfitSwap = () => {
   const navigate = useNavigate();
@@ -191,7 +192,7 @@ const OutfitSwap = () => {
 
   const getCreditsPerImage = (size: string): number => {
     switch (size) {
-      case '4K': return 4;
+      case '4K': return 3;
       case '2K': return 2;
       default: return 1;
     }
@@ -203,6 +204,7 @@ const OutfitSwap = () => {
   const canAfford = isAdmin || credits >= totalCost;
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <div className="container max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
@@ -420,6 +422,7 @@ const OutfitSwap = () => {
         )}
       </div>
     </div>
+    </PageTransition>
   );
 };
 

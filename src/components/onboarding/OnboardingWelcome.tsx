@@ -1,114 +1,127 @@
-import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import { Sparkles, Image, Gift, ArrowRight, Crown } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-interface OnboardingWelcomeProps {
-  onStart: () => void;
-  onSkip: () => void;
+const QUICK_SELLS = [
+  'Roupa', 'Calçado', 'Acessórios', 'Cosmética',
+  'Decoração', 'Eletrónica', 'Alimentação', 'Outro',
+];
+
+interface Props {
+  mode?: 'name' | 'whatSell';
+  name?: string;
+  initialValue?: string;
+  onNext: (value: string) => void;
 }
 
-export const OnboardingWelcome = ({ onStart, onSkip }: OnboardingWelcomeProps) => {
-  const { t } = useTranslation();
+export const OnboardingWelcome = ({
+  mode = 'name',
+  name,
+  initialValue = '',
+  onNext,
+}: Props) => {
+  const [value, setValue] = useState(initialValue);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const benefits = [
-    { icon: Image, text: t('onboarding.welcome.benefit1') },
-    { icon: Sparkles, text: t('onboarding.welcome.benefit2') },
-    { icon: Gift, text: t('onboarding.welcome.benefit3') },
-  ];
+  useEffect(() => {
+    const timer = setTimeout(() => inputRef.current?.focus(), 300);
+    return () => clearTimeout(timer);
+  }, [mode]);
+
+  const canAdvance = value.trim().length > 0;
+
+  const handleSubmit = () => {
+    if (canAdvance) onNext(value.trim());
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && canAdvance) handleSubmit();
+  };
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-80px)] px-5 py-8">
-      {/* Bonus Credits Banner */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl p-4 mb-6"
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
-            <Gift className="w-5 h-5 text-green-600 dark:text-green-400" />
-          </div>
-          <div>
-            <p className="font-semibold text-green-700 dark:text-green-300">
-              {t('onboarding.offer.bonusCredits')}
-            </p>
-            <p className="text-xs text-green-600/80 dark:text-green-400/80">
-              +20 {t('pricing.creditsPerMonth').replace('{{count}}', '')}
-            </p>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Main Content */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="flex-1 flex flex-col"
-      >
-
-        {/* Title & Subtitle */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold tracking-tight mb-2">
-            {t('onboarding.welcome.title')}
-          </h1>
-          <p className="text-muted-foreground">
-            {t('onboarding.welcome.subtitle')}
-          </p>
-        </div>
-
-        {/* Benefits */}
-        <div className="space-y-3 bg-muted/50 rounded-xl p-5 mb-auto">
-          {benefits.map((benefit, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 + index * 0.1 }}
-              className="flex items-center gap-3"
-            >
-              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <benefit.icon className="w-4 h-4 text-primary" />
-              </div>
-              <span className="text-sm font-medium">{benefit.text}</span>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* First Month Offer Badge */}
+    <div className="flex flex-col min-h-[calc(100vh-60px)] px-6 py-8 max-w-lg mx-auto w-full">
+      <div className="flex-1 flex flex-col justify-center">
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="flex items-center justify-center gap-2 py-3 mt-6"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          <Crown className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium text-primary">
-            {t('onboarding.offer.firstMonth')}
-          </span>
-        </motion.div>
+          {mode === 'name' ? (
+            <>
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-2">
+                Olá! Como gostas de ser chamado?
+              </h1>
+              <p className="text-muted-foreground text-sm mb-8">
+                Isto leva menos de 2 minutos.
+              </p>
+              <input
+                ref={inputRef}
+                type="text"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="O teu nome..."
+                className="w-full bg-transparent border-0 border-b-2 border-border focus:border-primary outline-none text-xl font-medium pb-2 transition-colors placeholder:text-muted-foreground/50"
+                autoComplete="given-name"
+              />
+            </>
+          ) : (
+            <>
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-2">
+                {name ? `${name}, o que vendes?` : 'O que vendes?'}
+              </h1>
+              <p className="text-muted-foreground text-sm mb-6">
+                Escolhe uma opção ou escreve livremente.
+              </p>
 
-        {/* Actions */}
-        <div className="space-y-3 mt-4 pb-[calc(env(safe-area-inset-bottom,0px)+16px)]">
-          <Button
-            onClick={onStart}
-            size="lg"
-            className="w-full gap-2 h-12 text-base"
-          >
-            {t('onboarding.welcome.getStarted')}
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-          <Button
-            onClick={onSkip}
-            variant="ghost"
-            size="sm"
-            className="w-full text-muted-foreground text-sm"
-          >
-            {t('onboarding.welcome.skip')}
-          </Button>
-        </div>
+              {/* Quick-select chips */}
+              <div className="flex flex-wrap gap-2 mb-6">
+                {QUICK_SELLS.map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => setValue(option)}
+                    className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
+                      value === option
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border hover:border-primary/50 hover:bg-muted'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+
+              <input
+                ref={inputRef}
+                type="text"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ou escreve aqui..."
+                className="w-full bg-transparent border-0 border-b-2 border-border focus:border-primary outline-none text-lg font-medium pb-2 transition-colors placeholder:text-muted-foreground/50"
+              />
+            </>
+          )}
+        </motion.div>
+      </div>
+
+      {/* CTA */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: canAdvance ? 1 : 0.4, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+        className="mt-8"
+      >
+        <Button
+          onClick={handleSubmit}
+          disabled={!canAdvance}
+          size="lg"
+          className="w-full gap-2 text-base"
+        >
+          Continuar
+          <ArrowRight className="w-4 h-4" />
+        </Button>
       </motion.div>
     </div>
   );

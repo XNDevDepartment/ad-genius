@@ -55,8 +55,8 @@ export const Library = ({ onBack }: LibraryProps) => {
   const isSourceTab = activeTab === 'source';
   const aiFilter = isSourceTab ? undefined : (activeTab as 'all' | 'ugc' | 'outfit_swap' | 'bulk_background');
 
-  const { images, loading, hasMore, loadMore, deleteImage: deleteImageFromDB, deleteImages } = useLibraryImages({ 
-    limit: 20, 
+  const { images, loading, hasMore, loadMore, deleteImage: deleteImageFromDB, deleteImages, refetch: refetchLibrary } = useLibraryImages({ 
+    limit: 25,
     filter: aiFilter
   });
   const { sourceImages, loading: sourceLoading, refetch: refetchSourceImages, deleteSourceImage, deleteSourceImages } = useSourceImages();
@@ -243,6 +243,7 @@ export const Library = ({ onBack }: LibraryProps) => {
               selectedIds={aiSelectedIds}
               onSelectionChange={setAiSelectedIds}
               onBulkDelete={deleteImages}
+              onRefresh={refetchLibrary}
             />
           ) : (
             <ImageLibraryGrid

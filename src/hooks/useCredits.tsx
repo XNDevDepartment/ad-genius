@@ -125,7 +125,10 @@ export const useCredits = () => {
   };
 
   const canAccessVideos = (): boolean => {
-    if (!subscriptionData) return false;
+    if (!subscriptionData) {
+      const cached = localStorage.getItem('ppx_subscription_tier');
+      return cached !== null && cached !== 'Free';
+    }
     return !isFreeTier();
   };
 

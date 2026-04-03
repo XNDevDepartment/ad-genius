@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect } from 'react';
 import SEO from '@/components/SEO';
+import { PageTransition } from '@/components/PageTransition';
 
 const getRedirectPath = () => {
   const promo = sessionStorage.getItem('promo_redirect');
@@ -28,7 +29,7 @@ const SignIn = () => {
   };
 
   return (
-    <>
+    <PageTransition>
       <SEO
         title="Sign In"
         description="Sign in to your ProduktPix account to create AI product photos."
@@ -38,7 +39,7 @@ const SignIn = () => {
         defaultMode="signin"
         onSuccess={handleSuccess}
       />
-    </>
+    </PageTransition>
   );
 };
 

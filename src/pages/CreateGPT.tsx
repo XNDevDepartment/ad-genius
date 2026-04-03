@@ -32,6 +32,7 @@ import { Link as LinkIcon, Images } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import MultiImageUploader from "@/components/MultiImageUploader";
+import { PageTransition } from "@/components/PageTransition";
 
 interface GeneratedImage {
   id: string;
@@ -879,6 +880,7 @@ const CreateUGC = () => {
 
 
   return (
+    <PageTransition>
     <TooltipProvider delayDuration={120} skipDelayDuration={400}>
       <div ref={topRef} className="min-h-screen bg-background relative">
       {/* Loading Overlay */}
@@ -1565,6 +1567,7 @@ const CreateUGC = () => {
       </Dialog>
       </div>
     </TooltipProvider>
+    </PageTransition>
   );
 };
 

@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HelpLayout } from "@/components/help/HelpLayout";
 import SEO from "@/components/SEO";
 import { buildBreadcrumbSchema } from "@/lib/schema";
+import { PageTransition } from "@/components/PageTransition";
 
 const tutorials = {
   beginner: [
@@ -130,6 +131,7 @@ const VideoTutorialsPage = () => {
   ]);
 
   return (
+    <PageTransition>
     <HelpLayout title="Video Tutorials" breadcrumbTitle="Video Tutorials">
       <SEO
         title="Video Tutorials"
@@ -289,6 +291,7 @@ const VideoTutorialsPage = () => {
         </Card> */}
       </div>
     </HelpLayout>
+    </PageTransition>
   );
 };
 

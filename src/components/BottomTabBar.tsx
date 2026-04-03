@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { useCredits } from "@/hooks/useCredits";
+import { motion } from "framer-motion";
 
 const BottomTabBar = () => {
   const location = useLocation();
@@ -27,13 +28,19 @@ const BottomTabBar = () => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-xl border-t border-border/50 z-50 safe-area-bottom">
       <div className="flex items-center justify-around px-2 py-2 max-w-lg mx-auto">
-        {tabs.map((tab) => {
+        {tabs.map((tab, index) => {
           const isActive = currentPath === tab.path;
           const Icon = tab.icon;
 
           if (tab.primary) {
             return (
-              <Link key={tab.id} to={tab.path} className="touch-manipulation">
+              <motion.div
+                key={tab.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05, duration: 0.25, ease: [0.25, 0.1, 0.25, 1] as const }}
+              >
+              <Link to={tab.path} className="touch-manipulation">
                 <Button 
                   variant="default"
                   size="sm"
@@ -46,14 +53,20 @@ const BottomTabBar = () => {
                   {tab.label}
                 </Button>
               </Link>
+              </motion.div>
             );
           }
 
           const isHighlight = 'highlight' in tab && tab.highlight && !isActive;
 
           return (
-            <Link
+            <motion.div
               key={tab.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05, duration: 0.25, ease: [0.25, 0.1, 0.25, 1] as const }}
+            >
+            <Link
               to={tab.path}
               className={cn(
                 "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all text-xs min-h-[44px] min-w-[44px] touch-manipulation active:scale-95",
@@ -75,6 +88,7 @@ const BottomTabBar = () => {
               </div>
               <span className="font-medium">{tab.label}</span>
             </Link>
+            </motion.div>
           );
         })}
       </div>

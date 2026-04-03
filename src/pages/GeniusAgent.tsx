@@ -15,6 +15,7 @@ import { useGeniusAgentConfig } from "@/hooks/useGeniusAgentConfig";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { LoadingFallback } from "@/components/LoadingFallback";
 import { format } from "date-fns";
+import { PageTransition } from "@/components/PageTransition";
 
 const DAYS_OF_WEEK = [
   { value: 0, label: "Sun" },
@@ -92,6 +93,7 @@ export default function GeniusAgent() {
   };
 
   return (
+    <PageTransition>
     <div className="container max-w-4xl py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
@@ -363,5 +365,6 @@ export default function GeniusAgent() {
         </TabsContent>
       </Tabs>
     </div>
+    </PageTransition>
   );
 }

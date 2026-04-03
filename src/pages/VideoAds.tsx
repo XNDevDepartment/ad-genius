@@ -7,6 +7,7 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { toast } from "@/hooks/use-toast";
 import ImageUploader from "@/components/ImageUploader";
 import { VideoAdsSettings } from "@/components/VideoAdsSettings";
+import { PageTransition } from "@/components/PageTransition";
 
 export type VideoDuration = 5 | 10 | 15 | 30;
 export type VideoAspectRatio = "1:1" | "9:16" | "16:9";
@@ -75,6 +76,7 @@ const VideoAds = () => {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
@@ -240,6 +242,7 @@ const VideoAds = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

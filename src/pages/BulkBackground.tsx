@@ -25,12 +25,13 @@ import { GarmentLibraryPicker } from "@/components/GarmentLibraryPicker";
 import { BulkUrlImportModal } from "@/components/BulkUrlImportModal";
 import { ShopifyImportModal } from "@/components/ShopifyImportModal";
 import { SourceImage } from "@/hooks/useSourceImages";
+import { PageTransition } from "@/components/PageTransition";
 
 const MAX_IMAGES = 20;
 
 function getCreditsPerImage(size: string): number {
   switch (size) {
-    case '4K': return 4;
+    case '4K': return 3;
     case '2K': return 2;
     default: return 1;
   }
@@ -364,6 +365,7 @@ const BulkBackground = () => {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl lg:max-w-7xl mx-auto space-y-6">
         {/* Header */}
@@ -821,10 +823,14 @@ const BulkBackground = () => {
             onClose={() => setEditingBgImage(null)}
             imageUrl={editingBgImage.url}
             imageId={editingBgImage.id}
+            onEditComplete={() => {
+              toast({ title: t('editImage.success'), description: t('editImage.savedToLibrary', 'Your edited image has been saved to the library.') });
+            }}
           />
         )}
       </div>
     </div>
+    </PageTransition>
   );
 };
 

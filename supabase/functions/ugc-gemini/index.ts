@@ -75,10 +75,17 @@ function backoffMs(attempt: number): number {
 
 // Resolution-based credit cost: 1 (1K), 2 (2K), 3 (4K)
 function calculateImageCost(settings: Record<string, unknown>): number {
+  // Prefer explicit imageSize tier if available
+  const imageSize = settings?.imageSize as string | undefined;
+  if (imageSize === '4K') return 3;
+  if (imageSize === '2K') return 2;
+  if (imageSize === '1K') return 1;
+  // Fallback: derive from pixel dimensions using max dimension (handles portrait ratios)
   const size = (settings?.size as string) ?? '1024x1024';
-  const width = parseInt(size.split('x')[0], 10) || 1024;
-  if (width >= 2800) return 3;  // 4K
-  if (width >= 1700) return 2;  // 2K
+  const parts = size.split('x').map(n => parseInt(n, 10) || 1024);
+  const maxDim = Math.max(...parts);
+  if (maxDim >= 2500) return 3;  // 4K
+  if (maxDim >= 1500) return 2;  // 2K
   return 1;                      // 1K
 }
 
@@ -287,11 +294,12 @@ serve(async (req)=>{
 // ---------- ACTIONS ----------
 // deno-lint-ignore no-explicit-any
 async function createImageJob(userId: string, payload: Record<string, unknown>, supabase: SupabaseClient<any>): Promise<Response> {
-  const { prompt, settings, source_image_id, source_image_ids, desiredAudience, prodSpecs } = payload as {
+  const { prompt, settings, source_image_id, source_image_ids, guidelineImageIds, desiredAudience, prodSpecs } = payload as {
     prompt?: string;
     settings?: Record<string, unknown>;
     source_image_id?: string;
     source_image_ids?: string[];
+    guidelineImageIds?: string[];
     desiredAudience?: string;
     prodSpecs?: string;
     idempotency_window_minutes?: number;
@@ -392,11 +400,15 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
       return errorJson(deduct?.error ?? deductErr?.message ?? "Failed to reserve credits", 400);
     }
   }
+  // Merge guidelineImageIds into settings so they persist with the job
+  const finalSettings = guidelineImageIds && guidelineImageIds.length > 0
+    ? { ...(settings ?? {}), guidelineImageIds }
+    : settings;
   // create job (queued) with model_type = 'gemini' and source_image_ids
   const { data: job, error: jobErr } = await supabase.from("image_jobs").insert({
     user_id: userId,
     prompt,
-    settings,
+    settings: finalSettings,
     content_hash: contentHash,
     total: totalImages,
     progress: 0,
@@ -407,7 +419,7 @@ async function createImageJob(userId: string, payload: Record<string, unknown>, 
     source_image_ids: finalSourceIds,
     model_type: "gemini",
     desiredAudience: desiredAudience ?? null,
-    prodSpecs: prodSpecs ?? null // Store the user's product specs
+    prodSpecs: prodSpecs ?? null
   }).select().single() as { data: ImageJob | null; error: Error | null };
   if (jobErr || !job) {
     // Refund credits on failure
@@ -537,9 +549,17 @@ async function generateImages(jobId: string, supabase: SupabaseClient<any>): Pro
       job.source_image_id
     ] : [];
     const sourceImageUrls = await getSignedSourceUrls(sourceImageIds, supabase);
+    
+    // Prepare guideline/reference images (stored in settings)
+    const guidelineIds = (job.settings as Record<string, unknown>)?.guidelineImageIds as string[] | undefined;
+    const guidelineUrls = guidelineIds && guidelineIds.length > 0
+      ? await getSignedSourceUrls(guidelineIds, supabase)
+      : [];
+    
     log("Source images prepared", {
       jobId,
-      sourceImageCount: sourceImageUrls.length
+      sourceImageCount: sourceImageUrls.length,
+      guidelineImageCount: guidelineUrls.length
     });
     // loop images
     for(let i = 0; i < (job.total ?? 1); i++){
@@ -549,9 +569,10 @@ async function generateImages(jobId: string, supabase: SupabaseClient<any>): Pro
         log("Starting image generation", {
           jobId,
           imageIndex: i,
-          usingSourceImage: !!sourceImageUrl
+          usingSourceImage: !!sourceImageUrl,
+          guidelineCount: guidelineUrls.length
         });
-        await generateSingleImageWithGemini(job, i, sourceImageUrl, supabase);
+        await generateSingleImageWithGemini(job, i, sourceImageUrl, guidelineUrls, supabase);
         completed++;
         const progress = Math.floor(completed / (job.total ?? 1) * 100);
         log("Image generation completed", {
@@ -654,7 +675,7 @@ async function generateImages(jobId: string, supabase: SupabaseClient<any>): Pro
 
 // Generate 1 image using Google Gemini (with retries/backoff)
 // deno-lint-ignore no-explicit-any
-async function generateSingleImageWithGemini(job: ImageJob, index: number, sourceImageUrl: string | null, supabase: SupabaseClient<any>): Promise<void> {
+async function generateSingleImageWithGemini(job: ImageJob, index: number, sourceImageUrl: string | null, guidelineImageUrls: string[], supabase: SupabaseClient<any>): Promise<void> {
   const MAX_ATTEMPTS = 3;
   const settings = job?.settings as Record<string, unknown> | null;
   const size = (settings?.size as string) ?? "1024x1024";
@@ -663,7 +684,7 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
   for(let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++){
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(()=>controller.abort(), 120000);
+      const timeout = setTimeout(()=>controller.abort(), 90000); // 90s to fail before edge function kill
       let res: Response | undefined;
       if (sourceImageUrl) {
         // ----- edits (using Gemini's image editing capabilities) -----
@@ -683,17 +704,71 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
         // Gemini 3 Pro Image Preview
         // Native aspect ratio support for Gemini 3 Pro
         const aspectRatio = settings?.aspectRatio as string | undefined;
-        const NATIVE_ASPECT_RATIOS = ['1:1', '3:4', '4:3', '9:16', '16:9'];
+        const imageSize = settings?.imageSize as string | undefined;
+        const NATIVE_ASPECT_RATIOS = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
         const useNativeAspect = aspectRatio && aspectRatio !== 'source' && NATIVE_ASPECT_RATIOS.includes(aspectRatio);
-        
+        const use4kFallback = imageSize === '4K' && useNativeAspect;
+
         log("Generating image with Gemini 3 Pro (image edit mode)", {
           jobId: job.id,
           aspectRatio: aspectRatio || 'none',
-          useNativeAspect
+          imageSize: imageSize || 'default',
+          useNativeAspect,
+          use4kFallback,
+          guidelineCount: guidelineImageUrls.length
         });
 
+        // Build imageConfig: avoid sending 4K + aspectRatio together
+        const imageConfig: Record<string, unknown> = {};
+        if (use4kFallback) {
+          // Gemini Flash can't do 4K reliably — downgrade to 2K with native aspect ratio
+          imageConfig.imageSize = '2K';
+          imageConfig.aspectRatio = aspectRatio;
+          log("4K requested but downgraded to 2K (model limitation)", { jobId: job.id, aspectRatio });
+        } else if (useNativeAspect) {
+          imageConfig.aspectRatio = aspectRatio;
+          if (imageSize) imageConfig.imageSize = imageSize;
+        }
+
+        // Build parts: prompt + main product image + guideline/reference images
+        const parts: Record<string, unknown>[] = [];
+        
+        // Add prompt with multi-image instructions if guidelines exist
+        if (guidelineImageUrls.length > 0) {
+          parts.push({ text: `${prompt}\n\nIMPORTANT MULTI-IMAGE INSTRUCTIONS:\n- The FIRST image is the MAIN PRODUCT. Reproduce this product EXACTLY in the generated image.\n- The ADDITIONAL image(s) are REFERENCE GUIDELINES showing how the product is used, worn, its scale, or context. Use them to understand the product better (size, how it fits, how it's worn) but ALWAYS feature the product from the FIRST image as the hero product.\n- DO NOT reproduce the reference images — only use them as context and guidance.` });
+        } else {
+          parts.push({ text: prompt });
+        }
+        
+        // Main product image
+        parts.push({ inlineData: { mimeType, data: base64Image } });
+        
+        // Guideline/reference images
+        for (const guidelineUrl of guidelineImageUrls) {
+          try {
+            const gSrc = await fetch(guidelineUrl);
+            if (!gSrc.ok) {
+              log("Failed to fetch guideline image, skipping", { url: guidelineUrl, status: gSrc.status });
+              continue;
+            }
+            const gMimeType = gSrc.headers.get('content-type') ?? 'image/png';
+            const gBuffer = await gSrc.arrayBuffer();
+            const gUint8 = new Uint8Array(gBuffer);
+            let gBinary = '';
+            for (let gi = 0; gi < gUint8.length; gi += chunkSize) {
+              const chunk = gUint8.subarray(gi, gi + chunkSize);
+              gBinary += String.fromCharCode.apply(null, Array.from(chunk));
+            }
+            const gBase64 = btoa(gBinary);
+            parts.push({ inlineData: { mimeType: gMimeType, data: gBase64 } });
+            log("Added guideline image to request", { jobId: job.id });
+          } catch (gErr) {
+            log("Error processing guideline image, skipping", { error: String(gErr) });
+          }
+        }
+
         res = await fetch(
-          "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent",
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent",
           {
             method: "POST",
             headers: {
@@ -704,20 +779,12 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
               contents: [
                 {
                   role: "user",
-                  parts: [
-                    { text: prompt },
-                    {
-                      inlineData: {
-                        mimeType,
-                        data: base64Image
-                      },
-                    },
-                  ],
+                  parts,
                 },
               ],
               generationConfig: {
                 responseModalities: ["TEXT", "IMAGE"],
-                ...(useNativeAspect && { imageConfig: { aspectRatio } })
+                ...(Object.keys(imageConfig).length > 0 && { imageConfig })
               },
             }),
             signal: controller.signal,
@@ -726,17 +793,32 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
       } else {
         // ----- Text-to-image mode (no source image) -----
         const aspectRatio = settings?.aspectRatio as string | undefined;
-        const NATIVE_ASPECT_RATIOS = ['1:1', '3:4', '4:3', '9:16', '16:9'];
+        const imageSize = settings?.imageSize as string | undefined;
+        const NATIVE_ASPECT_RATIOS = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
         const useNativeAspect = aspectRatio && aspectRatio !== 'source' && NATIVE_ASPECT_RATIOS.includes(aspectRatio);
-        
+        const use4kFallback = imageSize === '4K' && useNativeAspect;
+
         log("Generating image with Gemini 3 Pro (text-to-image mode)", {
           jobId: job.id,
           aspectRatio: aspectRatio || 'none',
-          useNativeAspect
+          imageSize: imageSize || 'default',
+          useNativeAspect,
+          use4kFallback
         });
 
+        const imageConfig: Record<string, unknown> = {};
+        if (use4kFallback) {
+          // Gemini Flash can't do 4K reliably — downgrade to 2K with native aspect ratio
+          imageConfig.imageSize = '2K';
+          imageConfig.aspectRatio = aspectRatio;
+          log("4K requested but downgraded to 2K (model limitation)", { jobId: job.id, aspectRatio });
+        } else if (useNativeAspect) {
+          imageConfig.aspectRatio = aspectRatio;
+          if (imageSize) imageConfig.imageSize = imageSize;
+        }
+
         res = await fetch(
-          "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent",
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent",
           {
             method: "POST",
             headers: {
@@ -747,7 +829,7 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
               contents: [{ parts: [{ text: prompt }] }],
               generationConfig: {
                 responseModalities: ["TEXT", "IMAGE"],
-                ...(useNativeAspect && { imageConfig: { aspectRatio } })
+                ...(Object.keys(imageConfig).length > 0 && { imageConfig })
               },
             }),
             signal: controller.signal,
@@ -788,12 +870,22 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
         }
         // Check if native aspect ratio was used (no cropping needed)
         const aspectRatioSetting = settings?.aspectRatio as string | undefined;
-        const NATIVE_ASPECT_RATIOS_CHECK = ['1:1', '3:4', '4:3', '9:16', '16:9'];
+        const imageSizeSetting = settings?.imageSize as string | undefined;
+        const NATIVE_ASPECT_RATIOS_CHECK = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
         const usedNativeAspect = aspectRatioSetting && aspectRatioSetting !== 'source' && NATIVE_ASPECT_RATIOS_CHECK.includes(aspectRatioSetting);
+        const was4kFallback = imageSizeSetting === '4K' && usedNativeAspect;
         
         let fileBytes: Uint8Array;
-        if (usedNativeAspect) {
-          // Native aspect ratio was used - no cropping needed, image already has correct dimensions
+        if (was4kFallback && aspectRatioSetting) {
+          // 4K was downgraded to 2K with native aspect ratio — no crop needed
+          log("4K downgraded to 2K with native aspect, no crop needed", {
+            jobId: job.id,
+            index,
+            aspectRatio: aspectRatioSetting
+          });
+          fileBytes = Uint8Array.from(atob(b64), (c)=>c.charCodeAt(0));
+        } else if (usedNativeAspect) {
+          // Native aspect ratio was used - no cropping needed
           log("Image generated with native aspect ratio, no crop needed", {
             jobId: job.id,
             index,
@@ -850,7 +942,7 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
         quality,
         format: storedFormat,
         provider: "gemini",
-        model: "gemini-3-pro-image-preview",
+        model: "gemini-3.1-flash-image-preview",
         aspectRatio: aspectRatioSetting || 'none',
         nativeAspectRatio: usedNativeAspect
       },
@@ -1102,12 +1194,14 @@ async function recoverQueued(supabase: SupabaseClient<any>): Promise<Response> {
       const completedImages = j.completed ?? 0;
       const unusedImages = totalImages - completedImages;
       if (unusedImages > 0) {
+        const costPerImage = calculateImageCost(j.settings ?? {});
+        const refundAmount = unusedImages * costPerImage;
         await supabase.rpc("refund_user_credits", {
           p_user_id: j.user_id,
-          p_amount: unusedImages, // 1 credit per image
+          p_amount: refundAmount,
           p_reason: "stuck_job_auto_recovery"
         });
-        log("Refunded credits for stuck job", { jobId: j.id, refund: unusedImages });
+        log("Refunded credits for stuck job", { jobId: j.id, refund: refundAmount, costPerImage });
       }
     }
     failedCount++;

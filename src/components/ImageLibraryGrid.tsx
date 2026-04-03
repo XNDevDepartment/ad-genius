@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -51,7 +52,16 @@ interface ImageLibraryGridProps {
   selectedIds?: Set<string>;
   onSelectionChange?: (ids: Set<string>) => void;
   onBulkDelete?: (imageIds: string[]) => Promise<{ success: number; failed: number }>;
+  onRefresh?: () => void;
 }
+
+const cardVariants = {
+  hidden: { opacity: 0, scale: 0.94, y: 10 },
+  visible: (i: number) => ({
+    opacity: 1, scale: 1, y: 0,
+    transition: { delay: Math.min(i * 0.04, 0.5), duration: 0.3, ease: [0.25, 0.1, 0.25, 1] as const },
+  }),
+};
 
 export const ImageLibraryGrid = ({
   images,
@@ -68,6 +78,7 @@ export const ImageLibraryGrid = ({
   selectedIds = new Set(),
   onSelectionChange,
   onBulkDelete,
+  onRefresh,
 }: ImageLibraryGridProps) => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<LibraryImage | null>(null);
@@ -257,24 +268,32 @@ export const ImageLibraryGrid = ({
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0.5">
-        {images.map((image) => {
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+        {images.map((image, index) => {
           const imageUrl = viewMode === "source" ? (image as any).signedUrl : image.url;
           const imageAlt = viewMode === "source"
             ? `Source: ${(image as any).fileName}`
             : `Generated: ${image.prompt.substring(0, 50)}...`;
 
           return (
-            <div 
-              key={image.id} 
-              className={`space-y-3 animate-scale-in group ${selectionMode && selectedIds.has(image.id) ? 'ring-2 ring-primary rounded-lg' : ''}`}
+            <motion.div
+              key={image.id}
+              custom={index}
+              initial="hidden"
+              animate="visible"
+              variants={cardVariants}
+              className={`group transition-all duration-200 ${
+                selectionMode && selectedIds.has(image.id)
+                  ? 'ring-2 ring-primary rounded-lg scale-[0.97]'
+                  : ''
+              }`}
               onClick={() => selectionMode && toggleSelection(image.id)}
             >
-              <div className="overflow-hidden border border-border/50 relative aspect-square">
+              <div className="overflow-hidden border border-border/50 relative aspect-[3/4] rounded-sm transition-all duration-300 ease-out group-hover:border-primary/40 group-hover:shadow-card">
                 <LazyImage 
                   src={imageUrl}
                   alt={imageAlt}
-                  className="w-full h-full object-cover shadow-card transition-transform group-hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.07]"
                 />
 
                 {/* Selection Checkbox */}
@@ -317,7 +336,7 @@ export const ImageLibraryGrid = ({
                 {/* Action buttons - hidden in selection mode */}
                 {!selectionMode && (
                   <>
-                    <div className="absolute top-2 right-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-20 flex gap-1">
+                    <div className="absolute top-2 right-2 sm:-translate-y-1 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 transition-all duration-300 z-20 flex gap-1">
                       <Button
                         size="sm"
                         variant="secondary"
@@ -362,7 +381,7 @@ export const ImageLibraryGrid = ({
                       )}
                     </div>
 
-                    <div className="absolute bottom-2 right-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-20 flex gap-1">
+                    <div className="absolute bottom-0 left-0 right-0 px-2 py-3 bg-gradient-to-t from-black/50 to-transparent sm:translate-y-1 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 transition-all duration-300 ease-out z-20 flex gap-1 justify-end items-end">
                       <Button
                         size="sm"
                         variant="secondary"
@@ -437,7 +456,7 @@ export const ImageLibraryGrid = ({
                   </>
                 )}
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
@@ -495,6 +514,7 @@ export const ImageLibraryGrid = ({
           onClose={() => setEditingImage(null)}
           imageUrl={editingImage.url}
           imageId={editingImage.id}
+          onEditComplete={() => { setEditingImage(null); onRefresh?.(); }}
         />
       )}
     </div>

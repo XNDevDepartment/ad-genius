@@ -5,6 +5,7 @@ import { buildWebPageSchema } from "@/lib/schema";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ArrowLeft, Quote } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { PageTransition } from "@/components/PageTransition";
 
 const CaseStudyPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -23,6 +24,7 @@ const CaseStudyPage = () => {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <SEO
         title={`${cs.company} — Professional Product Photos Case Study | ProduktPix`}
@@ -104,6 +106,7 @@ const CaseStudyPage = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

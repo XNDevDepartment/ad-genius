@@ -214,7 +214,7 @@ serve(async (req) => {
           subscriptionEndDate = new Date(subscription!.current_period_end * 1000).toISOString();
         }
 
-        // Update subscriber in database
+        // Update subscriber in database — clear any stale failure flags from previous subscription
         const { error: updateError } = await supabase
           .from("subscribers")
           .update({
@@ -223,6 +223,8 @@ serve(async (req) => {
             subscription_end: subscriptionEndDate,
             stripe_customer_id: session.customer as string,
             payment_type: isOneTimePayment ? 'one_time' : 'subscription',
+            subscription_status: 'active',
+            payment_failed_at: null,
             updated_at: new Date().toISOString(),
             last_reset_at: new Date().toISOString()
           })

@@ -23,6 +23,7 @@ import fotoUgc from '@/assets/landing_gallery/27.webp';
 import fotoVideo from '@/assets/module_icons/ugc.webp';
 import fotoFashion from '@/assets/demo_outfit_final.jpg';
 import fotoProduct from '@/assets/photoProduct.webp';
+import { PageTransition } from '@/components/PageTransition';
 
 const Promo3Meses = () => {
   const navigate = useNavigate();
@@ -149,6 +150,7 @@ const Promo3Meses = () => {
   ];
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       {!user && <MinimalHeader />}
 
@@ -352,6 +354,7 @@ const Promo3Meses = () => {
 
       <MinimalFooter />
     </div>
+    </PageTransition>
   );
 };
 

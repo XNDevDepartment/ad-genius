@@ -52,7 +52,7 @@ export const PostGenerationUpgradeModal = ({ jobStatus, jobId }: PostGenerationU
             className="w-full font-bold h-14 text-base"
             onClick={() => {
               setOpen(false);
-              navigate("/promo/3meses");
+            navigate("/promo/3meses");
             }}
           >
             {t('mobileUpgrade.postGeneration.upgradeCta')}

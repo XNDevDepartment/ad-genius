@@ -846,7 +846,7 @@
   "ugc": {
     "title": "Créer du Contenu UGC",
     "productImage": {
-      "title": "Image du Produit",
+      "title": "Image Principale du Produit",
       "subtitle": "Téléversez une image de votre produit pour analyse",
       "analyzing": "Analyse de l'image...",
       "tooltip": "Téléversez une image claire et de haute qualité de votre produit. L'IA l'analysera pour comprendre ce que vous vendez et suggérer des scénarios pertinents.",
@@ -856,6 +856,11 @@
       "supportedFormats": "PNG, JPG jusqu'à 10 Mo • Cliquez ou glissez-déposez",
       "preview": "Aperçu du produit",
       "remove": "Retirer l'image"
+    },
+    "referenceImages": {
+      "title": "Images de Référence (optionnel)",
+      "tooltip": "Téléversez jusqu'à 2 images supplémentaires montrant comment le produit est utilisé, son échelle ou son contexte. Elles aident l'IA à mieux comprendre votre produit.",
+      "subtitle": "Montrez comment le produit est porté, utilisé ou sa taille"
     },
     "productDetails": {
       "title": "Caractéristiques du produit (Facultatif)",
@@ -882,6 +887,11 @@
       "active": "Actif",
       "emptyState": "Téléversez l'image de votre produit et décrivez votre audience pour générer des scénarios.",
       "editPlaceholder": "Modifiez ou affinez la description du scénario sélectionné..."
+    },
+    "savedScenarios": {
+      "title": "Scénarios Précédents",
+      "empty": "Aucun scénario enregistré. Vos scénarios personnalisés apparaîtront ici après utilisation.",
+      "loading": "Chargement des scénarios..."
     },
     "generationSettings": {
       "title": "Paramètres d'Image",
@@ -1371,7 +1381,29 @@
     "errors": {
       "selectImageAndPrompt": "Veuillez sélectionner une image et saisir des instructions.",
       "videoLoadFailed": "Échec du chargement de la vidéo. Vérifiez la console pour plus de détails."
-    }
+    },
+    "upgradeRequired": "Upgrade Requis",
+    "viewPricingPlans": "Voir les Forfaits"
+  },
+  "animateImage": {
+    "title": "Animer l'Image",
+    "description": "Générez une vidéo à partir de votre image avec l'IA",
+    "previewUnavailable": "L'aperçu vidéo n'est pas disponible sur cet appareil.",
+    "downloadVideo": "Télécharger la Vidéo",
+    "download": "Télécharger",
+    "processingMessage": "Votre vidéo est en cours de génération. Vous pouvez continuer à travailler. Retrouvez-la dans l'onglet <strong>Vidéos</strong>.",
+    "gotIt": "Compris",
+    "failed": "Échec de la génération vidéo.",
+    "motionPrompt": "Prompt de Mouvement",
+    "aiSuggest": "Suggestion IA",
+    "promptPlaceholder": "Décrivez le mouvement souhaité...",
+    "duration": "Durée",
+    "seconds5": "5 secondes",
+    "seconds10": "10 secondes",
+    "generateVideo": "Générer Vidéo ({{duration}}s)",
+    "generating": "Génération...",
+    "starting": "Démarrage...",
+    "newVideo": "Nouvelle Vidéo"
   },
   "help": {
     "gettingStarted": {
@@ -2695,10 +2727,6 @@
       "cta": "Voir l'Offre",
       "close": "Fermer"
     }
-  },
-  "videoGenerator": {
-    "upgradeRequired": "Upgrade Requis",
-    "viewPricingPlans": "Voir les Forfaits"
   },
   "mobileUpgrade": {
     "freePlan": "Plan Gratuit",

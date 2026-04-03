@@ -764,6 +764,33 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_scenarios: {
+        Row: {
+          created_at: string | null
+          description: string
+          id: string
+          title: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          id?: string
+          title: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          id?: string
+          title?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       domain_rules: {
         Row: {
           created_at: string | null

@@ -13,6 +13,7 @@ import { OutfitCreatorSlots, SlotType, GarmentSlotData } from "@/components/Outf
 import { BaseModel } from "@/hooks/useBaseModels";
 import { GarmentSlots } from "@/api/outfit-creator-api";
 import { cn } from "@/lib/utils";
+import { PageTransition } from "@/components/PageTransition";
 
 const OutfitCreator = () => {
   const navigate = useNavigate();
@@ -217,6 +218,7 @@ const OutfitCreator = () => {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <div className="container max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
@@ -330,6 +332,7 @@ const OutfitCreator = () => {
         )}
       </div>
     </div>
+    </PageTransition>
   );
 };
 

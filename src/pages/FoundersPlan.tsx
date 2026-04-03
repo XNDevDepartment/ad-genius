@@ -11,6 +11,7 @@ import { trackInitiateCheckout, trackViewContent } from "@/lib/metaPixel";
 import { useTranslation } from "react-i18next";
 import SEO from "@/components/SEO";
 import { buildProductSchema } from "@/lib/schema";
+import { PageTransition } from "@/components/PageTransition";
 
 const FoundersPlan = () => {
   const navigate = useNavigate();
@@ -70,6 +71,7 @@ const FoundersPlan = () => {
   });
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <SEO
         title="Founders Plan - Special Offer"
@@ -237,6 +239,7 @@ const FoundersPlan = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

@@ -24,6 +24,7 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useTranslation } from "react-i18next";
 import { VideoSettingsPanel, VideoSettings } from "@/components/VideoSettings";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { PageTransition } from "@/components/PageTransition";
 
 
 
@@ -32,7 +33,7 @@ type Duration = 5 | 10;
 export default function VideoGenerator() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, subscriptionData } = useAuth();
   const { canAccessVideos, getVideoAccessMessage } = useCredits();
   const { isAdmin, loading: isAdminLoading } = useAdminAuth();
   const { t } = useTranslation();
@@ -77,7 +78,15 @@ export default function VideoGenerator() {
     if (isAdminLoading) return;
     if (isAdmin) return;
 
-    // Regular users still get checked
+    // Wait for subscription data to load; use cached tier to avoid flash redirect
+    const cachedTier = localStorage.getItem('ppx_subscription_tier');
+    if (!subscriptionData) {
+      // If cached tier exists and is not Free, trust it — don't redirect
+      if (cachedTier && cachedTier !== 'Free') return;
+      // If no cache, wait for data to load
+      if (!cachedTier) return;
+    }
+
     if (!canAccessVideos()) {
       toast({
         title: t('videoGenerator.upgradeRequired'),
@@ -88,7 +97,7 @@ export default function VideoGenerator() {
         navigate('/pricing');
       }, 2000);
     }
-  }, [user, isAdmin, isAdminLoading, canAccessVideos, navigate, toast, getVideoAccessMessage]);
+  }, [user, isAdmin, isAdminLoading, canAccessVideos, subscriptionData, navigate, toast, getVideoAccessMessage]);
 
   // AI image analysis function
   const analyzeImageForMotion = async (imageUrl: string) => {
@@ -517,7 +526,9 @@ export default function VideoGenerator() {
   };
 
   // Show access denied UI if no access (but not for admins)
-  if (!user || (!isAdminLoading && !isAdmin && !canAccessVideos())) {
+  const cachedTier = localStorage.getItem('ppx_subscription_tier');
+  const showAccessDenied = !user || (!isAdminLoading && !isAdmin && !canAccessVideos() && (subscriptionData || !cachedTier || cachedTier === 'Free'));
+  if (showAccessDenied) {
     return (
       <div className="min-h-screen p-4 md:p-8 bg-background">
         <div className="max-w-4xl mx-auto space-y-6">
@@ -541,6 +552,7 @@ export default function VideoGenerator() {
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen p-4 md:p-8 bg-background">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center gap-3">
@@ -912,5 +924,6 @@ export default function VideoGenerator() {
         onSelect={handleSourceImageSelect}
       />
     </div>
+    </PageTransition>
   );
 }

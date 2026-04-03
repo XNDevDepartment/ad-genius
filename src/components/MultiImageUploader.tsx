@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { Upload, X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useLocation } from "react-router-dom";
 
 interface MultiImageUploaderProps {
   onImagesSelect: (files: File[]) => void;
@@ -123,19 +124,27 @@ const MultiImageUploader = ({
 
   const canAddMore = selectedImages.length < maxImages;
 
+  const location = useLocation();
+
+  const isUgcRoute = location.pathname === "/create/ugc";
+
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div className={
+        isUgcRoute
+          ? "flex justify-center"
+          : "grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4"
+      }>
       {/* Uploaded Images Grid */}
       {selectedImages.length > 0 && (
         <>
           {selectedImages.map((file, index) => (
-            <Card key={index} className="relative bg-transparent border-2 border-border rounded-apple overflow-hidden">
+            <Card key={index} className="relative bg-transparent border-2 border-border rounded-apple overflow-hidden flex items-center justify-center">
               {imagePreviews[index] && (
                 <img
-                  src={imagePreviews[index]} 
-                  alt={`Product preview ${index + 1}`} 
-                  className="w-full h-48 object-cover"
+                  src={imagePreviews[index]}
+                  alt={`Product preview ${index + 1}`}
+                  className="object-cover w-full max-h-52"
                 />
               )}
 

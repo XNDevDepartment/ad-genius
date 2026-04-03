@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Layers, Upload, FolderOpen, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageTransition } from "@/components/PageTransition";
 
 const Bulk = () => {
   const { isAdmin, loading } = useAdminAuth();
@@ -30,6 +31,7 @@ const Bulk = () => {
   }
 
   return (
+    <PageTransition>
     <div className="container max-w-4xl mx-auto py-8 px-4">
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
@@ -67,6 +69,7 @@ const Bulk = () => {
         <p>{t('bulk.comingSoon')}</p>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

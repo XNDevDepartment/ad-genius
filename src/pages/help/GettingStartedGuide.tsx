@@ -7,6 +7,7 @@ import { HelpLayout } from "@/components/help/HelpLayout";
 import { useTranslation } from "react-i18next";
 import SEO from "@/components/SEO";
 import { buildHowToSchema, buildBreadcrumbSchema } from "@/lib/schema";
+import { PageTransition } from "@/components/PageTransition";
 
 const GettingStartedGuide = () => {
   const { t } = useTranslation();
@@ -62,6 +63,7 @@ const GettingStartedGuide = () => {
   ]);
 
   return (
+    <PageTransition>
     <HelpLayout title={t('help.gettingStarted.title')} breadcrumbTitle={t('help.gettingStarted.title')}>
       <SEO
         title="Getting Started Guide"
@@ -173,6 +175,7 @@ const GettingStartedGuide = () => {
         </Card>
       </div>
     </HelpLayout>
+    </PageTransition>
   );
 };
 

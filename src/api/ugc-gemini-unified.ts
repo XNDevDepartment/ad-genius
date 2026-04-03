@@ -10,6 +10,7 @@ export type CreateJobPayload = {
   settings: {
     number: number;
     size?: string;
+    imageSize?: string;
     quality: 'low' | 'medium' | 'high';
     orientation?: string;
     aspectRatio?: string;
@@ -20,6 +21,7 @@ export type CreateJobPayload = {
   };
   source_image_id?: string;
   source_image_ids?: string[];
+  guidelineImageIds?: string[];
   desiredAudience?: string;
   prodSpecs?: string;
 };

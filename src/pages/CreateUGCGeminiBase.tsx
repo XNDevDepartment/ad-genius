@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Crown } from "lucide-react";
-import { ArrowLeft, Sparkles, RefreshCw, HelpCircle, Pencil, ArrowDown } from "lucide-react";
+import { ArrowLeft, Sparkles, RefreshCw, HelpCircle, Pencil, ArrowDown, Clock } from "lucide-react";
+import { useCustomScenarios } from "@/hooks/useCustomScenarios";
+import { SavedScenariosModal } from "@/components/SavedScenariosModal";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -39,6 +41,7 @@ import AspectRatioSelector, { AspectRatio } from "@/components/AspectRatioSelect
 import { SIZE_MAP } from "@/lib/aspectSizes";
 import { PostGenerationUpgradeModal } from "@/components/PostGenerationUpgradeModal";
 import { ModelVersion } from "@/api/ugc-gemini-unified";
+import { PageTransition } from "@/components/PageTransition";
 
 interface GeneratedImage {
   id: string;
@@ -103,6 +106,9 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [productImages, setProductImages] = useState<File[]>([]);
   const [sourceImageIds, setSourceImageIds] = useState<string[]>([]);
   const [isAnalyzingImages, setIsAnalyzingImages] = useState<boolean[]>([]);
+  const [guidelineImages, setGuidelineImages] = useState<File[]>([]);
+  const [guidelineSourceIds, setGuidelineSourceIds] = useState<string[]>([]);
+  const [isAnalyzingGuidelines, setIsAnalyzingGuidelines] = useState<boolean[]>([]);
   const [desiredAudience, setDesiredAudience] = useState("");
   const [prodSpecs, setProdSpecs] = useState("");
   const [aiScenarios, setAiScenarios] = useState<AIScenario[]>([]);
@@ -147,6 +153,8 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [shopifyImportOpen, setShopifyImportOpen] = useState(false);
   const [animateModalOpen, setAnimateModalOpen] = useState(false);
   const [animateImageUrl, setAnimateImageUrl] = useState<string | null>(null);
+  const [savedScenariosOpen, setSavedScenariosOpen] = useState(false);
+  const { saveScenario } = useCustomScenarios();
   const [animateImageId, setAnimateImageId] = useState<string | null>(null);
 
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -455,6 +463,19 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
     document.getElementById("desiredAudience")?.focus();
   };
 
+  const handleGuidelineImagesUpload = async (files: File[]) => {
+    setGuidelineImages(files);
+    // Upload guideline images immediately
+    const newGuidelineIds: string[] = [];
+    for (const file of files) {
+      const uploaded = await uploadSourceImage(file);
+      if (uploaded?.id) {
+        newGuidelineIds.push(uploaded.id);
+      }
+    }
+    setGuidelineSourceIds(newGuidelineIds);
+  };
+
   const handleAudienceChange = (audienceText: string) => {
     setDesiredAudience(audienceText);
   };
@@ -647,6 +668,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       setAiScenarios(scenarios);
       setIsAnalyzingImages(new Array(imageCount).fill(false));
 
+      
       toast({
         title: "Scenarios Generated",
         description: `Got ${scenarios.length} UGC scenario ideas for your product.`,
@@ -825,6 +847,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
         settings: {
           number: numImages,
           size: sizePx,
+          imageSize: imageSize,
           quality: imageQuality,
           style: style as 'lifestyle' | 'minimal' | 'vibrant' | 'professional' | 'cinematic' | 'natural',
           timeOfDay: timeOfDay as 'natural' | 'golden' | 'night',
@@ -833,6 +856,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
           aspectRatio: aspectRatio,
         },
         source_image_ids: idsToUse,
+        guidelineImageIds: guidelineSourceIds.length > 0 ? guidelineSourceIds : undefined,
         desiredAudience: desiredAudience || undefined,
         prodSpecs: prodSpecs || undefined,
       });
@@ -842,6 +866,13 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
       const jobId = result.jobId;
       // Register in multi-job tracker
       tracker.addJob(jobId, numImages, aspectRatio);
+
+      // Auto-save custom scenario
+      if (customScenarioMode && selectedScenario?.description?.trim()) {
+        const desc = selectedScenario.description.trim();
+        const title = desc.length > 60 ? desc.substring(0, 60) + '…' : desc;
+        saveScenario({ title, description: desc }).catch(console.error);
+      }
 
       localStorage.setItem(storageKeys.jobId, jobId);
       localStorage.setItem(storageKeys.stage, 'generating');
@@ -928,6 +959,9 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
     setPendingSlots(0);
     setIsAnalyzingImages(new Array(productImages.length).fill(false));
     setImagesAnalysed(false);
+    setGuidelineImages([]);
+    setGuidelineSourceIds([]);
+    setIsAnalyzingGuidelines([]);
 
     localStorage.removeItem(storageKeys.jobId);
     localStorage.removeItem(storageKeys.stage);
@@ -963,6 +997,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const pageTitle = modelVersion === 'gemini-v3' ? 'UGC Creator (Gemini 3.0 Test)' : t('ugc.title');
 
   return (
+    <PageTransition>
     <TooltipProvider delayDuration={120} skipDelayDuration={400}>
       <div ref={topRef} className="min-h-screen bg-background relative overflow-y-auto">
         {/* Loading overlay removed - no longer needed with stateless scenario API */}
@@ -999,70 +1034,100 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                 <CardContent className="p-6 lg:p-8 space-y-6">
                   <div>
                     <div className="space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Label>{t('ugc.productImage.title')}</Label>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
-                                  <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="max-w-xs">{t('ugc.productImage.tooltip')}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                        <MultiImageUploader
-                          onImagesSelect={handleImagesUpload}
-                          selectedImages={productImages}
-                          setImagesAnalysed={setImagesAnalysed}
-                          isAnalyzing={isAnalyzingImages}
-                          analyzingText="Analyzing product..."
-                          maxImages={1}
-                        />
-
-                        {/* Additional Image Options */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Left: Main Product Image */}
                         <div className="space-y-2">
-                          <div className="flex gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSourceImagePickerOpen(true)}
-                              className="flex-1 p-2"
-                              disabled={false}
-                            >
-                              <Images className="h-4 w-4 mr-2" />
-                              {t('ugc.importOptions.library')}
-                            </Button>
+                          <div className="flex items-center gap-2">
+                            <Label>{t('ugc.productImage.title')}</Label>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                                    <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="max-w-xs">{t('ugc.productImage.tooltip')}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          <MultiImageUploader
+                            onImagesSelect={handleImagesUpload}
+                            selectedImages={productImages}
+                            setImagesAnalysed={setImagesAnalysed}
+                            isAnalyzing={isAnalyzingImages}
+                            analyzingText="Analyzing product..."
+                            maxImages={1}
+                          />
+
+                          {/* Additional Image Options */}
+                          <div className="space-y-2">
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSourceImagePickerOpen(true)}
+                                className="flex-1 p-2"
+                                disabled={false}
+                              >
+                                <Images className="h-4 w-4 mr-2" />
+                                {t('ugc.importOptions.library')}
+                              </Button>
+
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setUrlImportOpen(true)}
+                                className="flex-1 p-2"
+                                disabled={false}
+                              >
+                                <LinkIcon className="h-4 w-4 mr-2" />
+                                {t('ugc.importOptions.url')}
+                              </Button>
+                            </div>
 
                             <Button
                               type="button"
-                              variant="outline"
+                              variant="ghost"
                               size="sm"
-                              onClick={() => setUrlImportOpen(true)}
-                              className="flex-1 p-2"
+                              onClick={() => setShopifyImportOpen(true)}
+                              className="w-full text-muted-foreground hover:text-foreground"
                               disabled={false}
                             >
-                              <LinkIcon className="h-4 w-4 mr-2" />
-                              {t('ugc.importOptions.url')}
+                              <Store className="h-4 w-4 mr-2" />
+                              {t('ugc.importOptions.shopify')}
                             </Button>
                           </div>
+                        </div>
 
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setShopifyImportOpen(true)}
-                            className="w-full text-muted-foreground hover:text-foreground"
-                            disabled={false}
-                          >
-                            <Store className="h-4 w-4 mr-2" />
-                            {t('ugc.importOptions.shopify')}
-                          </Button>
+                        {/* Right: Reference/Guideline Images */}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Label>{t('ugc.referenceImages.title')}</Label>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                                    <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="max-w-xs">{t('ugc.referenceImages.tooltip')}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{t('ugc.referenceImages.subtitle')}</p>
+                          <MultiImageUploader
+                            onImagesSelect={handleGuidelineImagesUpload}
+                            selectedImages={guidelineImages}
+                            isAnalyzing={isAnalyzingGuidelines}
+                            analyzingText="Uploading reference..."
+                            maxImages={2}
+                          />
                         </div>
                       </div>
 
@@ -1199,17 +1264,30 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                         </div>
                         
                         {customScenarioMode && (
-                          <Textarea
-                            className="mt-3 min-h-[100px] text-base md:text-sm"
-                            placeholder={t('ugc.scenarios.customPlaceholder')}
-                            value={selectedScenario?.description || ''}
-                            onClick={(e) => e.stopPropagation()}
-                            onChange={(e) => setSelectedScenario({
-                              idea: t('ugc.scenarios.customScenario'),
-                              "small-description": t('ugc.scenarios.customScenarioDesc'),
-                              description: e.target.value
-                            })}
-                          />
+                          <div className="mt-3 space-y-2">
+                            <div className="relative">
+                              <Textarea
+                                className="min-h-[100px] text-base md:text-sm"
+                                placeholder={t('ugc.scenarios.customPlaceholder')}
+                                value={selectedScenario?.description || ''}
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={(e) => setSelectedScenario({
+                                  idea: t('ugc.scenarios.customScenario'),
+                                  "small-description": t('ugc.scenarios.customScenarioDesc'),
+                                  description: e.target.value
+                                })}
+                              />
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full border-primary/30 text-primary hover:bg-primary/10 gap-2"
+                              onClick={(e) => { e.stopPropagation(); setSavedScenariosOpen(true); }}
+                            >
+                              <Clock className="h-4 w-4" />
+                              {t('ugc.savedScenarios.title')}
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -1465,14 +1543,14 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                       ) : (
                         <>
                           <Sparkles className="h-5 w-5 mr-2" />
-                          {modelVersion === 'gemini-v3' ? t('ugc.generateFree') : t('ugc.generateWithCredits', { credits: numImages, plural: numImages > 1 ? 's' : '' })}
+                          {modelVersion === 'gemini-v3' ? t('ugc.generateFree') : t('ugc.generateWithCredits', { credits: calculateImageCost(imageQuality, numImages, imageSize), plural: calculateImageCost(imageQuality, numImages, imageSize) > 1 ? 's' : '' })}
                         </>
                       )}
                     </Button>
 
                     <p className="text-xs text-muted-foreground mt-2 text-center">
                       {isGenerating ? t('ugc.generating') :
-                        (!canGenerateImages(numImages) && modelVersion !== 'gemini-v3') ? t('ugc.insufficientCredits', { remaining: remainingCredits, needed: numImages }) :
+                        (!canGenerateImages(numImages) && modelVersion !== 'gemini-v3') ? t('ugc.insufficientCredits', { remaining: remainingCredits, needed: calculateImageCost(imageQuality, numImages, imageSize) }) :
                           t('ugc.generationTime')}
                     </p>
 
@@ -1520,7 +1598,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                   ) : (
                     <>
                       <Sparkles className="h-5 w-5 mr-2" />
-                      {modelVersion === 'gemini-v3' ? t('ugc.generateFree') : t('ugc.generateWithCredits', { credits: numImages, plural: numImages > 1 ? 's' : '' })}
+                      {modelVersion === 'gemini-v3' ? t('ugc.generateFree') : t('ugc.generateWithCredits', { credits: calculateImageCost(imageQuality, numImages, imageSize), plural: calculateImageCost(imageQuality, numImages, imageSize) > 1 ? 's' : '' })}
                     </>
                   )}
                 </Button>
@@ -1657,8 +1735,21 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
           imageId={animateImageId}
         />
         <PostGenerationUpgradeModal jobStatus={job?.status} jobId={job?.id} />
+        <SavedScenariosModal
+          open={savedScenariosOpen}
+          onOpenChange={setSavedScenariosOpen}
+          onSelect={(desc) => {
+            setSelectedScenario({
+              idea: t('ugc.scenarios.customScenario'),
+              "small-description": t('ugc.scenarios.customScenarioDesc'),
+              description: desc,
+            });
+            setCustomScenarioMode(true);
+          }}
+        />
       </div>
     </TooltipProvider>
+    </PageTransition>
   );
 };
 

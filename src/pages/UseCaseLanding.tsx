@@ -9,6 +9,7 @@ import { MinimalHeader } from '@/components/landing-v2/MinimalHeader';
 import { MinimalFooter } from '@/components/landing-v2/MinimalFooter';
 import { getUseCaseBySlug, getRelatedUseCases } from '@/data/use-cases';
 import { buildFAQPageSchema, buildBreadcrumbSchema, buildWebPageSchema } from '@/lib/schema';
+import { PageTransition } from '@/components/PageTransition';
 
 // Icon mapping for dynamic icons
 const iconMap: Record<string, LucideIcon> = {
@@ -50,7 +51,7 @@ const UseCaseLanding = () => {
   const pageSchema = buildWebPageSchema(useCase.title, useCase.description, `/use-cases/${useCase.slug}`);
 
   return (
-    <>
+    <PageTransition>
       <SEO
         title={useCase.metaTitle}
         description={useCase.metaDescription}
@@ -210,7 +211,7 @@ const UseCaseLanding = () => {
         
         <MinimalFooter />
       </div>
-    </>
+    </PageTransition>
   );
 };
 

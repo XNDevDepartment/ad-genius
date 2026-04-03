@@ -66,11 +66,11 @@ export function VideoCard({ job, onDelete, onDownload, onView }: VideoCardProps)
 
   return (
     <>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+      <Card className="overflow-hidden transition-all duration-300 ease-out hover:shadow-card hover:border-primary/40 group">
         <CardContent className="p-0">
           {/* Video Preview or Placeholder */}
           <div
-            className="relative h-96 bg-muted"
+            className="relative aspect-[3/4] bg-muted overflow-hidden"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
@@ -78,7 +78,7 @@ export function VideoCard({ job, onDelete, onDownload, onView }: VideoCardProps)
               <video
                 ref={videoRef}
                 src={videoUrl}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                 muted
                 loop
                 playsInline

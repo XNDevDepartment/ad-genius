@@ -1103,7 +1103,7 @@
   "ugc": {
     "title": "Criar Conteúdo UGC",
     "productImage": {
-      "title": "Imagem do Produto",
+      "title": "Imagem Principal do Produto",
       "subtitle": "Carregue uma imagem do seu produto para análise",
       "analyzing": "A analisar a imagem...",
       "tooltip": "Carregue uma imagem nítida e de alta qualidade do seu produto. A IA irá analisá-la para compreender o que vende e sugerir cenários relevantes.",
@@ -1113,6 +1113,11 @@
       "supportedFormats": "PNG, JPG até 30 MB • Clique ou arraste e largue",
       "preview": "Pré-visualização do produto",
       "remove": "Remover imagem"
+    },
+    "referenceImages": {
+      "title": "Imagens de Referência (opcional)",
+      "tooltip": "Carregue até 2 imagens adicionais que mostrem como o produto é usado, a sua escala ou contexto. Estas ajudam a IA a compreender melhor o seu produto.",
+      "subtitle": "Mostre como o produto é usado ou o seu tamanho"
     },
     "productDetails": {
       "title": "Caraterísticas do produto (opcional)",
@@ -1139,6 +1144,11 @@
       "active": "Ativo",
       "emptyState": "Carregue a imagem do seu produto e descreva o seu público para gerar cenários.",
       "editPlaceholder": "Edite ou refine a descrição do cenário selecionado..."
+    },
+    "savedScenarios": {
+      "title": "Cenários Anteriores",
+      "empty": "Ainda não tem cenários guardados. Os seus cenários personalizados aparecerão aqui depois de os utilizar.",
+      "loading": "A carregar cenários..."
     },
     "generationSettings": {
       "title": "Definições de Imagem",
@@ -1628,7 +1638,29 @@
     "errors": {
       "selectImageAndPrompt": "Selecione uma imagem e introduza instruções.",
       "videoLoadFailed": "Falha ao carregar o vídeo. Verifique a consola para mais detalhes."
-    }
+    },
+    "upgradeRequired": "Upgrade Necessário",
+    "viewPricingPlans": "Ver Planos"
+  },
+  "animateImage": {
+    "title": "Animar Imagem",
+    "description": "Gere um vídeo a partir da sua imagem usando IA",
+    "previewUnavailable": "A pré-visualização do vídeo não está disponível neste dispositivo.",
+    "downloadVideo": "Descarregar Vídeo",
+    "download": "Descarregar",
+    "processingMessage": "O seu vídeo está a ser gerado. Pode continuar o seu trabalho. Encontre-o no separador <strong>Vídeos</strong>.",
+    "gotIt": "Entendido",
+    "failed": "Falha na geração do vídeo.",
+    "motionPrompt": "Prompt de Movimento",
+    "aiSuggest": "Sugestão IA",
+    "promptPlaceholder": "Descreva o movimento que pretende...",
+    "duration": "Duração",
+    "seconds5": "5 segundos",
+    "seconds10": "10 segundos",
+    "generateVideo": "Gerar Vídeo ({{duration}}s)",
+    "generating": "A gerar...",
+    "starting": "A iniciar...",
+    "newVideo": "Novo Vídeo"
   },
   "help": {
     "gettingStarted": {
@@ -2741,10 +2773,6 @@
       "cta": "Ver Oferta",
       "close": "Fechar"
     }
-  },
-  "videoGenerator": {
-    "upgradeRequired": "Upgrade Necessário",
-    "viewPricingPlans": "Ver Planos"
   },
   "mobileUpgrade": {
     "freePlan": "Plano Grátis",

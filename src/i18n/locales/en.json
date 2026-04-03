@@ -1109,7 +1109,7 @@
   "ugc": {
     "title": "Create UGC Content",
     "productImage": {
-      "title": "Product Image",
+      "title": "Main Product Image",
       "subtitle": "Upload an image of your product for analysis",
       "analyzing": "Analyzing image...",
       "tooltip": "Upload a sharp, high-quality image of your product. The AI will analyze it to understand what you sell and suggest relevant scenarios.",
@@ -1119,6 +1119,11 @@
       "supportedFormats": "PNG, JPG up to 30 MB • Click or drag & drop",
       "preview": "Product preview",
       "remove": "Remove image"
+    },
+    "referenceImages": {
+      "title": "Reference Images (optional)",
+      "tooltip": "Upload up to 2 additional images showing how the product is used, its scale, or context. These help the AI better understand your product but won't be the main focus.",
+      "subtitle": "Show how the product is worn, used, or its size"
     },
     "productDetails": {
       "title": "Product details (optional)",
@@ -1145,6 +1150,11 @@
       "active": "Active",
       "emptyState": "Upload your product image and describe your audience to generate scenarios.",
       "editPlaceholder": "Edit or refine the selected scenario description..."
+    },
+    "savedScenarios": {
+      "title": "Previous Scenarios",
+      "empty": "No saved scenarios yet. Your custom scenarios will appear here after you use them.",
+      "loading": "Loading scenarios..."
     },
     "generationSettings": {
       "title": "Image Settings",
@@ -1634,7 +1644,29 @@
     "errors": {
       "selectImageAndPrompt": "Please select an image and enter instructions.",
       "videoLoadFailed": "Failed to load video. Check the console for more details."
-    }
+    },
+    "upgradeRequired": "Upgrade Required",
+    "viewPricingPlans": "View Pricing Plans"
+  },
+  "animateImage": {
+    "title": "Animate Image",
+    "description": "Generate a video from your image using AI",
+    "previewUnavailable": "Video preview is not available on this device.",
+    "downloadVideo": "Download Video",
+    "download": "Download",
+    "processingMessage": "Your video is generating. You may now continue your work. You can find it in your <strong>Videos</strong> tab.",
+    "gotIt": "Got it",
+    "failed": "Video generation failed.",
+    "motionPrompt": "Motion Prompt",
+    "aiSuggest": "AI Suggest",
+    "promptPlaceholder": "Describe the motion you want...",
+    "duration": "Duration",
+    "seconds5": "5 seconds",
+    "seconds10": "10 seconds",
+    "generateVideo": "Generate Video ({{duration}}s)",
+    "generating": "Generating...",
+    "starting": "Starting...",
+    "newVideo": "New Video"
   },
   "help": {
     "gettingStarted": {
@@ -2764,10 +2796,6 @@
       "cta": "View Offer",
       "close": "Close"
     }
-  },
-  "videoGenerator": {
-    "upgradeRequired": "Upgrade Required",
-    "viewPricingPlans": "View Pricing Plans"
   },
   "mobileUpgrade": {
     "freePlan": "Free Plan",

@@ -1006,7 +1006,7 @@
   "ugc": {
     "title": "UGC-Inhalte erstellen",
     "productImage": {
-      "title": "Produktbild",
+      "title": "Hauptproduktbild",
       "subtitle": "Lade ein Bild deines Produkts zur Analyse hoch",
       "analyzing": "Bild wird analysiert...",
       "tooltip": "Lade ein klares, hochauflösendes Bild deines Produkts hoch. Die KI analysiert es, um zu verstehen, was du verkaufst, und schlägt passende Szenarien vor.",
@@ -1016,6 +1016,11 @@
       "supportedFormats": "PNG, JPG bis 30 MB • Klicken oder ziehen & ablegen",
       "preview": "Produktvorschau",
       "remove": "Bild entfernen"
+    },
+    "referenceImages": {
+      "title": "Referenzbilder (optional)",
+      "tooltip": "Lade bis zu 2 zusätzliche Bilder hoch, die zeigen, wie das Produkt verwendet wird, seine Größe oder seinen Kontext. Diese helfen der KI, dein Produkt besser zu verstehen.",
+      "subtitle": "Zeige, wie das Produkt getragen, verwendet wird oder seine Größe"
     },
     "productDetails": {
       "title": "Produkteigenschaften (Optional)",
@@ -1042,6 +1047,11 @@
       "active": "Aktiv",
       "emptyState": "Lade dein Produktbild hoch und beschreibe deine Zielgruppe, um Szenarien zu generieren.",
       "editPlaceholder": "Bearbeite oder verfeinere die Beschreibung des ausgewählten Szenarios..."
+    },
+    "savedScenarios": {
+      "title": "Vorherige Szenarien",
+      "empty": "Noch keine gespeicherten Szenarien. Ihre benutzerdefinierten Szenarien erscheinen hier nach der Verwendung.",
+      "loading": "Szenarien werden geladen..."
     },
     "generationSettings": {
       "title": "Bildeinstellungen",
@@ -1531,7 +1541,29 @@
     "errors": {
       "selectImageAndPrompt": "Bitte wählen Sie ein Bild aus und geben Sie Anweisungen ein.",
       "videoLoadFailed": "Video konnte nicht geladen werden. Überprüfen Sie die Konsole für Details."
-    }
+    },
+    "upgradeRequired": "Upgrade Erforderlich",
+    "viewPricingPlans": "Preispläne ansehen"
+  },
+  "animateImage": {
+    "title": "Bild Animieren",
+    "description": "Erstellen Sie ein Video aus Ihrem Bild mit KI",
+    "previewUnavailable": "Videovorschau ist auf diesem Gerät nicht verfügbar.",
+    "downloadVideo": "Video Herunterladen",
+    "download": "Herunterladen",
+    "processingMessage": "Ihr Video wird generiert. Sie können weiterarbeiten. Finden Sie es im <strong>Videos</strong>-Tab.",
+    "gotIt": "Verstanden",
+    "failed": "Videogenerierung fehlgeschlagen.",
+    "motionPrompt": "Bewegungs-Prompt",
+    "aiSuggest": "KI-Vorschlag",
+    "promptPlaceholder": "Beschreiben Sie die gewünschte Bewegung...",
+    "duration": "Dauer",
+    "seconds5": "5 Sekunden",
+    "seconds10": "10 Sekunden",
+    "generateVideo": "Video Generieren ({{duration}}s)",
+    "generating": "Generierung...",
+    "starting": "Starten...",
+    "newVideo": "Neues Video"
   },
   "help": {
     "gettingStarted": {
@@ -2699,10 +2731,6 @@
       "cta": "Angebot ansehen",
       "close": "Schließen"
     }
-  },
-  "videoGenerator": {
-    "upgradeRequired": "Upgrade Erforderlich",
-    "viewPricingPlans": "Preispläne ansehen"
   },
   "mobileUpgrade": {
     "freePlan": "Kostenloser Plan",

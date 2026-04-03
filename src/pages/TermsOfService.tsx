@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import SEO from "@/components/SEO";
 import { buildWebPageSchema } from "@/lib/schema";
+import { PageTransition } from "@/components/PageTransition";
 
 const TermsOfService = () => {
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <SEO
         title="Terms of Service"
@@ -197,6 +199,7 @@ const TermsOfService = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

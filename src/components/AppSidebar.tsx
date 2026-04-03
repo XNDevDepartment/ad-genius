@@ -1,4 +1,5 @@
 import { Home, Plus, Image, User, Sparkles, LogOut, Settings, Video, Layers, Users, Gauge, ChevronDown, UserPlus, Crown, Store } from "lucide-react";
+import { motion } from "framer-motion";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -145,7 +146,7 @@ export function AppSidebar() {
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
-                {mainNavItems.map((item) => {
+                {mainNavItems.map((item, index) => {
                   // Hide admin-only items for non-admins
                   if (item.adminOnly && !isAdmin) return null;
                   // Hide items that require auth when not logged in
@@ -155,7 +156,13 @@ export function AppSidebar() {
                   const active = isActive(item.path);
 
                   return (
-                    <SidebarMenuItem key={item.id}>
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05, duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+                    >
+                    <SidebarMenuItem>
                       <SidebarMenuButton asChild>
                         <NavLink
                           to={item.path}
@@ -192,6 +199,7 @@ export function AppSidebar() {
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
+                    </motion.div>
                   );
                 })}
               </SidebarMenu>
@@ -206,12 +214,18 @@ export function AppSidebar() {
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-1 mt-2">
-                  {contentNavItems.map((item) => {
+                  {contentNavItems.map((item, index) => {
                     const Icon = item.icon;
                     const active = isActive(item.path);
 
                     return (
-                      <SidebarMenuItem key={item.id}>
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: (mainNavItems.length + index) * 0.05, duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+                      >
+                      <SidebarMenuItem>
                         <SidebarMenuButton asChild>
                           {item.disabled ? (
                             <div
@@ -253,6 +267,7 @@ export function AppSidebar() {
                           )}
                         </SidebarMenuButton>
                       </SidebarMenuItem>
+                      </motion.div>
                     );
                   })}
                 </SidebarMenu>

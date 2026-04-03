@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Mail, ArrowLeft, RefreshCw } from 'lucide-react';
+import { PageTransition } from '@/components/PageTransition';
 
 const EmailConfirmation = () => {
   const [isResending, setIsResending] = useState(false);
@@ -36,6 +37,7 @@ const EmailConfirmation = () => {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
@@ -83,6 +85,7 @@ const EmailConfirmation = () => {
         </CardContent>
       </Card>
     </div>
+    </PageTransition>
   );
 };
 

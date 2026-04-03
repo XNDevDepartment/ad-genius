@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEffect } from 'react';
 import { trackCheckoutAbandoned } from '@/lib/metaPixel';
+import { PageTransition } from '@/components/PageTransition';
 
 export default function Cancel() {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ export default function Cancel() {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md text-center">
         <CardHeader className="space-y-4">
@@ -38,8 +40,9 @@ export default function Cancel() {
             <h3 className="font-semibold mb-2">Why upgrade?</h3>
             <ul className="space-y-1 text-sm text-muted-foreground">
               <li>• Up to 400 credits per month (vs 10 free)</li>
-              <li>• Priority generation queue</li>
-              <li>• Advanced customization options</li>
+              <li>• All resolutions: 1K, 2K, 4K</li>
+              <li>• All aspect ratios including 9:16 & 4:5</li>
+              <li>• Video generation & Photoshoot sessions</li>
               <li>• Priority customer support</li>
             </ul>
           </div>
@@ -81,5 +84,6 @@ export default function Cancel() {
         </CardContent>
       </Card>
     </div>
+    </PageTransition>
   );
 }
