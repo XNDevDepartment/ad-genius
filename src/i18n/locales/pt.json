@@ -65,7 +65,8 @@
       "authRequired": "Por favor inicie sessão para continuar",
       "sessionExpired": "A sua sessão expirou. Por favor atualize a página.",
       "checkoutError": "Falha ao iniciar checkout. Por favor tente novamente.",
-      "pleaseWait": "Por favor aguarde..."
+      "pleaseWait": "Por favor aguarde...",
+      "firstMonth": "Oferta disponível para o primeiro mês"
     },
     "productType": {
       "title": "O que está a vender?",
