@@ -59,6 +59,7 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
     ugc: true,
     video: true,
     fashion_catalog: true,
+    catalog: true,
     product_background: true,
     packs: true
   });
@@ -121,7 +122,7 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
 
       setNewlyCreatedKey(data.api_key);
       setNewKeyName("");
-      setNewKeyPermissions({ ugc: true, video: true, fashion_catalog: true, product_background: true, packs: true });
+      setNewKeyPermissions({ ugc: true, video: true, fashion_catalog: true, catalog: true, product_background: true, packs: true });
       fetchApiKeys();
       
       toast({
@@ -317,6 +318,7 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
       ugc: 'UGC Images',
       video: 'Video',
       fashion_catalog: 'Fashion',
+      catalog: 'Catalog',
       product_background: 'Product Background',
       packs: 'Packs'
     };
@@ -429,11 +431,21 @@ export const ApiKeysPanel = ({ onClose }: ApiKeysPanelProps) => {
                         <Checkbox
                           id="perm-fashion"
                           checked={newKeyPermissions.fashion_catalog}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) =>
                             setNewKeyPermissions(p => ({ ...p, fashion_catalog: !!checked }))
                           }
                         />
                         <Label htmlFor="perm-fashion" className="text-sm">Fashion Catalog</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="perm-catalog"
+                          checked={newKeyPermissions.catalog}
+                          onCheckedChange={(checked) =>
+                            setNewKeyPermissions(p => ({ ...p, catalog: !!checked }))
+                          }
+                        />
+                        <Label htmlFor="perm-catalog" className="text-sm">Catalog Generate</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Checkbox
