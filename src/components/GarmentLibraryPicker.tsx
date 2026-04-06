@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, ImageIcon, Loader2 } from "lucide-react";
 import { useSourceImages, SourceImage } from "@/hooks/useSourceImages";
@@ -97,7 +96,7 @@ export const GarmentLibraryPicker = ({
         </div>
 
         {/* Image Grid */}
-        <ScrollArea className="flex-1 min-h-[300px] max-h-[60vh]">
+        <div className="flex-1 min-h-0 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
@@ -142,7 +141,7 @@ export const GarmentLibraryPicker = ({
               })}
             </div>
           )}
-        </ScrollArea>
+        </div>
 
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={handleClose}>
