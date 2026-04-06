@@ -620,7 +620,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
     }
   };
 
-  const getScenariosFromConversation = async (desiredText?: string, moreScen?: boolean) => {
+  const getScenariosFromConversation = async (desiredText?: string, moreScen?: boolean, previousScenarios?: typeof aiScenarios) => {
     // Capture image count at start to avoid race conditions with isAnalyzingImages array
     const imageCount = productImages.length;
 
@@ -663,6 +663,7 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
         audience: desiredAudience,
         productSpecs: prodSpecs || undefined,
         language,
+        existingScenarios: moreScen && previousScenarios && previousScenarios.length > 0 ? previousScenarios : undefined,
       });
 
       setAiScenarios(scenarios);
@@ -688,9 +689,11 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
 
   const generateMoreScenarios = async () => {
     if (isLoadingScenarios) return; // prevent double-tap
+    // Capture before clearing so we can pass them to avoid repetition
+    const previousScenarios = [...aiScenarios];
     setAiScenarios([]);
     setMoreScenarios(true);
-    await getScenariosFromConversation("", true);
+    await getScenariosFromConversation("", true, previousScenarios);
   };
 
   const handleGenerate = async () => {
