@@ -1,0 +1,676 @@
+================================================================================
+PRODUKTPIX — AI PROMPTS INVENTORY
+================================================================================
+Generated: 2026-04-06
+Total features covered: 12
+
+
+================================================================================
+1. IMAGE EDITING
+================================================================================
+File:    supabase/functions/edit-image/index.ts
+Model:   Gemini 3.1 Flash (image-preview)
+Cost:    1 credit
+Type:    Template — variable: {instruction}
+
+--- PROMPT ---
+MANDATORY RULES:
+- KEEP the entire image exactly as it is
+- DO NOT change any elements, objects, backgrounds, colors, or composition
+- The ONLY modifications allowed are: {instruction}
+- PRESERVE all product details, proportions, and image quality
+- Return only the edited image with minimal changes
+
+
+================================================================================
+2. BULK BACKGROUND REPLACEMENT
+================================================================================
+File:    supabase/functions/bulk-background/index.ts
+Model:   Gemini 3.1 Flash (image-preview)
+Cost:    1–4 credits
+Type:    Fixed base + preset hints + optional reference prompt
+
+--- BASE PROMPT ---
+Ultra-realistic studio product photo. Use reference for environment/lighting only.
+Product image is the ONLY geometry source. No 3D reconstruction, exact proportions
+preserved, no stretching/warping. Match scene by scale/position/rotation. Soft
+grounded shadows. No floating. Natural lens, no CGI. No added objects. Prioritize
+geometric accuracy.
+
+--- PRESET HINTS ---
+white-seamless  → white seamless studio, soft light
+black-studio    → black matte studio, rim lighting
+gradient-gray   → gray gradient, catalog style
+soft-pink       → pastel pink, feminine
+living-room     → modern living room, natural light
+kitchen         → modern kitchen, marble counter
+bedroom         → cozy bedroom, neutral tones
+home-office     → modern office with plants
+beach           → beach, golden light
+forest          → serene forest, filtered light
+garden          → colorful garden
+mountain        → majestic mountain landscape
+cafe            → rustic café, warm ambience
+street          → modern urban street
+rooftop         → rooftop, city skyline
+subway          → modern subway station
+editorial       → editorial high-fashion setup
+fashion         → fashion photography studio
+minimal         → ultra-minimal, negative space
+vogue           → luxurious Vogue style
+christmas       → festive Christmas scene
+summer          → vibrant tropical summer
+autumn          → autumn, colorful leaves
+spring          → spring, blooming flowers
+
+--- REFERENCE-BASED FOLLOW-UP PROMPT ---
+Second image is the anchor reference. Replicate its exact background, lighting,
+surface, AND product placement as a template. Place the NEW product (first image)
+into the same position, scale, and orientation as the product shown in the reference
+image. Match background and lighting exactly. Only the new product is visible — do
+not include any product from the reference. Preserve the new product's proportions.
+
+
+================================================================================
+3. CREATE BASE MODEL — UPLOAD & PROCESS (ADULT)
+================================================================================
+File:    supabase/functions/create-base-model/index.ts
+Model:   Gemini 3.1 Flash (image-preview)
+Cost:    5 credits
+Type:    Fixed
+
+--- PROMPT ---
+Remove the background from this image and replace it with Background: seamless light
+gray studio. Camera 50mm f/4 ISO200 1/125. Lighting: softbox 45° key + reflector
+fill, even exposure.
+###IMPORTANT: New wardrobe baseline: seamless neutral-tone fitted bodysuit (no
+logos/patterns), barefoot. Neutral expression, hands relaxed, fingers natural, head
+to toe visible, clean silhouette. One subject only. Lips Smiling slightly. Insert
+"GeniusAI" watermark on bottom right, almost non existent. Output 2048x3072, sRGB,
+300dpi.
+Negative: only produce model and no more elements in the picture, lowres, blurry,
+jpeg artifacts, extra limbs, extra fingers, fused fingers, disfigured, distorted
+proportions, wet/oily skin, cleavage emphasis, lingerie, underwear straps,
+see-through fabric, strong face shadows, color cast, watermark, logo, text, border.
+### RULE: NEVER PRODUCE SEXUALISE CONTENT
+
+
+================================================================================
+4. CREATE BASE MODEL — UPLOAD & PROCESS (CHILD)
+================================================================================
+File:    supabase/functions/create-base-model/index.ts
+Model:   Gemini 3.1 Flash (image-preview)
+Cost:    5 credits
+Type:    Fixed
+
+--- PROMPT ---
+Remove the background from this image and replace it with a solid light gray studio
+backdrop. Camera 50mm f/4 ISO200 1/125. Lighting: softbox 45° key + reflector fill,
+even exposure. New wardrobe: plain gray cotton t-shirt, blue jeans, white sneakers.
+No logos or graphics. Neutral expression, hands relaxed, fingers natural, head to
+toe visible, clean silhouette. One subject only. Output 2048x3072, sRGB, 300dpi.
+AVOID: multiple people, props, blurry areas, distorted anatomy, extra limbs,
+watermarks, text.
+
+
+================================================================================
+5. CREATE BASE MODEL — AI GENERATION (ADULT)
+================================================================================
+File:    supabase/functions/create-base-model/index.ts
+Model:   Gemini 3.1 Flash (image-preview)
+Cost:    6 credits
+Type:    Template — variables: {gender}, {nationality}, {ageRange}, {height},
+         {bodyType}, {skinTone}, {hairLength}, {hairTexture}, {hairColor},
+         {eyes}, {pose}, {expressionText}
+
+--- PROMPT ---
+TASK: Generate a photorealistic full-body fashion model photo for clothing try-on.
+
+SUBJECT:
+- Gender: {gender}
+- Ethnicity: {nationality}
+- Age: {ageRange}
+- Height: {height}cm
+- Body type: {bodyType}
+- Skin tone: {skinTone}
+- Hair: {hairLength}, {hairTexture}, {hairColor}
+- Eyes: {eyes}
+
+POSE & EXPRESSION:
+- Body pose: {pose} (natural, relaxed stance)
+- Expression: {expressionText}
+- Hands: relaxed and natural at sides, fingers clearly defined and separated
+- Arms: slightly away from body for clean silhouette
+
+WARDROBE:
+- Form-fitting seamless neutral-tone bodysuit (beige, gray, or nude tone)
+- No logos, patterns, or visible seams
+- Barefoot
+
+ENVIRONMENT:
+- Background: clean seamless solid light gray studio backdrop (#E8E8E8)
+- Empty studio with no visible equipment, lights, tripods, cameras, or reflectors
+- No shadows on background, no floor lines
+
+CAMERA & LIGHTING:
+- Full-body framing, entire figure from head to toe visible with margin
+- Camera: 85mm portrait lens, f/4, ISO 200
+- Soft diffused key light at 45 degrees
+- Fill reflector for even skin tones, no harsh shadows on face or body
+- Catch light in eyes
+
+OUTPUT REQUIREMENTS:
+- Single model only, centered in frame
+- Professional fashion photography quality
+- Clean silhouette suitable for virtual try-on
+- High detail on hands and face
+- 2048x3072 portrait orientation
+
+STRICTLY AVOID: multiple people, studio equipment in frame, props, accessories,
+jewelry, makeup emphasis, blurry areas, distorted anatomy, extra limbs, merged
+fingers, watermarks, text, logos, sexualized poses, lingerie, see-through fabric,
+wet/oily skin appearance, inappropriate or unnatural poses.
+
+
+================================================================================
+6. CREATE BASE MODEL — AI GENERATION (CHILD)
+================================================================================
+File:    supabase/functions/create-base-model/index.ts
+Model:   Gemini 3.1 Flash (image-preview)
+Cost:    6 credits
+Type:    Template — variables: {gender}, {nationality}, {ageRange}, {height},
+         {skinTone}, {hairLength}, {hairTexture}, {hairColor}, {eyes},
+         {pose}, {expressionText}
+
+--- PROMPT ---
+TASK: Generate a photorealistic full-body photo of a child for a children's clothing
+catalog.
+
+SUBJECT:
+- Gender: {gender}
+- Ethnicity: {nationality}
+- Age: {ageRange}
+- Height: {height}cm
+- Build: healthy, standard proportions
+- Skin tone: {skinTone}
+- Hair: {hairLength}, {hairTexture}, {hairColor}
+- Eyes: {eyes}
+
+POSE & EXPRESSION:
+- Pose: {pose}, natural and relaxed
+- Expression: {expressionText}
+- Hands visible and natural
+
+OUTFIT:
+- Plain gray cotton t-shirt, blue jeans, white sneakers
+- No logos or graphics
+
+SETTING:
+- Solid light gray studio backdrop
+- Soft even studio lighting
+- Full-body framing head to toe
+
+OUTPUT: 2048x3072, single child centered, professional catalog quality.
+
+AVOID: multiple people, props, blurry areas, distorted anatomy, extra limbs,
+watermarks, text.
+
+
+================================================================================
+7. OUTFIT SWAP — GARMENT ANALYSIS (FALLBACK)
+================================================================================
+File:    supabase/functions/outfit-swap/index.ts
+Model:   Gemini 2.5 Flash
+Cost:    —
+Type:    Fixed
+
+--- PROMPT ---
+ANALYZE THIS GARMENT AND RESPOND IN THIS EXACT FORMAT:
+
+CATEGORY: (TOP / BOTTOM / FOOTWEAR / FULL_OUTFIT / ACCESSORY)
+- TOP = t-shirts, shirts, blouses, hoodies, jackets, sweaters, coats
+        (anything worn on upper body only)
+- BOTTOM = pants, jeans, shorts, skirts, trousers
+           (anything worn on lower body only)
+- FOOTWEAR = shoes, sneakers, boots, sandals, heels
+- FULL_OUTFIT = dresses, jumpsuits, rompers, full suits
+                (covers both upper and lower body)
+- ACCESSORY = bags, hats, scarves, jewelry, belts
+
+FRAMING: (upper_body / lower_body / feet / full_body / detail)
+- upper_body = for tops, jackets, shirts
+- lower_body = for pants, skirts, shorts
+- feet = for footwear
+- full_body = for dresses, full outfits
+- detail = for accessories
+
+TYPE: (specific type like t-shirt, jeans, sneakers, etc.)
+STYLE: (casual/formal/athletic/streetwear/elegant)
+COLOR: Primary and secondary colors
+FIT: (fitted/regular/oversized/slim)
+MATERIAL: (cotton/denim/leather/knit/synthetic/canvas/suede)
+DETAILS: Key features (hood, zipper, buttons, collar type, pockets, sole type, heel
+height)
+
+Be concise. One line per category.
+
+
+================================================================================
+8. OUTFIT SWAP — TOP
+================================================================================
+File:    supabase/functions/outfit-swap/index.ts
+Model:   Gemini 3.1 Flash (image-preview)
+Cost:    3 credits
+Type:    Template — variable: {garment_description}
+
+--- PROMPT ---
+TWO IMAGES PROVIDED:
+- IMAGE 1: The model/person to dress (use this person's identity)
+- IMAGE 2: THE PRODUCT - This is the TOP that MUST appear on the model
+
+=== THE PRODUCT TO SHOWCASE ===
+{garment_description}
+
+THIS IS THE ITEM THE CUSTOMER IS SELLING - THE TOP MUST BE THE VISUAL FOCUS
+
+CRITICAL REQUIREMENTS:
+
+1. MODEL PRESERVATION - ABSOLUTE PRIORITY:
+   - You MUST use the EXACT person from IMAGE 1
+   - DO NOT create a new person or modify their appearance
+   - Keep the EXACT same face, hair, skin tone, body shape
+
+2. PRODUCT FOCUS - THE TOP IS THE HERO:
+   - The TOP from IMAGE 2 MUST appear on the model
+   - The TOP should be the visual focus of the image
+   - Lower body clothing should be NEUTRAL/COMPLEMENTARY (simple jeans, basic
+     pants) - not distracting
+   - Footwear should be simple and not draw attention
+
+3. COMPLETE OUTFIT REQUIRED:
+   - UPPER BODY: Wear THE PRODUCT (the top from IMAGE 2)
+   - LOWER BODY: Simple, neutral pants/jeans/skirt
+   - FEET: Simple appropriate shoes
+
+4. FRAMING: Full body (head to toe) - showcase the TOP
+
+5. PATTERN FIDELITY - CRITICAL:
+   - You MUST reproduce the EXACT fabric pattern, print, and texture from IMAGE 2
+   - Do NOT interpret or reimagine the pattern - copy it PRECISELY
+   - Small dots must remain small dots, stripes must remain stripes
+   - The pattern scale, spacing, and colors must match IMAGE 2 exactly
+
+FORBIDDEN: Creating new model, changing identity, underwear visible, bare legs,
+barefoot, focusing on other clothing instead of the TOP
+
+OUTPUT: The SAME model wearing THE PRODUCT (top) as the clear visual focus.
+
+
+================================================================================
+9. OUTFIT SWAP — BOTTOM
+================================================================================
+File:    supabase/functions/outfit-swap/index.ts
+Model:   Gemini 3.1 Flash (image-preview)
+Cost:    3 credits
+Type:    Template — variable: {garment_description}
+
+--- PROMPT ---
+TWO IMAGES PROVIDED:
+- IMAGE 1: The model/person to dress (use this person's identity)
+- IMAGE 2: THE PRODUCT - This is the BOTTOM (pants/skirt/shorts) that MUST appear
+  on the model
+
+=== THE PRODUCT TO SHOWCASE ===
+{garment_description}
+
+THIS IS THE ITEM THE CUSTOMER IS SELLING - THE BOTTOM MUST BE THE VISUAL FOCUS
+
+CRITICAL REQUIREMENTS:
+
+1. MODEL PRESERVATION - ABSOLUTE PRIORITY:
+   - You MUST use the EXACT person from IMAGE 1
+   - DO NOT create a new person or modify their appearance
+   - Keep the EXACT same face, hair, skin tone, body shape
+
+2. PRODUCT FOCUS - THE BOTTOM IS THE HERO:
+   - The BOTTOM from IMAGE 2 MUST appear on the model
+   - The BOTTOM should be the visual focus of the image
+   - Upper body clothing should be NEUTRAL/COMPLEMENTARY (simple white/black top)
+     - not distracting
+   - Footwear should complement but not distract
+
+3. COMPLETE OUTFIT REQUIRED:
+   - UPPER BODY: Simple, neutral top/shirt
+   - LOWER BODY: Wear THE PRODUCT (the bottom from IMAGE 2)
+   - FEET: Appropriate shoes that complement
+
+4. FRAMING: Full body (head to toe) - showcase the BOTTOM
+
+5. PATTERN FIDELITY - CRITICAL:
+   - You MUST reproduce the EXACT fabric pattern, print, and texture from IMAGE 2
+   - Do NOT interpret or reimagine the pattern - copy it PRECISELY
+   - Small dots must remain small dots, stripes must remain stripes
+   - The pattern scale, spacing, and colors must match IMAGE 2 exactly
+
+FORBIDDEN: Creating new model, changing identity, underwear visible, bare torso,
+barefoot, focusing on the top instead of the BOTTOM
+
+OUTPUT: The SAME model wearing THE PRODUCT (bottom) as the clear visual focus.
+
+
+================================================================================
+10. OUTFIT SWAP — FOOTWEAR
+================================================================================
+File:    supabase/functions/outfit-swap/index.ts
+Model:   Gemini 3.1 Flash (image-preview)
+Cost:    3 credits
+Type:    Template — variable: {garment_description}
+
+--- PROMPT ---
+TWO IMAGES PROVIDED:
+- IMAGE 1: The model/person to dress (use this person's identity)
+- IMAGE 2: THE PRODUCT - These are the SHOES/FOOTWEAR that MUST appear on the
+  model's feet
+
+=== THE PRODUCT TO SHOWCASE ===
+{garment_description}
+
+THIS IS THE ITEM THE CUSTOMER IS SELLING - THE FOOTWEAR MUST BE THE VISUAL FOCUS
+
+CRITICAL REQUIREMENTS:
+
+1. MODEL PRESERVATION - ABSOLUTE PRIORITY:
+   - You MUST use the EXACT person from IMAGE 1
+   - DO NOT create a new person or modify their appearance
+   - Keep the EXACT same face, hair, skin tone, body shape
+
+2. PRODUCT FOCUS - THE FOOTWEAR IS THE HERO:
+   - The SHOES from IMAGE 2 MUST appear on the model's feet
+   - The FOOTWEAR should be the PRIMARY visual focus
+   - Upper body clothing should be PLAIN/NEUTRAL (simple shirt) - DO NOT focus on
+     upper body
+   - Lower body clothing should be simple (basic jeans/pants) to not distract from
+     shoes
+   - DO NOT make the shirt/top the focus - THE SHOES ARE THE PRODUCT
+
+3. COMPLETE OUTFIT REQUIRED:
+   - UPPER BODY: Plain, neutral top (not the focus)
+   - LOWER BODY: Simple pants/jeans (not the focus)
+   - FEET: Wear THE PRODUCT (the footwear from IMAGE 2) - THIS IS THE FOCUS
+
+4. FRAMING: Full body or knee-to-feet, ensuring SHOES are clearly visible and
+   prominent
+
+5. PATTERN FIDELITY - CRITICAL:
+   - You MUST reproduce the EXACT design, pattern, and texture of the footwear from
+     IMAGE 2
+   - Do NOT interpret or reimagine the design - copy it PRECISELY
+   - The colors, materials, sole design, and details must match IMAGE 2 exactly
+
+FORBIDDEN: Creating new model, changing identity, barefoot, focusing on shirt/top,
+making upper body the focus, underwear visible
+
+OUTPUT: The SAME model with THE PRODUCT (footwear) clearly visible as the main
+focus of the image.
+
+
+================================================================================
+11. OUTFIT SWAP — FULL OUTFIT / DRESS
+================================================================================
+File:    supabase/functions/outfit-swap/index.ts
+Model:   Gemini 3.1 Flash (image-preview)
+Cost:    3 credits
+Type:    Template — variable: {garment_description}
+
+--- PROMPT ---
+TWO IMAGES PROVIDED:
+- IMAGE 1: The model/person to dress (use this person's identity)
+- IMAGE 2: THE PRODUCT - This is the FULL OUTFIT/DRESS that MUST appear on the
+  model
+
+=== THE PRODUCT TO SHOWCASE ===
+{garment_description}
+
+THIS IS THE ITEM THE CUSTOMER IS SELLING - THE OUTFIT MUST BE THE VISUAL FOCUS
+
+CRITICAL REQUIREMENTS:
+
+1. MODEL PRESERVATION - ABSOLUTE PRIORITY:
+   - You MUST use the EXACT person from IMAGE 1
+   - DO NOT create a new person or modify their appearance
+   - Keep the EXACT same face, hair, skin tone, body shape
+
+2. PRODUCT FOCUS - THE OUTFIT IS THE HERO:
+   - The OUTFIT from IMAGE 2 MUST appear on the model
+   - If it's a dress/jumpsuit: Wear it as the complete outfit
+   - If it's a bodysuit/shapewear: LAYER with blazer/jacket over it, add pants/skirt
+   - The model must NEVER appear to be in underwear
+
+3. COMPLETE LOOK REQUIRED:
+   - Wear THE PRODUCT as the main garment
+   - MUST wear appropriate footwear — NEVER barefoot (heels for elegant, sneakers
+     for casual)
+   - Model must look fashion-ready
+
+4. FRAMING: Full body (head to toe) - showcase the complete outfit
+
+5. PATTERN FIDELITY - CRITICAL:
+   - You MUST reproduce the EXACT fabric pattern, print, and texture from IMAGE 2
+   - Do NOT interpret or reimagine the pattern - copy it PRECISELY
+   - Small dots must remain small dots, stripes must remain stripes, plaids must
+     remain plaids
+   - The pattern scale, spacing, and colors must match IMAGE 2 exactly
+
+FORBIDDEN: Creating new model, changing identity, appearing in underwear, shapewear
+worn alone, bikini-like appearance, barefoot
+
+OUTPUT: The SAME model wearing THE PRODUCT (outfit) as a complete, styled look.
+
+
+================================================================================
+12. OUTFIT SWAP — ACCESSORY
+================================================================================
+File:    supabase/functions/outfit-swap/index.ts
+Model:   Gemini 3.1 Flash (image-preview)
+Cost:    3 credits
+Type:    Template — variable: {garment_description}
+
+--- PROMPT ---
+TWO IMAGES PROVIDED:
+- IMAGE 1: The model/person to dress (use this person's identity)
+- IMAGE 2: THE PRODUCT - This is the ACCESSORY that MUST appear on the model
+
+=== THE PRODUCT TO SHOWCASE ===
+{garment_description}
+
+THIS IS THE ITEM THE CUSTOMER IS SELLING - THE ACCESSORY MUST BE THE VISUAL FOCUS
+
+CRITICAL REQUIREMENTS:
+
+1. MODEL PRESERVATION - ABSOLUTE PRIORITY:
+   - You MUST use the EXACT person from IMAGE 1
+   - DO NOT create a new person or modify their appearance
+   - Keep the EXACT same face, hair, skin tone, body shape
+
+2. PRODUCT FOCUS - THE ACCESSORY IS THE HERO:
+   - The ACCESSORY from IMAGE 2 MUST appear on the model
+   - Position it naturally (bag on shoulder, scarf around neck, hat on head, etc.)
+   - The accessory should be clearly visible and the focus
+   - Clothing should be neutral/complementary to not distract from the accessory
+
+3. COMPLETE OUTFIT REQUIRED:
+   - Model must be wearing full clothing (top, bottom, shoes) — NEVER barefoot
+   - Clothing should be simple/neutral to highlight the accessory
+   - NEVER add accessory to someone in underwear
+
+4. FRAMING: Frame appropriately to showcase the accessory clearly
+
+5. PATTERN FIDELITY - CRITICAL:
+   - You MUST reproduce the EXACT design, pattern, texture, and details of the
+     accessory from IMAGE 2
+   - Do NOT interpret or reimagine any design elements - copy them PRECISELY
+   - The colors, materials, hardware, and details must match IMAGE 2 exactly
+
+FORBIDDEN: Creating new model, changing identity, model in underwear, accessory not
+visible, clothing overshadowing the accessory, barefoot
+
+OUTPUT: The SAME model with THE PRODUCT (accessory) clearly visible as the main
+focus.
+
+
+================================================================================
+13. PRODUCT TYPE ANALYSIS
+================================================================================
+File:    supabase/functions/analyze-product-type/index.ts
+Model:   Gemini 2.5 Flash
+Cost:    Free (internal)
+Type:    Fixed
+
+--- PROMPT ---
+Preciso que me analises esta imagem e detetes se este produto é moda/vestuário ou
+não? responde diretamente dizendo "yes" ou "no"
+
+(Translation: "I need you to analyze this image and detect if this product is
+fashion/apparel or not? respond directly saying 'yes' or 'no'")
+
+
+================================================================================
+14. SCENARIO GENERATION — SYSTEM PROMPT
+================================================================================
+File:    supabase/functions/scenario-generate/index.ts
+Model:   Claude Sonnet 4.6 (via OpenRouter)
+Cost:    Free (internal)
+Type:    Fixed system prompt
+
+--- SYSTEM PROMPT ---
+You are a creative UGC (User Generated Content) strategist and photographer with
+expertise in product photography for social media.
+
+Your role is to generate unique, creative, and practical scenario ideas that resonate
+with the target audience. Each scenario should:
+- Be visually interesting and engaging for social media
+- Feel authentic and relatable (not overly staged)
+- Be achievable for content creators with basic equipment
+- Highlight the product naturally within the scene
+- Consider lighting, composition, and mood
+
+Always respond in the language requested by the user.
+
+
+================================================================================
+15. SCENARIO GENERATION — USER PROMPT
+================================================================================
+File:    supabase/functions/scenario-generate/index.ts
+Model:   Claude Sonnet 4.6 (via OpenRouter)
+Cost:    Free (internal)
+Type:    Template — variables: {audience}, {productSpecs}, {language},
+         {existingList}
+
+--- PROMPT TEMPLATE ---
+Generate 5 creative and unique UGC (User Generated Content) scenario ideas for
+product photography.
+
+Target Audience: {audience}
+Product Details: {productSpecs}   ← omitted if not provided
+Language for response: {language} ← defaults to "en"
+
+Requirements:
+- Each scenario should be practical to photograph
+- Consider the target audience's lifestyle and preferences
+- Include a mix of indoor and outdoor settings
+- Vary the moods (energetic, calm, professional, casual, etc.)
+- Make scenarios authentic and relatable for social media
+- Focus on realistic, achievable setups for UGC creators
+{existingList}
+
+Output format: JSON array with 5 objects, each containing:
+  - idea: Short catchy title (3–6 words)
+  - description: Detailed scenario description (2 sentences max)
+  - small-description: One-line summary
+
+
+================================================================================
+16. ONBOARDING GENERATION
+================================================================================
+File:    supabase/functions/onboarding-generate/index.ts
+Model:   Gemini 3.1 Flash (via ugc-gemini-v3)
+Cost:    Free (bonus images, max 2 per user)
+Type:    Template — variable: {audience}
+
+--- PROMPTS BY CONTENT TYPE ---
+
+product_showcase:
+  Create a professional product showcase image. The product should be the hero,
+  photographed in clean, studio-like lighting. Target audience: {audience}
+
+lifestyle:
+  Create a lifestyle image showing the product being used in a real-world context.
+  Natural lighting, authentic setting. Target audience: {audience}
+
+social_proof:
+  Create a UGC-style image with a person naturally using/holding the product.
+  Authentic, influencer-like aesthetic. Target audience: {audience}
+
+ad_creative:
+  Create a marketing-ready visual that highlights the product's key features.
+  Bold, eye-catching composition perfect for ads. Target audience: {audience}
+
+
+================================================================================
+17. ONBOARDING SCENARIO PRESETS (FRONTEND)
+================================================================================
+File:    src/data/onboarding-scenarios.ts
+Model:   N/A (static frontend data passed to UGC generation)
+Type:    Fixed (6 preset prompts)
+
+--- STREET STYLE ---
+Professional UGC photo of a fashionable person walking confidently on a trendy urban
+street. The product is the focal point of their outfit. Natural daylight, candid
+street photography style, shallow depth of field on background.
+
+--- COFFEE SHOP ---
+Authentic lifestyle photo at a stylish minimalist coffee shop. Person naturally
+interacting with the product while enjoying their drink. Warm ambient lighting,
+Instagram-worthy aesthetic, cozy atmosphere.
+
+--- FASHION STUDIO ---
+Clean editorial fashion photography in a professional studio. Soft directional
+lighting, neutral background, focus on the product. Magazine-quality, high-fashion
+aesthetic.
+
+--- BEACH DAY ---
+Summer vacation lifestyle photo at a beautiful beach or resort. Golden hour lighting,
+relaxed and aspirational mood. Product featured naturally in the vacation setting.
+
+--- NIGHT OUT ---
+Stylish evening photo in an urban setting with ambient city lights. Sophisticated
+night-out vibe, neon reflections, fashionable person showcasing the product.
+
+--- FITNESS / ACTIVE ---
+Dynamic active lifestyle photo during workout or outdoor fitness activity. Energetic,
+healthy aesthetic, product integrated naturally into athletic wear or activity.
+
+
+================================================================================
+NOTES
+================================================================================
+
+UGC GENERATION (ugc-gemini / ugc-gemini-v3)
+  Prompts are user-provided or selected from templates stored in the database.
+  No hardcoded prompt in the edge function itself.
+
+OUTFIT CREATOR (outfit-creator)
+  Prompts are loaded dynamically from the `ai_prompts` database table using keys
+  such as `outfit_creator_garment_analysis`. Editable via the PromptEditorDialog
+  admin component (src/components/admin/PromptEditorDialog.tsx).
+
+DATABASE-DRIVEN PROMPT SYSTEM
+  Table: ai_prompts
+  Key columns: prompt_key, prompt_name, prompt_template, variables, is_active,
+               version
+  History tracked in: ai_prompt_history
+  Admin UI: src/components/admin/PromptEditorDialog.tsx
+
+================================================================================
+END OF FILE
+================================================================================
