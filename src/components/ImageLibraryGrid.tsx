@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Download, Trash2, ExternalLink, Eye, FileImage, Loader2, Copy, CheckSquare, Square, X, Pencil } from 'lucide-react';
+import { Download, Trash2, ExternalLink, Eye, FileImage, Loader2, Copy, CheckSquare, Square, X, Pencil, FolderPlus } from 'lucide-react';
 import EditImageModal from '@/components/EditImageModal';
 import { LazyImage } from '@/components/ui/lazy-image';
 import { useToast } from '@/hooks/use-toast';
@@ -53,6 +53,7 @@ interface ImageLibraryGridProps {
   onSelectionChange?: (ids: Set<string>) => void;
   onBulkDelete?: (imageIds: string[]) => Promise<{ success: number; failed: number }>;
   onRefresh?: () => void;
+  onAddToCollection?: (image: LibraryImage) => void;
 }
 
 const cardVariants = {
@@ -79,6 +80,7 @@ export const ImageLibraryGrid = ({
   onSelectionChange,
   onBulkDelete,
   onRefresh,
+  onAddToCollection,
 }: ImageLibraryGridProps) => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<LibraryImage | null>(null);
@@ -345,6 +347,17 @@ export const ImageLibraryGrid = ({
                       >
                         <ExternalLink className="h-4 w-4" />
                       </Button>
+                      {onAddToCollection && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={(e) => { e.stopPropagation(); onAddToCollection(image); }}
+                          className="bg-background/90 hover:bg-background"
+                          title="Add to collection"
+                        >
+                          <FolderPlus className="h-4 w-4" />
+                        </Button>
+                      )}
                       
                       {viewMode === "ai" && image.job_id && image.source_type === 'outfit_swap' && (
                         <Button
