@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckSquare, FolderOpen, FileImage, Store, Upload, Wand2, Trash2, X } from 'lucide-react';
+import { ArrowLeft, CheckSquare, FolderOpen, FileImage, Store, Upload, Wand2, Trash2, X, Images } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -10,6 +10,7 @@ import { BulkImageUploadModal } from '@/components/BulkImageUploadModal';
 import { ImageLibraryGrid } from '@/components/ImageLibraryGrid';
 import { GeneratingImagePlaceholders } from '@/components/departments/ugc/GeneratingImagePlaceholders';
 import { useLibraryBySource, SourceCatalogEntry } from '@/hooks/useLibraryBySource';
+import { useLibraryImages } from '@/hooks/useLibraryImages';
 import { useActiveJob } from '@/hooks/useActiveJob';
 import { useToast } from '@/hooks/use-toast';
 import type { LibraryImage } from '@/hooks/useLibraryImages';
@@ -18,10 +19,24 @@ interface LibraryCatalogProps {
   onBack: () => void;
 }
 
+type ViewLevel = 'generated' | 'sources' | 'sourceDetail';
+
 export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Level 1: all generated images
+  const {
+    images: allImages,
+    loading: allLoading,
+    hasMore: allHasMore,
+    loadMore: allLoadMore,
+    deleteImage: deleteAllImage,
+    deleteImages: deleteAllImages,
+    refetch: refetchAll,
+  } = useLibraryImages({ limit: 20 });
+
+  // Level 2 & 3: source catalog + detail
   const {
     catalogEntries,
     uncategorizedCount,
@@ -41,13 +56,14 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
 
   const { activeJob, activeImages } = useActiveJob();
 
+  const [viewLevel, setViewLevel] = useState<ViewLevel>('generated');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [sourceSelectionMode, setSourceSelectionMode] = useState(false);
   const [sourceSelectedIds, setSourceSelectedIds] = useState<Set<string>>(new Set());
   const [detailSelectionMode, setDetailSelectionMode] = useState(false);
   const [detailSelectedIds, setDetailSelectedIds] = useState<Set<string>>(new Set());
-
-  const isDetailView = selectedSourceId !== undefined;
+  const [genSelectionMode, setGenSelectionMode] = useState(false);
+  const [genSelectedIds, setGenSelectedIds] = useState<Set<string>>(new Set());
 
   // ─── Download handler ─────────────────────────────────────────────────────
 
@@ -145,9 +161,9 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
     }
   };
 
-  // ─── Catalog view (Level 1) ───────────────────────────────────────────────
+  // ─── Level 1: All Generated Images ────────────────────────────────────────
 
-  const renderCatalog = () => (
+  const renderGeneratedView = () => (
     <div className="space-y-6 animate-fade-in">
       {/* Currently Generating */}
       {activeJob && (
@@ -164,6 +180,71 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
           imageOrientation="square"
         />
       )}
+
+      {/* Source Images folder card */}
+      <Card
+        className="bg-gradient-card border-border/50 cursor-pointer hover:border-primary/40 transition-colors"
+        onClick={() => setViewLevel('sources')}
+      >
+        <CardContent className="flex items-center gap-4 py-4">
+          <div className="w-12 h-12 rounded-lg bg-secondary/50 flex items-center justify-center flex-shrink-0">
+            <Images className="h-6 w-6 text-muted-foreground" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-sm">Source Images</p>
+            <p className="text-xs text-muted-foreground">
+              {catalogEntries.length} product{catalogEntries.length !== 1 ? 's' : ''}
+              {uncategorizedCount > 0 && ` · ${uncategorizedCount} uncategorized`}
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setShowUploadModal(true); }}>
+            <Upload className="w-4 h-4 mr-2" />
+            Upload
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Generated images grid */}
+      <Card className="bg-gradient-card border-border/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            Generated Images ({allImages.length}{allHasMore ? '+' : ''})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ImageLibraryGrid
+            images={allImages}
+            loading={allLoading}
+            hasMore={allHasMore}
+            showSourceThumbnails={true}
+            viewMode="ai"
+            onLoadMore={allLoadMore}
+            onDelete={deleteAllImage}
+            onDownload={handleDownload}
+            onOpenInNewTab={handleOpenInNewTab}
+            selectionMode={genSelectionMode}
+            onSelectionModeChange={setGenSelectionMode}
+            selectedIds={genSelectedIds}
+            onSelectionChange={setGenSelectedIds}
+            onBulkDelete={deleteAllImages}
+            onRefresh={refetchAll}
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  // ─── Level 2: Source Catalog ───────────────────────────────────────────────
+
+  const renderSourceCatalog = () => (
+    <div className="space-y-6 animate-fade-in">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" size="icon" onClick={() => { setViewLevel('generated'); setSourceSelectionMode(false); setSourceSelectedIds(new Set()); }}>
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <h2 className="font-semibold text-lg flex-1">Source Images</h2>
+      </div>
 
       <Card className="bg-gradient-card border-border/50">
         <div className="flex items-center justify-between mr-4">
@@ -254,7 +335,7 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
               {uncategorizedCount > 0 && (
                 <div
                   className="group cursor-pointer"
-                  onClick={() => !sourceSelectionMode && selectSource(null)}
+                  onClick={() => { if (!sourceSelectionMode) { selectSource(null); setViewLevel('sourceDetail'); } }}
                 >
                   <div className="aspect-[3/4] rounded-sm border-2 border-dashed border-border/60 flex flex-col items-center justify-center gap-2 bg-muted/20 group-hover:border-primary/40 group-hover:bg-muted/30 transition-all">
                     <FolderOpen className="h-8 w-8 text-muted-foreground" />
@@ -272,7 +353,7 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
                   selectionMode={sourceSelectionMode}
                   selected={sourceSelectedIds.has(entry.id)}
                   onSelect={() => toggleSourceSelect(entry.id)}
-                  onClick={() => !sourceSelectionMode && selectSource(entry.id)}
+                  onClick={() => { if (!sourceSelectionMode) { selectSource(entry.id); setViewLevel('sourceDetail'); } }}
                   onDelete={async () => {
                     try {
                       await deleteSourceEntry(entry.id);
@@ -290,9 +371,9 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
     </div>
   );
 
-  // ─── Detail view (Level 2) ────────────────────────────────────────────────
+  // ─── Level 3: Source Detail ────────────────────────────────────────────────
 
-  const renderDetail = () => {
+  const renderSourceDetail = () => {
     const sourceName = selectedSourceId === null ? 'Uncategorized' : (selectedSource?.fileName ?? 'Source Image');
     const sourceCount = selectedSourceId === null ? uncategorizedCount : (selectedSource?.generatedCount ?? 0);
 
@@ -300,7 +381,7 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
       <div className="space-y-6 animate-fade-in">
         {/* Breadcrumb */}
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => { clearSelection(); setDetailSelectionMode(false); setDetailSelectedIds(new Set()); }}>
+          <Button variant="ghost" size="icon" onClick={() => { clearSelection(); setViewLevel('sources'); setDetailSelectionMode(false); setDetailSelectedIds(new Set()); }}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -355,9 +436,17 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
     );
   };
 
+  const renderCurrentView = () => {
+    switch (viewLevel) {
+      case 'generated': return renderGeneratedView();
+      case 'sources': return renderSourceCatalog();
+      case 'sourceDetail': return renderSourceDetail();
+    }
+  };
+
   return (
     <div className="lg:p-8 space-y-6">
-      {isDetailView ? renderDetail() : renderCatalog()}
+      {renderCurrentView()}
 
       <BulkImageUploadModal
         open={showUploadModal}
