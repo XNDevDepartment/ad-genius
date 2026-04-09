@@ -260,6 +260,58 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
     }
   }, []);
 
+  // Handle preload mode — pre-populate source images without replicating full job settings
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.preloadSourceImageIds && state.preloadSourceImageIds.length > 0 && !state.replicateJobId) {
+      const ids = state.preloadSourceImageIds as string[];
+      setSourceImageIds(ids);
+      setUploadedSourceIds(ids);
+      setImagesAnalysed(true);
+
+      const loadSourceImages = async () => {
+        try {
+          const { data: sourceImages, error } = await supabase
+            .from('source_images')
+            .select('*')
+            .in('id', ids);
+
+          if (error) throw error;
+          if (!sourceImages || sourceImages.length === 0) return;
+
+          const imageFiles = await Promise.all(
+            sourceImages.map(async (img) => {
+              try {
+                const bucket = img.public_url?.includes('/ugc-inputs/') ? 'ugc-inputs' : 'source-images';
+                const { data: signedData } = await supabase.storage
+                  .from(bucket)
+                  .createSignedUrl(img.storage_path, 3600);
+
+                const imageUrl = signedData?.signedUrl || img.public_url;
+                const response = await fetch(imageUrl);
+                const blob = await response.blob();
+                return new File([blob], img.file_name, { type: img.mime_type || 'image/jpeg' });
+              } catch (err) {
+                console.error('Failed to load source image:', img.id, err);
+                return null;
+              }
+            })
+          );
+
+          const validFiles = imageFiles.filter((f): f is File => f !== null);
+          if (validFiles.length > 0) {
+            setProductImages(validFiles);
+          }
+        } catch (error) {
+          console.error('Error loading preload source images:', error);
+        }
+      };
+
+      loadSourceImages();
+      window.history.replaceState({}, document.title);
+    }
+  }, []);
+
   useEffect(() => {
     if (aiScenarios.length > 0) {
       setTimeout(() => {
