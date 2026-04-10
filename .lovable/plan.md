@@ -1,29 +1,27 @@
 
 
-## Switch Library: Generated Images First, Source Images in Folder
+## Fix: Collection Creation Fails Silently
 
-### Current behavior
-When you open the Library, you see **source images** as cards (Level 1). Clicking one opens its **generated images** (Level 2).
+### Root Cause
 
-### New behavior
-When you open the Library, you see **all generated images** directly in a grid (Level 1) — same as the old `EmbeddedLibrary` flat view. A "Source Images" folder/button takes you to the source image catalog (Level 2), where clicking a source shows its generated images (Level 3).
+Build error — type mismatch between `useCollections().createCollection` (returns `Promise<Collection>`) and the `onCreate` prop type in `CreateCollectionDialog` / `CollectionsList` (expects `Promise<void>`). The app fails to compile this path correctly, so nothing happens when clicking "Create Collection".
 
-### Implementation
+### Fix
 
-**File: `src/components/departments/LibraryCatalog.tsx`**
+Wrap `createCollection` calls in LibraryCatalog.tsx with an async arrow function that discards the return value:
 
-1. **Default view (Level 1)**: Show all generated images using the existing `useLibraryImages` hook (already used by `EmbeddedLibrary`). Display them in `ImageLibraryGrid` with load-more pagination. Add a prominent "Source Images" button/card at the top that navigates to the source catalog view.
+**File: `src/components/departments/LibraryCatalog.tsx`** — 3 locations (lines ~515, ~531, ~553):
 
-2. **Source catalog view (Level 2)**: The current source-image grid (with `SourceCard` components). Accessed by clicking the "Source Images" button. Has a back arrow to return to the generated images view.
+```typescript
+// Before:
+onCreate={createCollection}
 
-3. **Source detail view (Level 3)**: Same as current Level 2 — shows generated images for a specific source. Back arrow returns to source catalog.
+// After:
+onCreate={async (input) => { await createCollection(input); }}
+```
 
-**State changes:**
-- Add a `viewLevel` state: `'generated' | 'sources' | 'sourceDetail'` (default: `'generated'`)
-- Import and use `useLibraryImages` for the generated images view
-- Keep `useLibraryBySource` for source catalog and detail views
-- Move the "Upload Images" and "Shopify" buttons to the source catalog view (Level 2)
+This satisfies the `Promise<void>` type signature while preserving functionality.
 
-**Files Modified:**
-1. `src/components/departments/LibraryCatalog.tsx` — restructure to show generated images first, sources as a sub-view
+### Files Modified
+1. `src/components/departments/LibraryCatalog.tsx` — wrap 3 `createCollection` references
 
