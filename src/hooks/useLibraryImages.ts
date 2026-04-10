@@ -30,7 +30,7 @@ export interface LibraryImage {
 interface PaginationOptions {
   page?: number;
   limit?: number;
-  filter?: 'all' | 'ugc' | 'outfit_swap' | 'bulk_background';
+  filter?: 'all' | 'ugc' | 'outfit_swap' | 'bulk_background' | 'generated';
   searchQuery?: string;
   dateFilter?: 'all' | '7d' | '30d' | '3m';
   sortOrder?: 'newest' | 'oldest';
@@ -107,6 +107,7 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       let ecommerceResult = { data: null as any[] | null, error: null as any };
       let bulkBgResult = { data: null as any[] | null, error: null as any };
       let productViewsResult = { data: null as any[] | null, error: null as any };
+      let generatedResult = { data: null as any[] | null, error: null as any };
 
       if (filter === 'ugc' || filter === 'all') {
         let q = supabase
@@ -117,6 +118,17 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
         if (searchQuery) q = q.ilike('prompt', `%${searchQuery}%`);
         if (dateCutoff) q = q.gte('created_at', dateCutoff);
         ugcResult = await q;
+      }
+
+      if (filter === 'generated' || filter === 'all') {
+        let gq = supabase
+          .from('generated_images')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        if (searchQuery) gq = gq.ilike('prompt', `%${searchQuery}%`);
+        if (dateCutoff) gq = gq.gte('created_at', dateCutoff);
+        generatedResult = await gq;
       }
 
       if (!searchQuery && (filter === 'outfit_swap' || filter === 'all')) {
@@ -146,6 +158,7 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       if (ecommerceResult.error) throw ecommerceResult.error;
       if (bulkBgResult.error) throw bulkBgResult.error;
       if (productViewsResult.error) throw productViewsResult.error;
+      if (generatedResult.error) throw generatedResult.error;
 
       // Normalize UGC images
       const ugcImages: LibraryImage[] = (ugcResult.data || []).map(img => {
@@ -280,9 +293,22 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
         return views;
       });
 
+      // Normalize generated (fashion catalog) images
+      const generatedImages: LibraryImage[] = (generatedResult.data || []).map((img: any) => ({
+        id: img.id,
+        url: img.public_url,
+        prompt: img.prompt || 'Generated Image',
+        created_at: img.created_at,
+        settings: img.settings || { size: '1024x1024', quality: 'high', numberOfImages: 1, format: 'png' },
+        source_image_id: img.source_image_id,
+        job_id: img.job_id,
+        source_type: 'ugc' as const, // treat as ugc for display/delete purposes
+      }));
+
       // Combine and sort globally by creation date
       const allImages = [
         ...ugcImages,
+        ...generatedImages,
         ...outfitSwapImages,
         ...photoshootImages,
         ...ecommerceImages,
@@ -296,6 +322,7 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
 
       console.log('[useLibraryImages] Processed images:', {
         ugc: ugcImages.length,
+        generated: generatedImages.length,
         outfitSwap: outfitSwapImages.length,
         photoshoot: photoshootImages.length,
         ecommerce: ecommerceImages.length,
@@ -400,6 +427,7 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       } else {
         deleteResults = await Promise.all([
           supabase.from('ugc_images').delete().eq('id', imageId).eq('user_id', user.id),
+          supabase.from('generated_images').delete().eq('id', imageId).eq('user_id', user.id),
           supabase.from('outfit_swap_results').delete().eq('id', imageId).eq('user_id', user.id),
           supabase.from('outfit_swap_ecommerce_photos').delete().eq('id', imageId).eq('user_id', user.id),
           supabase.from('bulk_background_results').delete().eq('id', imageId).eq('user_id', user.id)
