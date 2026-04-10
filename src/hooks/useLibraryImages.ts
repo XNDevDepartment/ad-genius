@@ -157,6 +157,7 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       if (photoshootResult.error) throw photoshootResult.error;
       if (ecommerceResult.error) throw ecommerceResult.error;
       if (bulkBgResult.error) throw bulkBgResult.error;
+      if (productViewsResult.error) throw productViewsResult.error;
       if (generatedResult.error) throw generatedResult.error;
 
       // Normalize UGC images
