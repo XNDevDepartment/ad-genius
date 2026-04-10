@@ -293,9 +293,22 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
         return views;
       });
 
+      // Normalize generated (fashion catalog) images
+      const generatedImages: LibraryImage[] = (generatedResult.data || []).map((img: any) => ({
+        id: img.id,
+        url: img.public_url,
+        prompt: img.prompt || 'Generated Image',
+        created_at: img.created_at,
+        settings: img.settings || { size: '1024x1024', quality: 'high', numberOfImages: 1, format: 'png' },
+        source_image_id: img.source_image_id,
+        job_id: img.job_id,
+        source_type: 'ugc' as const, // treat as ugc for display/delete purposes
+      }));
+
       // Combine and sort globally by creation date
       const allImages = [
         ...ugcImages,
+        ...generatedImages,
         ...outfitSwapImages,
         ...photoshootImages,
         ...ecommerceImages,
@@ -309,6 +322,7 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
 
       console.log('[useLibraryImages] Processed images:', {
         ugc: ugcImages.length,
+        generated: generatedImages.length,
         outfitSwap: outfitSwapImages.length,
         photoshoot: photoshootImages.length,
         ecommerce: ecommerceImages.length,
