@@ -30,7 +30,7 @@ export interface LibraryImage {
 interface PaginationOptions {
   page?: number;
   limit?: number;
-  filter?: 'all' | 'ugc' | 'outfit_swap' | 'bulk_background';
+  filter?: 'all' | 'ugc' | 'outfit_swap' | 'bulk_background' | 'generated';
   searchQuery?: string;
   dateFilter?: 'all' | '7d' | '30d' | '3m';
   sortOrder?: 'newest' | 'oldest';
