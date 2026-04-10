@@ -427,6 +427,7 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       } else {
         deleteResults = await Promise.all([
           supabase.from('ugc_images').delete().eq('id', imageId).eq('user_id', user.id),
+          supabase.from('generated_images').delete().eq('id', imageId).eq('user_id', user.id),
           supabase.from('outfit_swap_results').delete().eq('id', imageId).eq('user_id', user.id),
           supabase.from('outfit_swap_ecommerce_photos').delete().eq('id', imageId).eq('user_id', user.id),
           supabase.from('bulk_background_results').delete().eq('id', imageId).eq('user_id', user.id)
