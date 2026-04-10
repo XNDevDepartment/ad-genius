@@ -512,7 +512,7 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h2 className="font-semibold text-lg flex-1">Collections</h2>
-        <CreateCollectionDialog onCreate={createCollection} />
+        <CreateCollectionDialog onCreate={async (input) => { await createCollection(input); }} />
       </div>
 
       <Card className="bg-gradient-card border-border/50">
@@ -528,7 +528,7 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
               <p className="text-muted-foreground text-sm">No collections yet.</p>
               <p className="text-muted-foreground text-xs mt-1">Create a collection to group your campaign images.</p>
               <CreateCollectionDialog
-                onCreate={createCollection}
+                onCreate={async (input) => { await createCollection(input); }}
                 trigger={
                   <Button size="sm" className="mt-4">
                     Create First Collection
@@ -550,7 +550,7 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
                   toast({ title: 'Failed to delete collection', variant: 'destructive' });
                 }
               }}
-              onCreateCollection={createCollection}
+              onCreateCollection={async (input) => { await createCollection(input); }}
             />
           )}
         </CardContent>

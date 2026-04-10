@@ -10,6 +10,9 @@ export interface CollectionItem {
   added_at: string;
 }
 
+// Cast to any to bypass generated types that don't include collection_items table
+const db = supabase as any;
+
 export function useCollectionItems(collectionId?: string) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -20,7 +23,7 @@ export function useCollectionItems(collectionId?: string) {
     queryKey,
     queryFn: async (): Promise<CollectionItem[]> => {
       if (!collectionId) return [];
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('collection_items')
         .select('*')
         .eq('collection_id', collectionId)
@@ -34,7 +37,7 @@ export function useCollectionItems(collectionId?: string) {
 
   const addItemMutation = useMutation({
     mutationFn: async ({ targetCollectionId, contentId, contentType }: { targetCollectionId: string; contentId: string; contentType: string }) => {
-      const { error } = await supabase
+      const { error } = await db
         .from('collection_items')
         .upsert(
           { collection_id: targetCollectionId, content_id: contentId, content_type: contentType },
@@ -50,7 +53,7 @@ export function useCollectionItems(collectionId?: string) {
 
   const removeItemMutation = useMutation({
     mutationFn: async ({ targetCollectionId, contentId }: { targetCollectionId: string; contentId: string }) => {
-      const { error } = await supabase
+      const { error } = await db
         .from('collection_items')
         .delete()
         .eq('collection_id', targetCollectionId)
@@ -85,7 +88,7 @@ export function useContentCollections(contentId?: string) {
     queryKey: ['content-collections', contentId],
     queryFn: async (): Promise<CollectionItem[]> => {
       if (!contentId) return [];
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('collection_items')
         .select('*, collections!inner(user_id)')
         .eq('content_id', contentId)

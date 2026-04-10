@@ -14,6 +14,9 @@ export interface Collection {
   updated_at: string;
 }
 
+// Cast to any to bypass generated types that don't include collections table
+const db = supabase as any;
+
 export function useCollections() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -23,7 +26,7 @@ export function useCollections() {
     queryKey,
     queryFn: async (): Promise<Collection[]> => {
       if (!user?.id) return [];
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('collections')
         .select('*')
         .eq('user_id', user.id)
@@ -38,7 +41,7 @@ export function useCollections() {
   const createMutation = useMutation({
     mutationFn: async (input: { name: string; emoji?: string; color?: string; description?: string }) => {
       if (!user?.id) throw new Error('Not authenticated');
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('collections')
         .insert({
           user_id: user.id,
@@ -57,7 +60,7 @@ export function useCollections() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, patch }: { id: string; patch: Partial<Pick<Collection, 'name' | 'description' | 'color' | 'emoji' | 'cover_image_url'>> }) => {
-      const { error } = await supabase
+      const { error } = await db
         .from('collections')
         .update(patch)
         .eq('id', id);
@@ -68,7 +71,7 @@ export function useCollections() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await db
         .from('collections')
         .delete()
         .eq('id', id);
