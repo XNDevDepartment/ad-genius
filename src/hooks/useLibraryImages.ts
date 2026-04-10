@@ -107,6 +107,7 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
       let ecommerceResult = { data: null as any[] | null, error: null as any };
       let bulkBgResult = { data: null as any[] | null, error: null as any };
       let productViewsResult = { data: null as any[] | null, error: null as any };
+      let generatedResult = { data: null as any[] | null, error: null as any };
 
       if (filter === 'ugc' || filter === 'all') {
         let q = supabase
@@ -117,6 +118,17 @@ export const useLibraryImages = (options: PaginationOptions = {}) => {
         if (searchQuery) q = q.ilike('prompt', `%${searchQuery}%`);
         if (dateCutoff) q = q.gte('created_at', dateCutoff);
         ugcResult = await q;
+      }
+
+      if (filter === 'generated' || filter === 'all') {
+        let gq = supabase
+          .from('generated_images')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        if (searchQuery) gq = gq.ilike('prompt', `%${searchQuery}%`);
+        if (dateCutoff) gq = gq.gte('created_at', dateCutoff);
+        generatedResult = await gq;
       }
 
       if (!searchQuery && (filter === 'outfit_swap' || filter === 'all')) {
