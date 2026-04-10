@@ -60,7 +60,7 @@ export function useCollectionItems(collectionId?: string) {
         .eq('content_id', contentId);
       if (error) throw error;
     },
-    onSuccess: (_data: unknown, variables: { targetCollectionId: string; contentId: string }) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['collection-items', variables.targetCollectionId] });
       queryClient.invalidateQueries({ queryKey: collectionsKey });
     },
