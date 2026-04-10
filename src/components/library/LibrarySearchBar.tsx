@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export type DateFilter = 'all' | '7d' | '30d' | '3m';
-export type TypeFilter = 'all' | 'ugc' | 'outfit_swap' | 'bulk_background';
+export type TypeFilter = 'all' | 'ugc' | 'outfit_swap' | 'bulk_background' | 'generated';
 export type SortOrder = 'newest' | 'oldest';
 
 interface LibrarySearchBarProps {
@@ -85,6 +85,7 @@ export const LibrarySearchBar = ({
         <SelectContent>
           <SelectItem value="all">All types</SelectItem>
           <SelectItem value="ugc">UGC Images</SelectItem>
+          <SelectItem value="generated">Fashion Catalog</SelectItem>
           <SelectItem value="outfit_swap">Outfit Swap</SelectItem>
           <SelectItem value="bulk_background">Backgrounds</SelectItem>
         </SelectContent>

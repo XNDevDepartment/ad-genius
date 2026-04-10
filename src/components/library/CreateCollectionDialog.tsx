@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 
 const PRESET_EMOJIS = ['📁', '🎯', '⭐', '🛍️', '🌟', '📦', '🎨', '🏷️', '💼', '🚀', '🌿', '✨'];
 const PRESET_COLORS = [
@@ -25,6 +26,7 @@ export const CreateCollectionDialog = ({ onCreate, trigger, open, onOpenChange }
   const [emoji, setEmoji] = useState('📁');
   const [color, setColor] = useState('#6366f1');
   const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
 
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : internalOpen;
@@ -39,6 +41,12 @@ export const CreateCollectionDialog = ({ onCreate, trigger, open, onOpenChange }
       setEmoji('📁');
       setColor('#6366f1');
       setOpen(false);
+    } catch (err) {
+      toast({
+        title: 'Failed to create collection',
+        description: err instanceof Error ? err.message : 'Something went wrong. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setSaving(false);
     }
