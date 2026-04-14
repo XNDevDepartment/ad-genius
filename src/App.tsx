@@ -238,9 +238,11 @@ const App = () => {
                 } />
                 <Route path="library" element={
                   <ErrorBoundaryWithReset>
-                    <Suspense fallback={<LoadingFallback />}>
-                      <Library />
-                    </Suspense>
+                    <AuthGuard>
+                      <Suspense fallback={<LoadingFallback />}>
+                        <Library />
+                      </Suspense>
+                    </AuthGuard>
                   </ErrorBoundaryWithReset>
                 } />
                 <Route path="import/shopify" element={

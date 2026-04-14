@@ -13,6 +13,16 @@ export interface CollectionItem {
 // Cast to any to bypass generated types that don't include collection_items table
 const db = supabase as any;
 
+async function ensureSession() {
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (error || !session) {
+    const { data: refreshed, error: refreshErr } = await supabase.auth.refreshSession();
+    if (refreshErr || !refreshed.session) {
+      throw new Error('Not authenticated. Please sign in again.');
+    }
+  }
+}
+
 export function useCollectionItems(collectionId?: string) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -37,13 +47,14 @@ export function useCollectionItems(collectionId?: string) {
 
   const addItemMutation = useMutation({
     mutationFn: async ({ targetCollectionId, contentId, contentType }: { targetCollectionId: string; contentId: string; contentType: string }) => {
+      await ensureSession();
       const { error } = await db
         .from('collection_items')
         .upsert(
           { collection_id: targetCollectionId, content_id: contentId, content_type: contentType },
           { onConflict: 'collection_id,content_id', ignoreDuplicates: true }
         );
-      if (error) throw error;
+      if (error) throw new Error(error.message || 'Failed to add item to collection');
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['collection-items', variables.targetCollectionId] });
@@ -53,12 +64,13 @@ export function useCollectionItems(collectionId?: string) {
 
   const removeItemMutation = useMutation({
     mutationFn: async ({ targetCollectionId, contentId }: { targetCollectionId: string; contentId: string }) => {
+      await ensureSession();
       const { error } = await db
         .from('collection_items')
         .delete()
         .eq('collection_id', targetCollectionId)
         .eq('content_id', contentId);
-      if (error) throw error;
+      if (error) throw new Error(error.message || 'Failed to remove item from collection');
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['collection-items', variables.targetCollectionId] });
