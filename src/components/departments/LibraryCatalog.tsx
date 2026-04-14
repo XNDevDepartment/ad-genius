@@ -662,9 +662,10 @@ interface SourceCardProps {
   onSelect: () => void;
   onClick: () => void;
   onDelete: () => void;
+  onDownload: () => void;
 }
 
-const SourceCard = ({ entry, selectionMode, selected, onSelect, onClick, onDelete }: SourceCardProps) => (
+const SourceCard = ({ entry, selectionMode, selected, onSelect, onClick, onDelete, onDownload }: SourceCardProps) => (
   <div
     className="group cursor-pointer relative"
     onClick={selectionMode ? onSelect : onClick}
