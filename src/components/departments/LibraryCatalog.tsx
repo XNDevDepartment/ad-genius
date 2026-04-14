@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckSquare, FolderOpen, FileImage, Store, Upload, Wand2, Trash2, X, Images, FolderClosed } from 'lucide-react';
+import { ArrowLeft, CheckSquare, Download, FolderOpen, FileImage, Store, Upload, Wand2, Trash2, X, Images, FolderClosed } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -429,6 +429,21 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
                       toast({ title: 'Delete failed', variant: 'destructive' });
                     }
                   }}
+                  onDownload={async () => {
+                    toast({ title: 'Download Started', description: 'Downloading image...' });
+                    try {
+                      const response = await fetch(entry.signedUrl);
+                      const blob = await response.blob();
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = entry.fileName || `source-${entry.id}.png`;
+                      link.click();
+                      URL.revokeObjectURL(url);
+                    } catch {
+                      toast({ title: 'Download Failed', variant: 'destructive' });
+                    }
+                  }}
                 />
               ))}
             </div>
@@ -693,30 +708,38 @@ const SourceCard = ({ entry, selectionMode, selected, onSelect, onClick, onDelet
         <p className="text-white/70 text-xs">{entry.generatedCount} image{entry.generatedCount !== 1 ? 's' : ''}</p>
       </div>
 
-      {/* Delete button (visible on hover, not in selection mode) */}
+      {/* Action buttons (visible on hover, not in selection mode) */}
       {!selectionMode && (
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <button
-              className="absolute top-2 right-2 w-7 h-7 rounded bg-background/80 border border-border/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground hover:border-destructive z-10"
-              onClick={e => e.stopPropagation()}
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete source image?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will delete &quot;{entry.fileName}&quot; from your library. Generated images from this source will remain but become uncategorized.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+          <button
+            className="w-7 h-7 rounded bg-background/80 border border-border/50 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary"
+            onClick={e => { e.stopPropagation(); onDownload(); }}
+          >
+            <Download className="w-3.5 h-3.5" />
+          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                className="w-7 h-7 rounded bg-background/80 border border-border/50 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
+                onClick={e => e.stopPropagation()}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete source image?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will delete &quot;{entry.fileName}&quot; from your library. Generated images from this source will remain but become uncategorized.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       )}
     </div>
   </div>
