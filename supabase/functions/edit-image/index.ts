@@ -1,4 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  createGeminiClient,
+  extractBase64Image,
+  GEMINI_MODELS,
+} from "../_shared/gemini-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -125,6 +130,7 @@ Deno.serve(async (req) => {
       },
     ];
 
+    const gemini = createGeminiClient(googleApiKey);
     let editedImageBase64: string | null = null;
     const maxAttempts = 3;
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -133,21 +139,10 @@ Deno.serve(async (req) => {
         await new Promise((r) => setTimeout(r, delay));
       }
 
-      const geminiResponse = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-goog-api-key": googleApiKey,
-          },
-          body: JSON.stringify({
-            contents: [{ parts }],
-            generationConfig: {
-              responseModalities: ["TEXT", "IMAGE"],
-            },
-          }),
-        }
+      const geminiResponse = await gemini.generateContent(
+        GEMINI_MODELS.FLASH_IMAGE,
+        [{ parts }],
+        { responseModalities: ["TEXT", "IMAGE"] },
       );
 
       if (!geminiResponse.ok) {
@@ -167,18 +162,7 @@ Deno.serve(async (req) => {
       const geminiResult = await geminiResponse.json();
       console.log("Gemini response received");
 
-      const candidates = geminiResult.candidates || [];
-      for (const candidate of candidates) {
-        const candidateParts = candidate.content?.parts || [];
-        for (const part of candidateParts) {
-          if (part.inlineData?.data) {
-            editedImageBase64 = part.inlineData.data;
-            break;
-          }
-        }
-        if (editedImageBase64) break;
-      }
-
+      editedImageBase64 = extractBase64Image(geminiResult);
       if (editedImageBase64) break;
       console.error(`No image in Gemini response (attempt ${attempt + 1}):`, JSON.stringify(geminiResult).slice(0, 500));
     }

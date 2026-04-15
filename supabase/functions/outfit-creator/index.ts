@@ -1,6 +1,12 @@
 // outfit-creator/index.ts - Multi-pass outfit generation with Gemini
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.4";
+import {
+  createGeminiClient,
+  extractBase64Image,
+  extractText,
+  GEMINI_MODELS,
+} from "../_shared/gemini-client.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -110,63 +116,32 @@ async function fetchImageAsBase64(url: string): Promise<{ base64: string; mimeTy
   return { base64, mimeType: contentType };
 }
 
-// Helper: Extract base64 from Gemini response
-function extractBase64Image(jsonResp: any): string | null {
-  if (!jsonResp?.candidates) return null;
-  const parts = jsonResp.candidates?.[0]?.content?.parts ?? [];
-  const imgPart = parts.find((p: any) => p?.inlineData?.mimeType?.startsWith('image/'));
-  return imgPart?.inlineData?.data || null;
-}
-
-// Helper: Extract text from Gemini response
-function extractTextResponse(jsonResp: any): string | null {
-  if (!jsonResp?.candidates) return null;
-  const parts = jsonResp.candidates?.[0]?.content?.parts ?? [];
-  const textPart = parts.find((p: any) => p?.text);
-  return textPart?.text || null;
-}
-
 // Helper: Call Gemini for image generation
 async function generateWithGemini(
   prompt: string,
   images: Array<{ base64: string; mimeType: string }>,
   maxRetries = 3
 ): Promise<string | null> {
+  const gemini = createGeminiClient(GOOGLE_AI_KEY);
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       console.log(`[Gemini] Attempt ${attempt}/${maxRetries} with ${images.length} images`);
-      
+
       const parts: any[] = [{ text: prompt }];
       for (const img of images) {
-        parts.push({
-          inlineData: {
-            mimeType: img.mimeType,
-            data: img.base64
-          }
-        });
+        parts.push({ inlineData: { mimeType: img.mimeType, data: img.base64 } });
       }
-      
-      const response = await fetch(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent',
-        {
-          method: 'POST',
-          headers: {
-            'x-goog-api-key': GOOGLE_AI_KEY,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            contents: [{ parts }],
-            generationConfig: {
-              responseModalities: ['TEXT', 'IMAGE']
-            }
-          })
-        }
+
+      const response = await gemini.generateContent(
+        GEMINI_MODELS.FLASH_IMAGE,
+        [{ parts }],
+        { responseModalities: ['TEXT', 'IMAGE'] },
       );
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`[Gemini] API error ${response.status}:`, errorText);
-        
+
         if (response.status === 429) {
           const delay = Math.min(2000 * Math.pow(2, attempt), 16000);
           console.log(`[Gemini] Rate limited, waiting ${delay}ms...`);
@@ -175,19 +150,19 @@ async function generateWithGemini(
         }
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       if (data.candidates?.[0]?.finishReason === 'IMAGE_OTHER') {
         throw new Error(`Safety filter: ${data.candidates[0].finishMessage || 'Content rejected'}`);
       }
-      
+
       const resultBase64 = extractBase64Image(data);
       if (resultBase64) {
         console.log(`[Gemini] ✅ Image generated successfully`);
         return resultBase64;
       }
-      
+
       if (attempt < maxRetries) {
         await new Promise(r => setTimeout(r, 2000 * attempt));
       }
@@ -205,33 +180,19 @@ async function analyzeWithGemini(
   prompt: string,
   image: { base64: string; mimeType: string }
 ): Promise<string | null> {
+  const gemini = createGeminiClient(GOOGLE_AI_KEY);
   try {
-    const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent',
-      {
-        method: 'POST',
-        headers: {
-          'x-goog-api-key': GOOGLE_AI_KEY,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [
-              { text: prompt },
-              { inlineData: { mimeType: image.mimeType, data: image.base64 } }
-            ]
-          }],
-          generationConfig: {
-            responseModalities: ['TEXT']
-          }
-        })
-      }
+    const response = await gemini.generateContentJSON(
+      GEMINI_MODELS.FLASH_IMAGE,
+      [{
+        parts: [
+          { text: prompt },
+          { inlineData: { mimeType: image.mimeType, data: image.base64 } },
+        ],
+      }],
+      { responseModalities: ['TEXT'] },
     );
-    
-    if (!response.ok) throw new Error(`API error: ${response.status}`);
-    
-    const data = await response.json();
-    return extractTextResponse(data);
+    return extractText(response);
   } catch (error) {
     console.error('[analyzeWithGemini] Error:', error);
     return null;

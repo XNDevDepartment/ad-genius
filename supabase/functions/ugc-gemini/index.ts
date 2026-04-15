@@ -2,6 +2,10 @@
 // Supabase Edge Function (Deno) for Google Gemini image generation
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import {
+  createGeminiClient,
+  GEMINI_MODELS,
+} from "../_shared/gemini-client.ts";
 
 // ---------- TYPES ----------
 interface ImageJob {
@@ -767,28 +771,14 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
           }
         }
 
-        res = await fetch(
-          "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent",
+        res = await createGeminiClient(GOOGLE_AI_KEY).generateContent(
+          GEMINI_MODELS.FLASH_IMAGE,
+          [{ role: "user", parts }],
           {
-            method: "POST",
-            headers: {
-              "x-goog-api-key": GOOGLE_AI_KEY,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              contents: [
-                {
-                  role: "user",
-                  parts,
-                },
-              ],
-              generationConfig: {
-                responseModalities: ["TEXT", "IMAGE"],
-                ...(Object.keys(imageConfig).length > 0 && { imageConfig })
-              },
-            }),
-            signal: controller.signal,
-          }
+            responseModalities: ["TEXT", "IMAGE"],
+            ...(Object.keys(imageConfig).length > 0 && { imageConfig }),
+          },
+          controller.signal,
         );
       } else {
         // ----- Text-to-image mode (no source image) -----
@@ -817,23 +807,14 @@ async function generateSingleImageWithGemini(job: ImageJob, index: number, sourc
           if (imageSize) imageConfig.imageSize = imageSize;
         }
 
-        res = await fetch(
-          "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent",
+        res = await createGeminiClient(GOOGLE_AI_KEY).generateContent(
+          GEMINI_MODELS.FLASH_IMAGE,
+          [{ parts: [{ text: prompt }] }],
           {
-            method: "POST",
-            headers: {
-              "x-goog-api-key": GOOGLE_AI_KEY,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: {
-                responseModalities: ["TEXT", "IMAGE"],
-                ...(Object.keys(imageConfig).length > 0 && { imageConfig })
-              },
-            }),
-            signal: controller.signal,
-          }
+            responseModalities: ["TEXT", "IMAGE"],
+            ...(Object.keys(imageConfig).length > 0 && { imageConfig }),
+          },
+          controller.signal,
         );
       }
       try {

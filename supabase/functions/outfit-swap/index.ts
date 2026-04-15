@@ -1,6 +1,10 @@
 // outfit-swap/index.ts - Gemini API v1.0.1
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.4";
+import {
+  createGeminiClient,
+  GEMINI_MODELS,
+} from "../_shared/gemini-client.ts";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -343,41 +347,17 @@ async function generateImageWithRetry(prompt: string, base64Image: string, mimeT
   for(let attempt = 1; attempt <= maxRetries; attempt++){
     try {
       console.log(`[Attempt ${attempt}/${maxRetries}] Calling Gemini API...`);
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent', {
-        method: 'POST',
-        headers: {
-          'x-goog-api-key': GOOGLE_AI_KEY,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: prompt
-                },
-                {
-                  inlineData: {
-                    mimeType,
-                    data: base64Image
-                  }
-                },
-                ...additionalImages.map((img)=>({
-                    inlineData: {
-                      mimeType: img.mimeType,
-                      data: img.base64
-                    }
-                  }))
-              ]
-            }
+      const response = await createGeminiClient(GOOGLE_AI_KEY).generateContent(
+        GEMINI_MODELS.FLASH_IMAGE,
+        [{
+          parts: [
+            { text: prompt },
+            { inlineData: { mimeType, data: base64Image } },
+            ...additionalImages.map((img) => ({ inlineData: { mimeType: img.mimeType, data: img.base64 } })),
           ],
-          generationConfig: {
-            responseModalities: [
-              'IMAGE'
-            ]
-          }
-        })
-      });
+        }],
+        { responseModalities: ['IMAGE'] },
+      );
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`[Attempt ${attempt}] API error:`, response.status, errorText);
@@ -625,36 +605,12 @@ async function analyzeGarment(garmentUrl: string): Promise<GarmentAnalysisResult
     // Get analysis prompt from database
     const analysisPrompt = await getPrompt('outfit_swap_garment_analysis', {}, FALLBACK_GARMENT_ANALYSIS_PROMPT);
     // Call Gemini API for analysis
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
-      method: "POST",
-      headers: {
-        "x-goog-api-key": GOOGLE_AI_KEY,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: analysisPrompt
-              },
-              {
-                inlineData: {
-                  mimeType: mimeType,
-                  data: base64Image
-                }
-              }
-            ]
-          }
-        ],
-        generationConfig: {
-          responseModalities: [
-            'TEXT'
-          ]
-        }
-      }),
-      signal: controller.signal
-    });
+    const response = await createGeminiClient(GOOGLE_AI_KEY).generateContent(
+      GEMINI_MODELS.FLASH_TEXT,
+      [{ parts: [{ text: analysisPrompt }, { inlineData: { mimeType, data: base64Image } }] }],
+      { responseModalities: ['TEXT'] },
+      controller.signal,
+    );
     if (!response.ok) {
       const errorText = await response.text();
       console.error("[analyzeGarment] API error:", response.status, errorText);
@@ -861,69 +817,45 @@ async function processOutfitSwap(jobId: string) {
     const garmentExt = garmentImage.storage_path.split('.').pop()?.toLowerCase() || 'jpg';
     const garmentMimeType = garmentExt === 'png' ? 'image/png' : garmentExt === 'webp' ? 'image/webp' : 'image/jpeg';
     // Call Gemini API with multimodal input
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent', {
-      method: 'POST',
-      headers: {
-        'x-goog-api-key': GOOGLE_AI_KEY,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt
-              },
-              {
-                inlineData: {
-                  mimeType: personMimeType,
-                  data: personBase64
-                }
-              },
-              {
-                inlineData: {
-                  mimeType: garmentMimeType,
-                  data: garmentBase64
-                }
-              },
-              // Add custom background image if provided
-              ...await (async () => {
-                const bgImageUrl = (job.settings as any)?.backgroundImageUrl;
-                if (!bgImageUrl) return [];
-                try {
-                  console.log(`[processOutfitSwap] Job ${jobId}: Fetching custom background image`);
-                  const bgResponse = await fetch(bgImageUrl);
-                  if (!bgResponse.ok) return [];
-                  const bgBuffer = await bgResponse.arrayBuffer();
-                  const bgBase64 = bufferToBase64(new Uint8Array(bgBuffer));
-                  const bgMime = bgResponse.headers.get('content-type') ?? 'image/jpeg';
-                  return [{
-                    text: "Use this image as the background environment for the final result. Place the model in this scene:"
-                  }, {
-                    inlineData: {
-                      mimeType: bgMime,
-                      data: bgBase64
-                    }
-                  }];
-                } catch (e) {
-                  console.error(`[processOutfitSwap] Job ${jobId}: Failed to fetch background image:`, e);
-                  return [];
-                }
-              })()
-            ]
-          }
-        ],
-        generationConfig: {
-          responseModalities: [
-            'IMAGE'
-          ],
-          imageConfig: {
-            aspectRatio: (job.settings as any)?.aspectRatio || undefined,
-            imageSize: (job.settings as any)?.imageSize || undefined,
-          }
+    // Build background image parts if provided
+    const bgParts: any[] = [];
+    const bgImageUrl = (job.settings as any)?.backgroundImageUrl;
+    if (bgImageUrl) {
+      try {
+        console.log(`[processOutfitSwap] Job ${jobId}: Fetching custom background image`);
+        const bgResponse = await fetch(bgImageUrl);
+        if (bgResponse.ok) {
+          const bgBuffer = await bgResponse.arrayBuffer();
+          const bgBase64 = bufferToBase64(new Uint8Array(bgBuffer));
+          const bgMime = bgResponse.headers.get('content-type') ?? 'image/jpeg';
+          bgParts.push(
+            { text: "Use this image as the background environment for the final result. Place the model in this scene:" },
+            { inlineData: { mimeType: bgMime, data: bgBase64 } },
+          );
         }
-      })
-    });
+      } catch (e) {
+        console.error(`[processOutfitSwap] Job ${jobId}: Failed to fetch background image:`, e);
+      }
+    }
+
+    const response = await createGeminiClient(GOOGLE_AI_KEY).generateContent(
+      GEMINI_MODELS.FLASH_IMAGE,
+      [{
+        parts: [
+          { text: prompt },
+          { inlineData: { mimeType: personMimeType, data: personBase64 } },
+          { inlineData: { mimeType: garmentMimeType, data: garmentBase64 } },
+          ...bgParts,
+        ],
+      }],
+      {
+        responseModalities: ['IMAGE'],
+        imageConfig: {
+          aspectRatio: (job.settings as any)?.aspectRatio || undefined,
+          imageSize: (job.settings as any)?.imageSize || undefined,
+        },
+      },
+    );
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Gemini API error:", response.status, errorText);
@@ -1861,35 +1793,11 @@ async function generateEcommerceIdeas(userId1: string, params: any) {
 
                     ###IMPORTANT: You must return the text on this language: ` + language;
     console.log(`[generateEcommerceIdeas] Calling Gemini API...`);
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
-      method: 'POST',
-      headers: {
-        'x-goog-api-key': GOOGLE_AI_KEY,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt
-              },
-              {
-                inlineData: {
-                  mimeType: 'image/jpeg',
-                  data: base64Image
-                }
-              }
-            ]
-          }
-        ],
-        generationConfig: {
-          responseModalities: [
-            'TEXT'
-          ]
-        }
-      })
-    });
+    const response = await createGeminiClient(GOOGLE_AI_KEY).generateContent(
+      GEMINI_MODELS.FLASH_TEXT,
+      [{ parts: [{ text: prompt }, { inlineData: { mimeType: 'image/jpeg', data: base64Image } }] }],
+      { responseModalities: ['TEXT'] },
+    );
     if (!response.ok) {
       const errorText = await response.text();
       console.error('[generateEcommerceIdeas] Gemini API error:', response.status, errorText);
@@ -1981,14 +1889,11 @@ async function enhanceScenarioPrompt(userId1: string, params: any) {
     }
 
     console.log(`[enhanceScenarioPrompt] Calling Gemini API...`);
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
-      method: 'POST',
-      headers: {
-        'x-goog-api-key': GOOGLE_AI_KEY,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
-    });
+    const response = await createGeminiClient(GOOGLE_AI_KEY).generateContent(
+      GEMINI_MODELS.FLASH_TEXT,
+      requestBody.contents,
+      requestBody.generationConfig,
+    );
 
     if (!response.ok) {
       const errorText = await response.text();

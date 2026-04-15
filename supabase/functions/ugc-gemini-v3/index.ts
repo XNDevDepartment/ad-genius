@@ -2,6 +2,10 @@
 // Supabase Edge Function (Deno) for Google Gemini 3 Pro image generation with native aspect ratio support
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import {
+  createGeminiClient,
+  GEMINI_MODELS,
+} from "../_shared/gemini-client.ts";
 
 // ---------- CORS ----------
 const corsHeaders = {
@@ -751,18 +755,12 @@ async function generateSingleImageWithGemini(
           }
         }
 
-        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`, {
-          method: "POST",
-          headers: {
-            "x-goog-api-key": GOOGLE_AI_KEY,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            contents: [{ parts }],
-            generationConfig
-          }),
-          signal: controller.signal
-        });
+        res = await createGeminiClient(GOOGLE_AI_KEY).generateContent(
+          GEMINI_MODELS.FLASH_IMAGE,
+          [{ parts }],
+          generationConfig,
+          controller.signal,
+        );
       } else {
         // ----- Text-to-image mode (no source image) -----
         const generationConfig: Record<string, unknown> = {
@@ -778,18 +776,12 @@ async function generateSingleImageWithGemini(
           log("Using native API aspect ratio (text-to-image)", { jobId: job.id, index, aspectRatio, imageSize });
         }
 
-        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`, {
-          method: "POST",
-          headers: {
-            "x-goog-api-key": GOOGLE_AI_KEY,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig
-          }),
-          signal: controller.signal
-        });
+        res = await createGeminiClient(GOOGLE_AI_KEY).generateContent(
+          GEMINI_MODELS.FLASH_IMAGE,
+          [{ parts: [{ text: prompt }] }],
+          generationConfig,
+          controller.signal,
+        );
       }
 
       try {

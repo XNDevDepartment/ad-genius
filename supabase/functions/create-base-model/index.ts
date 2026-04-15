@@ -1,5 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.50.4";
+import {
+  createGeminiClient,
+  extractBase64Image,
+  isImageSafetyBlock,
+  GEMINI_MODELS,
+} from "../_shared/gemini-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -129,38 +135,19 @@ async function uploadAndProcessModel(supabaseClient: SupabaseClient, userId: str
     const mimeType = `image/${base64Match[1]}`;
     const base64Image = base64Match[2];
 
+    const gemini = createGeminiClient(googleApiKey);
     const maxAttempts = 2;
     let processedImageData: string | undefined;
     let lastSafetyBlock = false;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       console.log(`[uploadAndProcessModel] Gemini attempt ${attempt + 1}/${maxAttempts}`);
-      
-      const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`, {
-        method: "POST",
-        headers: {
-          "x-goog-api-key": googleApiKey,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: prompt },
-                {
-                  inlineData: {
-                    mimeType: mimeType,
-                    data: base64Image
-                  }
-                }
-              ]
-            }
-          ],
-          generationConfig: {
-            responseModalities: ['IMAGE']
-          }
-        })
-      });
+
+      const geminiResponse = await gemini.generateContent(
+        GEMINI_MODELS.FLASH_IMAGE,
+        [{ parts: [{ text: prompt }, { inlineData: { mimeType, data: base64Image } }] }],
+        { responseModalities: ['IMAGE'] },
+      );
 
       if (!geminiResponse.ok) {
         const errorText = await geminiResponse.text();
@@ -169,7 +156,7 @@ async function uploadAndProcessModel(supabaseClient: SupabaseClient, userId: str
           statusText: geminiResponse.statusText,
           body: errorText,
         });
-        
+
         if (geminiResponse.status === 429) {
           throw new Error("AI service is currently at capacity. Please wait a moment and try again.");
         } else if (geminiResponse.status === 402) {
@@ -177,23 +164,22 @@ async function uploadAndProcessModel(supabaseClient: SupabaseClient, userId: str
         } else if (geminiResponse.status === 400) {
           throw new Error("Unsupported image format. Please use PNG, JPG, or JPEG images only. Other formats like WEBP, GIF, or HEIC are not supported.");
         }
-        
+
         throw new Error(`Background removal failed (${geminiResponse.status}). Please try a different image or contact support.`);
       }
 
       const geminiData = await geminiResponse.json();
-      
+
       // Check for safety filter block
-      const finishReason = geminiData.candidates?.[0]?.finishReason;
-      if (finishReason === 'IMAGE_SAFETY') {
+      if (isImageSafetyBlock(geminiData)) {
         console.warn(`[uploadAndProcessModel] Safety filter triggered on attempt ${attempt + 1}`);
         lastSafetyBlock = true;
         continue;
       }
 
-      processedImageData = geminiData.candidates?.[0]?.content?.parts?.find((part: any) => part.inlineData)?.inlineData?.data;
+      processedImageData = extractBase64Image(geminiData) ?? undefined;
       if (processedImageData) break;
-      
+
       console.warn(`[uploadAndProcessModel] No image data on attempt ${attempt + 1}:`, JSON.stringify(geminiData));
     }
 
@@ -401,32 +387,19 @@ async function generateModelWithAI(supabaseClient: SupabaseClient, userId: strin
     
     console.log("Generating AI model with prompt (isChild:", isChild, ")");
 
+    const gemini = createGeminiClient(googleApiKey);
     const maxAttempts = 2;
     let generatedImageData: string | undefined;
     let lastSafetyBlock = false;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       console.log(`[generateModelWithAI] Gemini attempt ${attempt + 1}/${maxAttempts}`);
-      
-      const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent`, {
-        method: "POST",
-        headers: {
-          "x-goog-api-key": googleApiKey,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: prompt }
-              ]
-            }
-          ],
-          generationConfig: {
-            responseModalities: ['IMAGE']
-          }
-        })
-      });
+
+      const geminiResponse = await gemini.generateContent(
+        GEMINI_MODELS.FLASH_IMAGE,
+        [{ parts: [{ text: prompt }] }],
+        { responseModalities: ['IMAGE'] },
+      );
 
       if (!geminiResponse.ok) {
         const errorText = await geminiResponse.text();
@@ -435,18 +408,17 @@ async function generateModelWithAI(supabaseClient: SupabaseClient, userId: strin
       }
 
       const geminiData = await geminiResponse.json();
-      
+
       // Check for safety filter block
-      const finishReason = geminiData.candidates?.[0]?.finishReason;
-      if (finishReason === 'IMAGE_SAFETY') {
+      if (isImageSafetyBlock(geminiData)) {
         console.warn(`[generateModelWithAI] Safety filter triggered on attempt ${attempt + 1}`);
         lastSafetyBlock = true;
         continue;
       }
 
-      generatedImageData = geminiData.candidates?.[0]?.content?.parts?.find((part: any) => part.inlineData)?.inlineData?.data;
+      generatedImageData = extractBase64Image(geminiData) ?? undefined;
       if (generatedImageData) break;
-      
+
       console.warn(`[generateModelWithAI] No image data on attempt ${attempt + 1}:`, JSON.stringify(geminiData));
     }
     

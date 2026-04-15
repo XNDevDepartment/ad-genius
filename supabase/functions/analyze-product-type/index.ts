@@ -1,4 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import {
+  createGeminiClient,
+  GEMINI_MODELS,
+} from "../_shared/gemini-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -25,6 +29,8 @@ serve(async (req) => {
       throw new Error("GOOGLE_AI_API_KEY not configured");
     }
 
+    const gemini = createGeminiClient(GOOGLE_AI_API_KEY);
+
     // Fetch the image
     const imageResponse = await fetch(sourceImageUrl);
     if (!imageResponse.ok) {
@@ -32,47 +38,27 @@ serve(async (req) => {
     }
     const imageBuffer = await imageResponse.arrayBuffer();
     const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
-    
+
     // Determine mime type
     const contentType = imageResponse.headers.get("content-type") || "image/jpeg";
     const mimeType = contentType.includes("png") ? "image/png" : "image/jpeg";
 
     // Call Gemini
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GOOGLE_AI_API_KEY}`;
-    
-    const geminiResponse = await fetch(geminiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                inlineData: {
-                  mimeType,
-                  data: base64Image,
-                },
-              },
-              {
-                text: 'Preciso que me analises esta imagem e detetes se este produto é moda/vestuário ou não? responde diretamente dizendo "yes" ou "no"',
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          temperature: 0,
-          maxOutputTokens: 10,
+    const geminiData = await gemini.generateContentJSON(
+      GEMINI_MODELS.FLASH_TEXT,
+      [
+        {
+          parts: [
+            { inlineData: { mimeType, data: base64Image } },
+            {
+              text: 'Preciso que me analises esta imagem e detetes se este produto é moda/vestuário ou não? responde diretamente dizendo "yes" ou "no"',
+            },
+          ],
         },
-      }),
-    });
+      ],
+      { temperature: 0, maxOutputTokens: 10 },
+    );
 
-    if (!geminiResponse.ok) {
-      const errText = await geminiResponse.text();
-      console.error("Gemini API error:", errText);
-      throw new Error(`Gemini API error: ${geminiResponse.status}`);
-    }
-
-    const geminiData = await geminiResponse.json();
     const textResponse = geminiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase() || "";
     
     console.log("[analyze-product-type] Gemini response:", textResponse);

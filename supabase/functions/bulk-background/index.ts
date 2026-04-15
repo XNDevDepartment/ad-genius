@@ -1,4 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  createGeminiClient,
+  extractBase64Image as sharedExtractBase64Image,
+  GEMINI_MODELS,
+} from "../_shared/gemini-client.ts";
 
 export interface SettingsPayload {
   outputFormat?: 'png' | 'webp';
@@ -17,8 +22,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY")!;
-const GEMINI_MODEL = "gemini-3.1-flash-image-preview";
-const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const gemini = createGeminiClient(GOOGLE_AI_API_KEY);
 const STORAGE_BUCKET = "bulk-backgrounds";
 
 function getCreditsPerImage(settings: Record<string, unknown> | null): number {
@@ -86,14 +90,7 @@ function buildPrompt(presetId: string | null, hasCustomBg: boolean, customPrompt
   return p;
 }
 
-function extractBase64Image(data: unknown): string | null {
-  for (const c of ((data as any)?.candidates || [])) {
-    for (const p of (c?.content?.parts || [])) {
-      if (p?.inlineData?.data) return p.inlineData.data;
-    }
-  }
-  return null;
-}
+const extractBase64Image = sharedExtractBase64Image;
 
 function b64ToBytes(b64: string): Uint8Array {
   const s = atob(b64);
@@ -109,14 +106,14 @@ function bytesToB64(bytes: Uint8Array): string {
 }
 
 async function callGemini(parts: unknown[], settings?: SettingsPayload | null) {
-  return fetch(GEMINI_ENDPOINT, {
-    method: "POST",
-    headers: { "x-goog-api-key": GOOGLE_AI_API_KEY, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts }],
-      generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: settings?.aspectRatio, imageSize: settings?.imageSize } },
-    }),
-  });
+  return gemini.generateContent(
+    GEMINI_MODELS.FLASH_IMAGE,
+    [{ parts: parts as any }],
+    {
+      responseModalities: ["IMAGE"],
+      imageConfig: { aspectRatio: settings?.aspectRatio, imageSize: settings?.imageSize },
+    },
+  );
 }
 
 async function generateImageWithRetry(productB64: string, bgB64: string | null, prompt: string, maxRetries = 3, settings: SettingsPayload | null): Promise<Uint8Array | null> {
@@ -497,7 +494,11 @@ Deno.serve(async (req: Request) => {
           const srcB64 = await fetchImageAsBase64(srcR.result_url);
           const pvAR = (pv.metadata as any)?.aspectRatio || "1:1";
           const parts = [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: srcB64 } }];
-          const res = await fetch(GEMINI_ENDPOINT, { method: "POST", headers: { "x-goog-api-key": GOOGLE_AI_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: pvAR } } }) });
+          const res = await gemini.generateContent(
+            GEMINI_MODELS.FLASH_IMAGE,
+            [{ parts: parts as any }],
+            { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: pvAR } },
+          );
           if (!res.ok) { const errText = await res.text(); console.error(`PV ${svViewType} Gemini error:`, errText); throw new Error(`Gemini error: ${res.status}`); }
           const img = extractBase64Image(await res.json());
           if (!img) throw new Error("No image in Gemini response");

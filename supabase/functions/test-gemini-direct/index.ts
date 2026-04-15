@@ -1,4 +1,8 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import {
+  createGeminiClient,
+  GEMINI_MODELS,
+} from "../_shared/gemini-client.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -132,14 +136,12 @@ serve(async (req) => {
     }
 
     // Make API call to Google Imagen API
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict`, {
-      method: "POST",
-      headers: {
-        "x-goog-api-key": GOOGLE_AI_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(apiRequestBody),
-    })
+    const gemini = createGeminiClient(GOOGLE_AI_KEY!);
+    const response = await gemini.predict(
+      GEMINI_MODELS.IMAGEN,
+      apiRequestBody.instances,
+      apiRequestBody.parameters,
+    );
 
     console.log('[TEST-GEMINI] API response status:', response.status)
 

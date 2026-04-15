@@ -1,6 +1,11 @@
 import 'https://deno.land/x/xhr@0.1.0/mod.ts';
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import {
+  createOpenAIClient,
+  OPENAI_BASE,
+  ASSISTANTS_BETA_HEADER as ASSISTANTS_BETA,
+} from '../_shared/openai-client.ts';
 // ─────────────────────────────────────────────────────────────────────────────
 //  CORS & ENV
 // ─────────────────────────────────────────────────────────────────────────────
@@ -12,13 +17,6 @@ const corsHeaders = {
 };
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 if (!openAIApiKey) throw new Error('OPENAI_API_KEY env var missing');
-// ─────────────────────────────────────────────────────────────────────────────
-//  Constants & helpers
-// ─────────────────────────────────────────────────────────────────────────────
-const OPENAI_BASE = 'https://api.openai.com/v1';
-const ASSISTANTS_BETA = {
-  'OpenAI-Beta': 'assistants=v2'
-};
 
 // Supabase clients
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
@@ -28,6 +26,8 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '
 const supabaseAuth = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const supabaseService = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
+const openai = createOpenAIClient(openAIApiKey);
+
 const json = (data: any, status = 200) => new Response(JSON.stringify(data), {
   status,
   headers: {
@@ -36,61 +36,18 @@ const json = (data: any, status = 200) => new Response(JSON.stringify(data), {
   }
 });
 
-const fetchWithRetry = async (url: string, init: RequestInit, attempts = 3): Promise<Response> => {
-  for(let i = 0; i < attempts; i++){
-    const res = await fetch(url, init);
-    if (res.ok) return res;
-    if (i === attempts - 1 || res.status < 500) throw res;
-    await new Promise((r)=>setTimeout(r, 250 * 2 ** i));
-  }
-  throw new Error('All retry attempts failed');
-};
 const b64ToBlob = (b64: string, mime = 'image/jpeg') => {
   const bin = atob(b64.split(',').pop() || '');
   const buf = new Uint8Array(bin.length);
   for(let i = 0; i < bin.length; i++)buf[i] = bin.charCodeAt(i);
   return new Blob([buf], { type: mime });
 };
-async function waitForRun(threadId: string, runId: string) {
-  let delay = 200;
-  while(true){
-    const run = await fetchWithRetry(`${OPENAI_BASE}/threads/${threadId}/runs/${runId}`, {
-      headers: {
-        ...ASSISTANTS_BETA,
-        Authorization: `Bearer ${openAIApiKey}`
-      }
-    }).then((r)=>r.json());
-    if (run.status === 'completed') return;
-    if ([
-      'failed',
-      'cancelled',
-      'expired'
-    ].includes(run.status)) throw new Error(`Run ${run.status}`);
-    await new Promise((r)=>setTimeout(r, delay));
-    delay = Math.min(delay * 2, 1000);
-  }
+/*──────────────────────────  Action handlers  ───────────────────────────*/
+async function createThread() {
+  const threadId = await openai.createThread();
+  return json({ threadId });
 }
-async function getLatestAssistantReply(threadId: string) {
-  const { data } = await fetchWithRetry(`${OPENAI_BASE}/threads/${threadId}/messages?role=assistant&limit=1&order=desc`, {
-    headers: {
-      ...ASSISTANTS_BETA,
-      Authorization: `Bearer ${openAIApiKey}`
-    }
-  }).then((r)=>r.json());
-  return data[0]?.content?.[0]?.text?.value ?? '';
-}
-/*──────────────────────────  Action handlers  ───────────────────────────*/ async function createThread() {
-  const res = await fetchWithRetry(`${OPENAI_BASE}/threads`, {
-    method: 'POST',
-    headers: {
-      ...ASSISTANTS_BETA,
-      Authorization: `Bearer ${openAIApiKey}`
-    }
-  }).then((r)=>r.json());
-  return json({
-    threadId: res.id
-  });
-}
+
 async function sendImageAndRun({ threadId, assistantId, fileData, fileName, prompt }: {
   threadId: string;
   assistantId: string;
@@ -98,59 +55,14 @@ async function sendImageAndRun({ threadId, assistantId, fileData, fileName, prom
   fileName: string;
   prompt?: string;
 }) {
-  // 1 — upload image
-  const form = new FormData();
-  form.append('file', b64ToBlob(fileData), fileName);
-  form.append('purpose', 'vision');
-  const { id: fileId } = await fetchWithRetry(`${OPENAI_BASE}/files`, {
-    method: 'POST',
-    headers: {
-      ...ASSISTANTS_BETA,
-      Authorization: `Bearer ${openAIApiKey}`
-    },
-    body: form
-  }).then((r)=>r.json());
-  // 2 — add message referencing the image (and optional caption)
-  await fetchWithRetry(`${OPENAI_BASE}/threads/${threadId}/messages`, {
-    method: 'POST',
-    headers: {
-      ...ASSISTANTS_BETA,
-      Authorization: `Bearer ${openAIApiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      role: 'user',
-      content: [
-        {
-          type: 'image_file',
-          image_file: {
-            file_id: fileId
-          }
-        },
-        prompt ? {
-          type: 'text',
-          text: prompt
-        } : null
-      ].filter(Boolean)
-    })
-  });
-  // 3 — run
-  const { id: runId } = await fetchWithRetry(`${OPENAI_BASE}/threads/${threadId}/runs`, {
-    method: 'POST',
-    headers: {
-      ...ASSISTANTS_BETA,
-      Authorization: `Bearer ${openAIApiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      assistant_id: assistantId
-    })
-  }).then((r)=>r.json());
-  await waitForRun(threadId, runId);
-  const reply = await getLatestAssistantReply(threadId);
-  return json({
-    reply
-  });
+  const fileId = await openai.uploadFile(b64ToBlob(fileData), fileName);
+  const content: any[] = [{ type: 'image_file', image_file: { file_id: fileId } }];
+  if (prompt) content.push({ type: 'text', text: prompt });
+  await openai.addMessage(threadId, content);
+  const runId = await openai.createRun(threadId, assistantId);
+  await openai.waitForRun(threadId, runId);
+  const reply = await openai.getLatestReply(threadId);
+  return json({ reply });
 }
 
 async function sendMultipleImagesAndRun({ threadId, assistantId, images, prompt }: {
@@ -159,109 +71,31 @@ async function sendMultipleImagesAndRun({ threadId, assistantId, images, prompt 
   images: Array<{ fileData: string; fileName: string }>;
   prompt?: string;
 }) {
-  // 1 — upload all images
   const fileIds: string[] = [];
-  
   for (const image of images) {
-    const form = new FormData();
-    form.append('file', b64ToBlob(image.fileData), image.fileName);
-    form.append('purpose', 'vision');
-    const { id: fileId } = await fetchWithRetry(`${OPENAI_BASE}/files`, {
-      method: 'POST',
-      headers: {
-        ...ASSISTANTS_BETA,
-        Authorization: `Bearer ${openAIApiKey}`
-      },
-      body: form
-    }).then((r)=>r.json());
+    const fileId = await openai.uploadFile(b64ToBlob(image.fileData), image.fileName);
     fileIds.push(fileId);
   }
-
-  // 2 — create content with all images and optional text
-  const content = [
-    ...fileIds.map(fileId => ({
-      type: 'image_file',
-      image_file: {
-        file_id: fileId
-      }
-    })),
-    prompt ? {
-      type: 'text',
-      text: prompt
-    } : null
-  ].filter(Boolean);
-
-  await fetchWithRetry(`${OPENAI_BASE}/threads/${threadId}/messages`, {
-    method: 'POST',
-    headers: {
-      ...ASSISTANTS_BETA,
-      Authorization: `Bearer ${openAIApiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      role: 'user',
-      content
-    })
-  });
-
-  // 3 — run
-  const { id: runId } = await fetchWithRetry(`${OPENAI_BASE}/threads/${threadId}/runs`, {
-    method: 'POST',
-    headers: {
-      ...ASSISTANTS_BETA,
-      Authorization: `Bearer ${openAIApiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      assistant_id: assistantId
-    })
-  }).then((r)=>r.json());
-  
-  await waitForRun(threadId, runId);
-  const reply = await getLatestAssistantReply(threadId);
-  return json({
-    reply
-  });
+  const content: any[] = fileIds.map((fileId) => ({ type: 'image_file', image_file: { file_id: fileId } }));
+  if (prompt) content.push({ type: 'text', text: prompt });
+  await openai.addMessage(threadId, content);
+  const runId = await openai.createRun(threadId, assistantId);
+  await openai.waitForRun(threadId, runId);
+  const reply = await openai.getLatestReply(threadId);
+  return json({ reply });
 }
+
 async function converse({ threadId, content, assistantId }: {
   threadId: string;
   content: any;
   assistantId: string;
 }) {
   if (!threadId || !assistantId) throw new Error('Missing parameters');
-  await fetchWithRetry(`${OPENAI_BASE}/threads/${threadId}/messages`, {
-    method: 'POST',
-    headers: {
-      ...ASSISTANTS_BETA,
-      Authorization: `Bearer ${openAIApiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      role: 'user',
-      content: Array.isArray(content) ? content : [
-        {
-          type: 'text',
-          text: content
-        }
-      ]
-    })
-  });
-  const { id: runId } = await fetchWithRetry(`${OPENAI_BASE}/threads/${threadId}/runs`, {
-    method: 'POST',
-    headers: {
-      ...ASSISTANTS_BETA,
-      Authorization: `Bearer ${openAIApiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      assistant_id: assistantId
-    })
-  }).then((r)=>r.json());
-  await waitForRun(threadId, runId);
-  const reply = await getLatestAssistantReply(threadId);
-  return json({
-    reply
-  });
+  await openai.addMessage(threadId, content);
+  const runId = await openai.createRun(threadId, assistantId);
+  await openai.waitForRun(threadId, runId);
+  const reply = await openai.getLatestReply(threadId);
+  return json({ reply });
 }
 
 // Note: UGC image generation is now handled entirely by the ugc edge function

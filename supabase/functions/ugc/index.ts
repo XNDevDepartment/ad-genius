@@ -2,6 +2,7 @@
 // Supabase Edge Function (Deno)
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createOpenAIClient } from "../_shared/openai-client.ts";
 // ---------- CORS ----------
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,6 +14,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY") ?? "";
+const openaiClient = createOpenAIClient(OPENAI_KEY);
 // ---------- LOG ----------
 const log = (step: string, meta?: any) => console.log(`[UGC] ${step}${meta ? ` - ${JSON.stringify(meta)}` : ""}`);
 
@@ -559,30 +561,13 @@ async function generateSingleImage(job: any, index: number, sourceImageUrl: stri
         if (job?.settings?.input_fidelity) {
           form.append("input_fidelity", String(job.settings.input_fidelity));
         }
-        res = await fetch("https://api.openai.com/v1/images/edits", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${OPENAI_KEY}`
-          },
-          body: form,
-          signal: controller.signal
-        });
+        res = await openaiClient.editImage(form, controller.signal);
       } else {
         // ----- generations -----
-        res = await fetch("https://api.openai.com/v1/images/generations", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${OPENAI_KEY}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            model: "gpt-image-1",
-            prompt,
-            size,
-            quality
-          }),
-          signal: controller.signal
-        });
+        res = await openaiClient.generateImage(
+          { model: "gpt-image-1", prompt, size, quality },
+          controller.signal,
+        );
       }
       try {
         if (timeout1) clearTimeout(timeout1); // Clear timeout on successful response
