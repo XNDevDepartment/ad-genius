@@ -210,54 +210,45 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
         />
       )}
 
-      {/* Collections folder card */}
-      <Card
-        className="bg-gradient-card border-border/50 cursor-pointer hover:border-primary/40 transition-colors"
-        onClick={() => setViewLevel('collections')}
-      >
-        <CardContent className="flex items-center gap-4 py-4">
-          <div className="w-12 h-12 rounded-lg bg-secondary/50 flex items-center justify-center flex-shrink-0">
-            <FolderClosed className="h-6 w-6 text-muted-foreground" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-sm">Collections</p>
-            <p className="text-xs text-muted-foreground">
-              {collections.length} collection{collections.length !== 1 ? 's' : ''}
-            </p>
-          </div>
-          <CreateCollectionDialog
-            onCreate={async (input) => { await createCollection(input); }}
-            trigger={
-              <Button variant="outline" size="sm" onClick={e => e.stopPropagation()}>
-                + New
-              </Button>
-            }
-          />
-        </CardContent>
-      </Card>
+      {/* Compact toolbar: Collections + Source Images + actions, aligned with search row height */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-10"
+          onClick={() => setViewLevel('collections')}
+        >
+          <FolderClosed className="h-4 w-4 mr-2" />
+          Collections ({collections.length})
+        </Button>
+        <CreateCollectionDialog
+          onCreate={async (input) => { await createCollection(input); }}
+          trigger={
+            <Button variant="ghost" size="sm" className="h-10">
+              + New
+            </Button>
+          }
+        />
 
-      {/* Source Images folder card */}
-      <Card
-        className="bg-gradient-card border-border/50 cursor-pointer hover:border-primary/40 transition-colors"
-        onClick={() => setViewLevel('sources')}
-      >
-        <CardContent className="flex items-center gap-4 py-4">
-          <div className="w-12 h-12 rounded-lg bg-secondary/50 flex items-center justify-center flex-shrink-0">
-            <Images className="h-6 w-6 text-muted-foreground" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-sm">Source Images</p>
-            <p className="text-xs text-muted-foreground">
-              {catalogEntries.length} product{catalogEntries.length !== 1 ? 's' : ''}
-              {uncategorizedCount > 0 && ` · ${uncategorizedCount} uncategorized`}
-            </p>
-          </div>
-          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setShowUploadModal(true); }}>
-            <Upload className="w-4 h-4 mr-2" />
-            Upload
-          </Button>
-        </CardContent>
-      </Card>
+        <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-10"
+          onClick={() => setViewLevel('sources')}
+        >
+          <Images className="h-4 w-4 mr-2" />
+          Source Images ({catalogEntries.length})
+          {uncategorizedCount > 0 && (
+            <span className="ml-1 text-xs text-muted-foreground">· {uncategorizedCount} uncategorized</span>
+          )}
+        </Button>
+        <Button variant="ghost" size="sm" className="h-10" onClick={() => setShowUploadModal(true)}>
+          <Upload className="h-4 w-4 mr-2" />
+          Upload
+        </Button>
+      </div>
 
       {/* Search & filter bar */}
       <LibrarySearchBar
@@ -274,9 +265,17 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
       {/* Generated images grid */}
       <Card className="bg-gradient-card border-border/50">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Generated Images ({allImages.length}{allHasMore ? '+' : ''})
-          </CardTitle>
+          <div className="flex items-center justify-between gap-2">
+            <CardTitle className="flex items-center gap-2">
+              Generated Images ({allImages.length}{allHasMore ? '+' : ''})
+            </CardTitle>
+            {!genSelectionMode && allImages.length > 0 && (
+              <Button variant="outline" size="sm" onClick={() => setGenSelectionMode(true)}>
+                <CheckSquare className="w-4 h-4 mr-2" />
+                Select
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <ImageLibraryGrid
@@ -296,6 +295,9 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
             onBulkDelete={deleteAllImages}
             onRefresh={refetchAll}
             onAddToCollection={handleAddToCollection}
+            onBulkAddToCollection={(imgs) =>
+              setBulkAddItems(imgs.map(img => ({ id: img.id, type: img.source_type ?? 'ugc_image' })))
+            }
           />
         </CardContent>
       </Card>
