@@ -78,6 +78,26 @@ export function useCollectionItems(collectionId?: string) {
     },
   });
 
+  const addItemsMutation = useMutation({
+    mutationFn: async ({ targetCollectionId, items }: { targetCollectionId: string; items: { id: string; type: string }[] }) => {
+      await ensureSession();
+      const rows = items.map(it => ({
+        collection_id: targetCollectionId,
+        content_id: it.id,
+        content_type: it.type,
+      }));
+      const { error } = await db
+        .from('collection_items')
+        .upsert(rows, { onConflict: 'collection_id,content_id', ignoreDuplicates: true });
+      if (error) throw new Error(error.message || 'Failed to add items to collection');
+      return rows.length;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['collection-items', variables.targetCollectionId] });
+      queryClient.invalidateQueries({ queryKey: collectionsKey });
+    },
+  });
+
   const isInCollection = (contentId: string) =>
     items.some(item => item.content_id === contentId);
 
@@ -86,6 +106,8 @@ export function useCollectionItems(collectionId?: string) {
     isLoading,
     addItem: (contentId: string, contentType: string, targetCollectionId?: string) =>
       addItemMutation.mutateAsync({ targetCollectionId: targetCollectionId ?? collectionId ?? '', contentId, contentType }),
+    addItems: (items: { id: string; type: string }[], targetCollectionId?: string) =>
+      addItemsMutation.mutateAsync({ targetCollectionId: targetCollectionId ?? collectionId ?? '', items }),
     removeItem: (contentId: string, targetCollectionId?: string) =>
       removeItemMutation.mutateAsync({ targetCollectionId: targetCollectionId ?? collectionId ?? '', contentId }),
     isInCollection,

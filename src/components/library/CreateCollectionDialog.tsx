@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -28,9 +28,18 @@ export const CreateCollectionDialog = ({ onCreate, trigger, open, onOpenChange }
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
-  const isControlled = open !== undefined;
-  const isOpen = isControlled ? open : internalOpen;
-  const setOpen = isControlled ? (onOpenChange ?? (() => {})) : setInternalOpen;
+  // Stable controlled-mode detection — captured once on first render via ref
+  const isControlledRef = useRef(open !== undefined);
+  const isControlled = isControlledRef.current;
+  const isOpen = isControlled ? !!open : internalOpen;
+
+  const setOpen = (next: boolean) => {
+    if (isControlled) {
+      onOpenChange?.(next);
+    } else {
+      setInternalOpen(next);
+    }
+  };
 
   const handleCreate = async () => {
     if (!name.trim()) return;
@@ -64,7 +73,7 @@ export const CreateCollectionDialog = ({ onCreate, trigger, open, onOpenChange }
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-sm" onClick={e => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle>New Collection</DialogTitle>
         </DialogHeader>
@@ -89,7 +98,11 @@ export const CreateCollectionDialog = ({ onCreate, trigger, open, onOpenChange }
                 <button
                   key={e}
                   type="button"
-                  onClick={() => setEmoji(e)}
+                  onClick={(ev) => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    setEmoji(e);
+                  }}
                   className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all ${
                     emoji === e ? 'ring-2 ring-primary bg-primary/10' : 'bg-muted/50 hover:bg-muted'
                   }`}
@@ -107,7 +120,11 @@ export const CreateCollectionDialog = ({ onCreate, trigger, open, onOpenChange }
                 <button
                   key={c}
                   type="button"
-                  onClick={() => setColor(c)}
+                  onClick={(ev) => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    setColor(c);
+                  }}
                   className={`w-7 h-7 rounded-full transition-all ${color === c ? 'ring-2 ring-offset-2 ring-primary scale-110' : ''}`}
                   style={{ background: c }}
                 />
