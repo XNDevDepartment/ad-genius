@@ -12,6 +12,7 @@ import { GeneratingImagePlaceholders } from '@/components/departments/ugc/Genera
 import { CollectionsList } from '@/components/library/CollectionsList';
 import { CreateCollectionDialog } from '@/components/library/CreateCollectionDialog';
 import { AddToCollectionDialog } from '@/components/library/AddToCollectionPopover';
+import { BulkAddToCollectionDialog } from '@/components/library/BulkAddToCollectionDialog';
 import { LibrarySearchBar } from '@/components/library/LibrarySearchBar';
 import type { DateFilter, TypeFilter, SortOrder } from '@/components/library/LibrarySearchBar';
 import { useLibraryBySource, SourceCatalogEntry } from '@/hooks/useLibraryBySource';
@@ -76,6 +77,7 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
 
   // "Add to Collection" target image state
   const [addToCollectionImage, setAddToCollectionImage] = useState<{ id: string; type: string } | null>(null);
+  const [bulkAddItems, setBulkAddItems] = useState<{ id: string; type: string }[] | null>(null);
 
   const [viewLevel, setViewLevel] = useState<ViewLevel>('generated');
   const [showUploadModal, setShowUploadModal] = useState(false);
