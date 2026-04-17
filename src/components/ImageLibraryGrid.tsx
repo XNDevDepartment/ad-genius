@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Download, Trash2, ExternalLink, Eye, FileImage, Loader2, Copy, CheckSquare, Square, X, Pencil, FolderPlus } from 'lucide-react';
+import { Download, Trash2, ExternalLink, Eye, FileImage, Loader2, Copy, CheckSquare, Square, X, Pencil, FolderPlus, FolderInput } from 'lucide-react';
 import EditImageModal from '@/components/EditImageModal';
 import { LazyImage } from '@/components/ui/lazy-image';
 import { useToast } from '@/hooks/use-toast';
@@ -54,6 +54,7 @@ interface ImageLibraryGridProps {
   onBulkDelete?: (imageIds: string[]) => Promise<{ success: number; failed: number }>;
   onRefresh?: () => void;
   onAddToCollection?: (image: LibraryImage) => void;
+  onBulkAddToCollection?: (images: LibraryImage[]) => void;
 }
 
 const cardVariants = {
@@ -81,6 +82,7 @@ export const ImageLibraryGrid = ({
   onBulkDelete,
   onRefresh,
   onAddToCollection,
+  onBulkAddToCollection,
 }: ImageLibraryGridProps) => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<LibraryImage | null>(null);
@@ -245,7 +247,21 @@ export const ImageLibraryGrid = ({
               Select All
             </Button>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {onBulkAddToCollection && (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={selectedIds.size === 0}
+                onClick={() => {
+                  const selected = images.filter(img => selectedIds.has(img.id));
+                  onBulkAddToCollection(selected);
+                }}
+              >
+                <FolderInput className="h-4 w-4 mr-2" />
+                Add to Collection
+              </Button>
+            )}
             <Button
               variant="destructive"
               size="sm"
