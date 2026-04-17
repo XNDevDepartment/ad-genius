@@ -659,13 +659,27 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
         }}
       />
 
-      {/* Add to Collection dialog */}
+      {/* Add to Collection dialog (single image) */}
       {addToCollectionImage && (
         <AddToCollectionDialog
           open={!!addToCollectionImage}
           onOpenChange={(open) => { if (!open) setAddToCollectionImage(null); }}
           contentId={addToCollectionImage.id}
           contentType={addToCollectionImage.type}
+        />
+      )}
+
+      {/* Bulk Add to Collection dialog */}
+      {bulkAddItems && (
+        <BulkAddToCollectionDialog
+          open={!!bulkAddItems}
+          onOpenChange={(open) => { if (!open) setBulkAddItems(null); }}
+          items={bulkAddItems}
+          onAdded={() => {
+            setBulkAddItems(null);
+            setGenSelectedIds(new Set());
+            setGenSelectionMode(false);
+          }}
         />
       )}
     </div>
@@ -760,12 +774,14 @@ interface CollectionImageGridProps {
 }
 
 const CollectionImageGrid = ({ collectionId, contentIds, onDownload, onOpenInNewTab, onRemoved }: CollectionImageGridProps) => {
-  const { images, loading } = useLibraryImages({ limit: 100 });
+  // Load a wide set of images with all filters off so collection items are likely to resolve
+  const { images, loading } = useLibraryImages({ limit: 500, filter: 'all', searchQuery: '', dateFilter: 'all', sortOrder: 'newest' });
   const { removeItem } = useCollectionItems(collectionId);
   const { toast } = useToast();
 
   const contentIdSet = new Set(contentIds);
   const collectionImages = images.filter(img => contentIdSet.has(img.id));
+  const missingCount = contentIds.length - collectionImages.length;
 
   const handleDelete = async (imageId: string) => {
     try {
@@ -778,16 +794,34 @@ const CollectionImageGrid = ({ collectionId, contentIds, onDownload, onOpenInNew
   };
 
   return (
-    <ImageLibraryGrid
-      images={collectionImages}
-      loading={loading}
-      hasMore={false}
-      showSourceThumbnails={false}
-      viewMode="ai"
-      onLoadMore={() => {}}
-      onDelete={handleDelete}
-      onDownload={onDownload}
-      onOpenInNewTab={onOpenInNewTab}
-    />
+    <div className="space-y-3">
+      {!loading && missingCount > 0 && collectionImages.length > 0 && (
+        <p className="text-xs text-muted-foreground">
+          {missingCount} item{missingCount !== 1 ? 's' : ''} in this collection couldn't be loaded (they may have been deleted).
+        </p>
+      )}
+      {!loading && collectionImages.length === 0 && contentIds.length > 0 ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground text-sm">
+            This collection has {contentIds.length} item{contentIds.length !== 1 ? 's' : ''}, but they couldn't be loaded.
+          </p>
+          <p className="text-muted-foreground text-xs mt-1">
+            They may have been deleted from your library.
+          </p>
+        </div>
+      ) : (
+        <ImageLibraryGrid
+          images={collectionImages}
+          loading={loading}
+          hasMore={false}
+          showSourceThumbnails={false}
+          viewMode="ai"
+          onLoadMore={() => {}}
+          onDelete={handleDelete}
+          onDownload={onDownload}
+          onOpenInNewTab={onOpenInNewTab}
+        />
+      )}
+    </div>
   );
 };
