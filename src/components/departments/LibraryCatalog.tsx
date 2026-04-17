@@ -12,6 +12,7 @@ import { GeneratingImagePlaceholders } from '@/components/departments/ugc/Genera
 import { CollectionsList } from '@/components/library/CollectionsList';
 import { CreateCollectionDialog } from '@/components/library/CreateCollectionDialog';
 import { AddToCollectionDialog } from '@/components/library/AddToCollectionPopover';
+import { BulkAddToCollectionDialog } from '@/components/library/BulkAddToCollectionDialog';
 import { LibrarySearchBar } from '@/components/library/LibrarySearchBar';
 import type { DateFilter, TypeFilter, SortOrder } from '@/components/library/LibrarySearchBar';
 import { useLibraryBySource, SourceCatalogEntry } from '@/hooks/useLibraryBySource';
@@ -76,6 +77,7 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
 
   // "Add to Collection" target image state
   const [addToCollectionImage, setAddToCollectionImage] = useState<{ id: string; type: string } | null>(null);
+  const [bulkAddItems, setBulkAddItems] = useState<{ id: string; type: string }[] | null>(null);
 
   const [viewLevel, setViewLevel] = useState<ViewLevel>('generated');
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -208,54 +210,45 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
         />
       )}
 
-      {/* Collections folder card */}
-      <Card
-        className="bg-gradient-card border-border/50 cursor-pointer hover:border-primary/40 transition-colors"
-        onClick={() => setViewLevel('collections')}
-      >
-        <CardContent className="flex items-center gap-4 py-4">
-          <div className="w-12 h-12 rounded-lg bg-secondary/50 flex items-center justify-center flex-shrink-0">
-            <FolderClosed className="h-6 w-6 text-muted-foreground" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-sm">Collections</p>
-            <p className="text-xs text-muted-foreground">
-              {collections.length} collection{collections.length !== 1 ? 's' : ''}
-            </p>
-          </div>
-          <CreateCollectionDialog
-            onCreate={async (input) => { await createCollection(input); }}
-            trigger={
-              <Button variant="outline" size="sm" onClick={e => e.stopPropagation()}>
-                + New
-              </Button>
-            }
-          />
-        </CardContent>
-      </Card>
+      {/* Compact toolbar: Collections + Source Images + actions, aligned with search row height */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-10"
+          onClick={() => setViewLevel('collections')}
+        >
+          <FolderClosed className="h-4 w-4 mr-2" />
+          Collections ({collections.length})
+        </Button>
+        <CreateCollectionDialog
+          onCreate={async (input) => { await createCollection(input); }}
+          trigger={
+            <Button variant="ghost" size="sm" className="h-10">
+              + New
+            </Button>
+          }
+        />
 
-      {/* Source Images folder card */}
-      <Card
-        className="bg-gradient-card border-border/50 cursor-pointer hover:border-primary/40 transition-colors"
-        onClick={() => setViewLevel('sources')}
-      >
-        <CardContent className="flex items-center gap-4 py-4">
-          <div className="w-12 h-12 rounded-lg bg-secondary/50 flex items-center justify-center flex-shrink-0">
-            <Images className="h-6 w-6 text-muted-foreground" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-sm">Source Images</p>
-            <p className="text-xs text-muted-foreground">
-              {catalogEntries.length} product{catalogEntries.length !== 1 ? 's' : ''}
-              {uncategorizedCount > 0 && ` · ${uncategorizedCount} uncategorized`}
-            </p>
-          </div>
-          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setShowUploadModal(true); }}>
-            <Upload className="w-4 h-4 mr-2" />
-            Upload
-          </Button>
-        </CardContent>
-      </Card>
+        <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-10"
+          onClick={() => setViewLevel('sources')}
+        >
+          <Images className="h-4 w-4 mr-2" />
+          Source Images ({catalogEntries.length})
+          {uncategorizedCount > 0 && (
+            <span className="ml-1 text-xs text-muted-foreground">· {uncategorizedCount} uncategorized</span>
+          )}
+        </Button>
+        <Button variant="ghost" size="sm" className="h-10" onClick={() => setShowUploadModal(true)}>
+          <Upload className="h-4 w-4 mr-2" />
+          Upload
+        </Button>
+      </div>
 
       {/* Search & filter bar */}
       <LibrarySearchBar
@@ -272,9 +265,17 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
       {/* Generated images grid */}
       <Card className="bg-gradient-card border-border/50">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Generated Images ({allImages.length}{allHasMore ? '+' : ''})
-          </CardTitle>
+          <div className="flex items-center justify-between gap-2">
+            <CardTitle className="flex items-center gap-2">
+              Generated Images ({allImages.length}{allHasMore ? '+' : ''})
+            </CardTitle>
+            {!genSelectionMode && allImages.length > 0 && (
+              <Button variant="outline" size="sm" onClick={() => setGenSelectionMode(true)}>
+                <CheckSquare className="w-4 h-4 mr-2" />
+                Select
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <ImageLibraryGrid
@@ -294,6 +295,9 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
             onBulkDelete={deleteAllImages}
             onRefresh={refetchAll}
             onAddToCollection={handleAddToCollection}
+            onBulkAddToCollection={(imgs) =>
+              setBulkAddItems(imgs.map(img => ({ id: img.id, type: img.source_type ?? 'ugc_image' })))
+            }
           />
         </CardContent>
       </Card>
@@ -655,13 +659,27 @@ export const LibraryCatalog = ({ onBack }: LibraryCatalogProps) => {
         }}
       />
 
-      {/* Add to Collection dialog */}
+      {/* Add to Collection dialog (single image) */}
       {addToCollectionImage && (
         <AddToCollectionDialog
           open={!!addToCollectionImage}
           onOpenChange={(open) => { if (!open) setAddToCollectionImage(null); }}
           contentId={addToCollectionImage.id}
           contentType={addToCollectionImage.type}
+        />
+      )}
+
+      {/* Bulk Add to Collection dialog */}
+      {bulkAddItems && (
+        <BulkAddToCollectionDialog
+          open={!!bulkAddItems}
+          onOpenChange={(open) => { if (!open) setBulkAddItems(null); }}
+          items={bulkAddItems}
+          onAdded={() => {
+            setBulkAddItems(null);
+            setGenSelectedIds(new Set());
+            setGenSelectionMode(false);
+          }}
         />
       )}
     </div>
@@ -756,12 +774,14 @@ interface CollectionImageGridProps {
 }
 
 const CollectionImageGrid = ({ collectionId, contentIds, onDownload, onOpenInNewTab, onRemoved }: CollectionImageGridProps) => {
-  const { images, loading } = useLibraryImages({ limit: 100 });
+  // Load a wide set of images with all filters off so collection items are likely to resolve
+  const { images, loading } = useLibraryImages({ limit: 500, filter: 'all', searchQuery: '', dateFilter: 'all', sortOrder: 'newest' });
   const { removeItem } = useCollectionItems(collectionId);
   const { toast } = useToast();
 
   const contentIdSet = new Set(contentIds);
   const collectionImages = images.filter(img => contentIdSet.has(img.id));
+  const missingCount = contentIds.length - collectionImages.length;
 
   const handleDelete = async (imageId: string) => {
     try {
@@ -774,16 +794,34 @@ const CollectionImageGrid = ({ collectionId, contentIds, onDownload, onOpenInNew
   };
 
   return (
-    <ImageLibraryGrid
-      images={collectionImages}
-      loading={loading}
-      hasMore={false}
-      showSourceThumbnails={false}
-      viewMode="ai"
-      onLoadMore={() => {}}
-      onDelete={handleDelete}
-      onDownload={onDownload}
-      onOpenInNewTab={onOpenInNewTab}
-    />
+    <div className="space-y-3">
+      {!loading && missingCount > 0 && collectionImages.length > 0 && (
+        <p className="text-xs text-muted-foreground">
+          {missingCount} item{missingCount !== 1 ? 's' : ''} in this collection couldn't be loaded (they may have been deleted).
+        </p>
+      )}
+      {!loading && collectionImages.length === 0 && contentIds.length > 0 ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground text-sm">
+            This collection has {contentIds.length} item{contentIds.length !== 1 ? 's' : ''}, but they couldn't be loaded.
+          </p>
+          <p className="text-muted-foreground text-xs mt-1">
+            They may have been deleted from your library.
+          </p>
+        </div>
+      ) : (
+        <ImageLibraryGrid
+          images={collectionImages}
+          loading={loading}
+          hasMore={false}
+          showSourceThumbnails={false}
+          viewMode="ai"
+          onLoadMore={() => {}}
+          onDelete={handleDelete}
+          onDownload={onDownload}
+          onOpenInNewTab={onOpenInNewTab}
+        />
+      )}
+    </div>
   );
 };
