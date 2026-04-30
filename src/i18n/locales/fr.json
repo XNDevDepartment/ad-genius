@@ -61,7 +61,8 @@
       "authRequired": "Veuillez vous connecter pour continuer",
       "sessionExpired": "Votre session a expiré. Veuillez actualiser la page.",
       "checkoutError": "Échec du démarrage du paiement. Veuillez réessayer.",
-      "pleaseWait": "Veuillez patienter..."
+      "pleaseWait": "Veuillez patienter...",
+      "firstMonth": "Offre disponible pour le premier mois"
     },
     "productType": {
       "title": "Que vendez-vous ?",

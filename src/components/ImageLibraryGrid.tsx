@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Download, Trash2, ExternalLink, Eye, FileImage, Loader2, Copy, CheckSquare, Square, X, Pencil } from 'lucide-react';
+import { Download, Trash2, ExternalLink, Eye, FileImage, Loader2, Copy, CheckSquare, Square, X, Pencil, FolderPlus, FolderInput } from 'lucide-react';
 import EditImageModal from '@/components/EditImageModal';
 import { LazyImage } from '@/components/ui/lazy-image';
 import { useToast } from '@/hooks/use-toast';
@@ -53,6 +53,8 @@ interface ImageLibraryGridProps {
   onSelectionChange?: (ids: Set<string>) => void;
   onBulkDelete?: (imageIds: string[]) => Promise<{ success: number; failed: number }>;
   onRefresh?: () => void;
+  onAddToCollection?: (image: LibraryImage) => void;
+  onBulkAddToCollection?: (images: LibraryImage[]) => void;
 }
 
 const cardVariants = {
@@ -79,12 +81,15 @@ export const ImageLibraryGrid = ({
   onSelectionChange,
   onBulkDelete,
   onRefresh,
+  onAddToCollection,
+  onBulkAddToCollection,
 }: ImageLibraryGridProps) => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<LibraryImage | null>(null);
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [editingImage, setEditingImage] = useState<LibraryImage | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [activeMobileId, setActiveMobileId] = useState<string | null>(null);
   const { toast } = useToast();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -242,7 +247,21 @@ export const ImageLibraryGrid = ({
               Select All
             </Button>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {onBulkAddToCollection && (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={selectedIds.size === 0}
+                onClick={() => {
+                  const selected = images.filter(img => selectedIds.has(img.id));
+                  onBulkAddToCollection(selected);
+                }}
+              >
+                <FolderInput className="h-4 w-4 mr-2" />
+                Add to Collection
+              </Button>
+            )}
             <Button
               variant="destructive"
               size="sm"
@@ -282,12 +301,16 @@ export const ImageLibraryGrid = ({
               initial="hidden"
               animate="visible"
               variants={cardVariants}
+              data-active={activeMobileId === image.id}
               className={`group transition-all duration-200 ${
                 selectionMode && selectedIds.has(image.id)
                   ? 'ring-2 ring-primary rounded-lg scale-[0.97]'
                   : ''
               }`}
-              onClick={() => selectionMode && toggleSelection(image.id)}
+              onClick={() => {
+                if (selectionMode) { toggleSelection(image.id); return; }
+                setActiveMobileId(prev => prev === image.id ? null : image.id);
+              }}
             >
               <div className="overflow-hidden border border-border/50 relative aspect-[3/4] rounded-sm transition-all duration-300 ease-out group-hover:border-primary/40 group-hover:shadow-card">
                 <LazyImage 
@@ -336,7 +359,7 @@ export const ImageLibraryGrid = ({
                 {/* Action buttons - hidden in selection mode */}
                 {!selectionMode && (
                   <>
-                    <div className="absolute top-2 right-2 sm:-translate-y-1 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 transition-all duration-300 z-20 flex gap-1">
+                    <div className="absolute top-2 right-2 -translate-y-1 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 group-data-[active=true]:translate-y-0 group-data-[active=true]:opacity-100 transition-all duration-300 z-20 flex gap-1">
                       <Button
                         size="sm"
                         variant="secondary"
@@ -345,6 +368,17 @@ export const ImageLibraryGrid = ({
                       >
                         <ExternalLink className="h-4 w-4" />
                       </Button>
+                      {onAddToCollection && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={(e) => { e.stopPropagation(); onAddToCollection(image); }}
+                          className="bg-background/90 hover:bg-background"
+                          title="Add to collection"
+                        >
+                          <FolderPlus className="h-4 w-4" />
+                        </Button>
+                      )}
                       
                       {viewMode === "ai" && image.job_id && image.source_type === 'outfit_swap' && (
                         <Button
@@ -381,7 +415,7 @@ export const ImageLibraryGrid = ({
                       )}
                     </div>
 
-                    <div className="absolute bottom-0 left-0 right-0 px-2 py-3 bg-gradient-to-t from-black/50 to-transparent sm:translate-y-1 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 transition-all duration-300 ease-out z-20 flex gap-1 justify-end items-end">
+                    <div className="absolute bottom-0 left-0 right-0 px-2 py-3 bg-gradient-to-t from-black/50 to-transparent translate-y-1 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 group-data-[active=true]:translate-y-0 group-data-[active=true]:opacity-100 transition-all duration-300 ease-out z-20 flex gap-1 justify-end items-end">
                       <Button
                         size="sm"
                         variant="secondary"
@@ -424,7 +458,7 @@ export const ImageLibraryGrid = ({
                     </div>
 
                     {/* Delete button */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 z-10">
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 group-data-[active=true]:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 group-data-[active=true]:opacity-100 z-10">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button

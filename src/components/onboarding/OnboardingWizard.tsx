@@ -113,7 +113,7 @@ export const OnboardingWizard = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col safe-area-inset">
+    <div className="fixed inset-0 z-[60] bg-background flex flex-col safe-area-inset">
       {/* Header */}
       {showHeader && (
         <div className="px-4 pt-3 pb-2 flex-shrink-0">

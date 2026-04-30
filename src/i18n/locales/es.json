@@ -61,7 +61,8 @@
       "authRequired": "Por favor inicia sesión para continuar",
       "sessionExpired": "Tu sesión expiró. Por favor actualiza la página.",
       "checkoutError": "Error al iniciar el pago. Por favor intenta de nuevo.",
-      "pleaseWait": "Por favor espera..."
+      "pleaseWait": "Por favor espera...",
+      "firstMonth": "Oferta disponible para el primer mes"
     },
     "productType": {
       "title": "¿Qué estás vendiendo?",

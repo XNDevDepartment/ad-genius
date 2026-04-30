@@ -11,6 +11,7 @@ export interface GenerateScenariosParams {
   productSpecs?: string;
   language: string;
   imageUrl?: string;
+  existingScenarios?: AIScenario[];
 }
 
 /**

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Settings, CreditCard, HelpCircle, LogOut, Bell, Shield, AlertTriangle, Key, Link2 } from "lucide-react";
+import { ArrowLeft, Settings, CreditCard, HelpCircle, LogOut, Bell, Shield, AlertTriangle, Key, Link2, HardDrive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,6 +17,7 @@ import { BillingPanel } from "@/components/account/BillingPanel";
 import { HelpSupportPanel } from "@/components/account/HelpSupportPanel";
 import { ApiKeysPanel } from "@/components/account/ApiKeysPanel";
 import { IntegrationsPanel } from "@/components/account/IntegrationsPanel";
+import { StorageCleanupPanel } from "@/components/account/StorageCleanupPanel";
 import { useTranslation } from "react-i18next";
 import { PageTransition } from "@/components/PageTransition";
 
@@ -51,6 +52,7 @@ const Account = () => {
       "help",
       "api-keys",
       "integrations",
+      "storage-cleanup",
     ]);
 
     if (allowed.has(hashSection)) {
@@ -248,8 +250,24 @@ const Account = () => {
           </CardContent>
         </Card>
 
+        {/* Storage Cleanup */}
+        <Card
+          className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none bg-transparent"
+          onClick={() => handleMenuClick("storage-cleanup")}
+        >
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <HardDrive className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium">Storage Cleanup</h3>
+              <p className="text-sm text-muted-foreground">Find and remove duplicate source images</p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Sign Out */}
-        <Card 
+        <Card
           className="cursor-pointer hover:bg-muted/50 transition-colors border-0 shadow-none mt-8 bg-transparent"
           onClick={handleSignOut}
         >
@@ -288,7 +306,8 @@ const Account = () => {
              section === "billing" ? t('account.billing.title') :
              section === "help" ? t('account.helpSupport.title') :
              section === "api-keys" ? t('account.sections.apiKeys', 'API Keys') :
-             section === "integrations" ? t('account.sections.integrations', 'Integrations') : t('account.title')}
+             section === "integrations" ? t('account.sections.integrations', 'Integrations') :
+             section === "storage-cleanup" ? 'Storage Cleanup' : t('account.title')}
           </h1>
         </div>
       </div>
@@ -314,7 +333,8 @@ const Account = () => {
              section === "billing" ? t('account.billing.title') :
              section === "help" ? t('account.helpSupport.title') :
              section === "api-keys" ? t('account.sections.apiKeys', 'API Keys') :
-             section === "integrations" ? t('account.sections.integrations', 'Integrations') : t('account.title')}
+             section === "integrations" ? t('account.sections.integrations', 'Integrations') :
+             section === "storage-cleanup" ? 'Storage Cleanup' : t('account.title')}
           </h1>
         </div>
 
@@ -326,6 +346,7 @@ const Account = () => {
         {section === "help" && <HelpSupportPanel onClose={closeSection} />}
         {section === "api-keys" && <ApiKeysPanel onClose={closeSection} />}
         {section === "integrations" && <IntegrationsPanel onClose={closeSection} />}
+        {section === "storage-cleanup" && <StorageCleanupPanel onClose={closeSection} />}
         {section === "" && AccountPanel}
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { ArrowLeft, FileImage } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Library as LibraryComponent } from "@/components/departments/LibraryOld";
+import { LibraryCatalog as LibraryComponent } from "@/components/departments/LibraryCatalog";
 import { useTranslation } from "react-i18next";
 import { PageTransition } from "@/components/PageTransition";
 

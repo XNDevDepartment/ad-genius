@@ -38,7 +38,7 @@ const AppLayout = () => {
         )}
         {/* <AnnouncementBanner /> */}
         {showHeader && user && <NavigationHeader />}
-        <main className="pb-20">
+        <main className="pb-[58px]">
           <Outlet />
         </main>
         {/* {user && <MobilePromoBanner />} */}

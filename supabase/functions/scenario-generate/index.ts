@@ -57,7 +57,7 @@ serve(async (req) => {
       throw new Error("OPENROUTER_API_KEY is not configured");
     }
 
-    const { audience, productSpecs, language, imageUrl } = await req.json();
+    const { audience, productSpecs, language, imageUrl, existingScenarios } = await req.json();
 
     if (!audience) {
       return new Response(
@@ -67,6 +67,10 @@ serve(async (req) => {
     }
 
     // Build user prompt
+    const existingList = Array.isArray(existingScenarios) && existingScenarios.length > 0
+      ? `\n\nIMPORTANT: The following scenarios have ALREADY been generated. Do NOT repeat or closely resemble any of them:\n${existingScenarios.map((s, i) => `${i + 1}. ${s.idea} — ${s["small-description"]}`).join("\n")}`
+      : "";
+
     let userPrompt = `Generate 5 creative and unique UGC (User Generated Content) scenario ideas for product photography.
 
     Target Audience: ${audience}
@@ -79,7 +83,7 @@ serve(async (req) => {
     - Include a mix of indoor and outdoor settings
     - Vary the moods (energetic, calm, professional, casual, etc.)
     - Make scenarios authentic and relatable for social media
-    - Focus on realistic, achievable setups for UGC creators`;
+    - Focus on realistic, achievable setups for UGC creators${existingList}`;
 
     // System prompt
     const systemPrompt = `You are a creative UGC (User Generated Content) strategist and photographer with expertise in product photography for social media.
