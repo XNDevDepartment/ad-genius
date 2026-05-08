@@ -68,18 +68,34 @@ export function createGeminiApi(modelVersion: ModelVersion) {
   const endpoint = ENDPOINTS[modelVersion];
   const baseUrl = `https://dhqdamfisdbbcieqlpvt.supabase.co/functions/v1/${endpoint}`;
 
-  async function callFunction(action: string, payload: any = {}, maxRetries = 3) {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      throw new Error('Not authenticated');
+  async function getFreshAccessToken(forceRefresh = false): Promise<string> {
+    if (forceRefresh) {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error || !data.session) throw new Error('Not authenticated');
+      return data.session.access_token;
     }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Not authenticated');
+    // Proactively refresh if token expires within 60s
+    const expiresAt = (session.expires_at ?? 0) * 1000;
+    if (expiresAt && expiresAt - Date.now() < 60_000) {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error || !data.session) throw new Error('Not authenticated');
+      return data.session.access_token;
+    }
+    return session.access_token;
+  }
 
+  async function callFunction(action: string, payload: any = {}, maxRetries = 3) {
     const timeout = action === 'createImageJob' ? null : 30000;
-    
+    let didAuthRetry = false;
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         console.log(`[UGC-${modelVersion.toUpperCase()} API] ${action} - Attempt ${attempt}/${maxRetries}`, payload);
-        
+
+        const accessToken = await getFreshAccessToken(didAuthRetry);
+
         const controller = new AbortController();
         const timeoutId = timeout ? setTimeout(() => controller.abort(), timeout) : null;
 
@@ -87,7 +103,7 @@ export function createGeminiApi(modelVersion: ModelVersion) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
+            'Authorization': `Bearer ${accessToken}`,
           },
           body: JSON.stringify({ action, ...payload }),
           signal: controller.signal,
@@ -101,6 +117,13 @@ export function createGeminiApi(modelVersion: ModelVersion) {
           const error = data.error || 'Request failed';
           console.error(`[UGC-${modelVersion.toUpperCase()} API] ${action} failed:`, { status: response.status, error, attempt });
           
+          // On 401, force-refresh the session once and retry
+          if (response.status === 401 && !didAuthRetry && attempt < maxRetries) {
+            didAuthRetry = true;
+            console.log(`[UGC-${modelVersion.toUpperCase()} API] 401 received - refreshing session and retrying`);
+            continue;
+          }
+
           if (attempt < maxRetries && (response.status >= 500 || response.status === 408)) {
             const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
             console.log(`[UGC-${modelVersion.toUpperCase()} API] Retrying ${action} in ${delay}ms...`);
