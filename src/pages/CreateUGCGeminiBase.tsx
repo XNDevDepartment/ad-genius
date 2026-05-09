@@ -3,6 +3,8 @@ import { Crown } from "lucide-react";
 import { ArrowLeft, Sparkles, RefreshCw, HelpCircle, Pencil, ArrowDown, Clock } from "lucide-react";
 import { useCustomScenarios } from "@/hooks/useCustomScenarios";
 import { SavedScenariosModal } from "@/components/SavedScenariosModal";
+import { useCustomAudiences } from "@/hooks/useCustomAudiences";
+import { SavedAudiencesModal } from "@/components/SavedAudiencesModal";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
