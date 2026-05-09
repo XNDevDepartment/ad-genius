@@ -1,51 +1,71 @@
+## Goal
 
+Mirror the existing "Saved Scenarios" feature for **Audience**, so users can pick a previously used audience instead of retyping it for every new product.
 
-## Fix Collections Bugs + Library Header Sizing
+## What exists today (reference pattern)
 
-### Issues to fix
+- **Table**: `custom_scenarios` (`id`, `user_id`, `title`, `description`, `used_at`, `created_at`) with RLS "Users manage own scenarios".
+- **Hook**: `src/hooks/useCustomScenarios.ts` — list (top 20 by `used_at`), upsert-on-use (updates `used_at` if same description exists), delete.
+- **Modal**: `src/components/SavedScenariosModal.tsx` — list with title + truncated description, click to select, delete button on hover.
+- **Trigger**: a button under the custom-scenario textarea opens the modal.
+- **Save trigger**: in `CreateUGCGeminiBase.tsx` at line 929, `saveScenario({ title, description })` is called automatically when a generation is submitted with a custom scenario.
 
-**1. Emoji selection closes the Create Collection modal**
-- Root cause: emoji and color `<button>` elements call `setEmoji(e)` / `setColor(c)` which trigger a re-render, and because of how the controlled/uncontrolled `open` state is computed (`isControlled = open !== undefined`), the dialog incorrectly toggles closed in some render paths. Also clicks may be propagating to outer handlers.
-- Fix in `src/components/library/CreateCollectionDialog.tsx`:
-  - Add `e.preventDefault()` and `e.stopPropagation()` to every emoji and color button click handler.
-  - Stabilize the controlled/uncontrolled detection so `setOpen` does not flip dialog state during selection.
+## Plan: Saved Audiences (same pattern)
 
-**2. Selecting a collection shows "X images" but loads nothing**
-- Root cause: in `LibraryCatalog.tsx → CollectionImageGrid`, images come from `useLibraryImages({ limit: 100 })` and are filtered client-side by `contentIds`. But:
-  - Collection items can include sources beyond the first 100 returned images.
-  - Filter/sort/search defaults may exclude items.
-  - IDs from photoshoots / product views are composite (`${photoshoot.id}_${angle}`), so a stored `content_id` from a generated image will not match unless saved with the same composite key.
-- Fix:
-  - Increase fetch limit and pass `filter: 'all'`, no search, no date filter, sort newest, so the union covers everything.
-  - Add a fallback lookup: when a `content_id` doesn't match any loaded library image, attempt a direct lookup by ID across `ugc_images` / `generated_images` / `outfit_swap_results` / `bulk_background_results` to surface the URL.
-  - Show a clear empty/partial-load message when items exist in DB but cannot be resolved (so it never silently shows "0").
+### 1. Database (new migration)
 
-**3. Add a "select multiple" mode to perform bulk actions (add to collection / delete)**
-- `ImageLibraryGrid` already supports `selectionMode`, `selectedIds`, and `onBulkDelete`. We need to:
-  - Add an entry button "Select" in the Generated Images card header that toggles `genSelectionMode`.
-  - Extend `ImageLibraryGrid`'s selection-mode header with a new "Add to Collection" action that opens a dedicated bulk dialog.
-  - Create `BulkAddToCollectionDialog` (a small variation of `AddToCollectionDialog`) that accepts an array of `{ id, type }` and adds all selected images to the chosen collection in one batch via `useCollectionItems.addItem` looped per id (or a small helper `addItems`).
-  - Wire it up in `LibraryCatalog.tsx` for the generated-images grid.
+Create `custom_audiences` table:
+- `id` uuid PK
+- `user_id` uuid (not FK to auth.users)
+- `label` text (short name shown in the list — first ~40 chars of audience or auto-derived)
+- `audience` text (full audience text, max 500 to match input)
+- `used_at` timestamptz default `now()`
+- `created_at` timestamptz default `now()`
+- Unique index on `(user_id, audience)` to keep the upsert-on-use logic simple.
 
-**4. "Source Images" and "Collections" buttons in the library are too large; align with search & filters row**
-- Currently the Collections and Source Images entries are big full-width `<Card>` blocks with a 12×12 icon, padding, and right-side action.
-- Replace them with a compact horizontal toolbar placed directly above (or merged into) the `LibrarySearchBar` row:
-  - Two pill-style buttons (`📁 Collections (n)` and `🖼 Source Images (n)`), height matched to the search input, plus their inline secondary actions (`+ New`, `Upload`).
-  - Keep the same navigation behavior (clicking the pill opens the corresponding view).
-  - On small screens they wrap below the search row.
+RLS: single policy "Users manage own audiences" — `auth.uid() = user_id` for ALL on `authenticated`.
 
-### Files to change
-- `src/components/library/CreateCollectionDialog.tsx` — fix emoji/color click handlers and controlled-state detection.
-- `src/components/library/AddToCollectionPopover.tsx` — extract / extend to support a bulk variant; load existing memberships when opened single-item.
-- `src/components/library/BulkAddToCollectionDialog.tsx` — new small component for multi-image add.
-- `src/hooks/useCollectionItems.ts` — add `addItems(contentIds, contentType, collectionId)` helper.
-- `src/components/ImageLibraryGrid.tsx` — add "Add to Collection" button to the bulk selection-mode header (when an `onBulkAddToCollection` prop is provided).
-- `src/components/departments/LibraryCatalog.tsx`:
-  - Replace the two big `<Card>` shortcuts with a compact toolbar row above `LibrarySearchBar`.
-  - Add a "Select" toggle in the Generated Images card header.
-  - Wire bulk add-to-collection and improve `CollectionImageGrid` data loading + fallback resolution.
+### 2. Hook
 
-### Out of scope
-- No DB schema changes needed.
-- No changes to source image cards (download already added).
+`src/hooks/useCustomAudiences.ts` — copy of `useCustomScenarios.ts`:
+- `useQuery` returning top 20 ordered by `used_at desc`.
+- `saveAudience({ label, audience })` — if exact `audience` exists for user, update `used_at` + `label`; else insert.
+- `deleteAudience(id)`.
+- React Query key `['custom-audiences', user?.id]`, `staleTime: 60_000`.
 
+### 3. Modal component
+
+`src/components/SavedAudiencesModal.tsx` — copy of `SavedScenariosModal.tsx`:
+- Same Dialog + ScrollArea + list-item layout.
+- Title uses `Users` icon (lucide) instead of `Clock`.
+- `onSelect(audience: string)` populates the audience textarea and closes.
+- Inline delete button per item.
+
+### 4. UI integration in `CreateUGCGeminiBase.tsx`
+
+- Add state `savedAudiencesOpen` and `useCustomAudiences()`.
+- Next to the existing "Audience" `Label` (line 1191), add a small **"Saved audiences"** ghost button (Users icon) that opens the modal — only visible when the user has at least 1 saved audience (or always, with empty state).
+- On modal `onSelect`, call `handleAudienceChange(value)` so the existing textarea logic (length counter, scenario-fetch enable) stays intact.
+- **Auto-save on use**: in the same `handleSubmit` block where `saveScenario` is called (around line 929), also call `saveAudience({ label: desiredAudience.slice(0, 60), audience: desiredAudience.trim() })` when `desiredAudience.trim()` is non-empty. This guarantees only audiences actually used for a generation get saved (matches scenarios behavior).
+
+### 5. i18n
+
+Add strings under `ugc.savedAudiences` (`title`, `loading`, `empty`, optionally `openButton`) to all 5 locale files (en, pt, es, fr, de).
+
+### 6. Apply the same to `CreateUGCGeminiV3` if it has its own audience input
+
+Quick check — if `CreateUGCGeminiV3.tsx` uses the same `CreateUGCGeminiBase`, no extra work needed; otherwise add the same wiring.
+
+## Files touched
+
+- New: `supabase/migrations/<timestamp>_custom_audiences.sql`
+- New: `src/hooks/useCustomAudiences.ts`
+- New: `src/components/SavedAudiencesModal.tsx`
+- Edit: `src/pages/CreateUGCGeminiBase.tsx` (button next to Label, modal mount, save-on-submit)
+- Edit: `src/i18n/locales/{en,pt,es,fr,de}.json`
+
+## Out of scope
+
+- Editing saved audiences (only select/delete, like scenarios).
+- Sharing audiences across users.
+- Migration of historical generations into saved audiences.
