@@ -933,6 +933,13 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
         saveScenario({ title, description: desc }).catch(console.error);
       }
 
+      // Auto-save audience
+      if (desiredAudience.trim()) {
+        const aud = desiredAudience.trim();
+        const label = aud.length > 60 ? aud.substring(0, 60) + '…' : aud;
+        saveAudience({ label, audience: aud }).catch(console.error);
+      }
+
       localStorage.setItem(storageKeys.jobId, jobId);
       localStorage.setItem(storageKeys.stage, 'generating');
       localStorage.setItem(storageKeys.metadata, JSON.stringify({
