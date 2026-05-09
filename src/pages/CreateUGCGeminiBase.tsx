@@ -1825,6 +1825,11 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
             setCustomScenarioMode(true);
           }}
         />
+        <SavedAudiencesModal
+          open={savedAudiencesOpen}
+          onOpenChange={setSavedAudiencesOpen}
+          onSelect={(audience) => handleAudienceChange(audience)}
+        />
       </div>
     </TooltipProvider>
     </PageTransition>
