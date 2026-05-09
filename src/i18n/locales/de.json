@@ -1054,6 +1054,11 @@
       "empty": "Noch keine gespeicherten Szenarien. Ihre benutzerdefinierten Szenarien erscheinen hier nach der Verwendung.",
       "loading": "Szenarien werden geladen..."
     },
+    "savedAudiences": {
+      "title": "Vorherige Zielgruppen",
+      "empty": "Noch keine gespeicherten Zielgruppen. Ihre Zielgruppen erscheinen hier nach der Verwendung.",
+      "loading": "Zielgruppen werden geladen..."
+    },
     "generationSettings": {
       "title": "Bildeinstellungen",
       "subtitle": "Passe deine Ausgabepräferenzen an",

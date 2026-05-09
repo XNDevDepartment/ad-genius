@@ -832,6 +832,33 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_audiences: {
+        Row: {
+          audience: string
+          created_at: string
+          id: string
+          label: string
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          audience: string
+          created_at?: string
+          id?: string
+          label: string
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          audience?: string
+          created_at?: string
+          id?: string
+          label?: string
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       custom_scenarios: {
         Row: {
           created_at: string | null
