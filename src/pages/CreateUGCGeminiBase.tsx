@@ -1212,6 +1212,18 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
+                          {savedAudiences.length > 0 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="ml-auto h-7 px-2 text-xs text-primary hover:bg-primary/10 gap-1"
+                              onClick={() => setSavedAudiencesOpen(true)}
+                            >
+                              <Users className="h-3.5 w-3.5" />
+                              {t('ugc.savedAudiences.title')}
+                            </Button>
+                          )}
                         </div>
                         <div className="flex justify-between text-sm text-muted-foreground">
                           <p className="hidden md:block text-sm text-muted-foreground">{t('ugc.desireAudience.subtitle')}</p>
