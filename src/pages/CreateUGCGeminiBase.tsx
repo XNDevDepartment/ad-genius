@@ -157,6 +157,8 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [animateImageUrl, setAnimateImageUrl] = useState<string | null>(null);
   const [savedScenariosOpen, setSavedScenariosOpen] = useState(false);
   const { saveScenario } = useCustomScenarios();
+  const [savedAudiencesOpen, setSavedAudiencesOpen] = useState(false);
+  const { saveAudience, audiences: savedAudiences } = useCustomAudiences();
   const [animateImageId, setAnimateImageId] = useState<string | null>(null);
 
   const taRef = useRef<HTMLTextAreaElement>(null);
