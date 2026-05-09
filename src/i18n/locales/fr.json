@@ -894,6 +894,11 @@
       "empty": "Aucun scénario enregistré. Vos scénarios personnalisés apparaîtront ici après utilisation.",
       "loading": "Chargement des scénarios..."
     },
+    "savedAudiences": {
+      "title": "Audiences Précédentes",
+      "empty": "Aucune audience enregistrée. Vos audiences apparaîtront ici après utilisation.",
+      "loading": "Chargement des audiences..."
+    },
     "generationSettings": {
       "title": "Paramètres d'Image",
       "subtitle": "Personnalisez vos préférences de sortie",
