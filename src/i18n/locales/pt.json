@@ -1151,6 +1151,11 @@
       "empty": "Ainda não tem cenários guardados. Os seus cenários personalizados aparecerão aqui depois de os utilizar.",
       "loading": "A carregar cenários..."
     },
+    "savedAudiences": {
+      "title": "Audiências Anteriores",
+      "empty": "Ainda não tem audiências guardadas. As suas audiências aparecerão aqui depois de as utilizar.",
+      "loading": "A carregar audiências..."
+    },
     "generationSettings": {
       "title": "Definições de Imagem",
       "subtitle": "Personalize as suas preferências de saída",
