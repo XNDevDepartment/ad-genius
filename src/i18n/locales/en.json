@@ -1157,6 +1157,11 @@
       "empty": "No saved scenarios yet. Your custom scenarios will appear here after you use them.",
       "loading": "Loading scenarios..."
     },
+    "savedAudiences": {
+      "title": "Previous Audiences",
+      "empty": "No saved audiences yet. Your audiences will appear here after you use them.",
+      "loading": "Loading audiences..."
+    },
     "generationSettings": {
       "title": "Image Settings",
       "subtitle": "Customize your output preferences",
