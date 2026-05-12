@@ -27,12 +27,30 @@
     "scenarios": {
       "title": "Elige un Escenario",
       "subtitle": "¿Dónde debe aparecer tu producto?",
-      "streetStyle": { "name": "Street Style", "description": "Vibes urbanas" },
-      "coffeeShop": { "name": "Cafetería", "description": "Momento acogedor" },
-      "fashionStudio": { "name": "Estudio Fashion", "description": "Look editorial" },
-      "beachDay": { "name": "Día de Playa", "description": "Vacaciones de verano" },
-      "nightOut": { "name": "Noche en la Ciudad", "description": "Luces nocturnas" },
-      "fitnessActive": { "name": "Fitness & Activo", "description": "Vibes de entrenamiento" },
+      "streetStyle": {
+        "name": "Street Style",
+        "description": "Vibes urbanas"
+      },
+      "coffeeShop": {
+        "name": "Cafetería",
+        "description": "Momento acogedor"
+      },
+      "fashionStudio": {
+        "name": "Estudio Fashion",
+        "description": "Look editorial"
+      },
+      "beachDay": {
+        "name": "Día de Playa",
+        "description": "Vacaciones de verano"
+      },
+      "nightOut": {
+        "name": "Noche en la Ciudad",
+        "description": "Luces nocturnas"
+      },
+      "fitnessActive": {
+        "name": "Fitness & Activo",
+        "description": "Vibes de entrenamiento"
+      },
       "custom": "Escribe el tuyo",
       "customDescription": "Describe tu propio escenario",
       "customPlaceholder": "Ej: Una joven en una cafetería trendy..."
@@ -42,18 +60,18 @@
       "creditsAwarded": "¡Ganaste 20 créditos GRATIS!"
     },
     "loading": {
-  "creating": "Preparando tu espacio de trabajo.",
-  "analyzingProduct": "Analizando tu producto.",
-  "preparingScene": "Preparando la escena.",
-  "calibratingLighting": "Ajustando la iluminación para un look premium.",
-  "generatingVisuals": "Generando visuales.",
-  "optimizingDetails": "Afinando detalles para mejorar el realismo.",
-  "finalizingOutput": "Finalizando recursos para uso inmediato.",
-  "almostDone": "Casi listo."
-},
+      "creating": "Preparando tu espacio de trabajo.",
+      "analyzingProduct": "Analizando tu producto.",
+      "preparingScene": "Preparando la escena.",
+      "calibratingLighting": "Ajustando la iluminación para un look premium.",
+      "generatingVisuals": "Generando visuales.",
+      "optimizingDetails": "Afinando detalles para mejorar el realismo.",
+      "finalizingOutput": "Finalizando recursos para uso inmediato.",
+      "almostDone": "Casi listo."
+    },
     "offer": {
       "bonusCredits": "Completa ahora → ¡Obtén 20 créditos GRATIS!",
-      "firstMonth": "Primer mes solo €19.99",
+      "firstMonth": "Oferta disponible para el primer mes",
       "saveAmount": "¡Ahorra €10!",
       "expiresIn": "Oferta expira en {{hours}}h {{minutes}}m",
       "getOffer": "Obtener Esta Oferta",
@@ -61,8 +79,7 @@
       "authRequired": "Por favor inicia sesión para continuar",
       "sessionExpired": "Tu sesión expiró. Por favor actualiza la página.",
       "checkoutError": "Error al iniciar el pago. Por favor intenta de nuevo.",
-      "pleaseWait": "Por favor espera...",
-      "firstMonth": "Oferta disponible para el primer mes"
+      "pleaseWait": "Por favor espera..."
     },
     "productType": {
       "title": "¿Qué estás vendiendo?",
@@ -321,7 +338,7 @@
     "french": "Francés",
     "german": "Alemán"
   },
-"header": {
+  "header": {
     "tagline": "Marketing con IA"
   },
   "landing": {
@@ -539,7 +556,7 @@
         "liveChat": "Chat en vivo",
         "dedicatedManager": "Gerente dedicado",
         "earlyAccess": "Acceso anticipado a nuevas funcionalidades",
-  "businessConsulting": "Apoyo en la implementación del negocio y seguimiento de resultados"
+        "businessConsulting": "Apoyo en la implementación del negocio y seguimiento de resultados"
       },
       "values": {
         "unlimited": "ilimitado",
@@ -773,35 +790,14 @@
     }
   },
   "createSelection": {
-    "title": "Elige tu Flujo de Trabajo",
-    "description": "Selecciona el tipo de contenido que quieres crear",
-    "ugcCreator": {
-      "title": "Creador de UGC",
-      "description": "Crea contenido auténtico generado por usuarios con ayuda de IA"
+    "outfitCreator": {
+      "title": "Creador de Outfits",
+      "description": "Compón outfits completos con superior, inferior, zapatos y accesorios"
     },
-    "videoCreator": {
-      "title": "Image Animator",
-      "description": "Transforma tus imágenes UGC en videos realistas, destacando sus características y usos"
-    },
-    "studioPhotos": {
-      "title": "Fotos de Estudio",
-      "description": "Genera fotografía de producto profesional"
-    },
-    "outfitSwap": {
-      "title": "Probador",
-      "description": "Viste a nuestros modelos con tu ropa y consigue fotos con calidad profesional"
-    },
-    "bulkBackground": {
-      "title": "Fondo Masivo",
-      "description": "Aplica el mismo fondo a múltiples imágenes de producto a la vez"
-    },
-    "inProgress": {
-      "title": "En Progreso",
-      "description": "Estamos trabajando a diario para mejorar nuestra plataforma. ¡Serás el primero en conocer las novedades!"
-    },
-    "comingSoon": "Próximamente",
-    "betaBadge": "BETA",
-    "betaLockedDescription": "Haz upgrade a cualquier plan de pago para acceder a esta función beta. ¡Ayúdanos a perfeccionar el catalog!"
+    "productSwap": {
+      "title": "Cambiar Producto",
+      "description": "Sustituye el producto en una escena ya generada"
+    }
   },
   "bulkBackground": {
     "title": "Reemplazo de Fondo Masivo",
@@ -1307,27 +1303,41 @@
     },
     "privacy": {
       "title": "Privacidad y Seguridad",
-      "desc": "Controla tu privacidad y tus datos",
-      "privacySettings": "Ajustes de Privacidad",
-      "privacySettingsDesc": "Controla cómo se usan y comparten tus datos",
-      "showGenerationHistory": "Mostrar Historial de Generación",
-      "showGenerationHistoryDesc": "Permitir que otros vean tus generaciones públicas",
-      "analyticsData": "Datos Analíticos",
-      "analyticsDataDesc": "Ayúdanos a mejorar con análisis de uso",
+      "privacySettings": "Configuración de Privacidad",
+      "privacySettingsDesc": "Controla cómo se recopilan y utilizan tus datos",
+      "showGenerationHistory": "Historial de Generaciones",
+      "showGenerationHistoryDesc": "Guardar y mostrar tu historial de generaciones",
+      "analyticsData": "Datos de Análisis",
+      "analyticsDataDesc": "Ayúdanos a mejorar compartiendo datos de uso",
       "contentVisibility": "Visibilidad del Contenido",
-      "contentVisibilityDesc": "Controla quién puede ver tu contenido generado",
+      "contentVisibilityDesc": "Controla quién puede ver tu contenido",
       "publicGallery": "Galería Pública",
-      "publicGalleryDesc": "Mostrar tus imágenes en la galería pública",
+      "publicGalleryDesc": "Permitir que tus mejores imágenes aparezcan en la galería pública",
       "dataManagement": "Gestión de Datos",
-      "dataManagementDesc": "Gestiona tus datos personales y tu cuenta",
+      "dataManagementDesc": "Gestiona los datos de tu cuenta",
       "deleteAccount": "Eliminar Cuenta",
       "deleteAccountDesc": "Eliminar permanentemente tu cuenta y todos los datos",
       "delete": "Eliminar",
       "security": "Seguridad",
-      "securityDesc": "Gestiona la seguridad de tu cuenta",
+      "securityDesc": "Gestiona la configuración de seguridad de tu cuenta",
       "loginNotifications": "Notificaciones de Inicio de Sesión",
-      "loginNotificationsDesc": "Recibe avisos cuando alguien inicie sesión en tu cuenta",
-      "changePassword": "Cambiar Contraseña"
+      "loginNotificationsDesc": "Recibe notificaciones sobre nuevos inicios de sesión en tu cuenta",
+      "changePassword": "Cambiar Contraseña",
+      "sendingEmail": "Enviando email...",
+      "settingSaved": "Configuración guardada",
+      "settingSavedDesc": "Tu preferencia ha sido actualizada",
+      "error": "Error",
+      "errorSavingSettings": "Error al guardar configuración. Por favor, inténtalo de nuevo.",
+      "errorChangingPassword": "Error al enviar email de restablecimiento de contraseña",
+      "passwordResetSent": "Email de restablecimiento enviado",
+      "passwordResetSentDesc": "Revisa tu bandeja de entrada para un enlace de restablecimiento de contraseña",
+      "confirmDeleteTitle": "¿Eliminar Tu Cuenta?",
+      "confirmDeleteDesc": "Esta acción es permanente y no se puede deshacer. Todos tus datos, imágenes, vídeos y configuraciones serán eliminados permanentemente.",
+      "typeDeleteToConfirm": "Escribe DELETE para confirmar",
+      "confirmDelete": "Eliminar Mi Cuenta",
+      "accountDeleted": "Cuenta eliminada",
+      "accountDeletedDesc": "Tu cuenta ha sido eliminada permanentemente",
+      "errorDeletingAccount": "Error al eliminar cuenta. Por favor, contacta con soporte."
     },
     "billing": {
       "title": "Facturación y Uso",
@@ -1427,45 +1437,7 @@
     "verificationEmailSentDesc": "Revisa tu bandeja de entrada para un enlace de verificación.",
     "emailNotVerifiedHint": "Tu email no está verificado. Haz clic para enviar un enlace de verificación.",
     "errorSendingVerification": "Error al enviar email de verificación",
-    "error": "Error",
-    "privacy": {
-      "title": "Privacidad y Seguridad",
-      "privacySettings": "Configuración de Privacidad",
-      "privacySettingsDesc": "Controla cómo se recopilan y utilizan tus datos",
-      "showGenerationHistory": "Historial de Generaciones",
-      "showGenerationHistoryDesc": "Guardar y mostrar tu historial de generaciones",
-      "analyticsData": "Datos de Análisis",
-      "analyticsDataDesc": "Ayúdanos a mejorar compartiendo datos de uso",
-      "contentVisibility": "Visibilidad del Contenido",
-      "contentVisibilityDesc": "Controla quién puede ver tu contenido",
-      "publicGallery": "Galería Pública",
-      "publicGalleryDesc": "Permitir que tus mejores imágenes aparezcan en la galería pública",
-      "dataManagement": "Gestión de Datos",
-      "dataManagementDesc": "Gestiona los datos de tu cuenta",
-      "deleteAccount": "Eliminar Cuenta",
-      "deleteAccountDesc": "Eliminar permanentemente tu cuenta y todos los datos",
-      "delete": "Eliminar",
-      "security": "Seguridad",
-      "securityDesc": "Gestiona la configuración de seguridad de tu cuenta",
-      "loginNotifications": "Notificaciones de Inicio de Sesión",
-      "loginNotificationsDesc": "Recibe notificaciones sobre nuevos inicios de sesión en tu cuenta",
-      "changePassword": "Cambiar Contraseña",
-      "sendingEmail": "Enviando email...",
-      "settingSaved": "Configuración guardada",
-      "settingSavedDesc": "Tu preferencia ha sido actualizada",
-      "error": "Error",
-      "errorSavingSettings": "Error al guardar configuración. Por favor, inténtalo de nuevo.",
-      "errorChangingPassword": "Error al enviar email de restablecimiento de contraseña",
-      "passwordResetSent": "Email de restablecimiento enviado",
-      "passwordResetSentDesc": "Revisa tu bandeja de entrada para un enlace de restablecimiento de contraseña",
-      "confirmDeleteTitle": "¿Eliminar Tu Cuenta?",
-      "confirmDeleteDesc": "Esta acción es permanente y no se puede deshacer. Todos tus datos, imágenes, vídeos y configuraciones serán eliminados permanentemente.",
-      "typeDeleteToConfirm": "Escribe DELETE para confirmar",
-      "confirmDelete": "Eliminar Mi Cuenta",
-      "accountDeleted": "Cuenta eliminada",
-      "accountDeletedDesc": "Tu cuenta ha sido eliminada permanentemente",
-      "errorDeletingAccount": "Error al eliminar cuenta. Por favor, contacta con soporte."
-    }
+    "error": "Error"
   },
   "videoGenerator": {
     "title": "Imagen → Video",
@@ -2487,12 +2459,30 @@
       "title": "Hecho para Tu Tipo de Negocio",
       "subtitle": "Descubre cómo negocios como el tuyo usan ProduktPix cada día",
       "seeHow": "Ver cómo funciona →",
-      "clothing": { "title": "Tiendas de Ropa Online", "description": "Muestra prendas en modelos IA en entornos lifestyle" },
-      "jewelry": { "title": "Joyería y Accesorios", "description": "Primeros planos y fotos lifestyle de calidad de estudio" },
-      "beauty": { "title": "Belleza y Cosmética", "description": "Presentaciones elegantes para skincare y maquillaje" },
-      "home": { "title": "Muebles y Decoración", "description": "Coloca productos en ambientes decorados con estilo" },
-      "handmade": { "title": "Artesanía y Handmade", "description": "Fotos profesionales para Etsy, mercados y más" },
-      "food": { "title": "Alimentación y Bebidas", "description": "Fotos apetitosas para packaging y menús" }
+      "clothing": {
+        "title": "Tiendas de Ropa Online",
+        "description": "Muestra prendas en modelos IA en entornos lifestyle"
+      },
+      "jewelry": {
+        "title": "Joyería y Accesorios",
+        "description": "Primeros planos y fotos lifestyle de calidad de estudio"
+      },
+      "beauty": {
+        "title": "Belleza y Cosmética",
+        "description": "Presentaciones elegantes para skincare y maquillaje"
+      },
+      "home": {
+        "title": "Muebles y Decoración",
+        "description": "Coloca productos en ambientes decorados con estilo"
+      },
+      "handmade": {
+        "title": "Artesanía y Handmade",
+        "description": "Fotos profesionales para Etsy, mercados y más"
+      },
+      "food": {
+        "title": "Alimentación y Bebidas",
+        "description": "Fotos apetitosas para packaging y menús"
+      }
     },
     "testimonials": {
       "title": "Adorado por Empresarios",
@@ -2715,12 +2705,6 @@
       "uploadFailed": "Error al Subir"
     }
   },
-  "createSelection": {
-    "outfitCreator": {
-      "title": "Creador de Outfits",
-      "description": "Compón outfits completos con superior, inferior, zapatos y accesorios"
-    }
-  },
   "promo": {
     "mobile": {
       "starterOffer": "Plan Starter",
@@ -2813,5 +2797,30 @@
     "failed": "Generación fallida",
     "createFailed": "Error al crear vistas del producto",
     "tryAgain": "Inténtalo de nuevo"
+  },
+  "productSwap": {
+    "title": "Cambiar Producto",
+    "subtitle": "Sustituye el producto en una escena generada por una nueva imagen de producto",
+    "reference": "Escena de referencia",
+    "referenceHint": "Imagen generada con el producto original",
+    "newProduct": "Nuevo producto",
+    "newProductHint": "Foto limpia del producto a insertar",
+    "fromLibrary": "De la biblioteca",
+    "fromUploads": "Mis subidas",
+    "audience": "Audiencia",
+    "audiencePlaceholder": "¿Para quién es? ej.: jóvenes profesionales que aman el diseño minimal",
+    "scenario": "Escenario",
+    "scenarioPlaceholder": "Describe el contexto de la escena (luz, ambiente, lugar)",
+    "submit": "Generar cambio ({{cost}} crédito)",
+    "processing": "Generando...",
+    "pickReferenceTitle": "Elige una escena de referencia",
+    "pickProductTitle": "Elige una imagen de producto",
+    "results": {
+      "title": "Resultado",
+      "again": "Reintentar",
+      "download": "Descargar",
+      "openLibrary": "Abrir biblioteca"
+    },
+    "result": "Resultado"
   }
 }

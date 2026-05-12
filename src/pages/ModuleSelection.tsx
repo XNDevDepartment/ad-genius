@@ -129,6 +129,16 @@ const ModuleSelection = () => {
       locked: false,
     },
     {
+      id: "product-swap",
+      title: t('createSelection.productSwap.title'),
+      description: t('createSelection.productSwap.description'),
+      path: "/create/product-swap",
+      demoImage: demoBulkImg,
+      fallbackImage: demoBulkImg,
+      isBeta: true,
+      locked: false,
+    },
+    {
       id: "bulk-background",
       title: t('createSelection.bulkBackground.title'),
       description: t('createSelection.bulkBackground.description'),

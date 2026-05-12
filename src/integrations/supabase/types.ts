@@ -2052,6 +2052,75 @@ export type Database = {
         }
         Relationships: []
       }
+      product_swap_jobs: {
+        Row: {
+          audience: string
+          created_at: string
+          credits_spent: number | null
+          error: string | null
+          finished_at: string | null
+          id: string
+          new_product_image_id: string | null
+          new_product_image_url: string
+          progress: number
+          reference_image_id: string | null
+          reference_image_url: string
+          result_image_id: string | null
+          result_url: string | null
+          scenario: string
+          settings: Json
+          started_at: string | null
+          status: string
+          storage_path: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          audience: string
+          created_at?: string
+          credits_spent?: number | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          new_product_image_id?: string | null
+          new_product_image_url: string
+          progress?: number
+          reference_image_id?: string | null
+          reference_image_url: string
+          result_image_id?: string | null
+          result_url?: string | null
+          scenario: string
+          settings?: Json
+          started_at?: string | null
+          status?: string
+          storage_path?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          audience?: string
+          created_at?: string
+          credits_spent?: number | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          new_product_image_id?: string | null
+          new_product_image_url?: string
+          progress?: number
+          reference_image_id?: string | null
+          reference_image_url?: string
+          result_image_id?: string | null
+          result_url?: string | null
+          scenario?: string
+          settings?: Json
+          started_at?: string | null
+          status?: string
+          storage_path?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_activated: boolean | null
