@@ -1,71 +1,86 @@
-## Goal
+# Product Swap Module — Plan
 
-Mirror the existing "Saved Scenarios" feature for **Audience**, so users can pick a previously used audience instead of retyping it for every new product.
+A new module that takes a **reference scene image** (with an existing product) and a **new product image**, and generates a new image where only the product is swapped — preserving scene, lighting, model, and composition. Audience and scenario are required and steer subtle styling, exactly like the UGC Creator panel.
 
-## What exists today (reference pattern)
+## User Flow
 
-- **Table**: `custom_scenarios` (`id`, `user_id`, `title`, `description`, `used_at`, `created_at`) with RLS "Users manage own scenarios".
-- **Hook**: `src/hooks/useCustomScenarios.ts` — list (top 20 by `used_at`), upsert-on-use (updates `used_at` if same description exists), delete.
-- **Modal**: `src/components/SavedScenariosModal.tsx` — list with title + truncated description, click to select, delete button on hover.
-- **Trigger**: a button under the custom-scenario textarea opens the modal.
-- **Save trigger**: in `CreateUGCGeminiBase.tsx` at line 929, `saveScenario({ title, description })` is called automatically when a generation is submitted with a custom scenario.
+1. User opens **Product Swap** from the module selection grid.
+2. **Step 1 — Reference scene**: pick from Library (their generated UGC/photoshoot images) OR upload a new image. Tabbed picker.
+3. **Step 2 — New product image**: upload from device or pick from existing source images.
+4. **Step 3 — Audience + Scenario** (required, mirrors UGC Creator): textareas with the existing **Saved Audiences** and **Saved Scenarios** modals already built.
+5. **Step 4 — Resolution / aspect ratio** (1K/2K/4K, same tier rules and free-tier locks).
+6. Submit → credit deduction (1/2/3) → job runs → result appears in Library with a `product_swap` source tag.
 
-## Plan: Saved Audiences (same pattern)
+## Data Model
 
-### 1. Database (new migration)
+New table `product_swap_jobs`:
 
-Create `custom_audiences` table:
-- `id` uuid PK
-- `user_id` uuid (not FK to auth.users)
-- `label` text (short name shown in the list — first ~40 chars of audience or auto-derived)
-- `audience` text (full audience text, max 500 to match input)
-- `used_at` timestamptz default `now()`
-- `created_at` timestamptz default `now()`
-- Unique index on `(user_id, audience)` to keep the upsert-on-use logic simple.
+- `id`, `user_id`, `status` (queued/processing/completed/failed/canceled), `progress`
+- `reference_image_id` (nullable FK to `generated_images` or `ugc_images`) + `reference_image_url`
+- `new_product_image_id` (FK to `source_images`) + `new_product_image_url`
+- `audience` text, `scenario` text
+- `settings` jsonb (size, aspect_ratio, resolution_tier)
+- `result_image_id` (FK to `generated_images` once produced), `result_url`
+- `error`, timestamps
 
-RLS: single policy "Users manage own audiences" — `auth.uid() = user_id` for ALL on `authenticated`.
+RLS: users manage their own rows (`auth.uid() = user_id`). No new storage bucket — reuse `source-images` for uploads and write results to `generated-images`.
 
-### 2. Hook
+## Backend — Edge Function `product-swap`
 
-`src/hooks/useCustomAudiences.ts` — copy of `useCustomScenarios.ts`:
-- `useQuery` returning top 20 ordered by `used_at desc`.
-- `saveAudience({ label, audience })` — if exact `audience` exists for user, update `used_at` + `label`; else insert.
-- `deleteAudience(id)`.
-- React Query key `['custom-audiences', user?.id]`, `staleTime: 60_000`.
+New function at `supabase/functions/product-swap/index.ts`, `verify_jwt = false` with manual JWT validation (project standard).
 
-### 3. Modal component
+Responsibilities:
+1. Validate inputs (Zod): `referenceImageUrl`, `newProductImageUrl`, `audience`, `scenario`, `settings`.
+2. Pre-flight: check credits via `deduct_user_credits` (cost from `get_image_credit_cost` based on resolution).
+3. Create `product_swap_jobs` row, status `processing`.
+4. Build a **Gemini multi-image prompt** (using existing `Nano banana` pattern) that sends BOTH images:
+   - Image 1: reference scene
+   - Image 2: new product (isolated)
+   - Text prompt: imperative "MANDATORY RULES" — preserve scene, lighting, model, framing; replace ONLY the product currently held/worn/displayed with the new product from Image 2; maintain pattern fidelity, true colors, proportions; respect audience tone and scenario context.
+5. On success: upload result to `generated-images`, insert into `generated_images` with `metadata.source = 'product_swap'`, update job row, return URL. On failure: refund credits.
+6. Auto-save audience/scenario into `custom_audiences` / `custom_scenarios` (reuse existing pattern from UGC panel).
 
-`src/components/SavedAudiencesModal.tsx` — copy of `SavedScenariosModal.tsx`:
-- Same Dialog + ScrollArea + list-item layout.
-- Title uses `Users` icon (lucide) instead of `Clock`.
-- `onSelect(audience: string)` populates the audience textarea and closes.
-- Inline delete button per item.
+## Frontend
 
-### 4. UI integration in `CreateUGCGeminiBase.tsx`
+**New files:**
+- `src/pages/ProductSwap.tsx` — main page, 4-step layout matching the visual style of `OutfitSwap.tsx` and `CreateUGCGeminiBase.tsx`.
+- `src/api/product-swap-api.ts` — `createJob`, `getJob`, `subscribeToJob` (mirrors `outfit-swap-api.ts`).
+- `src/hooks/useProductSwap.ts` — job state machine (setup → processing → results), realtime subscription.
+- `src/components/product-swap/ReferenceImagePicker.tsx` — tabs: Library | Upload (reuses `useLibraryImages`, `useSourceImageUpload`).
+- `src/components/product-swap/NewProductPicker.tsx` — upload + existing source images grid.
 
-- Add state `savedAudiencesOpen` and `useCustomAudiences()`.
-- Next to the existing "Audience" `Label` (line 1191), add a small **"Saved audiences"** ghost button (Users icon) that opens the modal — only visible when the user has at least 1 saved audience (or always, with empty state).
-- On modal `onSelect`, call `handleAudienceChange(value)` so the existing textarea logic (length counter, scenario-fetch enable) stays intact.
-- **Auto-save on use**: in the same `handleSubmit` block where `saveScenario` is called (around line 929), also call `saveAudience({ label: desiredAudience.slice(0, 60), audience: desiredAudience.trim() })` when `desiredAudience.trim()` is non-empty. This guarantees only audiences actually used for a generation get saved (matches scenarios behavior).
+**Edits:**
+- `src/App.tsx` — add lazy route `/product-swap`.
+- `src/pages/ModuleSelection.tsx` — add Product Swap tile (icon: `Replace` from lucide).
+- Sidebar/nav components — add link.
+- `src/i18n/locales/{en,pt,es,fr,de}.json` — add `productSwap.*` strings (5 languages, mandatory).
 
-### 5. i18n
+**Reuse without modification:**
+- `SavedAudiencesModal`, `SavedScenariosModal`, `useCustomAudiences`, `useCustomScenarios`
+- `aspectSizes.ts`, `useCredits`, free-tier lock pattern (Crown icon)
+- Mobile modal pattern (`h-[100dvh]`, sticky footer)
 
-Add strings under `ugc.savedAudiences` (`title`, `loading`, `empty`, optionally `openButton`) to all 5 locale files (en, pt, es, fr, de).
+## Credit & Tier Rules (per project memory)
 
-### 6. Apply the same to `CreateUGCGeminiV3` if it has its own audience input
+- 1K = 1 credit, 2K = 2, 4K = 3.
+- Free tier: 1K only, locked aspect ratios 9:16 and 4:5.
+- Single output image per job.
 
-Quick check — if `CreateUGCGeminiV3.tsx` uses the same `CreateUGCGeminiBase`, no extra work needed; otherwise add the same wiring.
+## Out of Scope (v1)
 
-## Files touched
+- Batch / multi-product swap.
+- Variations (>1 output image).
+- Auto-detection of product type / category.
+- API gateway exposure (can be added later).
 
-- New: `supabase/migrations/<timestamp>_custom_audiences.sql`
-- New: `src/hooks/useCustomAudiences.ts`
-- New: `src/components/SavedAudiencesModal.tsx`
-- Edit: `src/pages/CreateUGCGeminiBase.tsx` (button next to Label, modal mount, save-on-submit)
-- Edit: `src/i18n/locales/{en,pt,es,fr,de}.json`
+## Technical Risks
 
-## Out of scope
+- **Gemini fidelity**: swapping a product while preserving pose/hand grip is the hardest case. Prompt must include strong "PATTERN FIDELITY" + "preserve grip/contact points" rules. Will iterate on prompt after first end-to-end test.
+- **Reference image URL access**: Library images are already public URLs in `generated-images` bucket — Gemini can fetch them directly, no signing needed.
 
-- Editing saved audiences (only select/delete, like scenarios).
-- Sharing audiences across users.
-- Migration of historical generations into saved audiences.
+## Files Touched (summary)
+
+- New migration: `product_swap_jobs` table + RLS.
+- New: `supabase/functions/product-swap/index.ts`, `supabase/config.toml` entry.
+- New: `src/pages/ProductSwap.tsx`, `src/api/product-swap-api.ts`, `src/hooks/useProductSwap.ts`, 2 picker components.
+- Edited: `src/App.tsx`, `src/pages/ModuleSelection.tsx`, sidebar nav, 5 i18n locale files.
