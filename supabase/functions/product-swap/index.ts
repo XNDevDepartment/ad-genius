@@ -323,8 +323,8 @@ OUTPUT: Return ONLY the final image. No text, no watermarks, no borders.`;
     const publicUrl = publicUrlData.publicUrl;
 
     // ── Insert into generated_images ──
-    const { data: gen, error: genErr } = await supabaseAdmin
-      .from("generated-images" as any)
+    const { data: gen } = await supabaseAdmin
+      .from("generated_images")
       .insert({
         user_id: userId,
         prompt: `Product swap — ${scenario.trim().slice(0, 200)}`,
@@ -341,37 +341,10 @@ OUTPUT: Return ONLY the final image. No text, no watermarks, no borders.`;
           resolution_tier: tier,
           ...settings,
         },
-      } as any)
+      })
       .select("id")
       .maybeSingle();
-
-    // Note: table is generated_images (with underscore)
-    let resultImageId: string | null = (gen as any)?.id ?? null;
-    if (genErr || !resultImageId) {
-      // retry with correct table name (defensive against typo path)
-      const { data: gen2 } = await supabaseAdmin
-        .from("generated_images")
-        .insert({
-          user_id: userId,
-          prompt: `Product swap — ${scenario.trim().slice(0, 200)}`,
-          public_url: publicUrl,
-          storage_path: storagePath,
-          source_image_id: newProductImageId,
-          settings: {
-            source: "product_swap",
-            product_swap_job_id: jobId,
-            reference_image_url: referenceImageUrl,
-            new_product_image_url: newProductImageUrl,
-            audience: audience.trim(),
-            scenario: scenario.trim(),
-            resolution_tier: tier,
-            ...settings,
-          },
-        })
-        .select("id")
-        .single();
-      resultImageId = (gen2 as any)?.id ?? null;
-    }
+    const resultImageId: string | null = (gen as any)?.id ?? null;
 
     // ── Mark job completed ──
     await supabaseAdmin
