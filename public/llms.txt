@@ -1,0 +1,49 @@
+# ProduktPix
+
+> AI product photography platform for e-commerce — turn phone photos into studio-quality product images, lifestyle scenes, virtual try-ons, and video ads.
+
+ProduktPix helps online stores generate professional product photos, UGC-style content, outfit swaps, and video ads in seconds. Built for Shopify, Amazon, Etsy, WooCommerce, and BigCommerce sellers.
+
+## Pages
+
+- [Home](/): Overview of ProduktPix and how it works.
+- [Pricing](/pricing): Plans and credit tiers.
+- [Founders Plan](/founders): Lifetime/founders offer.
+- [Affiliate Program](/afiliados): Earn 15% recurring commission.
+- [Sign in](/signin): Customer login.
+- [Sign up](/signup): Create an account.
+
+## Help
+
+- [Getting Started](/help/getting-started): First-time user guide.
+- [FAQ](/help/faq): Common questions answered.
+- [Tutorials](/help/tutorials): Video walkthroughs.
+- [API Docs](/help/api-docs): Developer reference.
+- [Integrations](/help/integrations): Connect ProduktPix to your store.
+
+## Use cases
+
+- [Amazon product photos](/use-cases/amazon-product-photos): Listings that convert.
+- [Shopify listing images](/use-cases/shopify-listing-images): Store-ready visuals.
+- [Fashion model photography](/use-cases/fashion-model-photography): On-model garment shots.
+- [Jewelry product photos](/use-cases/jewelry-product-photos): Detail-rich jewelry imagery.
+- [Cosmetics packaging](/use-cases/cosmetics-packaging): Beauty product shots.
+- [Food photography](/use-cases/food-photography): Appetizing food imagery.
+- [Furniture lifestyle](/use-cases/furniture-lifestyle): In-room furniture scenes.
+- [Electronics & tech](/use-cases/electronics-tech): Clean tech product shots.
+- [Etsy handmade](/use-cases/etsy-handmade): Artisan product photography.
+- [White background photos](/use-cases/white-background-photos): Marketplace-ready cutouts.
+
+## Integrations
+
+- [Shopify](/integrations/shopify): Sync products from Shopify.
+- [Amazon](/integrations/amazon): Amazon listing workflow.
+- [Etsy](/integrations/etsy): Etsy seller integration.
+- [WooCommerce](/integrations/woocommerce): WooCommerce import.
+- [BigCommerce](/integrations/bigcommerce): BigCommerce import.
+
+## Optional
+
+- [Privacy Policy](/privacy)
+- [Terms of Service](/terms)
+- [Cookie Policy](/cookies)
