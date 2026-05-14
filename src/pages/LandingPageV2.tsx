@@ -46,8 +46,8 @@ const LandingPageV2 = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Professional Product Photos — Studio-Quality Images for Your Online Store"
-        description="Professional product photography made simple for e-commerce. Upload your product, choose a scene, get store-ready images in seconds. From €0.20 per image."
+        title="Professional Product Photos for Your Store"
+        description="Studio-quality product photos for e-commerce. Upload, choose a scene, get store-ready images in seconds. From €0.20 per image."
         path="/"
         schema={[buildWebApplicationSchema(), buildSoftwareAppWithReviewsSchema(), howToSchema, faqSchema]}
       />

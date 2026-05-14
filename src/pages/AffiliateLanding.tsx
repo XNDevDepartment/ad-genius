@@ -31,7 +31,7 @@ const AffiliateLanding = () => {
     <div className="min-h-screen bg-background">
       <SEO
         title="Affiliate Program - Earn 15% Commission"
-        description="Join the ProduktPix affiliate program and earn 15% recurring commission for 12 months. Promote AI product photography to your audience and start earning passive income."
+        description="Join the ProduktPix affiliate program. Earn 15% recurring commission for 12 months promoting AI product photography to your audience."
         path="/afiliados"
         schema={[buildOrganizationSchema()]}
       />
