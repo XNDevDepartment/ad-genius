@@ -19,6 +19,7 @@ import demoUgcImg from "@/assets/module_icons/ugc.webp";
 import demoVideoImg from "@/assets/module_icons/video.webp";
 import demoOutfitImg from "@/assets/module_icons/fashion_catalog.webp";
 import demoBulkImg from "@/assets/module_icons/product_catalog.webp";
+import demoProductSwapImg from "@/assets/module_icons/product_swap.png";
 
 const cardVariants = {
   hidden: { opacity: 0, scale: 0.95, y: 16 },
