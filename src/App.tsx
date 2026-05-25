@@ -54,6 +54,7 @@ const TestVideoGeneration = lazyWithRetry(() => import("./pages/VideoGenerator")
 const VideoLibrary = lazyWithRetry(() => import("./pages/VideoLibrary"));
 const AdGenius = lazyWithRetry(() => import("./pages/AdGenius"));
 const OutfitSwap = lazyWithRetry(() => import("./pages/OutfitSwap"));
+const ProductSwap = lazyWithRetry(() => import("./pages/ProductSwap"));
 const OutfitCreator = lazyWithRetry(() => import("./pages/OutfitCreator"));
 const ProductStudioBackground = lazyWithRetry(() => import("./pages/ProductStudioBackground"));
 const ProductStudioBackgroundBulk = lazyWithRetry(() => import("./pages/ProductStudioBackgroundBulk"));
@@ -172,6 +173,15 @@ const App = () => {
                     <Suspense fallback={<LoadingFallback />}>
                       <AuthGuard>
                         <OutfitSwap />
+                      </AuthGuard>
+                    </Suspense>
+                  </ErrorBoundaryWithReset>
+                } />
+                <Route path="create/product-swap" element={
+                  <ErrorBoundaryWithReset>
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AuthGuard>
+                        <ProductSwap />
                       </AuthGuard>
                     </Suspense>
                   </ErrorBoundaryWithReset>

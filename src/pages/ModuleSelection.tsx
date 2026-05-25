@@ -19,6 +19,7 @@ import demoUgcImg from "@/assets/module_icons/ugc.webp";
 import demoVideoImg from "@/assets/module_icons/video.webp";
 import demoOutfitImg from "@/assets/module_icons/fashion_catalog.webp";
 import demoBulkImg from "@/assets/module_icons/product_catalog.webp";
+import demoProductSwapImg from "@/assets/module_icons/product_swap.png";
 
 const cardVariants = {
   hidden: { opacity: 0, scale: 0.95, y: 16 },
@@ -126,6 +127,16 @@ const ModuleSelection = () => {
       demoImage: demoOutfit,
       fallbackImage: demoOutfitImg,
       isBeta: false,
+      locked: false,
+    },
+    {
+      id: "product-swap",
+      title: t('createSelection.productSwap.title'),
+      description: t('createSelection.productSwap.description'),
+      path: "/create/product-swap",
+      demoImage: demoProductSwapImg,
+      fallbackImage: demoProductSwapImg,
+      isBeta: true,
       locked: false,
     },
     {

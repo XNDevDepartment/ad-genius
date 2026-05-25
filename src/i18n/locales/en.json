@@ -27,12 +27,30 @@
     "scenarios": {
       "title": "Pick a Scenario",
       "subtitle": "Where should your product appear?",
-      "streetStyle": { "name": "Street Style", "description": "Urban city vibes" },
-      "coffeeShop": { "name": "Coffee Shop", "description": "Cozy café moment" },
-      "fashionStudio": { "name": "Fashion Studio", "description": "Editorial look" },
-      "beachDay": { "name": "Beach Day", "description": "Summer vacation" },
-      "nightOut": { "name": "Night Out", "description": "Evening city lights" },
-      "fitnessActive": { "name": "Fitness & Active", "description": "Workout vibes" },
+      "streetStyle": {
+        "name": "Street Style",
+        "description": "Urban city vibes"
+      },
+      "coffeeShop": {
+        "name": "Coffee Shop",
+        "description": "Cozy café moment"
+      },
+      "fashionStudio": {
+        "name": "Fashion Studio",
+        "description": "Editorial look"
+      },
+      "beachDay": {
+        "name": "Beach Day",
+        "description": "Summer vacation"
+      },
+      "nightOut": {
+        "name": "Night Out",
+        "description": "Evening city lights"
+      },
+      "fitnessActive": {
+        "name": "Fitness & Active",
+        "description": "Workout vibes"
+      },
       "custom": "Write your own",
       "customDescription": "Describe your own scenario",
       "customPlaceholder": "e.g., A young woman at a trendy café..."
@@ -363,7 +381,7 @@
     "french": "French",
     "german": "German"
   },
-"header": {
+  "header": {
     "tagline": "Marketing with AI"
   },
   "landing": {
@@ -836,7 +854,7 @@
       "title": "Studio Photos",
       "description": "Generate professional product photos"
     },
-  "outfitSwap": {
+    "outfitSwap": {
       "title": "Fashion Catalog",
       "description": "Dress our models with your clothes and get professional-quality photos"
     },
@@ -854,7 +872,11 @@
     },
     "comingSoon": "Coming soon",
     "betaBadge": "BETA",
-    "betaLockedDescription": "Upgrade to any paid plan to access this beta feature. Help us perfect outfit-swap!"
+    "betaLockedDescription": "Upgrade to any paid plan to access this beta feature. Help us perfect outfit-swap!",
+    "productSwap": {
+      "title": "Product Swap",
+      "description": "Swap a product into a finished scene image"
+    }
   },
   "bulkBackground": {
     "title": "Bulk Background Replacement",
@@ -1157,6 +1179,11 @@
       "empty": "No saved scenarios yet. Your custom scenarios will appear here after you use them.",
       "loading": "Loading scenarios..."
     },
+    "savedAudiences": {
+      "title": "Previous Audiences",
+      "empty": "No saved audiences yet. Your audiences will appear here after you use them.",
+      "loading": "Loading audiences..."
+    },
     "generationSettings": {
       "title": "Image Settings",
       "subtitle": "Customize your output preferences",
@@ -1405,27 +1432,41 @@
     },
     "privacy": {
       "title": "Privacy & Security",
-      "desc": "Control your privacy and data",
       "privacySettings": "Privacy Settings",
-      "privacySettingsDesc": "Control how your data is used and shared",
-      "showGenerationHistory": "Show Generation History",
-      "showGenerationHistoryDesc": "Allow others to see your public generations",
+      "privacySettingsDesc": "Control how your data is collected and used",
+      "showGenerationHistory": "Generation History",
+      "showGenerationHistoryDesc": "Store and display your generation history",
       "analyticsData": "Analytics Data",
-      "analyticsDataDesc": "Help us improve via usage analytics",
+      "analyticsDataDesc": "Help us improve by sharing usage analytics",
       "contentVisibility": "Content Visibility",
-      "contentVisibilityDesc": "Control who can see your generated content",
+      "contentVisibilityDesc": "Control who can see your content",
       "publicGallery": "Public Gallery",
-      "publicGalleryDesc": "Display your images in the public gallery",
+      "publicGalleryDesc": "Allow your best images to be featured in public gallery",
       "dataManagement": "Data Management",
-      "dataManagementDesc": "Manage your personal data and account",
+      "dataManagementDesc": "Manage your account data",
       "deleteAccount": "Delete Account",
       "deleteAccountDesc": "Permanently delete your account and all data",
       "delete": "Delete",
       "security": "Security",
       "securityDesc": "Manage your account security settings",
       "loginNotifications": "Login Notifications",
-      "loginNotificationsDesc": "Receive an alert when a login occurs",
-      "changePassword": "Change Password"
+      "loginNotificationsDesc": "Get notified about new logins to your account",
+      "changePassword": "Change Password",
+      "sendingEmail": "Sending email...",
+      "settingSaved": "Setting saved",
+      "settingSavedDesc": "Your preference has been updated",
+      "error": "Error",
+      "errorSavingSettings": "Failed to save setting. Please try again.",
+      "errorChangingPassword": "Failed to send password reset email",
+      "passwordResetSent": "Password reset email sent",
+      "passwordResetSentDesc": "Check your inbox for a link to reset your password",
+      "confirmDeleteTitle": "Delete Your Account?",
+      "confirmDeleteDesc": "This action is permanent and cannot be undone. All your data, images, videos, and settings will be permanently deleted.",
+      "typeDeleteToConfirm": "Type DELETE to confirm",
+      "confirmDelete": "Delete My Account",
+      "accountDeleted": "Account deleted",
+      "accountDeletedDesc": "Your account has been permanently deleted",
+      "errorDeletingAccount": "Failed to delete account. Please contact support."
     },
     "billing": {
       "title": "Billing & Usage",
@@ -1525,45 +1566,7 @@
     "verificationEmailSentDesc": "Check your inbox for a link to verify your email.",
     "emailNotVerifiedHint": "Your email is not verified. Click to send a verification link.",
     "errorSendingVerification": "Failed to send verification email",
-    "error": "Error",
-    "privacy": {
-      "title": "Privacy & Security",
-      "privacySettings": "Privacy Settings",
-      "privacySettingsDesc": "Control how your data is collected and used",
-      "showGenerationHistory": "Generation History",
-      "showGenerationHistoryDesc": "Store and display your generation history",
-      "analyticsData": "Analytics Data",
-      "analyticsDataDesc": "Help us improve by sharing usage analytics",
-      "contentVisibility": "Content Visibility",
-      "contentVisibilityDesc": "Control who can see your content",
-      "publicGallery": "Public Gallery",
-      "publicGalleryDesc": "Allow your best images to be featured in public gallery",
-      "dataManagement": "Data Management",
-      "dataManagementDesc": "Manage your account data",
-      "deleteAccount": "Delete Account",
-      "deleteAccountDesc": "Permanently delete your account and all data",
-      "delete": "Delete",
-      "security": "Security",
-      "securityDesc": "Manage your account security settings",
-      "loginNotifications": "Login Notifications",
-      "loginNotificationsDesc": "Get notified about new logins to your account",
-      "changePassword": "Change Password",
-      "sendingEmail": "Sending email...",
-      "settingSaved": "Setting saved",
-      "settingSavedDesc": "Your preference has been updated",
-      "error": "Error",
-      "errorSavingSettings": "Failed to save setting. Please try again.",
-      "errorChangingPassword": "Failed to send password reset email",
-      "passwordResetSent": "Password reset email sent",
-      "passwordResetSentDesc": "Check your inbox for a link to reset your password",
-      "confirmDeleteTitle": "Delete Your Account?",
-      "confirmDeleteDesc": "This action is permanent and cannot be undone. All your data, images, videos, and settings will be permanently deleted.",
-      "typeDeleteToConfirm": "Type DELETE to confirm",
-      "confirmDelete": "Delete My Account",
-      "accountDeleted": "Account deleted",
-      "accountDeletedDesc": "Your account has been permanently deleted",
-      "errorDeletingAccount": "Failed to delete account. Please contact support."
-    }
+    "error": "Error"
   },
   "videoGenerator": {
     "title": "Image → Video",
@@ -2602,12 +2605,30 @@
       "title": "Built for Your Kind of Business",
       "subtitle": "See how businesses like yours use ProduktPix every day",
       "seeHow": "See how it works →",
-      "clothing": { "title": "Online Clothing Stores", "description": "Show garments on AI models in lifestyle settings" },
-      "jewelry": { "title": "Jewelry & Accessories", "description": "Studio-quality close-ups and lifestyle shots" },
-      "beauty": { "title": "Beauty & Cosmetics", "description": "Elegant product presentations for skincare and makeup" },
-      "home": { "title": "Furniture & Home Decor", "description": "Place products in beautifully styled room settings" },
-      "handmade": { "title": "Handmade & Craft Sellers", "description": "Professional photos for Etsy, markets, and beyond" },
-      "food": { "title": "Food & Beverage", "description": "Appetizing product shots for packaging and menus" }
+      "clothing": {
+        "title": "Online Clothing Stores",
+        "description": "Show garments on AI models in lifestyle settings"
+      },
+      "jewelry": {
+        "title": "Jewelry & Accessories",
+        "description": "Studio-quality close-ups and lifestyle shots"
+      },
+      "beauty": {
+        "title": "Beauty & Cosmetics",
+        "description": "Elegant product presentations for skincare and makeup"
+      },
+      "home": {
+        "title": "Furniture & Home Decor",
+        "description": "Place products in beautifully styled room settings"
+      },
+      "handmade": {
+        "title": "Handmade & Craft Sellers",
+        "description": "Professional photos for Etsy, markets, and beyond"
+      },
+      "food": {
+        "title": "Food & Beverage",
+        "description": "Appetizing product shots for packaging and menus"
+      }
     },
     "testimonials": {
       "title": "Loved by Business Owners",
@@ -2873,5 +2894,30 @@
     "failed": "Generation failed",
     "createFailed": "Failed to create product views",
     "tryAgain": "Please try again"
+  },
+  "productSwap": {
+    "title": "Product Swap",
+    "subtitle": "Replace the product in a generated scene with a new product image",
+    "reference": "Reference scene",
+    "referenceHint": "Generated image with the original product",
+    "newProduct": "New product",
+    "newProductHint": "Clean photo of the product to insert",
+    "fromLibrary": "From library",
+    "fromUploads": "My uploads",
+    "audience": "Audience",
+    "audiencePlaceholder": "Who is this for? e.g. young professionals interested in minimal design",
+    "scenario": "Scenario",
+    "scenarioPlaceholder": "Briefly describe the scene context (lighting, mood, location)",
+    "submit": "Generate swap ({{cost}} credit)",
+    "processing": "Generating...",
+    "pickReferenceTitle": "Pick a reference scene",
+    "pickProductTitle": "Pick a product image",
+    "results": {
+      "title": "Result",
+      "again": "Run again",
+      "download": "Download",
+      "openLibrary": "Open library"
+    },
+    "result": "Result"
   }
 }

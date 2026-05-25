@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Crown } from "lucide-react";
-import { ArrowLeft, Sparkles, RefreshCw, HelpCircle, Pencil, ArrowDown, Clock } from "lucide-react";
+import { ArrowLeft, Sparkles, RefreshCw, HelpCircle, Pencil, ArrowDown, Clock, Users } from "lucide-react";
 import { useCustomScenarios } from "@/hooks/useCustomScenarios";
 import { SavedScenariosModal } from "@/components/SavedScenariosModal";
+import { useCustomAudiences } from "@/hooks/useCustomAudiences";
+import { SavedAudiencesModal } from "@/components/SavedAudiencesModal";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -155,6 +157,8 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
   const [animateImageUrl, setAnimateImageUrl] = useState<string | null>(null);
   const [savedScenariosOpen, setSavedScenariosOpen] = useState(false);
   const { saveScenario } = useCustomScenarios();
+  const [savedAudiencesOpen, setSavedAudiencesOpen] = useState(false);
+  const { saveAudience, audiences: savedAudiences } = useCustomAudiences();
   const [animateImageId, setAnimateImageId] = useState<string | null>(null);
 
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -929,6 +933,13 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
         saveScenario({ title, description: desc }).catch(console.error);
       }
 
+      // Auto-save audience
+      if (desiredAudience.trim()) {
+        const aud = desiredAudience.trim();
+        const label = aud.length > 60 ? aud.substring(0, 60) + '…' : aud;
+        saveAudience({ label, audience: aud }).catch(console.error);
+      }
+
       localStorage.setItem(storageKeys.jobId, jobId);
       localStorage.setItem(storageKeys.stage, 'generating');
       localStorage.setItem(storageKeys.metadata, JSON.stringify({
@@ -1201,6 +1212,18 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
+                          {savedAudiences.length > 0 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="ml-auto h-7 px-2 text-xs text-primary hover:bg-primary/10 gap-1"
+                              onClick={() => setSavedAudiencesOpen(true)}
+                            >
+                              <Users className="h-3.5 w-3.5" />
+                              {t('ugc.savedAudiences.title')}
+                            </Button>
+                          )}
                         </div>
                         <div className="flex justify-between text-sm text-muted-foreground">
                           <p className="hidden md:block text-sm text-muted-foreground">{t('ugc.desireAudience.subtitle')}</p>
@@ -1801,6 +1824,11 @@ const CreateUGCGeminiBase = ({ modelVersion, showAdminBadge = false }: CreateUGC
             });
             setCustomScenarioMode(true);
           }}
+        />
+        <SavedAudiencesModal
+          open={savedAudiencesOpen}
+          onOpenChange={setSavedAudiencesOpen}
+          onSelect={(audience) => handleAudienceChange(audience)}
         />
       </div>
     </TooltipProvider>
